@@ -21,6 +21,9 @@ import "package:uy_dosh/base/services/native_language_service.dart";
 
 // Utility class for language display names
 class LanguageDisplayHelper {
+  /// Native display name (e.g. "🇷🇺 Русский").
+  /// Use for the language switcher / picker UI so users can recognize
+  /// their language regardless of the current app locale.
   static String getLanguageDisplayName(String languageCode) {
     switch (languageCode) {
       case "en":
@@ -29,6 +32,41 @@ class LanguageDisplayHelper {
         return "🇷🇺 Русский";
       case "uz":
         return "🇺🇿 O'zbekcha";
+      default:
+        return languageCode.toUpperCase();
+    }
+  }
+
+  /// Localized display name in the current app language.
+  /// Use when describing another user's language (e.g. compatibility
+  /// section, profile fields) so the label reads in the viewer's language.
+  static String getLocalizedLanguageName(String languageCode) {
+    final flag = _flagFor(languageCode);
+    final name = L10n.get(_nameKeyFor(languageCode));
+    return flag.isEmpty ? name : "$flag $name";
+  }
+
+  static String _flagFor(String languageCode) {
+    switch (languageCode) {
+      case "en":
+        return "🇺🇸";
+      case "ru":
+        return "🇷🇺";
+      case "uz":
+        return "🇺🇿";
+      default:
+        return "";
+    }
+  }
+
+  static String _nameKeyFor(String languageCode) {
+    switch (languageCode) {
+      case "en":
+        return "language_name_english";
+      case "ru":
+        return "language_name_russian";
+      case "uz":
+        return "language_name_uzbek";
       default:
         return languageCode.toUpperCase();
     }

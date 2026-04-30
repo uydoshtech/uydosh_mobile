@@ -356,7 +356,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                     ),
                                   ),
                                   Text(
-                                    LanguageDisplayHelper.getLanguageDisplayName(
+                                    LanguageDisplayHelper.getLocalizedLanguageName(
                                       profile.preferredLanguage!,
                                     ),
                                     style: TextStyle(

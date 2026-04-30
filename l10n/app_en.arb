@@ -481,6 +481,9 @@
   "language_english": "English",
   "language_russian": "Русский",
   "language_uzbek": "O'zbekcha",
+  "language_name_english": "English",
+  "language_name_russian": "Russian",
+  "language_name_uzbek": "Uzbek",
   "language_changed_to": "Language changed to {language}",
   "@language_changed_to": {
     "placeholders": {

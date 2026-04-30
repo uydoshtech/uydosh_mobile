@@ -481,6 +481,9 @@
   "language_english": "English",
   "language_russian": "Русский",
   "language_uzbek": "O'zbekcha",
+  "language_name_english": "Ingliz tili",
+  "language_name_russian": "Rus tili",
+  "language_name_uzbek": "O'zbek tili",
   "language_changed_to": "Til o'zgartirildi: {language}",
   "@language_changed_to": {
     "placeholders": {

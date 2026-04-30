@@ -109,7 +109,7 @@ class ListingDetailCompatibilityHelper {
       currentValue: currentProfile.preferredLanguage,
       ownerValue: ownerProfile.preferredLanguage,
       isMatch: (a, b) => a == b,
-      formatValue: LanguageDisplayHelper.getLanguageDisplayName,
+      formatValue: LanguageDisplayHelper.getLocalizedLanguageName,
     );
 
     compare<int>(

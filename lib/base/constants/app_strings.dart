@@ -531,6 +531,9 @@ class AppStrings {
       "language_english": "English",
       "language_russian": "Русский",
       "language_uzbek": "O'zbekcha",
+      "language_name_english": "English",
+      "language_name_russian": "Russian",
+      "language_name_uzbek": "Uzbek",
       "language_changed_to": "Language changed to {language}",
 
       // ===== PROFILE & USER INFO =====
@@ -1684,6 +1687,9 @@ class AppStrings {
       "language_english": "English",
       "language_russian": "Русский",
       "language_uzbek": "O'zbekcha",
+      "language_name_english": "Английский",
+      "language_name_russian": "Русский",
+      "language_name_uzbek": "Узбекский",
       "language_changed_to": "Язык изменен на {language}",
 
       // ===== PROFILE & USER INFO =====
@@ -2852,6 +2858,9 @@ class AppStrings {
       "language_english": "English",
       "language_russian": "Русский",
       "language_uzbek": "O'zbekcha",
+      "language_name_english": "Ingliz tili",
+      "language_name_russian": "Rus tili",
+      "language_name_uzbek": "O'zbek tili",
       "language_changed_to": "Til o'zgartirildi: {language}",
 
       // ===== PROFILE & USER INFO =====

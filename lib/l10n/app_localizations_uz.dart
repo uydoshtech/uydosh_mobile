@@ -1098,6 +1098,15 @@ class AppLocalizationsUz extends AppLocalizations {
   String get language_uzbek => 'O\'zbekcha';
 
   @override
+  String get language_name_english => 'Ingliz tili';
+
+  @override
+  String get language_name_russian => 'Rus tili';
+
+  @override
+  String get language_name_uzbek => 'O\'zbek tili';
+
+  @override
   String language_changed_to(String language) {
     return 'Til o\'zgartirildi: $language';
   }

@@ -688,8 +688,14 @@ class _EditListingScreenState extends State<EditListingScreen>
         final useLiquidGlassAppBar =
             themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = theme.appBarTheme;
+        // When [extendBodyBehindAppBar] is true the body starts at y=0, so the
+        // top padding must clear both the status bar (mainShellGlassExtraTopInset)
+        // and the AppBar itself (kToolbarHeight) — otherwise the first row of
+        // form fields gets clipped behind the translucent app bar.
         final bodyTopPad = useLiquidGlassAppBar
-            ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
+            ? 16.0 +
+                themeState.mainShellGlassExtraTopInset(context) +
+                kToolbarHeight
             : 20.0;
 
         return PopScope(

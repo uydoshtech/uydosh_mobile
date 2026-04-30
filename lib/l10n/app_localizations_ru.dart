@@ -1090,6 +1090,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get language_uzbek => 'O\'zbekcha';
 
   @override
+  String get language_name_english => 'Английский';
+
+  @override
+  String get language_name_russian => 'Русский';
+
+  @override
+  String get language_name_uzbek => 'Узбекский';
+
+  @override
   String language_changed_to(String language) {
     return 'Язык изменен на $language';
   }

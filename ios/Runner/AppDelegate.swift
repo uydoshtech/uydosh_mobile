@@ -2,6 +2,23 @@ import Flutter
 import UIKit
 import YandexMapsMobile
 
+/// Maps an in-app language code to the iOS `AppleLanguages` preference list.
+///
+/// Apple's RoomPlan / ARKit frameworks ship a fixed set of localizations
+/// (English, Russian, and other majors — but not Uzbek). When `AppleLanguages`
+/// is set to a single locale that the framework doesn't translate, iOS falls
+/// back to the development region (English) instead of the next-best language
+/// the user actually understands. We therefore expand the chosen language into
+/// a fallback chain so e.g. an Uzbek user still sees Russian coaching strings
+/// inside the native scan UI rather than English.
+func uydoshAppleLanguagesList(for code: String) -> [String] {
+  switch code {
+  case "uz": return ["uz", "ru", "en"]
+  case "ru": return ["ru", "en"]
+  default: return [code]
+  }
+}
+
 /// Registers the `uydosh/room_usdz_viewer` method channel.
 /// Kept in this file to ensure it is compiled into the Runner target.
 final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
@@ -71,11 +88,14 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
       return
     }
 
-    // Setting AppleLanguages is best-effort. Many native controllers read the
-    // preferred language at presentation time.
-    UserDefaults.standard.set([code], forKey: "AppleLanguages")
+    // Persist for the next app launch. NOTE: iOS frameworks (RoomPlan, ARKit,
+    // …) read `AppleLanguages` once at process start, so writing it here does
+    // NOT change strings already loaded in the current session — it only takes
+    // effect after the app is relaunched. The launch-time read in
+    // `application(_:didFinishLaunchingWithOptions:)` is what actually switches
+    // the language for the next session.
+    UserDefaults.standard.set(uydoshAppleLanguagesList(for: code), forKey: "AppleLanguages")
     UserDefaults.standard.set(code, forKey: "AppleLocale")
-    UserDefaults.standard.synchronize()
     result(true)
   }
 }
@@ -86,6 +106,20 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Apply the in-app language to `AppleLanguages` BEFORE any framework
+    // bundle resolution happens (i.e. before Flutter / RoomPlan / ARKit load).
+    // shared_preferences on iOS stores Dart keys in NSUserDefaults under the
+    // "flutter." prefix, so we read the same value Dart wrote in
+    // `LanguageState.setLanguage` / `initialize`. Without this, RoomPlan's
+    // coaching overlay (e.g. "More light required", "Move device to start")
+    // shows in whatever language was cached at process start rather than the
+    // currently-selected in-app language.
+    let defaults = UserDefaults.standard
+    if let persisted = defaults.string(forKey: "flutter.selected_language"), !persisted.isEmpty {
+      defaults.set(uydoshAppleLanguagesList(for: persisted), forKey: "AppleLanguages")
+      defaults.set(persisted, forKey: "AppleLocale")
+    }
+
     // YMKMapKit.setLocale("en_US") // Let it default to system language
     YMKMapKit.setApiKey("b7e30079-55fe-44d0-960c-50a03c3715e6") // Your generated API key
     GeneratedPluginRegistrant.register(with: self)

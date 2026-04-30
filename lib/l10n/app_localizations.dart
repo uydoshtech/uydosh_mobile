@@ -2074,6 +2074,24 @@ abstract class AppLocalizations {
   /// **'O\'zbekcha'**
   String get language_uzbek;
 
+  /// No description provided for @language_name_english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get language_name_english;
+
+  /// No description provided for @language_name_russian.
+  ///
+  /// In en, this message translates to:
+  /// **'Russian'**
+  String get language_name_russian;
+
+  /// No description provided for @language_name_uzbek.
+  ///
+  /// In en, this message translates to:
+  /// **'Uzbek'**
+  String get language_name_uzbek;
+
   /// No description provided for @language_changed_to.
   ///
   /// In en, this message translates to:
