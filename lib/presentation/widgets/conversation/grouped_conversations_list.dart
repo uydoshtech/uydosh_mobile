@@ -251,7 +251,12 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  InkWell(
+                  // Plain [GestureDetector] (rather than [InkWell]) — the
+                  // Material ink ripple looks heavy across the full-width
+                  // glass tile when expanding/collapsing. The haptic tap
+                  // below is enough feedback on its own.
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       HapticFeedbackUtils.impact();
                       setState(() {
@@ -396,52 +401,65 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       ),
                     ),
                   ),
-                  // Centered participant cluster overlay. Hidden once the
-                  // group is expanded — each conversation tile below already
-                  // shows its own avatar in full.
-                  if (!isExpanded)
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: Center(
-                          child: _ConversationParticipantStack(
-                            conversations: conversations,
-                            avatarColor: avatarColor,
-                            avatarIconColor: avatarIconColor,
-                            ringColor: cardColor,
-                          ),
+                  // Participant cluster overlay docked in the top-right
+                  // corner of the header. Always rendered so
+                  // [AnimatedOpacity] can cross-fade it in/out as the group
+                  // expands or collapses — leaving it as `if (!isExpanded)
+                  // …` would pop the cluster on/off in a single frame.
+                  PositionedDirectional(
+                    top: 10,
+                    end: 12,
+                    child: IgnorePointer(
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeInOut,
+                        opacity: isExpanded ? 0.0 : 1.0,
+                        child: _ConversationParticipantStack(
+                          conversations: conversations,
+                          avatarColor: avatarColor,
+                          avatarIconColor: avatarIconColor,
+                          ringColor: cardColor,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
-              // Group content with animation
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: isExpanded
-                    ? Column(
-                        children: [
-                          const Divider(height: 1),
-                          ...conversations.map(
-                            (conversation) => ConversationTile(
-                              conversation: conversation,
-                              currentUserId: widget.currentUserId,
-                              onTap: () =>
-                                  widget.onConversationTap(conversation),
-                              isGrouped:
-                                  true, // Add this parameter to style differently
-                              showActivityTimeOnly: widget.showActivityTimeOnly,
-                              onLongPress:
-                                  widget.onConversationLongPress == null
-                                      ? null
-                                      : () => widget.onConversationLongPress!(
-                                            conversation,
-                                          ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
+              // Group content with animation. [AnimatedCrossFade] (rather
+              // than [AnimatedSize] swapping in a [SizedBox.shrink]) keeps
+              // the conversation tiles visible while the height collapses,
+              // and fades them out in step with the size change so the
+              // closing tile feels like one continuous gesture instead of
+              // "content vanishes, then padding shrinks".
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 280),
+                sizeCurve: Curves.easeInOut,
+                firstCurve: Curves.easeIn,
+                secondCurve: Curves.easeOut,
+                crossFadeState: isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: const SizedBox(width: double.infinity, height: 0),
+                secondChild: Column(
+                  children: [
+                    const Divider(height: 1),
+                    ...conversations.map(
+                      (conversation) => ConversationTile(
+                        conversation: conversation,
+                        currentUserId: widget.currentUserId,
+                        onTap: () => widget.onConversationTap(conversation),
+                        isGrouped:
+                            true, // Add this parameter to style differently
+                        showActivityTimeOnly: widget.showActivityTimeOnly,
+                        onLongPress: widget.onConversationLongPress == null
+                            ? null
+                            : () => widget.onConversationLongPress!(
+                                  conversation,
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -479,7 +497,7 @@ class _ConversationParticipantStack extends StatelessWidget {
   });
 
   static const double _avatarSize = 36;
-  static const double _avatarGap = 4;
+  static const double _avatarGap = 2;
 
   /// How many real participant avatars we render before falling back to a
   /// `+N` chip. Five matches the typical "team avatars" pattern (Slack,
@@ -553,34 +571,50 @@ class _ParticipantAvatar extends StatelessWidget {
     final url = resolveAvatarUrl(conversation.otherUserAvatar);
     final cacheExtent = (size * MediaQuery.devicePixelRatioOf(context)).round();
 
-    Widget fallback() => Center(
+    Widget fallback() => Container(
+          color: avatarColor,
+          alignment: Alignment.center,
           child: ConversationAvatarContent(
             conversation: conversation,
             iconColor: avatarIconColor,
           ),
         );
 
-    return Container(
+    // Pipeline: an explicit [SizedBox] locks the 36×36 footprint, [ClipOval]
+    // forces a perfectly circular image clip (more reliable than relying on
+    // [Container.clipBehavior] + [BoxShape.circle], which can render
+    // unevenly when the child has its own width/height), and the outer
+    // [DecoratedBox] paints the thin separator ring on top so the border
+    // never gets eaten by the clip.
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: avatarColor,
-        border: Border.all(color: ringColor, width: 1.5),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipOval(
+              child: url != null
+                  ? CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      memCacheWidth: cacheExtent,
+                      memCacheHeight: cacheExtent,
+                      placeholder: (_, __) => fallback(),
+                      errorWidget: (_, __, ___) => fallback(),
+                    )
+                  : fallback(),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: ringColor, width: 1.5),
+              ),
+            ),
+          ),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: url != null
-          ? CachedNetworkImage(
-              imageUrl: url,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
-              memCacheWidth: cacheExtent,
-              memCacheHeight: cacheExtent,
-              placeholder: (_, __) => fallback(),
-              errorWidget: (_, __, ___) => fallback(),
-            )
-          : fallback(),
     );
   }
 }

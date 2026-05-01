@@ -1853,14 +1853,18 @@ class _ToggleTabContent extends StatelessWidget {
                       ThemeIcon(Icons.mail, size: 18, color: targetColor),
                       if (hasUnread)
                         Positioned(
-                          right: -3,
-                          top: -3,
+                          right: -4,
+                          top: -4,
                           child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),

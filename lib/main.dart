@@ -77,7 +77,12 @@ Future<void> _bootstrapSearchFiltersColdStart() async {
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    // Fire-and-forget: locking orientation is a platform-channel call that
+    // takes ~5–20 ms but doesn't gate any subsequent step. Awaiting it
+    // unnecessarily delays Firebase init and the rest of the cold start.
+    unawaited(
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
+    );
 
     // Image cache budget. Flutter's default is 1000 images / 100MB. We cap
     // count at 400 (plenty for a feed + detail browsing) but keep 100MB of
@@ -196,13 +201,12 @@ void main() async {
       );
     }
 
-    // Force refresh authentication status after a delay to ensure Firebase is ready
-    Future.delayed(const Duration(seconds: 2), () {
-      if (kDebugMode) {
-        logger.d("🔐 Main: Force refreshing authentication status...");
-      }
-      AuthenticationState().refreshAuthenticationStatus();
-    });
+    // (Removed) Force-refreshing authentication status 2 seconds after launch
+    // is redundant: `AuthenticationState().initialize()` is already awaited in
+    // the critical-path `Future.wait` above and re-checks the same state. The
+    // delayed refresh used to fire a duplicate Firebase Auth check while the
+    // user was already on the home screen — wasted CPU/network and a small
+    // extra battery hit on every cold start.
 
     // Display saved preferences in console (debug-only — Dart evaluates
     // string interpolation arguments eagerly, so without this guard the
@@ -243,8 +247,6 @@ void main() async {
 
     // Bloc.observer = AppBlocObserver.instance(); // Disabled to reduce logging
 
-    getIt<AppAnalyticsService>().logAppOpened(source: "cold_start");
-
     final navigatorKey = GlobalKey<NavigatorState>();
     getIt.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
 
@@ -258,6 +260,11 @@ void main() async {
     // link wiring, analytics user-id hydration) until the splash/first
     // screen is already painting. Keeps the cold-start critical path short.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Analytics "app opened" event: deferred from the critical path so the
+      // first frame doesn't wait on Firebase Analytics' lazy init.
+      unawaited(
+        getIt<AppAnalyticsService>().logAppOpened(source: "cold_start"),
+      );
       if (!kIsWeb) {
         try {
           await getIt<IPushNotificationService>().initialize();
@@ -656,8 +663,11 @@ class _SplashScreenState extends State<SplashScreen>
     _titleController.forward();
     _subtitleController.forward(); // Start simultaneously with title
 
-    // Navigate based on onboarding preference after text animations complete
-    await Future.delayed(const Duration(milliseconds: 2500));
+    // Navigate after text animations finish. Cut from 2500ms → 1000ms — the
+    // title/subtitle slide-in is ~800ms, so 1s is enough for the user to
+    // register the brand text before we move on. Saves ~1.5s of cold-start
+    // perceived latency on first launch / version upgrade.
+    await Future.delayed(const Duration(milliseconds: 1000));
     if (mounted) {
       final onboardingState = OnboardingState();
       if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
@@ -888,7 +898,9 @@ class _QuickSplashScreenState extends State<QuickSplashScreen>
     _fadeController.forward();
     // Brief hold so the static branding is actually perceptible, then move
     // on. Keep this snappy — the whole point of the quick splash is speed.
-    await Future.delayed(const Duration(milliseconds: 1700));
+    // Trimmed from 1700ms → 1000ms; with the 300ms fade-in, total time on
+    // splash is ~1s end-to-end on warm starts.
+    await Future.delayed(const Duration(milliseconds: 1000));
     if (!mounted) return;
 
     final onboardingState = OnboardingState();
