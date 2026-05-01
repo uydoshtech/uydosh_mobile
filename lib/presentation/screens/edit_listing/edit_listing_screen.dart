@@ -38,6 +38,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.d
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -132,6 +133,13 @@ class _EditListingScreenState extends State<EditListingScreen>
   final Set<int> _deletingPhotoIds = {}; // Track which photos are being deleted
   final Set<int> _makingPhotoPrimaryIds =
       {}; // Track which photos are being made primary
+
+  /// Display order for the combined existing + new photos grid. Owned by this
+  /// screen so drag-reorder survives rebuilds and can be persisted on save.
+  /// Kept in sync with [_existingPhotos] and [_selectedPhotos] via
+  /// [_rebuildOrderedPhotos] whenever either source changes.
+  List<PhotoItem> _orderedPhotos = const [];
+  bool _photoOrderDirty = false;
 
   /// Set to true if the 3D scan screen reports an upload/edit happened.
   bool _roomScanChanged = false;
@@ -307,6 +315,62 @@ class _EditListingScreenState extends State<EditListingScreen>
       // For now, we"ll start with an empty list and handle photo updates separately
       _selectedPhotos = [];
     }
+    _rebuildOrderedPhotos();
+  }
+
+  /// Rebuild [_orderedPhotos] from the current sources, preserving any
+  /// user-chosen order from the previous `_orderedPhotos` list.
+  ///
+  /// On first build (no prior order), existing photos are laid out with the
+  /// primary one first (matching the original PhotoUploader behavior), then
+  /// any newly-picked photos in selection order.
+  void _rebuildOrderedPhotos() {
+    final prev = _orderedPhotos;
+    final prevKeys = prev.map((e) => e.stableKey).toList();
+
+    // "Fresh" list in the default order (primary-first for existing, then
+    // new photos in selection order). Used both for first build and as the
+    // source of truth for which items should exist.
+    final fresh = <PhotoItem>[];
+    final primaryIndex = _existingPhotos.indexWhere((p) => p.isPrimary);
+    if (primaryIndex > 0) {
+      fresh.add(ExistingPhotoItem(_existingPhotos[primaryIndex]));
+      for (var i = 0; i < _existingPhotos.length; i++) {
+        if (i == primaryIndex) continue;
+        fresh.add(ExistingPhotoItem(_existingPhotos[i]));
+      }
+    } else {
+      for (final p in _existingPhotos) {
+        fresh.add(ExistingPhotoItem(p));
+      }
+    }
+    for (final path in _selectedPhotos) {
+      fresh.add(NewPhotoItem(path));
+    }
+
+    if (prevKeys.isEmpty) {
+      _orderedPhotos = fresh;
+      return;
+    }
+
+    // Keep previous ordering for items that still exist, then append any
+    // items that are new since the last rebuild (e.g. a newly-picked photo).
+    final freshByKey = {for (final item in fresh) item.stableKey: item};
+    final merged = <PhotoItem>[];
+    final used = <String>{};
+    for (final key in prevKeys) {
+      final item = freshByKey[key];
+      if (item != null) {
+        merged.add(item);
+        used.add(key);
+      }
+    }
+    for (final item in fresh) {
+      if (!used.contains(item.stableKey)) {
+        merged.add(item);
+      }
+    }
+    _orderedPhotos = merged;
   }
 
   void _loadStationsForLine(int line) {
@@ -565,7 +629,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("amenities", fallback: "Amenities");
     }
 
-    if (_selectedPhotos.isNotEmpty) {
+    if (_selectedPhotos.isNotEmpty || _photoOrderDirty) {
       addLabel("listing_photos_label", fallback: "Photos");
     }
 
@@ -649,6 +713,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     if (!_amenityIdsMatchBaseline()) return true;
 
     if (_selectedPhotos.isNotEmpty) return true;
+    if (_photoOrderDirty) return true;
 
     if (_roomScanChanged) return true;
 
@@ -1287,6 +1352,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                           logger.d("New selected photos: $photos");
                           setState(() {
                             _selectedPhotos = photos;
+                            _rebuildOrderedPhotos();
                           });
                           logger.d("Updated _selectedPhotos: $_selectedPhotos");
                         },
@@ -1296,6 +1362,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                         onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
                         deletingPhotoIds: _deletingPhotoIds,
                         makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
+                        orderedItems: _orderedPhotos,
+                        onReorderItems: (newOrder) {
+                          setState(() {
+                            _orderedPhotos = newOrder;
+                            _photoOrderDirty = true;
+                          });
+                        },
                         maxPhotos: 5,
                         isRequired: false,
                       ),
@@ -1495,7 +1568,10 @@ class _EditListingScreenState extends State<EditListingScreen>
         photoPaths: null, // Don"t upload photos during listing update
       );
 
-      // Then, upload new photos separately if any were selected
+      // Then, upload new photos separately if any were selected.
+      // After uploading we collect the server IDs so we can persist the
+      // user's chosen display order (existing + newly uploaded).
+      final List<int> newPhotoIds = [];
       if (_selectedPhotos.isNotEmpty) {
         try {
           logger.d("=== UPLOADING NEW PHOTOS FOR UPDATED LISTING ===");
@@ -1503,25 +1579,19 @@ class _EditListingScreenState extends State<EditListingScreen>
           logger.d("New photo paths: $_selectedPhotos");
           logger.d("Existing photos count: ${_existingPhotos.length}");
 
-          // Create isPrimary flags (first new photo is primary if no existing photos)
-          final isPrimaryFlags = List<bool>.generate(
-            _selectedPhotos.length,
-            (index) =>
-                _existingPhotos.isEmpty &&
-                index ==
-                    0, // First new photo is primary only if no existing photos
-          );
+          // isPrimary on upload doesn't matter when we follow up with a
+          // reorder call — the reorder makes `is_primary` match index 0 of
+          // the final order. Pass `false` to avoid unnecessary toggling.
+          final isPrimaryFlags = List<bool>.filled(_selectedPhotos.length, false);
 
-          logger.d("IsPrimary flags: $isPrimaryFlags");
-
-          // Upload new photos
-          await listingService.uploadListingPhotos(
+          final ids = await listingService.uploadListingPhotos(
             listingId: widget.listingDetail.id,
             photoPaths: _selectedPhotos,
             isPrimaryFlags: isPrimaryFlags,
           );
+          newPhotoIds.addAll(ids);
 
-          logger.d("✅ All new photos uploaded successfully");
+          logger.d("✅ All new photos uploaded successfully (ids: $ids)");
         } catch (photoError) {
           logger.d("⚠️ Warning: New photos failed to upload: $photoError");
           ToastTheme.showError(
@@ -1532,6 +1602,44 @@ class _EditListingScreenState extends State<EditListingScreen>
         }
       } else {
         logger.d("No new photos to upload");
+      }
+
+      // Persist the display order (existing + new) if the user reordered, or
+      // if there are new photos (so any reorder intent between existing and
+      // new is captured). We skip when only existing photos remain and the
+      // order is untouched — the server is already in that state.
+      final shouldPersistOrder = _photoOrderDirty ||
+          (newPhotoIds.isNotEmpty && _orderedPhotos.isNotEmpty);
+      if (shouldPersistOrder) {
+        try {
+          final pathToNewId = <String, int>{};
+          for (var i = 0;
+              i < _selectedPhotos.length && i < newPhotoIds.length;
+              i++) {
+            if (newPhotoIds[i] > 0) {
+              pathToNewId[_selectedPhotos[i]] = newPhotoIds[i];
+            }
+          }
+          final orderedIds = <int>[];
+          for (final item in _orderedPhotos) {
+            if (item is ExistingPhotoItem) {
+              orderedIds.add(item.photo.id);
+            } else if (item is NewPhotoItem) {
+              final id = pathToNewId[item.path];
+              if (id != null) orderedIds.add(id);
+            }
+          }
+          if (orderedIds.length > 1) {
+            await listingService.reorderPhotos(
+              listingId: widget.listingDetail.id,
+              photoIds: orderedIds,
+            );
+            logger.d("✅ Photo order persisted: $orderedIds");
+          }
+        } catch (reorderError) {
+          logger.d("⚠️ Warning: Failed to persist photo order: $reorderError");
+          // Soft-fail: the photos are uploaded; order is a refinement.
+        }
       }
 
       // Show success message
@@ -1559,6 +1667,9 @@ class _EditListingScreenState extends State<EditListingScreen>
 
       // Clear selected photos after successful update
       _selectedPhotos.clear();
+      _photoOrderDirty = false;
+      // _rebuildOrderedPhotos() will happen on next setState; we're about to
+      // pop, so no visible rebuild is necessary.
 
       // Mark home screen for refresh since we updated a listing
       HomeRefreshState().markForRefresh();
@@ -1707,6 +1818,7 @@ class _EditListingScreenState extends State<EditListingScreen>
               );
             });
           }
+          _rebuildOrderedPhotos();
         });
 
         // Update backend for new primary photo if needed (do this after setState)

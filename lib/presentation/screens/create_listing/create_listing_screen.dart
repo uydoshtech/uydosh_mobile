@@ -40,6 +40,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.d
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -1109,6 +1110,23 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 _makeNewPhotoPrimary, // Handle new photo primary selection
             deletingPhotoIds: const {}, // No deleting for new listings
             makingPhotoPrimaryIds: const {}, // No making primary for new listings
+            // Drive the grid off `_selectedPhotos` directly (as NewPhotoItem).
+            // On reorder we mutate the same list so the submit flow uploads
+            // photos in the user's chosen order (index 0 -> primary) without
+            // any extra bookkeeping.
+            orderedItems: [
+              for (final path in _selectedPhotos) NewPhotoItem(path),
+            ],
+            onReorderItems: (newOrder) {
+              setState(() {
+                _selectedPhotos = [
+                  for (final item in newOrder)
+                    if (item is NewPhotoItem) item.path,
+                ];
+                _primaryPhotoIndex =
+                    _selectedPhotos.isEmpty ? null : 0;
+              });
+            },
             maxPhotos: 5,
             isRequired: false,
           ),

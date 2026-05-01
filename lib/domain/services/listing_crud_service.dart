@@ -45,18 +45,29 @@ abstract class IListingCrudService {
 
   Future<bool> toggleListingActive(int listingId);
   Future<bool> deleteListing(int listingId);
-  Future<bool> uploadListingPhotos({
+
+  /// Upload all photos in [photoPaths] sequentially.
+  /// Returns the server-assigned photo IDs in upload order so callers can
+  /// match them back to local paths for a subsequent reorder call.
+  Future<List<int>> uploadListingPhotos({
     required int listingId,
     required List<String> photoPaths,
     required List<bool> isPrimaryFlags,
   });
-  Future<bool> uploadPhoto({
+
+  /// Upload a single photo. Returns the server-assigned photo ID (or -1 if
+  /// the response was missing an id).
+  Future<int> uploadPhoto({
     required int listingId,
     required String photoPath,
     required bool isPrimary,
   });
   Future<bool> deletePhoto({required int listingId, required int photoId});
   Future<bool> setPrimaryPhoto({required int listingId, required int photoId});
+  Future<bool> reorderPhotos({
+    required int listingId,
+    required List<int> photoIds,
+  });
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
@@ -365,7 +376,7 @@ class ListingCrudService implements IListingCrudService {
   }
 
   @override
-  Future<bool> uploadPhoto({
+  Future<int> uploadPhoto({
     required int listingId,
     required String photoPath,
     required bool isPrimary,
@@ -385,14 +396,22 @@ class ListingCrudService implements IListingCrudService {
         isPrimary: isPrimary,
       );
 
-      await _oauthApiClient.post<Map<String, dynamic>, PhotoUploadRequest>(
-        "/listings/$listingId/photos",
-        (json) => json as Map<String, dynamic>,
-        basePath: EnvironmentUtil.basePath,
-        data: requestData,
-      );
+      final response = await _oauthApiClient
+          .post<Map<String, dynamic>, PhotoUploadRequest>(
+            "/listings/$listingId/photos",
+            (json) => json as Map<String, dynamic>,
+            basePath: EnvironmentUtil.basePath,
+            data: requestData,
+          );
 
-      return true;
+      // Backend returns { message, photo: { id, ... } }.
+      final photo = response["photo"];
+      if (photo is Map<String, dynamic>) {
+        final rawId = photo["id"];
+        if (rawId is int) return rawId;
+        if (rawId is num) return rawId.toInt();
+      }
+      return -1;
     } catch (e) {
       if (kDebugMode) {
         logger.d("❌ Error uploading photo: $e");
@@ -402,20 +421,22 @@ class ListingCrudService implements IListingCrudService {
   }
 
   @override
-  Future<bool> uploadListingPhotos({
+  Future<List<int>> uploadListingPhotos({
     required int listingId,
     required List<String> photoPaths,
     required List<bool> isPrimaryFlags,
   }) async {
     try {
+      final ids = <int>[];
       for (var i = 0; i < photoPaths.length; i++) {
-        await uploadPhoto(
+        final id = await uploadPhoto(
           listingId: listingId,
           photoPath: photoPaths[i],
           isPrimary: isPrimaryFlags[i],
         );
+        ids.add(id);
       }
-      return true;
+      return ids;
     } catch (e) {
       if (kDebugMode) {
         logger.d("❌ Error uploading multiple photos: $e");
@@ -461,6 +482,28 @@ class ListingCrudService implements IListingCrudService {
     } catch (e) {
       if (kDebugMode) {
         logger.d("❌ Error setting primary photo: $e");
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> reorderPhotos({
+    required int listingId,
+    required List<int> photoIds,
+  }) async {
+    try {
+      if (photoIds.isEmpty) return true;
+      await _oauthApiClient.post<Map<String, dynamic>, PhotoReorderRequest>(
+        "/listings/$listingId/photos/reorder",
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+        data: PhotoReorderRequest(photoIds: photoIds),
+      );
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        logger.d("❌ Error reordering photos: $e");
       }
       rethrow;
     }

@@ -123,18 +123,22 @@ abstract class IListingService {
 
   Future<bool> toggleListingActive(int listingId);
   Future<bool> deleteListing(int listingId);
-  Future<bool> uploadListingPhotos({
+  Future<List<int>> uploadListingPhotos({
     required int listingId,
     required List<String> photoPaths,
     required List<bool> isPrimaryFlags,
   });
-  Future<bool> uploadPhoto({
+  Future<int> uploadPhoto({
     required int listingId,
     required String photoPath,
     required bool isPrimary,
   });
   Future<bool> deletePhoto({required int listingId, required int photoId});
   Future<bool> setPrimaryPhoto({required int listingId, required int photoId});
+  Future<bool> reorderPhotos({
+    required int listingId,
+    required List<int> photoIds,
+  });
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
@@ -398,7 +402,7 @@ class ListingService implements IListingService {
       _crudService.deleteListing(listingId);
 
   @override
-  Future<bool> uploadListingPhotos({
+  Future<List<int>> uploadListingPhotos({
     required int listingId,
     required List<String> photoPaths,
     required List<bool> isPrimaryFlags,
@@ -410,7 +414,7 @@ class ListingService implements IListingService {
       );
 
   @override
-  Future<bool> uploadPhoto({
+  Future<int> uploadPhoto({
     required int listingId,
     required String photoPath,
     required bool isPrimary,
@@ -434,6 +438,13 @@ class ListingService implements IListingService {
     required int photoId,
   }) =>
       _crudService.setPrimaryPhoto(listingId: listingId, photoId: photoId);
+
+  @override
+  Future<bool> reorderPhotos({
+    required int listingId,
+    required List<int> photoIds,
+  }) =>
+      _crudService.reorderPhotos(listingId: listingId, photoIds: photoIds);
 
   @override
   Future<void> uploadRoomScan({

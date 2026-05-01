@@ -13,6 +13,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
+import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class PhotoPicker extends StatefulWidget {
@@ -189,6 +190,14 @@ class _PhotoPickerState extends State<PhotoPicker> {
     final newPhotos = List<String>.from(widget.selectedPhotos);
     final photoToMakePrimary = newPhotos.removeAt(index);
     newPhotos.insert(0, photoToMakePrimary); // Move to first position
+    widget.onPhotosChanged(newPhotos);
+  }
+
+  void _reorderPhotos(int from, int to) {
+    if (from == to) return;
+    final newPhotos = List<String>.from(widget.selectedPhotos);
+    final moved = newPhotos.removeAt(from);
+    newPhotos.insert(to, moved);
     widget.onPhotosChanged(newPhotos);
   }
 
@@ -394,38 +403,29 @@ class _PhotoPickerState extends State<PhotoPicker> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          childAspectRatio: 1,
-                        ),
+                  ReorderablePhotoGrid(
                     itemCount: _getOrderedPhotos().length,
-                    itemBuilder: (context, index) {
-                      return _buildPhotoItem(index);
-                    },
+                    keyExtractor: (index) => _getOrderedPhotos()[index],
+                    onReorder: _reorderPhotos,
+                    itemBuilder: (context, index, _) => _buildPhotoItem(index),
                   ),
-                  // Instruction text
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      L10n.get("tap_photo_to_make_primary"),
-                      style: TextStyle(
-                        fontSize: 14.0,
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.7)
-                                : Colors.grey[600],
-                        fontStyle: FontStyle.italic,
+                  if (widget.selectedPhotos.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        L10n.get("drag_photo_to_reorder"),
+                        style: TextStyle(
+                          fontSize: 14.0,
+                          color:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withValues(alpha: 0.7)
+                                  : Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
 

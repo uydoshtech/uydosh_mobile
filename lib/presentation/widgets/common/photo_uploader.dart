@@ -14,14 +14,24 @@ import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
+import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
+/// Photo section used by the edit-listing screen.
+///
+/// Renders existing (server-side) and newly-picked local photos in a single
+/// reorderable grid. The parent keeps the canonical data: [existingPhotos],
+/// [selectedPhotos], and now a combined [orderedItems] list that describes
+/// the current on-screen order.
+///
+/// When the user drags a tile, [onReorderItems] fires with the new order so
+/// the parent can persist it on save.
 class PhotoUploader extends StatefulWidget {
-
   const PhotoUploader({
     required this.selectedPhotos,
     required this.onPhotosChanged,
@@ -31,20 +41,30 @@ class PhotoUploader extends StatefulWidget {
     required this.deletingPhotoIds,
     required this.makingPhotoPrimaryIds,
     super.key,
-    this.onMakeNewPhotoPrimary, // Optional callback for new photos
+    this.orderedItems,
+    this.onReorderItems,
+    this.onMakeNewPhotoPrimary,
     this.maxPhotos = 5,
     this.isRequired = false,
   });
+
   final List<String> selectedPhotos;
   final Function(List<String>) onPhotosChanged;
   final List<Photo> existingPhotos;
   final Function(int) onDeleteExistingPhoto;
   final Function(int) onMakePhotoPrimary;
-  final Function(int)? onMakeNewPhotoPrimary; // New callback for new photos
+  final Function(int)? onMakeNewPhotoPrimary;
   final Set<int> deletingPhotoIds;
   final Set<int> makingPhotoPrimaryIds;
   final int maxPhotos;
   final bool isRequired;
+
+  /// Caller-owned display order. When provided, tiles are rendered in this
+  /// order and [onReorderItems] is called on drag. When null, the widget
+  /// falls back to the legacy layout (primary existing first, then the rest,
+  /// then new photos) and disables drag reordering.
+  final List<PhotoItem>? orderedItems;
+  final Function(List<PhotoItem> newOrder)? onReorderItems;
 
   @override
   State<PhotoUploader> createState() => _PhotoUploaderState();
@@ -55,20 +75,9 @@ class _PhotoUploaderState extends State<PhotoUploader>
   final ImagePicker _picker = ImagePicker();
   int? _primaryNewPhotoIndex; // Track which new photo is primary
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
-        // For gallery, allow multiple image selection
         final images = await _picker.pickMultiImage(
           maxWidth: 1280,
           maxHeight: 720,
@@ -76,7 +85,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
         );
 
         if (images.isNotEmpty) {
-          // Check if adding these images would exceed the limit
           final remainingSlots =
               widget.maxPhotos - widget.selectedPhotos.length;
           final imagesToProcess = images.take(remainingSlots).toList();
@@ -84,12 +92,10 @@ class _PhotoUploaderState extends State<PhotoUploader>
           if (imagesToProcess.isNotEmpty) {
             final newPhotos = List<String>.from(widget.selectedPhotos);
 
-            // Add each selected image
             for (final image in imagesToProcess) {
               newPhotos.add(image.path);
             }
 
-            // If this is the first photo being added AND no existing photos, make it primary
             if (widget.selectedPhotos.isEmpty &&
                 newPhotos.isNotEmpty &&
                 widget.existingPhotos.isEmpty) {
@@ -102,8 +108,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
           }
         }
       } else {
-        // Default: native camera via image_picker. If the admin switch is
-        // flipped on, use our in-app custom camera (watermark overlay).
         String? capturedPath;
         if (!ClientCustomCameraConfig.customCameraDisabled.value) {
           capturedPath = await Navigator.of(context).push<String>(
@@ -127,7 +131,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
             final newPhotos = List<String>.from(widget.selectedPhotos);
             newPhotos.add(capturedPath);
 
-            // If this is the first photo being added AND no existing photos, make it primary
             if (widget.selectedPhotos.isEmpty &&
                 widget.existingPhotos.isEmpty) {
               _primaryNewPhotoIndex = 0;
@@ -152,12 +155,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(
-            L10n.get("max_photos_reached"),
-          ),
-          content: Text(
-            L10n.get("max_photos_message"),
-          ),
+          title: Text(L10n.get("max_photos_reached")),
+          content: Text(L10n.get("max_photos_message")),
           actions: [
             TextButton(
               onPressed: () {
@@ -298,17 +297,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
     final newPhotos = List<String>.from(widget.selectedPhotos);
     newPhotos.removeAt(index);
 
-    // Handle primary photo reassignment
     if (_primaryNewPhotoIndex != null) {
       if (index == _primaryNewPhotoIndex) {
-        // Primary photo was deleted, reassign to first remaining photo
         if (newPhotos.isNotEmpty) {
           _primaryNewPhotoIndex = 0;
         } else {
-          _primaryNewPhotoIndex = null; // No photos left
+          _primaryNewPhotoIndex = null;
         }
       } else if (index < _primaryNewPhotoIndex!) {
-        // Photo before primary was deleted, adjust index
         _primaryNewPhotoIndex = _primaryNewPhotoIndex! - 1;
       }
     }
@@ -321,18 +317,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
   }
 
   void _makeNewPhotoPrimary(int index) {
-    if (_primaryNewPhotoIndex == index) return; // Already primary
+    if (_primaryNewPhotoIndex == index) return;
 
     setState(() {
       _primaryNewPhotoIndex = index;
     });
 
-    // Call the callback if provided
-    if (widget.onMakeNewPhotoPrimary != null) {
-      widget.onMakeNewPhotoPrimary!(index);
-    }
+    widget.onMakeNewPhotoPrimary?.call(index);
 
-    // Show success message
     ToastTheme.showSuccess(
       context,
       message: L10n.get("photo_made_primary"),
@@ -343,52 +335,38 @@ class _PhotoUploaderState extends State<PhotoUploader>
     if (photoUrl.startsWith("http")) {
       return photoUrl;
     }
-    // Convert relative URL to absolute URL
     return "${EnvironmentUtil.basePath}$photoUrl";
   }
 
-  /// Returns [orderedPhotos, orderedToOriginalIndex].
-  /// orderedPhotos: display order (primary first).
-  /// orderedToOriginalIndex[i]: original index for callbacks.
-  (List<Photo> orderedPhotos, List<int> orderedToOriginalIndex)
-      _getOrderedExistingPhotosWithIndices() {
+  /// Fallback display order when the parent doesn't provide [orderedItems]:
+  /// existing primary first, remaining existing next, then new photos.
+  List<PhotoItem> _legacyOrderedItems() {
+    final items = <PhotoItem>[];
     final photos = widget.existingPhotos;
     final primaryIndex = photos.indexWhere((p) => p.isPrimary);
-    if (primaryIndex == -1 || primaryIndex == 0) {
-      return (
-        List<Photo>.from(photos),
-        List.generate(photos.length, (i) => i),
-      );
+    if (primaryIndex > 0) {
+      items.add(ExistingPhotoItem(photos[primaryIndex]));
+      for (var i = 0; i < photos.length; i++) {
+        if (i == primaryIndex) continue;
+        items.add(ExistingPhotoItem(photos[i]));
+      }
+    } else {
+      for (final p in photos) {
+        items.add(ExistingPhotoItem(p));
+      }
     }
-    final ordered = [
-      photos[primaryIndex],
-      ...photos.sublist(0, primaryIndex),
-      ...photos.sublist(primaryIndex + 1),
-    ];
-    final indices = [
-      primaryIndex,
-      ...List.generate(primaryIndex, (i) => i),
-      ...List.generate(
-        photos.length - primaryIndex - 1,
-        (i) => i + primaryIndex + 1,
-      ),
-    ];
-    return (ordered, indices);
+    for (final path in widget.selectedPhotos) {
+      items.add(NewPhotoItem(path));
+    }
+    return items;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Compute once per build instead of per item (avoids O(n²))
-    final (_, orderedToOriginalIndex) =
-        _getOrderedExistingPhotosWithIndices();
-    final existingCount = widget.existingPhotos.length;
-    final selectedCount = widget.selectedPhotos.length;
-    final primaryId = widget.existingPhotos
-        .where((p) => p.isPrimary)
-        .firstOrNull
-        ?.id ?? 0;
+    final orderedItems = widget.orderedItems ?? _legacyOrderedItems();
+    final canReorder = widget.orderedItems != null && widget.onReorderItems != null;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -401,7 +379,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with label and add button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -449,57 +426,72 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
             const SizedBox(height: 12),
 
-            // Combined photos grid (existing + new photos)
-            if (existingCount > 0 || selectedCount > 0) ...[
-              GridView.builder(
-                key: ValueKey(
-                  "combined_photos_${existingCount}_${selectedCount}_$primaryId",
-                ),
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  // Wider-than-tall tiles shrink row height vs 1:1 squares (less
-                  // empty-looking area on edit/create listing with few photos).
-                  childAspectRatio: 1.35,
-                ),
-                itemCount: existingCount + selectedCount,
-                itemBuilder: (context, index) {
-                  if (index < existingCount) {
-                    final originalIndex = orderedToOriginalIndex[index];
-                    return _buildExistingPhotoItem(originalIndex);
-                  } else {
-                    return _buildNewPhotoItem(index - existingCount);
+            if (orderedItems.isNotEmpty) ...[
+              ReorderablePhotoGrid(
+                itemCount: orderedItems.length,
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.35,
+                keyExtractor: (i) => orderedItems[i].stableKey,
+                canDrag: canReorder
+                    ? (i) {
+                        // Don't let the user drag a tile that's mid-flight with
+                        // the server (deleting, or being set as primary): its
+                        // state is about to change under us.
+                        final item = orderedItems[i];
+                        if (item is ExistingPhotoItem) {
+                          if (widget.deletingPhotoIds.contains(item.photo.id)) {
+                            return false;
+                          }
+                          if (widget.makingPhotoPrimaryIds
+                              .contains(item.photo.id)) {
+                            return false;
+                          }
+                        }
+                        return true;
+                      }
+                    : (_) => false,
+                onReorder: (from, to) {
+                  if (!canReorder) return;
+                  final newOrder = List<PhotoItem>.from(orderedItems);
+                  final moved = newOrder.removeAt(from);
+                  newOrder.insert(to, moved);
+                  widget.onReorderItems!(newOrder);
+                },
+                itemBuilder: (context, index, _) {
+                  final item = orderedItems[index];
+                  final isFirst = index == 0;
+                  if (item is ExistingPhotoItem) {
+                    final originalIndex = widget.existingPhotos
+                        .indexWhere((p) => p.id == item.photo.id);
+                    return _buildExistingPhotoItem(
+                      originalIndex < 0 ? 0 : originalIndex,
+                      treatAsPrimary: canReorder ? isFirst : false,
+                      allowTapToPrimary: !canReorder,
+                    );
                   }
+                  item as NewPhotoItem;
+                  final originalIndex =
+                      widget.selectedPhotos.indexOf(item.path);
+                  return _buildNewPhotoItem(
+                    originalIndex < 0 ? 0 : originalIndex,
+                    treatAsPrimary: canReorder
+                        ? isFirst
+                        : (_primaryNewPhotoIndex == originalIndex &&
+                            !widget.existingPhotos.any((p) => p.isPrimary)),
+                    allowTapToPrimary: !canReorder,
+                  );
                 },
               ),
 
-              // Instruction text below the combined grid
-              if (widget.existingPhotos.length > 1) ...[
+              if (orderedItems.length > 1) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    L10n.get("tap_photo_to_make_primary"),
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: theme.colorScheme.onSurfaceVariant.withValues(
-                        alpha: 0.7,
-                      ),
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ],
-
-              // Instruction text for new photos
-              if (widget.selectedPhotos.length > 1) ...[
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    L10n.get("tap_photo_to_make_primary"),
+                    L10n.get(canReorder
+                        ? "drag_photo_to_reorder"
+                        : "tap_photo_to_make_primary"),
                     style: TextStyle(
                       fontSize: 14.0,
                       color: theme.colorScheme.onSurfaceVariant.withValues(
@@ -517,9 +509,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
     );
   }
 
-  Widget _buildExistingPhotoItem(int index) {
+  Widget _buildExistingPhotoItem(
+    int index, {
+    bool treatAsPrimary = false,
+    bool allowTapToPrimary = true,
+  }) {
     final photo = widget.existingPhotos[index];
     final isDeleting = widget.deletingPhotoIds.contains(photo.id);
+    final showPrimary = treatAsPrimary || photo.isPrimary;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -532,16 +529,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
         borderRadius: BorderRadius.circular(8),
         child: Stack(
           children: [
-            // Photo image - tappable to make primary
             GestureDetector(
-              onTap:
-                  widget.makingPhotoPrimaryIds.contains(photo.id)
-                      ? null
-                      : () {
-                        // Add haptic feedback
-                        HapticFeedbackUtils.impact();
-                        widget.onMakePhotoPrimary(index);
-                      },
+              onTap: !allowTapToPrimary ||
+                      widget.makingPhotoPrimaryIds.contains(photo.id)
+                  ? null
+                  : () {
+                      HapticFeedbackUtils.impact();
+                      widget.onMakePhotoPrimary(index);
+                    },
               child: ColoredBox(
                 color: ThemeState().isBlueTheme
                     ? BlueThemeColors.surface
@@ -551,9 +546,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  // Pin both dimensions so cover-cropped tiles in the
-                  // photo grid don't get cached at the framework's guessed
-                  // height (which can balloon when fed `double.infinity`).
                   memCacheWidth: 400,
                   memCacheHeight: 400,
                   fadeInDuration: const Duration(milliseconds: 200),
@@ -572,7 +564,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 ),
               ),
             ),
-            // Overlay loader when making photo primary
             if (widget.makingPhotoPrimaryIds.contains(photo.id))
               Positioned.fill(
                 child: DecoratedBox(
@@ -606,10 +597,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   ),
                 ),
               ),
-            // Primary photo indicator
-            if (photo.isPrimary)
+            if (showPrimary)
               const Positioned(top: 4, left: 4, child: PrimaryPhotoPill()),
-            // Delete button
             Positioned(
               top: 4,
               right: 4,
@@ -657,12 +646,15 @@ class _PhotoUploaderState extends State<PhotoUploader>
     );
   }
 
-  Widget _buildNewPhotoItem(int index) {
+  Widget _buildNewPhotoItem(
+    int index, {
+    bool treatAsPrimary = false,
+    bool allowTapToPrimary = true,
+  }) {
     final photoPath = widget.selectedPhotos[index];
-    // Only show primary badge if no existing photos have primary status
-    final isPrimary =
-        _primaryNewPhotoIndex == index &&
-        !widget.existingPhotos.any((photo) => photo.isPrimary);
+    final isPrimary = treatAsPrimary ||
+        (_primaryNewPhotoIndex == index &&
+            !widget.existingPhotos.any((photo) => photo.isPrimary));
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -681,12 +673,13 @@ class _PhotoUploaderState extends State<PhotoUploader>
         borderRadius: BorderRadius.circular(8),
         child: Stack(
           children: [
-            // Photo image - tappable to make primary
             GestureDetector(
-              onTap: () {
-                HapticFeedbackUtils.impact();
-                _makeNewPhotoPrimary(index);
-              },
+              onTap: allowTapToPrimary
+                  ? () {
+                      HapticFeedbackUtils.impact();
+                      _makeNewPhotoPrimary(index);
+                    }
+                  : null,
               child: ColoredBox(
                 color: ThemeState().isBlueTheme
                     ? BlueThemeColors.surface
@@ -708,10 +701,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 ),
               ),
             ),
-            // Primary photo indicator
             if (isPrimary)
               const Positioned(top: 4, left: 4, child: PrimaryPhotoPill()),
-            // Delete button
             Positioned(
               top: 4,
               right: 4,

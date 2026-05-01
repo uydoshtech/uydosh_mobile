@@ -45,3 +45,14 @@ class RoomScanUploadRequest implements IJsonEncodable {
   @override
   Map<String, dynamic> toJson() => {"usdzData": usdzData};
 }
+
+/// Reorder existing listing photos. `photoIds` are in the desired display
+/// order (index 0 = new primary, index 0-based = new photo_order - 1).
+class PhotoReorderRequest implements IJsonEncodable {
+  PhotoReorderRequest({required this.photoIds});
+
+  final List<int> photoIds;
+
+  @override
+  Map<String, dynamic> toJson() => {"photoIds": photoIds};
+}
