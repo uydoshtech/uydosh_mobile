@@ -1,5 +1,6 @@
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart";
+import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -31,6 +32,16 @@ abstract final class ReinstallSessionGuard {
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       logger.d("⚠️ ReinstallSessionGuard: Firebase signOut failed: $e");
+    }
+    // Also clear the GoogleSignIn cache. The Firebase user was restored
+    // from Keychain on iOS reinstall, but the GoogleSignIn plugin keeps
+    // its own cached account — without this, the auth wizard would
+    // silently re-sign-in to the pre-reinstall identity instead of
+    // letting the user reconfirm their account.
+    try {
+      await GoogleSignIn().signOut();
+    } catch (e) {
+      logger.d("⚠️ ReinstallSessionGuard: GoogleSignIn signOut failed: $e");
     }
     try {
       await SessionManager.clearSession();

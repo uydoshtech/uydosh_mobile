@@ -1,6 +1,8 @@
 import "package:dio/dio.dart";
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -37,6 +39,24 @@ class LogoutService {
       logger.d("🔥 Signing out from Firebase...");
       await FirebaseAuth.instance.signOut();
       logger.d("✅ Firebase sign out completed");
+
+      // 1b. Also sign out from the GoogleSignIn plugin. Firebase's signOut
+      // only invalidates the Firebase credential; the underlying Google
+      // SDK keeps the last-used account cached, so the very next call to
+      // `GoogleSignIn.signIn()` would silently re-authenticate as the
+      // same user without showing the account chooser. The plugin's
+      // native state is process-global, so calling signOut on a fresh
+      // instance clears the cache for every other GoogleSignIn instance
+      // in the app (e.g. the one inside AuthWizardScreen). Best-effort —
+      // a failure here shouldn't block the rest of the logout flow.
+      if (!kIsWeb) {
+        try {
+          await GoogleSignIn().signOut();
+          logger.d("✅ GoogleSignIn sign out completed");
+        } catch (e) {
+          logger.d("⚠️ GoogleSignIn sign out failed (non-fatal): $e");
+        }
+      }
 
       // 2. Call backend logout endpoint if we have a session token
       final token = await SessionManager.getToken();

@@ -14,6 +14,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -213,29 +214,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     _loadRegions();
     _loadCountries();
 
-    // Pre-warm the Google Sign-In plugin while the user is still on the
-    // language step. Without this, the very first call to
-    // `_googleSignIn.signIn()` (when the user taps the button on page 1)
-    // pays the full native init cost — loading the GIDSignIn / GIS SDK,
-    // wiring up the method channel — which manifests as a 1–2s hiccup
-    // before the system sheet appears. `signInSilently` does that init
-    // work eagerly without showing any UI; it returns null if there's no
-    // cached account, which is exactly what we want here. We don't await
-    // it because the goal is purely to warm the plugin in the background.
-    _prewarmGoogleSignIn();
-  }
-
-  bool _googleSignInPrewarmed = false;
-
-  void _prewarmGoogleSignIn() {
-    if (kIsWeb) return;
-    if (_googleSignInPrewarmed) return;
-    _googleSignInPrewarmed = true;
-    unawaited(
-      _googleSignIn
-          .signInSilently(suppressErrors: true)
-          .catchError((Object _) => null),
-    );
+    // Note: GoogleSignIn warm-up is now centralized in
+    // [GoogleSignInWarmup], kicked off from main.dart's post-frame
+    // callback so it has the entire splash duration to complete.
+    // [_signInWithGoogle] also `ensureWarm`s before invoking the system
+    // sheet, so we don't need a wizard-local pre-warm anymore.
   }
 
   Future<void> _loadCountries() async {
@@ -361,6 +344,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         _crashlytics.log("AuthWizard: google_sign_in_started");
       }
+
+      // Make sure the GoogleSignIn native plugin is fully warm before we
+      // trigger the system sheet. On a normal cold start the warm-up
+      // (kicked off in main.dart's post-frame callback) has finished
+      // long before the user reaches this button — this await resolves
+      // immediately. If they somehow tap before warm-up is done (very
+      // fast cold start, fresh install, OEM build with slow native
+      // init), we wait once here instead of paying the full cold-start
+      // cost on `signIn()` itself, where the perceived hiccup is much
+      // worse because the user has already committed to the action.
+      await GoogleSignInWarmup.ensureWarm();
 
       // Trigger the authentication flow
       stage = "google_sign_in";

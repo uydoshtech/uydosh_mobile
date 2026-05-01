@@ -1,5 +1,7 @@
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -57,6 +59,21 @@ class SessionExpiredHandler {
         await FirebaseAuth.instance.signOut();
       } catch (e) {
         logger.d("⚠️ SessionExpiredHandler: Firebase sign out failed: $e");
+      }
+
+      // Clear the GoogleSignIn plugin's cached account too. Otherwise the
+      // user gets bounced to the auth wizard and the next "Sign in with
+      // Google" tap silently re-authenticates as the same Google
+      // identity — which, since the backend killed *that* identity's
+      // session, just reproduces the 401 in a loop. Showing the account
+      // chooser gives them a real way out (switch account / contact
+      // support).
+      if (!kIsWeb) {
+        try {
+          await GoogleSignIn().signOut();
+        } catch (e) {
+          logger.d("⚠️ SessionExpiredHandler: GoogleSignIn sign out failed: $e");
+        }
       }
 
       try {

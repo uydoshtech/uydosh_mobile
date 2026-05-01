@@ -111,29 +111,29 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
     _loadImage();
   }
 
-  /// Build the initial crop rect inside the viewport. Free-aspect mode
-  /// covers the whole viewport (which equals the visible photo after the
-  /// package's scale-to-cover); locked aspects centre an aspect-correct
-  /// rect that touches the viewport on its tight axis.
-  static Rect _initialCropRect(Rect viewportRect, double? aspectRatio) {
+  /// Build the initial crop rect inside the visible photo. Free-aspect
+  /// mode hugs the [imageRect] so the brackets match the photo edges on
+  /// entry; locked aspects centre an aspect-correct rect that touches
+  /// the photo on its tight axis.
+  static Rect _initialCropRect(Rect imageRect, double? aspectRatio) {
     if (aspectRatio == null) {
-      return viewportRect;
+      return imageRect;
     }
-    final vw = viewportRect.width;
-    final vh = viewportRect.height;
-    final viewportAr = vw / vh;
+    final iw = imageRect.width;
+    final ih = imageRect.height;
+    final imageAr = iw / ih;
     final double rectW;
     final double rectH;
-    if (aspectRatio > viewportAr) {
-      rectW = vw;
-      rectH = vw / aspectRatio;
+    if (aspectRatio > imageAr) {
+      rectW = iw;
+      rectH = iw / aspectRatio;
     } else {
-      rectH = vh;
-      rectW = vh * aspectRatio;
+      rectH = ih;
+      rectW = ih * aspectRatio;
     }
     return Rect.fromLTWH(
-      viewportRect.left + (vw - rectW) / 2,
-      viewportRect.top + (vh - rectH) / 2,
+      imageRect.left + (iw - rectW) / 2,
+      imageRect.top + (ih - rectH) / 2,
       rectW,
       rectH,
     );
@@ -461,21 +461,18 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         // mode because the package internally substitutes a 1.0 aspect
         // ratio when null is passed, which would force a centered square
         // (showing as a horizontal strip on tall photos).
-        //
-        // We also can't return the raw [imageRect] (the pre-scale
-        // letterboxed bounds): with [interactive] true the package
-        // immediately calls `_applyScale(scaleToCover)` which grows the
-        // image to fill the viewport. The cropRect stays as-set, so
-        // returning the original imageRect would leave the brackets
-        // sitting inside a now-bigger photo. Returning the [viewportRect]
-        // (and a viewport-fitted rect for locked aspects) means the crop
-        // rect matches the post-scale visible image area exactly.
         initialRectBuilder: InitialRectBuilder.withBuilder(
           (viewportRect, imageRect) =>
-              _initialCropRect(viewportRect, _aspect.value),
+              _initialCropRect(imageRect, _aspect.value),
         ),
         radius: 0,
-        interactive: true,
+        // [interactive] true would let the user pinch-zoom the image,
+        // but it also disables the "drag the crop rect to move it"
+        // gesture inside the package (single-finger drag pans the image
+        // instead). For a listing-photo cropper, being able to drag the
+        // crop box around is more important than pinch-zoom, so we
+        // mirror the previous [ImageCropper] UX and keep this off.
+        interactive: false,
         cornerDotBuilder: (size, edge) =>
             _CornerMarker(size: size, edge: edge),
         progressIndicator: const CircularProgressIndicator(

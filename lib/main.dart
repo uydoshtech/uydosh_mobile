@@ -23,6 +23,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/reinstall_session_guard.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
@@ -277,6 +278,13 @@ void main() async {
           logger.d("Push notification init failed: $e");
         }
         unawaited(deepLinkService.initialize());
+        // Eagerly warm the GoogleSignIn native plugin so the user's
+        // first tap on "Sign in with Google" in the auth wizard doesn't
+        // pay the full cold-start cost (1–3s on real devices). Runs in
+        // parallel with the splash + onboarding navigation; the wizard
+        // also `ensureWarm`s before invoking the system sheet to handle
+        // the case where the user reaches it before warm-up finishes.
+        unawaited(GoogleSignInWarmup.start());
       }
       // Warm up UI sound effects so the first refresh/like has no latency.
       unawaited(SoundService().preload());
