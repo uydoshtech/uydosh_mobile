@@ -7,6 +7,7 @@ import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -136,6 +137,16 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
         if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
+            // Let the user crop/rotate the freshly captured shot before we
+            // bake in the watermark — cropping after watermarking would let
+            // the user accidentally cut the logo off. If the user cancels
+            // the cropper we silently keep the original photo.
+            var photoPath = capturedPath;
+            if (mounted) {
+              final croppedPath = await cropListingPhoto(context, photoPath);
+              if (croppedPath != null) photoPath = croppedPath;
+            }
+
             // Show loading indicator
             setState(() {
               _isProcessingImage = true;
@@ -144,7 +155,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
             try {
               final watermarkBytes = await _loadWatermarkBytes();
               final watermarkedFile = await WatermarkService.addWatermark(
-                File(capturedPath),
+                File(photoPath),
                 watermarkImageBytes: watermarkBytes,
               );
               final newPhotos = List<String>.from(widget.selectedPhotos);
@@ -155,7 +166,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                 debugPrint("Error adding watermark: $e");
               }
               final newPhotos = List<String>.from(widget.selectedPhotos);
-              newPhotos.add(capturedPath);
+              newPhotos.add(photoPath);
               widget.onPhotosChanged(newPhotos);
             } finally {
               // Hide loading indicator

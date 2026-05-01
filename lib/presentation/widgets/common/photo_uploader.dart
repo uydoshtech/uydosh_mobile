@@ -7,6 +7,7 @@ import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -128,8 +129,17 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
         if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
+            // Offer crop/rotate right after capture. Cancelling the cropper
+            // silently keeps the original photo so we never punish the user
+            // for taking a shot they don't want to crop.
+            var photoPath = capturedPath;
+            if (mounted) {
+              final croppedPath = await cropListingPhoto(context, photoPath);
+              if (croppedPath != null) photoPath = croppedPath;
+            }
+
             final newPhotos = List<String>.from(widget.selectedPhotos);
-            newPhotos.add(capturedPath);
+            newPhotos.add(photoPath);
 
             if (widget.selectedPhotos.isEmpty &&
                 widget.existingPhotos.isEmpty) {

@@ -55,13 +55,24 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   bool _uploadingAvatar = false;
 
   String? _effectiveAvatarUrl() {
-    // Prefer the Google/Firebase photo while the user is signed in with
-    // Google — it is always fresh. Fall back to whatever is stored on the
-    // profile (custom upload, or a previously-backfilled Google URL) for
-    // users who don't have an active Firebase photoURL (e.g. phone auth).
+    // A custom upload is stored as a relative backend path
+    // (e.g. /images/avatars/avatar_42_xxx.jpg). Treat that as the source of
+    // truth so the avatar refreshes immediately after the user uploads a new
+    // photo — otherwise the Google/Firebase URL below wins and the new image
+    // never shows up here, even though the backend has it. Google avatars
+    // come back as absolute https URLs and fall through to the Firebase
+    // path, which keeps them fresh for users who haven't customized.
+    final raw = widget.profile.avatarUrl?.trim();
+    final hasCustomUpload = raw != null &&
+        raw.isNotEmpty &&
+        !raw.startsWith("http://") &&
+        !raw.startsWith("https://");
+    if (hasCustomUpload) {
+      return resolveAvatarUrl(raw);
+    }
     return widget.cachedGooglePhotoUrl ??
         FirebaseAuth.instance.currentUser?.photoURL ??
-        resolveAvatarUrl(widget.profile.avatarUrl);
+        resolveAvatarUrl(raw);
   }
 
   Future<void> _pickAndUploadAvatar() async {
