@@ -503,6 +503,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get room_scan_success => '3D skan saqlandi';
 
   @override
+  String get room_scan_cancelled =>
+      'Skan qilinmadi. Qayta urinish uchun «Boshlash»ni bosing.';
+
+  @override
   String get room_scan_error =>
       'Skanni saqlab bo\'lmadi. Qayta urinib ko\'ring.';
 

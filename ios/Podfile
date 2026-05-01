@@ -213,6 +213,32 @@ post_install do |installer|
     end
   end
 
+  # Notify Flutter when the user dismisses the native RoomCaptureViewController
+  # without exporting a USDZ — i.e. tapped "Cancel", or tapped "Done" → "Finish"
+  # before any room was captured. Upstream just calls `self.dismiss(animated:)`
+  # in those paths and never sends `onRoomCaptureFinished`, so Dart's listener
+  # never fires and our screen is stuck on "Start scan" with no feedback.
+  # We piggy-back on the existing `onRoomCaptureFinished` channel call: the Dart
+  # side already treats a nil/empty `usdzFilePath` as the cancel case and shows
+  # a friendly "no scan was captured" toast.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: notify flutter on cancel/empty-finish */'
+    unless src.include?(marker)
+      src = src.sub(
+        "    @objc private func cancelScanning() {\n        self.dismiss(animated: true)\n    }",
+        "    @objc private func cancelScanning() {\n        #{marker}\n        self.uydoshNotifyRoomCaptureFinishedToFlutter()\n        self.dismiss(animated: true)\n    }"
+      )
+      # finishAndReturnResult's "no captured room" early-out also dismisses
+      # silently — make it behave the same as cancel.
+      src = src.sub(
+        "    @objc private func finishAndReturnResult() {\n        guard let currentCapturedRoom = currentCapturedRoom else {\n            self.dismiss(animated: true)\n            return\n        }",
+        "    @objc private func finishAndReturnResult() {\n        guard let currentCapturedRoom = currentCapturedRoom else {\n            #{marker}\n            self.uydoshNotifyRoomCaptureFinishedToFlutter()\n            self.dismiss(animated: true)\n            return\n        }"
+      )
+      File.write(room_capture_file, src)
+    end
+  end
+
   # Localize hardcoded UI strings in flutter_roomplan's RoomCaptureViewController.
   # Upstream uses hardcoded English titles for top buttons.
   if File.exist?(room_capture_file)

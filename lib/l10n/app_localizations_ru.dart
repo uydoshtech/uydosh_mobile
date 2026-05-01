@@ -501,6 +501,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get room_scan_success => '3D-скан сохранён';
 
   @override
+  String get room_scan_cancelled =>
+      'Скан не был сделан. Нажмите «Начать», чтобы попробовать снова.';
+
+  @override
   String get room_scan_error => 'Не удалось сохранить скан. Попробуйте снова.';
 
   @override

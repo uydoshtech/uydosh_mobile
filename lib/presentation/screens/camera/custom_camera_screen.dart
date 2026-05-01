@@ -650,6 +650,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
 
   Widget _buildBottomBar(BuildContext context) {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final isReview = _stage == _CaptureStage.review;
+    // The review stage shows glassy translucent pills over the captured
+    // photo, and we want the bottom-right brand mark to stay visible
+    // underneath them. A heavy black gradient defeats that, so we use a
+    // gentler wash here. The live stage keeps a slightly darker gradient
+    // to anchor the white shutter button against bright scenes.
+    final bottomGradientAlpha = isReview ? 0.28 : 0.5;
     return Positioned(
       left: 0,
       right: 0,
@@ -666,14 +673,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              Colors.black.withValues(alpha: 0.55),
+              Colors.black.withValues(alpha: bottomGradientAlpha),
               Colors.transparent,
             ],
           ),
         ),
-        child: _stage == _CaptureStage.live
-            ? _buildLiveControls()
-            : _buildReviewControls(),
+        child: isReview ? _buildReviewControls() : _buildLiveControls(),
       ),
     );
   }

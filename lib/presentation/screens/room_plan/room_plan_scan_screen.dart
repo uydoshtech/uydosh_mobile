@@ -69,13 +69,15 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     _roomPlan.onRoomCaptureFinished(() {
       Future<void> run() async {
         final path = await _roomPlan.getUsdzFilePath();
-        if (!mounted || path == null || path.isEmpty) {
-          if (mounted) {
-            ToastTheme.showError(
-              context,
-              message: L10n.get("room_scan_error"),
-            );
-          }
+        if (!mounted) return;
+        if (path == null || path.isEmpty) {
+          // RoomPlan invokes onRoomCaptureFinished on Cancel too, with no
+          // USDZ. Treat that as "user backed out" — surface a friendly info
+          // toast instead of a scary error.
+          ToastTheme.showInfo(
+            context,
+            message: L10n.get("room_scan_cancelled"),
+          );
           return;
         }
         setState(() => _uploading = true);

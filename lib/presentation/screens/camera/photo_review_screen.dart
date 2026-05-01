@@ -1,12 +1,13 @@
 import "dart:io";
 import "dart:math" as math;
+import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Result returned by [PhotoReviewScreen] via [Navigator.pop]:
 ///   - the original [path] when the user accepts the photo,
@@ -294,65 +295,119 @@ class _UyDoshReviewPillButtonState extends State<UyDoshReviewPillButton> {
 
   @override
   Widget build(BuildContext context) {
-    final base = widget.primary
-        ? BlueThemeColors.primary
-        : const Color(0xFF1F2630);
-    const fg = Colors.white;
+    return ListenableBuilder(
+      listenable: AnimationSettingsState(),
+      builder: (context, _) {
+        const fg = Colors.white;
+        // Tinted glass: brand-blue wash for the affirmative button, neutral
+        // dark wash for the secondary one. Translucent so the watermark on
+        // the photo behind the bar stays visible (was solid + heavy 3D
+        // shadows before, which obscured the bottom-right brand mark).
+        final tint = widget.primary
+            ? BlueThemeColors.primary.withValues(alpha: _pressed ? 0.55 : 0.42)
+            : Colors.black.withValues(alpha: _pressed ? 0.42 : 0.30);
 
-    final shadows = _pressed
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : <BoxShadow>[
-            if (widget.primary)
-              ...ThreeDSurfaceStyle.floatingOrbHaloShadows(
-                context,
-                base,
-                depthScale: 0.7,
-              ),
-            ...ThreeDSurfaceStyle.elevatedShadows(context),
-          ];
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
-    return Semantics(
-      label: widget.label,
-      button: true,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedbackUtils.impact();
-          widget.onPressed();
-        },
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
-            gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
-            boxShadow: shadows,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.10),
-            ),
-          ),
+        // Slimmer pill (vertical 14 → 9, horizontal 22 → 18) so the row of
+        // controls takes less vertical real-estate over the photo.
+        final padding = const EdgeInsets.symmetric(horizontal: 18, vertical: 9);
+        final radius = BorderRadius.circular(999);
+
+        // Inner content (icon + label) — same composition as before, just
+        // slightly smaller icon to balance the slimmer pill.
+        final content = Padding(
+          padding: padding,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(widget.icon, color: fg, size: 20),
-              const SizedBox(width: 8),
+              Icon(widget.icon, color: fg, size: 18),
+              const SizedBox(width: 7),
               Text(
                 widget.label,
                 style: const TextStyle(
                   color: fg,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.2,
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+
+        // Subtle top→bottom gradient + hairline border keeps the pill
+        // legible without re-introducing an opaque fill.
+        final glassDecoration = BoxDecoration(
+          borderRadius: radius,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: widget.primary ? 0.16 : 0.10),
+              tint,
+            ],
+            stops: const [0.0, 1.0],
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.22),
+            width: 0.6,
+          ),
+        );
+
+        // Soft halo so the pill still reads as elevated against busy photos
+        // (previous design used heavy 3D shadows + an orb halo — too much
+        // visual weight for a glass surface).
+        final boxShadow = <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: _pressed ? 0.18 : 0.28),
+            blurRadius: _pressed ? 8 : 14,
+            spreadRadius: 0,
+            offset: Offset(0, _pressed ? 1 : 4),
+          ),
+        ];
+
+        return Semantics(
+          label: widget.label,
+          button: true,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedbackUtils.impact();
+              widget.onPressed();
+            },
+            onTapDown: (_) => setState(() => _pressed = true),
+            onTapUp: (_) => setState(() => _pressed = false),
+            onTapCancel: () => setState(() => _pressed = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              curve: Curves.easeOut,
+              transform: Matrix4.translationValues(0, _pressed ? 1 : 0, 0),
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                boxShadow: boxShadow,
+              ),
+              child: ClipRRect(
+                borderRadius: radius,
+                child: enableGlass
+                    ? BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                        child: DecoratedBox(
+                          decoration: glassDecoration,
+                          child: content,
+                        ),
+                      )
+                    : DecoratedBox(
+                        decoration: glassDecoration,
+                        child: content,
+                      ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

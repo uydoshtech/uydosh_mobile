@@ -228,6 +228,7 @@
   "room_scan_start": "Start scan",
   "room_scan_uploading": "Uploading…",
   "room_scan_success": "3D scan saved",
+  "room_scan_cancelled": "No scan was captured. Tap Start to try again.",
   "room_scan_error": "Could not save scan. Try again.",
   "room_scan_not_supported": "3D room scan requires an iPhone or iPad with LiDAR.",
   "room_scan_disabled_globally": "3D room scanning is turned off in app settings. It may be available again later.",

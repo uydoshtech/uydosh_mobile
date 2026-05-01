@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_preview_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -385,7 +386,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         theme: theme,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -545,12 +546,19 @@ class _PhotoUploaderState extends State<PhotoUploader>
         child: Stack(
           children: [
             GestureDetector(
-              onTap: !allowTapToPrimary ||
+              onTap: widget.deletingPhotoIds.contains(photo.id) ||
                       widget.makingPhotoPrimaryIds.contains(photo.id)
                   ? null
                   : () {
-                      HapticFeedbackUtils.impact();
-                      widget.onMakePhotoPrimary(index);
+                      HapticFeedbackUtils.selectionClick();
+                      if (allowTapToPrimary) {
+                        widget.onMakePhotoPrimary(index);
+                      } else {
+                        PhotoPreviewDialog.showNetwork(
+                          context,
+                          _buildPhotoUrl(photo.photoUrl),
+                        );
+                      }
                     },
               child: ColoredBox(
                 color: ThemeState().isBlueTheme
@@ -695,12 +703,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
         child: Stack(
           children: [
             GestureDetector(
-              onTap: allowTapToPrimary
-                  ? () {
-                      HapticFeedbackUtils.impact();
-                      _makeNewPhotoPrimary(index);
-                    }
-                  : null,
+              onTap: () {
+                HapticFeedbackUtils.selectionClick();
+                if (allowTapToPrimary) {
+                  _makeNewPhotoPrimary(index);
+                } else {
+                  PhotoPreviewDialog.showFile(context, File(photoPath));
+                }
+              },
               child: ColoredBox(
                 color: ThemeState().isBlueTheme
                     ? BlueThemeColors.surface

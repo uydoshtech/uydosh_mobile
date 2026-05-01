@@ -262,6 +262,7 @@ class AppStrings {
       "room_scan_scan_other_rooms": "Scan Other Rooms",
       "room_scan_uploading": "Uploading…",
       "room_scan_success": "3D scan saved",
+      "room_scan_cancelled": "No scan was captured. Tap Start to try again.",
       "room_scan_error": "Could not save scan. Try again.",
       "room_scan_too_large":
           "3D scan is too large to upload. Please try scanning a smaller area.",
@@ -1442,6 +1443,8 @@ class AppStrings {
       "room_scan_scan_other_rooms": "Сканировать другие комнаты",
       "room_scan_uploading": "Загрузка…",
       "room_scan_success": "3D-скан сохранён",
+      "room_scan_cancelled":
+          "Скан не был сделан. Нажмите «Начать», чтобы попробовать снова.",
       "room_scan_error": "Не удалось сохранить скан. Попробуйте снова.",
       "room_scan_too_large":
           "3D-скан слишком большой для загрузки. Попробуйте отсканировать меньшую область.",
@@ -2644,6 +2647,8 @@ class AppStrings {
       "room_scan_scan_other_rooms": "Boshqa xonalarni skanerlash",
       "room_scan_uploading": "Yuklanmoqda…",
       "room_scan_success": "3D skan saqlandi",
+      "room_scan_cancelled":
+          "Skan qilinmadi. Qayta urinish uchun «Boshlash»ni bosing.",
       "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",
       "room_scan_too_large":
           "3D skan yuklash uchun juda katta. Iltimos, kichikroq hududni skanerlab ko'ring.",

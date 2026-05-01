@@ -499,6 +499,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get room_scan_success => '3D scan saved';
 
   @override
+  String get room_scan_cancelled =>
+      'No scan was captured. Tap Start to try again.';
+
+  @override
   String get room_scan_error => 'Could not save scan. Try again.';
 
   @override

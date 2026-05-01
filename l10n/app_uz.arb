@@ -228,6 +228,7 @@
   "room_scan_start": "Skanlashni boshlash",
   "room_scan_uploading": "Yuklanmoqda…",
   "room_scan_success": "3D skan saqlandi",
+  "room_scan_cancelled": "Skan qilinmadi. Qayta urinish uchun «Boshlash»ni bosing.",
   "room_scan_error": "Skanni saqlab bo'lmadi. Qayta urinib ko'ring.",
   "room_scan_not_supported": "3D skan uchun LiDARli iPhone yoki iPad kerak.",
   "room_scan_disabled_globally": "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",

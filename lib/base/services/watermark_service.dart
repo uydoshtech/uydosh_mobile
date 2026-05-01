@@ -15,20 +15,25 @@ import "package:uy_dosh/base/logger/logger.dart";
 /// mark scales with the image (a 1080-wide listing photo and a 4032-wide
 /// raw capture both end up looking identical when displayed).
 class WatermarkPlacement {
-  /// Logo edge length as a fraction of the shorter side.
-  static const double sizeFraction = 0.12;
+  /// Logo edge length as a fraction of the shorter side. Slightly smaller
+  /// than the previous 0.12 — the box looked balanced in the preview /
+  /// crop screens but reads as crowded against the corner on a
+  /// fullscreen final-photo viewer (Photos.app, Telegram), where the
+  /// photo bleeds to the device edge with no chrome.
+  static const double sizeFraction = 0.10;
 
   /// Distance from the right and bottom edges as a fraction of the
   /// shorter side.
   ///
   /// Note: the brand-mark PNG has ~15-17% built-in transparent padding
-  /// inside its square canvas (see brand_logo_transparent.svg viewBox),
-  /// so the visible "U" glyph already sits inset from the box edges.
-  /// Adding a 7% box margin lands the visible glyph ~9% of the shorter
-  /// side from the photo's edge — comfortable on small thumbnails and
-  /// large captures alike, and visibly off the corner on the saved
-  /// photo (matching the breathing room you see in the preview / crop).
-  static const double marginFraction = 0.07;
+  /// inside its square canvas (see brand_logo_transparent.svg viewBox —
+  /// U letter ends at y=9590 in 11607-tall canvas, right at x=9974 in
+  /// 11711-wide), so the visible "U" glyph already sits inset from the
+  /// box edges. A 10% box margin (combined with the smaller box) lands
+  /// the visible glyph ~12% of the shorter side from the photo's edge —
+  /// comfortably off the corner on the final photo even when viewed
+  /// edge-to-edge in a fullscreen viewer.
+  static const double marginFraction = 0.10;
 }
 
 class WatermarkService {

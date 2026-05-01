@@ -988,6 +988,12 @@ abstract class AppLocalizations {
   /// **'3D scan saved'**
   String get room_scan_success;
 
+  /// No description provided for @room_scan_cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'No scan was captured. Tap Start to try again.'**
+  String get room_scan_cancelled;
+
   /// No description provided for @room_scan_error.
   ///
   /// In en, this message translates to:
