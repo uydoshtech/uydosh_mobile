@@ -106,14 +106,12 @@ class _EditListingScreenState extends State<EditListingScreen>
   /// When true, [Navigator.pop] after a successful save is allowed despite dirty form.
   bool _allowPopWithoutConfirm = false;
 
-  /// Pulse animation for the save button to gently blink when there are
-  /// unsaved changes, drawing the user's attention to it. Mirrors the
-  /// behavior on the edit profile screen.
-  late final AnimationController _savePulseController;
-  late final Animation<double> _savePulseOpacity;
-
-  late final AnimationController _roomScanIconRotationController;
-  late final Animation<double> _roomScanIconRotationAnimation;
+  // The save-pulse and room-scan-icon-rotation controllers used to live here
+  // and run forever for the entire lifetime of the screen, even when nothing
+  // was dirty / nothing was being scanned. They now live inside their own
+  // widgets ([_PulsingSaveButton] and [_RoomScanIconRotator]) so the tickers
+  // only run while their consumer is actually visible. See those widgets at
+  // the bottom of this file.
 
   void _markDirty() {
     if (mounted) setState(() {});
@@ -140,40 +138,11 @@ class _EditListingScreenState extends State<EditListingScreen>
     _metroStationScrollController = FixedExtentScrollController(
       initialItem: _selectedStationIndex,
     );
-    _savePulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-    _savePulseOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _savePulseController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _roomScanIconRotationController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
-    _roomScanIconRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _roomScanIconRotationController,
-        curve: Curves.linear,
-      ),
-    );
-
     _loadLocations();
   }
 
   Widget _buildRotatingRoomScanIcon() {
-    return AnimatedBuilder(
-      animation: _roomScanIconRotationAnimation,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: _roomScanIconRotationAnimation.value * 2 * math.pi,
-          child: child,
-        );
-      },
+    return _RoomScanIconRotator(
       child: ThemeIcon(
         Icons.view_in_ar,
         color: ThemeState().isBlueTheme ? Colors.white : null,
@@ -480,8 +449,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
-    _savePulseController.dispose();
-    _roomScanIconRotationController.dispose();
     // Clean up any ongoing operations
     _makingPhotoPrimaryIds.clear();
     _deletingPhotoIds.clear();
@@ -1544,16 +1511,12 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
 
     if (_isFormDirty()) {
-      return FadeTransition(
-        opacity: _savePulseOpacity,
-        child: IconButton(
-          onPressed: () {
-            HapticFeedbackUtils.impact();
-            _submitForm();
-          },
-          icon: const ThemeIcon(Icons.save),
-          tooltip: L10n.get("save_changes"),
-        ),
+      return _PulsingSaveButton(
+        onPressed: () {
+          HapticFeedbackUtils.impact();
+          _submitForm();
+        },
+        tooltip: L10n.get("save_changes"),
       );
     }
 
@@ -1758,5 +1721,106 @@ class _EditListingScreenState extends State<EditListingScreen>
         _existingPhotos[i] = _existingPhotos[i].copyWith(isPrimary: false);
       }
     });
+  }
+}
+
+/// Save icon that pulses (fades) gently to draw attention. Owns its own
+/// `AnimationController`, so the controller only ticks while this widget is
+/// mounted — i.e. only while the form is actually dirty. Previously the
+/// controller lived on the parent state and ticked forever, including for the
+/// majority of the screen's lifetime when nothing was unsaved.
+class _PulsingSaveButton extends StatefulWidget {
+  const _PulsingSaveButton({required this.onPressed, required this.tooltip});
+
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  State<_PulsingSaveButton> createState() => _PulsingSaveButtonState();
+}
+
+class _PulsingSaveButtonState extends State<_PulsingSaveButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.45, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: IconButton(
+        onPressed: widget.onPressed,
+        icon: const ThemeIcon(Icons.save),
+        tooltip: widget.tooltip,
+      ),
+    );
+  }
+}
+
+/// Rotates [child] for one short attention burst on first paint, then stops.
+///
+/// Replaces a previous behavior where the room-scan icon spun forever for the
+/// entire lifetime of the edit-listing screen. The user only needs to see the
+/// "this is interactive / animated" cue once; after that the icon rests.
+class _RoomScanIconRotator extends StatefulWidget {
+  const _RoomScanIconRotator({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_RoomScanIconRotator> createState() => _RoomScanIconRotatorState();
+}
+
+class _RoomScanIconRotatorState extends State<_RoomScanIconRotator>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  static const Duration _burstDuration = Duration(seconds: 6);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: _burstDuration,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        // Two full rotations across `_burstDuration`, then static.
+        return Transform.rotate(
+          angle: _controller.value * 2 * math.pi * 2,
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
   }
 }

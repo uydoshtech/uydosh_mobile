@@ -17,6 +17,11 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Last known backend [UserProfile.avatarUrl] (may be relative). Used for app bar avatar.
   String? _cachedAvatarUrl;
 
+  /// Last known backend [UserProfile.name]. Used to derive the current user's
+  /// initials when their avatar is shown without a network image (e.g. in the
+  /// messages inbox tile when the last message is from the current user).
+  String? _cachedName;
+
   /// Whether the profile is 100% complete
   bool get isProfileComplete => _isProfileComplete;
 
@@ -34,6 +39,9 @@ class ProfileCompletionState extends ChangeNotifier {
 
   /// Raw avatar URL from the last [updateFromProfile] call (same as [UserProfile.avatarUrl]).
   String? get cachedAvatarUrl => _cachedAvatarUrl;
+
+  /// Display name from the last [updateFromProfile] call (same as [UserProfile.name]).
+  String? get cachedName => _cachedName;
 
   /// Field keys that gate basic usability of the profile (matching with other
   /// users, role-based UI, etc.). Kept in sync with [_checkHasEssentialInfo]
@@ -59,6 +67,7 @@ class ProfileCompletionState extends ChangeNotifier {
       _hasEssentialInfo = true;
       _isInitialized = false;
       _cachedAvatarUrl = null;
+      _cachedName = null;
       notifyListeners();
       return;
     }
@@ -69,6 +78,9 @@ class ProfileCompletionState extends ChangeNotifier {
     final newAvatarUrl = profile.avatarUrl;
     final avatarChanged = _cachedAvatarUrl != newAvatarUrl;
     _cachedAvatarUrl = newAvatarUrl;
+    final newName = profile.name;
+    final nameChanged = _cachedName != newName;
+    _cachedName = newName;
 
     if (!isComplete && kDebugMode) {
       final missing = getMissingFields(profile);
@@ -80,7 +92,8 @@ class ProfileCompletionState extends ChangeNotifier {
     if (_isProfileComplete != isComplete ||
         _hasEssentialInfo != hasEssential ||
         !_isInitialized ||
-        avatarChanged) {
+        avatarChanged ||
+        nameChanged) {
       _isProfileComplete = isComplete;
       _hasEssentialInfo = hasEssential;
       _isInitialized = true;
@@ -94,6 +107,7 @@ class ProfileCompletionState extends ChangeNotifier {
     _hasEssentialInfo = true;
     _isInitialized = false;
     _cachedAvatarUrl = null;
+    _cachedName = null;
     notifyListeners();
   }
 

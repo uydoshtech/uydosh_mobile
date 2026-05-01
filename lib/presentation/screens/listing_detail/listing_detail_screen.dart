@@ -170,9 +170,14 @@ class ListingDetailScreen extends StatefulWidget {
 class _ListingDetailScreenState extends State<ListingDetailScreen>
     with TickerProviderStateMixin {
   late AnimationController _heartAnimationController;
-  late AnimationController _warningBlinkController;
-  late Animation<double> _warningBlinkAnimation;
-  late final AnimationController _room3dRotateController;
+  // The warning-blink controller used to live here and run forever, even on
+  // listings with zero complaints (the vast majority). It now lives inside
+  // [ListingDetailComplaintsCard] which is only mounted when there's
+  // actually a complaint to warn about — see that widget for the controller.
+  //
+  // The 3D-room rotate controller used to live here too and ran forever even
+  // for listings without a `pointCloudUrl`. It now lives inside [_Room3dTile]
+  // which is only mounted when there's a 3D scan to rotate the icon for.
   late PageController _pageController;
   late ScrollController _scrollController;
 
@@ -200,23 +205,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       duration: const Duration(milliseconds: 150),
     );
 
-    _warningBlinkController = AnimationUtils.createAnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _warningBlinkAnimation = AnimationUtils.createFadeAnimation(
-      controller: _warningBlinkController,
-      begin: 0.25,
-      end: 1.0,
-      curve: Curves.easeInOut,
-    );
-    _warningBlinkController.repeat(reverse: true);
-
-    _room3dRotateController = AnimationUtils.createAnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
-
     // Initialize page controller for photo carousel
     _pageController = PageController();
     _scrollController = ScrollController();
@@ -239,8 +227,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   @override
   void dispose() {
     AnimationUtils.disposeAnimationController(_heartAnimationController);
-    AnimationUtils.disposeAnimationController(_warningBlinkController);
-    AnimationUtils.disposeAnimationController(_room3dRotateController);
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -2140,45 +2126,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
   }
 
   Widget _room3dTile(ListingDetail listingDetail) {
-    final rotate = CurvedAnimation(
-      parent: _room3dRotateController,
-      curve: Curves.linear,
-    );
-    return SizedBox(
-      width: double.infinity,
-      child: ListingDetailTileShell(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => _openRoom3dViewer(listingDetail),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
-            child: Row(
-              children: [
-                RotationTransition(
-                  turns: rotate,
-                  child: ThemeIcon(
-                    Icons.view_in_ar,
-                    color: ThemeState().isBlueTheme
-                        ? BlueThemeColors.textPrimary
-                        : Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    L10n.get("view_room_3d"),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                ThemeIcon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _Room3dTile(
+      onTap: () => _openRoom3dViewer(listingDetail),
     );
   }
 
@@ -2405,7 +2354,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                       cs.count,
                     ),
                     onPressed: () => _viewListingComplaints(listingDetail.id),
-                    warningBlinkAnimation: _warningBlinkAnimation,
                   ),
                 ),
               );
@@ -2632,5 +2580,84 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         context.read<ListingDetailPageBloc>().setDeleting(false);
       }
     }
+  }
+}
+
+/// Self-contained "View room in 3D" tile.
+///
+/// Owns its rotating-icon controller so the controller only ticks while the
+/// tile is actually mounted (i.e. only when the listing has a 3D scan).
+/// Previously this controller lived on the parent screen and ran forever
+/// regardless of whether a 3D tile was visible.
+class _Room3dTile extends StatefulWidget {
+  const _Room3dTile({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_Room3dTile> createState() => _Room3dTileState();
+}
+
+class _Room3dTileState extends State<_Room3dTile>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _rotateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _rotateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rotate = CurvedAnimation(
+      parent: _rotateController,
+      curve: Curves.linear,
+    );
+    return SizedBox(
+      width: double.infinity,
+      child: ListingDetailTileShell(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: widget.onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
+            child: Row(
+              children: [
+                RotationTransition(
+                  turns: rotate,
+                  child: ThemeIcon(
+                    Icons.view_in_ar,
+                    color: ThemeState().isBlueTheme
+                        ? BlueThemeColors.textPrimary
+                        : Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    L10n.get("view_room_3d"),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                ThemeIcon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

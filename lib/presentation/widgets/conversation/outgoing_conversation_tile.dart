@@ -1,6 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -30,7 +31,8 @@ class OutgoingConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeState(),
+      listenable:
+          Listenable.merge([ThemeState(), ProfileCompletionState()]),
       builder: (context, child) {
         final themeState = ThemeState();
         final cardColor = themeState.cardColor;
@@ -52,7 +54,19 @@ class OutgoingConversationTile extends StatelessWidget {
         final hasListingPrice =
             conversation.listingPrice != null && conversation.listingPrice! > 0;
 
-        final resolvedAvatarUrl = resolveAvatarUrl(conversation.otherUserAvatar);
+        // Show the avatar of whoever sent the most recent message: the current
+        // user when they were the last sender, otherwise the conversation
+        // partner.
+        final lastSenderIsCurrentUser = currentUserId != null &&
+            conversation.lastMessageSenderId == currentUserId;
+        final profileState = ProfileCompletionState();
+        final rawAvatar = lastSenderIsCurrentUser
+            ? profileState.cachedAvatarUrl
+            : conversation.otherUserAvatar;
+        final initialsName = lastSenderIsCurrentUser
+            ? profileState.cachedName
+            : null;
+        final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
 
         final avatarLeading = resolvedAvatarUrl != null
@@ -72,6 +86,7 @@ class OutgoingConversationTile extends StatelessWidget {
                           child: ConversationAvatarContent(
                             conversation: conversation,
                             iconColor: avatarIconColor,
+                            userNameOverride: initialsName,
                           ),
                         ),
                       ),
@@ -84,6 +99,7 @@ class OutgoingConversationTile extends StatelessWidget {
                           child: ConversationAvatarContent(
                             conversation: conversation,
                             iconColor: avatarIconColor,
+                            userNameOverride: initialsName,
                           ),
                         ),
                       ),
@@ -94,6 +110,7 @@ class OutgoingConversationTile extends StatelessWidget {
                 child: ConversationAvatarContent(
                   conversation: conversation,
                   iconColor: avatarIconColor,
+                  userNameOverride: initialsName,
                 ),
               );
 

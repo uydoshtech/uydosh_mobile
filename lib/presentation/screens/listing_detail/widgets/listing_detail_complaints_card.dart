@@ -5,17 +5,50 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Complaints warning card for listing detail (shown when listing has complaints).
-class ListingDetailComplaintsCard extends StatelessWidget {
+///
+/// Owns its own blink animation so the controller only ticks while the card is
+/// actually mounted. Previously the parent screen owned a `_warningBlinkController`
+/// that started repeating in `initState` and ran for the entire lifetime of the
+/// listing detail screen — including for every listing that had zero complaints
+/// (i.e. the vast majority).
+class ListingDetailComplaintsCard extends StatefulWidget {
   const ListingDetailComplaintsCard({
     required this.complaintsLabel,
     required this.onPressed,
-    required this.warningBlinkAnimation,
     super.key,
   });
 
   final String complaintsLabel;
   final VoidCallback onPressed;
-  final Animation<double> warningBlinkAnimation;
+
+  @override
+  State<ListingDetailComplaintsCard> createState() =>
+      _ListingDetailComplaintsCardState();
+}
+
+class _ListingDetailComplaintsCardState
+    extends State<ListingDetailComplaintsCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _blinkController;
+  late final Animation<double> _blinkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    )..repeat(reverse: true);
+    _blinkAnimation = Tween<double>(begin: 0.25, end: 1.0).animate(
+      CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,15 +60,15 @@ class ListingDetailComplaintsCard extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: () {
               HapticFeedbackUtils.impact();
-              onPressed();
+              widget.onPressed();
             },
             icon: FadeTransition(
-              opacity: warningBlinkAnimation,
+              opacity: _blinkAnimation,
               child: const ThemeIcon(Icons.report_outlined),
             ),
             label: FadeTransition(
-              opacity: warningBlinkAnimation,
-              child: Text(complaintsLabel),
+              opacity: _blinkAnimation,
+              child: Text(widget.complaintsLabel),
             ),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),

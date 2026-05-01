@@ -310,11 +310,13 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         replyToMessageId: event.replyToMessageId,
       );
 
-      // Record first message for achievement (runs at source - guaranteed)
+      // Record first message for achievement (runs at source - guaranteed).
+      // Defer surfacing so the unlock sheet doesn't pop on top of the chat
+      // the user is still inside; ChatScreen flushes it on dispose.
       try {
         final achievement = await _gamificationService.recordFirstMessage();
         if (achievement != null) {
-          AchievementUnlockState().setPendingAchievement(achievement);
+          AchievementUnlockState().setDeferredAchievement(achievement);
         }
       } catch (e) {
         if (kDebugMode) {

@@ -51,11 +51,16 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "room_plan_scan");
 
+    // 6-second attention burst (2 full rotations), then static. Previously
+    // this rotated forever for the entire lifetime of the welcome screen,
+    // burning CPU/GPU continuously even though the rotation is purely
+    // decorative — the user understands the affordance after one or two
+    // turns.
     _iconRotationController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 6),
       vsync: this,
-    )..repeat();
-    _iconRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    )..forward();
+    _iconRotationAnimation = Tween<double>(begin: 0.0, end: 2.0).animate(
       CurvedAnimation(parent: _iconRotationController, curve: Curves.linear),
     );
 

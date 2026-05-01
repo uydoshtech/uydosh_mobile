@@ -14,14 +14,20 @@ class ConversationAvatarContent extends StatelessWidget {
     required this.conversation,
     required this.iconColor,
     super.key,
+    this.userNameOverride,
   });
 
   final ConversationSummary conversation;
   final Color iconColor;
 
+  /// When provided, used in place of [ConversationSummary.otherUserName] to
+  /// derive initials. Used to show the current user's initials when the last
+  /// message in the conversation was sent by them.
+  final String? userNameOverride;
+
   @override
   Widget build(BuildContext context) {
-    final userName = conversation.otherUserName;
+    final userName = userNameOverride ?? conversation.otherUserName;
     final initials = StringUtils.extractInitials(userName);
 
     if (initials.isNotEmpty) {

@@ -14,8 +14,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/deferred_yandex_map.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -377,7 +377,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
           collapsedIconColor: ListingDetailThemeHelper.locationTextColor,
           title: title,
           children: [
-            YandexMapWidget(
+            DeferredYandexMap(
               apiKey: AppConfig.yandexMapsApiKey,
               height: 250,
               listingDetail: widget.listingDetail,

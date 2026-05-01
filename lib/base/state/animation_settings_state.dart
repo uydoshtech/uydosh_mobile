@@ -16,7 +16,13 @@ class AnimationSettingsState extends ChangeNotifier {
   bool _isInitialized = false;
   bool _uiAnimationsEnabled = true;
   bool _searchPulseEnabled = true;
-  bool _bellIdleEnabled = true;
+  // Idle bell wiggle is a pure decoration — two infinite tickers running
+  // forever on every screen that shows the search FAB or app-bar bell, just
+  // to wobble a bell ±0.012 turns. Defaulting it OFF dramatically reduces
+  // foreground CPU/GPU drain. Users who like the wiggle can re-enable it
+  // from Settings; existing users with a persisted preference are
+  // unaffected (we only fall back to this default when the key is absent).
+  bool _bellIdleEnabled = false;
   bool _bellTapEnabled = true;
 
   bool get isInitialized => _isInitialized;
@@ -37,7 +43,7 @@ class AnimationSettingsState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _uiAnimationsEnabled = prefs.getBool(_keyUiAnimationsEnabled) ?? true;
       _searchPulseEnabled = prefs.getBool(_keySearchPulseEnabled) ?? true;
-      _bellIdleEnabled = prefs.getBool(_keyBellIdleEnabled) ?? true;
+      _bellIdleEnabled = prefs.getBool(_keyBellIdleEnabled) ?? false;
       _bellTapEnabled = prefs.getBool(_keyBellTapEnabled) ?? true;
       logger.d(
         "Loaded animation settings: ui=$_uiAnimationsEnabled, searchPulse=$_searchPulseEnabled, bellIdle=$_bellIdleEnabled, bellTap=$_bellTapEnabled",
@@ -46,7 +52,7 @@ class AnimationSettingsState extends ChangeNotifier {
       logger.d("Error initializing animation settings: $e");
       _uiAnimationsEnabled = true;
       _searchPulseEnabled = true;
-      _bellIdleEnabled = true;
+      _bellIdleEnabled = false;
       _bellTapEnabled = true;
     }
     _isInitialized = true;

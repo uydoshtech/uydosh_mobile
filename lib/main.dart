@@ -40,6 +40,7 @@ import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/lifecycle_ticker_mode.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -465,10 +466,18 @@ class _MyAppState extends State<MyApp> {
                     ? const SplashScreen()
                     : const QuickSplashScreen()),
             builder: (context, child) {
-              return _AchievementUnlockListener(
-                navigatorKey: widget.navigatorKey,
-                child: _BlocAuthListener(
-                  child: child ?? const SizedBox.shrink(),
+              // Pauses all `vsync`-bound tickers below this point whenever the
+              // app is not in `AppLifecycleState.resumed`. Eliminates idle
+              // CPU/GPU drain from infinite `repeat()` animations during the
+              // `inactive`/`hidden` states (notification shade, Control
+              // Center, incoming call UI, brief app-switch peeks) — Flutter's
+              // own scheduler only auto-pauses frames in `paused`/`detached`.
+              return LifecycleTickerMode(
+                child: _AchievementUnlockListener(
+                  navigatorKey: widget.navigatorKey,
+                  child: _BlocAuthListener(
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               );
             },

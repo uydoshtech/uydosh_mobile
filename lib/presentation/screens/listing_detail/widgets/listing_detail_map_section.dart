@@ -6,8 +6,8 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/deferred_yandex_map.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Map section with Yandex Maps for listing detail.
@@ -234,7 +234,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              YandexMapWidget(
+              DeferredYandexMap(
                 apiKey: AppConfig.yandexMapsApiKey,
                 height: 250,
                 listingDetail: widget.listingDetail,

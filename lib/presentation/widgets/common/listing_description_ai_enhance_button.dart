@@ -42,16 +42,46 @@ class _ListingDescriptionAiEnhanceButtonState
   @override
   void initState() {
     super.initState();
+    // Attention burst: blink a few cycles after first paint, then settle at
+    // full opacity and stop ticking. Previously this repeated forever
+    // (`repeat(reverse: true)`), driving a 60 fps animation for the entire
+    // lifetime of the create/edit listing screen even though the sparkle is
+    // purely decorative and the user understands the affordance after a
+    // glance.
     _sparkleBlinkController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..repeat(reverse: true);
-    _sparkleOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _sparkleBlinkController,
-        curve: Curves.easeInOut,
-      ),
+      duration: const Duration(milliseconds: 4500),
     );
+    // 4.5 cycles of fade ramp 0.45 → 1.0 → 0.45 → 1.0 → ... → 1.0 (rest).
+    // Implemented as a TweenSequence so the controller runs once, end-to-end,
+    // and stops; no infinite ticker.
+    _sparkleOpacity = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.45)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.45, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.45)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.45, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1.0),
+        weight: 1,
+      ),
+    ]).animate(_sparkleBlinkController);
+    _sparkleBlinkController.forward();
   }
 
   @override

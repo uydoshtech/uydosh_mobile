@@ -12,6 +12,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
@@ -232,6 +233,10 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
+    // Surface any achievement that was unlocked while the user was inside
+    // this chat (e.g. ice breaker on first sent message). We hold it back
+    // so the unlock sheet doesn't cover the chat the user is still using.
+    AchievementUnlockState().flushDeferredAchievement();
     super.dispose();
   }
 
