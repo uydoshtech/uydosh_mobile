@@ -4261,7 +4261,7 @@ abstract class AppLocalizations {
   /// No description provided for @title_too_long.
   ///
   /// In en, this message translates to:
-  /// **'Title must be 25 characters or less'**
+  /// **'Title must be 50 characters or less'**
   String get title_too_long;
 
   /// No description provided for @description_required.

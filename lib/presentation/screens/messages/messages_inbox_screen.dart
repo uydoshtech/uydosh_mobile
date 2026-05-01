@@ -73,6 +73,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     with RouteAware, WidgetsBindingObserver {
   int? _currentUserId;
   int _selectedTabIndex = 0; // 0 = incoming, 1 = outgoing
+  /// Whether the user has manually picked a tab in this session. Once set,
+  /// the auto-default-tab rule below stops overriding their choice on
+  /// subsequent conversation refreshes.
+  bool _userPickedTab = false;
+  /// Whether we have already applied the "auto-pick the tab with unreads"
+  /// rule for the current login session. Reset on logout so the rule
+  /// re-runs on the next sign-in.
+  bool _appliedInitialTabRule = false;
   /// Cached conversations to show during refresh - prevents blink when returning to screen
   List<ConversationSummary>? _lastDisplayedConversations;
   Timer? _unreadRefreshDebounce;
@@ -161,6 +169,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         if (_hasArchivedChats) {
           setState(() => _hasArchivedChats = false);
         }
+        // Re-arm the auto-default-tab rule so the next sign-in gets a fresh
+        // pick based on the new account's unread state.
+        _appliedInitialTabRule = false;
+        _userPickedTab = false;
       }
     }
   }
@@ -355,6 +367,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   );
                 });
               }
+
+              // First load after sign-in: auto-pick the tab that has unread
+              // messages so the user lands on the conversation that needs
+              // their attention. If both tabs have unreads (or neither does),
+              // keep the default left tab.
+              _maybeApplyInitialTabRule(visible);
 
               // Calculate total unread count and update global state
               final totalUnreadCount = _calculateTotalUnreadCount(visible);
@@ -768,7 +786,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 child: GestureDetector(
                   onTap: () {
                     HapticFeedbackUtils.selection();
-                    setState(() => _selectedTabIndex = 0);
+                    setState(() {
+                      _selectedTabIndex = 0;
+                      _userPickedTab = true;
+                    });
                   },
                   child: Container(
                     height: 48,
@@ -790,7 +811,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 child: GestureDetector(
                   onTap: () {
                     HapticFeedbackUtils.selection();
-                    setState(() => _selectedTabIndex = 1);
+                    setState(() {
+                      _selectedTabIndex = 1;
+                      _userPickedTab = true;
+                    });
                   },
                   child: Container(
                     height: 48,
@@ -812,6 +836,31 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         ],
       ),
     );
+  }
+
+  /// Pick the initial tab on first load after sign-in based on which tab has
+  /// unread messages: only-incoming → tab 0, only-outgoing → tab 1, both or
+  /// neither → keep the default (tab 0). Skips if the user has already picked
+  /// a tab manually, or if we have already applied the rule this session.
+  void _maybeApplyInitialTabRule(List<ConversationSummary> visible) {
+    if (_appliedInitialTabRule || _userPickedTab) return;
+    if (_currentUserId == null) return;
+    _appliedInitialTabRule = true;
+
+    final incoming = visible
+        .where((c) => c.participantId == _currentUserId)
+        .toList();
+    final outgoing = visible
+        .where((c) => c.initiatorId == _currentUserId)
+        .toList();
+
+    final incomingHasUnread = _getUnreadCount(incoming) > 0;
+    final outgoingHasUnread = _getUnreadCount(outgoing) > 0;
+
+    final desired = (outgoingHasUnread && !incomingHasUnread) ? 1 : 0;
+    if (desired == _selectedTabIndex) return;
+    if (!mounted) return;
+    setState(() => _selectedTabIndex = desired);
   }
 
   int _getUnreadCount(List<ConversationSummary> conversations) {

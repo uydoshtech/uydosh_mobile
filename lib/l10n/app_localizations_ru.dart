@@ -2247,7 +2247,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get title_required => 'Заголовок обязателен';
 
   @override
-  String get title_too_long => 'Заголовок должен быть не более 25 символов';
+  String get title_too_long => 'Заголовок должен быть не более 50 символов';
 
   @override
   String get description_required => 'Описание обязательно';

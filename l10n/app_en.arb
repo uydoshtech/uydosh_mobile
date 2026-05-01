@@ -861,7 +861,7 @@
   "updating_listing": "Updating...",
   "creating_listing": "Creating...",
   "title_required": "Title is required",
-  "title_too_long": "Title must be 25 characters or less",
+  "title_too_long": "Title must be 50 characters or less",
   "description_required": "Description is required",
   "description_too_long": "Description must be 500 characters or less",
   "location_required": "Please select a location",

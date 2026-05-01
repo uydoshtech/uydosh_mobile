@@ -853,7 +853,7 @@
   "updating_listing": "Обновляется...",
   "creating_listing": "Создается...",
   "title_required": "Заголовок обязателен",
-  "title_too_long": "Заголовок должен быть не более 25 символов",
+  "title_too_long": "Заголовок должен быть не более 50 символов",
   "description_required": "Описание обязательно",
   "description_too_long": "Описание должно быть не более 500 символов",
   "location_required": "Пожалуйста, выберите район",

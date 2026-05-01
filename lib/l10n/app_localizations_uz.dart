@@ -2269,7 +2269,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get title_required => 'Sarlavha talab qilinadi';
 
   @override
-  String get title_too_long => 'Sarlavha 25 belgidan ko\'p bo\'lmasligi kerak';
+  String get title_too_long => 'Sarlavha 50 belgidan ko\'p bo\'lmasligi kerak';
 
   @override
   String get description_required => 'Tavsif talab qilinadi';

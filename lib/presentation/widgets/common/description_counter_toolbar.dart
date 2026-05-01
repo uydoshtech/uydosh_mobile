@@ -35,6 +35,7 @@ class DescriptionCounterToolbar extends StatelessWidget {
     this.layout = DescriptionCounterToolbarLayout.row,
     this.counterColor,
     this.stackCounterRightOffset = -18,
+    this.counterVisibleAtFraction = 0.0,
   });
 
   final TextEditingController controller;
@@ -53,6 +54,20 @@ class DescriptionCounterToolbar extends StatelessWidget {
   /// Horizontal offset applied to the counter column in stack layout. Defaults
   /// to `-18` so the counter can sit flush with the parent field's padding.
   final double stackCounterRightOffset;
+
+  /// Fraction of [maxLength] at which the `currentLength/maxLength` counter
+  /// text becomes visible. Defaults to `0.0` (always visible). The
+  /// expand/collapse chevron is always shown regardless.
+  ///
+  /// Example: `0.7` with `maxLength: 1000` shows the counter starting at
+  /// `700` characters.
+  final double counterVisibleAtFraction;
+
+  bool get _showCounterText {
+    if (counterVisibleAtFraction <= 0.0) return true;
+    if (maxLength <= 0) return true;
+    return (currentLength / maxLength) >= counterVisibleAtFraction;
+  }
 
   Color _resolveCounterColor(BuildContext context) {
     final override = counterColor;
@@ -89,15 +104,17 @@ class DescriptionCounterToolbar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          "$currentLength/$maxLength",
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+        if (_showCounterText) ...[
+          Text(
+            "$currentLength/$maxLength",
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
+          const SizedBox(width: 4),
+        ],
         Semantics(
           button: true,
           label: isExpanded ? "Collapse description" : "Expand description",

@@ -90,6 +90,39 @@ class _EditListingScreenState extends State<EditListingScreen>
   static const int _descriptionExpandedExtraLines = 3;
   bool _isDescriptionExpanded = false;
 
+  static const int _titleMaxLength = 50;
+  static const int _titleCounterVisibleAt = 40;
+
+  /// Counter for the Title field: hidden until the user is close to the cap,
+  /// then shown as a small subtle "currentLength/maxLength" badge.
+  Widget? _buildTitleCounter(
+    BuildContext context, {
+    required int currentLength,
+    required bool isFocused,
+    int? maxLength,
+  }) {
+    if (currentLength < _titleCounterVisibleAt) return null;
+    final cap = maxLength ?? _titleMaxLength;
+    final isAtLimit = currentLength >= cap;
+    final theme = Theme.of(context);
+    final color = isAtLimit
+        ? theme.colorScheme.error
+        : (ThemeState().isLightTheme
+            ? Colors.grey[700]
+            : theme.colorScheme.onSurfaceVariant.withOpacity(0.8));
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, right: 4),
+      child: Text(
+        "$currentLength/$cap",
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   // Amenities state
   final Set<int> _selectedAmenityIds = {};
 
@@ -841,7 +874,70 @@ class _EditListingScreenState extends State<EditListingScreen>
                       ),
                       const SizedBox(
                         height: 10,
-                      ), // Space between price range and description
+                      ), // Space between price range and title
+
+                      // Title Field — editable. Pre-populated with the
+                      // listing's existing title in [_initializeForm].
+                      WheelPickerPlateContainer(
+                        theme: theme,
+                        child: TextFormField(
+                          controller: _titleController,
+                          maxLength: _titleMaxLength,
+                          maxLines: 1,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            hintText: L10n.get("listing_title_hint"),
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? theme.colorScheme.onSurfaceVariant
+                                      .withOpacity(0.7)
+                                  : Colors.grey[400],
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
+                          ),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: ThemeState().isLightTheme
+                                ? Colors.black
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                          buildCounter: _buildTitleCounter,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ), // Space between title and description
 
                       // Description Field
                       WheelPickerPlateContainer(
@@ -867,6 +963,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                             decoration: InputDecoration(
                               hintText: L10n.get("listing_description_hint"),
                               hintStyle: TextStyle(
+                                fontWeight: FontWeight.w600,
                                 color: Theme.of(context).brightness ==
                                         Brightness.dark
                                     ? theme.colorScheme.onSurfaceVariant
@@ -905,12 +1002,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 vertical: 12,
                               ),
                             ),
-                            style: TextStyle(
-                              color: ThemeState().isLightTheme
-                                  ? Colors.black
-                                  : theme.colorScheme.onSurfaceVariant,
-                            ),
-                            minLines: _descriptionBaseLines +
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: ThemeState().isLightTheme
+                                ? Colors.black
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                          minLines: _descriptionBaseLines +
                                 (_isDescriptionExpanded
                                     ? _descriptionExpandedExtraLines
                                     : 0),
@@ -936,6 +1034,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   _isDescriptionExpanded =
                                       !_isDescriptionExpanded;
                                 }),
+                                counterVisibleAtFraction: 0.7,
                               );
                             },
                           ),
@@ -1306,7 +1405,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       return;
     }
 
-    if (title.length > 25) {
+    if (title.length > _titleMaxLength) {
       ToastTheme.showError(
         context,
         message: L10n.get("title_too_long"),

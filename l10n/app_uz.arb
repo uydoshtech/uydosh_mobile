@@ -861,7 +861,7 @@
   "updating_listing": "Yangilanmoqda...",
   "creating_listing": "Yaratilmoqda...",
   "title_required": "Sarlavha talab qilinadi",
-  "title_too_long": "Sarlavha 25 belgidan ko'p bo'lmasligi kerak",
+  "title_too_long": "Sarlavha 50 belgidan ko'p bo'lmasligi kerak",
   "description_required": "Tavsif talab qilinadi",
   "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
   "location_required": "Iltimos, tuman tanlang",

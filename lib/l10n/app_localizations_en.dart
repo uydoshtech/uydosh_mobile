@@ -2233,7 +2233,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get title_required => 'Title is required';
 
   @override
-  String get title_too_long => 'Title must be 25 characters or less';
+  String get title_too_long => 'Title must be 50 characters or less';
 
   @override
   String get description_required => 'Description is required';

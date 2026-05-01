@@ -107,6 +107,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   static const int _descriptionExpandedExtraLines = 3;
   bool _isDescriptionExpanded = false;
 
+  /// The most recent auto-generated default title. Used to decide whether the
+  /// user has manually edited the title — if `_titleController.text` matches
+  /// this value (or is empty), we re-stamp on type/gender changes; otherwise
+  /// we preserve the user's edit.
+  String _lastGeneratedTitle = "";
+
   // Lists
   List<Location> _currentLocations = [];
   List<SubwayStation> _currentStations = [];
@@ -382,10 +388,52 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     );
   }
 
-  /// Update title field with generated title
+  static const int _titleMaxLength = 50;
+  static const int _titleCounterVisibleAt = 40;
+
+  /// Counter for the Title field: hidden until the user is close to the cap,
+  /// then shown as a small subtle "currentLength/maxLength" badge.
+  Widget? _buildTitleCounter(
+    BuildContext context, {
+    required int currentLength,
+    required bool isFocused,
+    int? maxLength,
+  }) {
+    if (currentLength < _titleCounterVisibleAt) return null;
+    final cap = maxLength ?? _titleMaxLength;
+    final isAtLimit = currentLength >= cap;
+    final theme = Theme.of(context);
+    final color = isAtLimit
+        ? theme.colorScheme.error
+        : (ThemeState().isLightTheme
+            ? Colors.grey[700]
+            : theme.colorScheme.onSurfaceVariant.withOpacity(0.8));
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, right: 4),
+      child: Text(
+        "$currentLength/$cap",
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  /// Update title field with the auto-generated default.
+  ///
+  /// Preserves the user's edits: only overwrites when the field is empty or
+  /// still equals the previously-stamped default.
   void _updateTitle() {
     final generatedTitle = _generateTitle();
-    _titleController.text = generatedTitle;
+    final current = _titleController.text;
+    final shouldOverwrite =
+        current.isEmpty || current == _lastGeneratedTitle;
+    if (shouldOverwrite) {
+      _titleController.text = generatedTitle;
+    }
+    _lastGeneratedTitle = generatedTitle;
   }
 
   // Theme-dependent color method for borders
@@ -646,7 +694,68 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             });
           },
         ),
-        const SizedBox(height: 10), // Space between price range and description
+        const SizedBox(height: 10), // Space between price range and title
+
+        // Title Field — pre-filled with auto-generated #TitleName, editable.
+        L10n.inputField(
+          "listing_title_hint",
+          builder: (hintText) => WheelPickerPlateContainer(
+            theme: Theme.of(context),
+              child: TextFormField(
+                controller: _titleController,
+                maxLength: _titleMaxLength,
+                maxLines: 1,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                        : Colors.grey[400],
+                  ),
+                border: OutlineInputBorder(
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  borderSide: BorderSide.none,
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  borderSide: BorderSide.none,
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.transparent,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                ),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: ThemeState().isLightTheme
+                      ? Colors.black
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                buildCounter: _buildTitleCounter,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10), // Space between title and description
 
         // Description Field
         L10n.inputField(
@@ -672,6 +781,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 decoration: InputDecoration(
                   hintText: hintText,
                   hintStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Theme.of(
                             context,
@@ -706,6 +817,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
                 ),
                 style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                   color: ThemeState().isLightTheme
                       ? Colors.black
                       : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -736,6 +849,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       _isDescriptionExpanded = !_isDescriptionExpanded;
                     }),
                     layout: DescriptionCounterToolbarLayout.stack,
+                    counterVisibleAtFraction: 0.7,
                   );
                 },
               ),
@@ -1080,7 +1194,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       return;
     }
 
-    if (title.length > 50) {
+    if (title.length > _titleMaxLength) {
       ToastTheme.showError(
         context,
         message: L10n.get("title_too_long"),
