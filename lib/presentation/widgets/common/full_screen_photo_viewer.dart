@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
 
@@ -212,29 +213,6 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                 ),
                                 child: Row(
                                   children: [
-                                    // Close button
-                                    GestureDetector(
-                                      onTap: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        child: const ThemeIcon(
-                                          Icons.close,
-                                          color: Colors.white,
-                                          size: 24,
-                                        ),
-                                      ),
-                                    ),
-
-                                    const Spacer(),
-
                                     // Photo counter
                                     Container(
                                       padding: const EdgeInsets.symmetric(
@@ -256,6 +234,25 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
+                                    ),
+
+                                    const Spacer(),
+
+                                    // Close button
+                                    ThreeDAppBarIconButton(
+                                      iconData: Icons.close,
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      semanticsLabel:
+                                          MaterialLocalizations.of(context)
+                                              .closeButtonTooltip,
+                                      borderRadius:
+                                          const BorderRadius.all(
+                                        Radius.circular(999),
+                                      ),
+                                      iconSize: 20,
+                                      contentSlotSize: 24,
+                                      padding: const EdgeInsets.all(6),
                                     ),
                                   ],
                                 ),

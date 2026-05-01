@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
@@ -62,7 +63,7 @@ class PhotoPreviewDialog extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: ColoredBox(
-                color: Colors.black,
+                color: BlueThemeColors.navigationBackground,
                 child: InteractiveViewer(
                   minScale: 1,
                   maxScale: 4,

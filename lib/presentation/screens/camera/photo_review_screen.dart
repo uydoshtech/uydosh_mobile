@@ -70,11 +70,11 @@ class PhotoReviewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     // Reserve enough room for the bottom action bar (top padding 16 +
-    // ~48 button height + 20 bottom padding ≈ 84) plus the home-bar safe
-    // area, so the photo (and its bottom-right logo overlay) finish
-    // above the Retake / Use-photo buttons instead of sitting behind
-    // them and getting clipped.
-    final bottomBarReserve = bottomInset + 96;
+    // ~48 button height + 56 bottom padding ≈ 120) plus the home-bar
+    // safe area, so the photo (and its bottom-right logo overlay)
+    // finish well above the Retake / Use-photo buttons instead of
+    // sitting behind them and getting clipped.
+    final bottomBarReserve = bottomInset + 132;
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -233,7 +233,9 @@ class _PhotoReviewBottomBar extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.only(
           top: 16,
-          bottom: bottomPadding + 20,
+          // Lifted from `bottomPadding + 20` so the buttons no longer
+          // overlap the bottom-right brand logo baked into the photo.
+          bottom: bottomPadding + 56,
           left: 24,
           right: 24,
         ),

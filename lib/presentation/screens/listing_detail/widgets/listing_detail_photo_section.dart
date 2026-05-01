@@ -158,24 +158,9 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                   Positioned(
                                     top: 12,
                                     right: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.6),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        "${index + 1}/${orderedPhotos.length}",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
+                                    child: _PhotoCounterPill(
+                                      text:
+                                          "${index + 1}/${orderedPhotos.length}",
                                     ),
                                   ),
                               ],
@@ -210,6 +195,96 @@ class ListingDetailPhotoSection extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Liquid-glass page-counter pill (e.g. "2/5") shown over the photo carousel.
+///
+/// Mirrors the same translucent / blurred / hairline-bordered treatment used
+/// by `UyDoshReviewPillButton` so the counter reads as a glass surface
+/// floating above the photo rather than an opaque black chip. The
+/// `BackdropFilter` blur is gated on `AnimationSettingsState` (and the
+/// platform's "reduce motion" flag) so the cheap solid-fill fallback is used
+/// when UI animations are disabled.
+class _PhotoCounterPill extends StatelessWidget {
+  const _PhotoCounterPill({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AnimationSettingsState(),
+      builder: (context, _) {
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+        const radius = BorderRadius.all(Radius.circular(999));
+
+        // Translucent top→bottom wash: a thin white highlight at the top
+        // softens into a darker tint at the bottom, giving the pill a
+        // subtle "liquid glass" highlight without an opaque fill.
+        final glassDecoration = BoxDecoration(
+          borderRadius: radius,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.18),
+              Colors.black.withValues(alpha: 0.38),
+            ],
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.28),
+            width: 0.6,
+          ),
+        );
+
+        final content = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+              height: 1.0,
+            ),
+          ),
+        );
+
+        return DecoratedBox(
+          decoration: const BoxDecoration(
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x4D000000),
+                blurRadius: 14,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: radius,
+            child: enableGlass
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: DecoratedBox(
+                      decoration: glassDecoration,
+                      child: content,
+                    ),
+                  )
+                : DecoratedBox(
+                    decoration: glassDecoration,
+                    child: content,
+                  ),
+          ),
+        );
+      },
     );
   }
 }

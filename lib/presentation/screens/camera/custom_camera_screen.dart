@@ -551,7 +551,15 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     if (_stage == _CaptureStage.review && _captured != null) {
       // Same widget the standalone [PhotoReviewScreen] uses, so the camera
       // path and the image_picker fallback path render identically.
-      return PhotoReviewWithLogo(path: _captured!.path);
+      // Reserve room at the bottom so the photo's bottom-right brand
+      // logo finishes above the Retake / Use-photo buttons instead of
+      // sitting behind them. Must stay in sync with the review-stage
+      // bottom padding in [_buildBottomBar].
+      final bottomInset = MediaQuery.paddingOf(context).bottom;
+      return Padding(
+        padding: EdgeInsets.only(bottom: bottomInset + 132),
+        child: PhotoReviewWithLogo(path: _captured!.path),
+      );
     }
 
     final controller = _controller;
@@ -664,7 +672,12 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       child: Container(
         padding: EdgeInsets.only(
           top: 16,
-          bottom: bottomPadding + 20,
+          // In the review stage, lift the Retake / Use-photo buttons so
+          // they no longer overlap the bottom-right brand logo baked
+          // into the captured photo (kept in sync with the photo
+          // reserve in [_buildPreviewLayer]). The live stage keeps the
+          // tighter spacing under the shutter button.
+          bottom: bottomPadding + (isReview ? 56 : 20),
           left: 24,
           right: 24,
         ),

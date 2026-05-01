@@ -386,7 +386,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         theme: theme,
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -435,7 +435,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
 
             if (orderedItems.isNotEmpty) ...[
               ReorderablePhotoGrid(
@@ -625,42 +625,34 @@ class _PhotoUploaderState extends State<PhotoUploader>
             Positioned(
               top: 4,
               right: 4,
-              child: GestureDetector(
-                onTap:
-                    isDeleting
-                        ? null
-                        : () => widget.onDeleteExistingPhoto(index),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color:
-                        isDeleting
-                            ? Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.38)
-                            : Colors.red.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                  ),
-                  child:
-                      isDeleting
-                          ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.38),
-                              ),
-                            ),
-                          )
-                          : const ThemeIcon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
+              child: ThreeDPillButton(
+                padding: const EdgeInsets.all(4),
+                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                backgroundColor: isDeleting
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.38)
+                    : Colors.red.shade600,
+                neumorphicSoftUi: true,
+                onPressed: isDeleting
+                    ? null
+                    : () => widget.onDeleteExistingPhoto(index),
+                child: isDeleting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
                           ),
-                ),
+                        ),
+                      )
+                    : const ThemeIcon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
               ),
             ),
           ],
@@ -737,15 +729,16 @@ class _PhotoUploaderState extends State<PhotoUploader>
             Positioned(
               top: 4,
               right: 4,
-              child: GestureDetector(
-                onTap: () => _deleteNewPhoto(index),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const ThemeIcon(Icons.close, color: Colors.white, size: 16),
+              child: ThreeDPillButton(
+                padding: const EdgeInsets.all(4),
+                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                backgroundColor: Colors.red.shade600,
+                neumorphicSoftUi: true,
+                onPressed: () => _deleteNewPhoto(index),
+                child: const ThemeIcon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 16,
                 ),
               ),
             ),

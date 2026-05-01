@@ -4,7 +4,6 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -14,7 +13,6 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Listing type, gender, and price chips (shown in a dedicated tile on listing detail).
 class ListingDetailMetaBadges extends StatelessWidget {
@@ -46,17 +44,12 @@ class ListingDetailMetaBadges extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final priceActiveColor =
-        isBlueTheme ? Colors.white : AppColors.statusActive;
-    final priceInactiveColor =
-        isBlueTheme ? Colors.white : AppColors.statusInactive;
-    final priceBadgeBg =
-        isBlueTheme
-            ? (listingDetail.isActive
-                ? AppColors.statusActive
-                : AppColors.statusInactive)
-            : Colors.white;
+    // Mirror the price-badge styles used by `ListingTile` (transparent fill,
+    // green border + icon + text). Inactive listings fall back to the
+    // shared inactive token so disabled tiles read the same on both
+    // surfaces.
+    final priceColor =
+        listingDetail.isActive ? Colors.green : AppColors.statusInactive;
 
     // Two-zone layout:
     //   • left  — wrapping chips (type / gender / price); may overflow to a
@@ -121,19 +114,31 @@ class ListingDetailMetaBadges extends StatelessWidget {
                     ],
                   ),
                 ),
-              PriceRangeBadge(
-                minPrice: listingDetail.price,
-                maxPrice: listingDetail.price,
-                isActive: listingDetail.isActive,
-                showIcon: true,
-                iconSize: 18,
-                fontSize: 13,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                currencySymbol: "y.e.",
-                activeColor: priceActiveColor,
-                inactiveColor: priceInactiveColor,
-                badgeBackgroundColor: priceBadgeBg,
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: priceColor, width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ThemeIconFactory.detail(
+                      icon: Icons.payments,
+                      size: 18,
+                      color: priceColor,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${listingDetail.price} y.e.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: priceColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
