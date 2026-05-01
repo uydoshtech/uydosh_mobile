@@ -20,6 +20,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart"; // ignore: unused_import
 import "package:uy_dosh/domain/services/search_alert_service.dart"; // ignore: unused_import
+import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart"; // ignore: unused_import
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";

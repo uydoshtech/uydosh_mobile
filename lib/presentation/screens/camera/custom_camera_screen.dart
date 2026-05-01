@@ -4,13 +4,97 @@ import "package:camera/camera.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:image/image.dart" as img;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/presentation/screens/camera/photo_review_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+
+/// Payload for the background-isolate crop job in [_cropJpegToAspect].
+@immutable
+class _CropJob {
+  const _CropJob({required this.sourcePath, required this.targetAspect});
+
+  final String sourcePath;
+
+  /// Desired output aspect ratio, expressed as `width / height` after the
+  /// image's EXIF orientation has been baked in. For example, a portrait
+  /// phone screen (1179×2556) passes ~0.461 and we center-crop the sides of
+  /// a landscape 16:9 capture to hit that.
+  final double targetAspect;
+}
+
+/// Center-crops [job.sourcePath] to the given aspect ratio and returns the
+/// path of the new JPEG written next to the source. Returns `null` if the
+/// file can't be decoded, if its aspect ratio already matches (within a
+/// small tolerance), or if writing the output fails — callers fall back to
+/// the original file in that case.
+///
+/// Runs on a background isolate via [compute] because decoding/encoding a
+/// ~2 MP JPEG on the UI thread visibly stutters the shutter animation.
+String? _cropJpegToAspect(_CropJob job) {
+  try {
+    final bytes = File(job.sourcePath).readAsBytesSync();
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) return null;
+    // Bake any EXIF orientation into pixels so our center-crop math lines up
+    // with what the UI will actually display. Mirrors what
+    // `watermark_service.dart` does for the same reason.
+    final oriented = img.bakeOrientation(decoded);
+
+    final srcW = oriented.width;
+    final srcH = oriented.height;
+    if (srcW <= 0 || srcH <= 0) return null;
+    final srcAspect = srcW / srcH;
+
+    // Aspect ratios within ~0.5% — treat as already-matching and skip the
+    // re-encode entirely. Avoids needlessly re-compressing a JPEG that
+    // would lose a tiny bit of quality for a sub-pixel crop.
+    if ((srcAspect - job.targetAspect).abs() / job.targetAspect < 0.005) {
+      return null;
+    }
+
+    int cropW;
+    int cropH;
+    if (srcAspect > job.targetAspect) {
+      // Source is wider than target → crop the sides (left/right).
+      cropH = srcH;
+      cropW = (srcH * job.targetAspect).round().clamp(1, srcW);
+    } else {
+      // Source is taller than target → crop the top/bottom.
+      cropW = srcW;
+      cropH = (srcW / job.targetAspect).round().clamp(1, srcH);
+    }
+    final cropX = ((srcW - cropW) / 2).round();
+    final cropY = ((srcH - cropH) / 2).round();
+
+    final cropped = img.copyCrop(
+      oriented,
+      x: cropX,
+      y: cropY,
+      width: cropW,
+      height: cropH,
+    );
+
+    // Write a sibling file instead of overwriting: the plugin's temp file
+    // name encodes the capture timestamp and we want to keep the original
+    // around for debugging / in case some downstream code already retained
+    // the path before our crop finished.
+    final dotIdx = job.sourcePath.lastIndexOf(".");
+    final outPath = dotIdx <= job.sourcePath.lastIndexOf("/")
+        ? "${job.sourcePath}_cropped.jpg"
+        : "${job.sourcePath.substring(0, dotIdx)}_cropped"
+            "${job.sourcePath.substring(dotIdx)}";
+    File(outPath).writeAsBytesSync(img.encodeJpg(cropped, quality: 92));
+    return outPath;
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Full-screen custom camera with a UyDosh logo pinned to the bottom-right,
 /// aligned with the shutter button — mirrors the 3D scan scene aesthetic.
@@ -118,14 +202,23 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     });
     try {
       // Don't pre-check camera permission via `permission_handler`: on iOS
-      // it requires build-time preprocessor macros (`PERMISSION_CAMERA=1`)
-      // in the Podfile, and without them every status read returns `denied`
-      // even when iOS has actually granted access — which is exactly how
-      // the previous "camera permissions" change broke this screen. The
-      // `camera` plugin's iOS implementation calls AVFoundation's
-      // `requestAccess(for: .video)` itself inside `initialize()`, which is
-      // the source of truth and returns a clean `CameraAccessDenied`
-      // `CameraException` if the user actually denied access. Let it.
+      // it requires the `PERMISSION_CAMERA=1` Podfile macro and even when
+      // the macro is set, `request()` has well-documented races where it
+      // resolves with stale `.denied` while AVFoundation is still flipping
+      // the underlying status. The `camera` plugin's iOS implementation
+      // calls AVFoundation's `requestAccess(for: .video)` itself inside
+      // `initialize()` (below, via `_setUpController`), which is the
+      // source of truth and returns a clean `CameraAccessDenied`
+      // exception if the user actually denies — we let it.
+      //
+      // The pre-permission **rationale** screen (see
+      // [CameraPermissionGate] in `photo_picker.dart`) still runs before
+      // this screen is pushed; it only shows our brand explanation, then
+      // returns. The OS-level dialog therefore fires from `initialize()`
+      // here on first run. The `_bootstrapping` guard in
+      // [didChangeAppLifecycleState] is what keeps the spurious
+      // `inactive` event during that dialog from tearing down the
+      // half-initialized controller and leaving the preview frozen.
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setStateIfMounted(() {
@@ -268,6 +361,15 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
         controller.value.isTakingPicture) {
       return;
     }
+    // Snapshot the visible viewport aspect ratio *before* awaiting anything,
+    // so we crop the capture to exactly what the user was framing in the
+    // preview. The live preview uses `BoxFit.cover` to fill the Scaffold
+    // body (see `_buildPreviewLayer`), so the Scaffold body's aspect is the
+    // what-you-see-is-what-you-get framing. We must capture this synchronously
+    // because by the time `takePicture()` resolves, the user may have rotated
+    // the device and MediaQuery would report a different orientation.
+    final viewportSize = MediaQuery.sizeOf(context);
+    final viewportAspect = viewportSize.width / viewportSize.height;
     setState(() => _capturing = true);
     try {
       HapticFeedbackUtils.impact();
@@ -288,8 +390,29 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       } catch (_) {
         // Non-fatal.
       }
+      // Crop the sensor-sized JPEG down to the viewport's aspect ratio so
+      // the review screen shows exactly the frame the user composed. The
+      // live preview fills the screen via `BoxFit.cover`, which crops parts
+      // of the sensor frame that don't fit — without this step, the review
+      // stage would then show those previously-hidden pixels as black-bar
+      // letterboxing (see `PhotoReviewWithLogo`, which uses `AspectRatio`
+      // at the image's real dimensions). Runs on a background isolate so a
+      // ~2 MP decode/encode doesn't jank the capture animation.
+      XFile outputFile = file;
+      try {
+        final croppedPath = await compute(
+          _cropJpegToAspect,
+          _CropJob(sourcePath: file.path, targetAspect: viewportAspect),
+        );
+        if (croppedPath != null) outputFile = XFile(croppedPath);
+      } catch (e, st) {
+        // Never block the user on crop failure: fall back to the full-frame
+        // capture. They'll just see the letterboxed review as before.
+        logger.w("Viewport crop failed; using uncropped capture",
+            error: e, stackTrace: st);
+      }
       setStateIfMounted(() {
-        _captured = file;
+        _captured = outputFile;
         _stage = _CaptureStage.review;
       });
     } catch (e, st) {
@@ -345,7 +468,11 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
           fit: StackFit.expand,
           children: [
             _buildPreviewLayer(),
-            _buildLogoWatermark(),
+            // Live preview gets a screen-anchored watermark so it stays
+            // visually paired with the shutter button. The review stage
+            // anchors its own watermark to the actual photo bounds inside
+            // [_PhotoReviewWithLogo], so we skip the screen-level one then.
+            if (_stage == _CaptureStage.live) _buildLogoWatermark(),
             _buildTopBar(context),
             _buildBottomBar(context),
           ],
@@ -417,14 +544,9 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     }
 
     if (_stage == _CaptureStage.review && _captured != null) {
-      return Center(
-        child: Image.file(
-          File(_captured!.path),
-          fit: BoxFit.contain,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      );
+      // Same widget the standalone [PhotoReviewScreen] uses, so the camera
+      // path and the image_picker fallback path render identically.
+      return PhotoReviewWithLogo(path: _captured!.path);
     }
 
     final controller = _controller;
@@ -568,16 +690,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _CameraTextButton(
+        UyDoshReviewPillButton(
           icon: Icons.refresh,
           label: L10n.get("retake"),
           onPressed: _retake,
         ),
-        _CameraTextButton(
+        UyDoshReviewPillButton(
           icon: Icons.check,
           label: L10n.get("use_photo"),
-          filled: true,
           onPressed: _usePhoto,
+          primary: true,
         ),
       ],
     );
@@ -683,52 +805,6 @@ class _ShutterButtonState extends State<_ShutterButton> {
                       size: 38,
                     ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CameraTextButton extends StatelessWidget {
-  const _CameraTextButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    this.filled = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final bool filled;
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = filled ? Colors.white : Colors.black.withValues(alpha: 0.45);
-    final fg = filled ? Colors.black : Colors.white;
-    return Material(
-      color: bg,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(999),
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: fg, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
           ),
         ),
       ),

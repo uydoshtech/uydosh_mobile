@@ -212,6 +212,30 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     // sources.
     _loadRegions();
     _loadCountries();
+
+    // Pre-warm the Google Sign-In plugin while the user is still on the
+    // language step. Without this, the very first call to
+    // `_googleSignIn.signIn()` (when the user taps the button on page 1)
+    // pays the full native init cost — loading the GIDSignIn / GIS SDK,
+    // wiring up the method channel — which manifests as a 1–2s hiccup
+    // before the system sheet appears. `signInSilently` does that init
+    // work eagerly without showing any UI; it returns null if there's no
+    // cached account, which is exactly what we want here. We don't await
+    // it because the goal is purely to warm the plugin in the background.
+    _prewarmGoogleSignIn();
+  }
+
+  bool _googleSignInPrewarmed = false;
+
+  void _prewarmGoogleSignIn() {
+    if (kIsWeb) return;
+    if (_googleSignInPrewarmed) return;
+    _googleSignInPrewarmed = true;
+    unawaited(
+      _googleSignIn
+          .signInSilently(suppressErrors: true)
+          .catchError((Object _) => null),
+    );
   }
 
   Future<void> _loadCountries() async {
@@ -325,9 +349,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     String stage = "google_sign_in_start";
     try {
       if (!kIsWeb) {
-        await _crashlytics.setCustomKey("auth_provider", "google");
-        await _crashlytics.setCustomKey("auth_flow", "sign_in");
-        await _crashlytics.setCustomKey("auth_step", "google_sign_in_start");
+        // Fire-and-forget so we don't gate the system sheet on three
+        // sequential method-channel hops. These are diagnostic breadcrumbs
+        // — losing them on the rare flush-before-write race is acceptable,
+        // adding ~hundreds of ms of latency before the Google sheet
+        // appears is not.
+        unawaited(_crashlytics.setCustomKey("auth_provider", "google"));
+        unawaited(_crashlytics.setCustomKey("auth_flow", "sign_in"));
+        unawaited(
+          _crashlytics.setCustomKey("auth_step", "google_sign_in_start"),
+        );
         _crashlytics.log("AuthWizard: google_sign_in_started");
       }
 

@@ -493,6 +493,30 @@ class AppStrings {
       "crop_listing_photo": "Crop photo",
       "crop_done": "Done",
       "crop_cancel": "Cancel",
+      "crop_rotate_left": "Rotate left",
+      "crop_rotate_right": "Rotate right",
+      "crop_aspect_free": "Free",
+
+      // Permission rationale screens
+      "permission_camera_title": "Take listing photos",
+      "permission_camera_body":
+          "UyDosh needs camera access so you can capture listing photos right inside the app. We add the UyDosh watermark automatically so your photos can't be reused on other listings.",
+      "permission_camera_cta": "Allow camera access",
+      "permission_camera_denied_title": "Camera access is off",
+      "permission_camera_denied_body":
+          "Camera access was turned off in iOS Settings. Open Settings to turn it back on, or pick a photo from your gallery instead.",
+      "permission_camera_open_settings": "Open Settings",
+      "permission_camera_use_gallery": "Use gallery instead",
+      "permission_notifications_title": "Get instant alerts",
+      "permission_notifications_body":
+          "Turn on notifications to know the moment a new listing matches your saved search, and to get a ping when someone messages you about your listing.",
+      "permission_notifications_cta": "Turn on notifications",
+      "permission_notifications_denied_body":
+          "Notifications are turned off in iOS Settings. Open Settings to turn them on so search alerts can reach you.",
+      "permission_not_now": "Not now",
+      "permission_skip": "Skip",
+      "crop_undo": "Undo",
+      "crop_aspect_ratio": "Aspect ratio",
 
       "max_photos_reached": "Maximum photos reached",
       "max_photos_message":
@@ -1655,6 +1679,30 @@ class AppStrings {
       "crop_listing_photo": "Обрезать фото",
       "crop_done": "Готово",
       "crop_cancel": "Отмена",
+      "crop_rotate_left": "Повернуть влево",
+      "crop_rotate_right": "Повернуть вправо",
+      "crop_aspect_free": "Свободно",
+
+      // Permission rationale screens
+      "permission_camera_title": "Фото для объявления",
+      "permission_camera_body":
+          "UyDosh нужен доступ к камере, чтобы вы могли снимать фото объявления прямо в приложении. Мы автоматически добавляем водяной знак UyDosh, чтобы фото нельзя было использовать в чужих объявлениях.",
+      "permission_camera_cta": "Разрешить доступ к камере",
+      "permission_camera_denied_title": "Доступ к камере выключен",
+      "permission_camera_denied_body":
+          "Доступ к камере отключён в настройках iOS. Откройте Настройки, чтобы включить его, или выберите фото из галереи.",
+      "permission_camera_open_settings": "Открыть настройки",
+      "permission_camera_use_gallery": "Выбрать из галереи",
+      "permission_notifications_title": "Мгновенные уведомления",
+      "permission_notifications_body":
+          "Включите уведомления, чтобы узнавать о новых объявлениях по вашему поиску в момент их публикации и получать пинг, когда вам пишут об объявлении.",
+      "permission_notifications_cta": "Включить уведомления",
+      "permission_notifications_denied_body":
+          "Уведомления отключены в настройках iOS. Откройте Настройки, чтобы включить их, и тогда уведомления о новых объявлениях смогут до вас доходить.",
+      "permission_not_now": "Не сейчас",
+      "permission_skip": "Пропустить",
+      "crop_undo": "Отменить",
+      "crop_aspect_ratio": "Пропорции",
 
       "max_photos_reached": "Достигнут максимум фотографий",
       "max_photos_message": "Вы можете загрузить максимум 5 фото.",
@@ -1838,9 +1886,9 @@ class AppStrings {
       "admin_client_config_hide_gemini_listing_ui_description":
           "Показывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_client_config_disable_custom_camera":
-          "Использовать встроенную камеру",
+          "Использовать кастомную камеру",
       "admin_client_config_disable_custom_camera_description":
-          "Когда включено, съёмка фото открывает встроенную камеру с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Когда включено, съёмка фото открывает кастомную камеру приложения с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_client_config_disable_lidar_room_scan":
           "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
@@ -2830,6 +2878,30 @@ class AppStrings {
       "crop_listing_photo": "Rasmni kesish",
       "crop_done": "Tayyor",
       "crop_cancel": "Bekor qilish",
+      "crop_rotate_left": "Chapga burish",
+      "crop_rotate_right": "O'ngga burish",
+      "crop_aspect_free": "Erkin",
+
+      // Permission rationale screens
+      "permission_camera_title": "E'lon uchun rasm",
+      "permission_camera_body":
+          "UyDosh kameraga kirish ruxsatini so'raydi, shunda siz e'lon rasmlarini to'g'ridan-to'g'ri ilovada olishingiz mumkin. Biz UyDosh suv belgisini avtomatik qo'shamiz, shunda rasmlardan boshqa e'lonlarda foydalanib bo'lmaydi.",
+      "permission_camera_cta": "Kameraga ruxsat berish",
+      "permission_camera_denied_title": "Kameraga kirish o'chirilgan",
+      "permission_camera_denied_body":
+          "Kameraga kirish iOS sozlamalarida o'chirilgan. Yoqish uchun Sozlamalarni oching yoki galereyadan rasm tanlang.",
+      "permission_camera_open_settings": "Sozlamalarni ochish",
+      "permission_camera_use_gallery": "Galereyadan tanlash",
+      "permission_notifications_title": "Tezkor bildirishnomalar",
+      "permission_notifications_body":
+          "Sizning qidiringizga mos yangi e'lon paydo bo'lishi bilan xabar olish va e'loningiz bo'yicha xabar yuborganda ping olish uchun bildirishnomalarni yoqing.",
+      "permission_notifications_cta": "Bildirishnomalarni yoqish",
+      "permission_notifications_denied_body":
+          "Bildirishnomalar iOS sozlamalarida o'chirilgan. Yoqish uchun Sozlamalarni oching, shunda qidiruv bildirishnomalari sizga yetib borishi mumkin.",
+      "permission_not_now": "Hozir emas",
+      "permission_skip": "O'tkazib yuborish",
+      "crop_undo": "Bekor qilish",
+      "crop_aspect_ratio": "Tomonlar nisbati",
 
       "max_photos_reached": "Maksimal rasmlar soniga yetildi",
       "max_photos_message":
@@ -3015,9 +3087,9 @@ class AppStrings {
       "admin_client_config_hide_gemini_listing_ui_description":
           "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni ko‘rsatadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_client_config_disable_custom_camera":
-          "Ichki kamera rejimidan foydalanish",
+          "Maxsus kameradan foydalanish",
       "admin_client_config_disable_custom_camera_description":
-          "Yoqilganda, foto olish vaqtida suv belgisi bilan ichki kamera ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_client_config_disable_lidar_room_scan":
           "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":

@@ -1470,11 +1470,11 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_custom_camera =>
-      'Ichki kamera rejimidan foydalanish';
+      'Maxsus kameradan foydalanish';
 
   @override
   String get admin_client_config_disable_custom_camera_description =>
-      'Yoqilganda, foto olish vaqtida suv belgisi bilan ichki kamera ochiladi. O\'chirilganda, klientlar qurilmaning standart kamerasiga o\'tadi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+      'Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O\'chirilganda, klientlar qurilmaning standart kamerasiga o\'tadi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

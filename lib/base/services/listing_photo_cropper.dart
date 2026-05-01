@@ -1,76 +1,46 @@
 import "package:flutter/material.dart";
 import "package:image_cropper/image_cropper.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/screens/camera/listing_crop_screen.dart";
 
-/// Opens the platform native cropper (uCrop on Android, TOCropViewController
-/// on iOS) for a freshly captured/picked listing photo.
+/// Opens the UyDosh-styled Flutter crop screen for a freshly captured/picked
+/// listing photo.
 ///
-/// Returns the cropped file path, or `null` if the user cancelled. Callers
-/// typically fall back to the original source path on `null` so cancelling
-/// means "skip cropping" rather than "discard photo".
+/// Returns the cropped JPEG file path, or `null` if the user cancelled.
+/// Callers typically fall back to the original source path on `null` so
+/// cancelling means "skip cropping" rather than "discard photo".
+///
+/// Previously this delegated to the [ImageCropper] plugin (uCrop on Android,
+/// TOCropViewController on iOS), but neither of those exposed enough
+/// theming hooks to brand the screen as UyDosh — and the iOS plugin owned
+/// the photo canvas, making it impossible to overlay our brand mark over
+/// the crop rect. This indirection now opens [ListingCropScreen] which
+/// gives us full control over both.
 Future<String?> cropListingPhoto(
   BuildContext context,
   String sourcePath, {
   CropAspectRatio? lockedAspectRatio,
 }) async {
-  final theme = Theme.of(context);
-  final toolbarTitle = L10n.get("crop_listing_photo");
-  final doneTitle = L10n.get("crop_done");
-  final cancelTitle = L10n.get("crop_cancel");
-
+  final navigator = Navigator.of(context);
+  // Convert the legacy [CropAspectRatio] (used by callers that haven't been
+  // ported off [image_cropper]'s API yet) into the simple `width/height`
+  // double our screen accepts. `null` means free-form cropping.
+  final lockedRatio = lockedAspectRatio == null
+      ? null
+      : lockedAspectRatio.ratioX / lockedAspectRatio.ratioY;
   try {
-    final result = await ImageCropper().cropImage(
-      sourcePath: sourcePath,
-      // Cap the cropped output so subsequent watermarking + upload stays
-      // light. Listing photos are displayed at modest sizes; 1600px on the
-      // long side keeps detail without bloating storage.
-      maxWidth: 1600,
-      maxHeight: 1600,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 85,
-      aspectRatio: lockedAspectRatio,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: toolbarTitle,
-          toolbarColor: theme.colorScheme.surface,
-          toolbarWidgetColor: theme.colorScheme.onSurface,
-          statusBarLight: theme.brightness == Brightness.light,
-          backgroundColor: Colors.black,
-          activeControlsWidgetColor: theme.colorScheme.primary,
-          lockAspectRatio: lockedAspectRatio != null,
-          hideBottomControls: false,
-          initAspectRatio: CropAspectRatioPreset.original,
-          aspectRatioPresets: const [
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio16x9,
-            CropAspectRatioPreset.square,
-            CropAspectRatioPreset.ratio3x2,
-          ],
+    return await navigator.push<String>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ListingCropScreen(
+          sourcePath: sourcePath,
+          lockedAspectRatio: lockedRatio,
         ),
-        IOSUiSettings(
-          title: toolbarTitle,
-          doneButtonTitle: doneTitle,
-          cancelButtonTitle: cancelTitle,
-          aspectRatioLockEnabled: lockedAspectRatio != null,
-          resetAspectRatioEnabled: lockedAspectRatio == null,
-          rotateButtonsHidden: false,
-          aspectRatioPickerButtonHidden: lockedAspectRatio != null,
-          aspectRatioPresets: const [
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio16x9,
-            CropAspectRatioPreset.square,
-            CropAspectRatioPreset.ratio3x2,
-          ],
-        ),
-      ],
+      ),
     );
-    return result?.path;
   } catch (_) {
-    // Best-effort: any cropper failure (plugin error, missing activity, etc.)
-    // shouldn't block the user from saving the photo as-is. The caller will
-    // fall back to the original path when this returns null.
+    // Best-effort: any failure shouldn't block the user from saving the
+    // photo as-is. The caller will fall back to the original path when
+    // this returns null.
     return null;
   }
 }

@@ -1460,11 +1460,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_custom_camera =>
-      'Использовать встроенную камеру';
+      'Использовать кастомную камеру';
 
   @override
   String get admin_client_config_disable_custom_camera_description =>
-      'Когда включено, съёмка фото открывает встроенную камеру с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).';
+      'Когда включено, съёмка фото открывает кастомную камеру приложения с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).';
 
   @override
   String get admin_content_moderation_blur_enabled =>

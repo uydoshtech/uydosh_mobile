@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -27,6 +28,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _autoSwitchTimer;
+  bool _navigatingToMainApp = false;
 
   late AnimationController _rotateController;
   late Animation<double> _rotateAnimation;
@@ -94,14 +96,25 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   void _startAutoSwitchTimer() {
+    // Do not restart the timer once we've already kicked off the
+    // navigate-to-main-app flow — otherwise it can re-enter
+    // `_navigateToMainApp` while we're awaiting the notification gate.
+    if (_navigatingToMainApp) return;
     _autoSwitchTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (mounted && _currentPage < 2) {
+      if (!mounted || _navigatingToMainApp) {
+        timer.cancel();
+        return;
+      }
+      if (_currentPage < 2) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-      } else if (mounted && _currentPage == 2) {
-        // If on last page, navigate to main app
+      } else if (_currentPage == 2) {
+        // If on last page, navigate to main app. `_navigateToMainApp`
+        // cancels the timer itself; we still cancel here to make the
+        // periodic callback strictly one-shot in this branch.
+        timer.cancel();
         _navigateToMainApp();
       }
     });
@@ -129,6 +142,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Future<void> _navigateToMainApp({bool skipped = false}) async {
+    // Re-entry guard. The 5s auto-switch timer keeps firing while the
+    // user reads the notification rationale, so without this latch we'd
+    // queue up multiple `_navigateToMainApp()` calls — each pushing its
+    // own NotificationPermissionGate and then `pushReplaceMainNavigation`,
+    // which manifests as the home screen being pushed twice.
+    if (_navigatingToMainApp) return;
+    _navigatingToMainApp = true;
+    // Belt-and-suspenders: also kill the timer up front so we don't even
+    // re-enter the periodic callback while we await the gate.
+    _autoSwitchTimer?.cancel();
+    _autoSwitchTimer = null;
+
     if (skipped) {
       getIt<AppAnalyticsService>().logOnboardingSkipped(pageIndex: _currentPage);
     } else {
@@ -137,6 +162,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     // Mark onboarding screens as seen (toggle is turned OFF after search tutorial)
     await OnboardingState().markOnboardingScreensSeen();
 
+    // Surface the notification rationale once at the end of onboarding
+    // (only if we've never asked before). Skipped users still see it —
+    // they bailed out of the *intro slides*, not out of the app, so it's
+    // still worth opting them in to search alerts. Failures here are
+    // non-fatal: we always proceed to main navigation regardless.
+    if (mounted && !await NotificationPermissionGate.hasPromptedBefore()) {
+      if (!mounted) return;
+      await NotificationPermissionGate.ensure(
+        context,
+        allowSkipPersistsAcrossLaunches: true,
+      );
+    }
+
+    if (!mounted) return;
     context.pushReplaceMainNavigation();
   }
 

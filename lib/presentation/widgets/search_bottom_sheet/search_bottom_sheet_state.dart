@@ -281,10 +281,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
       await ActiveSearchAlertsState().refresh();
 
-      // Ensure notifications are enabled (or guide user to settings).
-      final push = getIt<IPushNotificationService>();
-      if (push.isSupported) {
-        final ok = await push.requestPermissionAndRegister();
+      // Ensure notifications are enabled. The gate surfaces our rationale
+      // screen before any OS prompt so the user understands why we want
+      // the permission (without it the search alert can never reach them),
+      // and falls back to a Settings deep-link when permission was
+      // previously denied.
+      if (getIt<IPushNotificationService>().isSupported) {
+        final ok = await NotificationPermissionGate.ensure(context);
         if (!mounted) return;
         if (!ok) {
           ToastTheme.showWarning(context,

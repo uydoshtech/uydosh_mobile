@@ -94,61 +94,61 @@ class ConversationLocationInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (hasLocation && hasSubwayStation)
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final rowW =
-                      constraints.maxWidth.isFinite
-                          ? constraints.maxWidth
-                          : MediaQuery.sizeOf(context).width;
-                  // Cap station width so short names do not leave a huge gap before district.
-                  final stationMaxW = (rowW * 0.42).clamp(72.0, 220.0);
-                  final textStyle = TextStyle(fontSize: 12, color: textColor);
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.train,
-                        color: ConversationSubwayStationDisplay._getLineColor(
-                          conversation.subwayStationLine ?? 1,
+              // A fixed `maxWidth` cap (rather than a percentage of the
+              // parent) keeps the station label from hogging space on long
+              // names, while [Expanded] lets the district fill whatever
+              // remains. An earlier version wrapped this row in a
+              // [LayoutBuilder] to derive the cap from the parent width,
+              // but nesting a [LayoutBuilder] inside an [IntrinsicHeight]
+              // (as this widget is on the grouped inbox header) produces
+              // wrong intrinsic heights and pushes the price row below the
+              // card's clip.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ThemeIcon(
+                    Icons.train,
+                    color: ConversationSubwayStationDisplay._getLineColor(
+                      conversation.subwayStationLine ?? 1,
+                    ),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 140),
+                      child: Text(
+                        _getLocalizedName(
+                          nameUz: conversation.subwayStationNameUz,
+                          nameRu: conversation.subwayStationNameRu,
+                          nameEn: conversation.subwayStationNameEn,
                         ),
-                        size: 16,
+                        style: TextStyle(fontSize: 12, color: textColor),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 4),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: stationMaxW),
-                        child: Text(
-                          _getLocalizedName(
-                            nameUz: conversation.subwayStationNameUz,
-                            nameRu: conversation.subwayStationNameRu,
-                            nameEn: conversation.subwayStationNameEn,
-                          ),
-                          style: textStyle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const ThemeIcon(
+                    Icons.location_on,
+                    color: AppColors.error,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      _getLocalizedName(
+                        nameUz: conversation.locationNameUz,
+                        nameRu: conversation.locationNameRu,
+                        nameEn: conversation.locationNameEn,
                       ),
-                      const SizedBox(width: 8),
-                      const ThemeIcon(
-                        Icons.location_on,
-                        color: AppColors.error,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          _getLocalizedName(
-                            nameUz: conversation.locationNameUz,
-                            nameRu: conversation.locationNameRu,
-                            nameEn: conversation.locationNameEn,
-                          ),
-                          style: textStyle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                      style: TextStyle(fontSize: 12, color: textColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               )
             else ...[
               if (hasLocation)

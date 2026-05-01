@@ -44,10 +44,18 @@ abstract class IPushNotificationService {
   /// Get current notification permission status. Returns null if not supported.
   Future<AuthorizationStatus?> getNotificationStatus();
 
-  /// Request permission again (e.g. from settings menu). On iOS, if denied,
-  /// opens app settings. On Android, may show the permission dialog again.
-  /// Returns true if permission was granted and token registered.
-  Future<bool> requestPermissionAndRegister();
+  /// Request permission again (e.g. from settings menu). When
+  /// [openSettingsOnDenied] is true (default — kept for legacy callers), a
+  /// denied result silently opens iOS Settings so the user can flip the
+  /// switch manually. New callers gated by `NotificationPermissionGate`
+  /// should pass `false` and handle the denied case themselves with a
+  /// proper rationale screen instead of slamming the user into Settings.
+  ///
+  /// Returns true iff permission was granted and the FCM token was
+  /// registered with the backend.
+  Future<bool> requestPermissionAndRegister({
+    bool openSettingsOnDenied = true,
+  });
 }
 
 class PushNotificationService implements IPushNotificationService {
@@ -127,7 +135,9 @@ class PushNotificationService implements IPushNotificationService {
   }
 
   @override
-  Future<bool> requestPermissionAndRegister() async {
+  Future<bool> requestPermissionAndRegister({
+    bool openSettingsOnDenied = true,
+  }) async {
     if (!_isSupported) return false;
 
     try {
@@ -145,8 +155,12 @@ class PushNotificationService implements IPushNotificationService {
         return true;
       }
 
-      // Permission denied. Open app settings so user can enable manually.
-      await openAppSettings();
+      // Permission denied. Legacy callers want us to open Settings so the
+      // user can flip the switch manually; gate-driven callers handle the
+      // denied state with a rationale screen instead and pass `false`.
+      if (openSettingsOnDenied) {
+        await openAppSettings();
+      }
       return false;
     } catch (e) {
       logger.d("📲 requestPermissionAndRegister error: $e");

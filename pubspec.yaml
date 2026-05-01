@@ -100,6 +100,11 @@ dependencies:
   path_provider: ^2.1.4
   firebase_app_check: ^0.3.2+10
   image_cropper: ^12.2.1
+  # Flutter-native crop widget. We use this to render our own UyDosh-styled
+  # crop screen on top of (so we have full control of toolbar / buttons /
+  # overlay logo). [image_cropper] is kept around for the underlying
+  # platform helpers but [cropListingPhoto] now drives [crop_your_image].
+  crop_your_image: ^2.0.0
   dio_cache_interceptor: ^4.0.6
   device_info_plus: ^12.4.0
   package_info_plus: ^9.0.1

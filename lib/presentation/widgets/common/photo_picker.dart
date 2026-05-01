@@ -4,7 +4,6 @@ import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
-import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
@@ -12,6 +11,7 @@ import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
+import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
@@ -115,25 +115,23 @@ class _PhotoPickerState extends State<PhotoPicker> {
           }
         }
       } else {
-        // Default: native camera via image_picker. If the admin switch is
-        // flipped on, use our in-app custom camera (watermark overlay).
-        String? capturedPath;
-        if (!ClientCustomCameraConfig.customCameraDisabled.value) {
-          capturedPath = await Navigator.of(context).push<String>(
-            MaterialPageRoute(
-              builder: (_) => const CustomCameraScreen(),
-              fullscreenDialog: true,
-            ),
-          );
-        } else {
-          final image = await _picker.pickImage(
-            source: ImageSource.camera,
-            maxWidth: 1280,
-            maxHeight: 720,
-            imageQuality: 75,
-          );
-          capturedPath = image?.path;
-        }
+        // Always use our in-app [CustomCameraScreen] for camera capture.
+        // We deliberately do NOT fall back to `image_picker` here even
+        // when the server-side `customCameraDisabled` flag is on:
+        // `UIImagePickerController` on iOS forces its own (un-themable)
+        // "Retake / Use Photo" preview and our branded review screen
+        // would then stack on top of it — two previews back-to-back of
+        // the exact same photo, which looks broken. Show the rationale,
+        // then push our camera, which has the branded review built in.
+        final granted = await CameraPermissionGate.ensure(context);
+        if (!granted || !mounted) return;
+
+        final capturedPath = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => const CustomCameraScreen(),
+            fullscreenDialog: true,
+          ),
+        );
 
         if (capturedPath != null) {
           if (widget.selectedPhotos.length < widget.maxPhotos) {
