@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
 /// Result returned by [PermissionRationaleScreen] via [Navigator.pop]:
 ///   - [allow]    → user tapped the primary CTA, caller should request the
@@ -101,17 +101,15 @@ class PermissionRationaleScreen extends StatelessWidget {
               _PermissionPrimaryButton(
                 label: primaryLabel,
                 onPressed: () {
-                  HapticFeedbackUtils.impact();
                   Navigator.of(context)
                       .pop(PermissionRationaleResult.allow);
                 },
               ),
               if (secondaryLabel != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 _PermissionSecondaryButton(
                   label: secondaryLabel!,
                   onPressed: () {
-                    HapticFeedbackUtils.impact();
                     Navigator.of(context)
                         .pop(PermissionRationaleResult.skip);
                   },
@@ -140,7 +138,11 @@ class PermissionRationaleScreen extends StatelessWidget {
   }
 }
 
-class _PermissionPrimaryButton extends StatefulWidget {
+/// Primary CTA on the rationale screen ("Allow camera access" / "Open
+/// Settings"). White neumorphic pill — the dual-shadow soft-UI treatment
+/// (`neumorphicSoftUi`) reads as a raised tablet on the brand-blue backdrop,
+/// keeping it visually consistent with the onboarding wizard CTAs.
+class _PermissionPrimaryButton extends StatelessWidget {
   const _PermissionPrimaryButton({
     required this.label,
     required this.onPressed,
@@ -150,40 +152,17 @@ class _PermissionPrimaryButton extends StatefulWidget {
   final VoidCallback onPressed;
 
   @override
-  State<_PermissionPrimaryButton> createState() =>
-      _PermissionPrimaryButtonState();
-}
-
-class _PermissionPrimaryButtonState extends State<_PermissionPrimaryButton> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    // White face on the brand-blue backdrop — high contrast and a deliberate
-    // departure from a tinted secondary so the "Allow" CTA is unambiguous.
-    final shadows = _pressed
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : ThreeDSurfaceStyle.elevatedShadows(context);
     return SizedBox(
       width: double.infinity,
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-          padding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 22),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: shadows,
-          ),
+      child: ThreeDPillButton(
+        onPressed: onPressed,
+        backgroundColor: Colors.white,
+        neumorphicSoftUi: true,
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 22),
+        child: Center(
           child: Text(
-            widget.label,
+            label,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: BlueThemeColors.primary,
@@ -198,6 +177,10 @@ class _PermissionPrimaryButtonState extends State<_PermissionPrimaryButton> {
   }
 }
 
+/// Secondary "Not now" / "Skip" pill. Uses the lighter brand blue as its face
+/// so the same neumorphic dual shadows give it a softly raised look against
+/// the darker [BlueThemeColors.primary] page background, instead of the
+/// previous flat outlined button.
 class _PermissionSecondaryButton extends StatelessWidget {
   const _PermissionSecondaryButton({
     required this.label,
@@ -211,21 +194,21 @@ class _PermissionSecondaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: TextButton(
+      child: ThreeDPillButton(
         onPressed: onPressed,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.35)),
-          ),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+        backgroundColor: BlueThemeColors.primaryLight,
+        neumorphicSoftUi: true,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 22),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ),

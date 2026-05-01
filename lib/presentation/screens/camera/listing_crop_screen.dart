@@ -4,6 +4,7 @@ import "dart:typed_data";
 
 import "package:crop_your_image/crop_your_image.dart";
 import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
 import "package:image/image.dart" as img;
 import "package:path_provider/path_provider.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -108,6 +109,34 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
       _aspect = _closestPresetTo(widget.lockedAspectRatio!);
     }
     _loadImage();
+  }
+
+  /// Build the initial crop rect inside the viewport. Free-aspect mode
+  /// covers the whole viewport (which equals the visible photo after the
+  /// package's scale-to-cover); locked aspects centre an aspect-correct
+  /// rect that touches the viewport on its tight axis.
+  static Rect _initialCropRect(Rect viewportRect, double? aspectRatio) {
+    if (aspectRatio == null) {
+      return viewportRect;
+    }
+    final vw = viewportRect.width;
+    final vh = viewportRect.height;
+    final viewportAr = vw / vh;
+    final double rectW;
+    final double rectH;
+    if (aspectRatio > viewportAr) {
+      rectW = vw;
+      rectH = vw / aspectRatio;
+    } else {
+      rectH = vh;
+      rectW = vh * aspectRatio;
+    }
+    return Rect.fromLTWH(
+      viewportRect.left + (vw - rectW) / 2,
+      viewportRect.top + (vh - rectH) / 2,
+      rectW,
+      rectH,
+    );
   }
 
   static _AspectChoice _closestPresetTo(double target) {
@@ -426,16 +455,24 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         aspectRatio: _aspect.value,
         baseColor: Colors.black,
         maskColor: Colors.black.withValues(alpha: 0.55),
-        // Start the crop rect at the full image bounds so portrait photos
-        // aren't visually clipped on entry. We can't use
+        // Start the crop rect at the full visible photo so it lines up
+        // with the image edges on entry. We can't use
         // [InitialRectBuilder.withSizeAndRatio(size: 1.0)] in free-aspect
         // mode because the package internally substitutes a 1.0 aspect
         // ratio when null is passed, which would force a centered square
-        // (showing as a horizontal strip on tall photos). Returning the
-        // image rect verbatim makes the initial crop cover the full photo
-        // for any orientation / aspect ratio.
+        // (showing as a horizontal strip on tall photos).
+        //
+        // We also can't return the raw [imageRect] (the pre-scale
+        // letterboxed bounds): with [interactive] true the package
+        // immediately calls `_applyScale(scaleToCover)` which grows the
+        // image to fill the viewport. The cropRect stays as-set, so
+        // returning the original imageRect would leave the brackets
+        // sitting inside a now-bigger photo. Returning the [viewportRect]
+        // (and a viewport-fitted rect for locked aspects) means the crop
+        // rect matches the post-scale visible image area exactly.
         initialRectBuilder: InitialRectBuilder.withBuilder(
-          (viewportRect, imageRect) => imageRect,
+          (viewportRect, imageRect) =>
+              _initialCropRect(viewportRect, _aspect.value),
         ),
         radius: 0,
         interactive: true,
@@ -464,12 +501,18 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
             return const SizedBox.shrink();
           }
           final logoSize = math.min(desiredLogoSize, maxLogoSize);
+          // The package wraps this widget in `Positioned.fromRect(rect:
+          // cropRect)`, so coordinates here are *local* to the crop rect
+          // (top-left = 0,0, bottom-right = rect.size). Anchor with
+          // `right`/`bottom` rather than recomputing absolute offsets,
+          // otherwise the logo lands outside the local box and gets
+          // clipped.
           return IgnorePointer(
             child: Stack(
               children: [
                 Positioned(
-                  left: rect.right - logoSize - margin,
-                  top: rect.bottom - logoSize - margin,
+                  right: margin,
+                  bottom: margin,
                   width: logoSize,
                   height: logoSize,
                   child: Image.asset(
@@ -573,7 +616,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
                     tooltip: L10n.get("crop_undo"),
                   ),
                   _ToolIconButton(
-                    icon: Icons.aspect_ratio_outlined,
+                    assetPath: "assets/icon/components/aspect_ratio.svg",
                     onPressed: canPickAspect ? _showAspectPicker : null,
                     tooltip: L10n.get("crop_aspect_ratio"),
                   ),
@@ -714,20 +757,40 @@ class _ToolPill extends StatelessWidget {
 
 /// Borderless icon button rendered inside [_ToolPill]. Uses an [InkWell]
 /// ripple over the pill background so the tools feel grouped together.
+///
+/// Accepts either a Material [IconData] or an SVG [assetPath] (tinted via
+/// `currentColor` so the disabled state matches the rest of the toolbar).
+/// Exactly one of [icon] / [assetPath] must be provided.
 class _ToolIconButton extends StatelessWidget {
   const _ToolIconButton({
-    required this.icon,
     required this.onPressed,
+    this.icon,
+    this.assetPath,
     this.tooltip,
-  });
+  }) : assert(
+          (icon != null) ^ (assetPath != null),
+          "Provide exactly one of icon or assetPath",
+        );
 
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final VoidCallback? onPressed;
   final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final tintColor = Colors.white.withValues(alpha: enabled ? 1 : 0.4);
+    final iconWidget = icon != null
+        ? Icon(icon, color: tintColor, size: 22)
+        : Center(
+            child: SvgPicture.asset(
+              assetPath!,
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(tintColor, BlendMode.srcIn),
+            ),
+          );
     final button = Material(
       color: Colors.transparent,
       shape: const CircleBorder(),
@@ -742,11 +805,7 @@ class _ToolIconButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(
-            icon,
-            color: Colors.white.withValues(alpha: enabled ? 1 : 0.4),
-            size: 22,
-          ),
+          child: iconWidget,
         ),
       ),
     );
