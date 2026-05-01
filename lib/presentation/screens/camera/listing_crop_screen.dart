@@ -10,6 +10,7 @@ import "package:path_provider/path_provider.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -480,24 +481,20 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         ),
         overlayBuilder: (context, rect) {
           // Anchor the brand mark to the bottom-right of the visible crop
-          // rect so the user previews exactly where [WatermarkService]
-          // will land the logo on the saved photo.
+          // rect with the same proportional size + margin that
+          // [WatermarkService] bakes into the final photo (both pull from
+          // [WatermarkPlacement]). That way what the user sees here is
+          // exactly what they'll get on the saved file.
           //
-          // Constrain the logo so it never spills outside the rect: when
-          // the user shrinks the crop area, scale the logo down to fit
-          // (with a fixed margin), and hide it entirely if the rect is
-          // smaller than the minimum readable mark.
-          const margin = 10.0;
-          const desiredLogoSize = 56.0;
+          // If the crop rect gets too small to comfortably hold the mark,
+          // hide it instead of letting it dominate the cropped frame.
           const minLogoSize = 24.0;
-          final maxLogoSize = math.max(
-            0.0,
-            math.min(rect.width, rect.height) - margin * 2,
-          );
-          if (maxLogoSize < minLogoSize) {
+          final shorter = math.min(rect.width, rect.height);
+          final logoSize = shorter * WatermarkPlacement.sizeFraction;
+          final margin = shorter * WatermarkPlacement.marginFraction;
+          if (logoSize < minLogoSize) {
             return const SizedBox.shrink();
           }
-          final logoSize = math.min(desiredLogoSize, maxLogoSize);
           // The package wraps this widget in `Positioned.fromRect(rect:
           // cropRect)`, so coordinates here are *local* to the crop rect
           // (top-left = 0,0, bottom-right = rect.size). Anchor with

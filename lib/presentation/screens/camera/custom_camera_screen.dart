@@ -1,4 +1,5 @@
 import "dart:io";
+import "dart:math" as math;
 
 import "package:camera/camera.dart";
 import "package:flutter/foundation.dart";
@@ -8,6 +9,7 @@ import "package:image/image.dart" as img;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/presentation/screens/camera/photo_review_screen.dart";
@@ -468,10 +470,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
           fit: StackFit.expand,
           children: [
             _buildPreviewLayer(),
-            // Live preview gets a screen-anchored watermark so it stays
-            // visually paired with the shutter button. The review stage
-            // anchors its own watermark to the actual photo bounds inside
-            // [_PhotoReviewWithLogo], so we skip the screen-level one then.
+            // Live preview shows the brand mark in the same proportional
+            // spot it'll land on the saved photo (driven by
+            // [WatermarkPlacement]), so the user sees a true preview of
+            // the watermark while framing the shot. The review stage
+            // draws its own photo-bounds-anchored copy inside
+            // [_PhotoReviewWithLogo], so we skip the screen-level one
+            // then.
             if (_stage == _CaptureStage.live) _buildLogoWatermark(),
             _buildTopBar(context),
             _buildBottomBar(context),
@@ -582,21 +587,23 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   }
 
   Widget _buildLogoWatermark() {
-    // Vertically align with the shutter button inside the bottom bar.
-    // Shutter button is 84px tall; centering a ~64px logo on the same line
-    // means (shutterCenter - 32) from the screen bottom.
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    // Match [WatermarkPlacement] exactly so the live preview is a true
+    // preview of where the watermark will land on the saved photo. We
+    // measure against the screen's shorter side here (the viewfinder
+    // fills the screen via `BoxFit.cover`); on the post-capture image
+    // [WatermarkService] does the same against the photo's shorter side.
+    final mq = MediaQuery.of(context);
+    final shorter = math.min(mq.size.width, mq.size.height);
+    final logoSize = shorter * WatermarkPlacement.sizeFraction;
+    final margin = shorter * WatermarkPlacement.marginFraction;
     return Positioned(
-      right: 24,
-      bottom: bottomPadding + 26,
+      right: margin,
+      bottom: margin,
+      width: logoSize,
+      height: logoSize,
       child: IgnorePointer(
-        // Transparent brand mark — no rounded chip / dark backdrop. The PNG
-        // already has a transparent background, and a soft drop shadow keeps
-        // it legible over varied scenes without competing visual weight.
         child: Image.asset(
           "assets/icon/components/brand_logo_transparent.png",
-          width: 64,
-          height: 64,
           fit: BoxFit.contain,
         ),
       ),

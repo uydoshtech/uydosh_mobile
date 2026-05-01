@@ -1,12 +1,37 @@
 import "dart:io";
+import "dart:math" as math;
 import "dart:typed_data";
 
 import "package:image/image.dart" as img;
 import "package:uy_dosh/base/logger/logger.dart";
 
+/// Shared placement constants for the UyDosh brand mark.
+///
+/// Both the in-app previews ([PhotoReviewScreen], [ListingCropScreen]) and
+/// the baked-in watermark from [WatermarkService] consume these so the
+/// logo lives in the same spot on the preview and the final saved photo.
+///
+/// Values are expressed as a fraction of the photo's *shorter* side so the
+/// mark scales with the image (a 1080-wide listing photo and a 4032-wide
+/// raw capture both end up looking identical when displayed).
+class WatermarkPlacement {
+  /// Logo edge length as a fraction of the shorter side.
+  static const double sizeFraction = 0.12;
+
+  /// Distance from the right and bottom edges as a fraction of the
+  /// shorter side.
+  ///
+  /// Note: the brand-mark PNG has ~15-17% built-in transparent padding
+  /// inside its square canvas (see brand_logo_transparent.svg viewBox),
+  /// so the visible "U" glyph already sits inset from the box edges.
+  /// Adding a 7% box margin lands the visible glyph ~9% of the shorter
+  /// side from the photo's edge — comfortable on small thumbnails and
+  /// large captures alike, and visibly off the corner on the saved
+  /// photo (matching the breathing room you see in the preview / crop).
+  static const double marginFraction = 0.07;
+}
+
 class WatermarkService {
-  /// Watermark takes ~40% of the shorter image dimension for high visibility on physical devices.
-  static const double _watermarkFraction = 0.40;
 
   /// Adds a watermark (app icon) to the given image file.
   /// [watermarkImageBytes] - PNG/JPEG bytes of the logo to overlay (e.g. from assets).
@@ -46,20 +71,26 @@ class WatermarkService {
       // Clone image for modification
       final watermarkedImage = img.Image.from(originalImage);
 
-      // Resize watermark to ~40% of shorter image side (very visible on physical devices)
-      final targetSize = (watermarkedImage.width < watermarkedImage.height
-              ? watermarkedImage.width
-              : watermarkedImage.height) *
-          _watermarkFraction;
+      // Anchor the mark to the bottom-right of the photo with proportional
+      // size + margin so the baked-in result matches the preview rendered
+      // by [PhotoReviewWithLogo] / [ListingCropScreen]. Both surfaces use
+      // the same [WatermarkPlacement] fractions.
+      final shorterSide = math.min(
+        watermarkedImage.width,
+        watermarkedImage.height,
+      );
+      final targetSize = shorterSide * WatermarkPlacement.sizeFraction;
+      final marginPx =
+          (shorterSide * WatermarkPlacement.marginFraction).round();
+
       final scaleW = targetSize / watermarkImage.width;
       final scaleH = targetSize / watermarkImage.height;
-      final scale = (scaleW < scaleH ? scaleW : scaleH).clamp(0.0, 2.0);
+      final scale = math.min(scaleW, scaleH).clamp(0.0, 2.0);
       final w = (watermarkImage.width * scale).round().clamp(1, 2000);
       final h = (watermarkImage.height * scale).round().clamp(1, 2000);
 
-      // Center position (for testing visibility)
-      final dstX = (watermarkedImage.width - w) ~/ 2;
-      final dstY = (watermarkedImage.height - h) ~/ 2;
+      final dstX = watermarkedImage.width - w - marginPx;
+      final dstY = watermarkedImage.height - h - marginPx;
 
       img.compositeImage(
         watermarkedImage,

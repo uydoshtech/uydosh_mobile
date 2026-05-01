@@ -526,7 +526,12 @@ class _PhotoUploaderState extends State<PhotoUploader>
   }) {
     final photo = widget.existingPhotos[index];
     final isDeleting = widget.deletingPhotoIds.contains(photo.id);
-    final showPrimary = treatAsPrimary || photo.isPrimary;
+    // In reorder mode (allowTapToPrimary == false) the on-screen position is
+    // the source of truth for which tile is primary — the server-side
+    // `photo.isPrimary` flag only catches up after save, so we must not OR it
+    // in or two pills will render while a non-primary tile sits at index 0.
+    final showPrimary =
+        allowTapToPrimary ? (treatAsPrimary || photo.isPrimary) : treatAsPrimary;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -662,9 +667,15 @@ class _PhotoUploaderState extends State<PhotoUploader>
     bool allowTapToPrimary = true,
   }) {
     final photoPath = widget.selectedPhotos[index];
-    final isPrimary = treatAsPrimary ||
-        (_primaryNewPhotoIndex == index &&
-            !widget.existingPhotos.any((photo) => photo.isPrimary));
+    // Mirror the existing-photo logic: in reorder mode the visual position
+    // wins, so we ignore the locally-tracked `_primaryNewPhotoIndex` (which
+    // would otherwise still mark the original first-picked photo as primary
+    // even after the user dragged another tile to slot 0).
+    final isPrimary = allowTapToPrimary
+        ? (treatAsPrimary ||
+            (_primaryNewPhotoIndex == index &&
+                !widget.existingPhotos.any((photo) => photo.isPrimary)))
+        : treatAsPrimary;
 
     return DecoratedBox(
       decoration: BoxDecoration(

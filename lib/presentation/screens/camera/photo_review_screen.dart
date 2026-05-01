@@ -1,8 +1,10 @@
 import "dart:io";
+import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -65,10 +67,20 @@ class PhotoReviewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    // Reserve enough room for the bottom action bar (top padding 16 +
+    // ~48 button height + 20 bottom padding ≈ 84) plus the home-bar safe
+    // area, so the photo (and its bottom-right logo overlay) finish
+    // above the Retake / Use-photo buttons instead of sitting behind
+    // them and getting clipped.
+    final bottomBarReserve = bottomInset + 96;
     return Stack(
       fit: StackFit.expand,
       children: [
-        PhotoReviewWithLogo(path: path),
+        Padding(
+          padding: EdgeInsets.only(bottom: bottomBarReserve),
+          child: PhotoReviewWithLogo(path: path),
+        ),
         _PhotoReviewBottomBar(onRetake: onRetake, onUsePhoto: onUsePhoto),
       ],
     );
@@ -166,23 +178,34 @@ class _PhotoReviewWithLogoState extends State<PhotoReviewWithLogo> {
     return Center(
       child: AspectRatio(
         aspectRatio: size.width / size.height,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            image,
-            Positioned(
-              right: 12,
-              bottom: 12,
-              child: IgnorePointer(
-                child: Image.asset(
-                  "assets/icon/components/brand_logo_transparent.png",
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.contain,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Compute the logo size + margin from the rendered photo box
+            // so the preview matches what [WatermarkService] will bake on
+            // the saved file (both pull from [WatermarkPlacement]).
+            final shorter =
+                math.min(constraints.maxWidth, constraints.maxHeight);
+            final logoSize = shorter * WatermarkPlacement.sizeFraction;
+            final margin = shorter * WatermarkPlacement.marginFraction;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                image,
+                Positioned(
+                  right: margin,
+                  bottom: margin,
+                  width: logoSize,
+                  height: logoSize,
+                  child: IgnorePointer(
+                    child: Image.asset(
+                      "assets/icon/components/brand_logo_transparent.png",
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
