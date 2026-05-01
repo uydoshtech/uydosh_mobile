@@ -29,13 +29,6 @@ Future<String?> cropListingPhoto(
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 85,
       aspectRatio: lockedAspectRatio,
-      aspectRatioPresets: const [
-        CropAspectRatioPreset.original,
-        CropAspectRatioPreset.ratio4x3,
-        CropAspectRatioPreset.ratio16x9,
-        CropAspectRatioPreset.square,
-        CropAspectRatioPreset.ratio3x2,
-      ],
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: toolbarTitle,
@@ -47,6 +40,13 @@ Future<String?> cropListingPhoto(
           lockAspectRatio: lockedAspectRatio != null,
           hideBottomControls: false,
           initAspectRatio: CropAspectRatioPreset.original,
+          aspectRatioPresets: const [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+          ],
         ),
         IOSUiSettings(
           title: toolbarTitle,
@@ -56,6 +56,13 @@ Future<String?> cropListingPhoto(
           resetAspectRatioEnabled: lockedAspectRatio == null,
           rotateButtonsHidden: false,
           aspectRatioPickerButtonHidden: lockedAspectRatio != null,
+          aspectRatioPresets: const [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+          ],
         ),
       ],
     );
