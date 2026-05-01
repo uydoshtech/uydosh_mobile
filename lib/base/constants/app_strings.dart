@@ -144,6 +144,8 @@ class AppStrings {
       "notifications_alert_match_header": "Notify me when there's a match for:",
       "notifications_alert_match_header_paused": "Paused — would notify on match for:",
       "notifications_push_off_title": "Your {platform} push alerts are turned off",
+      "inbox_push_off_banner_title":
+          "Turn on notifications so you don't miss new messages",
       "notifications_enabled": "Notifications enabled",
       "notifications_enable_in_settings": "Please enable notifications in Settings",
       "notifications_appbar_semantics_active_alerts": "Active search alerts",
@@ -1291,6 +1293,8 @@ class AppStrings {
           "Приостановлено — уведомили бы при совпадении:",
       "notifications_push_off_title":
           "Ваши push-уведомления {platform} отключены",
+      "inbox_push_off_banner_title":
+          "Включите уведомления, чтобы не пропустить сообщения",
       "notifications_enabled": "Уведомления включены",
       "notifications_enable_in_settings":
           "Включите уведомления в настройках приложения",
@@ -2461,6 +2465,8 @@ class AppStrings {
           "Vaqtincha to‘xtatilgan — moslik uchun xabar berilardi:",
       "notifications_push_off_title":
           "{platform} push-bildirishnomalaringiz o'chirilgan",
+      "inbox_push_off_banner_title":
+          "Yangi xabarlarni o'tkazib yubormaslik uchun bildirishnomalarni yoqing",
       "notifications_enabled": "Bildirishnomalar yoqildi",
       "notifications_enable_in_settings":
           "Ilova sozlamalarida bildirishnomalarni yoqing",

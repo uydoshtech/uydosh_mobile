@@ -1,7 +1,9 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -214,6 +216,8 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;
         final iconColor = themeState.cardIconColor;
+        final avatarColor = themeState.avatarColor;
+        final avatarIconColor = themeState.avatarIconColor;
         final unreadColor = themeState.unreadIndicatorColor;
         final unreadTextColor = themeState.unreadIndicatorTextColor;
 
@@ -230,101 +234,185 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
             firstConversation.listingPrice != null &&
                 firstConversation.listingPrice! > 0;
 
+        final groupUnreadCount = _getGroupUnreadCount(conversations);
+
         return ThreeDElevatedSurface(
           baseColor: cardColor,
           margin: EdgeInsets.zero,
           child: Column(
             children: [
-              // Group header
-              ListTile(
-                onTap: () {
-                  HapticFeedbackUtils.impact();
-                  setState(() {
-                    _expandedGroups[listingId] = !isExpanded;
-                  });
-                },
-                title: Text(
-                  listingTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: textColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      L10n.plural("conversations_count", conversations.length),
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
-                    ),
-                    // Location, metro, and price (same data as single conversation tiles)
-                    if (hasLocation || hasSubwayStation || hasListingPrice) ...[
-                      const SizedBox(height: 8),
-                      ConversationLocationInfo(
-                        conversation: firstConversation,
-                        textColor: secondaryTextColor,
-                        showPrice: true,
+              // Group header. Custom Row layout (rather than [ListTile]) so we
+              // can keep the title/subtitle on the left, the unread badge +
+              // expand chevron on the right rail, and overlay the
+              // participant-avatar cluster at the geometric center of the
+              // header via a [Stack] (see [Positioned.fill] below). The
+              // overlay is wrapped in [IgnorePointer] so taps still hit the
+              // [InkWell] underneath.
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      setState(() {
+                        _expandedGroups[listingId] = !isExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        16,
+                        12,
+                        12,
+                        10,
                       ),
-                    ],
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Unread count indicator for the group
-                    if (_getGroupUnreadCount(conversations) > 0) ...[
-                      Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color.lerp(unreadColor, Colors.white, 0.32) ??
-                                  unreadColor,
-                              Color.lerp(unreadColor, Colors.black, 0.22) ??
-                                  unreadColor,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withValues(alpha: 0.24),
-                              blurRadius: 6,
-                              offset: const Offset(-2, -2),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    listingTitle,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: textColor,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    L10n.plural(
+                                      "conversations_count",
+                                      conversations.length,
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                  if (hasLocation ||
+                                      hasSubwayStation ||
+                                      hasListingPrice) ...[
+                                    const SizedBox(height: 8),
+                                    ConversationLocationInfo(
+                                      conversation: firstConversation,
+                                      textColor: secondaryTextColor,
+                                      showPrice: true,
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.22),
-                              blurRadius: 6,
-                              offset: const Offset(2, 2),
+                            const SizedBox(width: 8),
+                            // Right rail: a [Spacer] pushes everything to
+                            // the bottom-right corner, where the unread
+                            // count badge sits beside the expand chevron —
+                            // mirrors the original [ListTile.trailing]
+                            // layout (badge to the left of the chevron).
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Spacer(),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    if (groupUnreadCount > 0) ...[
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color.lerp(
+                                                    unreadColor,
+                                                    Colors.white,
+                                                    0.32,
+                                                  ) ??
+                                                  unreadColor,
+                                              Color.lerp(
+                                                    unreadColor,
+                                                    Colors.black,
+                                                    0.22,
+                                                  ) ??
+                                                  unreadColor,
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.24,
+                                              ),
+                                              blurRadius: 6,
+                                              offset: const Offset(-2, -2),
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.22,
+                                              ),
+                                              blurRadius: 6,
+                                              offset: const Offset(2, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            "$groupUnreadCount",
+                                            style: TextStyle(
+                                              color: unreadTextColor,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    AnimatedRotation(
+                                      turns: isExpanded ? 0.0 : 0.5,
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                      child: ThemeIcon(
+                                        Icons.expand_less,
+                                        color: iconColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                  // Centered participant cluster overlay. Hidden once the
+                  // group is expanded — each conversation tile below already
+                  // shows its own avatar in full.
+                  if (!isExpanded)
+                    Positioned.fill(
+                      child: IgnorePointer(
                         child: Center(
-                          child: Text(
-                            "${_getGroupUnreadCount(conversations)}",
-                            style: TextStyle(
-                              color: unreadTextColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: _ConversationParticipantStack(
+                            conversations: conversations,
+                            avatarColor: avatarColor,
+                            avatarIconColor: avatarIconColor,
+                            ringColor: cardColor,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                    ],
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.0 : 0.5,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      child: ThemeIcon(Icons.expand_less, color: iconColor),
                     ),
-                  ],
-                ),
+                ],
               ),
               // Group content with animation
               AnimatedSize(
@@ -372,5 +460,165 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
       }
       return sum;
     });
+  }
+}
+
+/// Horizontal cluster of participant avatars overlaid at the center of the
+/// collapsed group header. Each circle shows the "other user" of one
+/// conversation. Avatars are placed side-by-side with a small gap between
+/// them (no overlap) so every face reads as its own discrete identity. The
+/// per-group unread badge in the right rail already conveys the unread
+/// signal, so avatars here are intentionally identifier-only — no
+/// per-avatar dot.
+class _ConversationParticipantStack extends StatelessWidget {
+  const _ConversationParticipantStack({
+    required this.conversations,
+    required this.avatarColor,
+    required this.avatarIconColor,
+    required this.ringColor,
+  });
+
+  static const double _avatarSize = 36;
+  static const double _avatarGap = 4;
+
+  /// How many real participant avatars we render before falling back to a
+  /// `+N` chip. Five matches the typical "team avatars" pattern (Slack,
+  /// Linear) — enough to distinguish faces, not so many that a long listing
+  /// crushes the title on the left.
+  static const int _maxVisible = 5;
+
+  final List<ConversationSummary> conversations;
+  final Color avatarColor;
+  final Color avatarIconColor;
+
+  /// Color used for the thin ring around each circle. Should match the
+  /// surrounding card so adjacent circles read as cleanly separated rather
+  /// than melting into each other.
+  final Color ringColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (conversations.isEmpty) return const SizedBox.shrink();
+
+    final visible = conversations.take(_maxVisible).toList();
+    final overflow = conversations.length - visible.length;
+
+    final children = <Widget>[
+      for (var i = 0; i < visible.length; i++) ...[
+        if (i > 0) const SizedBox(width: _avatarGap),
+        _ParticipantAvatar(
+          conversation: visible[i],
+          size: _avatarSize,
+          avatarColor: avatarColor,
+          avatarIconColor: avatarIconColor,
+          ringColor: ringColor,
+        ),
+      ],
+      if (overflow > 0) ...[
+        const SizedBox(width: _avatarGap),
+        _ParticipantOverflowChip(
+          count: overflow,
+          size: _avatarSize,
+          ringColor: ringColor,
+          background: avatarColor,
+          textColor: avatarIconColor,
+        ),
+      ],
+    ];
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: children,
+    );
+  }
+}
+
+class _ParticipantAvatar extends StatelessWidget {
+  const _ParticipantAvatar({
+    required this.conversation,
+    required this.size,
+    required this.avatarColor,
+    required this.avatarIconColor,
+    required this.ringColor,
+  });
+
+  final ConversationSummary conversation;
+  final double size;
+  final Color avatarColor;
+  final Color avatarIconColor;
+  final Color ringColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = resolveAvatarUrl(conversation.otherUserAvatar);
+    final cacheExtent = (size * MediaQuery.devicePixelRatioOf(context)).round();
+
+    Widget fallback() => Center(
+          child: ConversationAvatarContent(
+            conversation: conversation,
+            iconColor: avatarIconColor,
+          ),
+        );
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: avatarColor,
+        border: Border.all(color: ringColor, width: 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: url != null
+          ? CachedNetworkImage(
+              imageUrl: url,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              memCacheWidth: cacheExtent,
+              memCacheHeight: cacheExtent,
+              placeholder: (_, __) => fallback(),
+              errorWidget: (_, __, ___) => fallback(),
+            )
+          : fallback(),
+    );
+  }
+}
+
+class _ParticipantOverflowChip extends StatelessWidget {
+  const _ParticipantOverflowChip({
+    required this.count,
+    required this.size,
+    required this.ringColor,
+    required this.background,
+    required this.textColor,
+  });
+
+  final int count;
+  final double size;
+  final Color ringColor;
+  final Color background;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: background,
+        border: Border.all(color: ringColor, width: 1.5),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        "+$count",
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+          fontSize: size * 0.36,
+        ),
+      ),
+    );
   }
 }

@@ -1151,8 +1151,10 @@ class _ListingTileState extends State<ListingTile>
     final transferInfo = MetroCache.getTransferStationInfo(station.id);
 
     if (transferInfo != null) {
-      // This is a transfer station - show both stations with <-> icon
-      // Determine which station should be on the left based on search context
+      // Transfer station: render both line-colored icons side by side, then
+      // only the main station's name. Which side counts as "main" depends on
+      // the active search context — when the user filtered by a specific
+      // line, that line's station is the main one.
       final connectedStation = SubwayStationDetail(
         id: transferInfo["connectedStationId"],
         nameUz: transferInfo["connectedStationName"],
@@ -1161,43 +1163,49 @@ class _ListingTileState extends State<ListingTile>
         line: transferInfo["connectedStationLine"],
       );
 
-      // If we have a searchLineId, prioritize that line on the left
-      // Otherwise, keep the original station on the left
-      final leftStation =
+      final mainStation =
           (widget.searchLineId != null &&
                   connectedStation.line == widget.searchLineId)
               ? connectedStation
               : station;
-      final rightStation =
-          (leftStation.id == station.id) ? connectedStation : station;
+      final transferStation =
+          (mainStation.id == station.id) ? connectedStation : station;
 
       return Row(
         children: [
-          ThemeIcon(Icons.train, color: _getLineColor(leftStation.line), size: 20),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              _getLocalizedName(
-                nameUz: leftStation.nameUz,
-                nameRu: leftStation.nameRu,
-                nameEn: leftStation.nameEn,
+          // Lock both line icons to the same square footprint so they render
+          // at identical visual size — without this, baseline alignment from
+          // the trailing Expanded text can subtly shrink one of them.
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Center(
+              child: ThemeIcon(
+                Icons.train,
+                color: _getLineColor(transferStation.line),
+                size: 20,
               ),
-              style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 4),
-          ThemeIcon(Icons.swap_horiz, color: _getLocationTextColor(), size: 16),
-          const SizedBox(width: 4),
-          ThemeIcon(Icons.train, color: _getLineColor(rightStation.line), size: 20),
-          const SizedBox(width: 4),
-          Flexible(
+          const SizedBox(width: 2),
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Center(
+              child: ThemeIcon(
+                Icons.train,
+                color: _getLineColor(mainStation.line),
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
             child: Text(
               _getLocalizedName(
-                nameUz: rightStation.nameUz,
-                nameRu: rightStation.nameRu,
-                nameEn: rightStation.nameEn,
+                nameUz: mainStation.nameUz,
+                nameRu: mainStation.nameRu,
+                nameEn: mainStation.nameEn,
               ),
               style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
               maxLines: 1,

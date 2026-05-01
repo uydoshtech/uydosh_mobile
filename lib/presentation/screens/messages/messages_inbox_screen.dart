@@ -1,8 +1,12 @@
 import "dart:async";
 import "dart:ui" show ImageFilter;
 
+import "package:firebase_messaging/firebase_messaging.dart"
+    show AuthorizationStatus;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:permission_handler/permission_handler.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -20,6 +24,7 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
@@ -45,9 +50,11 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
+import "package:uy_dosh/presentation/widgets/messages/inbox_push_banner.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({
@@ -106,6 +113,49 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   bool _hasArchivedChats = false;
   final IMessagingService _messagingService = getIt<IMessagingService>();
 
+  /// OS-level push permission status. `null` until first probe completes (or
+  /// when the platform doesn't support push at all).
+  AuthorizationStatus? _pushStatus;
+
+  /// `true` while we're awaiting the system permission sheet / settings hop;
+  /// blocks duplicate taps and drives the spinner inside [InboxPushBanner].
+  bool _pushBannerBusy = false;
+
+  /// `true` once the user has tapped the close affordance recently — banner
+  /// stays hidden until the cooldown stored in prefs elapses (or the
+  /// permission status itself flips to authorized, which we treat as
+  /// "problem solved" and reset the dismiss).
+  bool _pushBannerDismissed = false;
+
+  /// `true` while the banner is playing its roll-up + fade-out animation.
+  /// Decoupled from [_pushBannerDismissed] / [_pushStatus] so we keep the
+  /// underlying widget mounted until the curve finishes — same pattern used
+  /// for the alerts explainer and the favorites/notifications tiles.
+  bool _pushBannerClosing = false;
+
+  /// Duration of the close animation. Matches [RollUpFadeOut]'s default so
+  /// the post-anim state commit lines up exactly with the visual collapse.
+  static const Duration _pushBannerCloseDuration =
+      Duration(milliseconds: 300);
+
+  /// `true` once we've at least attempted to load both the OS status and the
+  /// dismiss timestamp — guards against showing or hiding the banner before
+  /// we actually know which state we're in (avoids a flicker on first
+  /// frame).
+  bool _pushBannerProbed = false;
+
+  /// SharedPreferences key for the dismiss timestamp (ms-since-epoch). Kept
+  /// inline rather than in a constants file because it is only read/written
+  /// from this screen.
+  static const String _pushBannerDismissedAtKey =
+      "inbox_push_banner_dismissed_at_ms";
+
+  /// How long a manual dismiss suppresses the banner. Two weeks balances
+  /// "don't nag" with "remind people who keep losing chat replies"; long
+  /// enough to feel respectful, short enough to recover users who change
+  /// their mind silently.
+  static const Duration _pushBannerDismissCooldown = Duration(days: 14);
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +171,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
     _unreadMessagesListener = _onUnreadMessagesChanged;
     UnreadMessagesState().addListener(_unreadMessagesListener);
+
+    _refreshPushBannerVisibility();
   }
 
   @override
@@ -202,6 +254,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       // Refresh conversations when app becomes active again
       _loadConversations();
       _refreshArchivedChatsFlag();
+      // The user may have toggled the OS notifications permission while we
+      // were backgrounded (e.g. they tapped "Open settings" on the inbox
+      // banner). Re-probe so the banner reflects reality.
+      _refreshPushBannerVisibility();
     }
   }
 
@@ -286,6 +342,170 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   Future<void> _onInboxPullRefresh() async {
     _loadConversations();
+    // Pull-to-refresh is a natural moment to also re-check push permission —
+    // cheap, and lets the banner disappear without a full app restart if the
+    // user enabled notifications elsewhere.
+    unawaited(_refreshPushBannerVisibility());
+  }
+
+  /// Re-probe the OS push permission and the dismiss cooldown, then rebuild
+  /// if the visibility decision changes. Safe to call repeatedly — the cost
+  /// is one platform channel hit + one SharedPreferences read.
+  ///
+  /// When the new state would hide a currently-visible banner (typical
+  /// path: user just granted permission via the system sheet), the underlying
+  /// status update is held back behind a roll-up animation so the banner
+  /// collapses gracefully instead of popping out.
+  Future<void> _refreshPushBannerVisibility() async {
+    final push = getIt<IPushNotificationService>();
+    if (!push.isSupported) {
+      if (!_pushBannerProbed) {
+        setStateIfMounted(() => _pushBannerProbed = true);
+      }
+      return;
+    }
+
+    final status = await push.getNotificationStatus();
+
+    final prefs = await SharedPreferences.getInstance();
+    final dismissedAtMs = prefs.getInt(_pushBannerDismissedAtKey);
+    final isAuthorized = status == AuthorizationStatus.authorized ||
+        status == AuthorizationStatus.provisional;
+    var dismissed = false;
+    if (dismissedAtMs != null) {
+      final age =
+          DateTime.now().millisecondsSinceEpoch - dismissedAtMs;
+      dismissed = age >= 0 && age < _pushBannerDismissCooldown.inMilliseconds;
+      // Once permission is granted, a stale dismiss flag is just dead state —
+      // clear it so a future revoke shows the banner without waiting two
+      // weeks.
+      if (isAuthorized) {
+        await prefs.remove(_pushBannerDismissedAtKey);
+        dismissed = false;
+      }
+    }
+
+    if (!mounted) return;
+
+    final wasVisible = _shouldShowPushBanner;
+    final willBeVisible = _pushBannerVisibilityFor(
+      status: status,
+      dismissed: dismissed,
+    );
+
+    // Visible → hidden: roll up + fade out before committing the state, so
+    // the surface doesn't disappear in a single frame.
+    if (wasVisible && !willBeVisible && !_pushBannerClosing) {
+      setState(() => _pushBannerClosing = true);
+      await Future<void>.delayed(_pushBannerCloseDuration);
+      if (!mounted) return;
+    }
+
+    setState(() {
+      _pushStatus = status;
+      _pushBannerDismissed = dismissed;
+      _pushBannerProbed = true;
+      _pushBannerClosing = false;
+    });
+  }
+
+  /// Pure visibility predicate used both for the live getter and to peek at
+  /// what visibility *would* be after a hypothetical state transition.
+  bool _pushBannerVisibilityFor({
+    required AuthorizationStatus? status,
+    required bool dismissed,
+  }) {
+    if (dismissed) return false;
+    if (status == null) return false;
+    return status == AuthorizationStatus.denied ||
+        status == AuthorizationStatus.notDetermined;
+  }
+
+  bool get _shouldShowPushBanner {
+    if (!_pushBannerProbed) return false;
+    return _pushBannerVisibilityFor(
+      status: _pushStatus,
+      dismissed: _pushBannerDismissed,
+    );
+  }
+
+  /// Whether the banner row should be present in the entries list at all.
+  /// During [_pushBannerClosing] the underlying state still satisfies
+  /// [_shouldShowPushBanner] (we hold off the commit), so a single check is
+  /// enough — but we expose this for clarity at the call site.
+  bool get _shouldRenderPushBannerRow =>
+      _shouldShowPushBanner || _pushBannerClosing;
+
+  Future<void> _onPushBannerPressed() async {
+    if (_pushBannerBusy) return;
+    HapticFeedbackUtils.impact();
+    setState(() => _pushBannerBusy = true);
+
+    final push = getIt<IPushNotificationService>();
+    final isDenied = _pushStatus == AuthorizationStatus.denied;
+
+    try {
+      if (isDenied) {
+        // iOS won't re-prompt once the user denied — the only path is the
+        // Settings app. didChangeAppLifecycleState picks up the new status
+        // when they return.
+        await openAppSettings();
+        return;
+      }
+
+      final ok = await push.requestPermissionAndRegister();
+      if (!mounted) return;
+      if (ok) {
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("notifications_enabled"),
+        );
+      } else {
+        // Either the user denied the system sheet (and the service already
+        // bounced them to Settings) or registration failed silently. Either
+        // way, point them at Settings as the next step.
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("notifications_enable_in_settings"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _pushBannerBusy = false);
+      }
+      // Always re-probe: even on the openAppSettings path the user is back
+      // in-app the moment this future resolves (system Settings is a
+      // separate app on iOS, so didChangeAppLifecycleState handles that
+      // case; on Android it's a popup that closes synchronously).
+      await _refreshPushBannerVisibility();
+    }
+  }
+
+  Future<void> _onPushBannerDismiss() async {
+    if (_pushBannerClosing) return;
+    HapticFeedbackUtils.impact();
+
+    // Persist immediately so a kill mid-animation still respects the
+    // dismiss; the visual collapse happens in parallel.
+    unawaited(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt(
+          _pushBannerDismissedAtKey,
+          DateTime.now().millisecondsSinceEpoch,
+        );
+      } catch (e) {
+        logger.d("📲 [InboxPushBanner] Failed to persist dismiss: $e");
+      }
+    }());
+
+    setState(() => _pushBannerClosing = true);
+    await Future<void>.delayed(_pushBannerCloseDuration);
+    if (!mounted) return;
+    setState(() {
+      _pushBannerDismissed = true;
+      _pushBannerClosing = false;
+    });
   }
 
   /// Show cached conversations if available, otherwise loading - prevents blink during refresh
@@ -1344,6 +1564,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     required bool outgoingTiles,
   }) {
     final entries = <_InboxListEntry>[
+      if (_shouldRenderPushBannerRow) _InboxPushBannerRow(),
       ...(outgoingTiles
           ? _inboxEntriesWithDayHeaders(conversations)
           : _incomingEntriesWithDaySections(conversations)),
@@ -1357,6 +1578,31 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final entry = entries[index];
         final isFirstRow = index == 0;
         return switch (entry) {
+          _InboxPushBannerRow() => Padding(
+            // Slightly larger top breathing room so the banner doesn't kiss
+            // the pinned tab toggle that floats above the list.
+            padding: const EdgeInsets.only(top: 4),
+            child: _pushBannerClosing
+                ? RollUpFadeOut(
+                    duration: _pushBannerCloseDuration,
+                    child: InboxPushBanner(
+                      key: const ValueKey("inbox_push_banner"),
+                      status:
+                          _pushStatus ?? AuthorizationStatus.notDetermined,
+                      busy: _pushBannerBusy,
+                      onPressed: _onPushBannerPressed,
+                      onDismiss: _onPushBannerDismiss,
+                    ),
+                  )
+                : InboxPushBanner(
+                    key: const ValueKey("inbox_push_banner"),
+                    status:
+                        _pushStatus ?? AuthorizationStatus.notDetermined,
+                    busy: _pushBannerBusy,
+                    onPressed: _onPushBannerPressed,
+                    onDismiss: _onPushBannerDismiss,
+                  ),
+          ),
           _InboxDayHeader(:final dayStart) => DateHeaderWidget(
             dateString: MessageGroupingUtils.formatDateHeader(
               dayStart,
@@ -1429,6 +1675,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 }
 
 sealed class _InboxListEntry {}
+
+/// Sentinel "row" rendered as the first item of the inbox list when the OS
+/// push permission is missing. Carrying it through the same entry pipeline
+/// lets it scroll away with the rest of the content (rather than steal a
+/// pinned slot above the incoming/outgoing toggle).
+final class _InboxPushBannerRow extends _InboxListEntry {
+  _InboxPushBannerRow();
+}
 
 final class _InboxDayHeader extends _InboxListEntry {
   _InboxDayHeader(this.dayStart);
