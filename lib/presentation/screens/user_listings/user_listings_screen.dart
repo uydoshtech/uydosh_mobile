@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
@@ -76,12 +77,6 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
   late final VoidCallback _resetScrollLoadingState;
 
   Color _emptyStateTitleColor() =>
-      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey600;
-
-  Color _errorTitleColor() =>
-      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.statusInactive;
-
-  Color _errorBodyColor() =>
       ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey600;
 
   @override
@@ -317,37 +312,31 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
   }
 
   Widget _buildErrorState(String errorMessage) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIconFactory.status(
-            icon: Icons.error_outline,
-            size: 64,
-            isError: true,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            L10n.get("error"),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: _errorTitleColor(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            ErrorMessageHelper.sanitizeErrorMessage(errorMessage),
-            style: TextStyle(fontSize: 14, color: _errorBodyColor()),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          GhostButtonFactory.text(
-            onPressed: _onRefresh,
-            text: L10n.get("retry"),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-        ],
+    return Builder(
+      builder: (context) => UydoshErrorRetryColumn(
+        iconColor: AppColors.error,
+        title: L10n.get("error"),
+        titleStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: AppColors.error,
+        ),
+        message: ErrorMessageHelper.sanitizeErrorMessage(
+          errorMessage,
+          context: context,
+        ),
+        messageStyle: TextStyle(
+          fontSize: 14,
+          color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
+        ),
+        spacingAfterIcon: 24,
+        spacingAfterTitle: 12,
+        spacingBeforeButton: 20,
+        retryButton: GhostButtonFactory.text(
+          onPressed: _onRefresh,
+          text: L10n.get("retry"),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
       ),
     );
   }

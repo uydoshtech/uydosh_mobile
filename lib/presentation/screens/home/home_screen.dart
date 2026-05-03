@@ -262,8 +262,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     HomeRefreshState().addListener(_onHomeRefreshStateChanged);
 
     // After logout, inline ribbon + filtered bloc path must drop even if this
-    // State object outlives the session-clear hook ordering.
-    AuthenticationState().addListener(_onAuthenticationChangedForInlineSearch);
+    // State object outlives the session-clear hook ordering. After login, we
+    // also need to re-run the auth-dependent bootstrap so the user's
+    // server-side filters and inline ribbon are restored on the same mounted
+    // home screen (otherwise the filter chips stay hidden until app restart).
+    AuthenticationState().addListener(_onAuthenticationChanged);
 
     // Re-check tutorial when onboarding toggle changes (e.g. user turns it ON in settings)
     OnboardingState().addListener(_onOnboardingStateChanged);
@@ -322,6 +325,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     await _restoreInlineSearchModeFromPrefs();
   }
 
+  /// Re-runs the auth-dependent portion of the bootstrap after the user signs
+  /// in while the home screen is already mounted. Without this the inline
+  /// filter chips ribbon (and any backend-stored filters) stays hidden because
+  /// the original [_bootstrapHomeSearchFilters] short-circuited when the user
+  /// was still unauthenticated at app launch.
+  Future<void> _rebootstrapAfterLogin() async {
+    if (!mounted) return;
+    if (!await SessionManager.isAuthenticated()) return;
+    await _searchFiltersState.hydrateFromBackendForCurrentUser();
+    if (!mounted) return;
+    await _searchFiltersState.ensureProfileDefaultsApplied();
+    if (!mounted) return;
+    await _restoreInlineSearchModeFromPrefs();
+  }
+
   Future<void> _restoreInlineSearchModeFromPrefs() async {
     if (widget.isSearchMode) return; // dedicated results screen manages itself
     if (!await SessionManager.isAuthenticated()) return;
@@ -358,9 +376,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  void _onAuthenticationChangedForInlineSearch() {
+  void _onAuthenticationChanged() {
     if (!mounted) return;
-    if (AuthenticationState().isAuthenticated) return;
+    if (AuthenticationState().isAuthenticated) {
+      // User just signed in (or session was restored) on an already-mounted
+      // home screen. Re-run the auth-dependent bootstrap so filters
+      // hydrate from backend and the inline filter chips ribbon is
+      // restored if it was active in the previous session.
+      unawaited(_rebootstrapAfterLogin());
+      return;
+    }
     if (!_inlineSearchActive) return;
     _exitInlineSearch();
   }
@@ -460,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     TutorialOverlayManager().dismissActive();
     routeObserver.unsubscribe(this);
     OnboardingState().removeListener(_onOnboardingStateChanged);
-    AuthenticationState().removeListener(_onAuthenticationChangedForInlineSearch);
+    AuthenticationState().removeListener(_onAuthenticationChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
     TooltipsState().removeListener(_onTooltipsStateChanged);
     ScrollUtils.disposeScrollController(_scrollController);

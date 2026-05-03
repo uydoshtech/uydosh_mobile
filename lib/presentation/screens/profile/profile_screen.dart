@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -9,6 +10,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/logout_service.dart"
     show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -35,6 +37,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ProfileScreenData {
@@ -464,68 +467,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildErrorState(String message, BuildContext context) {
     final isSessionExpired = message == sessionExpiredErrorCode;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ThemeIcon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
+    final sanitizedMessage = isSessionExpired
+        ? null
+        : ErrorMessageHelper.sanitizeErrorMessage(message, context: context);
+
+    return UydoshErrorRetryColumn(
+      iconColor: AppColors.error,
+      title: L10n.get(
+        isSessionExpired ? "session_expired" : "error_loading_profile",
+      ),
+      titleStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.error,
+      ),
+      message: sanitizedMessage,
+      messageStyle: TextStyle(
+        fontSize: 14,
+        color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      spacingAfterIcon: 24,
+      spacingAfterTitle: 12,
+      spacingBeforeButton: 20,
+      retryButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              if (isSessionExpired) {
+                LogoutService().performLogout();
+              } else {
+                context.read<CurrentUserProfileBloc>().add(
+                  const CurrentUserProfileEvent.fetchProfile(),
+                );
+              }
+            },
+            child: Text(
+              L10n.get(isSessionExpired ? "logout" : "retry"),
             ),
-            const SizedBox(height: 16),
-            Text(
-              L10n.get(
-                isSessionExpired ? "session_expired" : "error_loading_profile",
-              ),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (!isSessionExpired) ...[
-              const SizedBox(height: 8),
-              Text(
-                L10n.get("error_generic"),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            const SizedBox(height: 24),
-            ElevatedButton(
+          ),
+          if (!isSessionExpired) ...[
+            const SizedBox(height: 12),
+            TextButton(
               onPressed: () {
                 HapticFeedbackUtils.impact();
-                if (isSessionExpired) {
-                  LogoutService().performLogout();
-                } else {
-                  context.read<CurrentUserProfileBloc>().add(
-                    const CurrentUserProfileEvent.fetchProfile(),
-                  );
-                }
+                _showLogoutDialog(context);
               },
-              child: Text(
-                L10n.get(isSessionExpired ? "logout" : "retry"),
-              ),
+              child: Text(L10n.get("logout")),
             ),
-            if (!isSessionExpired) ...[
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  _showLogoutDialog(context);
-                },
-                child: Text(L10n.get("logout")),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }

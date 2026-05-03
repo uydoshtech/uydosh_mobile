@@ -6,6 +6,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
@@ -22,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 
 class ListingComplaintsScreen extends StatefulWidget {
@@ -447,27 +449,33 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
   }
 
   Widget _buildErrorState(BuildContext context, String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const ThemeIcon(Icons.error_outline, size: 64, color: AppColors.error),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 16),
-          GhostButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(
-              L10n.get("back_to_listing"),
-            ),
-          ),
-        ],
+    return UydoshErrorRetryColumn(
+      iconColor: AppColors.error,
+      title: L10n.get("error"),
+      titleStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.error,
+      ),
+      message: ErrorMessageHelper.sanitizeErrorMessage(
+        message,
+        context: context,
+      ),
+      messageStyle: TextStyle(
+        fontSize: 14,
+        color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      spacingAfterIcon: 24,
+      spacingAfterTitle: 12,
+      spacingBeforeButton: 20,
+      retryButton: GhostButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: Text(
+          L10n.get("back_to_listing"),
+        ),
       ),
     );
   }

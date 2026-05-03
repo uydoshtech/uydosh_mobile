@@ -17,6 +17,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -737,16 +738,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, _) {
-          final themeState = ThemeState();
           return AuthRequiredState(
-            message:
-                "Please log in again to view your messages. Your session may have expired.",
-            buttonLabel: "Log In Again",
-            iconSize: 64,
-            titleFontSize: 24,
-            iconColor: themeState.primaryColor,
-            titleColor: themeState.primaryColor,
-            messageColor: themeState.secondaryTextColor,
+            iconColor: _getEmptyStateIconColor(),
+            textColor: _getEmptyStateTextColor(),
             onLogin: AuthRequiredState.logoutAndReauthenticate(context),
           );
         },
@@ -759,24 +753,27 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final themeState = ThemeState();
         final buttonColor = themeState.buttonColor;
         final buttonTextColor = themeState.buttonTextColor;
+        final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(
+          message,
+          context: context,
+        );
 
         return UydoshErrorRetryColumn(
           iconColor: AppColors.error,
-          title: "Error",
+          title: L10n.get("error"),
           titleStyle: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
             color: AppColors.error,
           ),
-          message: message,
+          message: sanitizedMessage,
           messageStyle: TextStyle(
-            fontSize: 16,
-            color: themeState.secondaryTextColor,
+            fontSize: 14,
+            color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          spacingAfterIcon: 16,
-          spacingAfterTitle: 8,
-          spacingBeforeButton: 24,
+          spacingAfterIcon: 24,
+          spacingAfterTitle: 12,
+          spacingBeforeButton: 20,
           retryButton: ThreeDPillButton(
             onPressed: _loadConversations,
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -800,6 +797,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       },
     );
   }
+
+  Color _getEmptyStateIconColor() => ThemeState().isBlueTheme
+      ? AppColors.textLight
+      : AppColors.textGrey400;
+
+  Color _getEmptyStateTextColor() => ThemeState().isBlueTheme
+      ? AppColors.textLight
+      : AppColors.textGrey400;
 
   Widget _buildTabbedConversationsList(
     List<ConversationSummary> conversations,

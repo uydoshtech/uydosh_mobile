@@ -507,9 +507,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return Builder(
       builder: (context) => AuthRequiredState(
         icon: Icons.error_outline,
-        message:
-            "Please log in again to view your favorites. Your session may have expired.",
-        buttonLabel: "Log In Again",
         iconColor: _getEmptyStateIconColor(),
         textColor: _getEmptyStateTextColor(),
         onLogin: AuthRequiredState.logoutAndReauthenticate(context),
@@ -520,8 +517,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildAuthenticationRequiredState() {
     return Builder(
       builder: (context) => AuthRequiredState(
-        message: "Please log in to view your favorites.",
-        buttonLabel: "Log In",
         iconColor: _getEmptyStateIconColor(),
         textColor: _getEmptyStateTextColor(),
         onLogin: () => context.pushReplaceAuthWizard(),

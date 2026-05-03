@@ -11,6 +11,7 @@ import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
@@ -22,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -717,44 +719,34 @@ L10n.get("rating"),
   }
 
   Widget _buildErrorState(String message, BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ThemeIconFactory.status(
-              icon: Icons.error_outline,
-              size: 64,
-              isError: true,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              L10n.get("error_loading_profile"),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: _getTextPrimaryColor(),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              L10n.get("error_generic"),
-              style: TextStyle(fontSize: 16, color: _getTextSecondaryColor()),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            GhostButtonFactory.text(
-              onPressed: () {
-                context.read<ListingOwnerProfileBloc>().add(
-                  ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
-                );
-              },
-              text: L10n.get("retry"),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ],
-        ),
+    return UydoshErrorRetryColumn(
+      iconColor: AppColors.error,
+      title: L10n.get("error"),
+      titleStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.error,
+      ),
+      message: ErrorMessageHelper.sanitizeErrorMessage(
+        message,
+        context: context,
+      ),
+      messageStyle: TextStyle(
+        fontSize: 14,
+        color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      spacingAfterIcon: 24,
+      spacingAfterTitle: 12,
+      spacingBeforeButton: 20,
+      retryButton: GhostButtonFactory.text(
+        onPressed: () {
+          context.read<ListingOwnerProfileBloc>().add(
+            ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
+          );
+        },
+        text: L10n.get("retry"),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     );
   }
