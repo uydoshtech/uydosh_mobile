@@ -42,6 +42,18 @@ class SearchFiltersState extends ChangeNotifier {
     _hydrateFuture = null;
   }
 
+  /// Synchronously flush any pending debounced remote save so it survives a
+  /// logout / account switch. Must be called BEFORE the session token is
+  /// cleared (otherwise the OAuth interceptor has nothing to send and the
+  /// request 401s, dropping the user's last filter changes on the floor).
+  Future<void> flushPendingRemotePersist() async {
+    final pending = _remoteSaveDebounce;
+    if (pending == null || !pending.isActive) return;
+    pending.cancel();
+    _remoteSaveDebounce = null;
+    await _flushRemotePersist();
+  }
+
   /// Loads filters from `users.search_filters` for the signed-in user (server wins).
   Future<void> hydrateFromBackendForCurrentUser() async {
     if (_hydrateFuture != null) {

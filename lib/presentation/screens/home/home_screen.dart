@@ -205,6 +205,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   bool _inlineSearchSpacerExpanded = false;
   int _inlineSearchExitRefreshToken = 0;
   int _inlineSearchEnterSearchToken = 0;
+  // Window during which a SearchFiltersState change after a fresh login is
+  // treated as the post-hydrate update and may auto-activate the inline
+  // ribbon. Outside this window we ignore filter changes so we don't
+  // surprise the user with the ribbon popping up during normal browsing
+  // (e.g. when another part of the app touches a filter setter).
+  DateTime? _postLoginActivationDeadline;
+  // Tracks the previous value of [AuthenticationState.isAuthenticated] so
+  // we react only to real transitions. Without this guard, the Firebase
+  // auth listener firing during logout (local session is briefly still
+  // valid, so combined-auth stays "true") would look like another login
+  // and trigger a stray hydrate that re-applies the previous user's
+  // filters mid-logout.
+  bool _wasAuthenticated = false;
   static const double _inlineSearchRibbonHeight = 56.0;
   static const double _inlineSearchRibbonToListGap = 8.0;
   static const double _kFabGap = 12.0;
@@ -266,7 +279,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // also need to re-run the auth-dependent bootstrap so the user's
     // server-side filters and inline ribbon are restored on the same mounted
     // home screen (otherwise the filter chips stay hidden until app restart).
+    _wasAuthenticated = AuthenticationState().isAuthenticated;
     AuthenticationState().addListener(_onAuthenticationChanged);
+
+    // Watch the global SearchFiltersState so the chips bar reflects external
+    // changes (e.g. backend hydrate triggered by MainNavigation's own auth
+    // listener) and so we can auto-activate the ribbon if the freshly
+    // hydrated filters indicate a previously-applied search. Without this
+    // listener the home rebuilds only when our own [_rebootstrapAfterLogin]
+    // path setStates — which may race with hydrate completing through a
+    // different code path and leave the home unfiltered after login.
+    _searchFiltersState.addListener(_onSearchFiltersStateChanged);
 
     // Re-check tutorial when onboarding toggle changes (e.g. user turns it ON in settings)
     OnboardingState().addListener(_onOnboardingStateChanged);
@@ -322,7 +345,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     await _searchFiltersState.ensureProfileDefaultsApplied();
     if (!mounted) return;
-    await _restoreInlineSearchModeFromPrefs();
+    final restored = await _restoreInlineSearchModeFromPrefs();
+    if (restored) return;
+    if (!mounted) return;
+    // Fallback for the fresh-mount-after-login path: the auth wizard's
+    // [_navigateToMainNavigation] uses `pushAndRemoveUntil` whenever the
+    // existing `MainNavigation` was disposed (e.g. when the user reached
+    // the wizard via `pushReplaceAuthWizard`), so this state object is
+    // brand new and the auth-flip listener never sees a transition. The
+    // logout hook wiped the local `home_inline_search_active` prefs flag,
+    // so [_restoreInlineSearchModeFromPrefs] returns false above. We use
+    // the freshly hydrated backend filters as a proxy for "user had a
+    // previous search" and re-activate the ribbon when any of them are
+    // non-default.
+    if (!await SessionManager.isAuthenticated()) return;
+    if (widget.isSearchMode) return;
+    if (_inlineSearchActive || _inlineSearchClosing) return;
+    if (_hasUserAppliedSearchCriteria()) {
+      _activateInlineSearch(persistActiveFlag: true);
+    }
   }
 
   /// Re-runs the auth-dependent portion of the bootstrap after the user signs
@@ -330,6 +371,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// filter chips ribbon (and any backend-stored filters) stays hidden because
   /// the original [_bootstrapHomeSearchFilters] short-circuited when the user
   /// was still unauthenticated at app launch.
+  ///
+  /// Note: the session-clear hook in `main.dart` wipes the local
+  /// `home_inline_search_active` prefs flag on logout, so we cannot rely on
+  /// it across a logout/login cycle. After hydration we re-activate the
+  /// ribbon when the freshly-loaded backend filters indicate the user had a
+  /// search applied (any non-default location / metro / price / extras).
   Future<void> _rebootstrapAfterLogin() async {
     if (!mounted) return;
     if (!await SessionManager.isAuthenticated()) return;
@@ -337,16 +384,54 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     await _searchFiltersState.ensureProfileDefaultsApplied();
     if (!mounted) return;
-    await _restoreInlineSearchModeFromPrefs();
+    final restored = await _restoreInlineSearchModeFromPrefs();
+    if (restored) {
+      _postLoginActivationDeadline = null;
+      return;
+    }
+    if (!mounted) return;
+    if (_hasUserAppliedSearchCriteria()) {
+      _postLoginActivationDeadline = null;
+      _activateInlineSearch(persistActiveFlag: true);
+    }
+    // If criteria are still all-default, leave the post-login window open;
+    // [_onSearchFiltersStateChanged] may activate later when a delayed
+    // hydrate notification arrives.
   }
 
-  Future<void> _restoreInlineSearchModeFromPrefs() async {
-    if (widget.isSearchMode) return; // dedicated results screen manages itself
-    if (!await SessionManager.isAuthenticated()) return;
+  /// True when filters carry user intent beyond the listing-type / gender
+  /// defaults (which are auto-derived from profile and don't represent an
+  /// active "search").
+  bool _hasUserAppliedSearchCriteria() {
+    return _searchFiltersState.selectedLocationIndex > 0 ||
+        _searchFiltersState.selectedSubwayLine > 0 ||
+        _searchFiltersState.selectedStationId > 0 ||
+        _searchFiltersState.minPrice != 10.0 ||
+        _searchFiltersState.maxPrice != 1000.0 ||
+        _searchFiltersState.privateRoom ||
+        _searchFiltersState.withPhoto;
+  }
+
+  /// Returns true when the persisted prefs flag was set and we activated the
+  /// ribbon; false otherwise. Splitting this out lets the post-login path
+  /// decide whether to fall back to a filter-driven heuristic.
+  Future<bool> _restoreInlineSearchModeFromPrefs() async {
+    if (widget.isSearchMode) return false; // dedicated results screen manages itself
+    if (!await SessionManager.isAuthenticated()) return false;
     final prefs = await SharedPreferences.getInstance();
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
-    if (!mounted) return;
-    if (!active) return;
+    if (!mounted) return false;
+    if (!active) return false;
+    _activateInlineSearch(persistActiveFlag: false);
+    return true;
+  }
+
+  /// Flips the home into inline-search mode, animates the ribbon in, and
+  /// dispatches the filtered search after the slide animation completes.
+  /// When [persistActiveFlag] is true, also writes the prefs flag so the
+  /// ribbon survives the next cold start (the prefs path normally already
+  /// has it set, hence the parameter).
+  void _activateInlineSearch({required bool persistActiveFlag}) {
     final token = ++_inlineSearchEnterSearchToken;
     setState(() {
       _inlineSearchActive = true;
@@ -354,6 +439,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchSpacerExpanded = true;
     });
     HomeInlineSearchState().setActive(true);
+    if (persistActiveFlag) {
+      unawaited(() async {
+        try {
+          final p = await SharedPreferences.getInstance();
+          await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+        } catch (_) {}
+      }());
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(() async {
@@ -378,16 +471,81 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _onAuthenticationChanged() {
     if (!mounted) return;
-    if (AuthenticationState().isAuthenticated) {
-      // User just signed in (or session was restored) on an already-mounted
-      // home screen. Re-run the auth-dependent bootstrap so filters
-      // hydrate from backend and the inline filter chips ribbon is
-      // restored if it was active in the previous session.
-      unawaited(_rebootstrapAfterLogin());
+    final isNow = AuthenticationState().isAuthenticated;
+    final wasBefore = _wasAuthenticated;
+    _wasAuthenticated = isNow;
+
+    if (isNow) {
+      // Distinguish a real auth flip (false → true) from spurious
+      // re-notifications. AuthenticationState calls notifyListeners on
+      // every status check, so during a normal login the listener fires
+      // multiple times: once when Firebase signs the user in (local
+      // session not yet present, [SessionManager.isAuthenticated] still
+      // returns false), and again after [_storeBackendSession] writes
+      // the token and calls [refreshAuthenticationStatus]. We need to
+      // run the bootstrap on the second one too — the first one's
+      // [_rebootstrapAfterLogin] aborts on the missing token. Use the
+      // post-login activation window as the gate for follow-up retries
+      // so we don't keep firing hydrate forever.
+      if (!wasBefore) {
+        // Real flip — open the window and force a rebuild so the auth
+        // gate in [_buildInlineFiltersRibbonAnimated] re-evaluates.
+        _postLoginActivationDeadline =
+            DateTime.now().add(const Duration(seconds: 20));
+        setState(() {});
+        unawaited(_rebootstrapAfterLogin());
+      } else if (_postLoginActivationDeadline != null &&
+          DateTime.now().isBefore(_postLoginActivationDeadline!)) {
+        // Follow-up notification within the window: retry the bootstrap
+        // in case the previous attempt aborted because the token wasn't
+        // yet persisted to prefs.
+        unawaited(_rebootstrapAfterLogin());
+      }
       return;
     }
-    if (!_inlineSearchActive) return;
-    _exitInlineSearch();
+
+    if (!wasBefore) {
+      // Already-anonymous re-notification — nothing to do.
+      return;
+    }
+
+    // Real logout. Force a rebuild so the auth gate in
+    // [_buildInlineFiltersRibbonAnimated] removes the AnimatedSwitcher
+    // subtree in this frame, instead of letting it play a 750ms slide-out
+    // with the previous user's chips cached on the outgoing child.
+    _postLoginActivationDeadline = null;
+    if (_inlineSearchActive) {
+      _exitInlineSearch(animated: false);
+    } else {
+      setState(() {});
+    }
+  }
+
+  void _onSearchFiltersStateChanged() {
+    if (!mounted) return;
+
+    // When the ribbon is visible, rebuild so the chips bar reflects the
+    // latest values (filters are read directly off the singleton at build
+    // time). Skipping this rebuild when the ribbon isn't shown avoids
+    // pointless work while the user is scrolling wheels in the search
+    // sheet, which fires a setter on every wheel index update.
+    if (_inlineSearchActive || _inlineSearchClosing) {
+      setState(() {});
+    }
+
+    // Auto-activate the inline ribbon if the filter change happened within
+    // the post-login window AND the freshly hydrated filters carry user-
+    // applied criteria. This catches the race where hydrate completes via
+    // [MainNavigation]'s own auth listener and our [_rebootstrapAfterLogin]
+    // already finished its (then-stale) heuristic check.
+    final deadline = _postLoginActivationDeadline;
+    if (deadline == null || DateTime.now().isAfter(deadline)) return;
+    if (!AuthenticationState().isAuthenticated) return;
+    if (widget.isSearchMode) return;
+    if (_inlineSearchActive || _inlineSearchClosing) return;
+    if (!_hasUserAppliedSearchCriteria()) return;
+    _postLoginActivationDeadline = null;
+    _activateInlineSearch(persistActiveFlag: true);
   }
 
   /// Shows the first tutorial (search button) only on the home screen's main
@@ -486,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     routeObserver.unsubscribe(this);
     OnboardingState().removeListener(_onOnboardingStateChanged);
     AuthenticationState().removeListener(_onAuthenticationChanged);
+    _searchFiltersState.removeListener(_onSearchFiltersStateChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
     TooltipsState().removeListener(_onTooltipsStateChanged);
     ScrollUtils.disposeScrollController(_scrollController);
@@ -907,6 +1066,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersRibbonAnimated() {
+    // Don't render the ribbon (or its AnimatedSwitcher) at all when the user
+    // is not authenticated. AnimatedSwitcher would otherwise play a 750ms
+    // slide-out on logout — and the outgoing child is a cached snapshot of
+    // the previous user's filter chips, so the chips stay visible on screen
+    // while sliding away. Removing the switcher entirely makes Flutter
+    // dispose that subtree in the same frame the auth state notifies.
+    if (!AuthenticationState().isAuthenticated) {
+      return const SizedBox.shrink();
+    }
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
       builder: (context, _) {
@@ -1711,12 +1879,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     _performSearch();
   }
 
-  void _exitInlineSearch() {
+  void _exitInlineSearch({bool animated = true}) {
     final refreshToken = ++_inlineSearchExitRefreshToken;
     if (mounted) {
       setState(() {
         _inlineSearchActive = false;
-        _inlineSearchClosing = true;
+        // When [animated] is false (e.g. driven by logout), skip the closing
+        // placeholder so AnimatedSwitcher does not keep the outgoing ribbon
+        // — built with the previous user's filters — visible while it slides
+        // away.
+        _inlineSearchClosing = animated;
         // Collapse spacer immediately so listings move up during ribbon slide-out.
         _inlineSearchSpacerExpanded = false;
       });
@@ -1727,7 +1899,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     });
     // Avoid triggering a fetch+rebuild while the ribbon is animating out.
     // If the user quickly re-enters inline search, skip this refresh.
-    final animationsEnabled = _homeRibbonAnimationsEnabled(context);
+    final animationsEnabled = animated && _homeRibbonAnimationsEnabled(context);
     unawaited(() async {
       if (animationsEnabled) {
         await Future.delayed(const Duration(milliseconds: 750));

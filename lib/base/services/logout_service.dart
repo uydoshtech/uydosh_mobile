@@ -12,6 +12,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 /// Thrown when account deletion is rejected because the account is blocked.
@@ -71,6 +72,18 @@ class LogoutService {
           logger.d("❌ Backend logout failed: $e");
           // Continue with local logout even if backend fails
         }
+      }
+
+      // 2b. Flush any pending debounced search-filter writes BEFORE we wipe
+      // the token. Without this, a filter change made within ~1.6s before
+      // logout never reaches the backend and is silently lost — so the
+      // next time this user (or any other user on the same device) signs
+      // in, hydration restores stale data and the filter looks like it
+      // was never restored.
+      try {
+        await SearchFiltersState().flushPendingRemotePersist();
+      } catch (e) {
+        logger.d("⚠️ Logout: failed to flush pending search filters: $e");
       }
 
       // 3. Clear local session

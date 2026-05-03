@@ -426,6 +426,40 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
       }
     } catch (e, st) {
+      // The native Google Sign-In SDKs don't always honour the
+      // "return null on cancel" contract. iOS surfaces a dismiss as
+      // `PlatformException(sign_in_failed, com.google.GIDSignIn,
+      // access_denied, …)`; Android uses `sign_in_canceled`; web fires
+      // `popup_closed_by_user`. Treat all of these as the same no-op
+      // path the `googleUser == null` branch above takes — clear the
+      // loader and bail out silently, no scary error toast.
+      if (_isUserCancelledSignIn(e)) {
+        if (!kIsWeb) {
+          try {
+            await _crashlytics.setCustomKey(
+              "auth_step",
+              "google_sign_in_cancelled",
+            );
+            _crashlytics.log(
+              "AuthWizard: google_sign_in_cancelled (stage=$stage)",
+            );
+          } catch (loggingError) {
+            logger.d("Crashlytics logging failed: $loggingError");
+          }
+        }
+        getIt<AppAnalyticsService>().logSignInCancelled(
+          method: "google",
+          stage: stage,
+          reason: _extractAuthErrorCode(e),
+        );
+        if (mounted) {
+          setState(() {
+            _isAuthenticating = false;
+          });
+        }
+        return;
+      }
+
       if (!kIsWeb) {
         try {
           await _crashlytics.setCustomKey("auth_provider", "google");
@@ -478,6 +512,44 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
       }
     }
+  }
+
+  /// Returns `true` if [error] represents the user cancelling/dismissing
+  /// the Google Sign-In flow rather than an actual failure. The plugin
+  /// is supposed to return `null` from `signIn()` on cancel, but in
+  /// practice the native SDKs sometimes throw — we have to pattern-match
+  /// the platform-specific shapes:
+  ///
+  /// * iOS: `PlatformException(sign_in_failed, com.google.GIDSignIn,
+  ///   access_denied, …)` when the user closes the system sheet, plus
+  ///   `sign_in_canceled` from older builds and `-5` (`kGIDSignInError
+  ///   CodeCanceled`) tucked into the message.
+  /// * Android: `PlatformException(sign_in_canceled, …)` and (for the
+  ///   newer Credential Manager flow) `network_error` / `failed` with a
+  ///   "cancelled" message.
+  /// * Web: `PlatformException(popup_closed_by_user, …)` or a generic
+  ///   error with "popup_closed" in the message.
+  bool _isUserCancelledSignIn(Object error) {
+    if (error is! PlatformException) return false;
+    final code = error.code.toLowerCase();
+    if (code == "sign_in_canceled" ||
+        code == "sign_in_cancelled" ||
+        code == "canceled" ||
+        code == "cancelled" ||
+        code == "popup_closed_by_user" ||
+        code == "popup_closed") {
+      return true;
+    }
+    final detailsStr = error.details?.toString().toLowerCase() ?? "";
+    final messageStr = error.message?.toLowerCase() ?? "";
+    bool mentionsCancellation(String s) =>
+        s.contains("access_denied") ||
+        s.contains("canceled") ||
+        s.contains("cancelled") ||
+        s.contains("popup_closed") ||
+        s.contains("user closed") ||
+        s.contains("user_cancel");
+    return mentionsCancellation(detailsStr) || mentionsCancellation(messageStr);
   }
 
   // Phone Sign-In method

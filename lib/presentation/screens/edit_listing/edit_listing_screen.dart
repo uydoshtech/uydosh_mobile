@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart";
@@ -1986,11 +1985,11 @@ class _PulsingSaveButtonState extends State<_PulsingSaveButton>
   }
 }
 
-/// Rotates [child] for one short attention burst on first paint, then stops.
+/// Continuously rotates [child] to match the room-scan icon behavior used on
+/// the listing detail screen (`_Room3dTile`).
 ///
-/// Replaces a previous behavior where the room-scan icon spun forever for the
-/// entire lifetime of the edit-listing screen. The user only needs to see the
-/// "this is interactive / animated" cue once; after that the icon rests.
+/// The ticker only runs while this widget is mounted, so it stops as soon as
+/// the user leaves the edit-listing screen.
 class _RoomScanIconRotator extends StatefulWidget {
   const _RoomScanIconRotator({required this.child});
 
@@ -2003,15 +2002,14 @@ class _RoomScanIconRotator extends StatefulWidget {
 class _RoomScanIconRotatorState extends State<_RoomScanIconRotator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  static const Duration _burstDuration = Duration(seconds: 6);
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: _burstDuration,
-    )..forward();
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
   }
 
   @override
@@ -2022,15 +2020,12 @@ class _RoomScanIconRotatorState extends State<_RoomScanIconRotator>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        // Two full rotations across `_burstDuration`, then static.
-        return Transform.rotate(
-          angle: _controller.value * 2 * math.pi * 2,
-          child: child,
-        );
-      },
+    final rotate = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.linear,
+    );
+    return RotationTransition(
+      turns: rotate,
       child: widget.child,
     );
   }

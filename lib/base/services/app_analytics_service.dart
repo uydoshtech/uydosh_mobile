@@ -86,6 +86,24 @@ class AppAnalyticsService {
     );
   }
 
+  /// User dismissed the sign-in flow (closed Google sheet, hit cancel, etc.).
+  /// Not an error — emitted as a separate event so funnels can distinguish
+  /// "cancelled by user" from "actually failed".
+  Future<void> logSignInCancelled({
+    required String method,
+    String? stage,
+    String? reason,
+  }) async {
+    await _analytics.logEvent(
+      name: "sign_in_cancelled",
+      parameters: {
+        "method": method,
+        if (stage != null) "stage": stage,
+        if (reason != null) "reason": reason,
+      },
+    );
+  }
+
   Future<void> logSignInFailure({
     required String method,
     String? stage,

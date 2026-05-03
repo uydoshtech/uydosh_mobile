@@ -24,6 +24,7 @@ import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -567,6 +568,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         await SessionManager.storeUserRole(roleToSave);
         await SessionManager.storeUserProfile(updatedProfile);
         ProfileCompletionState().updateFromProfile(updatedProfile);
+        if (mounted) {
+          precacheCurrentUserAvatar(context, updatedProfile.avatarUrl);
+        }
 
         Navigator.of(context).pop(true); // Return true to indicate success
       }

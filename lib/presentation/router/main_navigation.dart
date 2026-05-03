@@ -142,6 +142,10 @@ class MainNavigationState extends State<MainNavigation>
       final cached = await SessionManager.getCachedUserProfile();
       if (cached != null && mounted) {
         ProfileCompletionState().updateFromProfile(cached);
+        // Warm the image cache before the AppBar paints with the new URL,
+        // so the profile icon doesn't flash through the fallback glyph on
+        // the first frame after the cached profile arrives.
+        precacheCurrentUserAvatar(context, cached.avatarUrl);
       }
 
       // 2) Always refresh from the server so stale cached profiles (e.g.
@@ -151,6 +155,7 @@ class MainNavigationState extends State<MainNavigation>
       await SessionManager.storeUserProfile(fresh);
       if (mounted) {
         ProfileCompletionState().updateFromProfile(fresh);
+        precacheCurrentUserAvatar(context, fresh.avatarUrl);
       }
       await syncGoogleAvatarToBackendIfMissing(existingProfile: fresh);
     } catch (_) {
@@ -311,6 +316,9 @@ class MainNavigationState extends State<MainNavigation>
       await SessionManager.storeUserProfile(profile);
 
       ProfileCompletionState().updateFromProfile(profile);
+      if (mounted) {
+        precacheCurrentUserAvatar(context, profile.avatarUrl);
+      }
 
       final completionPercent = ProfileCompletionState.completionPercent(profile);
       if (completionPercent >= 100) return;
