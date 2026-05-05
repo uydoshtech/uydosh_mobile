@@ -36,8 +36,14 @@ class ErrorMessageHelper {
     );
   }
 
+  /// Resolves [key] via [L10n] (which reads from the global `LanguageState`
+  /// and therefore does not require a [BuildContext]). [context] is kept in
+  /// the signature for callers that still pass it, but is no longer used to
+  /// decide whether to localize — historically passing `null` here forced the
+  /// English [fallback], which is why bloc-emitted error messages (e.g. the
+  /// messaging inbox "An error occurred. Please try again.") rendered in
+  /// English even when the rest of the app was in Russian.
   static String _t(BuildContext? context, String key, {required String fallback}) {
-    if (context == null) return fallback;
     return L10n.get(key, fallback: fallback);
   }
 

@@ -137,20 +137,18 @@ class ListingDetailPhotoSection extends StatelessWidget {
                                         const SizedBox.shrink(),
                                   ),
                                 ),
-                                Positioned(
+                                const Positioned(
                                   bottom: 12,
                                   right: 12,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(8),
+                                  child: _PhotoGlassPill(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 4,
                                     ),
-                                    child: const ThemeIcon(
+                                    child: ThemeIcon(
                                       Icons.fullscreen,
                                       color: Colors.white,
-                                      size: 20,
+                                      size: 18,
                                     ),
                                   ),
                                 ),
@@ -201,16 +199,49 @@ class ListingDetailPhotoSection extends StatelessWidget {
 
 /// Liquid-glass page-counter pill (e.g. "2/5") shown over the photo carousel.
 ///
-/// Mirrors the same translucent / blurred / hairline-bordered treatment used
-/// by `UyDoshReviewPillButton` so the counter reads as a glass surface
-/// floating above the photo rather than an opaque black chip. The
-/// `BackdropFilter` blur is gated on `AnimationSettingsState` (and the
-/// platform's "reduce motion" flag) so the cheap solid-fill fallback is used
-/// when UI animations are disabled.
+/// Thin wrapper around [_PhotoGlassPill] that renders the counter text with
+/// the shared 3D glass treatment so it visually matches the fullscreen
+/// button at the opposite corner.
 class _PhotoCounterPill extends StatelessWidget {
   const _PhotoCounterPill({required this.text});
 
   final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PhotoGlassPill(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.3,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+/// Shared liquid-glass pill used for overlay chrome on the photo carousel
+/// (page counter, fullscreen affordance, etc.).
+///
+/// Mirrors the translucent / blurred / hairline-bordered treatment used by
+/// `UyDoshReviewPillButton` so overlays read as glass surfaces floating
+/// above the photo rather than opaque black chips. The `BackdropFilter`
+/// blur is gated on `AnimationSettingsState` (and the platform's "reduce
+/// motion" flag) so the cheap solid-fill fallback is used when UI
+/// animations are disabled.
+class _PhotoGlassPill extends StatelessWidget {
+  const _PhotoGlassPill({
+    required this.child,
+    required this.padding,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -244,17 +275,8 @@ class _PhotoCounterPill extends StatelessWidget {
         );
 
         final content = Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
-              height: 1.0,
-            ),
-          ),
+          padding: padding,
+          child: child,
         );
 
         return DecoratedBox(

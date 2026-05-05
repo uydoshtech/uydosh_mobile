@@ -442,87 +442,6 @@ class _ListingDescriptionTranslationState
     );
   }
 
-  /// Compact control matching [_flagButton] size; tinted so it reads as “source text”
-  /// without the width of a full label. Full phrase stays in the tooltip.
-  Widget _originalCompactButton(BuildContext context) {
-    const pillHeight = 28.0;
-    const radius = 14.0;
-    final scheme = Theme.of(context).colorScheme;
-    final borderColor =
-        ListingDetailThemeHelper.amenityChipBorderColor.withValues(alpha: 0.45);
-    final isBlueTheme = ThemeState().isBlueTheme;
-    // Blue theme primary is very dark — same as cards — so primary-tinted icon
-    // is invisible; match flag pills (white icon + light fill).
-    final fillColor = isBlueTheme
-        ? ListingDetailThemeHelper.amenityChipBackgroundColor
-        : scheme.primary.withValues(alpha: 0.12);
-    final iconColor = isBlueTheme
-        ? ListingDetailThemeHelper.iconColor
-        : scheme.primary.withValues(alpha: 0.9);
-
-    final isDisabled = _loadingLang != null;
-
-    final content = Tooltip(
-      message: L10n.get("listing_show_original_description"),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isDisabled
-              ? null
-              : () {
-                  setState(() {
-                    _target = _TranslationTarget.original;
-                    _error = null;
-                  });
-                },
-          borderRadius: BorderRadius.circular(radius),
-          child: Container(
-            height: pillHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 7),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(radius),
-              border: Border.all(color: borderColor, width: 1),
-              color: fillColor,
-            ),
-            child: ThemeIcon(
-              Icons.article_outlined,
-              size: 16,
-              color: iconColor,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (!isDisabled) {
-      return content;
-    }
-    return IgnorePointer(
-      ignoring: true,
-      child: Opacity(opacity: 0.45, child: content),
-    );
-  }
-
-  /// "Original" only when the user is viewing a **different** string than the
-  /// listing’s source (or while a translation is still loading).
-  bool _shouldShowOriginalLink({
-    required bool waitingForTranslation,
-  }) {
-    if (_target == _TranslationTarget.original) {
-      return false;
-    }
-    if (waitingForTranslation) {
-      return true;
-    }
-    final code = _codeForTarget(_target);
-    final shown = _cache[code];
-    if (shown == null) {
-      return true;
-    }
-    return shown.trim() != widget.originalText.trim();
-  }
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
@@ -588,12 +507,6 @@ class _ListingDescriptionTranslationState
           target: _TranslationTarget.en,
           tooltipKey: "listing_translate_tooltip_en",
         ),
-        if (_shouldShowOriginalLink(
-          waitingForTranslation: waitingForTranslation,
-        )) ...[
-          const SizedBox(width: 6),
-          _originalCompactButton(context),
-        ],
       ],
     );
 

@@ -338,7 +338,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     view.addSubview(zoomControlsContainer)
 
     zoomStack.translatesAutoresizingMaskIntoConstraints = false
-    zoomStack.axis = .vertical
+    zoomStack.axis = .horizontal
     zoomStack.alignment = .fill
     zoomStack.spacing = 8
 

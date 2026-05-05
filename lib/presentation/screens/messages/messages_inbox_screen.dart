@@ -17,7 +17,6 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
-import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -37,6 +36,7 @@ import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/common_state_builder.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -49,7 +49,6 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -747,54 +746,31 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       );
     }
 
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, _) {
-        final themeState = ThemeState();
-        final buttonColor = themeState.buttonColor;
-        final buttonTextColor = themeState.buttonTextColor;
-        final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(
-          message,
-          context: context,
-        );
-
-        return UydoshErrorRetryColumn(
-          iconColor: AppColors.error,
-          title: L10n.get("error"),
-          titleStyle: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppColors.error,
-          ),
-          message: sanitizedMessage,
-          messageStyle: TextStyle(
-            fontSize: 14,
-            color: AppColors.getThemeAwareTextColor(context).withOpacity(0.7),
-          ),
-          spacingAfterIcon: 24,
-          spacingAfterTitle: 12,
-          spacingBeforeButton: 20,
-          retryButton: ThreeDPillButton(
-            onPressed: _loadConversations,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            backgroundColor: buttonColor,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ThemeIcon(Icons.refresh, size: 18, color: buttonTextColor),
-                const SizedBox(width: 8),
-                Text(
-                  L10n.get("retry"),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: buttonTextColor,
-                  ),
-                ),
-              ],
+    // Mirror the home tab's error state (icon → "Ошибка" → sanitized detail →
+    // refresh pill) so the inbox doesn't drift into a different-looking error
+    // screen. Uses CommonStateBuilder exactly like home_screen so any future
+    // tweak there flows here automatically.
+    return CommonStateBuilder(
+      isLoading: false,
+      hasError: true,
+      isEmpty: false,
+      errorMessage: message,
+      errorAction: ThreeDPillButton(
+        onPressed: _loadConversations,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ThemeIcon(Icons.refresh, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              L10n.get("retry"),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
+      child: const SizedBox.shrink(),
     );
   }
 

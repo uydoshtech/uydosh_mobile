@@ -90,6 +90,7 @@ class ToastTheme {
     bool useRollingAnimation = true,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -99,6 +100,7 @@ class ToastTheme {
         duration: duration ?? _defaultDuration,
         onDismissed: onDismissed,
         onClosed: onClosed,
+        leadingIcon: leadingIcon,
       );
     } else {
       _showSnackBar(
@@ -106,6 +108,7 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.statusActive,
         duration: duration ?? _defaultDuration,
+        leadingIcon: leadingIcon,
       );
     }
   }
@@ -132,6 +135,7 @@ class ToastTheme {
     bool useRollingAnimation = true,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -141,6 +145,7 @@ class ToastTheme {
         duration: duration ?? _defaultDuration,
         onDismissed: onDismissed,
         onClosed: onClosed,
+        leadingIcon: leadingIcon,
       );
     } else {
       _showSnackBar(
@@ -148,6 +153,7 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.error,
         duration: duration ?? _defaultDuration,
+        leadingIcon: leadingIcon,
       );
     }
   }
@@ -174,6 +180,7 @@ class ToastTheme {
     bool useRollingAnimation = true,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -183,6 +190,7 @@ class ToastTheme {
         duration: duration ?? _defaultDuration,
         onDismissed: onDismissed,
         onClosed: onClosed,
+        leadingIcon: leadingIcon,
       );
     } else {
       _showSnackBar(
@@ -190,6 +198,7 @@ class ToastTheme {
         message: message,
         backgroundColor: AppColors.warning,
         duration: duration ?? _defaultDuration,
+        leadingIcon: leadingIcon,
       );
     }
   }
@@ -216,6 +225,7 @@ class ToastTheme {
     bool useRollingAnimation = true,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -225,6 +235,7 @@ class ToastTheme {
         duration: duration ?? _defaultDuration,
         onDismissed: onDismissed,
         onClosed: onClosed,
+        leadingIcon: leadingIcon,
       );
     } else {
       _showSnackBar(
@@ -232,6 +243,7 @@ class ToastTheme {
         message: message,
         backgroundColor: BlueThemeColors.primaryLight,
         duration: duration ?? _defaultDuration,
+        leadingIcon: leadingIcon,
       );
     }
   }
@@ -259,6 +271,7 @@ class ToastTheme {
     bool useRollingAnimation = true,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (useRollingAnimation) {
       _showRollingToast(
@@ -268,6 +281,7 @@ class ToastTheme {
         duration: duration ?? _defaultDuration,
         onDismissed: onDismissed,
         onClosed: onClosed,
+        leadingIcon: leadingIcon,
       );
     } else {
       _showSnackBar(
@@ -275,6 +289,7 @@ class ToastTheme {
         message: message,
         backgroundColor: backgroundColor,
         duration: duration ?? _defaultDuration,
+        leadingIcon: leadingIcon,
       );
     }
   }
@@ -302,6 +317,7 @@ class ToastTheme {
     required Duration duration,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     if (!context.mounted) return;
 
@@ -316,6 +332,7 @@ class ToastTheme {
       duration: duration,
       onDismissed: onDismissed,
       onClosed: onClosed,
+      leadingIcon: leadingIcon,
     );
   }
 
@@ -327,6 +344,7 @@ class ToastTheme {
     required Duration duration,
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
+    IconData? leadingIcon,
   }) {
     // Dismiss any existing toast
     dismissCurrent();
@@ -340,6 +358,7 @@ class ToastTheme {
             message: message,
             backgroundColor: backgroundColor,
             duration: duration,
+            leadingIcon: leadingIcon,
             onDismiss: () {
               overlayEntry.remove();
               _currentToastOverlay = null;
@@ -365,8 +384,18 @@ class ToastTheme {
     required String message,
     required Color backgroundColor,
     required Duration duration,
+    IconData? leadingIcon,
   }) {
     if (context.mounted) {
+      final foreground = _foregroundOn(backgroundColor);
+      final textWidget = Text(
+        message,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: _glassySurface(
@@ -377,14 +406,16 @@ class ToastTheme {
                 horizontal: 16,
                 vertical: 12,
               ),
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: _foregroundOn(backgroundColor),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: leadingIcon == null
+                  ? textWidget
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(leadingIcon, color: foreground, size: 18),
+                        const SizedBox(width: 8),
+                        Flexible(child: textWidget),
+                      ],
+                    ),
             ),
           ),
           backgroundColor: Colors.transparent,
@@ -530,11 +561,13 @@ class _TopToastOverlay extends StatefulWidget {
     required this.backgroundColor,
     required this.duration,
     required this.onDismiss,
+    this.leadingIcon,
   });
   final String message;
   final Color backgroundColor;
   final Duration duration;
   final VoidCallback onDismiss;
+  final IconData? leadingIcon;
 
   @override
   State<_TopToastOverlay> createState() => _TopToastOverlayState();
@@ -603,6 +636,31 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
     });
   }
 
+  Widget _buildContent(Color foregroundColor) {
+    final text = Text(
+      widget.message,
+      style: TextStyle(
+        color: foregroundColor,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+        decorationColor: Colors.transparent,
+        decorationThickness: 0,
+      ),
+      textAlign: TextAlign.center,
+    );
+    if (widget.leadingIcon == null) return text;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(widget.leadingIcon, color: foregroundColor, size: 18),
+        const SizedBox(width: 8),
+        Flexible(child: text),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _slideController.dispose();
@@ -637,18 +695,7 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
                         horizontal: 16,
                         vertical: 12,
                       ),
-                      child: Text(
-                        widget.message,
-                        style: TextStyle(
-                          color: foregroundColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.none,
-                          decorationColor: Colors.transparent,
-                          decorationThickness: 0,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      child: _buildContent(foregroundColor),
                     ),
                   ),
                 ),

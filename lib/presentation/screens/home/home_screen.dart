@@ -1513,6 +1513,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ToastTheme.showWarning(
             context,
             message: L10n.get("search_alert_already_exists"),
+            leadingIcon: Icons.notifications_active_outlined,
           );
         } else {
           ToastTheme.showError(
@@ -1566,6 +1567,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ToastTheme.showWarning(
           context,
           message: L10n.get("search_alert_already_exists"),
+          leadingIcon: Icons.notifications_active_outlined,
         );
         return;
       }
