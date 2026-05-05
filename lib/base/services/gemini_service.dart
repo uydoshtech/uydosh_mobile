@@ -337,7 +337,7 @@ class GeminiService {
     if (client == null) {
       return (text: null, skipDirectGemini: false);
     }
-    const base = EnvironmentUtil.basePath;
+    final base = EnvironmentUtil.basePath;
     final uri = base.endsWith("/")
         ? "${base}app/gemini/translate-listing"
         : "$base/app/gemini/translate-listing";

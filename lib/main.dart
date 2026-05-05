@@ -25,6 +25,7 @@ import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/reinstall_session_guard.dart";
+import "package:uy_dosh/base/services/remote_config_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
@@ -114,6 +115,14 @@ void main() async {
     // Activate App Check BEFORE any Firebase Auth call (phone verification
     // requires it). Safe to await — non-fatal if it fails.
     await AppCheckBootstrap.activate();
+
+    // Resolve runtime-tunable client config (currently: API base URL) from
+    // Firebase Remote Config. Must run BEFORE `configureDependencies()` and
+    // any service that issues HTTP requests, so the first network call uses
+    // the freshest known URL. Internally never throws — falls back to the
+    // SharedPreferences cache or the compile-time default if Firebase RC is
+    // unavailable, so this cannot break startup.
+    await RemoteConfigService.initialize();
 
     // iOS: Firebase user can persist in Keychain after uninstall while prefs
     // are cleared — sign out so we do not treat the user as logged in without

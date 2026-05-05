@@ -17,17 +17,25 @@ abstract class IApiClient {
 
   final Dio dio;
 
+  // [basePath] used to default to `EnvironmentUtil.basePath` directly, which
+  // required that field to be `const`. Now that the base URL is resolved at
+  // runtime from Remote Config, default parameter values can no longer be
+  // `const` — so callers either pass a custom [basePath] explicitly, or we
+  // resolve the runtime value via `EnvironmentUtil.basePath` inside the
+  // method body when [basePath] is null.
+
   Future<ResponseType> get<ResponseType>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.get(
-      "$basePath$path",
+      "$base$path",
       queryParameters: queryParameters,
       options: options ?? Options(headers: headers),
       cancelToken: cancelToken,
@@ -38,13 +46,14 @@ abstract class IApiClient {
   /// Binary GET (e.g. admin export downloads). [path] is relative to [basePath].
   Future<Uint8List> getBytes(
     String path, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.get<dynamic>(
-      "$basePath$path",
+      "$base$path",
       queryParameters: queryParameters,
       cancelToken: cancelToken,
       options:
@@ -63,7 +72,7 @@ abstract class IApiClient {
   Future<List<ResponseType>> getList<ResponseType>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
@@ -83,15 +92,16 @@ abstract class IApiClient {
   Future<ResponseType> post<ResponseType, RequestType extends IJsonEncodable>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     RequestType? data,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.post(
-      "$basePath$path",
+      "$base$path",
       data: data?.toJson(),
       queryParameters: queryParameters,
       options: options ?? Options(headers: headers),
@@ -103,15 +113,16 @@ abstract class IApiClient {
   Future<ResponseType> put<ResponseType, RequestType extends IJsonEncodable>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     RequestType? data,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.put(
-      "$basePath$path",
+      "$base$path",
       data: data?.toJson(),
       queryParameters: queryParameters,
       options: options ?? Options(headers: headers),
@@ -123,15 +134,16 @@ abstract class IApiClient {
   Future<ResponseType> patch<ResponseType, RequestType extends IJsonEncodable>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     RequestType? data,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.patch(
-      "$basePath$path",
+      "$base$path",
       data: data?.toJson(),
       queryParameters: queryParameters,
       options: options ?? Options(headers: headers),
@@ -143,15 +155,16 @@ abstract class IApiClient {
   Future<ResponseType> delete<ResponseType, RequestType extends IJsonEncodable>(
     String path,
     ResponseType Function(dynamic) fromJson, {
-    String basePath = EnvironmentUtil.basePath,
+    String? basePath,
     RequestType? data,
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     Options? options,
     CancelToken? cancelToken,
   }) async {
+    final base = basePath ?? EnvironmentUtil.basePath;
     final response = await dio.delete(
-      "$basePath$path",
+      "$base$path",
       data: data?.toJson(),
       queryParameters: queryParameters,
       options: options ?? Options(headers: headers),
