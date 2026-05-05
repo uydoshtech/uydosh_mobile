@@ -24,7 +24,6 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
-import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
@@ -797,12 +796,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                   Navigator.of(context).maybePop();
                 },
               ),
-              actions: [
+            actions: [
+              if (_isSubmitting || _isFormDirty())
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: _buildAppBarTrailingAction(theme),
                 ),
-              ],
+            ],
             ),
             body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
               listener: (context, state) {
@@ -1697,9 +1697,8 @@ class _EditListingScreenState extends State<EditListingScreen>
   }
 
   /// Shows a pulsing save icon when the form has unsaved changes (or a
-  /// spinner while a save is in progress). Falls back to the 3-dots menu
-  /// when the form is clean — matching the behavior on the edit profile
-  /// screen so the save affordance is consistently discoverable.
+  /// spinner while a save is in progress). When the form is clean, no
+  /// trailing action is shown (the parent gates this widget on dirty/submitting).
   Widget _buildAppBarTrailingAction(ThemeData theme) {
     final foregroundColor =
         theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary;
@@ -1719,34 +1718,13 @@ class _EditListingScreenState extends State<EditListingScreen>
       );
     }
 
-    if (_isFormDirty()) {
-      return _PulsingSaveButton(
-        onPressed: () {
-          HapticFeedbackUtils.impact();
-          _submitForm();
-        },
-        tooltip: L10n.get("save_changes"),
-      );
-    }
-
-    return ActionDropdownMenu(
-      items: _buildActionMenuItems(),
-      icon: Icons.more_vert,
-      iconColor: foregroundColor,
-      tooltip: L10n.get("actions"),
+    return _PulsingSaveButton(
+      onPressed: () {
+        HapticFeedbackUtils.impact();
+        _submitForm();
+      },
+      tooltip: L10n.get("save_changes"),
     );
-  }
-
-  List<ActionMenuItem> _buildActionMenuItems() {
-    return [
-      ActionMenuItem(
-        value: "save",
-        icon: Icons.save,
-        textKey: "save_changes",
-        onPressed:
-            _isSubmitting ? () {} : _submitForm, // Disable when submitting
-      ),
-    ];
   }
 
   Future<void> _deleteExistingPhoto(int index) async {
