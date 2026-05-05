@@ -1,10 +1,12 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class GigOfferDetailScreen extends StatefulWidget {
   const GigOfferDetailScreen({required this.offerId, super.key});
@@ -27,7 +29,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       listener: (context, state) {
         if (state is GigOfferBookingCreated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Booking created.")),
+            SnackBar(content: Text(L10n.get("gigs_booking_created_toast"))),
           );
           context.pushMyGigBookings();
         } else if (state is GigOfferDetailError) {
@@ -38,7 +40,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       },
       builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text("Service")),
+          appBar: AppBar(title: Text(L10n.get("gigs_offer_detail_title"))),
           body: _buildBody(context, state),
         );
       },
@@ -70,6 +72,7 @@ class _OfferDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final offer = state.offer;
     final language = LanguageState().currentLanguage;
     final description = offer.localizedDescription(language) ?? "";
@@ -78,95 +81,151 @@ class _OfferDetailContent extends StatelessWidget {
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
           children: [
             if (offer.photos.isNotEmpty)
-              SizedBox(
-                height: 200,
-                child: PageView.builder(
-                  itemCount: offer.photos.length,
-                  itemBuilder: (_, i) => CachedNetworkImage(
-                    imageUrl: offer.photos[i].photoUrl,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 16),
-            if (categoryName.isNotEmpty)
-              Text(
-                categoryName,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            Text(
-              offer.title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _priceLine(offer),
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (offer.providerDisplayName != null)
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundImage: offer.providerAvatarUrl != null
-                        ? CachedNetworkImageProvider(offer.providerAvatarUrl!)
-                        : null,
-                    child: offer.providerAvatarUrl == null
-                        ? const Icon(Icons.person)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          offer.providerDisplayName!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (offer.providerRatingAvg != null)
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                size: 14,
-                                color: Colors.amber,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "${offer.providerRatingAvg!.toStringAsFixed(1)} "
-                                "(${offer.providerRatingCount ?? 0})",
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                      ],
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox(
+                  height: 220,
+                  child: PageView.builder(
+                    itemCount: offer.photos.length,
+                    itemBuilder: (_, i) => CachedNetworkImage(
+                      imageUrl: offer.photos[i].photoUrl,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                ],
+                ),
               ),
             const SizedBox(height: 16),
-            if (description.isNotEmpty) ...[
-              const Text(
-                "About this service",
-                style: TextStyle(fontWeight: FontWeight.w600),
+            ThreeDElevatedSurface(
+              baseColor: scheme.surface,
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (categoryName.isNotEmpty)
+                      Text(
+                        categoryName.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          letterSpacing: 0.5,
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      offer.title,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _priceLine(offer),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(description),
+            ),
+            const SizedBox(height: 14),
+            if (offer.providerDisplayName != null)
+              ThreeDElevatedSurface(
+                baseColor: scheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundImage: offer.providerAvatarUrl != null
+                            ? CachedNetworkImageProvider(
+                                offer.providerAvatarUrl!,
+                              )
+                            : null,
+                        child: offer.providerAvatarUrl == null
+                            ? const Icon(Icons.person)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              offer.providerDisplayName!,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            if (offer.providerRatingAvg != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      size: 14,
+                                      color: Colors.amber,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "${offer.providerRatingAvg!.toStringAsFixed(1)} "
+                                      "(${offer.providerRatingCount ?? 0})",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: scheme.onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (description.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              ThreeDElevatedSurface(
+                baseColor: scheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        L10n.get("gigs_offer_about"),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          color: scheme.onSurface.withValues(alpha: 0.85),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ],
         ),
@@ -175,8 +234,13 @@ class _OfferDetailContent extends StatelessWidget {
           right: 16,
           bottom: 16,
           child: SizedBox(
-            height: 52,
+            height: 54,
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
               onPressed: state.bookingInFlight
                   ? null
                   : () => context
@@ -184,11 +248,17 @@ class _OfferDetailContent extends StatelessWidget {
                       .add(const BookThisOffer()),
               child: state.bookingInFlight
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 22,
+                      width: 22,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text("Book this service"),
+                  : Text(
+                      L10n.get("gigs_offer_book_cta"),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
             ),
           ),
         ),
@@ -197,13 +267,14 @@ class _OfferDetailContent extends StatelessWidget {
   }
 
   String _priceLine(GigOffer o) {
+    final params = {"amount": o.price.toString(), "currency": o.currencyCode};
     switch (o.pricingType) {
       case GigPricingType.hourly:
-        return "${o.price} ${o.currencyCode}/hr";
+        return L10n.getWithParams("gigs_price_per_hour", params: params);
       case GigPricingType.perUnit:
-        return "${o.price} ${o.currencyCode}/unit";
+        return L10n.getWithParams("gigs_price_per_unit", params: params);
       case GigPricingType.fixed:
-        return "${o.price} ${o.currencyCode}";
+        return L10n.getWithParams("gigs_price_fixed", params: params);
     }
   }
 }

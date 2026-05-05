@@ -323,11 +323,6 @@ void main() async {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
           useMaterial3: true,
-          fontFamilyFallback: const [
-            "NotoSans",
-            "NotoSansArabic",
-            "NotoSansSymbols2",
-          ],
           scaffoldBackgroundColor: AppColors.primary, // Deep primary background
         ),
         home: const Scaffold(

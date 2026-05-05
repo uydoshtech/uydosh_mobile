@@ -153,18 +153,13 @@ flutter:
     - assets/map_elements/airport.svg
     - assets/sounds/
 
-  fonts:
-    # Noto fallbacks to cover “missing glyph” warnings (Arabic, symbols, etc).
-    # These are used via ThemeData.fontFamilyFallback.
-    - family: NotoSans
-      fonts:
-        - asset: assets/fonts/noto/NotoSans-Regular.ttf
-    - family: NotoSansArabic
-      fonts:
-        - asset: assets/fonts/noto/NotoSansArabic-Regular.ttf
-    - family: NotoSansSymbols2
-      fonts:
-        - asset: assets/fonts/noto/NotoSansSymbols2-Regular.ttf
+  # No bundled fonts: en/ru/uz UI is covered by the system Roboto (Android) /
+  # SF Pro (iOS) fonts, both of which already include Latin + Cyrillic. For any
+  # user-generated content containing other scripts (Arabic, CJK, symbols),
+  # the OS provides its own fallback chain — bundling a Noto fallback inside
+  # `fontFamilyFallback` ended up forcing Arabic shaping on mixed-script text
+  # (see incident on listing detail screen, May 2026), so we let the platform
+  # handle non-Latin glyphs natively.
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

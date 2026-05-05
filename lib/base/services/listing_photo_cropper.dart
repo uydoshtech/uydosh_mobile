@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:image_cropper/image_cropper.dart";
 import "package:uy_dosh/presentation/screens/camera/listing_crop_screen.dart";
 
 /// Opens the UyDosh-styled Flutter crop screen for a freshly captured/picked
@@ -9,31 +8,27 @@ import "package:uy_dosh/presentation/screens/camera/listing_crop_screen.dart";
 /// Callers typically fall back to the original source path on `null` so
 /// cancelling means "skip cropping" rather than "discard photo".
 ///
-/// Previously this delegated to the [ImageCropper] plugin (uCrop on Android,
+/// Previously this delegated to the `image_cropper` plugin (uCrop on Android,
 /// TOCropViewController on iOS), but neither of those exposed enough
 /// theming hooks to brand the screen as UyDosh — and the iOS plugin owned
 /// the photo canvas, making it impossible to overlay our brand mark over
 /// the crop rect. This indirection now opens [ListingCropScreen] which
 /// gives us full control over both.
+///
+/// [lockedAspectRatio] is `width / height`; `null` means free-form cropping.
 Future<String?> cropListingPhoto(
   BuildContext context,
   String sourcePath, {
-  CropAspectRatio? lockedAspectRatio,
+  double? lockedAspectRatio,
 }) async {
   final navigator = Navigator.of(context);
-  // Convert the legacy [CropAspectRatio] (used by callers that haven't been
-  // ported off [image_cropper]'s API yet) into the simple `width/height`
-  // double our screen accepts. `null` means free-form cropping.
-  final lockedRatio = lockedAspectRatio == null
-      ? null
-      : lockedAspectRatio.ratioX / lockedAspectRatio.ratioY;
   try {
     return await navigator.push<String>(
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => ListingCropScreen(
           sourcePath: sourcePath,
-          lockedAspectRatio: lockedRatio,
+          lockedAspectRatio: lockedAspectRatio,
         ),
       ),
     );

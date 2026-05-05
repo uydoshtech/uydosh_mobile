@@ -17,11 +17,11 @@ class SoundService {
   SoundService._internal();
   static final SoundService _instance = SoundService._internal();
 
-  static const String _refreshWhooshAsset = "sounds/whoosh_refresh.wav";
-  static const String _successAsset = "sounds/success.wav";
-  static const String _errorAsset = "sounds/error.wav";
-  static const String _likeAsset = "sounds/like.wav";
-  static const String _messageIncomingAsset = "sounds/like.wav";
+  static const String _refreshWhooshAsset = "sounds/whoosh_refresh.m4a";
+  static const String _successAsset = "sounds/success.m4a";
+  static const String _errorAsset = "sounds/error.m4a";
+  static const String _likeAsset = "sounds/like.m4a";
+  static const String _messageIncomingAsset = "sounds/like.m4a";
 
   // Keep separate players so overlapping sounds don't cut each other off.
   final AudioPlayer _refreshPlayer = AudioPlayer();

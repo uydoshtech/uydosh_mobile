@@ -119,20 +119,20 @@ class $AssetsSoundsGen {
   /// File path: assets/sounds/SOURCES.md
   String get sources => 'assets/sounds/SOURCES.md';
 
-  /// File path: assets/sounds/click.wav
-  String get click => 'assets/sounds/click.wav';
+  /// File path: assets/sounds/click.m4a
+  String get click => 'assets/sounds/click.m4a';
 
-  /// File path: assets/sounds/error.wav
-  String get error => 'assets/sounds/error.wav';
+  /// File path: assets/sounds/error.m4a
+  String get error => 'assets/sounds/error.m4a';
 
-  /// File path: assets/sounds/like.wav
-  String get like => 'assets/sounds/like.wav';
+  /// File path: assets/sounds/like.m4a
+  String get like => 'assets/sounds/like.m4a';
 
-  /// File path: assets/sounds/success.wav
-  String get success => 'assets/sounds/success.wav';
+  /// File path: assets/sounds/success.m4a
+  String get success => 'assets/sounds/success.m4a';
 
-  /// File path: assets/sounds/whoosh_refresh.wav
-  String get whooshRefresh => 'assets/sounds/whoosh_refresh.wav';
+  /// File path: assets/sounds/whoosh_refresh.m4a
+  String get whooshRefresh => 'assets/sounds/whoosh_refresh.m4a';
 
   /// List of all assets
   List<String> get values => [sources, click, error, like, success, whooshRefresh];

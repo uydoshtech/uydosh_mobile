@@ -9,13 +9,12 @@ class AppTheme {
 
   /// Global fallback fonts used when the default platform font lacks a glyph.
   ///
-  /// This keeps the app’s primary typography (Roboto/SF) while providing a
-  /// wider Unicode coverage for user-generated content and translations.
-  static const List<String> fontFamilyFallback = <String>[
-    "NotoSans",
-    "NotoSansArabic",
-    "NotoSansSymbols2",
-  ];
+  /// Empty by design: en/ru/uz UI is covered by the system Roboto / SF font,
+  /// and the OS already provides its own fallback chain for Arabic / CJK /
+  /// symbol glyphs in user-generated content. Listing a single non-Latin
+  /// font here forces its shaping rules onto mixed-script text (it broke
+  /// description rendering on the listing detail screen in May 2026).
+  static const List<String> fontFamilyFallback = <String>[];
 
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;

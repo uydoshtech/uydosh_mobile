@@ -15,7 +15,7 @@ class SendSoundUtils {
   static DateTime? _lastSelectionSoundAt;
   static const Duration _selectionThrottle = Duration(milliseconds: 60);
 
-  static const String _clickAsset = "sounds/click.wav";
+  static const String _clickAsset = "sounds/click.m4a";
 
   static bool _selectionPlayerInitialized = false;
 

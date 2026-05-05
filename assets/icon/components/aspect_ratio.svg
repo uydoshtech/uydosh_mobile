@@ -1,17 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Aspect-ratio glyph used by the listing crop screen toolbar.
-
-  Design: a stroked rounded-rectangle "card" with a smaller filled rounded
-  rectangle nested in the bottom-left corner  visually cues the user that
-  this control changes the size/proportion of the framed area.
-
-  Painted in `currentColor` so [SvgPicture.asset] can tint it via a
-  [ColorFilter] driven by the surrounding [_ToolIconButton] enabled state.
--->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <rect x="3" y="4.5" width="18" height="15" rx="2.6" ry="2.6"
-        stroke="currentColor" stroke-width="2"/>
-  <rect x="6" y="12.5" width="7.5" height="5" rx="1.1" ry="1.1"
-        fill="currentColor"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><rect width="18" height="15" x="3" y="4.5" stroke="currentColor" stroke-width="2" rx="2.6" ry="2.6"/><rect width="7.5" height="5" x="6" y="12.5" fill="currentColor" rx="1.1" ry="1.1"/></svg>

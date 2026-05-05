@@ -50,6 +50,13 @@ android {
             appVersionName: flutter.versionName,
             appVersionCode: "${flutter.versionCode}",
         ]
+
+        // Ship native libs only for the ABIs we care about. Drops x86/x86_64
+        // (emulator-only) from production APK splits and AAB. Play Store will
+        // still serve the right ABI via App Bundle + Dynamic Delivery.
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
     }
 
     buildTypes {
@@ -57,7 +64,20 @@ android {
             signingConfig = keystorePropertiesFile.exists()
                 ? signingConfigs.release
                 : signingConfigs.debug
+
+            // R8 in full mode + resource shrinker. Saves several MB by
+            // removing unreachable Java/Kotlin code from Firebase, Yandex
+            // Mapkit, image_picker, etc., and stripping unused res/.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
         }
+    }
+
+    // Keep AAPT2 from compressing already-compressed assets we ship raw.
+    androidResources {
+        noCompress 'tflite'
     }
 }
 
