@@ -807,8 +807,8 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
           '<g id="ic_num_group" style="display:none"',
         )
         .replaceAll(
-          '<rect id="background_color_rectangle"',
-          '<rect id="background_color_rectangle" style="display:none"',
+          '<path id="background_color_rectangle"',
+          '<path id="background_color_rectangle" style="display:none"',
         );
     final flattenedSwitches = withoutTitleGroup.replaceAllMapped(
       RegExp(r"<switch([^>]*)>([\s\S]*?)</switch>"),
@@ -822,6 +822,17 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
             RegExp('transform="[^"]+"').firstMatch(attributes);
         if (transformMatch == null) return textValue;
 
+        // Preserve class/style from the original <switch>, since SVGO
+        // sometimes hoists e.g. class="end" / class="mid" / class="r1"
+        // from the parent group onto the <switch> itself. Dropping these
+        // would lose text-anchor / fill rules on the rendered text.
+        final classMatch = RegExp('class="[^"]+"').firstMatch(attributes);
+        final styleMatch = RegExp('style="[^"]+"').firstMatch(attributes);
+        final extraAttrs = [
+          if (classMatch != null) classMatch.group(0)!,
+          if (styleMatch != null) styleMatch.group(0)!,
+        ].join(" ");
+
         final stationId = _stationIdFromSwitchContent(content);
         final useBold = stationId != null &&
             boldStationIds.isNotEmpty &&
@@ -830,7 +841,10 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
             ? '<g style="font-weight:bold;text-decoration:underline;text-underline-offset:3px">$textValue</g>'
             : textValue;
 
-        return "<g ${transformMatch.group(0)}>$inner</g>";
+        final openTag = extraAttrs.isEmpty
+            ? "<g ${transformMatch.group(0)}>"
+            : "<g ${transformMatch.group(0)} $extraAttrs>";
+        return "$openTag$inner</g>";
       },
     );
 
