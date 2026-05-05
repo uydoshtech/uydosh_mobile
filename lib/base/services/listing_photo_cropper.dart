@@ -39,3 +39,31 @@ Future<String?> cropListingPhoto(
     return null;
   }
 }
+
+/// Opens the UyDosh-styled crop screen tuned for **profile avatars**: 1:1
+/// circular crop preview, no listing watermark mark, smaller output cap, and
+/// the avatar-specific localised title. Returns the cropped JPEG file path,
+/// or `null` if the user cancelled. The image bytes are still a square JPEG
+/// — circular display is the caller's responsibility (e.g. [CircleAvatar]).
+Future<String?> cropProfileAvatar(
+  BuildContext context,
+  String sourcePath,
+) async {
+  final navigator = Navigator.of(context);
+  try {
+    return await navigator.push<String>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ListingCropScreen(
+          sourcePath: sourcePath,
+          circleCrop: true,
+          showBrandMark: false,
+          titleL10nKey: "crop_profile_photo",
+          maxOutputDimension: 1024,
+        ),
+      ),
+    );
+  } catch (_) {
+    return null;
+  }
+}

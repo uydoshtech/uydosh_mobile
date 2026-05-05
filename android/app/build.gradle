@@ -79,6 +79,20 @@ android {
     androidResources {
         noCompress 'tflite'
     }
+
+    // Strip x86 / x86_64 native libs that third-party AARs (notably Yandex
+    // MapKit) ship even when [ndk.abiFilters] is set. We don't target Chrome
+    // OS or x86 emulator users, and Play's Dynamic Delivery would otherwise
+    // serve a fatter AAB. `jniLibs.excludes` is checked at the final
+    // packaging stage so it catches everything regardless of source.
+    //
+    // If you ever need to debug on an x86_64 emulator, comment this block
+    // out (or build a debug-flavoured APK; debug builds bypass excludes).
+    packagingOptions {
+        jniLibs {
+            excludes += ['lib/x86/**', 'lib/x86_64/**']
+        }
+    }
 }
 
 flutter {

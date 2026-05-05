@@ -89,7 +89,10 @@ dependencies:
   audioplayers: ^6.0.0
 
   # Celebrations
-  flutter_fireworks: ^1.0.8
+  # Fireworks are rendered by an in-house [SimpleFireworksDisplay] CustomPainter
+  # (see lib/presentation/widgets/common/simple_fireworks.dart). We dropped
+  # `flutter_fireworks` because it transitively pulled in `package:flame` for
+  # an effect we can produce in ~250 lines of paint code.
   confetti: ^0.8.0
 
   # In-app tutorial
@@ -100,11 +103,11 @@ dependencies:
   flutter_roomplan: ^1.0.7
   path_provider: ^2.1.4
   firebase_app_check: ^0.3.2+10
-  image_cropper: ^12.2.1
-  # Flutter-native crop widget. We use this to render our own UyDosh-styled
-  # crop screen on top of (so we have full control of toolbar / buttons /
-  # overlay logo). [image_cropper] is kept around for the underlying
-  # platform helpers but [cropListingPhoto] now drives [crop_your_image].
+  # Flutter-native crop widget. We render our own UyDosh-styled crop UI on top
+  # of [Crop] from this package — see [ListingCropScreen] — so we control the
+  # toolbar / buttons / overlay watermark. Replaces the previous
+  # [image_cropper] plugin (which was dropped to shrink the app, since its
+  # native uCrop / TOCropViewController UIs added megabytes of platform code).
   crop_your_image: ^2.0.0
   dio_cache_interceptor: ^4.0.6
   device_info_plus: ^12.4.0

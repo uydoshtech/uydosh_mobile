@@ -1,10 +1,10 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "package:image_cropper/image_cropper.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -120,48 +120,12 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     }
   }
 
-  /// Presents the native cropper (uCrop on Android, TOCropViewController on
-  /// iOS) with a 1:1 lock so the cropped output always fills the circle
-  /// avatar. Returns the path of the cropped file, or `null` if cancelled.
+  /// Opens the UyDosh-styled crop screen tuned for avatars (1:1 circular
+  /// preview, no listing watermark, 1024px output cap). Returns the path of
+  /// the cropped file, or `null` if cancelled.
   Future<String?> _cropToSquare(String sourcePath) async {
     try {
-      final theme = Theme.of(context);
-      final toolbarTitle = L10n.get("crop_profile_photo");
-      final result = await ImageCropper().cropImage(
-        sourcePath: sourcePath,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 85,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: toolbarTitle,
-            toolbarColor: theme.colorScheme.surface,
-            toolbarWidgetColor: theme.colorScheme.onSurface,
-            statusBarLight: theme.brightness == Brightness.light,
-            backgroundColor: Colors.black,
-            activeControlsWidgetColor: theme.colorScheme.primary,
-            lockAspectRatio: true,
-            hideBottomControls: true,
-            cropStyle: CropStyle.circle,
-            initAspectRatio: CropAspectRatioPreset.square,
-            aspectRatioPresets: const [CropAspectRatioPreset.square],
-          ),
-          IOSUiSettings(
-            title: toolbarTitle,
-            doneButtonTitle: L10n.get("crop_done"),
-            cancelButtonTitle: L10n.get("crop_cancel"),
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-            rotateButtonsHidden: true,
-            aspectRatioPickerButtonHidden: true,
-            cropStyle: CropStyle.circle,
-            aspectRatioPresets: const [CropAspectRatioPreset.square],
-          ),
-        ],
-      );
-      return result?.path;
+      return await cropProfileAvatar(context, sourcePath);
     } catch (_) {
       if (mounted) {
         ToastTheme.showError(

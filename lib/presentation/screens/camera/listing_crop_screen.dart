@@ -17,14 +17,14 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
-/// UyDosh-styled listing photo crop screen.
+/// UyDosh-styled photo crop screen.
 ///
-/// Replaces the native [ImageCropper] flow (TOCropViewController on iOS, uCrop
-/// on Android) with a Flutter-rendered crop UI so we can:
-///   - apply UyDosh palette + 3D pill buttons consistently with the rest of
-///     the listing-creation flow,
-///   - overlay the UyDosh brand mark at the bottom-right of the visible crop
-///     rect, mirroring where [WatermarkService] will bake the watermark.
+/// Originally introduced to replace the native `image_cropper` flow
+/// (TOCropViewController on iOS, uCrop on Android) for **listing photos** so
+/// we can theme the surface and overlay the UyDosh brand mark exactly where
+/// [WatermarkService] will bake the watermark. Now also reused for the
+/// **profile avatar** crop via [showBrandMark]/[circleCrop]/[titleL10nKey],
+/// which let us drop the `image_cropper` dependency entirely.
 ///
 /// Returns the cropped JPEG file path via [Navigator.pop], or `null` if the
 /// user cancels. On any rotation/cropping failure we surface a toast and pop
@@ -36,17 +36,35 @@ class ListingCropScreen extends StatefulWidget {
     this.lockedAspectRatio,
     this.maxOutputDimension = 1600,
     this.jpegQuality = 85,
+    this.titleL10nKey = "crop_listing_photo",
+    this.showBrandMark = true,
+    this.circleCrop = false,
   });
 
   final String sourcePath;
+
+  /// `width / height` ratio to lock the crop to. `null` lets the user freely
+  /// adjust. Ignored — and forced to 1.0 — when [circleCrop] is true.
   final double? lockedAspectRatio;
 
   /// Cap on the longer side of the cropped JPEG (matches the previous
-  /// [ImageCropper] config so subsequent watermarking + upload stays light).
+  /// `image_cropper` config so subsequent watermarking + upload stays light).
   final int maxOutputDimension;
 
   /// JPEG quality of the encoded crop result (0-100).
   final int jpegQuality;
+
+  /// L10n key for the title rendered in the top bar.
+  final String titleL10nKey;
+
+  /// Whether to render the UyDosh brand mark inside the crop rect to preview
+  /// where [WatermarkService] will bake it. Avatar callers pass `false`.
+  final bool showBrandMark;
+
+  /// When true, renders a circular crop UI (forces 1:1 aspect, hides the
+  /// aspect picker, shows a circular mask). The encoded JPEG is still the
+  /// square bounding box; circular display is the caller's responsibility.
+  final bool circleCrop;
 
   @override
   State<ListingCropScreen> createState() => _ListingCropScreenState();
@@ -100,14 +118,21 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
   bool _busy = false;
   _AspectChoice _aspect = _AspectChoice.free;
 
+  /// Effective lock: `circleCrop` always implies a 1:1 lock per the
+  /// `crop_your_image` API (it forces aspect 1.0 internally when
+  /// `withCircleUi` is true), so we mirror that here.
+  double? get _effectiveLock =>
+      widget.circleCrop ? 1.0 : widget.lockedAspectRatio;
+
   @override
   void initState() {
     super.initState();
-    if (widget.lockedAspectRatio != null) {
+    final lock = _effectiveLock;
+    if (lock != null) {
       // Pick the closest preset to the locked ratio so the picker reflects
       // the actual constraint (prevents user confusion when the chosen
       // option appears different from the rect they're cropping).
-      _aspect = _closestPresetTo(widget.lockedAspectRatio!);
+      _aspect = _closestPresetTo(lock);
     }
     _loadImage();
   }
@@ -454,6 +479,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         controller: _controller,
         onCropped: _onCropped,
         aspectRatio: _aspect.value,
+        withCircleUi: widget.circleCrop,
         baseColor: Colors.black,
         maskColor: Colors.black.withValues(alpha: 0.55),
         // Start the crop rect at the full visible photo so it lines up
@@ -488,6 +514,13 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
           //
           // If the crop rect gets too small to comfortably hold the mark,
           // hide it instead of letting it dominate the cropped frame.
+          //
+          // Suppressed entirely on avatar (and other non-listing) crops via
+          // [showBrandMark]: the watermark service only stamps listing
+          // photos, so previewing it on profile avatars would be misleading.
+          if (!widget.showBrandMark) {
+            return const SizedBox.shrink();
+          }
           const minLogoSize = 24.0;
           final shorter = math.min(rect.width, rect.height);
           final logoSize = shorter * WatermarkPlacement.sizeFraction;
@@ -547,7 +580,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         ),
         child: Center(
           child: Text(
-            L10n.get("crop_listing_photo"),
+            L10n.get(widget.titleL10nKey),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
@@ -564,7 +597,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
   Widget _buildBottomBar() {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final canInteract = !_busy && _imageBytes != null && _loadError == null;
-    final canPickAspect = canInteract && widget.lockedAspectRatio == null;
+    final canPickAspect = canInteract && _effectiveLock == null;
     return Positioned(
       left: 0,
       right: 0,

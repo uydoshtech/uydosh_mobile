@@ -3,7 +3,6 @@ import "dart:ui";
 
 import "package:confetti/confetti.dart";
 import "package:flutter/material.dart";
-import "package:flutter_fireworks/flutter_fireworks.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
@@ -11,8 +10,9 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
-import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/simple_fireworks.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Bottom sheet shown when user unlocks an achievement.
@@ -90,7 +90,7 @@ class AchievementUnlockBottomSheet extends StatefulWidget {
 
 class _AchievementUnlockBottomSheetState
     extends State<AchievementUnlockBottomSheet> {
-  late final FireworksController _fireworksController;
+  late final SimpleFireworksController _fireworksController;
   late final ConfettiController _confettiController;
 
   static const _celebrationColors = [
@@ -107,7 +107,7 @@ class _AchievementUnlockBottomSheetState
   @override
   void initState() {
     super.initState();
-    _fireworksController = FireworksController(
+    _fireworksController = SimpleFireworksController(
       colors: _celebrationColors,
       minExplosionDuration: 1.0,
       maxExplosionDuration: 2.5,
@@ -217,7 +217,7 @@ class _AchievementUnlockBottomSheetState
         children: [
           Positioned.fill(
             child: IgnorePointer(
-              child: FireworksDisplay(controller: _fireworksController),
+              child: SimpleFireworksDisplay(controller: _fireworksController),
             ),
           ),
           Positioned.fill(

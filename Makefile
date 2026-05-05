@@ -33,27 +33,43 @@ commit-version: bump-build ## Bump version and commit changes
 # Release build targets.
 #
 # Flags:
-#   --tree-shake-icons        Strip unused glyphs from MaterialIcons / CupertinoIcons (~1.5–3 MB).
-#   --obfuscate               Strip Dart symbol names from the AOT snapshot.
-#   --split-debug-info=...    Required by --obfuscate; keep these symbols safe
-#                             (commit them or upload to Crashlytics) so we can
-#                             desymbolicate stack traces from production crashes.
-#   --split-per-abi (APK)     Emits one APK per ABI instead of a fat universal APK
-#                             (~40% install size reduction). Play Store users get
-#                             the equivalent automatically through the AAB target.
+#   --tree-shake-icons               Strip unused glyphs from MaterialIcons /
+#                                    CupertinoIcons (~1.5–3 MB).
+#   --obfuscate                      Strip Dart symbol names from the AOT
+#                                    snapshot.
+#   --split-debug-info=...           Required by --obfuscate; keep these
+#                                    symbols safe (commit them or upload to
+#                                    Crashlytics) so we can desymbolicate
+#                                    stack traces from production crashes.
+#   --split-per-abi (APK)            Emits one APK per ABI instead of a fat
+#                                    universal APK (~40% install size
+#                                    reduction). Play Store users get the
+#                                    equivalent automatically through the AAB
+#                                    target.
+#   --target-platform=$(ANDROID_PLATFORMS)
+#                                    Drops x86_64 (emulator-only) from the AAB
+#                                    so Flutter doesn't even compile that
+#                                    Dart→native snapshot. The Gradle
+#                                    `ndk.abiFilters` block alone is ignored
+#                                    by Flutter when generating per-ABI
+#                                    snapshots. Cuts the AAB upload by ~10 MB
+#                                    and speeds up CI.
 
 ANDROID_SYMBOLS := build/symbols/android
 IOS_SYMBOLS := build/symbols/ios
+ANDROID_PLATFORMS := android-arm,android-arm64
 
 build-apk: ## Build release per-ABI APKs (sideload only; Play uses AAB)
 	flutter build apk --release \
 	  --tree-shake-icons \
 	  --split-per-abi \
+	  --target-platform=$(ANDROID_PLATFORMS) \
 	  --obfuscate --split-debug-info=$(ANDROID_SYMBOLS)
 
 build-aab: ## Build release Android App Bundle with tree-shaken icons
 	flutter build appbundle --release \
 	  --tree-shake-icons \
+	  --target-platform=$(ANDROID_PLATFORMS) \
 	  --obfuscate --split-debug-info=$(ANDROID_SYMBOLS)
 
 build-ios: ## Build release iOS IPA with tree-shaken icons
