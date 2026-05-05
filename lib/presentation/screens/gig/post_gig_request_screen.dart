@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/state/language_state.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";

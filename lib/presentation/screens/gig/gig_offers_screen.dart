@@ -1,7 +1,7 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/state/language_state.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";

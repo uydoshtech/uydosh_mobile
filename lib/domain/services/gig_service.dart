@@ -9,8 +9,8 @@ import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_provider_profile.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 
-/// Wraps a Map<String, dynamic> body as an `IJsonEncodable` so it can be passed
-/// directly to `IApiClient.post/patch/...`.
+/// Wraps a `Map&lt;String, dynamic&gt;` body as an `IJsonEncodable` so it can
+/// be passed directly to `IApiClient.post/patch/...`.
 class _RawJsonBody implements IJsonEncodable {
   _RawJsonBody(this._body);
   final Map<String, dynamic> _body;
@@ -68,7 +68,10 @@ abstract class IGigService {
     int? serviceRadiusKm,
     bool isRemote = false,
   });
-  Future<GigOffer> updateOffer({required int id, Map<String, dynamic> patch});
+  Future<GigOffer> updateOffer({
+    required int id,
+    required Map<String, dynamic> patch,
+  });
   Future<void> deleteOffer(int id);
   Future<void> addOfferPhoto({
     required int offerId,

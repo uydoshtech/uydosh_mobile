@@ -1,0 +1,77 @@
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
+import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
+import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_offer_detail_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_offers_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_requests_list_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/my_gig_bookings_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
+
+/// Navigation helpers for the gig module. Mirrors the listing pattern in
+/// `navigation_extensions.dart`: each push wires the BLoCs the destination
+/// screen needs from `getIt`.
+extension GigNavigatorExtensions on BuildContext {
+  void pushGigHub() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(builder: (_) => const GigHubScreen()),
+    );
+  }
+
+  void pushGigOffersList() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => GigOffersBloc(getIt<IGigService>()),
+          child: const GigOffersScreen(),
+        ),
+      ),
+    );
+  }
+
+  void pushGigOfferDetail(int offerId) {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => GigOfferDetailBloc(getIt<IGigService>()),
+          child: GigOfferDetailScreen(offerId: offerId),
+        ),
+      ),
+    );
+  }
+
+  void pushPostGigRequest() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => GigPostRequestBloc(getIt<IGigService>()),
+          child: const PostGigRequestScreen(),
+        ),
+      ),
+    );
+  }
+
+  void pushMyGigBookings() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => GigBookingsBloc(getIt<IGigService>()),
+          child: const MyGigBookingsScreen(),
+        ),
+      ),
+    );
+  }
+
+  void pushGigRequestsList() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const GigRequestsListScreen(),
+      ),
+    );
+  }
+}
