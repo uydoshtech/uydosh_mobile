@@ -1,10 +1,13 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class GigOffersScreen extends StatefulWidget {
   const GigOffersScreen({super.key});
@@ -39,7 +42,7 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Browse services")),
+      appBar: AppBar(title: Text(L10n.get("gigs_browse_title"))),
       body: BlocBuilder<GigOffersBloc, GigOffersState>(
         builder: (context, state) {
           if (state is GigOffersLoading || state is GigOffersInitial) {
@@ -54,8 +57,11 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
           }
           if (state is GigOffersLoaded) {
             if (state.offers.isEmpty) {
-              return const Center(
-                child: Text("No services available yet."),
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(L10n.get("gigs_browse_empty")),
+                ),
               );
             }
             return RefreshIndicator(
@@ -66,9 +72,9 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
               },
               child: ListView.separated(
                 controller: _scrollController,
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 itemCount: state.offers.length + (state.hasMore ? 1 : 0),
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
                 itemBuilder: (_, i) {
                   if (i >= state.offers.length) {
                     return const Padding(
@@ -95,34 +101,48 @@ class _OfferTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
     final categoryName = offer.category?.localizedName(language) ?? "";
     final photo = offer.primaryPhotoUrl();
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return ThreeDElevatedSurface(
+      baseColor: scheme.surface,
+      borderRadius: const BorderRadius.all(Radius.circular(18)),
       child: InkWell(
-        onTap: () => context.pushGigOfferDetail(offer.id),
+        borderRadius: const BorderRadius.all(Radius.circular(18)),
+        onTap: () {
+          HapticFeedbackUtils.lightImpact();
+          context.pushGigOfferDetail(offer.id);
+        },
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: 84,
+                  height: 84,
                   child: photo != null
                       ? CachedNetworkImage(
                           imageUrl: photo,
                           fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) =>
-                              Container(color: Colors.grey.shade200),
+                          errorWidget: (_, __, ___) => Container(
+                            color: scheme.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.image_not_supported_rounded,
+                              color: scheme.onSurface.withValues(alpha: 0.4),
+                            ),
+                          ),
                         )
                       : Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image_not_supported),
+                          color: scheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.handyman_outlined,
+                            color: scheme.onSurface.withValues(alpha: 0.4),
+                          ),
                         ),
                 ),
               ),
@@ -133,55 +153,69 @@ class _OfferTile extends StatelessWidget {
                   children: [
                     if (categoryName.isNotEmpty)
                       Text(
-                        categoryName,
+                        categoryName.toUpperCase(),
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          letterSpacing: 0.5,
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                    const SizedBox(height: 2),
                     Text(
                       offer.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _formatPrice(offer),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         if (offer.providerRatingAvg != null) ...[
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
+                          const Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color: Colors.amber,
+                          ),
                           const SizedBox(width: 2),
                           Text(
                             offer.providerRatingAvg!.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurface,
+                            ),
                           ),
-                          if (offer.providerRatingCount != null) ...[
+                          if (offer.providerRatingCount != null)
                             Text(
                               " (${offer.providerRatingCount})",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color:
+                                    scheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
-                          ],
                           const SizedBox(width: 8),
                         ],
                         if (offer.providerDisplayName != null)
                           Expanded(
                             child: Text(
                               offer.providerDisplayName!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color:
+                                    scheme.onSurface.withValues(alpha: 0.6),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -200,14 +234,14 @@ class _OfferTile extends StatelessWidget {
   }
 
   String _formatPrice(GigOffer o) {
-    final amount = "${o.price} ${o.currencyCode}";
+    final params = {"amount": o.price.toString(), "currency": o.currencyCode};
     switch (o.pricingType) {
       case GigPricingType.hourly:
-        return "$amount/hr";
+        return L10n.getWithParams("gigs_price_per_hour", params: params);
       case GigPricingType.perUnit:
-        return "$amount/unit";
+        return L10n.getWithParams("gigs_price_per_unit", params: params);
       case GigPricingType.fixed:
-        return amount;
+        return L10n.getWithParams("gigs_price_fixed", params: params);
     }
   }
 }
@@ -225,11 +259,18 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Colors.redAccent,
+            ),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: onRetry, child: const Text("Retry")),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: Text(L10n.get("gigs_retry")),
+            ),
           ],
         ),
       ),

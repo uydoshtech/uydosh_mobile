@@ -1,5 +1,8 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 
 /// Entry point into the gig economy module: browse offers, post a task,
 /// or open the bookings tab. Reachable from the main app via
@@ -10,36 +13,48 @@ class GigHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Gigs")),
+      appBar: AppBar(title: Text(L10n.get("gigs_hub_title"))),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           _HubTile(
-            icon: Icons.search,
-            title: "Browse services",
-            subtitle: "Find people who can help with tasks",
-            onTap: () => context.pushGigOffersList(),
+            icon: Icons.search_rounded,
+            title: L10n.get("gigs_hub_browse_title"),
+            subtitle: L10n.get("gigs_hub_browse_subtitle"),
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushGigOffersList();
+            },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _HubTile(
-            icon: Icons.post_add,
-            title: "Post a task",
-            subtitle: "Describe what you need; let people bid",
-            onTap: () => context.pushPostGigRequest(),
+            icon: Icons.post_add_rounded,
+            title: L10n.get("gigs_hub_post_title"),
+            subtitle: L10n.get("gigs_hub_post_subtitle"),
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushPostGigRequest();
+            },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _HubTile(
-            icon: Icons.event_note,
-            title: "My bookings",
-            subtitle: "Tasks you booked or accepted",
-            onTap: () => context.pushMyGigBookings(),
+            icon: Icons.event_note_rounded,
+            title: L10n.get("gigs_hub_my_bookings_title"),
+            subtitle: L10n.get("gigs_hub_my_bookings_subtitle"),
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushMyGigBookings();
+            },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _HubTile(
-            icon: Icons.list_alt,
-            title: "Open requests",
-            subtitle: "Tasks people are looking to get done",
-            onTap: () => context.pushGigRequestsList(),
+            icon: Icons.list_alt_rounded,
+            title: L10n.get("gigs_hub_open_requests_title"),
+            subtitle: L10n.get("gigs_hub_open_requests_subtitle"),
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushGigRequestsList();
+            },
           ),
         ],
       ),
@@ -62,13 +77,67 @@ class _HubTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, size: 32),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+    final scheme = Theme.of(context).colorScheme;
+    // In the blue theme `scheme.surface` and `scheme.primary` are both the
+    // same dark navy, so a `primary.withValues(alpha: 0.12)` chip / icon would
+    // vanish into the tile. Use `secondary` (the brand's light-teal accent in
+    // dark themes; falls back to a contrasty value in light themes) so the
+    // icon pops on every theme.
+    final accent = scheme.secondary;
+    return ThreeDElevatedSurface(
+      baseColor: scheme.surface,
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
+      child: InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: accent, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurface.withValues(alpha: 0.65),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: scheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

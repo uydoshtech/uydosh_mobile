@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 
 class MyGigBookingsScreen extends StatefulWidget {
   const MyGigBookingsScreen({super.key});
@@ -45,13 +47,13 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My bookings"),
+        title: Text(L10n.get("gigs_my_bookings_title")),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [
-            Tab(text: "All"),
-            Tab(text: "As client"),
-            Tab(text: "As provider"),
+          tabs: [
+            Tab(text: L10n.get("gigs_my_bookings_tab_all")),
+            Tab(text: L10n.get("gigs_my_bookings_tab_client")),
+            Tab(text: L10n.get("gigs_my_bookings_tab_provider")),
           ],
         ),
       ),
@@ -65,12 +67,17 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen>
           }
           if (state is GigBookingsLoaded) {
             if (state.bookings.isEmpty) {
-              return const Center(child: Text("No bookings yet."));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(L10n.get("gigs_my_bookings_empty")),
+                ),
+              );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               itemCount: state.bookings.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
               itemBuilder: (_, i) =>
                   _BookingTile(booking: state.bookings[i]),
             );
@@ -106,25 +113,28 @@ class _BookingTile extends StatelessWidget {
   String _statusLabel() {
     switch (booking.status) {
       case GigBookingStatus.pending:
-        return "Pending";
+        return L10n.get("gigs_status_pending");
       case GigBookingStatus.accepted:
-        return "Accepted";
+        return L10n.get("gigs_status_accepted");
       case GigBookingStatus.inProgress:
-        return "In progress";
+        return L10n.get("gigs_status_in_progress");
       case GigBookingStatus.completed:
-        return "Completed";
+        return L10n.get("gigs_status_completed");
       case GigBookingStatus.cancelled:
-        return "Cancelled";
+        return L10n.get("gigs_status_cancelled");
       case GigBookingStatus.disputed:
-        return "Disputed";
+        return L10n.get("gigs_status_disputed");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final scheme = Theme.of(context).colorScheme;
+    final statusColor = _statusColor(context);
+    return ThreeDElevatedSurface(
+      baseColor: scheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -135,24 +145,27 @@ class _BookingTile extends StatelessWidget {
                     booking.titleSnapshot,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
                     ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: _statusColor(context).withValues(alpha: 0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _statusLabel(),
                     style: TextStyle(
-                      color: _statusColor(context),
-                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                      fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
                   ),
@@ -160,12 +173,24 @@ class _BookingTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text("${booking.agreedAmount} ${booking.currencyCode}"),
+            Text(
+              "${booking.agreedAmount} ${booking.currencyCode}",
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
+            ),
             if (booking.scheduledStartAt != null) ...[
               const SizedBox(height: 4),
               Text(
-                "Scheduled: ${booking.scheduledStartAt}",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                L10n.getWithParams(
+                  "gigs_scheduled_at",
+                  params: {"when": booking.scheduledStartAt!},
+                ),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ],
             const SizedBox(height: 12),
@@ -196,7 +221,7 @@ class _BookingActions extends StatelessWidget {
                   toStatus: GigBookingStatus.cancelled,
                 ),
               ),
-          child: const Text("Cancel"),
+          child: Text(L10n.get("gigs_action_cancel")),
         ),
       );
     }
@@ -211,7 +236,7 @@ class _BookingActions extends StatelessWidget {
                   toStatus: GigBookingStatus.completed,
                 ),
               ),
-          child: const Text("Mark complete"),
+          child: Text(L10n.get("gigs_action_mark_complete")),
         ),
       );
     }

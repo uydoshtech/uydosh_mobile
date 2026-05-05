@@ -1,9 +1,13 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class PostGigRequestScreen extends StatefulWidget {
   const PostGigRequestScreen({super.key});
@@ -21,6 +25,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
   GigCategory? _selectedCategory;
   GigRequestBudgetType _budgetType = GigRequestBudgetType.fixed;
   bool _isRemote = false;
+  bool _showCategoryError = false;
 
   @override
   void initState() {
@@ -40,11 +45,12 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Choose a category")),
-      );
+    final formValid = _formKey.currentState!.validate();
+    final categoryMissing = _selectedCategory == null;
+    if (categoryMissing != _showCategoryError) {
+      setState(() => _showCategoryError = categoryMissing);
+    }
+    if (!formValid || categoryMissing) {
       return;
     }
     final budget = _budgetController.text.isEmpty
@@ -74,7 +80,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
       listener: (context, state) {
         if (state is GigPostRequestSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Task posted.")),
+            SnackBar(content: Text(L10n.get("gigs_post_request_success_toast"))),
           );
           Navigator.of(context).pop();
         } else if (state is GigPostRequestError) {
@@ -89,106 +95,121 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
         final submitting = state is GigPostRequestSubmitting;
 
         return Scaffold(
-          appBar: AppBar(title: const Text("Post a task")),
+          appBar: AppBar(title: Text(L10n.get("gigs_post_request_title"))),
           body: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
-                DropdownButtonFormField<GigCategory>(
-                  initialValue: _selectedCategory,
-                  decoration: const InputDecoration(labelText: "Category"),
-                  items: [
-                    for (final c in categories)
-                      DropdownMenuItem(
-                        value: c,
-                        child: Text(c.localizedName(language)),
-                      ),
-                  ],
-                  onChanged: (v) => setState(() => _selectedCategory = v),
-                  validator: (v) => v == null ? "Required" : null,
+                _FieldLabel(L10n.get("gigs_post_request_field_category")),
+                _CategoryPlate(
+                  categories: categories,
+                  selected: _selectedCategory,
+                  language: language,
+                  showError: _showCategoryError,
+                  onChanged: (c) {
+                    setState(() {
+                      _selectedCategory = c;
+                      if (c != null) _showCategoryError = false;
+                    });
+                  },
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: "Title"),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? "Required" : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: "Description (optional)",
-                  ),
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<GigRequestBudgetType>(
-                        initialValue: _budgetType,
-                        decoration:
-                            const InputDecoration(labelText: "Budget type"),
-                        items: const [
-                          DropdownMenuItem(
-                            value: GigRequestBudgetType.fixed,
-                            child: Text("Fixed"),
-                          ),
-                          DropdownMenuItem(
-                            value: GigRequestBudgetType.hourly,
-                            child: Text("Hourly"),
-                          ),
-                          DropdownMenuItem(
-                            value: GigRequestBudgetType.open,
-                            child: Text("Open"),
-                          ),
-                        ],
-                        onChanged: (v) => setState(
-                          () => _budgetType =
-                              v ?? GigRequestBudgetType.fixed,
-                        ),
-                      ),
+                const SizedBox(height: 14),
+                _FieldLabel(L10n.get("gigs_post_request_field_title")),
+                _PlateField(
+                  child: TextFormField(
+                    controller: _titleController,
+                    textInputAction: TextInputAction.next,
+                    style: _fieldTextStyle(context),
+                    decoration: _plateInputDecoration(
+                      context,
+                      hint: L10n.get("gigs_post_request_field_title"),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _budgetController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Amount (UZS)",
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _addressController,
-                  decoration: const InputDecoration(
-                    labelText: "Address (optional)",
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? L10n.get("gigs_post_request_required")
+                        : null,
                   ),
                 ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  title: const Text("Remote"),
+                const SizedBox(height: 14),
+                _FieldLabel(L10n.get("gigs_post_request_field_description")),
+                _PlateField(
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 5,
+                    minLines: 4,
+                    style: _fieldTextStyle(context),
+                    decoration: _plateInputDecoration(
+                      context,
+                      hint: L10n.get("gigs_post_request_field_description"),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
+                _BudgetTypePlate(
+                  value: _budgetType,
+                  onChanged: (v) => setState(() => _budgetType = v),
+                ),
+                if (_budgetType != GigRequestBudgetType.open) ...[
+                  const SizedBox(height: 14),
+                  _FieldLabel(L10n.get("gigs_post_request_field_amount")),
+                  _PlateField(
+                    child: TextFormField(
+                      controller: _budgetController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      style: _fieldTextStyle(context),
+                      decoration: _plateInputDecoration(
+                        context,
+                        hint: "UZS",
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                _FieldLabel(L10n.get("gigs_post_request_field_address")),
+                _PlateField(
+                  child: TextFormField(
+                    controller: _addressController,
+                    style: _fieldTextStyle(context),
+                    decoration: _plateInputDecoration(
+                      context,
+                      hint: L10n.get("gigs_post_request_field_address"),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _RemoteTogglePlate(
                   value: _isRemote,
+                  label: L10n.get("gigs_post_request_field_remote"),
                   onChanged: (v) => setState(() => _isRemote = v),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 SizedBox(
-                  height: 52,
+                  height: 54,
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                     onPressed: submitting ? null : _submit,
                     child: submitting
                         ? const SizedBox(
-                            height: 20,
-                            width: 20,
+                            height: 22,
+                            width: 22,
                             child:
                                 CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text("Post task"),
+                        : Text(
+                            L10n.get("gigs_post_request_submit"),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -196,6 +217,321 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared styling helpers
+// ---------------------------------------------------------------------------
+
+TextStyle _fieldTextStyle(BuildContext context) {
+  return TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: ThemeState().isLightTheme
+        ? Colors.black
+        : Theme.of(context).colorScheme.onSurface,
+  );
+}
+
+InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
+  final hintColor = Theme.of(context).brightness == Brightness.dark
+      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
+      : Colors.grey[500];
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: hintColor,
+    ),
+    // Override the global `inputDecorationTheme` (which fills with white).
+    filled: true,
+    fillColor: Colors.transparent,
+    border: const OutlineInputBorder(borderSide: BorderSide.none),
+    enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    contentPadding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    isDense: true,
+  );
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, bottom: 6, top: 2),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
+          color: Theme.of(context)
+              .colorScheme
+              .onSurface
+              .withValues(alpha: 0.65),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlateField extends StatelessWidget {
+  const _PlateField({required this.child, this.showErrorBorder = false});
+  final Widget child;
+  final bool showErrorBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return WheelPickerPlateContainer(
+      theme: Theme.of(context),
+      showErrorBorder: showErrorBorder,
+      child: child,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Category picker — opens a bottom sheet, paints the sunken plate.
+// ---------------------------------------------------------------------------
+
+class _CategoryPlate extends StatelessWidget {
+  const _CategoryPlate({
+    required this.categories,
+    required this.selected,
+    required this.language,
+    required this.onChanged,
+    required this.showError,
+  });
+
+  final List<GigCategory> categories;
+  final GigCategory? selected;
+  final String language;
+  final ValueChanged<GigCategory?> onChanged;
+  final bool showError;
+
+  Future<void> _pick(BuildContext context) async {
+    if (categories.isEmpty) return;
+    final picked = await showModalBottomSheet<GigCategory>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: categories.length,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.08),
+            ),
+            itemBuilder: (_, i) {
+              final c = categories[i];
+              final isSelected = c.id == selected?.id;
+              return ListTile(
+                title: Text(
+                  c.localizedName(language),
+                  style: TextStyle(
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+                trailing: isSelected
+                    ? Icon(
+                        Icons.check_rounded,
+                        color: Theme.of(context).colorScheme.secondary,
+                      )
+                    : null,
+                onTap: () => Navigator.of(context).pop(c),
+              );
+            },
+          ),
+        );
+      },
+    );
+    if (picked != null) onChanged(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final hintColor = Theme.of(context).brightness == Brightness.dark
+        ? scheme.onSurface.withValues(alpha: 0.45)
+        : Colors.grey[500];
+    final hasValue = selected != null;
+    final disabled = categories.isEmpty;
+    return _PlateField(
+      showErrorBorder: showError,
+      child: InkWell(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        onTap: disabled ? null : () => _pick(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  hasValue
+                      ? selected!.localizedName(language)
+                      : (disabled
+                          ? L10n.get("gigs_loading")
+                          : L10n.get("gigs_post_request_field_category")),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: hasValue
+                        ? (ThemeState().isLightTheme
+                            ? Colors.black
+                            : scheme.onSurface)
+                        : hintColor,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: scheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Budget type — segmented neumorphic chip group.
+// ---------------------------------------------------------------------------
+
+class _BudgetTypePlate extends StatelessWidget {
+  const _BudgetTypePlate({required this.value, required this.onChanged});
+  final GigRequestBudgetType value;
+  final ValueChanged<GigRequestBudgetType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = <(GigRequestBudgetType, String)>[
+      (GigRequestBudgetType.fixed, L10n.get("gigs_budget_type_fixed")),
+      (GigRequestBudgetType.hourly, L10n.get("gigs_budget_type_hourly")),
+      (GigRequestBudgetType.open, L10n.get("gigs_budget_type_open")),
+    ];
+    return _PlateField(
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          children: [
+            for (final entry in entries)
+              Expanded(
+                child: _BudgetSegmentButton(
+                  label: entry.$2,
+                  selected: entry.$1 == value,
+                  onTap: () => onChanged(entry.$1),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetSegmentButton extends StatelessWidget {
+  const _BudgetSegmentButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: selected
+              ? scheme.secondary.withValues(alpha: 0.20)
+              : Colors.transparent,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected
+                ? scheme.secondary
+                : scheme.onSurface.withValues(alpha: 0.75),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Remote toggle — sunken plate with switch.
+// ---------------------------------------------------------------------------
+
+class _RemoteTogglePlate extends StatelessWidget {
+  const _RemoteTogglePlate({
+    required this.value,
+    required this.label,
+    required this.onChanged,
+  });
+  final bool value;
+  final String label;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return _PlateField(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: scheme.secondary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
