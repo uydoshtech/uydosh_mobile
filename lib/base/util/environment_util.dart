@@ -1,7 +1,7 @@
 abstract class EnvironmentUtil {
   static const basePath = String.fromEnvironment(
     "API_BASE_PATH",
-    defaultValue: "http://3.140.249.173:3000",
+    defaultValue: "http://3.128.76.53:3000",
   );
 
   /// Web URL for shareable links (https). Messengers like Telegram only make
