@@ -37,8 +37,21 @@ abstract class GigPostRequestState {
 }
 
 class GigPostRequestIdle extends GigPostRequestState {
-  const GigPostRequestIdle({this.categories = const <GigCategory>[]});
+  const GigPostRequestIdle({
+    this.categories = const <GigCategory>[],
+    this.loadingCategories = false,
+    this.categoriesError,
+  });
+
   final List<GigCategory> categories;
+
+  /// True while the initial categories request is in-flight. Distinguishes
+  /// "still loading" from "loaded and the response was empty / failed".
+  final bool loadingCategories;
+
+  /// Last error encountered while loading categories, if any. Cleared on the
+  /// next successful load.
+  final String? categoriesError;
 }
 
 class GigPostRequestSubmitting extends GigPostRequestState {
@@ -58,11 +71,15 @@ class GigPostRequestError extends GigPostRequestState {
 class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> {
   GigPostRequestBloc(this._service) : super(const GigPostRequestIdle()) {
     on<LoadCategoriesForRequest>((_, emit) async {
+      emit(const GigPostRequestIdle(loadingCategories: true));
       try {
         final cats = await _service.listCategories();
         emit(GigPostRequestIdle(categories: cats));
       } catch (err) {
-        emit(GigPostRequestError(err.toString()));
+        // Stay in Idle (so the form is still usable) but surface the error
+        // through the dropdown plate. Going to GigPostRequestError would
+        // dump the user out of the screen via the SnackBar listener.
+        emit(GigPostRequestIdle(categoriesError: err.toString()));
       }
     });
     on<SubmitGigRequest>((e, emit) async {

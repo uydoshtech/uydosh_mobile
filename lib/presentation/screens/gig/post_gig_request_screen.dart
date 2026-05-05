@@ -6,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -90,8 +91,10 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
         }
       },
       builder: (context, state) {
-        final categories =
-            state is GigPostRequestIdle ? state.categories : <GigCategory>[];
+        final idle = state is GigPostRequestIdle ? state : null;
+        final categories = idle?.categories ?? const <GigCategory>[];
+        final loadingCategories = idle?.loadingCategories ?? false;
+        final categoriesError = idle?.categoriesError;
         final submitting = state is GigPostRequestSubmitting;
 
         return Scaffold(
@@ -107,6 +110,11 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   selected: _selectedCategory,
                   language: language,
                   showError: _showCategoryError,
+                  loading: loadingCategories,
+                  errorMessage: categoriesError,
+                  onRetry: () => context
+                      .read<GigPostRequestBloc>()
+                      .add(const LoadCategoriesForRequest()),
                   onChanged: (c) {
                     setState(() {
                       _selectedCategory = c;
@@ -310,6 +318,9 @@ class _CategoryPlate extends StatelessWidget {
     required this.language,
     required this.onChanged,
     required this.showError,
+    required this.loading,
+    required this.errorMessage,
+    required this.onRetry,
   });
 
   final List<GigCategory> categories;
@@ -317,6 +328,9 @@ class _CategoryPlate extends StatelessWidget {
   final String language;
   final ValueChanged<GigCategory?> onChanged;
   final bool showError;
+  final bool loading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
 
   Future<void> _pick(BuildContext context) async {
     if (categories.isEmpty) return;
@@ -342,7 +356,21 @@ class _CategoryPlate extends StatelessWidget {
             itemBuilder: (_, i) {
               final c = categories[i];
               final isSelected = c.id == selected?.id;
+              final scheme = Theme.of(context).colorScheme;
               return ListTile(
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    c.icon,
+                    color: scheme.secondary,
+                    size: 20,
+                  ),
+                ),
                 title: Text(
                   c.localizedName(language),
                   style: TextStyle(
@@ -353,7 +381,7 @@ class _CategoryPlate extends StatelessWidget {
                 trailing: isSelected
                     ? Icon(
                         Icons.check_rounded,
-                        color: Theme.of(context).colorScheme.secondary,
+                        color: scheme.secondary,
                       )
                     : null,
                 onTap: () => Navigator.of(context).pop(c),
@@ -373,23 +401,44 @@ class _CategoryPlate extends StatelessWidget {
         ? scheme.onSurface.withValues(alpha: 0.45)
         : Colors.grey[500];
     final hasValue = selected != null;
-    final disabled = categories.isEmpty;
+    final hasCategories = categories.isNotEmpty;
+    final hasError = errorMessage != null && !loading && !hasCategories;
+    final canTap = hasCategories;
+
+    final placeholder = loading
+        ? L10n.get("gigs_loading")
+        : (hasError
+            ? L10n.get("gigs_categories_unavailable")
+            : L10n.get("gigs_post_request_field_category"));
+
     return _PlateField(
       showErrorBorder: showError,
       child: InkWell(
         borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        onTap: disabled ? null : () => _pick(context),
+        onTap: canTap ? () => _pick(context) : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Row(
             children: [
+              if (hasValue) ...[
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: scheme.secondary.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(
+                    selected!.icon,
+                    color: scheme.secondary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
               Expanded(
                 child: Text(
-                  hasValue
-                      ? selected!.localizedName(language)
-                      : (disabled
-                          ? L10n.get("gigs_loading")
-                          : L10n.get("gigs_post_request_field_category")),
+                  hasValue ? selected!.localizedName(language) : placeholder,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -401,10 +450,35 @@ class _CategoryPlate extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: scheme.onSurface.withValues(alpha: 0.7),
-              ),
+              if (loading)
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                )
+              else if (hasError)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 32,
+                    height: 32,
+                  ),
+                  onPressed: onRetry,
+                  tooltip: L10n.get("gigs_retry"),
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    color: scheme.secondary,
+                  ),
+                )
+              else
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: scheme.onSurface.withValues(alpha: 0.7),
+                ),
             ],
           ),
         ),
