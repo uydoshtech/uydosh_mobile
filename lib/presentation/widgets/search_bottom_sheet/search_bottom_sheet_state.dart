@@ -814,6 +814,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   void _performSearch() {
     HapticFeedbackUtils.impact();
 
+    // Tell SearchBottomSheetWidget.show() to commit the in-session edits.
+    // Must happen BEFORE Navigator.pop so the show() caller (which awaits
+    // the modal future) sees a true flag when the future resolves.
+    widget.onCommit?.call();
+
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;
     final locationId = _getSelectedLocationId();

@@ -102,6 +102,17 @@ class SearchBottomSheetWidget {
     final isFirstOpen = !hadSavedListingTypeId && !hadSavedGender;
 
     await searchFiltersState.initialize();
+
+    // Mutations made inside the sheet (wheel scrolls, toggles, etc.) must NOT
+    // bleed into the home filter chips ribbon — only an explicit Search press
+    // should commit the new filters. Open an editing session that suppresses
+    // outside notifications + remote persist, snapshot the current state so
+    // we can revert on dismiss, and let [_performSearch] flip a commit flag
+    // before popping.
+    searchFiltersState.beginEditingSession();
+    final preSheetSnapshot = SearchFiltersSnapshot.capture(searchFiltersState);
+    var didCommit = false;
+
     await searchFiltersState.applyProfileValuesForSearchSheet();
 
     // Some callers pass "defaults" (e.g. 2/male) on the first open which would
@@ -127,7 +138,12 @@ class SearchBottomSheetWidget {
       existingLocationsBloc = null;
     }
 
-    return showModalBottomSheet<void>(
+    void markCommitted() {
+      didCommit = true;
+    }
+
+    try {
+      await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -177,11 +193,25 @@ class SearchBottomSheetWidget {
           currentPrivateRoom: currentPrivateRoom,
           currentWithPhoto: currentWithPhoto,
           onApply: onApply,
+          onCommit: markCommitted,
           primaryLabelKey: primaryLabelKey,
           primaryIcon: primaryIcon,
         ),
       ),
     );
+    } finally {
+      if (didCommit) {
+        // End the session and notify outside listeners so the home chips
+        // ribbon picks up the freshly applied filters.
+        searchFiltersState.endEditingSession(commit: true);
+      } else {
+        // User dismissed without searching: revert any in-sheet edits so the
+        // home filter chips ribbon (and persisted prefs) keep their prior
+        // values.
+        searchFiltersState.endEditingSession(commit: false);
+        await searchFiltersState.restoreToSnapshot(preSheetSnapshot);
+      }
+    }
   }
 }
 
@@ -200,6 +230,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentPrivateRoom,
     this.currentWithPhoto,
     this.onApply,
+    this.onCommit,
     this.primaryLabelKey = "search",
     this.primaryIcon = Icons.search,
   });
@@ -216,6 +247,10 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final bool? currentPrivateRoom;
   final bool? currentWithPhoto;
   final void Function(SearchBottomSheetResult result)? onApply;
+
+  /// Called by [_performSearch] BEFORE popping the sheet so the show()
+  /// caller knows to commit (vs. revert) the in-session filter edits.
+  final VoidCallback? onCommit;
   final String primaryLabelKey;
   final IconData primaryIcon;
 

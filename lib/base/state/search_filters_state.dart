@@ -35,6 +35,42 @@ class SearchFiltersState extends ChangeNotifier {
   static const Duration _remoteSaveDelay = Duration(milliseconds: 1600);
   Future<void>? _hydrateFuture;
 
+  /// Counts active "editing sessions" (e.g. the search bottom sheet) during
+  /// which mutations should NOT propagate to outside listeners or to the
+  /// backend. The sheet uses this so in-progress edits don't bleed into the
+  /// home filter chips ribbon — they only become visible when the user
+  /// taps Search (commit) or are reverted via [restoreToSnapshot] on dismiss.
+  int _editingSessionDepth = 0;
+
+  bool get _externalListenersSuppressed => _editingSessionDepth > 0;
+  bool get _remotePersistGated =>
+      _suppressRemotePersist || _editingSessionDepth > 0;
+
+  /// Begin an "editing session". While active, [notifyListeners] is a no-op
+  /// for outside observers and remote persist is paused. Sessions nest, so
+  /// each call must be paired with [endEditingSession].
+  void beginEditingSession() {
+    _editingSessionDepth++;
+  }
+
+  /// Ends the current editing session. When [commit] is true, listeners are
+  /// notified and a remote persist is scheduled so the latest filter values
+  /// are propagated. When false, the caller is expected to follow up with
+  /// [restoreToSnapshot] to revert any in-session changes.
+  void endEditingSession({required bool commit}) {
+    if (_editingSessionDepth > 0) _editingSessionDepth--;
+    if (_editingSessionDepth == 0 && commit) {
+      super.notifyListeners();
+      if (!_remotePersistGated) _scheduleRemotePersist();
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    if (_externalListenersSuppressed) return;
+    super.notifyListeners();
+  }
+
   /// Clears debounce state when the backend session ends (logout / account switch).
   void onSessionEnded() {
     _remoteSaveDebounce?.cancel();
@@ -386,7 +422,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update location index
@@ -402,7 +438,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update subway line
@@ -424,7 +460,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update station index
@@ -446,7 +482,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update station ID (new method)
@@ -468,7 +504,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update gender
@@ -484,7 +520,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update price range
@@ -502,7 +538,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Update private room preference
@@ -518,7 +554,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   Future<void> setWithPhoto(bool withPhoto) async {
@@ -533,7 +569,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
   // Clear all search filters
@@ -606,7 +642,7 @@ class SearchFiltersState extends ChangeNotifier {
       logger.d("Error restoring search filters snapshot: $e");
     }
 
-    if (!_suppressRemotePersist) _scheduleRemotePersist();
+    if (!_remotePersistGated) _scheduleRemotePersist();
   }
 }
 
