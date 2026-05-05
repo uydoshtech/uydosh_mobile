@@ -27,15 +27,20 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 /// The Telegram button is rendered only when [onTelegram] is non-null
 /// (i.e. the listing has a telegram handle AND the admin contact flag is
 /// on). When Telegram is absent the in-app chat button takes the full
-/// width.
+/// width. When [onMessage] is null (e.g. admin viewing a listing they own
+/// — you can't chat with yourself), the in-app chat CTA is hidden and
+/// Telegram takes the full width.
 class ListingDetailContactActionBar extends StatelessWidget {
   const ListingDetailContactActionBar({
-    required this.onMessage,
+    this.onMessage,
     this.onTelegram,
     super.key,
-  });
+  }) : assert(
+          onMessage != null || onTelegram != null,
+          "ListingDetailContactActionBar needs at least one CTA",
+        );
 
-  final VoidCallback onMessage;
+  final VoidCallback? onMessage;
   final VoidCallback? onTelegram;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
@@ -77,7 +82,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     return _GlassNeumorphicCtaButton(
       onPressed: () {
         HapticFeedbackUtils.impact();
-        onMessage();
+        onMessage!.call();
       },
       icon: CupertinoIcons.shield_fill,
       iconColor: primaryFg,
@@ -91,6 +96,13 @@ class ListingDetailContactActionBar extends StatelessWidget {
 
   Widget _buildActions() {
     final hasTelegram = onTelegram != null;
+    final hasChat = onMessage != null;
+    if (hasTelegram && !hasChat) {
+      return SizedBox(
+        width: double.infinity,
+        child: Builder(builder: _telegramButton),
+      );
+    }
     if (!hasTelegram) {
       return SizedBox(
         width: double.infinity,

@@ -61,6 +61,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
@@ -2001,14 +2002,43 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
             return ListenableBuilder(
               listenable: UserListingState(),
               builder: (context, _) {
-                if (UserListingState().isOwner(listingDetail.user.id)) {
-                  return const SizedBox.shrink();
-                }
+                final isOwner =
+                    UserListingState().isOwner(listingDetail.user.id);
                 final telegramHandle =
                     listingDetail.contactTelegram?.trim() ?? "";
-                final onTelegram = (showContacts && telegramHandle.isNotEmpty)
+                final telegramAvailable =
+                    showContacts && telegramHandle.isNotEmpty;
+                final onTelegram = telegramAvailable
                     ? () => _openTelegramChat(listingDetail.contactTelegram!)
                     : null;
+
+                if (isOwner) {
+                  // Admin-as-owner gets a Telegram-only sticky CTA so
+                  // they can still reach the listing's external contact
+                  // (e.g. listings imported under an admin account where
+                  // `contact_telegram` is the original poster's handle).
+                  // The in-app chat CTA is hidden because chatting with
+                  // yourself isn't possible. We deliberately bypass the
+                  // platform-wide `showListingContacts` gate here: the
+                  // toggle controls visibility for regular users, but
+                  // admins always need access to the contact channels
+                  // for moderation. Non-admin owners still see nothing
+                  // — the owner toolbar is their UI.
+                  if (telegramHandle.isEmpty) return const SizedBox.shrink();
+                  return FutureBuilder<String?>(
+                    future: _userRoleFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.data != "admin") {
+                        return const SizedBox.shrink();
+                      }
+                      return ListingDetailContactActionBar(
+                        onTelegram: () =>
+                            _openTelegramChat(listingDetail.contactTelegram!),
+                      );
+                    },
+                  );
+                }
+
                 return ListingDetailContactActionBar(
                   onMessage: () => _startConversation(listingDetail),
                   onTelegram: onTelegram,
@@ -2359,6 +2389,34 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
               );
             },
           ),
+          // Admin-as-owner contact card. Pinned to the bottom of the body
+          // so it sits below all the listing's regular content — admins
+          // are the only audience and they're typically scrolling through
+          // the listing first. Non-admin owners (the common case)
+          // intentionally don't see contact controls; the FutureBuilder
+          // gates this on `role == "admin"` (e.g. the Telegram-import
+          // worker imports listings under an admin account, so the
+          // contacts here belong to the original poster).
+          if (isOwner &&
+              ((listingDetail.contactTelegram?.trim().isNotEmpty ?? false) ||
+                  (listingDetail.contactPhone?.trim().isNotEmpty ?? false)))
+            FutureBuilder<String?>(
+              future: _userRoleFuture,
+              builder: (context, snapshot) {
+                if (snapshot.data != "admin") {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: ListingDetailAdminContactInfo(
+                    contactTelegram: listingDetail.contactTelegram,
+                    contactPhone: listingDetail.contactPhone,
+                    onTelegram: _openTelegramChat,
+                    onPhone: _makePhoneCall,
+                  ),
+                );
+              },
+            ),
         ];
 
         final themeState = ThemeState();
