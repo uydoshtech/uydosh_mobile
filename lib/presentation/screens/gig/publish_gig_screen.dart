@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -12,6 +13,8 @@ import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
+import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -75,6 +78,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   bool _showTitleError = false;
   bool _showAmountError = false;
   late GigPublishMode _mode;
+
+  /// Local file paths the user picked through [PhotoUploader] for the
+  /// service flavor. Tasks deliberately skip photos for v1 (per product
+  /// decision); we still keep the list state-bound so a user who toggles
+  /// service → task → service doesn't lose their picks.
+  List<String> _selectedPhotos = const <String>[];
+
+  /// Index into [_selectedPhotos] for the user-marked cover image. `null`
+  /// means "no explicit choice" — the bloc/server fall back to slot 0.
+  int? _primaryPhotoIndex;
 
   /// ISO-4217-ish code shown as the prefix on the budget/price input. Shared
   /// between task and service modes so a user who flips back and forth keeps
@@ -191,6 +204,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               minDurationMinutes:
                   _pricingType == GigPricingType.hourly ? minDuration : null,
               isRemote: _isRemote,
+              photoPaths: List<String>.unmodifiable(_selectedPhotos),
+              primaryPhotoIndex: _primaryPhotoIndex,
             ),
           );
     }
@@ -489,6 +504,51 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           ),
         ),
       ],
+      const SizedBox(height: 14),
+      // Reuses the same uploader that powers create/edit-listing — same
+      // pick / crop / camera flow, same primary-photo pill, same drag
+      // reorder. We feed it `existingPhotos: const []` because the
+      // publish screen always starts from a blank slate; the edit-offer
+      // screen (forthcoming) will pass real `Photo`s here.
+      PhotoUploader(
+        selectedPhotos: _selectedPhotos,
+        onPhotosChanged: (photos) {
+          setState(() {
+            _selectedPhotos = photos;
+            // Mirror create-listing: first picked photo becomes primary
+            // by default. Stays sticky if the user already chose one.
+            if (photos.isNotEmpty && _primaryPhotoIndex == null) {
+              _primaryPhotoIndex = 0;
+            } else if (photos.isEmpty) {
+              _primaryPhotoIndex = null;
+            }
+          });
+        },
+        existingPhotos: const [],
+        onDeleteExistingPhoto: (_) {},
+        onMakePhotoPrimary: (_) {},
+        onMakeNewPhotoPrimary: (i) =>
+            setState(() => _primaryPhotoIndex = i),
+        deletingPhotoIds: const {},
+        makingPhotoPrimaryIds: const {},
+        maxPhotos: AppConfig.maxPhotosPerGigOffer,
+        // Drive the grid off `_selectedPhotos` directly so drag-reorder
+        // updates both the on-screen order and the upload order on
+        // submit (slot 0 is uploaded as primary unless the user
+        // explicitly tapped a different tile).
+        orderedItems: [
+          for (final path in _selectedPhotos) NewPhotoItem(path),
+        ],
+        onReorderItems: (newOrder) {
+          setState(() {
+            _selectedPhotos = [
+              for (final item in newOrder)
+                if (item is NewPhotoItem) item.path,
+            ];
+            _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
+          });
+        },
+      ),
     ];
   }
 }

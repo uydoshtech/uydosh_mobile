@@ -60,6 +60,13 @@ abstract class RemoteConfigService {
   static const _kMaxPhotosPerListing = "max_photos_per_listing";
   static const _kDefaultMaxPhotosPerListing = "5";
 
+  /// Max number of photos a provider may attach to a single gig offer.
+  /// Independent from [_kMaxPhotosPerListing] so the two can be tuned
+  /// separately as the marketplaces evolve at different paces (a service
+  /// listing typically wants fewer cover shots than a flat).
+  static const _kMaxPhotosPerGigOffer = "max_photos_per_gig_offer";
+  static const _kDefaultMaxPhotosPerGigOffer = "5";
+
   /// Boolean flag (stored as the string `"true"` / `"false"`) that controls
   /// whether the small floating labels above the create/edit-listing form
   /// fields (title, description, price, etc.) are rendered. Defaults to
@@ -92,6 +99,7 @@ abstract class RemoteConfigService {
     _kGeminiApiKey2: EnvironmentUtil.compileTimeGeminiApiKey2,
     _kShowListingFormFieldLabels: _kDefaultShowListingFormFieldLabels,
     _kMaxPhotosPerListing: _kDefaultMaxPhotosPerListing,
+    _kMaxPhotosPerGigOffer: _kDefaultMaxPhotosPerGigOffer,
   };
 
   /// Currently-active values. Seeded from [_defaults], overridden by the
@@ -144,6 +152,19 @@ abstract class RemoteConfigService {
     final parsed = int.tryParse(raw?.trim() ?? "");
     if (parsed == null || parsed <= 0) {
       return int.parse(_kDefaultMaxPhotosPerListing);
+    }
+    return parsed;
+  }
+
+  /// Max number of photos per gig offer. Tunable independently from the
+  /// listings cap (see [maxPhotosPerListing]) under the
+  /// `max_photos_per_gig_offer` Firebase Console key. Same defensive
+  /// fallback rules.
+  static int get maxPhotosPerGigOffer {
+    final raw = _values[_kMaxPhotosPerGigOffer];
+    final parsed = int.tryParse(raw?.trim() ?? "");
+    if (parsed == null || parsed <= 0) {
+      return int.parse(_kDefaultMaxPhotosPerGigOffer);
     }
     return parsed;
   }

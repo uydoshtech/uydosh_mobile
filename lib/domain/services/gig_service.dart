@@ -1,3 +1,6 @@
+import "dart:convert";
+import "dart:io";
+
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
@@ -73,9 +76,23 @@ abstract class IGigService {
     required Map<String, dynamic> patch,
   });
   Future<void> deleteOffer(int id);
+
+  /// Link an already-hosted image to an offer by URL. Used by server-side /
+  /// admin tooling that already has a public URL on hand.
   Future<void> addOfferPhoto({
     required int offerId,
     required String photoUrl,
+    bool isPrimary = false,
+  });
+
+  /// Upload a local image file as a photo on an offer. Mirrors the listing
+  /// photo upload path: reads the file, encodes it as a base64
+  /// `data:image/jpeg;base64,...` payload, posts to
+  /// `POST /gigs/offers/:id/photos`. The server handles content moderation,
+  /// watermarking, and storage.
+  Future<void> uploadOfferPhoto({
+    required int offerId,
+    required String photoPath,
     bool isPrimary = false,
   });
 
@@ -357,6 +374,29 @@ class GigService implements IGigService {
       (json) => json as Map<String, dynamic>,
       basePath: _base,
       data: _RawJsonBody({"photo_url": photoUrl, "is_primary": isPrimary}),
+    );
+  }
+
+  @override
+  Future<void> uploadOfferPhoto({
+    required int offerId,
+    required String photoPath,
+    bool isPrimary = false,
+  }) async {
+    final file = File(photoPath);
+    if (!file.existsSync()) {
+      throw Exception("Photo file does not exist: $photoPath");
+    }
+    final bytes = await file.readAsBytes();
+    final imageData = "data:image/jpeg;base64,${base64Encode(bytes)}";
+    await _oauthClient.post<Map<String, dynamic>, _RawJsonBody>(
+      "/gigs/offers/$offerId/photos",
+      (json) => json as Map<String, dynamic>,
+      basePath: _base,
+      data: _RawJsonBody({
+        "image_data": imageData,
+        "is_primary": isPrimary,
+      }),
     );
   }
 

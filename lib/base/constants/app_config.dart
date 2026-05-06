@@ -36,4 +36,11 @@ class AppConfig {
   /// limit propagates to existing screens on the next frame after a
   /// successful RC fetch — no app restart required.
   static int get maxPhotosPerListing => EnvironmentUtil.maxPhotosPerListing;
+
+  /// Max photos per gig offer, resolved at runtime from Firebase Remote
+  /// Config (key: `max_photos_per_gig_offer`). Independent from
+  /// [maxPhotosPerListing] so the gigs marketplace can evolve its caps
+  /// separately from property listings.
+  static int get maxPhotosPerGigOffer =>
+      EnvironmentUtil.maxPhotosPerGigOffer;
 }

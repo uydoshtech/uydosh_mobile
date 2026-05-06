@@ -105,6 +105,17 @@ abstract class EnvironmentUtil {
     defaultValue: 5,
   );
 
+  /// Compile-time default for the max number of photos a provider may
+  /// attach to a single gig offer. Independent from
+  /// [compileTimeMaxPhotosPerListing] — see
+  /// `_kDefaultMaxPhotosPerGigOffer` in [RemoteConfigService] for the
+  /// mirroring fallback chain. Override with
+  /// `--dart-define=MAX_PHOTOS_PER_GIG_OFFER=…`.
+  static const compileTimeMaxPhotosPerGigOffer = int.fromEnvironment(
+    "MAX_PHOTOS_PER_GIG_OFFER",
+    defaultValue: 5,
+  );
+
   /// Current API base URL.
   ///
   /// Resolves at runtime from Remote Config (cached locally), falling back
@@ -152,6 +163,12 @@ abstract class EnvironmentUtil {
   /// not yet provided a value or the stored value is malformed.
   static int get maxPhotosPerListing =>
       RemoteConfigService.maxPhotosPerListing;
+
+  /// Max number of photos per gig offer. Resolves at runtime from Remote
+  /// Config, falling back to [compileTimeMaxPhotosPerGigOffer] when RC
+  /// has not yet provided a value or the stored value is malformed.
+  static int get maxPhotosPerGigOffer =>
+      RemoteConfigService.maxPhotosPerGigOffer;
 
   /// Convenience that returns `<API_BASE_PATH>/<api>` only when
   /// `API_BASE_PATH` was provided via `--dart-define` at build time,
