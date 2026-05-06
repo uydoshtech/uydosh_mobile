@@ -7,10 +7,10 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 
 class OutgoingConversationTile extends StatelessWidget {
   const OutgoingConversationTile({
@@ -129,14 +129,13 @@ class OutgoingConversationTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        resolvedConversationListingTitle(conversation),
-                        style: TextStyle(
+                      ConversationListingTitleWithCategoryIcon(
+                        conversation: conversation,
+                        textStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: textColor,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        iconColor: iconColor,
                       ),
                       if (hasLocation || hasSubwayStation || hasListingPrice) ...[
                         const SizedBox(height: 8),

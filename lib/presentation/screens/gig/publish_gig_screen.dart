@@ -1,8 +1,12 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/config/gemini_config.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
@@ -12,11 +16,13 @@ import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -40,9 +46,18 @@ class PublishGigScreen extends StatefulWidget {
   const PublishGigScreen({
     super.key,
     this.initialMode = GigPublishMode.task,
+    this.editingOffer,
   });
 
   final GigPublishMode initialMode;
+
+  /// When non-null, the screen runs in "edit service" mode: the
+  /// task/service toggle is hidden, all service fields are prefilled from
+  /// the offer, the photo uploader is hidden (photo edits are not part of
+  /// v1), the submit button reads "Save", and submission dispatches
+  /// [SubmitGigOfferEdit] (PATCH /gigs/offers/:id) instead of creating a
+  /// new offer.
+  final GigOffer? editingOffer;
 
   @override
   State<PublishGigScreen> createState() => _PublishGigScreenState();
@@ -55,6 +70,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   static const int _titleCounterVisibleAt = 40;
   static const int _descriptionMaxLength = 1000;
   static const int _descriptionCounterVisibleAt = 700;
+
+  /// Description grows from 4 → 7 lines when the user taps the chevron in the
+  /// counter toolbar. Mirrors the create/edit listing screens so users get the
+  /// same affordance everywhere the app collects long-form copy.
+  static const int _descriptionBaseLines = 4;
+  static const int _descriptionExpandedExtraLines = 3;
+  bool _isDescriptionExpanded = false;
 
   // Shared form scaffolding. Re-validating with the same key across modes
   // is fine because the conditionally-mounted fields drop out of the form
@@ -97,10 +119,34 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   String _currency = "UZS";
   static const List<String> _supportedCurrencies = ["UZS", "USD"];
 
+  bool get _isEditing => widget.editingOffer != null;
+
   @override
   void initState() {
     super.initState();
-    _mode = widget.initialMode;
+    // Edit flow always operates on the service flavor — there's no
+    // request-edit equivalent and the toggle is hidden anyway.
+    _mode = _isEditing ? GigPublishMode.service : widget.initialMode;
+
+    final offer = widget.editingOffer;
+    if (offer != null) {
+      // Prefer the embedded category from the API response; fall back to
+      // the local cache lookup so the picker still shows the correct chip
+      // when the response omitted the subobject.
+      _selectedCategory =
+          offer.category ?? GigCategoryCache.getById(offer.categoryId);
+      _titleController.text = offer.title;
+      // Prefill only from the Russian field — the create flow only writes
+      // `description_ru`, so the round trip stays consistent. The other
+      // locale columns (uz/en) are left untouched on save.
+      _descriptionController.text = offer.descriptionRu ?? "";
+      _pricingType = offer.pricingType;
+      _priceController.text = offer.price.toString();
+      _minDurationController.text =
+          offer.minDurationMinutes?.toString() ?? "";
+      _isRemote = offer.isRemote;
+      _currency = offer.currencyCode;
+    }
   }
 
   @override
@@ -115,6 +161,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   }
 
   void _setMode(GigPublishMode next) {
+    if (_isEditing) return; // mode is locked while editing an existing offer
     if (next == _mode) return;
     setState(() {
       _mode = next;
@@ -186,23 +233,41 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       final minDuration = _minDurationController.text.trim().isEmpty
           ? null
           : int.tryParse(_minDurationController.text.trim());
-      context.read<GigPostOfferBloc>().add(
-            SubmitGigOffer(
-              categoryId: _selectedCategory!.id,
-              title: _titleController.text.trim(),
-              pricingType: _pricingType,
-              price: price,
-              currencyCode: _currency,
-              descriptionRu: desc,
-              // Min-duration only meaningful for hourly pricing — drop it
-              // otherwise so we don't ship a misleading value to the API.
-              minDurationMinutes:
-                  _pricingType == GigPricingType.hourly ? minDuration : null,
-              isRemote: _isRemote,
-              photoPaths: List<String>.unmodifiable(_selectedPhotos),
-              primaryPhotoIndex: _primaryPhotoIndex,
-            ),
-          );
+      final editing = widget.editingOffer;
+      if (editing != null) {
+        context.read<GigPostOfferBloc>().add(
+              SubmitGigOfferEdit(
+                offerId: editing.id,
+                categoryId: _selectedCategory!.id,
+                title: _titleController.text.trim(),
+                pricingType: _pricingType,
+                price: price,
+                currencyCode: _currency,
+                descriptionRu: desc,
+                minDurationMinutes:
+                    _pricingType == GigPricingType.hourly ? minDuration : null,
+                isRemote: _isRemote,
+              ),
+            );
+      } else {
+        context.read<GigPostOfferBloc>().add(
+              SubmitGigOffer(
+                categoryId: _selectedCategory!.id,
+                title: _titleController.text.trim(),
+                pricingType: _pricingType,
+                price: price,
+                currencyCode: _currency,
+                descriptionRu: desc,
+                // Min-duration only meaningful for hourly pricing — drop it
+                // otherwise so we don't ship a misleading value to the API.
+                minDurationMinutes:
+                    _pricingType == GigPricingType.hourly ? minDuration : null,
+                isRemote: _isRemote,
+                photoPaths: List<String>.unmodifiable(_selectedPhotos),
+                primaryPhotoIndex: _primaryPhotoIndex,
+              ),
+            );
+      }
     }
   }
 
@@ -210,7 +275,14 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   Widget build(BuildContext context) {
     final language = LanguageState().currentLanguage;
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_publish_screen_title"))),
+      appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
+        title: Text(
+          _isEditing
+              ? L10n.get("gigs_edit_offer_title")
+              : L10n.get("gigs_publish_screen_title"),
+        ),
+      ),
       // Two listeners — one per bloc — handle the success/error toasts.
       // `MultiBlocListener` keeps the body free of nested builders.
       body: MultiBlocListener(
@@ -242,6 +314,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   ),
                 );
                 Navigator.of(context).pop();
+              } else if (state is GigOfferEditSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text(L10n.get("gigs_edit_offer_success_toast")),
+                  ),
+                );
+                // Pop the updated offer back to the detail screen so it can
+                // re-render without a follow-up GET round trip.
+                Navigator.of(context).pop<GigOffer>(state.updated);
               } else if (state is GigPostOfferError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
@@ -280,11 +362,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                     children: [
-                      _PublishModeToggle(
-                        value: _mode,
-                        onChanged: _setMode,
-                      ),
-                      const SizedBox(height: 22),
+                      if (!_isEditing) ...[
+                        _PublishModeToggle(
+                          value: _mode,
+                          onChanged: _setMode,
+                        ),
+                        const SizedBox(height: 22),
+                      ],
                       _FieldLabel(
                         L10n.get("gigs_post_request_field_category"),
                       ),
@@ -340,29 +424,49 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         L10n.get("gigs_post_request_field_description"),
                       ),
                       _PlateField(
-                        child: TextFormField(
-                          controller: _descriptionController,
-                          maxLines: 5,
-                          minLines: 4,
-                          maxLength: _descriptionMaxLength,
-                          style: _fieldTextStyle(context),
-                          decoration: _plateInputDecoration(
-                            context,
-                            hint: L10n.get(
-                              "gigs_post_request_field_description",
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 320),
+                          reverseDuration: const Duration(milliseconds: 320),
+                          curve: Curves.easeInOut,
+                          alignment: Alignment.topCenter,
+                          clipBehavior: Clip.hardEdge,
+                          child: TextFormField(
+                            controller: _descriptionController,
+                            minLines: _descriptionBaseLines +
+                                (_isDescriptionExpanded
+                                    ? _descriptionExpandedExtraLines
+                                    : 0),
+                            maxLines: _descriptionBaseLines +
+                                (_isDescriptionExpanded
+                                    ? _descriptionExpandedExtraLines
+                                    : 0),
+                            maxLength: _descriptionMaxLength,
+                            style: _descriptionTextStyle(context),
+                            decoration: _descriptionInputDecoration(
+                              context,
+                              hint: L10n.get(
+                                "gigs_post_request_field_description",
+                              ),
                             ),
-                          ),
-                          buildCounter: (
-                            context, {
-                            required currentLength,
-                            required isFocused,
-                            maxLength,
-                          }) =>
-                              _buildSubtleCounter(
-                            context,
-                            currentLength: currentLength,
-                            maxLength: maxLength ?? _descriptionMaxLength,
-                            visibleAt: _descriptionCounterVisibleAt,
+                            buildCounter: (
+                              context, {
+                              required currentLength,
+                              required isFocused,
+                              maxLength,
+                            }) {
+                              return _GigDescriptionToolbar(
+                                controller: _descriptionController,
+                                isOffer: _mode == GigPublishMode.service,
+                                currentLength: currentLength,
+                                maxLength: maxLength ?? _descriptionMaxLength,
+                                visibleAt: _descriptionCounterVisibleAt,
+                                isExpanded: _isDescriptionExpanded,
+                                onToggleExpanded: () => setState(() {
+                                  _isDescriptionExpanded =
+                                      !_isDescriptionExpanded;
+                                }),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -371,14 +475,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ..._buildTaskFields()
                       else
                         ..._buildServiceFields(),
-                      const SizedBox(height: 14),
-                      _RemoteTogglePlate(
-                        value: _isRemote,
-                        label:
-                            L10n.get("gigs_post_request_field_remote"),
-                        onChanged: (v) =>
-                            setState(() => _isRemote = v),
-                      ),
                       const SizedBox(height: 24),
                       PrimaryButton(
                         onPressed: submitting ? null : _submit,
@@ -387,9 +483,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         width: double.infinity,
                         borderRadius: BorderRadius.circular(16),
                         child: Text(
-                          _mode == GigPublishMode.task
-                              ? L10n.get("gigs_post_request_submit")
-                              : L10n.get("gigs_post_offer_submit"),
+                          _isEditing
+                              ? L10n.get("gigs_edit_offer_submit")
+                              : (_mode == GigPublishMode.task
+                                  ? L10n.get("gigs_post_request_submit")
+                                  : L10n.get("gigs_post_offer_submit")),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
@@ -414,23 +512,36 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         value: _budgetType,
         onChanged: (v) => setState(() => _budgetType = v),
       ),
-      if (_budgetType != GigRequestBudgetType.open) ...[
-        const SizedBox(height: 14),
-        _FieldLabel(L10n.get("gigs_post_request_field_amount")),
-        _CurrencyAmountField(
-          controller: _budgetController,
-          currency: _currency,
-          supportedCurrencies: _supportedCurrencies,
-          onCurrencyChanged: (c) => setState(() => _currency = c),
-          hint: "0",
-          showError: _showAmountError,
-          onChanged: (_) {
-            if (_showAmountError) {
-              setState(() => _showAmountError = false);
-            }
-          },
+      const SizedBox(height: 14),
+      // Budget amount + Remote toggle share one row (50/50). When the user
+      // picks "open budget" there's no amount input, so the remote toggle
+      // takes the full width on its own to keep the layout balanced.
+      if (_budgetType != GigRequestBudgetType.open)
+        _AmountAndRemoteRow(
+          amountLabel: L10n.get("gigs_post_request_field_amount"),
+          remoteLabel: L10n.get("gigs_post_request_field_remote"),
+          amountField: _CurrencyAmountField(
+            controller: _budgetController,
+            currency: _currency,
+            supportedCurrencies: _supportedCurrencies,
+            onCurrencyChanged: (c) => setState(() => _currency = c),
+            hint: "0",
+            showError: _showAmountError,
+            onChanged: (_) {
+              if (_showAmountError) {
+                setState(() => _showAmountError = false);
+              }
+            },
+          ),
+          isRemote: _isRemote,
+          onRemoteChanged: (v) => setState(() => _isRemote = v),
+        )
+      else
+        _RemoteTogglePlate(
+          value: _isRemote,
+          label: L10n.get("gigs_post_request_field_remote"),
+          onChanged: (v) => setState(() => _isRemote = v),
         ),
-      ],
       const SizedBox(height: 14),
       _FieldLabel(L10n.get("gigs_post_request_field_address")),
       _PlateField(
@@ -454,19 +565,25 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         onChanged: (v) => setState(() => _pricingType = v),
       ),
       const SizedBox(height: 14),
-      _FieldLabel(L10n.get("gigs_post_offer_field_price")),
-      _CurrencyAmountField(
-        controller: _priceController,
-        currency: _currency,
-        supportedCurrencies: _supportedCurrencies,
-        onCurrencyChanged: (c) => setState(() => _currency = c),
-        hint: "0",
-        showError: _showAmountError,
-        onChanged: (_) {
-          if (_showAmountError) {
-            setState(() => _showAmountError = false);
-          }
-        },
+      // Price + Remote toggle share one row (50/50).
+      _AmountAndRemoteRow(
+        amountLabel: L10n.get("gigs_post_offer_field_price"),
+        remoteLabel: L10n.get("gigs_post_request_field_remote"),
+        amountField: _CurrencyAmountField(
+          controller: _priceController,
+          currency: _currency,
+          supportedCurrencies: _supportedCurrencies,
+          onCurrencyChanged: (c) => setState(() => _currency = c),
+          hint: "0",
+          showError: _showAmountError,
+          onChanged: (_) {
+            if (_showAmountError) {
+              setState(() => _showAmountError = false);
+            }
+          },
+        ),
+        isRemote: _isRemote,
+        onRemoteChanged: (v) => setState(() => _isRemote = v),
       ),
       if (_pricingType == GigPricingType.hourly) ...[
         const SizedBox(height: 14),
@@ -484,51 +601,56 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           ),
         ),
       ],
-      const SizedBox(height: 14),
-      // Reuses the same uploader that powers create/edit-listing — same
-      // pick / crop / camera flow, same primary-photo pill, same drag
-      // reorder. We feed it `existingPhotos: const []` because the
-      // publish screen always starts from a blank slate; the edit-offer
-      // screen (forthcoming) will pass real `Photo`s here.
-      PhotoUploader(
-        selectedPhotos: _selectedPhotos,
-        onPhotosChanged: (photos) {
-          setState(() {
-            _selectedPhotos = photos;
-            // Mirror create-listing: first picked photo becomes primary
-            // by default. Stays sticky if the user already chose one.
-            if (photos.isNotEmpty && _primaryPhotoIndex == null) {
-              _primaryPhotoIndex = 0;
-            } else if (photos.isEmpty) {
-              _primaryPhotoIndex = null;
-            }
-          });
-        },
-        existingPhotos: const [],
-        onDeleteExistingPhoto: (_) {},
-        onMakePhotoPrimary: (_) {},
-        onMakeNewPhotoPrimary: (i) =>
-            setState(() => _primaryPhotoIndex = i),
-        deletingPhotoIds: const {},
-        makingPhotoPrimaryIds: const {},
-        maxPhotos: AppConfig.maxPhotosPerGigOffer,
-        // Drive the grid off `_selectedPhotos` directly so drag-reorder
-        // updates both the on-screen order and the upload order on
-        // submit (slot 0 is uploaded as primary unless the user
-        // explicitly tapped a different tile).
-        orderedItems: [
-          for (final path in _selectedPhotos) NewPhotoItem(path),
-        ],
-        onReorderItems: (newOrder) {
-          setState(() {
-            _selectedPhotos = [
-              for (final item in newOrder)
-                if (item is NewPhotoItem) item.path,
-            ];
-            _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
-          });
-        },
-      ),
+      // Photo editing on existing offers requires backend delete /
+      // set-primary endpoints we don't ship yet — so the uploader is
+      // hidden in edit mode. Users keep their existing photos as-is and
+      // can manage covers from a future dedicated photo screen.
+      if (!_isEditing) ...[
+        const SizedBox(height: 14),
+        // Reuses the same uploader that powers create/edit-listing — same
+        // pick / crop / camera flow, same primary-photo pill, same drag
+        // reorder. Create flow always starts from a blank slate, so we
+        // feed it `existingPhotos: const []`.
+        PhotoUploader(
+          selectedPhotos: _selectedPhotos,
+          onPhotosChanged: (photos) {
+            setState(() {
+              _selectedPhotos = photos;
+              // Mirror create-listing: first picked photo becomes primary
+              // by default. Stays sticky if the user already chose one.
+              if (photos.isNotEmpty && _primaryPhotoIndex == null) {
+                _primaryPhotoIndex = 0;
+              } else if (photos.isEmpty) {
+                _primaryPhotoIndex = null;
+              }
+            });
+          },
+          existingPhotos: const [],
+          onDeleteExistingPhoto: (_) {},
+          onMakePhotoPrimary: (_) {},
+          onMakeNewPhotoPrimary: (i) =>
+              setState(() => _primaryPhotoIndex = i),
+          deletingPhotoIds: const {},
+          makingPhotoPrimaryIds: const {},
+          maxPhotos: AppConfig.maxPhotosPerGigOffer,
+          // Drive the grid off `_selectedPhotos` directly so drag-reorder
+          // updates both the on-screen order and the upload order on
+          // submit (slot 0 is uploaded as primary unless the user
+          // explicitly tapped a different tile).
+          orderedItems: [
+            for (final path in _selectedPhotos) NewPhotoItem(path),
+          ],
+          onReorderItems: (newOrder) {
+            setState(() {
+              _selectedPhotos = [
+                for (final item in newOrder)
+                  if (item is NewPhotoItem) item.path,
+              ];
+              _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
+            });
+          },
+        ),
+      ],
     ];
   }
 }
@@ -607,12 +729,73 @@ TextStyle _fieldTextStyle(BuildContext context) {
   );
 }
 
+/// Description-only text style — mirrors `create_listing_screen.dart` so the
+/// gig description field paints the same color as the listing one.
+TextStyle _descriptionTextStyle(BuildContext context) {
+  return TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: ThemeState().isLightTheme
+        ? Colors.black
+        : Theme.of(context).colorScheme.onSurfaceVariant,
+  );
+}
+
+/// Description-only [InputDecoration] — mirrors `create_listing_screen.dart`
+/// so the gig description plate has the same internal padding, hint color,
+/// and (lack of) `isDense` as the listing one. Other gig fields keep the
+/// regular [_plateInputDecoration].
+InputDecoration _descriptionInputDecoration(
+  BuildContext context, {
+  String? hint,
+}) {
+  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
+  return InputDecoration(
+    hintText: cleanedHint,
+    hintStyle: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7)
+          : Colors.grey[400],
+    ),
+    border: OutlineInputBorder(
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      borderSide: BorderSide.none,
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      borderSide: BorderSide.none,
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      borderSide: BorderSide.none,
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      borderSide: BorderSide.none,
+    ),
+    filled: true,
+    fillColor: Colors.transparent,
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 12,
+    ),
+  );
+}
+
 InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   final hintColor = Theme.of(context).brightness == Brightness.dark
       ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
       : Colors.grey[500];
+  final cleanedHint =
+      hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
   return InputDecoration(
-    hintText: hint,
+    hintText: cleanedHint,
     hintStyle: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
@@ -644,7 +827,7 @@ class _FieldLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 6, bottom: 6, top: 2),
       child: Text(
-        text,
+        text.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim(),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -1075,6 +1258,53 @@ class _PricingTypePlate extends StatelessWidget {
   }
 }
 
+/// Side-by-side row that pairs the labeled price/budget input with the
+/// labeled remote toggle. Each child takes 50% of the available width.
+/// Uses [CrossAxisAlignment.end] so the two plates line up at their bottom
+/// edge — which is what the eye reads as "the same row" — even though the
+/// left column has an extra `_FieldLabel` above the plate.
+class _AmountAndRemoteRow extends StatelessWidget {
+  const _AmountAndRemoteRow({
+    required this.amountLabel,
+    required this.remoteLabel,
+    required this.amountField,
+    required this.isRemote,
+    required this.onRemoteChanged,
+  });
+
+  final String amountLabel;
+  final String remoteLabel;
+  final Widget amountField;
+  final bool isRemote;
+  final ValueChanged<bool> onRemoteChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _FieldLabel(amountLabel),
+              amountField,
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _RemoteTogglePlate(
+            value: isRemote,
+            label: remoteLabel,
+            onChanged: onRemoteChanged,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _RemoteTogglePlate extends StatelessWidget {
   const _RemoteTogglePlate({
     required this.value,
@@ -1109,6 +1339,105 @@ class _RemoteTogglePlate extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Counter-row used as `TextField.buildCounter` for the description field.
+/// Shows the AI-enhance action on the left and a `currentLength/maxLength`
+/// + expand chevron on the right. Mirrors the listing screens' affordance
+/// — sans the "Template" button, which is housing-specific.
+class _GigDescriptionToolbar extends StatelessWidget {
+  const _GigDescriptionToolbar({
+    required this.controller,
+    required this.isOffer,
+    required this.currentLength,
+    required this.maxLength,
+    required this.visibleAt,
+    required this.isExpanded,
+    required this.onToggleExpanded,
+  });
+
+  final TextEditingController controller;
+  final bool isOffer;
+  final int currentLength;
+  final int maxLength;
+  final int visibleAt;
+  final bool isExpanded;
+  final VoidCallback onToggleExpanded;
+
+  bool get _showCounterText {
+    if (visibleAt <= 0) return true;
+    if (maxLength <= 0) return true;
+    return currentLength >= visibleAt;
+  }
+
+  Color _resolveCounterColor(BuildContext context) {
+    final isAtLimit = maxLength > 0 && currentLength >= maxLength;
+    if (isAtLimit) return Theme.of(context).colorScheme.error;
+    final theme = Theme.of(context);
+    return theme.brightness == Brightness.dark
+        ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)
+        : Colors.black;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _resolveCounterColor(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ListingDescriptionAiEnhanceButton(
+            controller: controller,
+            inlineWithCounter: true,
+            canEnhance: () => GeminiConfig.isConfigured,
+            enhance: (text) => getIt<GeminiService>()
+                .enhanceGigDescription(text: text, isOffer: isOffer),
+          ),
+          const Spacer(),
+          if (_showCounterText) ...[
+            Text(
+              "$currentLength/$maxLength",
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+          Semantics(
+            button: true,
+            label:
+                isExpanded ? "Collapse description" : "Expand description",
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () {
+                HapticFeedbackUtils.lightImpact();
+                onToggleExpanded();
+              },
+              child: SizedBox(
+                width: 32,
+                height: 28,
+                child: Center(
+                  child: AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeInOut,
+                    child: const Icon(
+                      Icons.expand_more,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

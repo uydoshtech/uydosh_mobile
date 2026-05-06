@@ -78,6 +78,15 @@ class MainNavigationState extends State<MainNavigation>
   bool _notificationsBellTutorialShownThisSession = false;
   bool _notificationsBellTutorialPending = false;
 
+  /// Tab the user was on before they entered a "create" flow via the bottom
+  /// bar's "+" chooser. Used so that picking Service after Housing doesn't
+  /// strand the half-filled Housing-create tab in the back stack — we
+  /// switch back to this tab before pushing the gig publish route, which
+  /// makes a single back press from the gig screen return the user to
+  /// where they actually came from. Cleared whenever the user manually
+  /// taps a tab in the bottom bar so it doesn't leak across flows.
+  int? _previousIndexBeforeCreate;
+
   late final VoidCallback _authStateListener;
   late final VoidCallback _unreadMessagesListener;
 
@@ -719,6 +728,14 @@ class MainNavigationState extends State<MainNavigation>
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
+                        // Remember where the user was *before* entering the
+                        // create-listing tab so a subsequent Service pick
+                        // can restore it; only set on first entry to avoid
+                        // overwriting it if the user re-opens the chooser
+                        // while already on tab 3.
+                        if (_currentIndex != 3) {
+                          _previousIndexBeforeCreate = _currentIndex;
+                        }
                         setState(() {
                           _currentIndex = 3;
                         });
@@ -733,6 +750,19 @@ class MainNavigationState extends State<MainNavigation>
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
+                        // If the user came here via Housing first, hop the
+                        // visible tab back to where they originally were
+                        // before pushing the gig publish route. That way a
+                        // single back press from the gig screen returns
+                        // them to their starting point instead of leaving
+                        // an abandoned create-listing tab in the back stack.
+                        if (_currentIndex == 3) {
+                          final restoreIndex = _previousIndexBeforeCreate ?? 0;
+                          _previousIndexBeforeCreate = null;
+                          setState(() {
+                            _currentIndex = restoreIndex;
+                          });
+                        }
                         context.pushPublishGig(
                           initialMode: GigPublishMode.service,
                         );
@@ -755,6 +785,7 @@ class MainNavigationState extends State<MainNavigation>
       debugPrint(
         "🧭 MainNavigation: Setting _currentIndex from $_currentIndex to $index",
       );
+      _previousIndexBeforeCreate = null;
       setState(() {
         _currentIndex = index;
       });
@@ -1069,6 +1100,11 @@ class MainNavigationState extends State<MainNavigation>
                     // Favorites and Conversations require authentication
                     return; // Don"t navigate, stay on current screen
                   }
+
+                  // Manual tab change ends any in-progress create flow,
+                  // so the previous-index tracker shouldn't bleed into a
+                  // later "+" → Service pick.
+                  _previousIndexBeforeCreate = null;
 
                   // Allow navigation to all tabs
                   setState(() {

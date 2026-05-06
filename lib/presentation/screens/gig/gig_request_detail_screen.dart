@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -41,7 +42,10 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_request_detail_title"))),
+      appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
+        title: Text(L10n.get("gigs_request_detail_title")),
+      ),
       body: FutureBuilder<GigRequest>(
         future: _future,
         builder: (context, snap) {
@@ -269,7 +273,7 @@ class _RequestDetailContent extends StatelessWidget {
           left: 16,
           right: 16,
           bottom: 16 + bottomInset,
-          child: PrimaryButtonFactory.iconTextCentered(
+          child: PrimaryButtonFactory.iconText(
             onPressed: contactInFlight ? null : onContactPressed,
             icon: Icons.chat_bubble_outline,
             text: L10n.get("gigs_request_contact_cta"),

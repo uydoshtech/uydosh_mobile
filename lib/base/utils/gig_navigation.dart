@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
@@ -66,6 +67,35 @@ extension GigNavigatorExtensions on BuildContext {
         builder: (_) => BlocProvider(
           create: (_) => GigPostOfferBloc(getIt<IGigService>()),
           child: const PostGigOfferScreen(),
+        ),
+      ),
+    );
+  }
+
+  /// Owner-only entry point: opens [PublishGigScreen] in edit mode for the
+  /// given service. The screen pops with the updated [GigOffer] on success
+  /// (or `null` on dismiss / cancel) so the caller can rebuild from fresh
+  /// state without a follow-up GET.
+  Future<GigOffer?> pushEditGigOffer(GigOffer offer) {
+    return Navigator.of(this).push<GigOffer>(
+      MaterialPageRoute<GigOffer>(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            // Edit mode locks to the service flavor so the request bloc is
+            // unused — but [PublishGigScreen]'s `MultiBlocListener`/builders
+            // still read it. Provide a no-op instance to keep the screen
+            // shape identical between create and edit.
+            BlocProvider(
+              create: (_) => GigPostRequestBloc(getIt<IGigService>()),
+            ),
+            BlocProvider(
+              create: (_) => GigPostOfferBloc(getIt<IGigService>()),
+            ),
+          ],
+          child: PublishGigScreen(
+            initialMode: GigPublishMode.service,
+            editingOffer: offer,
+          ),
         ),
       ),
     );

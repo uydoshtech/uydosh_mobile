@@ -3,6 +3,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 
@@ -27,7 +28,10 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_requests_title"))),
+      appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
+        title: Text(L10n.get("gigs_requests_title")),
+      ),
       body: FutureBuilder<({List<GigRequest> requests, bool hasMore})>(
         future: _future,
         builder: (context, snap) {

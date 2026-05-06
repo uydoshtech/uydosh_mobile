@@ -51,6 +51,8 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "context_id") int? contextId,
     @JsonKey(name: "gig_request_id") int? gigRequestId,
     @JsonKey(name: "gig_request_title") String? gigRequestTitle,
+    /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
+    @JsonKey(name: "gig_category_id") int? gigCategoryId,
     @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,

@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 
@@ -39,7 +40,10 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_browse_title"))),
+      appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
+        title: Text(L10n.get("gigs_browse_title")),
+      ),
       body: BlocBuilder<GigOffersBloc, GigOffersState>(
         builder: (context, state) {
           if (state is GigOffersLoading || state is GigOffersInitial) {

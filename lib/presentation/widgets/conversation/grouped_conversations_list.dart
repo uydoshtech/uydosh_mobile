@@ -6,11 +6,11 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 
 class GroupedConversationsList extends StatefulWidget {
@@ -162,13 +162,9 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         final listingId = _sortedListingIds[i];
         final conversations = _groupedConversations[listingId] ?? const [];
         final isExpanded = _expandedGroups[listingId] ?? false;
-        final listingTitle = conversations.isEmpty
-            ? ""
-            : resolvedConversationListingTitle(conversations.first);
         children.add(
           _buildGroupCard(
             listingId: listingId,
-            listingTitle: listingTitle,
             conversations: conversations,
             isExpanded: isExpanded,
           ),
@@ -192,13 +188,9 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         final conversations = _groupedConversations[listingId] ?? const [];
         final isExpanded =
             _expandedGroups[listingId] ?? false; // Default to collapsed
-        final listingTitle = conversations.isEmpty
-            ? ""
-            : resolvedConversationListingTitle(conversations.first);
 
         return _buildGroupCard(
           listingId: listingId,
-          listingTitle: listingTitle,
           conversations: conversations,
           isExpanded: isExpanded,
         );
@@ -208,7 +200,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
   Widget _buildGroupCard({
     required int listingId,
-    required String listingTitle,
     required List<ConversationSummary> conversations,
     required bool isExpanded,
   }) {
@@ -283,15 +274,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    listingTitle,
-                                    style: TextStyle(
+                                  ConversationListingTitleWithCategoryIcon(
+                                    conversation: firstConversation,
+                                    textStyle: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                       color: textColor,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    iconColor: iconColor,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(

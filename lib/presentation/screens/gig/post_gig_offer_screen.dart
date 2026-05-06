@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -111,7 +112,10 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
         final submitting = state is GigPostOfferSubmitting;
 
         return Scaffold(
-          appBar: AppBar(title: Text(L10n.get("gigs_post_offer_title"))),
+          appBar: AppBar(
+            leading: ThreeDAppBarIconButton.backLeading(context),
+            title: Text(L10n.get("gigs_post_offer_title")),
+          ),
           body: Form(
             key: _formKey,
             child: ListView(
@@ -258,8 +262,10 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   final hintColor = Theme.of(context).brightness == Brightness.dark
       ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
       : Colors.grey[500];
+  final cleanedHint =
+      hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
   return InputDecoration(
-    hintText: hint,
+    hintText: cleanedHint,
     hintStyle: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
@@ -292,7 +298,7 @@ class _FieldLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 6, bottom: 6, top: 2),
       child: Text(
-        text,
+        text.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim(),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,

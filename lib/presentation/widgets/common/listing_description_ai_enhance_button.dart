@@ -7,17 +7,40 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
-/// Compact “AI enhance” action for listing description fields (create / edit).
+/// Signature for callbacks that take the current trimmed text and return an
+/// improved version (or `null` on failure / unavailable).
+typedef DescriptionEnhanceCallback = Future<String?> Function(String text);
+
+/// Compact “AI enhance” action for listing/gig description fields (create /
+/// edit). Defaults to housing-listing copy + [GeminiService.enhanceListingDescription];
+/// callers can override [enhance] / [canEnhance] / [errorKey] to plug the same
+/// affordance into a different domain (e.g. gigs).
 class ListingDescriptionAiEnhanceButton extends StatefulWidget {
   const ListingDescriptionAiEnhanceButton({
     required this.controller,
     super.key,
     /// When true, omit outer alignment/padding for use in a [Row] with the char counter.
     this.inlineWithCounter = false,
+    this.enhance,
+    this.canEnhance,
+    this.errorKey,
   });
 
   final TextEditingController controller;
   final bool inlineWithCounter;
+
+  /// Override the default "improve this listing" call. Receives the trimmed
+  /// input text; should return the improved text or `null` if the model
+  /// failed / produced nothing.
+  final DescriptionEnhanceCallback? enhance;
+
+  /// Override the default availability check (defaults to
+  /// [GeminiService.canEnhanceListingDescription]).
+  final bool Function()? canEnhance;
+
+  /// Localization key for the toast shown when the model fails. Defaults to
+  /// `listing_ai_enhance_error` for housing-listing copy.
+  final String? errorKey;
 
   @override
   State<ListingDescriptionAiEnhanceButton> createState() =>
@@ -108,7 +131,9 @@ class _ListingDescriptionAiEnhanceButtonState
       return;
     }
     final gemini = getIt<GeminiService>();
-    if (!gemini.canEnhanceListingDescription) {
+    final canEnhance =
+        widget.canEnhance?.call() ?? gemini.canEnhanceListingDescription;
+    if (!canEnhance) {
       ToastTheme.showError(
         context,
         message: L10n.get("listing_ai_enhance_unavailable"),
@@ -119,14 +144,16 @@ class _ListingDescriptionAiEnhanceButtonState
       _loading = true;
     });
     try {
-      final enhanced = await gemini.enhanceListingDescription(text: raw);
+      final enhanced = await (widget.enhance != null
+          ? widget.enhance!.call(raw)
+          : gemini.enhanceListingDescription(text: raw));
       if (!mounted) {
         return;
       }
       if (enhanced == null || enhanced.trim().isEmpty) {
         ToastTheme.showError(
           context,
-          message: L10n.get("listing_ai_enhance_error"),
+          message: L10n.get(widget.errorKey ?? "listing_ai_enhance_error"),
         );
         return;
       }

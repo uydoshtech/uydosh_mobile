@@ -10,10 +10,10 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
-import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({super.key});
@@ -327,11 +327,13 @@ class ConversationCard extends StatelessWidget {
                 (conversation.listingTypeId != null &&
                     (conversation.listingTypeId == 1 ||
                         conversation.listingTypeId == 2))) ...[
-              Text(
-                resolvedConversationListingTitle(conversation),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              ConversationListingTitleWithCategoryIcon(
+                conversation: conversation,
+                textStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
+                iconColor: Theme.of(context).colorScheme.primary,
+                iconSize: 18,
               ),
               const SizedBox(height: 2),
             ],

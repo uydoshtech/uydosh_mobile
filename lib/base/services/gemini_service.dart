@@ -205,6 +205,107 @@ class GeminiService {
     return null;
   }
 
+  /// Same contract as [enhanceListingDescription] but tuned for gig posts
+  /// (services someone offers, or tasks someone needs done) instead of
+  /// housing/roommate listings. The prompt nudges the model away from the
+  /// roommate-listing voice and toward concise, neutral service copy.
+  Future<String?> enhanceGigDescription({
+    required String text,
+    required bool isOffer,
+  }) async {
+    try {
+      return await _enhanceGigDescriptionImpl(
+        text: text,
+        isOffer: isOffer,
+      ).timeout(
+        _enhanceListingOverallTimeout,
+        onTimeout: () {
+          logger.w(
+            "Gemini enhance gig: timed out after ${_enhanceListingOverallTimeout.inSeconds}s",
+          );
+          return null;
+        },
+      );
+    } catch (e, st) {
+      logger.w("Gemini enhance gig: $e", error: e, stackTrace: st);
+      return null;
+    }
+  }
+
+  Future<String?> _enhanceGigDescriptionImpl({
+    required String text,
+    required bool isOffer,
+  }) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    if (!GeminiConfig.isConfigured) {
+      return null;
+    }
+    final prompt = _buildGigEnhancePrompt(trimmed, isOffer: isOffer);
+
+    for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
+      final key = GeminiConfig.apiKeys[i];
+      try {
+        final response = await _modelForEnhanceKey(key)
+            .generateContent([Content.text(prompt)])
+            .timeout(_directGenerateContentTimeout);
+        final out = _extractResponseText(response);
+        if (out != null && out.isNotEmpty) {
+          final s = out.trim();
+          return s.length > 1000 ? s.substring(0, 1000) : s;
+        }
+        logger.w("Gemini enhance gig: empty response (key index $i)");
+      } on TimeoutException catch (e, st) {
+        logger.w(
+          "Gemini enhance gig timed out (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      } on GenerativeAIException catch (e, st) {
+        logger.w(
+          "Gemini enhance gig failed (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      } catch (e, st) {
+        logger.w(
+          "Gemini enhance gig error (key index $i): $e",
+          error: e,
+          stackTrace: st,
+        );
+      }
+    }
+    return null;
+  }
+
+  static String _buildGigEnhancePrompt(String trimmed, {required bool isOffer}) {
+    final langBlock = _languagePreserveInstruction(trimmed);
+    final domainHint = isOffer
+        ? "a service the user offers (e.g. cleaning, repair, tutoring, design)"
+        : "a task the user needs done (e.g. furniture assembly, moving help, "
+            "translation, photography)";
+    return "You edit short gig-marketplace descriptions for a mobile app. "
+        "The text describes $domainHint.\n\n"
+        "$langBlock\n\n"
+        "TASK: Improve clarity, grammar, and punctuation only. Fix typos. "
+        "Do NOT translate, do NOT switch languages, and do NOT summarize.\n"
+        "Preserve meaning, numbers, prices, addresses, and tone.\n"
+        "CASE RULE: For any word written in ALL CAPS (two or more consecutive uppercase letters), "
+        "convert it to Pascal case — capitalize only the first letter and lowercase the rest "
+        "(e.g. \"BEAUTIFUL APARTMENT\" -> \"Beautiful Apartment\", \"СРОЧНО\" -> \"Срочно\"). "
+        "EXCEPTIONS — keep ALL CAPS unchanged for: proper names, place names, brand/company names, "
+        "person names, and well-known acronyms/initialisms (e.g. USA, USSR, Wi-Fi, TV, AC, ID, NYC, "
+        "BMW, IKEA, ТЦ, ЖК, СНТ, метро). When unsure whether a word is an acronym or a proper name, keep it as written.\n"
+        "Do not add a title, quotation marks, labels, or any text before or after the description.\n"
+        "Maximum length 1000 characters.\n"
+        "Output ONLY the improved description text, nothing else.\n\n"
+        "---\n"
+        "GIG TEXT:\n"
+        "$trimmed";
+  }
+
   /// Heuristic language hint + strict “no translation” instructions for enhance.
   static String _buildEnhancePrompt(String trimmed) {
     final langBlock = _languagePreserveInstruction(trimmed);

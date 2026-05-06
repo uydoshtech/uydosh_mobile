@@ -2,10 +2,12 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -41,7 +43,10 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       },
       builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: Text(L10n.get("gigs_offer_detail_title"))),
+          appBar: AppBar(
+            leading: ThreeDAppBarIconButton.backLeading(context),
+            title: Text(L10n.get("gigs_offer_detail_title")),
+          ),
           body: _buildBody(context, state),
         );
       },
@@ -234,24 +239,48 @@ class _OfferDetailContent extends StatelessWidget {
           left: 16,
           right: 16,
           bottom: 16,
-          child: PrimaryButton(
-            onPressed: state.bookingInFlight
-                ? null
-                : () => context
-                    .read<GigOfferDetailBloc>()
-                    .add(const BookThisOffer()),
-            isLoading: state.bookingInFlight,
-            height: 54,
-            width: double.infinity,
-            borderRadius: BorderRadius.circular(16),
-            child: Text(
-              L10n.get("gigs_offer_book_cta"),
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
-          ),
+          // Owners can't book their own offer — swap the booking CTA for
+          // an edit entry point that opens the publish screen prefilled
+          // from this offer. After a successful save we re-fetch the
+          // detail so the screen reflects the new state immediately.
+          child: UserListingState().isOwner(offer.providerUserId)
+              ? PrimaryButton(
+                  onPressed: () async {
+                    final detailBloc = context.read<GigOfferDetailBloc>();
+                    final updated = await context.pushEditGigOffer(offer);
+                    if (updated != null) {
+                      detailBloc.add(FetchGigOfferDetail(offer.id));
+                    }
+                  },
+                  height: 54,
+                  width: double.infinity,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Text(
+                    L10n.get("gigs_offer_edit_cta"),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+              : PrimaryButton(
+                  onPressed: state.bookingInFlight
+                      ? null
+                      : () => context
+                          .read<GigOfferDetailBloc>()
+                          .add(const BookThisOffer()),
+                  isLoading: state.bookingInFlight,
+                  height: 54,
+                  width: double.infinity,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Text(
+                    L10n.get("gigs_offer_book_cta"),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
         ),
       ],
     );

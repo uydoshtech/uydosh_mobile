@@ -43,6 +43,33 @@ class SubmitGigOffer extends GigPostOfferEvent {
   final int? primaryPhotoIndex;
 }
 
+/// Owner-only edit of an existing offer. Goes through `PATCH /gigs/offers/:id`
+/// with whichever subset of fields the screen wants to overwrite. The
+/// publish flow (`SubmitGigOffer`) still owns photo upload — for v1 the edit
+/// screen only modifies text/numeric/category fields.
+class SubmitGigOfferEdit extends GigPostOfferEvent {
+  const SubmitGigOfferEdit({
+    required this.offerId,
+    required this.categoryId,
+    required this.title,
+    required this.pricingType,
+    required this.price,
+    this.currencyCode = "UZS",
+    this.descriptionRu,
+    this.minDurationMinutes,
+    this.isRemote = false,
+  });
+  final int offerId;
+  final int categoryId;
+  final String title;
+  final GigPricingType pricingType;
+  final int price;
+  final String currencyCode;
+  final String? descriptionRu;
+  final int? minDurationMinutes;
+  final bool isRemote;
+}
+
 abstract class GigPostOfferState {
   const GigPostOfferState();
 }
@@ -60,6 +87,11 @@ class GigPostOfferSubmitting extends GigPostOfferState {
 class GigPostOfferSuccess extends GigPostOfferState {
   const GigPostOfferSuccess(this.created);
   final GigOffer created;
+}
+
+class GigOfferEditSuccess extends GigPostOfferState {
+  const GigOfferEditSuccess(this.updated);
+  final GigOffer updated;
 }
 
 class GigPostOfferError extends GigPostOfferState {
@@ -113,6 +145,33 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
         }
 
         emit(GigPostOfferSuccess(offer));
+      } catch (err) {
+        emit(GigPostOfferError(err.toString()));
+      }
+    });
+
+    on<SubmitGigOfferEdit>((e, emit) async {
+      emit(const GigPostOfferSubmitting());
+      try {
+        // Build a sparse patch — sending the full set of fields is harmless
+        // (the backend `updateOffer` accepts a `Partial<…>`) but keeping
+        // only the user-editable subset documents which fields this screen
+        // actually owns. Photo edits are a separate, future workflow.
+        final patch = <String, dynamic>{
+          "category_id": e.categoryId,
+          "title": e.title,
+          "pricing_type": gigPricingTypeToString(e.pricingType),
+          "price": e.price,
+          "currency_code": e.currencyCode,
+          // Send `null` (not "") when description was cleared so the server
+          // can wipe the column rather than store an empty string.
+          "description_ru": e.descriptionRu,
+          "min_duration_minutes":
+              e.pricingType == GigPricingType.hourly ? e.minDurationMinutes : null,
+          "is_remote": e.isRemote,
+        };
+        final updated = await _service.updateOffer(id: e.offerId, patch: patch);
+        emit(GigOfferEditSuccess(updated));
       } catch (err) {
         emit(GigPostOfferError(err.toString()));
       }

@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
@@ -200,35 +201,19 @@ class _GigHubBodyState extends State<_GigHubBody> {
         // Allow pull-to-refresh even when the body is short / empty.
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, topPad, 16, 12),
-            sliver: SliverToBoxAdapter(
-              child: NeumorphicSegmentedSwitch<GigHubFeed>(
-                value: _feed,
-                onChanged: _onFeedChanged,
-                entries: [
-                  SegmentedSwitchEntry(
-                    value: GigHubFeed.services,
-                    label: L10n.get("gigs_hub_feed_services"),
-                    icon: Icons.handyman_outlined,
-                  ),
-                  SegmentedSwitchEntry(
-                    value: GigHubFeed.tasks,
-                    label: L10n.get("gigs_hub_feed_tasks"),
-                    icon: Icons.assignment_outlined,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.only(bottom: 12),
-            sliver: SliverToBoxAdapter(
-              child: _CategoryRibbon(
-                categories: _categories,
-                selectedCategoryId: _selectedCategoryId,
-                onSelected: _onCategorySelected,
-              ),
+          // Pinned header keeps the feed switch + category ribbon visible
+          // while the underlying list scrolls, so users can change feed or
+          // category without scrolling back to the top first.
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _GigHubPinnedHeaderDelegate(
+              topPadding: topPad,
+              feed: _feed,
+              onFeedChanged: _onFeedChanged,
+              categories: _categories,
+              selectedCategoryId: _selectedCategoryId,
+              onCategorySelected: _onCategorySelected,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             ),
           ),
           ..._buildFeedSlivers(context),
@@ -257,7 +242,10 @@ class _GigHubBodyState extends State<_GigHubBody> {
       return body;
     }
     return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_hub_title"))),
+      appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
+        title: Text(L10n.get("gigs_hub_title")),
+      ),
       body: body,
     );
   }
@@ -356,6 +344,106 @@ class _GigHubBodyState extends State<_GigHubBody> {
         },
       ),
     ];
+  }
+}
+
+/// Pinned header at the top of [GigHubScreen]: stacks the feed segmented
+/// switch (Services / Tasks) above the horizontally scrollable category
+/// ribbon. Painted on top of the scaffold background so feed items
+/// scrolling underneath don't bleed through.
+class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _GigHubPinnedHeaderDelegate({
+    required this.topPadding,
+    required this.feed,
+    required this.onFeedChanged,
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+    required this.backgroundColor,
+  });
+
+  final double topPadding;
+  final GigHubFeed feed;
+  final ValueChanged<GigHubFeed> onFeedChanged;
+  final List<GigCategory> categories;
+  final int? selectedCategoryId;
+  final ValueChanged<int?> onCategorySelected;
+  final Color backgroundColor;
+
+  /// Segmented switch height (matches [NeumorphicSegmentedSwitch]'s default).
+  static const double _switchHeight = 48;
+
+  /// Spacing below the segmented switch, before the category ribbon.
+  static const double _switchToRibbonGap = 12;
+
+  /// Height of the category ribbon (mirrors [_CategoryRibbon._ribbonHeight]).
+  static const double _ribbonHeight = 56;
+
+  /// Spacing below the ribbon, before the first feed item.
+  static const double _ribbonBottomGap = 12;
+
+  double get _height =>
+      topPadding +
+      _switchHeight +
+      _switchToRibbonGap +
+      _ribbonHeight +
+      _ribbonBottomGap;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: backgroundColor,
+      padding: EdgeInsets.only(top: topPadding, bottom: _ribbonBottomGap),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: NeumorphicSegmentedSwitch<GigHubFeed>(
+              value: feed,
+              onChanged: onFeedChanged,
+              entries: [
+                SegmentedSwitchEntry(
+                  value: GigHubFeed.services,
+                  label: L10n.get("gigs_hub_feed_services"),
+                  icon: Icons.handyman_outlined,
+                ),
+                SegmentedSwitchEntry(
+                  value: GigHubFeed.tasks,
+                  label: L10n.get("gigs_hub_feed_tasks"),
+                  icon: Icons.assignment_outlined,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: _switchToRibbonGap),
+          _CategoryRibbon(
+            categories: categories,
+            selectedCategoryId: selectedCategoryId,
+            onSelected: onCategorySelected,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_GigHubPinnedHeaderDelegate oldDelegate) {
+    return topPadding != oldDelegate.topPadding ||
+        feed != oldDelegate.feed ||
+        selectedCategoryId != oldDelegate.selectedCategoryId ||
+        backgroundColor != oldDelegate.backgroundColor ||
+        !identical(categories, oldDelegate.categories);
   }
 }
 
@@ -651,9 +739,14 @@ class _EmptySliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
+    // Fill the rest of the viewport so the column's `Center` can vertically
+    // center it between the category ribbon and the bottom of the screen,
+    // rather than parking it just below the ribbon. Bottom padding keeps the
+    // text from sitting under the floating "My bookings" pill.
+    return SliverFillRemaining(
+      hasScrollBody: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48),
+        padding: const EdgeInsets.only(bottom: 96),
         child: UydoshEmptyColumn(icon: icon, title: message),
       ),
     );
