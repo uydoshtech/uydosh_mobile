@@ -1,14 +1,11 @@
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/cache/gig_category_cache.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 
 abstract class GigPostRequestEvent {
   const GigPostRequestEvent();
-}
-
-class LoadCategoriesForRequest extends GigPostRequestEvent {
-  const LoadCategoriesForRequest();
 }
 
 class SubmitGigRequest extends GigPostRequestEvent {
@@ -39,21 +36,9 @@ abstract class GigPostRequestState {
 }
 
 class GigPostRequestIdle extends GigPostRequestState {
-  const GigPostRequestIdle({
-    this.categories = const <GigCategory>[],
-    this.loadingCategories = false,
-    this.categoriesError,
-  });
+  const GigPostRequestIdle({required this.categories});
 
   final List<GigCategory> categories;
-
-  /// True while the initial categories request is in-flight. Distinguishes
-  /// "still loading" from "loaded and the response was empty / failed".
-  final bool loadingCategories;
-
-  /// Last error encountered while loading categories, if any. Cleared on the
-  /// next successful load.
-  final String? categoriesError;
 }
 
 class GigPostRequestSubmitting extends GigPostRequestState {
@@ -71,19 +56,8 @@ class GigPostRequestError extends GigPostRequestState {
 }
 
 class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> {
-  GigPostRequestBloc(this._service) : super(const GigPostRequestIdle()) {
-    on<LoadCategoriesForRequest>((_, emit) async {
-      emit(const GigPostRequestIdle(loadingCategories: true));
-      try {
-        final cats = await _service.listCategories();
-        emit(GigPostRequestIdle(categories: cats));
-      } catch (err) {
-        // Stay in Idle (so the form is still usable) but surface the error
-        // through the dropdown plate. Going to GigPostRequestError would
-        // dump the user out of the screen via the SnackBar listener.
-        emit(GigPostRequestIdle(categoriesError: err.toString()));
-      }
-    });
+  GigPostRequestBloc(this._service)
+      : super(GigPostRequestIdle(categories: GigCategoryCache.getOrdered())) {
     on<SubmitGigRequest>((e, emit) async {
       emit(const GigPostRequestSubmitting());
       try {

@@ -1,4 +1,4 @@
-.PHONY: help bump-build bump-patch bump-minor bump-major version build-apk build-aab build-ios
+.PHONY: help bump-build bump-patch bump-minor bump-major version build-apk build-aab build-ios run-web run-web-debug
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -94,4 +94,21 @@ analyze-size-android: ## Treemap of release AAB contents (open the printed JSON 
 
 analyze-size-ios: ## Treemap of release iOS contents (open the printed JSON in DevTools)
 	flutter build ios --release --tree-shake-icons --analyze-size
+
+# Web dev server with a PINNED port so Firebase / Google OAuth redirect URIs
+# (http://localhost:5555) only need to be whitelisted once instead of on every
+# `flutter run`. Override with `make run-web WEB_PORT=1234` if 5555 is taken.
+WEB_PORT ?= 5555
+WEB_HOSTNAME ?= localhost
+
+run-web: ## Run Flutter web in Chrome on a fixed port (default 5555)
+	flutter run -d chrome \
+	  --web-hostname=$(WEB_HOSTNAME) \
+	  --web-port=$(WEB_PORT)
+
+run-web-debug: ## Run Flutter web in Chrome on a fixed port with web-renderer=html
+	flutter run -d chrome \
+	  --web-hostname=$(WEB_HOSTNAME) \
+	  --web-port=$(WEB_PORT) \
+	  --web-browser-flag=--disable-web-security
 

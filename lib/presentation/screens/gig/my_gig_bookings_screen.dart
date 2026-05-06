@@ -4,8 +4,22 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+
+/// Which role filter is currently applied to "My bookings".
+enum _BookingRole { all, client, provider }
+
+extension on _BookingRole {
+  String get apiValue => switch (this) {
+        _BookingRole.all => "all",
+        _BookingRole.client => "client",
+        _BookingRole.provider => "provider",
+      };
+}
 
 class MyGigBookingsScreen extends StatefulWidget {
   const MyGigBookingsScreen({super.key});
@@ -14,85 +28,88 @@ class MyGigBookingsScreen extends StatefulWidget {
   State<MyGigBookingsScreen> createState() => _MyGigBookingsScreenState();
 }
 
-class _MyGigBookingsScreenState extends State<MyGigBookingsScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabs;
+class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
+  _BookingRole _role = _BookingRole.all;
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this);
-    _tabs.addListener(() {
-      if (_tabs.indexIsChanging) return;
-      _refreshForTab(_tabs.index);
-    });
-    context.read<GigBookingsBloc>().add(const FetchMyGigBookings(role: "all"));
+    context
+        .read<GigBookingsBloc>()
+        .add(FetchMyGigBookings(role: _role.apiValue));
   }
 
-  void _refreshForTab(int index) {
-    final role = switch (index) {
-      0 => "all",
-      1 => "client",
-      2 => "provider",
-      _ => "all",
-    };
-    context.read<GigBookingsBloc>().add(FetchMyGigBookings(role: role));
-  }
-
-  @override
-  void dispose() {
-    _tabs.dispose();
-    super.dispose();
+  void _onRoleChanged(_BookingRole next) {
+    if (next == _role) return;
+    setState(() => _role = next);
+    context
+        .read<GigBookingsBloc>()
+        .add(FetchMyGigBookings(role: next.apiValue));
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
+        leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(L10n.get("gigs_my_bookings_title")),
-        bottom: TabBar(
-          controller: _tabs,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-          labelColor: scheme.onPrimary,
-          unselectedLabelColor: scheme.onPrimary.withValues(alpha: 0.7),
-          indicatorColor: scheme.onPrimary,
-          tabs: [
-            Tab(text: L10n.get("gigs_my_bookings_tab_all")),
-            Tab(text: L10n.get("gigs_my_bookings_tab_client")),
-            Tab(text: L10n.get("gigs_my_bookings_tab_provider")),
-          ],
-        ),
       ),
-      body: BlocBuilder<GigBookingsBloc, GigBookingsState>(
-        builder: (context, state) {
-          if (state is GigBookingsLoading || state is GigBookingsInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is GigBookingsError) {
-            return Center(child: Text(state.message));
-          }
-          if (state is GigBookingsLoaded) {
-            if (state.bookings.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(L10n.get("gigs_my_bookings_empty")),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: NeumorphicSegmentedSwitch<_BookingRole>(
+              value: _role,
+              onChanged: _onRoleChanged,
+              entries: [
+                SegmentedSwitchEntry(
+                  value: _BookingRole.all,
+                  label: L10n.get("gigs_my_bookings_tab_all"),
+                  icon: Icons.list_alt_rounded,
                 ),
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              itemCount: state.bookings.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 14),
-              itemBuilder: (_, i) =>
-                  _BookingTile(booking: state.bookings[i]),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                SegmentedSwitchEntry(
+                  value: _BookingRole.client,
+                  label: L10n.get("gigs_my_bookings_tab_client"),
+                  icon: Icons.person_outline_rounded,
+                ),
+                SegmentedSwitchEntry(
+                  value: _BookingRole.provider,
+                  label: L10n.get("gigs_my_bookings_tab_provider"),
+                  icon: Icons.handyman_outlined,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: BlocBuilder<GigBookingsBloc, GigBookingsState>(
+              builder: (context, state) {
+                if (state is GigBookingsLoading ||
+                    state is GigBookingsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is GigBookingsError) {
+                  return Center(child: Text(state.message));
+                }
+                if (state is GigBookingsLoaded) {
+                  if (state.bookings.isEmpty) {
+                    return UydoshEmptyColumn(
+                      icon: Icons.event_note_outlined,
+                      title: L10n.get("gigs_my_bookings_empty"),
+                    );
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                    itemCount: state.bookings.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (_, i) =>
+                        _BookingTile(booking: state.bookings[i]),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -39,12 +39,6 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
   bool _showPriceError = false;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<GigPostOfferBloc>().add(const LoadCategoriesForOffer());
-  }
-
-  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
@@ -114,8 +108,6 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
       builder: (context, state) {
         final idle = state is GigPostOfferIdle ? state : null;
         final categories = idle?.categories ?? const <GigCategory>[];
-        final loadingCategories = idle?.loadingCategories ?? false;
-        final categoriesError = idle?.categoriesError;
         final submitting = state is GigPostOfferSubmitting;
 
         return Scaffold(
@@ -131,11 +123,6 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                   selected: _selectedCategory,
                   language: language,
                   showError: _showCategoryError,
-                  loading: loadingCategories,
-                  errorMessage: categoriesError,
-                  onRetry: () => context
-                      .read<GigPostOfferBloc>()
-                      .add(const LoadCategoriesForOffer()),
                   onChanged: (c) {
                     setState(() {
                       _selectedCategory = c;
@@ -346,9 +333,6 @@ class _CategoryPlate extends StatelessWidget {
     required this.language,
     required this.onChanged,
     required this.showError,
-    required this.loading,
-    required this.errorMessage,
-    required this.onRetry,
   });
 
   final List<GigCategory> categories;
@@ -356,9 +340,6 @@ class _CategoryPlate extends StatelessWidget {
   final String language;
   final ValueChanged<GigCategory?> onChanged;
   final bool showError;
-  final bool loading;
-  final String? errorMessage;
-  final VoidCallback onRetry;
 
   Future<void> _pick(BuildContext context) async {
     if (categories.isEmpty) return;
@@ -453,15 +434,8 @@ class _CategoryPlate extends StatelessWidget {
         ? scheme.onSurface.withValues(alpha: 0.45)
         : Colors.grey[500];
     final hasValue = selected != null;
-    final hasCategories = categories.isNotEmpty;
-    final hasError = errorMessage != null && !loading && !hasCategories;
-    final canTap = hasCategories;
-
-    final placeholder = loading
-        ? L10n.get("gigs_loading")
-        : (hasError
-            ? L10n.get("gigs_categories_unavailable")
-            : L10n.get("gigs_post_request_field_category"));
+    final canTap = categories.isNotEmpty;
+    final placeholder = L10n.get("gigs_post_request_field_category");
 
     return _PlateField(
       showErrorBorder: showError,
@@ -502,35 +476,10 @@ class _CategoryPlate extends StatelessWidget {
                   ),
                 ),
               ),
-              if (loading)
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: scheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                )
-              else if (hasError)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 32,
-                    height: 32,
-                  ),
-                  onPressed: onRetry,
-                  tooltip: L10n.get("gigs_retry"),
-                  icon: Icon(
-                    Icons.refresh_rounded,
-                    color: scheme.secondary,
-                  ),
-                )
-              else
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: scheme.onSurface.withValues(alpha: 0.7),
-                ),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: scheme.onSurface.withValues(alpha: 0.7),
+              ),
             ],
           ),
         ),

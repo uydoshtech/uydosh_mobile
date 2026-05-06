@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -19,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
   const AdminUserDetailScreen({required this.user, super.key});
@@ -333,12 +335,27 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
 
   String _formatDateTime(DateTime value) {
     final local = value.toLocal();
-    final y = local.year.toString().padLeft(4, "0");
-    final m = local.month.toString().padLeft(2, "0");
-    final d = local.day.toString().padLeft(2, "0");
-    final hh = local.hour.toString().padLeft(2, "0");
-    final mm = local.minute.toString().padLeft(2, "0");
-    return "$y-$m-$d $hh:$mm";
+    final locale = LanguageState().currentLanguage;
+    try {
+      return _capitalizeMonth(
+        DateFormat("dd/MMMM/yyyy HH:mm", locale).format(local),
+      );
+    } catch (_) {
+      return _capitalizeMonth(DateFormat("dd/MMMM/yyyy HH:mm").format(local));
+    }
+  }
+
+  String _capitalizeMonth(String dateText) {
+    final parts = dateText.split("/");
+    if (parts.length < 2) {
+      return dateText;
+    }
+    final month = parts[1];
+    if (month.isEmpty) {
+      return dateText;
+    }
+    parts[1] = "${month.substring(0, 1).toUpperCase()}${month.substring(1)}";
+    return parts.join("/");
   }
 
   Widget _buildInfoCard(BuildContext context) {

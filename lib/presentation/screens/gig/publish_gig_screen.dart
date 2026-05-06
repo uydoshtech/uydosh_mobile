@@ -4,7 +4,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
@@ -13,6 +12,7 @@ import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
@@ -101,12 +101,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   void initState() {
     super.initState();
     _mode = widget.initialMode;
-    // Both blocs are provided by the navigation push; warm both category
-    // lists eagerly so toggling the mode is instant.
-    context
-        .read<GigPostRequestBloc>()
-        .add(const LoadCategoriesForRequest());
-    context.read<GigPostOfferBloc>().add(const LoadCategoriesForOffer());
   }
 
   @override
@@ -125,9 +119,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     setState(() {
       _mode = next;
       // A category selected for one flavor is meaningful for the other
-      // (same `IGigService.listCategories()` source), so we keep it. We
-      // do clear the category-missing error indicator though; it'll be
-      // re-set on next submit if still missing.
+      // (same [GigCategoryCache] source), so we keep it. We do clear the
+      // category-missing error indicator though; it'll be re-set on next
+      // submit if still missing.
       _showCategoryError = false;
       // Mode swap may move the relevant amount field (budget ↔ price), so
       // drop any stale error indicator until the user re-submits.
@@ -260,32 +254,20 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           builder: (context, requestState) {
             return BlocBuilder<GigPostOfferBloc, GigPostOfferState>(
               builder: (context, offerState) {
-                // Pull category list / loading state from whichever bloc
-                // owns the current mode. Both call the same backend so
-                // the lists are typically identical in practice.
+                // Both blocs are seeded from the same [GigCategoryCache], so
+                // the picker can read either one — but we still pull from
+                // whichever matches the current mode in case future cache
+                // semantics diverge per-flavor (e.g. service-only categories).
                 final List<GigCategory> categories;
-                final bool loadingCategories;
-                final String? categoriesError;
-                final VoidCallback retryLoadCategories;
                 if (_mode == GigPublishMode.task) {
                   final idle = requestState is GigPostRequestIdle
                       ? requestState
                       : null;
                   categories = idle?.categories ?? const <GigCategory>[];
-                  loadingCategories = idle?.loadingCategories ?? false;
-                  categoriesError = idle?.categoriesError;
-                  retryLoadCategories = () => context
-                      .read<GigPostRequestBloc>()
-                      .add(const LoadCategoriesForRequest());
                 } else {
                   final idle =
                       offerState is GigPostOfferIdle ? offerState : null;
                   categories = idle?.categories ?? const <GigCategory>[];
-                  loadingCategories = idle?.loadingCategories ?? false;
-                  categoriesError = idle?.categoriesError;
-                  retryLoadCategories = () => context
-                      .read<GigPostOfferBloc>()
-                      .add(const LoadCategoriesForOffer());
                 }
 
                 final submitting = (_mode == GigPublishMode.task &&
@@ -311,9 +293,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         selected: _selectedCategory,
                         language: language,
                         showError: _showCategoryError,
-                        loading: loadingCategories,
-                        errorMessage: categoriesError,
-                        onRetry: retryLoadCategories,
                         onChanged: (c) {
                           setState(() {
                             _selectedCategory = c;
@@ -554,195 +533,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Neumorphic segmented switch
-//
-// Reusable N-segment switcher modeled on the messages inbox tab toggle: a
-// 3D pill container with an animated sliding thumb that rides under the
-// active segment. Used for the Task/Service publish-mode toggle as well as
-// for the budget-type and pricing-type pickers below.
-// ---------------------------------------------------------------------------
-
-class _SwitchEntry<T> {
-  const _SwitchEntry({required this.value, required this.label, this.icon});
-  final T value;
-  final String label;
-  final IconData? icon;
-}
-
-class _NeumorphicSegmentedSwitch<T> extends StatelessWidget {
-  const _NeumorphicSegmentedSwitch({
-    required this.value,
-    required this.entries,
-    required this.onChanged,
-    this.height = 48,
-  });
-
-  final T value;
-  final List<_SwitchEntry<T>> entries;
-  final ValueChanged<T> onChanged;
-  final double height;
-
-  static const double _thumbInset = 2;
-
-  double _outerRadius() => height / 2;
-  double _innerRadius() => height / 2 - _thumbInset;
-
-  @override
-  Widget build(BuildContext context) {
-    assert(entries.isNotEmpty, "Switch needs at least one entry");
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, _) {
-        final themeState = ThemeState();
-        final primaryColor = themeState.primaryColor;
-        final cardColor = themeState.cardColor;
-        final selectedTextColor =
-            ThemeData.estimateBrightnessForColor(primaryColor) ==
-                    Brightness.dark
-                ? Colors.white
-                : Colors.black;
-        final unselectedTextColor = themeState.unselectedTabTextColor;
-
-        final selectedIndex = entries.indexWhere((e) => e.value == value);
-        // Anchor the thumb to index 0 if no match (defensive — keeps the
-        // switch from "disappearing" the thumb on a stale value).
-        final activeIndex = selectedIndex < 0 ? 0 : selectedIndex;
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final segmentWidth =
-                (constraints.maxWidth - _thumbInset * 2) / entries.length;
-
-            return Container(
-              height: height,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(_outerRadius()),
-                gradient: ThreeDSurfaceStyle.surfaceGradient(
-                  context,
-                  cardColor,
-                ),
-                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-              ),
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    left: _thumbInset + segmentWidth * activeIndex,
-                    top: _thumbInset,
-                    bottom: _thumbInset,
-                    width: segmentWidth,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(_innerRadius()),
-                        gradient: ThreeDSurfaceStyle.surfaceGradient(
-                          context,
-                          primaryColor,
-                        ),
-                        boxShadow:
-                            ThreeDSurfaceStyle.elevatedShadows(context),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      for (var i = 0; i < entries.length; i++)
-                        Expanded(
-                          child: _SwitchTab(
-                            entry: entries[i],
-                            isSelected: i == activeIndex,
-                            height: height,
-                            selectedTextColor: selectedTextColor,
-                            unselectedTextColor: unselectedTextColor,
-                            onTap: () {
-                              if (i == activeIndex) return;
-                              HapticFeedbackUtils.selection();
-                              onChanged(entries[i].value);
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _SwitchTab<T> extends StatelessWidget {
-  const _SwitchTab({
-    required this.entry,
-    required this.isSelected,
-    required this.height,
-    required this.selectedTextColor,
-    required this.unselectedTextColor,
-    required this.onTap,
-  });
-
-  final _SwitchEntry<T> entry;
-  final bool isSelected;
-  final double height;
-  final Color selectedTextColor;
-  final Color unselectedTextColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isSelected ? selectedTextColor : unselectedTextColor;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        height: height,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeInOut,
-          opacity: isSelected ? 1.0 : 0.82,
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 240),
-            curve: Curves.easeOutCubic,
-            scale: isSelected ? 1.0 : 0.96,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (entry.icon != null) ...[
-                      Icon(entry.icon, size: 18, color: color),
-                      const SizedBox(width: 6),
-                    ],
-                    Flexible(
-                      child: Text(
-                        entry.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w600,
-                          color: color,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _PublishModeToggle extends StatelessWidget {
   const _PublishModeToggle({required this.value, required this.onChanged});
 
@@ -751,16 +541,16 @@ class _PublishModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _NeumorphicSegmentedSwitch<GigPublishMode>(
+    return NeumorphicSegmentedSwitch<GigPublishMode>(
       value: value,
       onChanged: onChanged,
       entries: [
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigPublishMode.task,
           label: L10n.get("gigs_publish_mode_task"),
           icon: Icons.assignment_outlined,
         ),
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigPublishMode.service,
           label: L10n.get("gigs_publish_mode_service"),
           icon: Icons.handyman_outlined,
@@ -1073,9 +863,6 @@ class _CategoryPlate extends StatelessWidget {
     required this.language,
     required this.onChanged,
     required this.showError,
-    required this.loading,
-    required this.errorMessage,
-    required this.onRetry,
   });
 
   final List<GigCategory> categories;
@@ -1083,9 +870,6 @@ class _CategoryPlate extends StatelessWidget {
   final String language;
   final ValueChanged<GigCategory?> onChanged;
   final bool showError;
-  final bool loading;
-  final String? errorMessage;
-  final VoidCallback onRetry;
 
   Future<void> _pick(BuildContext context) async {
     if (categories.isEmpty) return;
@@ -1175,15 +959,8 @@ class _CategoryPlate extends StatelessWidget {
         ? scheme.onSurface.withValues(alpha: 0.45)
         : Colors.grey[500];
     final hasValue = selected != null;
-    final hasCategories = categories.isNotEmpty;
-    final hasError = errorMessage != null && !loading && !hasCategories;
-    final canTap = hasCategories;
-
-    final placeholder = loading
-        ? L10n.get("gigs_loading")
-        : (hasError
-            ? L10n.get("gigs_categories_unavailable")
-            : L10n.get("gigs_post_request_field_category"));
+    final canTap = categories.isNotEmpty;
+    final placeholder = L10n.get("gigs_post_request_field_category");
 
     return _PlateField(
       showErrorBorder: showError,
@@ -1224,35 +1001,10 @@ class _CategoryPlate extends StatelessWidget {
                   ),
                 ),
               ),
-              if (loading)
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: scheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                )
-              else if (hasError)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 32,
-                    height: 32,
-                  ),
-                  onPressed: onRetry,
-                  tooltip: L10n.get("gigs_retry"),
-                  icon: Icon(
-                    Icons.refresh_rounded,
-                    color: scheme.secondary,
-                  ),
-                )
-              else
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: scheme.onSurface.withValues(alpha: 0.7),
-                ),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: scheme.onSurface.withValues(alpha: 0.7),
+              ),
             ],
           ),
         ),
@@ -1268,21 +1020,21 @@ class _BudgetTypePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _NeumorphicSegmentedSwitch<GigRequestBudgetType>(
+    return NeumorphicSegmentedSwitch<GigRequestBudgetType>(
       value: value,
       onChanged: onChanged,
       entries: [
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigRequestBudgetType.fixed,
           label: L10n.get("gigs_budget_type_fixed"),
           icon: Icons.price_change_outlined,
         ),
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigRequestBudgetType.hourly,
           label: L10n.get("gigs_budget_type_hourly"),
           icon: Icons.schedule_outlined,
         ),
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigRequestBudgetType.open,
           label: L10n.get("gigs_budget_type_open"),
           icon: Icons.gavel_outlined,
@@ -1299,21 +1051,21 @@ class _PricingTypePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _NeumorphicSegmentedSwitch<GigPricingType>(
+    return NeumorphicSegmentedSwitch<GigPricingType>(
       value: value,
       onChanged: onChanged,
       entries: [
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigPricingType.fixed,
           label: L10n.get("gigs_pricing_type_fixed"),
           icon: Icons.price_change_outlined,
         ),
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigPricingType.hourly,
           label: L10n.get("gigs_pricing_type_hourly"),
           icon: Icons.schedule_outlined,
         ),
-        _SwitchEntry(
+        SegmentedSwitchEntry(
           value: GigPricingType.perUnit,
           label: L10n.get("gigs_pricing_type_per_unit"),
           icon: Icons.straighten_outlined,

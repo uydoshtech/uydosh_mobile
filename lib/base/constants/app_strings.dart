@@ -698,6 +698,8 @@ class AppStrings {
       "gigs_publish_screen_title": "Publish",
       "gigs_publish_mode_task": "Task",
       "gigs_publish_mode_service": "Service",
+      "gigs_hub_feed_services": "Services",
+      "gigs_hub_feed_tasks": "Tasks",
 
       "gigs_browse_title": "Browse services",
       "gigs_browse_empty": "No services available yet.",
@@ -1982,6 +1984,8 @@ class AppStrings {
       "gigs_publish_screen_title": "Опубликовать",
       "gigs_publish_mode_task": "Задача",
       "gigs_publish_mode_service": "Услуга",
+      "gigs_hub_feed_services": "Услуги",
+      "gigs_hub_feed_tasks": "Задачи",
 
       "gigs_browse_title": "Услуги",
       "gigs_browse_empty": "Пока нет доступных услуг.",
@@ -3279,6 +3283,8 @@ class AppStrings {
       "gigs_publish_screen_title": "Joylash",
       "gigs_publish_mode_task": "Vazifa",
       "gigs_publish_mode_service": "Xizmat",
+      "gigs_hub_feed_services": "Xizmatlar",
+      "gigs_hub_feed_tasks": "Vazifalar",
 
       "gigs_browse_title": "Xizmatlar",
       "gigs_browse_empty": "Hozircha xizmatlar yo'q.",
