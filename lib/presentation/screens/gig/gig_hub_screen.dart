@@ -1,8 +1,12 @@
+import "dart:ui" show ImageFilter;
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
@@ -193,8 +197,12 @@ class _GigHubBodyState extends State<_GigHubBody> {
     // `extendBodyBehindAppBar`, so this body would render under the app bar
     // unless we offset by the device top padding the same way other main
     // tabs (e.g. Favorites, Home) do.
+    // Match [MessagesInboxScreen._buildTabbedConversationsList]: outer
+    // `Padding(top: mainShellGlassExtraTopInset)` only — the first 8 px below
+    // the shell header come from `EdgeInsets.fromLTRB(16, 8, 16, 12)` around
+    // the toggle (not duplicated here).
     final topPad = widget.embedded
-        ? 16.0 + ThemeState().mainShellGlassExtraTopInset(context)
+        ? ThemeState().mainShellGlassExtraTopInset(context)
         : 16.0;
 
     final scrollable = UydoshRefreshIndicator.mainShell(
@@ -376,11 +384,17 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<int?> onCategorySelected;
   final Color backgroundColor;
 
-  /// Segmented switch height (matches [NeumorphicSegmentedSwitch]'s default).
+  /// Segmented switch height (matches [NeumorphicSegmentedSwitch] default and
+  /// [MessagesInboxScreen] toggle).
   static const double _switchHeight = 48;
 
-  /// Spacing below the segmented switch, before the category ribbon.
-  static const double _switchToRibbonGap = 12;
+  /// Vertical padding around the primary toggle (matches messages inbox).
+  static const double _togglePadTop = 8;
+  static const double _togglePadBottom = 12;
+
+  /// Total height of the toggle row including inbox-style vertical margins.
+  static const double _toggleSectionHeight =
+      _togglePadTop + _switchHeight + _togglePadBottom;
 
   /// Height of the category ribbon (mirrors [_CategoryRibbon._ribbonHeight]).
   static const double _ribbonHeight = 56;
@@ -390,8 +404,7 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   double get _height =>
       topPadding +
-      _switchHeight +
-      _switchToRibbonGap +
+      _toggleSectionHeight +
       _ribbonHeight +
       _ribbonBottomGap;
 
@@ -414,25 +427,85 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: NeumorphicSegmentedSwitch<GigHubFeed>(
-              value: feed,
-              onChanged: onFeedChanged,
-              entries: [
-                SegmentedSwitchEntry(
-                  value: GigHubFeed.services,
-                  label: L10n.get("gigs_hub_feed_services"),
-                  icon: Icons.handyman_outlined,
-                ),
-                SegmentedSwitchEntry(
-                  value: GigHubFeed.tasks,
-                  label: L10n.get("gigs_hub_feed_tasks"),
-                  icon: Icons.assignment_outlined,
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              _togglePadTop,
+              16,
+              _togglePadBottom,
+            ),
+            child: ListenableBuilder(
+              listenable: ThemeState(),
+              builder: (context, _) {
+                final themeState = ThemeState();
+                final switchWidget = NeumorphicSegmentedSwitch<GigHubFeed>(
+                  height: _switchHeight,
+                  value: feed,
+                  onChanged: onFeedChanged,
+                  entries: [
+                    SegmentedSwitchEntry(
+                      value: GigHubFeed.services,
+                      label: L10n.get("gigs_hub_feed_services"),
+                      icon: Icons.handyman_outlined,
+                    ),
+                    SegmentedSwitchEntry(
+                      value: GigHubFeed.tasks,
+                      label: L10n.get("gigs_hub_feed_tasks"),
+                      icon: Icons.assignment_outlined,
+                    ),
+                  ],
+                );
+
+                if (!(themeState.isBlueTheme || themeState.isLightTheme)) {
+                  return switchWidget;
+                }
+
+                const radius = BorderRadius.all(Radius.circular(20));
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                final scheme = Theme.of(context).colorScheme;
+                final baseTint =
+                    isDark ? BlueThemeColors.background : scheme.surface;
+                final disableAnimations =
+                    MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+                final enableGlass =
+                    AnimationSettingsState().uiAnimationsEnabled &&
+                        !disableAnimations;
+
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: radius,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: enableGlass ? 18 : 0,
+                                  sigmaY: enableGlass ? 18 : 0,
+                                ),
+                                child: const SizedBox.expand(),
+                              ),
+                            ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: radius,
+                                color: baseTint.withValues(
+                                  alpha: isDark ? 0.10 : 0.12,
+                                ),
+                              ),
+                              child: const SizedBox.expand(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    switchWidget,
+                  ],
+                );
+              },
             ),
           ),
-          const SizedBox(height: _switchToRibbonGap),
           _CategoryRibbon(
             categories: categories,
             selectedCategoryId: selectedCategoryId,

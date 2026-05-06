@@ -28,6 +28,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
     required this.entries,
     required this.onChanged,
     this.height = 48,
+    this.intrinsicWidthFirstSegment = false,
     super.key,
   });
 
@@ -36,10 +37,54 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
   final ValueChanged<T> onChanged;
   final double height;
 
+  /// When true, the first segment is only as wide as its icon + label (with a
+  /// sensible minimum tap target); remaining segments split the rest equally.
+  /// When false, every segment gets the same width (original behavior).
+  final bool intrinsicWidthFirstSegment;
+
   static const double _thumbInset = 2;
+  static const double _tabHorizontalPadding = 6;
+  static const double _iconSize = 18;
+  static const double _iconTextGap = 6;
 
   double _outerRadius() => height / 2;
   double _innerRadius() => height / 2 - _thumbInset;
+
+  double _measureFirstSegmentWidth(BuildContext context) {
+    final entry = entries.first;
+    const style = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+    );
+    final painter = TextPainter(
+      text: TextSpan(text: entry.label, style: style),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    var w = _tabHorizontalPadding * 2;
+    if (entry.icon != null) {
+      w += _iconSize + _iconTextGap;
+    }
+    w += painter.width;
+    return w;
+  }
+
+  List<double> _segmentWidths(BuildContext context, double totalInner) {
+    if (entries.isEmpty) {
+      return [];
+    }
+    if (!intrinsicWidthFirstSegment || entries.length == 1) {
+      final w = totalInner / entries.length;
+      return List.filled(entries.length, w);
+    }
+    final measured = _measureFirstSegmentWidth(context);
+    final minForOthers = (entries.length - 1) * kMinInteractiveDimension;
+    final maxFirst = (totalInner - minForOthers).clamp(0.0, totalInner);
+    final w0 = measured.clamp(kMinInteractiveDimension, maxFirst);
+    final rem = (totalInner - w0).clamp(0.0, double.infinity);
+    final wRest = rem / (entries.length - 1);
+    return [w0, ...List.filled(entries.length - 1, wRest)];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +109,12 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final segmentWidth =
-                (constraints.maxWidth - _thumbInset * 2) / entries.length;
+            final totalInner =
+                (constraints.maxWidth - _thumbInset * 2).clamp(0.0, double.infinity);
+            final segmentWidths = _segmentWidths(
+              context,
+              totalInner,
+            );
 
             return Container(
               height: height,
@@ -82,10 +131,13 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
-                    left: _thumbInset + segmentWidth * activeIndex,
+                    left: _thumbInset +
+                        segmentWidths
+                            .take(activeIndex)
+                            .fold<double>(0, (a, w) => a + w),
                     top: _thumbInset,
                     bottom: _thumbInset,
-                    width: segmentWidth,
+                    width: segmentWidths[activeIndex],
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(_innerRadius()),
@@ -98,24 +150,47 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      for (var i = 0; i < entries.length; i++)
-                        Expanded(
-                          child: _SegmentedSwitchTab<T>(
-                            entry: entries[i],
-                            isSelected: i == activeIndex,
-                            height: height,
-                            selectedTextColor: selectedTextColor,
-                            unselectedTextColor: unselectedTextColor,
-                            onTap: () {
-                              if (i == activeIndex) return;
-                              HapticFeedbackUtils.selection();
-                              onChanged(entries[i].value);
-                            },
-                          ),
-                        ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: _thumbInset,
+                    ),
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < entries.length; i++)
+                          intrinsicWidthFirstSegment &&
+                                  i == 0 &&
+                                  entries.length > 1
+                              ? SizedBox(
+                                  width: segmentWidths[i],
+                                  child: _SegmentedSwitchTab<T>(
+                                    entry: entries[i],
+                                    isSelected: i == activeIndex,
+                                    height: height,
+                                    selectedTextColor: selectedTextColor,
+                                    unselectedTextColor: unselectedTextColor,
+                                    onTap: () {
+                                      if (i == activeIndex) return;
+                                      HapticFeedbackUtils.selection();
+                                      onChanged(entries[i].value);
+                                    },
+                                  ),
+                                )
+                              : Expanded(
+                                  child: _SegmentedSwitchTab<T>(
+                                    entry: entries[i],
+                                    isSelected: i == activeIndex,
+                                    height: height,
+                                    selectedTextColor: selectedTextColor,
+                                    unselectedTextColor: unselectedTextColor,
+                                    onTap: () {
+                                      if (i == activeIndex) return;
+                                      HapticFeedbackUtils.selection();
+                                      onChanged(entries[i].value);
+                                    },
+                                  ),
+                                ),
+                      ],
+                    ),
                   ),
                 ],
               ),

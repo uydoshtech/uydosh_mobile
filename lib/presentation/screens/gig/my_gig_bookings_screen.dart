@@ -63,6 +63,7 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
             child: NeumorphicSegmentedSwitch<_BookingRole>(
               value: _role,
               onChanged: _onRoleChanged,
+              intrinsicWidthFirstSegment: true,
               entries: [
                 SegmentedSwitchEntry(
                   value: _BookingRole.all,
