@@ -1,7 +1,8 @@
 import "dart:async";
 
 import "package:audioplayers/audioplayers.dart";
-import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform;
+import "package:flutter/foundation.dart"
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/services.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.
@@ -15,7 +16,10 @@ class SendSoundUtils {
   static DateTime? _lastSelectionSoundAt;
   static const Duration _selectionThrottle = Duration(milliseconds: 60);
 
-  static const String _clickAsset = "sounds/click.m4a";
+  /// Web uses MP3: Chromium's WebAudio pipeline often rejects `.m4a` here
+  /// (`DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) even for valid AAC.
+  static String get _clickAsset =>
+      kIsWeb ? "sounds/click.mp3" : "sounds/click.m4a";
 
   static bool _selectionPlayerInitialized = false;
 
