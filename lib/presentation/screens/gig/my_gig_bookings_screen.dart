@@ -45,11 +45,15 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(L10n.get("gigs_my_bookings_title")),
         bottom: TabBar(
           controller: _tabs,
+          labelColor: scheme.onPrimary,
+          unselectedLabelColor: scheme.onPrimary.withValues(alpha: 0.7),
+          indicatorColor: scheme.onPrimary,
           tabs: [
             Tab(text: L10n.get("gigs_my_bookings_tab_all")),
             Tab(text: L10n.get("gigs_my_bookings_tab_client")),

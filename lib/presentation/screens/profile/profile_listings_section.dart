@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -6,6 +7,9 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
+import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/router/main_navigation.dart"
+    show mainNavigationKey;
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -81,6 +85,12 @@ class ProfileListingsSection extends StatelessWidget {
                 ),
               );
             },
+          ),
+          _buildGroupedMenuItem(
+            context: context,
+            icon: CupertinoIcons.suit_heart,
+            title: L10n.get("menu_favorites"),
+            onTap: () => _openFavoritesTab(context),
           ),
           _buildGroupedMenuItem(
             context: context,
@@ -203,6 +213,22 @@ class ProfileListingsSection extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openFavoritesTab(BuildContext context) {
+    const favoritesTabIndex = 1;
+    final navState = mainNavigationKey.currentState;
+    if (navState != null) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      navState.navigateToIndex(favoritesTabIndex);
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            AppRouter.buildMainNavigation(initialIndex: favoritesTabIndex),
       ),
     );
   }

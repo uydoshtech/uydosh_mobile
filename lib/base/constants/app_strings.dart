@@ -726,6 +726,10 @@ class AppStrings {
       "gigs_requests_empty": "No open tasks right now.",
       "gigs_request_budget_open": "Open budget",
       "gigs_request_budget_fixed": "Budget: {amount} {currency}",
+      "gigs_request_detail_title": "Task",
+      "gigs_request_description_label": "About this task",
+      "gigs_request_contact_cta": "Message client",
+      "gigs_request_contact_failed": "Couldn't open chat. Please try again.",
 
       "gigs_price_per_hour": "{amount} {currency}/hr",
       "gigs_price_per_unit": "{amount} {currency}/unit",
@@ -1978,6 +1982,10 @@ class AppStrings {
       "gigs_requests_empty": "Сейчас нет открытых задач.",
       "gigs_request_budget_open": "Бюджет не указан",
       "gigs_request_budget_fixed": "Бюджет: {amount} {currency}",
+      "gigs_request_detail_title": "Задача",
+      "gigs_request_description_label": "Об этой задаче",
+      "gigs_request_contact_cta": "Написать заказчику",
+      "gigs_request_contact_failed": "Не удалось открыть чат. Попробуйте снова.",
 
       "gigs_price_per_hour": "{amount} {currency}/час",
       "gigs_price_per_unit": "{amount} {currency}/ед.",
@@ -3243,6 +3251,10 @@ class AppStrings {
       "gigs_requests_empty": "Hozircha ochiq vazifa yo'q.",
       "gigs_request_budget_open": "Byudjet ko'rsatilmagan",
       "gigs_request_budget_fixed": "Byudjet: {amount} {currency}",
+      "gigs_request_detail_title": "Vazifa",
+      "gigs_request_description_label": "Vazifa haqida",
+      "gigs_request_contact_cta": "Buyurtmachiga yozish",
+      "gigs_request_contact_failed": "Chatni ochib bo'lmadi. Qayta urinib ko'ring.",
 
       "gigs_price_per_hour": "{amount} {currency}/soat",
       "gigs_price_per_unit": "{amount} {currency}/dona",

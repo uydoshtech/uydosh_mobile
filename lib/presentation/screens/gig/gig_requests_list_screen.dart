@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -71,38 +72,48 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
                   : L10n.get("gigs_request_budget_open");
               return ThreeDElevatedSurface(
                 baseColor: scheme.surface,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (categoryName.isNotEmpty)
-                        Text(
-                          categoryName.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            letterSpacing: 0.5,
-                            color: scheme.primary,
-                            fontWeight: FontWeight.w700,
+                // Wrap the inner Padding in a Material+InkWell so the ripple
+                // is clipped to the surface's rounded shape and matches the
+                // elevation visual.
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.pushGigRequestDetail(r.id),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (categoryName.isNotEmpty)
+                            Text(
+                              categoryName.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                letterSpacing: 0.5,
+                                color: scheme.secondary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          const SizedBox(height: 4),
+                          Text(
+                            r.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
                           ),
-                        ),
-                      const SizedBox(height: 4),
-                      Text(
-                        r.title,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
-                        ),
+                          const SizedBox(height: 6),
+                          Text(
+                            budgetLine,
+                            style: TextStyle(
+                              color: scheme.onSurface.withValues(alpha: 0.75),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        budgetLine,
-                        style: TextStyle(
-                          color: scheme.onSurface.withValues(alpha: 0.75),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               );

@@ -141,6 +141,16 @@ class $AssetsSoundsGen {
 class $AssetsIconComponentsGen {
   const $AssetsIconComponentsGen();
 
+  /// File path: assets/icon/components/aspect_ratio.svg
+  String get aspectRatio => 'assets/icon/components/aspect_ratio.svg';
+
+  /// File path: assets/icon/components/brand_logo_transparent.png
+  AssetGenImage get brandLogoTransparentPng =>
+      const AssetGenImage('assets/icon/components/brand_logo_transparent.png');
+
+  /// File path: assets/icon/components/brand_logo_transparent.svg
+  String get brandLogoTransparentSvg => 'assets/icon/components/brand_logo_transparent.svg';
+
   /// File path: assets/icon/components/brand_mark.png
   AssetGenImage get brandMark => const AssetGenImage('assets/icon/components/brand_mark.png');
 
@@ -157,7 +167,16 @@ class $AssetsIconComponentsGen {
   String get uLetter => 'assets/icon/components/u_letter.svg';
 
   /// List of all assets
-  List<dynamic> get values => [brandMark, chimney, redRoof, square, uLetter];
+  List<dynamic> get values => [
+        aspectRatio,
+        brandLogoTransparentPng,
+        brandLogoTransparentSvg,
+        brandMark,
+        chimney,
+        redRoof,
+        square,
+        uLetter
+      ];
 }
 
 class $AssetsImagesRoomScanExamplesGen {

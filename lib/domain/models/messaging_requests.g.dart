@@ -9,15 +9,19 @@ part of 'messaging_requests.dart';
 CreateConversationRequest _$CreateConversationRequestFromJson(
         Map<String, dynamic> json) =>
     CreateConversationRequest(
-      listingId: (json['listing_id'] as num).toInt(),
-      participantId: (json['participant_id'] as num).toInt(),
+      listingId: (json['listing_id'] as num?)?.toInt(),
+      participantId: (json['participant_id'] as num?)?.toInt(),
+      contextType: json['context_type'] as String?,
+      contextId: (json['context_id'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$CreateConversationRequestToJson(
         CreateConversationRequest instance) =>
     <String, dynamic>{
-      'listing_id': instance.listingId,
-      'participant_id': instance.participantId,
+      if (instance.listingId case final value?) 'listing_id': value,
+      if (instance.participantId case final value?) 'participant_id': value,
+      if (instance.contextType case final value?) 'context_type': value,
+      if (instance.contextId case final value?) 'context_id': value,
     };
 
 SendMessageRequest _$SendMessageRequestFromJson(Map<String, dynamic> json) =>

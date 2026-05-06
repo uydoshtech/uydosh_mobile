@@ -3,21 +3,40 @@ import "package:uy_dosh/base/api/client/json_encodable.dart";
 
 part "messaging_requests.g.dart";
 
-@JsonSerializable()
+/// Request body for `POST /conversations`.
+///
+/// Two valid shapes today:
+///   - Listing chat: `listingId` + `participantId`.
+///   - Gig-request chat: `contextType='gig_request'` + `contextId=<requestId>`.
+///     The server overwrites `participant_id` with the gig request's owner;
+///     callers can omit it.
+///
+/// We intentionally serialize `null` keys as absent (`includeIfNull: false`)
+/// so the backend's "exactly one shape" validation isn't tripped by stray
+/// nulls when the gig path is used.
+@JsonSerializable(includeIfNull: false)
 class CreateConversationRequest implements IJsonEncodable {
   const CreateConversationRequest({
-    required this.listingId,
-    required this.participantId,
+    this.listingId,
+    this.participantId,
+    this.contextType,
+    this.contextId,
   });
 
   factory CreateConversationRequest.fromJson(Map<String, dynamic> json) =>
       _$CreateConversationRequestFromJson(json);
 
   @JsonKey(name: "listing_id")
-  final int listingId;
+  final int? listingId;
 
   @JsonKey(name: "participant_id")
-  final int participantId;
+  final int? participantId;
+
+  @JsonKey(name: "context_type")
+  final String? contextType;
+
+  @JsonKey(name: "context_id")
+  final int? contextId;
 
   @override
   Map<String, dynamic> toJson() => _$CreateConversationRequestToJson(this);

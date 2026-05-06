@@ -64,10 +64,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
   }
 
   void _recompute() {
-    // Group conversations by listing ID
+    // Group conversations by listing ID. Gig-module conversations
+    // (`context_type='gig_request'` etc.) carry `listing_id == null`, so we
+    // give each one a unique synthetic group key (negated conversation id)
+    // to keep them in their own row instead of all collapsing under "0".
     final groupedConversations = <int, List<ConversationSummary>>{};
     for (final conversation in widget.conversations) {
-      (groupedConversations[conversation.listingId] ??= []).add(conversation);
+      final groupKey = conversation.listingId ?? -conversation.id;
+      (groupedConversations[groupKey] ??= []).add(conversation);
     }
 
     // Sort conversations within each group: unread first, then most recent first.

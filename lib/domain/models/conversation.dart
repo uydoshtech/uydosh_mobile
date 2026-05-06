@@ -9,10 +9,19 @@ part "conversation.g.dart";
 class Conversation with _$Conversation {
   const factory Conversation({
     required int id,
-    @JsonKey(name: "listing_id") required int listingId,
     @JsonKey(name: "initiator_id") required int initiatorId,
     @JsonKey(name: "participant_id") required int participantId,
-    @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "is_active") required bool isActive,
+    @JsonKey(name: "created_at") required String createdAt,
+    @JsonKey(name: "updated_at") required String updatedAt,
+    // Nullable since the gig-module conversations (`context_type` =
+    // `gig_request` / `gig_offer` / `gig_booking`) don't carry a listing.
+    // Legacy listing chats keep `listing_id` populated alongside
+    // `context_type='listing'` for back-compat with grouped views.
+    @JsonKey(name: "listing_id") int? listingId,
+    @JsonKey(name: "context_type") String? contextType,
+    @JsonKey(name: "context_id") int? contextId,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
     @JsonKey(name: "archived_at") String? archivedAt,
@@ -30,10 +39,15 @@ class Conversation with _$Conversation {
 class ConversationSummary with _$ConversationSummary {
   const factory ConversationSummary({
     required int id,
-    @JsonKey(name: "listing_id") required int listingId,
     @JsonKey(name: "initiator_id") required int initiatorId,
     @JsonKey(name: "participant_id") required int participantId,
-    @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "last_message_at") String? lastMessageAt,
+    @JsonKey(name: "is_active") required bool isActive,
+    @JsonKey(name: "created_at") required String createdAt,
+    @JsonKey(name: "updated_at") required String updatedAt,
+    @JsonKey(name: "listing_id") int? listingId,
+    @JsonKey(name: "context_type") String? contextType,
+    @JsonKey(name: "context_id") int? contextId,
+    @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
     @JsonKey(name: "archived_at") String? archivedAt,

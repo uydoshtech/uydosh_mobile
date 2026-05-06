@@ -34,9 +34,17 @@ abstract class IMessagingService {
 
   Future<Conversation> getConversation(int conversationId);
 
+  /// Open (or reactivate) a conversation.
+  ///
+  /// Two mutually-exclusive shapes are accepted:
+  ///   - Listing chat: pass [listingId] + [participantId].
+  ///   - Gig-request chat: pass [gigRequestId]; [participantId] is ignored
+  ///     (the backend forces it to the request's `client_user_id` to prevent
+  ///     address-book scraping).
   Future<Conversation> createConversation({
-    required int listingId,
-    required int participantId,
+    int? listingId,
+    int? participantId,
+    int? gigRequestId,
   });
 
   Future<void> deleteConversation(int conversationId);
@@ -300,16 +308,39 @@ class MessagingService implements IMessagingService {
 
   @override
   Future<Conversation> createConversation({
-    required int listingId,
-    required int participantId,
+    int? listingId,
+    int? participantId,
+    int? gigRequestId,
   }) async {
     try {
       await _checkAuthentication();
 
-      final request = CreateConversationRequest(
-        listingId: listingId,
-        participantId: participantId,
-      );
+      // Validate the caller picked exactly one shape. We assert at the call
+      // site rather than silently coercing because mixing them is almost
+      // always a bug (e.g. forgetting to pass listingId in a refactor).
+      final isListing = listingId != null;
+      final isGigRequest = gigRequestId != null;
+      if (isListing == isGigRequest) {
+        throw ArgumentError(
+          "createConversation requires exactly one of listingId or "
+          "gigRequestId (received listingId=$listingId, gigRequestId=$gigRequestId)",
+        );
+      }
+      if (isListing && participantId == null) {
+        throw ArgumentError(
+          "participantId is required when opening a listing-scoped chat",
+        );
+      }
+
+      final request = isGigRequest
+          ? CreateConversationRequest(
+              contextType: "gig_request",
+              contextId: gigRequestId,
+            )
+          : CreateConversationRequest(
+              listingId: listingId,
+              participantId: participantId,
+            );
 
       final response = await _apiClient
           .post<Conversation, CreateConversationRequest>("/conversations", (

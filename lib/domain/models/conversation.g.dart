@@ -9,12 +9,14 @@ part of 'conversation.dart';
 _$ConversationImpl _$$ConversationImplFromJson(Map<String, dynamic> json) =>
     _$ConversationImpl(
       id: (json['id'] as num).toInt(),
-      listingId: (json['listing_id'] as num).toInt(),
       initiatorId: (json['initiator_id'] as num).toInt(),
       participantId: (json['participant_id'] as num).toInt(),
       isActive: json['is_active'] as bool,
       createdAt: json['created_at'] as String,
       updatedAt: json['updated_at'] as String,
+      listingId: (json['listing_id'] as num?)?.toInt(),
+      contextType: json['context_type'] as String?,
+      contextId: (json['context_id'] as num?)?.toInt(),
       lastMessageAt: json['last_message_at'] as String?,
       lastMessageContent: json['last_message_content'] as String?,
       lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
@@ -31,12 +33,14 @@ _$ConversationImpl _$$ConversationImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$ConversationImplToJson(_$ConversationImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'listing_id': instance.listingId,
       'initiator_id': instance.initiatorId,
       'participant_id': instance.participantId,
       'is_active': instance.isActive,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
+      'listing_id': instance.listingId,
+      'context_type': instance.contextType,
+      'context_id': instance.contextId,
       'last_message_at': instance.lastMessageAt,
       'last_message_content': instance.lastMessageContent,
       'last_message_sender_id': instance.lastMessageSenderId,
@@ -50,12 +54,14 @@ _$ConversationSummaryImpl _$$ConversationSummaryImplFromJson(
         Map<String, dynamic> json) =>
     _$ConversationSummaryImpl(
       id: (json['id'] as num).toInt(),
-      listingId: (json['listing_id'] as num).toInt(),
       initiatorId: (json['initiator_id'] as num).toInt(),
       participantId: (json['participant_id'] as num).toInt(),
       isActive: json['is_active'] as bool,
       createdAt: json['created_at'] as String,
       updatedAt: json['updated_at'] as String,
+      listingId: (json['listing_id'] as num?)?.toInt(),
+      contextType: json['context_type'] as String?,
+      contextId: (json['context_id'] as num?)?.toInt(),
       lastMessageAt: json['last_message_at'] as String?,
       lastMessageContent: json['last_message_content'] as String?,
       lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
@@ -88,12 +94,14 @@ Map<String, dynamic> _$$ConversationSummaryImplToJson(
         _$ConversationSummaryImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'listing_id': instance.listingId,
       'initiator_id': instance.initiatorId,
       'participant_id': instance.participantId,
       'is_active': instance.isActive,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
+      'listing_id': instance.listingId,
+      'context_type': instance.contextType,
+      'context_id': instance.contextId,
       'last_message_at': instance.lastMessageAt,
       'last_message_content': instance.lastMessageContent,
       'last_message_sender_id': instance.lastMessageSenderId,

@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_offer_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_offers_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_request_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_requests_list_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/my_gig_bookings_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
@@ -71,6 +72,14 @@ extension GigNavigatorExtensions on BuildContext {
     Navigator.of(this).push(
       MaterialPageRoute<void>(
         builder: (_) => const GigRequestsListScreen(),
+      ),
+    );
+  }
+
+  void pushGigRequestDetail(int requestId) {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => GigRequestDetailScreen(requestId: requestId),
       ),
     );
   }
