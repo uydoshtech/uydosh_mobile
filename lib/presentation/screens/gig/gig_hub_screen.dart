@@ -41,23 +41,17 @@ class GigHubScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 14),
+          // Single "Publish" tile that opens the unified publish flow with
+          // an in-screen Task/Service toggle. Replaces the legacy pair of
+          // tiles (`gigs_hub_post_*` + `gigs_hub_publish_offer_*`) which
+          // routed to two near-identical forms.
           _HubTile(
             icon: Icons.post_add_rounded,
-            title: L10n.get("gigs_hub_post_title"),
-            subtitle: L10n.get("gigs_hub_post_subtitle"),
+            title: L10n.get("gigs_hub_publish_title"),
+            subtitle: L10n.get("gigs_hub_publish_subtitle"),
             onTap: () {
               HapticFeedbackUtils.lightImpact();
-              context.pushPostGigRequest();
-            },
-          ),
-          const SizedBox(height: 14),
-          _HubTile(
-            icon: Icons.handshake_rounded,
-            title: L10n.get("gigs_hub_publish_offer_title"),
-            subtitle: L10n.get("gigs_hub_publish_offer_subtitle"),
-            onTap: () {
-              HapticFeedbackUtils.lightImpact();
-              context.pushPostGigOffer();
+              context.pushPublishGig();
             },
           ),
           const SizedBox(height: 14),

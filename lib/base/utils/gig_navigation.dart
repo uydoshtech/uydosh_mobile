@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/screens/gig/gig_requests_list_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/my_gig_bookings_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_offer_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart";
 
 /// Navigation helpers for the gig module. Mirrors the listing pattern in
 /// `navigation_extensions.dart`: each push wires the BLoCs the destination
@@ -65,6 +66,28 @@ extension GigNavigatorExtensions on BuildContext {
         builder: (_) => BlocProvider(
           create: (_) => GigPostOfferBloc(getIt<IGigService>()),
           child: const PostGigOfferScreen(),
+        ),
+      ),
+    );
+  }
+
+  /// Unified publish flow: opens [PublishGigScreen] with both the request
+  /// and offer blocs in scope so the in-screen Task/Service toggle can
+  /// switch flavors without re-pushing a route. The hub uses this in place
+  /// of the legacy [pushPostGigRequest] / [pushPostGigOffer] entry points.
+  void pushPublishGig({GigPublishMode initialMode = GigPublishMode.task}) {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => GigPostRequestBloc(getIt<IGigService>()),
+            ),
+            BlocProvider(
+              create: (_) => GigPostOfferBloc(getIt<IGigService>()),
+            ),
+          ],
+          child: PublishGigScreen(initialMode: initialMode),
         ),
       ),
     );

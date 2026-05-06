@@ -21,6 +21,9 @@ import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
+    show GigPublishMode;
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -651,6 +654,100 @@ class MainNavigationState extends State<MainNavigation>
     ];
   }
 
+  /// Open the chooser sheet for the bottom-bar "+" button. Lets the user
+  /// pick between creating a housing listing (existing tab flow) or posting
+  /// a gig service offer (pushed as a route).
+  ///
+  /// The bar's tap is intercepted by [CustomCurvedNavigationBar.onCreatePressed]
+  /// before the orb animates to "+", so dismissing the sheet without picking
+  /// leaves the active tab untouched.
+  void _showCreateChoiceSheet() {
+    HapticFeedbackUtils.impact();
+    if (!_isAuthenticated) {
+      _redirectToAuthWizard();
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: GlassBottomSheetSurface(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(20),
+            ),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.18,
+                          ),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        L10n.get("create_choice_title"),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    _CreateChoiceTile(
+                      emoji: "🏠",
+                      title: L10n.get("create_choice_housing"),
+                      subtitle: L10n.get("create_choice_housing_subtitle"),
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(sheetContext).pop();
+                        if (!mounted) return;
+                        setState(() {
+                          _currentIndex = 3;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _CreateChoiceTile(
+                      emoji: "🛠",
+                      title: L10n.get("create_choice_service"),
+                      subtitle: L10n.get("create_choice_service_subtitle"),
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(sheetContext).pop();
+                        if (!mounted) return;
+                        context.pushPublishGig(
+                          initialMode: GigPublishMode.service,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// Method to navigate to a specific index (can be called from outside).
   void navigateToIndex(int index) {
     debugPrint("🧭 MainNavigation: navigateToIndex called with index $index");
@@ -963,6 +1060,7 @@ class MainNavigationState extends State<MainNavigation>
                 isAuthenticated: _isAuthenticated,
                 hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
                 incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
+                onCreatePressed: _showCreateChoiceSheet,
                 onTap: (index) {
                   HapticFeedbackUtils.impact();
 
@@ -1158,3 +1256,73 @@ class _NotificationsBellIconState extends State<_NotificationsBellIcon>
 // Global key to access MainNavigation state
 final GlobalKey<MainNavigationState> mainNavigationKey =
     GlobalKey<MainNavigationState>();
+
+class _CreateChoiceTile extends StatelessWidget {
+  const _CreateChoiceTile({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.surface.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

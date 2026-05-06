@@ -17,6 +17,7 @@ class CustomCurvedNavigationBar extends StatefulWidget {
     required this.currentIndex, required this.onTap, required this.navigationKey, required this.isAuthenticated, super.key,
     this.hasUnreadMessages = false,
     this.incomingMessageTravelDotTrigger = 0,
+    this.onCreatePressed,
   });
 
   final int currentIndex;
@@ -25,6 +26,13 @@ class CustomCurvedNavigationBar extends StatefulWidget {
   final bool isAuthenticated;
   final bool hasUnreadMessages;
   final int incomingMessageTravelDotTrigger;
+
+  /// Invoked when the user taps the trailing "+" item. When supplied, the
+  /// tap is intercepted before the underlying [CurvedNavigationBar] reacts,
+  /// so callers can show a chooser sheet and decide which create flow to
+  /// trigger (housing tab vs. push gig-offer route) without the bar
+  /// flicker-animating to a tab the user did not actually pick.
+  final VoidCallback? onCreatePressed;
 
   @override
   State<CustomCurvedNavigationBar> createState() =>
@@ -38,38 +46,72 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
 
     return SizedBox(
       height: 70.0,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(
-            // Item count is fixed (4) post 2026-Q2 nav rework, so the
-            // package's cached `_length` no longer needs invalidation.
-            child: CurvedNavigationBar(
-              index: widget.currentIndex,
-              height: 70.0,
-              color: _getCurvedColor(context), // Theme-dependent curved color
-              // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
-              // keep the package [Material] transparent so gradients/shadows show.
-              buttonBackgroundColor: Colors.transparent,
-              backgroundColor: _getBackgroundColor(
-                context,
-              ), // Theme-dependent background color
-              animationCurve: Curves.easeInOut,
-              animationDuration: const Duration(milliseconds: 300),
-              onTap: (index) {
-                _handleNavigationTap(index, widget.isAuthenticated);
-              },
-              letIndexChange: (index) {
-                // Allow all index changes - authentication will be handled in _handleNavigationTap
-                // This ensures all navigation items appear clickable and responsive
-                return true;
-              },
-              items: items,
-            ),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final itemWidth = constraints.maxWidth / items.length;
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                // Item count is fixed (4) post 2026-Q2 nav rework, so the
+                // package's cached `_length` no longer needs invalidation.
+                child: CurvedNavigationBar(
+                  index: widget.currentIndex,
+                  height: 70.0,
+                  color: _getCurvedColor(context), // Theme-dependent curved color
+                  // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
+                  // keep the package [Material] transparent so gradients/shadows show.
+                  buttonBackgroundColor: Colors.transparent,
+                  backgroundColor: _getBackgroundColor(
+                    context,
+                  ), // Theme-dependent background color
+                  animationCurve: Curves.easeInOut,
+                  animationDuration: const Duration(milliseconds: 300),
+                  onTap: (index) {
+                    _handleNavigationTap(index, widget.isAuthenticated);
+                  },
+                  letIndexChange: (index) {
+                    // Allow all index changes - authentication will be handled in _handleNavigationTap
+                    // This ensures all navigation items appear clickable and responsive
+                    return true;
+                  },
+                  items: items,
+                ),
+              ),
+              // Tap-overlay over the trailing "+" item. The underlying
+              // [CurvedNavigationBar] item count is fixed at 4, so the create
+              // button is the right-most quarter of the bar. We capture taps
+              // here so the bar doesn't animate the orb across to "+" before
+              // the chooser sheet returns — if the user picks "Service" we
+              // never want to land on the create-listing tab. Housing-pick
+              // intentionally falls through to the standard tab switch via
+              // [widget.onTap] from the parent's setState.
+              if (widget.onCreatePressed != null)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: itemWidth,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      _handleCreateTap(widget.isAuthenticated);
+                    },
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  void _handleCreateTap(bool isAuthenticated) {
+    if (!isAuthenticated) {
+      _launchAuthWizard(context);
+      return;
+    }
+    widget.onCreatePressed?.call();
   }
 
   Widget _buildNavigationItem(
