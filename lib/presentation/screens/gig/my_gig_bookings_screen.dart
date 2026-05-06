@@ -196,7 +196,7 @@ class _BookingTile extends StatelessWidget {
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 18, 20),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -240,13 +240,13 @@ class _BookingTile extends StatelessWidget {
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: _hasActionButtons
-                    ? MainAxisAlignment.spaceBetween
-                    : MainAxisAlignment.start,
                 children: [
                   statusChip,
-                  if (_hasActionButtons)
+                  if (_hasActionButtons) ...[
+                    const SizedBox(height: 18),
+                    const Expanded(child: SizedBox.shrink()),
                     _BookingActions(booking: booking),
+                  ],
                 ],
               ),
             ],
