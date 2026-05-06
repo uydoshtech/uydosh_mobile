@@ -12,6 +12,7 @@ import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
@@ -929,42 +930,68 @@ class _CurrencyAmountField extends StatelessWidget {
     HapticFeedbackUtils.selection();
     final picked = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        final scheme = Theme.of(context).colorScheme;
-        return SafeArea(
-          child: ListView.separated(
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: supportedCurrencies.length,
-            separatorBuilder: (_, __) => Divider(
-              height: 1,
-              color: scheme.onSurface.withValues(alpha: 0.08),
-            ),
-            itemBuilder: (_, i) {
-              final code = supportedCurrencies[i];
-              final isSelected = code == currency;
-              return ListTile(
-                leading: Text(
-                  _flagFor(code),
-                  style: const TextStyle(fontSize: 24),
-                ),
-                title: Text(
-                  code,
-                  style: TextStyle(
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetCtx) {
+        final scheme = Theme.of(sheetCtx).colorScheme;
+        const radius = BorderRadius.vertical(top: Radius.circular(20));
+        return GlassBottomSheetSurface(
+          borderRadius: radius,
+          child: Material(
+            type: MaterialType.transparency,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: scheme.onSurface.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
                   ),
-                ),
-                trailing: isSelected
-                    ? Icon(Icons.check_rounded, color: scheme.secondary)
-                    : null,
-                onTap: () => Navigator.of(context).pop(code),
-              );
-            },
+                  const SizedBox(height: 6),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: supportedCurrencies.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: scheme.onSurface.withValues(alpha: 0.08),
+                    ),
+                    itemBuilder: (_, i) {
+                      final code = supportedCurrencies[i];
+                      final isSelected = code == currency;
+                      return ListTile(
+                        leading: Text(
+                          _flagFor(code),
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        title: Text(
+                          code,
+                          style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? Icon(Icons.check_rounded,
+                                color: scheme.secondary)
+                            : null,
+                        onTap: () => Navigator.of(sheetCtx).pop(code),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -1064,50 +1091,76 @@ class _CategoryPlate extends StatelessWidget {
     if (categories.isEmpty) return;
     final picked = await showModalBottomSheet<GigCategory>(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: ListView.separated(
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: categories.length,
-            separatorBuilder: (_, __) => Divider(
-              height: 1,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.08),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.06),
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetCtx) {
+        final scheme = Theme.of(sheetCtx).colorScheme;
+        const radius = BorderRadius.vertical(top: Radius.circular(20));
+        return GlassBottomSheetSurface(
+          borderRadius: radius,
+          child: Material(
+            type: MaterialType.transparency,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: scheme.onSurface.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: scheme.onSurface.withValues(alpha: 0.08),
+                      ),
+                      itemBuilder: (_, i) {
+                        final c = categories[i];
+                        final isSelected = c.id == selected?.id;
+                        return ListTile(
+                          leading: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color:
+                                  scheme.secondary.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(c.icon,
+                                color: scheme.secondary, size: 20),
+                          ),
+                          title: Text(
+                            c.localizedName(language),
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? Icon(Icons.check_rounded,
+                                  color: scheme.secondary)
+                              : null,
+                          onTap: () => Navigator.of(sheetCtx).pop(c),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            itemBuilder: (_, i) {
-              final c = categories[i];
-              final isSelected = c.id == selected?.id;
-              final scheme = Theme.of(context).colorScheme;
-              return ListTile(
-                leading: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: scheme.secondary.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(c.icon, color: scheme.secondary, size: 20),
-                ),
-                title: Text(
-                  c.localizedName(language),
-                  style: TextStyle(
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-                trailing: isSelected
-                    ? Icon(Icons.check_rounded, color: scheme.secondary)
-                    : null,
-                onTap: () => Navigator.of(context).pop(c),
-              );
-            },
           ),
         );
       },
