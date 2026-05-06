@@ -11,6 +11,7 @@ export "uydosh_card_tile.dart";
 export "uydosh_dropdown.dart";
 export "auth_required_state.dart";
 export "description_counter_toolbar.dart";
+export "labeled_field_overlay.dart";
 export "unsaved_changes_dialog.dart";
 export "uydosh_info_dialog.dart";
 export "uydosh_empty_column.dart";

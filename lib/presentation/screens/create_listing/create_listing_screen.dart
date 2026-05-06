@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -575,46 +576,52 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             children: [
               // Listing Type Selection (50% width)
               Expanded(
-                child: ListingTypePicker(
-                  selectedListingTypeId: _selectedListingTypeId,
-                  scrollController: _listingTypeScrollController,
-                  onListingTypeChanged: (listingTypeId) {
-                    setState(() {
-                      final prevType = _selectedListingTypeId;
-                      _selectedListingTypeId = listingTypeId;
-                      // Clear photos when switching to "room needed" (listingTypeId == 1)
-                      if (listingTypeId == 1) {
-                        _selectedPhotos.clear();
-                        _primaryPhotoIndex = null;
-                      }
-                      if (_priceTouched) {
-                        if (prevType == 2 && listingTypeId == 1) {
-                          _deriveBudgetRangeFromRoommatePrice();
-                        } else if (prevType == 1 && listingTypeId == 2) {
-                          _deriveRoommatePriceFromBudget();
+                child: LabeledFieldOverlay(
+                  label: L10n.get("listing_type_label"),
+                  child: ListingTypePicker(
+                    selectedListingTypeId: _selectedListingTypeId,
+                    scrollController: _listingTypeScrollController,
+                    onListingTypeChanged: (listingTypeId) {
+                      setState(() {
+                        final prevType = _selectedListingTypeId;
+                        _selectedListingTypeId = listingTypeId;
+                        // Clear photos when switching to "room needed" (listingTypeId == 1)
+                        if (listingTypeId == 1) {
+                          _selectedPhotos.clear();
+                          _primaryPhotoIndex = null;
                         }
-                      }
-                    });
-                    _updateTitle();
-                  },
-                  useThemeColors: true,
-                  showArrows: false,
+                        if (_priceTouched) {
+                          if (prevType == 2 && listingTypeId == 1) {
+                            _deriveBudgetRangeFromRoommatePrice();
+                          } else if (prevType == 1 && listingTypeId == 2) {
+                            _deriveRoommatePriceFromBudget();
+                          }
+                        }
+                      });
+                      _updateTitle();
+                    },
+                    useThemeColors: true,
+                    showArrows: false,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               // Gender Selection (50% width)
               Expanded(
-                child: GenderPicker(
-                  selectedGender: _selectedGender,
-                  scrollController: _genderScrollController,
-                  onGenderChanged: (gender) {
-                    setState(() {
-                      _selectedGender = gender;
-                    });
-                    _updateTitle();
-                  },
-                  useThemeColors: true,
-                  showArrows: false,
+                child: LabeledFieldOverlay(
+                  label: L10n.get("gender"),
+                  child: GenderPicker(
+                    selectedGender: _selectedGender,
+                    scrollController: _genderScrollController,
+                    onGenderChanged: (gender) {
+                      setState(() {
+                        _selectedGender = gender;
+                      });
+                      _updateTitle();
+                    },
+                    useThemeColors: true,
+                    showArrows: false,
+                  ),
                 ),
               ),
             ],
@@ -671,37 +678,42 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           showArrows: false,
         ),
         const SizedBox(height: 10), // Space between location and price range
-        PriceRangePicker(
-          key: ValueKey<int>(_selectedListingTypeId),
-          minPrice: _priceSliderMin,
-          maxPrice: _priceSliderMax,
-          initialMinPrice:
-              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
-          initialMaxPrice:
-              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
-          useSinglePrice: _pricePickerSingleHandle,
-          showErrorBorder: _showPriceError,
-          onPriceRangeChanged: (minPrice, maxPrice) {
-            _dismissKeyboard();
-            setState(() {
-              if (_pricePickerSingleHandle) {
-                _roommatePrice = minPrice;
-              } else {
-                _roomBudgetMin = minPrice;
-                _roomBudgetMax = maxPrice;
-              }
-              _priceTouched = true;
-              _showPriceError = false;
-            });
-          },
+        LabeledFieldOverlay(
+          label: L10n.get("listing_price_label"),
+          child: PriceRangePicker(
+            key: ValueKey<int>(_selectedListingTypeId),
+            minPrice: _priceSliderMin,
+            maxPrice: _priceSliderMax,
+            initialMinPrice:
+                _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
+            initialMaxPrice:
+                _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
+            useSinglePrice: _pricePickerSingleHandle,
+            showErrorBorder: _showPriceError,
+            onPriceRangeChanged: (minPrice, maxPrice) {
+              _dismissKeyboard();
+              setState(() {
+                if (_pricePickerSingleHandle) {
+                  _roommatePrice = minPrice;
+                } else {
+                  _roomBudgetMin = minPrice;
+                  _roomBudgetMax = maxPrice;
+                }
+                _priceTouched = true;
+                _showPriceError = false;
+              });
+            },
+          ),
         ),
         const SizedBox(height: 10), // Space between price range and title
 
         // Title Field — pre-filled with auto-generated #TitleName, editable.
         L10n.inputField(
           "listing_title_hint",
-          builder: (hintText) => WheelPickerPlateContainer(
-            theme: Theme.of(context),
+          builder: (hintText) => LabeledFieldOverlay(
+            label: L10n.get("listing_title_label"),
+            child: WheelPickerPlateContainer(
+              theme: Theme.of(context),
               child: TextFormField(
                 controller: _titleController,
                 maxLength: _titleMaxLength,
@@ -753,6 +765,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 buildCounter: _buildTitleCounter,
+              ),
             ),
           ),
         ),
@@ -761,10 +774,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         // Description Field
         L10n.inputField(
           "listing_description_hint",
-          builder: (hintText) => WheelPickerPlateContainer(
-            showErrorBorder: _showDescriptionError,
-            theme: Theme.of(context),
-            child: AnimatedSize(
+          builder: (hintText) => LabeledFieldOverlay(
+            label: L10n.get("listing_description_label"),
+            child: WheelPickerPlateContainer(
+              showErrorBorder: _showDescriptionError,
+              theme: Theme.of(context),
+              child: AnimatedSize(
               duration: const Duration(milliseconds: 320),
               reverseDuration: const Duration(milliseconds: 320),
               curve: Curves.easeInOut,
@@ -854,23 +869,27 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   );
                 },
               ),
+              ),
             ),
           ),
         ),
         const SizedBox(height: 16),
         // Amenities Section
-        ListingFormAmenitiesSection(
-          selectedAmenityIds: _selectedAmenityIds,
-          onAmenityToggled: (amenityId) {
-            setState(() {
-              if (_selectedAmenityIds.contains(amenityId)) {
-                _selectedAmenityIds.remove(amenityId);
-              } else {
-                _selectedAmenityIds.add(amenityId);
-              }
-            });
-          },
-          onDismissKeyboard: _dismissKeyboard,
+        LabeledFieldOverlay(
+          label: L10n.get("amenities"),
+          child: ListingFormAmenitiesSection(
+            selectedAmenityIds: _selectedAmenityIds,
+            onAmenityToggled: (amenityId) {
+              setState(() {
+                if (_selectedAmenityIds.contains(amenityId)) {
+                  _selectedAmenityIds.remove(amenityId);
+                } else {
+                  _selectedAmenityIds.add(amenityId);
+                }
+              });
+            },
+            onDismissKeyboard: _dismissKeyboard,
+          ),
         ),
 
         const SizedBox(height: 16),
@@ -1127,7 +1146,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     _selectedPhotos.isEmpty ? null : 0;
               });
             },
-            maxPhotos: 5,
             isRequired: false,
           ),
 

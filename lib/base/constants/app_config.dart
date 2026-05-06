@@ -26,4 +26,14 @@ class AppConfig {
   /// [EnvironmentUtil.compileTimeYandexMapsApiKey] on first cold launch
   /// before Remote Config has fetched.
   static String get yandexMapsApiKey => EnvironmentUtil.yandexMapsApiKey;
+
+  /// Max photos per listing, resolved at runtime from Firebase Remote
+  /// Config (key: `max_photos_per_listing`). Falls back to
+  /// [EnvironmentUtil.compileTimeMaxPhotosPerListing] (currently 5) when
+  /// Remote Config has not yet supplied a value.
+  ///
+  /// NOTE: this is read every time photo widgets rebuild, so the new
+  /// limit propagates to existing screens on the next frame after a
+  /// successful RC fetch — no app restart required.
+  static int get maxPhotosPerListing => EnvironmentUtil.maxPhotosPerListing;
 }

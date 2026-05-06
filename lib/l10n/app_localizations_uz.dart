@@ -792,6 +792,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get show_map => 'Xaritani ko\'rsatish';
 
   @override
+  String get tap_to_load_map => 'Yuklash uchun bosing';
+
+  @override
   String get hide_map => 'Xaritani yashirish';
 
   @override
@@ -1019,14 +1022,17 @@ class AppLocalizationsUz extends AppLocalizations {
   String get choose_from_gallery => 'Galereyadan tanlash';
 
   @override
-  String get photo_limit_reached => 'Maksimal 5 ta rasm';
+  String photo_limit_reached(int max) {
+    return 'Maksimal $max ta rasm';
+  }
 
   @override
   String get max_photos_reached => 'Maksimal rasmlar soniga yetildi';
 
   @override
-  String get max_photos_message =>
-      'Siz faqat 5 tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo\'shishdan oldin ba\'zi rasmlarni o\'chiring.';
+  String max_photos_message(int max) {
+    return 'Siz faqat $max tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo\'shishdan oldin ba\'zi rasmlarni o\'chiring.';
+  }
 
   @override
   String get ok => 'OK';

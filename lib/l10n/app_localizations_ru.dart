@@ -784,6 +784,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get show_map => 'Показать карту';
 
   @override
+  String get tap_to_load_map => 'Нажмите для загрузки';
+
+  @override
   String get hide_map => 'Скрыть карту';
 
   @override
@@ -1013,13 +1016,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get choose_from_gallery => 'Выбрать из галереи';
 
   @override
-  String get photo_limit_reached => 'Максимум 5 фотографий';
+  String photo_limit_reached(int max) {
+    return 'Максимум $max фотографий';
+  }
 
   @override
   String get max_photos_reached => 'Достигнут максимум фотографий';
 
   @override
-  String get max_photos_message => 'Вы можете загрузить максимум 5 фото.';
+  String max_photos_message(int max) {
+    return 'Вы можете загрузить максимум $max фото.';
+  }
 
   @override
   String get ok => 'ОК';

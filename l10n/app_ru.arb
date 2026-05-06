@@ -347,6 +347,7 @@
   "about_feature_4": "Проверенные и безопасные объявления",
   "location_on_map": "Локация",
   "show_map": "Показать карту",
+  "tap_to_load_map": "Нажмите для загрузки",
   "hide_map": "Скрыть карту",
   "open_in_yandex_maps": "Открыть в Яндекс Картах",
   "open_in_yandex_maps_confirmation": "Браузер с Яндекс Картами будет открыт.",
@@ -448,9 +449,25 @@
   "add_photo": "Добавить фото",
   "take_photo": "Сделать фото",
   "choose_from_gallery": "Выбрать из галереи",
-  "photo_limit_reached": "Максимум 5 фотографий",
+  "photo_limit_reached": "Максимум {max} фотографий",
+  "@photo_limit_reached": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "max_photos_reached": "Достигнут максимум фотографий",
-  "max_photos_message": "Вы можете загрузить максимум 5 фото.",
+  "max_photos_message": "Вы можете загрузить максимум {max} фото.",
+  "@max_photos_message": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "ok": "ОК",
   "delete": "Удалить",
   "onboarding_title_1": "Найди идеального соседа",

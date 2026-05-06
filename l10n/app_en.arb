@@ -355,6 +355,7 @@
   "about_feature_4": "• Verified and safe listings",
   "location_on_map": "Location",
   "show_map": "Show map",
+  "tap_to_load_map": "Tap to load",
   "hide_map": "Hide map",
   "open_in_yandex_maps": "Open in Yandex Maps",
   "open_in_yandex_maps_confirmation": "A browser with Yandex Maps will be opened.",
@@ -456,9 +457,25 @@
   "add_photo": "Add Photo",
   "take_photo": "Take Photo",
   "choose_from_gallery": "Choose from Gallery",
-  "photo_limit_reached": "Maximum 5 photos allowed",
+  "photo_limit_reached": "Maximum {max} photos allowed",
+  "@photo_limit_reached": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "max_photos_reached": "Maximum photos reached",
-  "max_photos_message": "You can only upload up to 5 photos. Please remove some photos before adding new ones.",
+  "max_photos_message": "You can only upload up to {max} photos. Please remove some photos before adding new ones.",
+  "@max_photos_message": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "ok": "OK",
   "delete": "Delete",
   "onboarding_title_1": "Find Your Ideal Roommate",

@@ -95,6 +95,16 @@ abstract class EnvironmentUtil {
     defaultValue: "",
   );
 
+  /// Compile-time default for the max number of photos a user may attach
+  /// to a single listing. Mirrors the Remote Config default — keep in
+  /// sync with `_kDefaultMaxPhotosPerListing` in [RemoteConfigService] and
+  /// with the `MAX_PHOTOS` constant in the backend Telegram-ingest worker.
+  /// Override at build time with `--dart-define=MAX_PHOTOS_PER_LISTING=…`.
+  static const compileTimeMaxPhotosPerListing = int.fromEnvironment(
+    "MAX_PHOTOS_PER_LISTING",
+    defaultValue: 5,
+  );
+
   /// Current API base URL.
   ///
   /// Resolves at runtime from Remote Config (cached locally), falling back
@@ -136,6 +146,12 @@ abstract class EnvironmentUtil {
   /// used for fallback on transient key errors). Resolves at runtime from
   /// Remote Config, falling back to [compileTimeGeminiApiKey2].
   static String get geminiApiKey2 => RemoteConfigService.geminiApiKey2;
+
+  /// Max number of photos per listing. Resolves at runtime from Remote
+  /// Config, falling back to [compileTimeMaxPhotosPerListing] when RC has
+  /// not yet provided a value or the stored value is malformed.
+  static int get maxPhotosPerListing =>
+      RemoteConfigService.maxPhotosPerListing;
 
   /// Convenience that returns `<API_BASE_PATH>/<api>` only when
   /// `API_BASE_PATH` was provided via `--dart-define` at build time,

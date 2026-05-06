@@ -355,6 +355,7 @@
   "about_feature_4": "• Tekshirilgan va xavfsiz e'lonlar",
   "location_on_map": "Xaritadagi joylashuv",
   "show_map": "Xaritani ko'rsatish",
+  "tap_to_load_map": "Yuklash uchun bosing",
   "hide_map": "Xaritani yashirish",
   "open_in_yandex_maps": "Yandex Xaritalarida ochish",
   "open_in_yandex_maps_confirmation": "Brauzerda Yandex Xaritalari ochiladi.",
@@ -456,9 +457,25 @@
   "add_photo": "Rasm qo'shish",
   "take_photo": "Rasm olish",
   "choose_from_gallery": "Galereyadan tanlash",
-  "photo_limit_reached": "Maksimal 5 ta rasm",
+  "photo_limit_reached": "Maksimal {max} ta rasm",
+  "@photo_limit_reached": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "max_photos_reached": "Maksimal rasmlar soniga yetildi",
-  "max_photos_message": "Siz faqat 5 tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo'shishdan oldin ba'zi rasmlarni o'chiring.",
+  "max_photos_message": "Siz faqat {max} tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo'shishdan oldin ba'zi rasmlarni o'chiring.",
+  "@max_photos_message": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
   "ok": "OK",
   "delete": "O'chirish",
   "onboarding_title_1": "Ideal xonadoshingizni toping",

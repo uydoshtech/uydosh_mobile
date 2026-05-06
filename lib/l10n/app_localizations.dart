@@ -1510,6 +1510,12 @@ abstract class AppLocalizations {
   /// **'Show map'**
   String get show_map;
 
+  /// No description provided for @tap_to_load_map.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to load'**
+  String get tap_to_load_map;
+
   /// No description provided for @hide_map.
   ///
   /// In en, this message translates to:
@@ -1927,8 +1933,8 @@ abstract class AppLocalizations {
   /// No description provided for @photo_limit_reached.
   ///
   /// In en, this message translates to:
-  /// **'Maximum 5 photos allowed'**
-  String get photo_limit_reached;
+  /// **'Maximum {max} photos allowed'**
+  String photo_limit_reached(int max);
 
   /// No description provided for @max_photos_reached.
   ///
@@ -1939,8 +1945,8 @@ abstract class AppLocalizations {
   /// No description provided for @max_photos_message.
   ///
   /// In en, this message translates to:
-  /// **'You can only upload up to 5 photos. Please remove some photos before adding new ones.'**
-  String get max_photos_message;
+  /// **'You can only upload up to {max} photos. Please remove some photos before adding new ones.'**
+  String max_photos_message(int max);
 
   /// No description provided for @ok.
   ///

@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -109,7 +109,7 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      L10n.get("show_map", fallback: "Show map"),
+                      context.l10n.show_map,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: scheme.onSurface,
@@ -117,10 +117,7 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      L10n.get(
-                        "tap_to_load_map",
-                        fallback: "Tap to load",
-                      ),
+                      context.l10n.tap_to_load_map,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),

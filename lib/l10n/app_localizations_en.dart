@@ -782,6 +782,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get show_map => 'Show map';
 
   @override
+  String get tap_to_load_map => 'Tap to load';
+
+  @override
   String get hide_map => 'Hide map';
 
   @override
@@ -1007,14 +1010,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get choose_from_gallery => 'Choose from Gallery';
 
   @override
-  String get photo_limit_reached => 'Maximum 5 photos allowed';
+  String photo_limit_reached(int max) {
+    return 'Maximum $max photos allowed';
+  }
 
   @override
   String get max_photos_reached => 'Maximum photos reached';
 
   @override
-  String get max_photos_message =>
-      'You can only upload up to 5 photos. Please remove some photos before adding new ones.';
+  String max_photos_message(int max) {
+    return 'You can only upload up to $max photos. Please remove some photos before adding new ones.';
+  }
 
   @override
   String get ok => 'OK';

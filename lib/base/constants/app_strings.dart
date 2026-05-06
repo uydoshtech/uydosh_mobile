@@ -482,7 +482,7 @@ class AppStrings {
       "add_photo": "Add Photo",
       "take_photo": "Take Photo",
       "choose_from_gallery": "Choose from Gallery",
-      "photo_limit_reached": "Maximum 5 photos allowed",
+      "photo_limit_reached": "Maximum {max} photos allowed",
       "retake": "Retake",
       "use_photo": "Use Photo",
       "flash": "Flash",
@@ -522,7 +522,7 @@ class AppStrings {
 
       "max_photos_reached": "Maximum photos reached",
       "max_photos_message":
-          "You can only upload up to 5 photos. Please remove some photos before adding new ones.",
+          "You can only upload up to {max} photos. Please remove some photos before adding new ones.",
 
       "ok": "OK",
       "delete": "Delete",
@@ -1138,6 +1138,7 @@ class AppStrings {
       "authenticate_to_post_listing": "Authenticate to post listing",
       "select_location_required": "Select location",
       "select_metro_line_optional": "Metro line",
+      "metro_station_label": "Metro station",
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Amenities",
@@ -1754,7 +1755,7 @@ class AppStrings {
       "add_photo": "Добавить фото",
       "take_photo": "Сделать фото",
       "choose_from_gallery": "Выбрать из галереи",
-      "photo_limit_reached": "Максимум 5 фотографий",
+      "photo_limit_reached": "Максимум {max} фотографий",
       "retake": "Переснять",
       "use_photo": "Использовать",
       "flash": "Вспышка",
@@ -1793,7 +1794,7 @@ class AppStrings {
       "crop_aspect_ratio": "Пропорции",
 
       "max_photos_reached": "Достигнут максимум фотографий",
-      "max_photos_message": "Вы можете загрузить максимум 5 фото.",
+      "max_photos_message": "Вы можете загрузить максимум {max} фото.",
 
       "ok": "ОК",
       "delete": "Удалить",
@@ -2418,6 +2419,7 @@ class AppStrings {
       "authenticate_to_post_listing": "Войти для размещения объявления",
       "select_location_required": "Выберите район",
       "select_metro_line_optional": "Линия метро",
+      "metro_station_label": "Станция метро",
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Удобства",
@@ -3039,7 +3041,7 @@ class AppStrings {
       "add_photo": "Rasm qo'shish",
       "take_photo": "Rasm olish",
       "choose_from_gallery": "Galereyadan tanlash",
-      "photo_limit_reached": "Maksimal 5 ta rasm",
+      "photo_limit_reached": "Maksimal {max} ta rasm",
       "retake": "Qayta olish",
       "use_photo": "Foydalanish",
       "flash": "Chaqnoq",
@@ -3079,7 +3081,7 @@ class AppStrings {
 
       "max_photos_reached": "Maksimal rasmlar soniga yetildi",
       "max_photos_message":
-          "Siz faqat 5 tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo'shishdan oldin ba'zi rasmlarni o'chiring.",
+          "Siz faqat {max} tagacha rasm yuklashingiz mumkin. Iltimos, yangi rasmlar qo'shishdan oldin ba'zi rasmlarni o'chiring.",
 
       "ok": "OK",
       "delete": "O'chirish",
@@ -3703,6 +3705,7 @@ class AppStrings {
           "E'lon joylashtirish uchun tizimga kiring",
       "select_location_required": "Tumanni tanlang",
       "select_metro_line_optional": "Metro liniyasi",
+      "metro_station_label": "Metro bekati",
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Qulayliklar",

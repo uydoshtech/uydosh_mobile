@@ -5,6 +5,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -46,7 +47,7 @@ class PhotoUploader extends StatefulWidget {
     this.orderedItems,
     this.onReorderItems,
     this.onMakeNewPhotoPrimary,
-    this.maxPhotos = 5,
+    this.maxPhotos,
     this.isRequired = false,
   });
 
@@ -58,7 +59,12 @@ class PhotoUploader extends StatefulWidget {
   final Function(int)? onMakeNewPhotoPrimary;
   final Set<int> deletingPhotoIds;
   final Set<int> makingPhotoPrimaryIds;
-  final int maxPhotos;
+
+  /// Optional caller override. When `null` (the common case) the widget
+  /// falls back to [AppConfig.maxPhotosPerListing], which itself is
+  /// driven by Firebase Remote Config — so most call sites should leave
+  /// this unset and let the limit be tuned from the Firebase Console.
+  final int? maxPhotos;
   final bool isRequired;
 
   /// Caller-owned display order. When provided, tiles are rendered in this
@@ -77,6 +83,11 @@ class _PhotoUploaderState extends State<PhotoUploader>
   final ImagePicker _picker = ImagePicker();
   int? _primaryNewPhotoIndex; // Track which new photo is primary
 
+  /// Resolves the active per-listing photo cap. Re-read on every access so
+  /// a fresh Remote Config value lands on the next rebuild.
+  int get _effectiveMaxPhotos =>
+      widget.maxPhotos ?? AppConfig.maxPhotosPerListing;
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
@@ -88,7 +99,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
         if (images.isNotEmpty) {
           final remainingSlots =
-              widget.maxPhotos - widget.selectedPhotos.length;
+              _effectiveMaxPhotos - widget.selectedPhotos.length;
           final imagesToProcess = images.take(remainingSlots).toList();
 
           if (imagesToProcess.isNotEmpty) {
@@ -129,7 +140,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         );
 
         if (capturedPath != null) {
-          if (widget.selectedPhotos.length < widget.maxPhotos) {
+          if (widget.selectedPhotos.length < _effectiveMaxPhotos) {
             // Offer crop/rotate right after capture. Cancelling the cropper
             // silently keeps the original photo so we never punish the user
             // for taking a shot they don't want to crop.
@@ -162,12 +173,18 @@ class _PhotoUploaderState extends State<PhotoUploader>
   }
 
   void _showMaxPhotosDialog() {
+    final maxPhotos = _effectiveMaxPhotos;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(L10n.get("max_photos_reached")),
-          content: Text(L10n.get("max_photos_message")),
+          content: Text(
+            L10n.getWithParams(
+              "max_photos_message",
+              params: {"max": "$maxPhotos"},
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -212,8 +229,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       "listing_photos_count",
                       params: {
                         "current":
-                            "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, widget.maxPhotos)}",
-                        "max": "${widget.maxPhotos}",
+                            "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, _effectiveMaxPhotos)}",
+                        "max": "$_effectiveMaxPhotos",
                       },
                     ),
                     style: TextStyle(
@@ -403,7 +420,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ),
                   ),
                 ),
-                if (widget.selectedPhotos.length < widget.maxPhotos)
+                if (widget.selectedPhotos.length < _effectiveMaxPhotos)
                   Builder(
                     builder: (context) {
                       final isLightTheme = ThemeState().isLightTheme;

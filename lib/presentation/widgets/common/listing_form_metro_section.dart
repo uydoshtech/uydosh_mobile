@@ -62,11 +62,17 @@ class ListingFormMetroSection extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _buildLinePicker(context),
+          child: LabeledFieldOverlay(
+            label: L10n.get("select_metro_line_optional"),
+            child: _buildLinePicker(context),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _buildStationPicker(context),
+          child: LabeledFieldOverlay(
+            label: L10n.get("metro_station_label"),
+            child: _buildStationPicker(context),
+          ),
         ),
       ],
     );

@@ -1,7 +1,7 @@
 import "dart:async" show unawaited;
 
 import "package:firebase_remote_config/firebase_remote_config.dart";
-import "package:flutter/foundation.dart" show kDebugMode;
+import "package:flutter/foundation.dart" show ValueNotifier, kDebugMode;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -51,6 +51,28 @@ abstract class RemoteConfigService {
   static const _kGeminiApiKey = "gemini_api_key";
   static const _kGeminiApiKey2 = "gemini_api_key_2";
 
+  /// Max number of photos a user may attach to a single listing. Stored as
+  /// the stringified int (Remote Config doesn't have a native int type that
+  /// plays nicely with our string-only `_values` map). Parsed lazily by
+  /// [maxPhotosPerListing], which falls back to
+  /// [_kDefaultMaxPhotosPerListing] on any malformed / non-positive value
+  /// (e.g. someone fat-fingering "0" or "five" in the Firebase Console).
+  static const _kMaxPhotosPerListing = "max_photos_per_listing";
+  static const _kDefaultMaxPhotosPerListing = "5";
+
+  /// Boolean flag (stored as the string `"true"` / `"false"`) that controls
+  /// whether the small floating labels above the create/edit-listing form
+  /// fields (title, description, price, etc.) are rendered. Defaults to
+  /// shown; flip in the Firebase Console to hide them globally without
+  /// shipping a new build.
+  static const _kShowListingFormFieldLabels =
+      "show_listing_form_field_labels";
+
+  /// Default value used both as the Firebase Remote Config default and as
+  /// the seed for [showListingFormFieldLabels]. Defined as a constant so the
+  /// two stay in sync.
+  static const _kDefaultShowListingFormFieldLabels = "true";
+
   /// Prefix for SharedPreferences cache keys. The `api_base_path` cache key
   /// (`uydosh.remote_config.api_base_path`) intentionally matches the value
   /// used before the multi-key refactor so existing installs keep their
@@ -68,6 +90,8 @@ abstract class RemoteConfigService {
     _kYandexMapsApiKey: EnvironmentUtil.compileTimeYandexMapsApiKey,
     _kGeminiApiKey: EnvironmentUtil.compileTimeGeminiApiKey,
     _kGeminiApiKey2: EnvironmentUtil.compileTimeGeminiApiKey2,
+    _kShowListingFormFieldLabels: _kDefaultShowListingFormFieldLabels,
+    _kMaxPhotosPerListing: _kDefaultMaxPhotosPerListing,
   };
 
   /// Currently-active values. Seeded from [_defaults], overridden by the
@@ -109,6 +133,34 @@ abstract class RemoteConfigService {
   /// Same caveats as [geminiApiKey].
   static String get geminiApiKey2 => _values[_kGeminiApiKey2]!;
 
+  /// Max number of photos per listing. Tunable from the Firebase Console
+  /// under the `max_photos_per_listing` key. Falls back to the compile-time
+  /// default ([_kDefaultMaxPhotosPerListing], currently `5`) when the
+  /// stored value is missing, empty, non-numeric, or non-positive — we
+  /// never want to render a UI that can't accept a single photo just
+  /// because someone typo'd the RC value.
+  static int get maxPhotosPerListing {
+    final raw = _values[_kMaxPhotosPerListing];
+    final parsed = int.tryParse(raw?.trim() ?? "");
+    if (parsed == null || parsed <= 0) {
+      return int.parse(_kDefaultMaxPhotosPerListing);
+    }
+    return parsed;
+  }
+
+  /// Reactive notifier mirroring [_kShowListingFormFieldLabels]. Widgets
+  /// (e.g. `LabeledFieldOverlay`) listen to this so toggling the flag in the
+  /// Firebase Console takes effect on the next successful fetch without an
+  /// app restart. Seeded from the cached / compile-time value during
+  /// [initialize].
+  static final ValueNotifier<bool> showListingFormFieldLabels =
+      ValueNotifier(_parseBool(_kDefaultShowListingFormFieldLabels));
+
+  static bool _parseBool(String raw) {
+    final v = raw.trim().toLowerCase();
+    return v == "true" || v == "1" || v == "yes" || v == "on";
+  }
+
   /// Initialize Remote Config. Call once during app bootstrap, after
   /// `Firebase.initializeApp()` and before any service that issues HTTP
   /// requests.
@@ -135,6 +187,7 @@ abstract class RemoteConfigService {
         "🛰️ RemoteConfig: using cached apiBasePath=${_values[_kApiBasePath]}",
       );
     }
+    _syncReactiveValues();
 
     FirebaseRemoteConfig rc;
     try {
@@ -190,8 +243,20 @@ abstract class RemoteConfigService {
         await prefs.setString("$_kPrefsCachePrefix$key", fresh);
         logger.d("🛰️ RemoteConfig: applied fresh $key=$fresh");
       }
+      _syncReactiveValues();
     } catch (e) {
       logger.d("🛰️ RemoteConfig: fetch failed, keeping current values: $e");
+    }
+  }
+
+  /// Push the current string-typed `_values` into reactive notifiers so any
+  /// widget listening to a flag (like [showListingFormFieldLabels]) rebuilds.
+  static void _syncReactiveValues() {
+    final raw = _values[_kShowListingFormFieldLabels] ??
+        _kDefaultShowListingFormFieldLabels;
+    final parsed = _parseBool(raw);
+    if (showListingFormFieldLabels.value != parsed) {
+      showListingFormFieldLabels.value = parsed;
     }
   }
 }

@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
@@ -23,7 +24,7 @@ class PhotoPicker extends StatefulWidget {
     required this.onPhotosChanged,
     super.key,
     this.onMakePhotoPrimary, // Optional callback
-    this.maxPhotos = 5,
+    this.maxPhotos,
     this.isRequired = false,
   });
 
@@ -31,7 +32,10 @@ class PhotoPicker extends StatefulWidget {
   final Function(List<String>) onPhotosChanged;
   final Function(int)?
   onMakePhotoPrimary; // Add callback for making photo primary
-  final int maxPhotos;
+
+  /// Optional caller override. When `null` the widget uses
+  /// [AppConfig.maxPhotosPerListing] (driven by Firebase Remote Config).
+  final int? maxPhotos;
   final bool isRequired;
 
   @override
@@ -41,6 +45,11 @@ class PhotoPicker extends StatefulWidget {
 class _PhotoPickerState extends State<PhotoPicker> {
   final ImagePicker _picker = ImagePicker();
   bool _isProcessingImage = false;
+
+  /// Active per-listing photo cap. Re-read on every access so a fresh
+  /// Remote Config value lands on the next rebuild.
+  int get _effectiveMaxPhotos =>
+      widget.maxPhotos ?? AppConfig.maxPhotosPerListing;
 
   static Uint8List? _cachedWatermarkBytes;
 
@@ -66,7 +75,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
         if (images.isNotEmpty) {
           // Check if adding these images would exceed the limit
           final remainingSlots =
-              widget.maxPhotos - widget.selectedPhotos.length;
+              _effectiveMaxPhotos - widget.selectedPhotos.length;
           final imagesToProcess = images.take(remainingSlots).toList();
 
           if (imagesToProcess.isNotEmpty) {
@@ -134,7 +143,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
         );
 
         if (capturedPath != null) {
-          if (widget.selectedPhotos.length < widget.maxPhotos) {
+          if (widget.selectedPhotos.length < _effectiveMaxPhotos) {
             // Let the user crop/rotate the freshly captured shot before we
             // bake in the watermark — cropping after watermarking would let
             // the user accidentally cut the logo off. If the user cancels
@@ -218,16 +227,21 @@ class _PhotoPickerState extends State<PhotoPicker> {
   }
 
   void _showMaxPhotosDialog() {
+    final maxPhotos = _effectiveMaxPhotos;
+    final title = L10n.getWithParams(
+      "photo_limit_reached",
+      params: {"max": "$maxPhotos"},
+    );
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text(
-            L10n.get("photo_limit_reached"),
+            title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           content: Text(
-            "${L10n.get("photo_limit_reached")} (${widget.maxPhotos})",
+            "$title ($maxPhotos)",
             style: const TextStyle(fontSize: 16),
           ),
           actions: [
@@ -357,7 +371,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                     ),
                   ),
                 ),
-                if (widget.selectedPhotos.length < widget.maxPhotos)
+                if (widget.selectedPhotos.length < _effectiveMaxPhotos)
                   IconButton(
                     onPressed: _isProcessingImage
                         ? null
@@ -500,7 +514,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  "${_getOrderedPhotos().length}/${widget.maxPhotos}",
+                  "${_getOrderedPhotos().length}/$_effectiveMaxPhotos",
                   style: TextStyle(
                     fontSize: 12,
                     color:

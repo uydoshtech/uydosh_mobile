@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
@@ -835,31 +836,38 @@ class _EditListingScreenState extends State<EditListingScreen>
                           children: [
                             // Listing Type Selection (50% width)
                             Expanded(
-                              child: ListingTypePicker(
-                                selectedListingTypeId: _selectedListingTypeId,
-                                scrollController: _listingTypeScrollController,
-                                onListingTypeChanged: (listingTypeId) {
-                                  setState(() {
-                                    _selectedListingTypeId = listingTypeId;
-                                  });
-                                },
-                                useThemeColors: true,
-                                showArrows: false,
+                              child: LabeledFieldOverlay(
+                                label: L10n.get("listing_type_label"),
+                                child: ListingTypePicker(
+                                  selectedListingTypeId: _selectedListingTypeId,
+                                  scrollController:
+                                      _listingTypeScrollController,
+                                  onListingTypeChanged: (listingTypeId) {
+                                    setState(() {
+                                      _selectedListingTypeId = listingTypeId;
+                                    });
+                                  },
+                                  useThemeColors: true,
+                                  showArrows: false,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             // Gender Selection (50% width)
                             Expanded(
-                              child: GenderPicker(
-                                selectedGender: _selectedGender,
-                                scrollController: _genderScrollController,
-                                onGenderChanged: (gender) {
-                                  setState(() {
-                                    _selectedGender = gender;
-                                  });
-                                },
-                                useThemeColors: true,
-                                showArrows: false,
+                              child: LabeledFieldOverlay(
+                                label: L10n.get("gender"),
+                                child: GenderPicker(
+                                  selectedGender: _selectedGender,
+                                  scrollController: _genderScrollController,
+                                  onGenderChanged: (gender) {
+                                    setState(() {
+                                      _selectedGender = gender;
+                                    });
+                                  },
+                                  useThemeColors: true,
+                                  showArrows: false,
+                                ),
                               ),
                             ),
                           ],
@@ -922,19 +930,22 @@ class _EditListingScreenState extends State<EditListingScreen>
                         height: 10,
                       ), // Space between location and price range
                       // Price Field - Single handle, stored as both min and max
-                      PriceRangePicker(
-                        minPrice: 10.0,
-                        maxPrice: 1000.0,
-                        initialMinPrice: _price,
-                        initialMaxPrice: _price,
-                        useSinglePrice: true,
-                        onPriceRangeChanged: (minPrice, maxPrice) {
-                          _dismissKeyboard();
-                          setState(() {
-                            _price =
-                                minPrice; // Same value for both in single mode
-                          });
-                        },
+                      LabeledFieldOverlay(
+                        label: L10n.get("listing_price_label"),
+                        child: PriceRangePicker(
+                          minPrice: 10.0,
+                          maxPrice: 1000.0,
+                          initialMinPrice: _price,
+                          initialMaxPrice: _price,
+                          useSinglePrice: true,
+                          onPriceRangeChanged: (minPrice, maxPrice) {
+                            _dismissKeyboard();
+                            setState(() {
+                              _price =
+                                  minPrice; // Same value for both in single mode
+                            });
+                          },
+                        ),
                       ),
                       const SizedBox(
                         height: 10,
@@ -942,9 +953,11 @@ class _EditListingScreenState extends State<EditListingScreen>
 
                       // Title Field — editable. Pre-populated with the
                       // listing's existing title in [_initializeForm].
-                      WheelPickerPlateContainer(
-                        theme: theme,
-                        child: TextFormField(
+                      LabeledFieldOverlay(
+                        label: L10n.get("listing_title_label"),
+                        child: WheelPickerPlateContainer(
+                          theme: theme,
+                          child: TextFormField(
                           controller: _titleController,
                           maxLength: _titleMaxLength,
                           maxLines: 1,
@@ -997,6 +1010,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 : theme.colorScheme.onSurfaceVariant,
                           ),
                           buildCounter: _buildTitleCounter,
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -1004,10 +1018,12 @@ class _EditListingScreenState extends State<EditListingScreen>
                       ), // Space between title and description
 
                       // Description Field
-                      WheelPickerPlateContainer(
-                        showErrorBorder: _showDescriptionError,
-                        theme: theme,
-                        child: AnimatedSize(
+                      LabeledFieldOverlay(
+                        label: L10n.get("listing_description_label"),
+                        child: WheelPickerPlateContainer(
+                          showErrorBorder: _showDescriptionError,
+                          theme: theme,
+                          child: AnimatedSize(
                           duration: const Duration(milliseconds: 320),
                           reverseDuration: const Duration(milliseconds: 320),
                           curve: Curves.easeInOut,
@@ -1101,6 +1117,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 counterVisibleAtFraction: 0.7,
                               );
                             },
+                          ),
                           ),
                         ),
                       ),
@@ -1368,7 +1385,6 @@ class _EditListingScreenState extends State<EditListingScreen>
                             _photoOrderDirty = true;
                           });
                         },
-                        maxPhotos: 5,
                         isRequired: false,
                       ),
 
@@ -1402,18 +1418,21 @@ class _EditListingScreenState extends State<EditListingScreen>
                       const SizedBox(height: 20),
 
                       // Amenities Section
-                      ListingFormAmenitiesSection(
-                        selectedAmenityIds: _selectedAmenityIds,
-                        onAmenityToggled: (amenityId) {
-                          setState(() {
-                            if (_selectedAmenityIds.contains(amenityId)) {
-                              _selectedAmenityIds.remove(amenityId);
-                            } else {
-                              _selectedAmenityIds.add(amenityId);
-                            }
-                          });
-                        },
-                        onDismissKeyboard: _dismissKeyboard,
+                      LabeledFieldOverlay(
+                        label: L10n.get("amenities"),
+                        child: ListingFormAmenitiesSection(
+                          selectedAmenityIds: _selectedAmenityIds,
+                          onAmenityToggled: (amenityId) {
+                            setState(() {
+                              if (_selectedAmenityIds.contains(amenityId)) {
+                                _selectedAmenityIds.remove(amenityId);
+                              } else {
+                                _selectedAmenityIds.add(amenityId);
+                              }
+                            });
+                          },
+                          onDismissKeyboard: _dismissKeyboard,
+                        ),
                       ),
 
                       const SizedBox(height: 26),
