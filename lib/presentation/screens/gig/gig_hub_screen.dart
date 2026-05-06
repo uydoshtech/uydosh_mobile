@@ -52,6 +52,16 @@ class GigHubScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _HubTile(
+            icon: Icons.handshake_rounded,
+            title: L10n.get("gigs_hub_publish_offer_title"),
+            subtitle: L10n.get("gigs_hub_publish_offer_subtitle"),
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushPostGigOffer();
+            },
+          ),
+          const SizedBox(height: 14),
+          _HubTile(
             icon: Icons.event_note_rounded,
             title: L10n.get("gigs_hub_my_bookings_title"),
             subtitle: L10n.get("gigs_hub_my_bookings_subtitle"),

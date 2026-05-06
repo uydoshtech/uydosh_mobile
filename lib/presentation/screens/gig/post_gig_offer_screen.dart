@@ -5,45 +5,47 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
-import "package:uy_dosh/domain/models/gig/gig_request.dart";
-import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
+import "package:uy_dosh/domain/models/gig/gig_offer.dart";
+import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
-class PostGigRequestScreen extends StatefulWidget {
-  const PostGigRequestScreen({super.key});
+/// Mirror of [PostGigRequestScreen] but for the *provider* side: lets a user
+/// publish a [GigOffer] (a standing service they sell) instead of a one-off
+/// task they want done. Backed by [GigPostOfferBloc] which calls
+/// `IGigService.createOffer` → `POST /gigs/offers`.
+class PostGigOfferScreen extends StatefulWidget {
+  const PostGigOfferScreen({super.key});
 
   @override
-  State<PostGigRequestScreen> createState() => _PostGigRequestScreenState();
+  State<PostGigOfferScreen> createState() => _PostGigOfferScreenState();
 }
 
-class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
+class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _budgetController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _minDurationController = TextEditingController();
   GigCategory? _selectedCategory;
-  GigRequestBudgetType _budgetType = GigRequestBudgetType.fixed;
+  GigPricingType _pricingType = GigPricingType.fixed;
   bool _isRemote = false;
   bool _showCategoryError = false;
 
   @override
   void initState() {
     super.initState();
-    context
-        .read<GigPostRequestBloc>()
-        .add(const LoadCategoriesForRequest());
+    context.read<GigPostOfferBloc>().add(const LoadCategoriesForOffer());
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _budgetController.dispose();
-    _addressController.dispose();
+    _priceController.dispose();
+    _minDurationController.dispose();
     super.dispose();
   }
 
@@ -56,21 +58,24 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
     if (!formValid || categoryMissing) {
       return;
     }
-    final budget = _budgetController.text.isEmpty
+    final price = int.tryParse(_priceController.text);
+    if (price == null) return;
+    final minDuration = _minDurationController.text.trim().isEmpty
         ? null
-        : int.tryParse(_budgetController.text);
-    context.read<GigPostRequestBloc>().add(
-          SubmitGigRequest(
+        : int.tryParse(_minDurationController.text.trim());
+    context.read<GigPostOfferBloc>().add(
+          SubmitGigOffer(
             categoryId: _selectedCategory!.id,
             title: _titleController.text.trim(),
-            budgetType: _budgetType,
-            budgetAmount: budget,
+            pricingType: _pricingType,
+            price: price,
             descriptionRu: _descriptionController.text.trim().isEmpty
                 ? null
                 : _descriptionController.text.trim(),
-            addressText: _addressController.text.trim().isEmpty
-                ? null
-                : _addressController.text.trim(),
+            // Min-duration only makes sense for hourly pricing; ignore it
+            // otherwise so we don't send a meaningless value to the backend.
+            minDurationMinutes:
+                _pricingType == GigPricingType.hourly ? minDuration : null,
             isRemote: _isRemote,
           ),
         );
@@ -79,28 +84,28 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
   @override
   Widget build(BuildContext context) {
     final language = LanguageState().currentLanguage;
-    return BlocConsumer<GigPostRequestBloc, GigPostRequestState>(
+    return BlocConsumer<GigPostOfferBloc, GigPostOfferState>(
       listener: (context, state) {
-        if (state is GigPostRequestSuccess) {
+        if (state is GigPostOfferSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.get("gigs_post_request_success_toast"))),
+            SnackBar(content: Text(L10n.get("gigs_post_offer_success_toast"))),
           );
           Navigator.of(context).pop();
-        } else if (state is GigPostRequestError) {
+        } else if (state is GigPostOfferError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
         }
       },
       builder: (context, state) {
-        final idle = state is GigPostRequestIdle ? state : null;
+        final idle = state is GigPostOfferIdle ? state : null;
         final categories = idle?.categories ?? const <GigCategory>[];
         final loadingCategories = idle?.loadingCategories ?? false;
         final categoriesError = idle?.categoriesError;
-        final submitting = state is GigPostRequestSubmitting;
+        final submitting = state is GigPostOfferSubmitting;
 
         return Scaffold(
-          appBar: AppBar(title: Text(L10n.get("gigs_post_request_title"))),
+          appBar: AppBar(title: Text(L10n.get("gigs_post_offer_title"))),
           body: Form(
             key: _formKey,
             child: ListView(
@@ -115,8 +120,8 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   loading: loadingCategories,
                   errorMessage: categoriesError,
                   onRetry: () => context
-                      .read<GigPostRequestBloc>()
-                      .add(const LoadCategoriesForRequest()),
+                      .read<GigPostOfferBloc>()
+                      .add(const LoadCategoriesForOffer()),
                   onChanged: (c) {
                     setState(() {
                       _selectedCategory = c;
@@ -155,17 +160,43 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
-                _BudgetTypePlate(
-                  value: _budgetType,
-                  onChanged: (v) => setState(() => _budgetType = v),
+                _FieldLabel(L10n.get("gigs_post_offer_field_pricing_type")),
+                _PricingTypePlate(
+                  value: _pricingType,
+                  onChanged: (v) => setState(() => _pricingType = v),
                 ),
-                if (_budgetType != GigRequestBudgetType.open) ...[
+                const SizedBox(height: 14),
+                _FieldLabel(L10n.get("gigs_post_offer_field_price")),
+                _PlateField(
+                  child: TextFormField(
+                    controller: _priceController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    style: _fieldTextStyle(context),
+                    decoration: _plateInputDecoration(
+                      context,
+                      hint: "UZS",
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return L10n.get("gigs_post_request_required");
+                      }
+                      final n = int.tryParse(v.trim());
+                      if (n == null || n <= 0) {
+                        return L10n.get("gigs_post_request_required");
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                if (_pricingType == GigPricingType.hourly) ...[
                   const SizedBox(height: 14),
-                  _FieldLabel(L10n.get("gigs_post_request_field_amount")),
+                  _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
                   _PlateField(
                     child: TextFormField(
-                      controller: _budgetController,
+                      controller: _minDurationController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -173,23 +204,12 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                       style: _fieldTextStyle(context),
                       decoration: _plateInputDecoration(
                         context,
-                        hint: "UZS",
+                        hint:
+                            L10n.get("gigs_post_offer_field_min_duration_hint"),
                       ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                _FieldLabel(L10n.get("gigs_post_request_field_address")),
-                _PlateField(
-                  child: TextFormField(
-                    controller: _addressController,
-                    style: _fieldTextStyle(context),
-                    decoration: _plateInputDecoration(
-                      context,
-                      hint: L10n.get("gigs_post_request_field_address"),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 14),
                 _RemoteTogglePlate(
                   value: _isRemote,
@@ -204,7 +224,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   width: double.infinity,
                   borderRadius: BorderRadius.circular(16),
                   child: Text(
-                    L10n.get("gigs_post_request_submit"),
+                    L10n.get("gigs_post_offer_submit"),
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -479,20 +499,20 @@ class _CategoryPlate extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Budget type — segmented neumorphic chip group.
+// Pricing type — segmented neumorphic chip group.
 // ---------------------------------------------------------------------------
 
-class _BudgetTypePlate extends StatelessWidget {
-  const _BudgetTypePlate({required this.value, required this.onChanged});
-  final GigRequestBudgetType value;
-  final ValueChanged<GigRequestBudgetType> onChanged;
+class _PricingTypePlate extends StatelessWidget {
+  const _PricingTypePlate({required this.value, required this.onChanged});
+  final GigPricingType value;
+  final ValueChanged<GigPricingType> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final entries = <(GigRequestBudgetType, String)>[
-      (GigRequestBudgetType.fixed, L10n.get("gigs_budget_type_fixed")),
-      (GigRequestBudgetType.hourly, L10n.get("gigs_budget_type_hourly")),
-      (GigRequestBudgetType.open, L10n.get("gigs_budget_type_open")),
+    final entries = <(GigPricingType, String)>[
+      (GigPricingType.fixed, L10n.get("gigs_pricing_type_fixed")),
+      (GigPricingType.hourly, L10n.get("gigs_pricing_type_hourly")),
+      (GigPricingType.perUnit, L10n.get("gigs_pricing_type_per_unit")),
     ];
     return _PlateField(
       child: Padding(
@@ -501,7 +521,7 @@ class _BudgetTypePlate extends StatelessWidget {
           children: [
             for (final entry in entries)
               Expanded(
-                child: _BudgetSegmentButton(
+                child: _PricingSegmentButton(
                   label: entry.$2,
                   selected: entry.$1 == value,
                   onTap: () => onChanged(entry.$1),
@@ -517,8 +537,8 @@ class _BudgetTypePlate extends StatelessWidget {
 /// Selected segment uses the app's standard "raised chip" treatment
 /// (gradient + dual shadows + brand button color), matching `AmenityToggle`
 /// and the rest of the app's highlighted-selection styling.
-class _BudgetSegmentButton extends StatelessWidget {
-  const _BudgetSegmentButton({
+class _PricingSegmentButton extends StatelessWidget {
+  const _PricingSegmentButton({
     required this.label,
     required this.selected,
     required this.onTap,

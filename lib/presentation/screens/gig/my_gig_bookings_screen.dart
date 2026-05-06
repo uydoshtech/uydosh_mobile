@@ -3,6 +3,8 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 
 class MyGigBookingsScreen extends StatefulWidget {
@@ -51,6 +53,9 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen>
         title: Text(L10n.get("gigs_my_bookings_title")),
         bottom: TabBar(
           controller: _tabs,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 12),
           labelColor: scheme.onPrimary,
           unselectedLabelColor: scheme.onPrimary.withValues(alpha: 0.7),
           indicatorColor: scheme.onPrimary,
@@ -218,14 +223,15 @@ class _BookingActions extends StatelessWidget {
         booking.status == GigBookingStatus.accepted;
     if (canCancel) {
       actions.add(
-        OutlinedButton(
+        GhostButtonFactory.text(
           onPressed: () => context.read<GigBookingsBloc>().add(
                 TransitionGigBooking(
                   bookingId: booking.id,
                   toStatus: GigBookingStatus.cancelled,
                 ),
               ),
-          child: Text(L10n.get("gigs_action_cancel")),
+          text: L10n.get("gigs_action_cancel"),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         ),
       );
     }
@@ -233,14 +239,15 @@ class _BookingActions extends StatelessWidget {
     if (booking.status == GigBookingStatus.inProgress ||
         booking.status == GigBookingStatus.accepted) {
       actions.add(
-        ElevatedButton(
+        PrimaryButtonFactory.text(
           onPressed: () => context.read<GigBookingsBloc>().add(
                 TransitionGigBooking(
                   bookingId: booking.id,
                   toStatus: GigBookingStatus.completed,
                 ),
               ),
-          child: Text(L10n.get("gigs_action_mark_complete")),
+          text: L10n.get("gigs_action_mark_complete"),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         ),
       );
     }

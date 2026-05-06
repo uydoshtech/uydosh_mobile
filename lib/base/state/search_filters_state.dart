@@ -7,6 +7,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
@@ -109,6 +110,13 @@ class SearchFiltersState extends ChangeNotifier {
 
   Future<void> _hydrateFromBackendImpl() async {
     if (!await SessionManager.isAuthenticated()) return;
+
+    // Honor the user-facing "Restore filters on app start" preference: when
+    // disabled, skip pulling the backend copy so this device stays "fresh".
+    // The backend value itself is intentionally preserved so flipping the
+    // toggle back ON re-restores prior filters.
+    await RestoreFiltersState().initialize();
+    if (!RestoreFiltersState().shouldRestore) return;
 
     _suppressRemotePersist = true;
     try {
@@ -238,6 +246,17 @@ class SearchFiltersState extends ChangeNotifier {
   // Initialize and load saved search filters from storage
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    // Respect the "Restore filters on app start" setting: when disabled we
+    // discard locally persisted filters so the user opens to defaults each
+    // launch. The backend snapshot is left untouched.
+    await RestoreFiltersState().initialize();
+    if (!RestoreFiltersState().shouldRestore) {
+      await clearAllFilters(persistRemote: false);
+      _isInitialized = true;
+      notifyListeners();
+      return;
+    }
 
     try {
       final prefs = await SharedPreferences.getInstance();

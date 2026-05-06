@@ -1187,7 +1187,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             children: [
               // Reserve space for the tune icon which is drawn above the chips.
               const SizedBox(width: 18, height: 18),
-              const SizedBox(width: 10),
+              // Small breathing room between the tune icon and the first chip.
+              const SizedBox(width: 16),
               Expanded(child: _buildInlineFiltersChips()),
               IconButton(
                 visualDensity: VisualDensity.compact,
@@ -1362,7 +1363,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     ),
                   ),
                 ),
-                const SizedBox(height: 110),
+                // Reserve space below the CTAs for the bell FAB stack and the
+                // hint bubble that floats above it (`bottom: 124` + bubble
+                // height + breathing room) so the bubble can never overlap
+                // the "notify me" button when the empty-state column is
+                // centered vertically.
+                const SizedBox(height: 240),
               ],
             ),
           ),

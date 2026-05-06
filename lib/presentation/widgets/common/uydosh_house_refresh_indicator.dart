@@ -429,8 +429,8 @@ class _HouseRefreshBadge extends StatelessWidget {
 
   static const double _badgeSize = 41.0;
   static const EdgeInsets _badgeMargin = EdgeInsets.all(4.0);
-  static const EdgeInsets _badgePadding = EdgeInsets.all(12.0);
-  static const double _iconSize = 17.0; // _badgeSize - horizontal padding (24).
+  static const EdgeInsets _badgePadding = EdgeInsets.all(10.3);
+  static const double _iconSize = 20.4; // _badgeSize - horizontal padding (20.6).
 
   final Color color;
   final Color backgroundColor;

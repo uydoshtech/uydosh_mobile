@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
@@ -246,6 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               [
                 _buildOnboardingToggleMenuItem(context),
                 _buildTooltipsToggleMenuItem(context),
+                _buildRestoreFiltersToggleMenuItem(context),
                 _buildHapticFeedbackToggleMenuItem(context),
                 _buildSoundEffectsToggleMenuItem(context),
                 _buildAnimationsToggleMenuItems(context),
@@ -445,6 +447,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             } else {
               await TooltipsState().setEnabled(false);
             }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildRestoreFiltersToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: RestoreFiltersState(),
+      builder: (context, child) {
+        return UydoshToggle(
+          icon: Icons.restore,
+          iconColor: _getIconColor(),
+          title: L10n.text(
+            "restore_filters_on_start",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: L10n.text(
+            "restore_filters_on_start_description",
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          value: RestoreFiltersState().shouldRestore,
+          onChanged: (value) async {
+            await RestoreFiltersState().setShouldRestore(value);
           },
         );
       },

@@ -35,6 +35,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -70,6 +71,10 @@ bool get kSkipSplashScreen => kIsWeb;
 const bool kShowRoomPlanWelcomeInsteadOfHome = false;
 
 Future<void> _bootstrapSearchFiltersColdStart() async {
+  // Load the user's "Restore filters on app start" preference before
+  // [SearchFiltersState.initialize], so it can honor the toggle (when off,
+  // it discards persisted local filters and skips the backend hydrate).
+  await RestoreFiltersState().initialize();
   await SearchFiltersState().initialize();
   if (!await SessionManager.isAuthenticated()) return;
   await SearchFiltersState().hydrateFromBackendForCurrentUser();

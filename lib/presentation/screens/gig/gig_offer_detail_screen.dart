@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -233,32 +234,22 @@ class _OfferDetailContent extends StatelessWidget {
           left: 16,
           right: 16,
           bottom: 16,
-          child: SizedBox(
+          child: PrimaryButton(
+            onPressed: state.bookingInFlight
+                ? null
+                : () => context
+                    .read<GigOfferDetailBloc>()
+                    .add(const BookThisOffer()),
+            isLoading: state.bookingInFlight,
             height: 54,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+            width: double.infinity,
+            borderRadius: BorderRadius.circular(16),
+            child: Text(
+              L10n.get("gigs_offer_book_cta"),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
               ),
-              onPressed: state.bookingInFlight
-                  ? null
-                  : () => context
-                      .read<GigOfferDetailBloc>()
-                      .add(const BookThisOffer()),
-              child: state.bookingInFlight
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(
-                      L10n.get("gigs_offer_book_cta"),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
             ),
           ),
         ),

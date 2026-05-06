@@ -7,6 +7,7 @@ import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -267,29 +268,17 @@ class _RequestDetailContent extends StatelessWidget {
           left: 16,
           right: 16,
           bottom: 16,
-          child: SizedBox(
+          child: PrimaryButtonFactory.iconTextCentered(
+            onPressed: contactInFlight ? null : onContactPressed,
+            icon: Icons.chat_bubble_outline,
+            text: L10n.get("gigs_request_contact_cta"),
+            isLoading: contactInFlight,
             height: 54,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: contactInFlight ? null : onContactPressed,
-              icon: contactInFlight
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.chat_bubble_outline),
-              label: Text(
-                L10n.get("gigs_request_contact_cta"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
+            width: double.infinity,
+            borderRadius: BorderRadius.circular(16),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
             ),
           ),
         ),
