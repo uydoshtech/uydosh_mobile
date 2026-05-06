@@ -52,13 +52,21 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
 
   double _measureFirstSegmentWidth(BuildContext context) {
     final entry = entries.first;
-    const style = TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
+    final theme = Theme.of(context);
+    final baseStyle = theme.textTheme.labelLarge ??
+        theme.textTheme.bodyMedium ??
+        const TextStyle(fontSize: 14);
+    final style = baseStyle.merge(
+      const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
     );
+    final scaler = MediaQuery.textScalerOf(context);
     final painter = TextPainter(
       text: TextSpan(text: entry.label, style: style),
       textDirection: Directionality.of(context),
+      textScaler: scaler,
       maxLines: 1,
     )..layout();
     var w = _tabHorizontalPadding * 2;
@@ -66,7 +74,8 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
       w += _iconSize + _iconTextGap;
     }
     w += painter.width;
-    return w;
+    // Small slack so layout / icon glyph boxes don’t clip the label.
+    return w + 2;
   }
 
   List<double> _segmentWidths(BuildContext context, double totalInner) {
@@ -78,10 +87,14 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
       return List.filled(entries.length, w);
     }
     final measured = _measureFirstSegmentWidth(context);
-    final minForOthers = (entries.length - 1) * kMinInteractiveDimension;
-    final maxFirst = (totalInner - minForOthers).clamp(0.0, totalInner);
-    final w0 = measured.clamp(kMinInteractiveDimension, maxFirst);
-    final rem = (totalInner - w0).clamp(0.0, double.infinity);
+    final w0 = measured < kMinInteractiveDimension
+        ? kMinInteractiveDimension.toDouble()
+        : measured;
+    if (w0 > totalInner) {
+      final w = totalInner / entries.length;
+      return List.filled(entries.length, w);
+    }
+    final rem = totalInner - w0;
     final wRest = rem / (entries.length - 1);
     return [w0, ...List.filled(entries.length - 1, wRest)];
   }

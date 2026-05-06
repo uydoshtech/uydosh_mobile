@@ -7,6 +7,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
@@ -191,6 +192,21 @@ class _GigHubBodyState extends State<_GigHubBody> {
     }
   }
 
+  /// Empty-state icon: category glyph when a filter chip is selected, otherwise
+  /// the generic feed icon ("All").
+  IconData _emptyStateIcon({required IconData allFeedIcon}) {
+    final id = _selectedCategoryId;
+    if (id == null) {
+      return allFeedIcon;
+    }
+    for (final c in _categories) {
+      if (c.id == id) {
+        return gigCategoryIcon(c.code);
+      }
+    }
+    return allFeedIcon;
+  }
+
   @override
   Widget build(BuildContext context) {
     // When hosted inside `MainNavigation`, the shell uses
@@ -205,51 +221,62 @@ class _GigHubBodyState extends State<_GigHubBody> {
         ? ThemeState().mainShellGlassExtraTopInset(context)
         : 16.0;
 
-    final scrollable = UydoshRefreshIndicator.mainShell(
-      onRefresh: _onRefresh,
-      edgeOffset: topPad,
-      child: PullToRefreshStretchHaptics(
-        child: CustomScrollView(
-          controller: _scrollController,
-          // Allow pull-to-refresh even when the body is short / empty.
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            // Pinned header keeps the feed switch + category ribbon visible
-            // while the underlying list scrolls, so users can change feed or
-            // category without scrolling back to the top first.
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _GigHubPinnedHeaderDelegate(
-                topPadding: topPad,
-                feed: _feed,
-                onFeedChanged: _onFeedChanged,
-                categories: _categories,
-                selectedCategoryId: _selectedCategoryId,
-                onCategorySelected: _onCategorySelected,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              ),
-            ),
-            ..._buildFeedSlivers(context),
-            // Bottom padding scaled so the last feed item clears the floating
-            // "My bookings" FAB without being covered by it.
-            const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
-          ],
-        ),
-      ),
-    );
+    final body = ListenableBuilder(
+      listenable: AuthenticationState(),
+      builder: (context, _) {
+        final signedIn = AuthenticationState().isAuthenticated;
+        final bottomClearance = signedIn ? 96.0 : 16.0;
 
-    // Place the FAB ourselves (instead of using `Scaffold.floatingActionButton`)
-    // so it works identically whether the screen is embedded inside the
-    // tab host's `Scaffold` or pushed standalone.
-    final body = Stack(
-      children: [
-        Positioned.fill(child: scrollable),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: _MyBookingsFab(),
-        ),
-      ],
+        final scrollable = UydoshRefreshIndicator.mainShell(
+          onRefresh: _onRefresh,
+          edgeOffset: topPad,
+          child: PullToRefreshStretchHaptics(
+            child: CustomScrollView(
+              controller: _scrollController,
+              // Allow pull-to-refresh even when the body is short / empty.
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                // Pinned header keeps the feed switch + category ribbon visible
+                // while the underlying list scrolls, so users can change feed or
+                // category without scrolling back to the top first.
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _GigHubPinnedHeaderDelegate(
+                    topPadding: topPad,
+                    feed: _feed,
+                    onFeedChanged: _onFeedChanged,
+                    categories: _categories,
+                    selectedCategoryId: _selectedCategoryId,
+                    onCategorySelected: _onCategorySelected,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  ),
+                ),
+                ..._buildFeedSlivers(context, bottomClearance),
+                // Bottom padding scaled so the last feed item clears the floating
+                // "My bookings" FAB without being covered by it (signed-in only).
+                SliverPadding(
+                  padding: EdgeInsets.only(bottom: bottomClearance),
+                ),
+              ],
+            ),
+          ),
+        );
+
+        // Place the FAB ourselves (instead of using `Scaffold.floatingActionButton`)
+        // so it works identically whether the screen is embedded inside the
+        // tab host's `Scaffold` or pushed standalone.
+        return Stack(
+          children: [
+            Positioned.fill(child: scrollable),
+            if (signedIn)
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: _MyBookingsFab(),
+              ),
+          ],
+        );
+      },
     );
 
     if (widget.embedded) {
@@ -264,16 +291,19 @@ class _GigHubBodyState extends State<_GigHubBody> {
     );
   }
 
-  List<Widget> _buildFeedSlivers(BuildContext context) {
+  List<Widget> _buildFeedSlivers(
+    BuildContext context,
+    double bottomClearanceForFab,
+  ) {
     switch (_feed) {
       case GigHubFeed.services:
-        return _servicesFeedSlivers();
+        return _servicesFeedSlivers(bottomClearanceForFab);
       case GigHubFeed.tasks:
-        return _tasksFeedSlivers();
+        return _tasksFeedSlivers(bottomClearanceForFab);
     }
   }
 
-  List<Widget> _servicesFeedSlivers() {
+  List<Widget> _servicesFeedSlivers(double bottomClearanceForFab) {
     return [
       BlocBuilder<GigOffersBloc, GigOffersState>(
         builder: (context, state) {
@@ -290,8 +320,9 @@ class _GigHubBodyState extends State<_GigHubBody> {
           if (state is GigOffersLoaded) {
             if (state.offers.isEmpty) {
               return _EmptySliver(
-                icon: Icons.handyman_outlined,
+                icon: _emptyStateIcon(allFeedIcon: Icons.handyman_outlined),
                 message: L10n.get("gigs_browse_empty"),
+                bottomPadding: bottomClearanceForFab,
               );
             }
             final itemCount =
@@ -316,7 +347,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
     ];
   }
 
-  List<Widget> _tasksFeedSlivers() {
+  List<Widget> _tasksFeedSlivers(double bottomClearanceForFab) {
     return [
       BlocBuilder<GigRequestsBloc, GigRequestsState>(
         builder: (context, state) {
@@ -334,8 +365,9 @@ class _GigHubBodyState extends State<_GigHubBody> {
           if (state is GigRequestsLoaded) {
             if (state.requests.isEmpty) {
               return _EmptySliver(
-                icon: Icons.assignment_outlined,
+                icon: _emptyStateIcon(allFeedIcon: Icons.assignment_outlined),
                 message: L10n.get("gigs_requests_empty"),
+                bottomPadding: bottomClearanceForFab,
               );
             }
             final itemCount =
@@ -811,21 +843,26 @@ class _LoadingMoreFooter extends StatelessWidget {
 }
 
 class _EmptySliver extends StatelessWidget {
-  const _EmptySliver({required this.icon, required this.message});
+  const _EmptySliver({
+    required this.icon,
+    required this.message,
+    required this.bottomPadding,
+  });
 
   final IconData icon;
   final String message;
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
     // Fill the rest of the viewport so the column's `Center` can vertically
     // center it between the category ribbon and the bottom of the screen,
     // rather than parking it just below the ribbon. Bottom padding keeps the
-    // text from sitting under the floating "My bookings" pill.
+    // text from sitting under the floating "My bookings" pill when signed in.
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 96),
+        padding: EdgeInsets.only(bottom: bottomPadding),
         child: UydoshEmptyColumn(icon: icon, title: message),
       ),
     );

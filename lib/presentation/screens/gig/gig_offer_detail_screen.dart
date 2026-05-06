@@ -4,7 +4,9 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -176,6 +178,14 @@ class _OfferDetailContentStatefulState
     }
   }
 
+  void _onBookThisServicePressed() {
+    if (!AuthenticationState().isAuthenticated) {
+      context.pushAuthWizard();
+      return;
+    }
+    context.read<GigOfferDetailBloc>().add(const BookThisOffer());
+  }
+
   @override
   void dispose() {
     _photoPageController?.dispose();
@@ -328,7 +338,7 @@ class _OfferDetailContentStatefulState
           // from this offer. After a successful save we re-fetch the
           // detail so the screen reflects the new state immediately.
           child: UserListingState().isOwner(offer.providerUserId)
-              ? PrimaryButtonFactory.iconTextCentered(
+              ? PrimaryButtonFactory.iconText(
                   onPressed: () =>
                       unawaited(widget.onEditOffer(offer)),
                   icon: Icons.edit_outlined,
@@ -341,22 +351,19 @@ class _OfferDetailContentStatefulState
                     fontSize: 16,
                   ),
                 )
-              : PrimaryButton(
+              : PrimaryButtonFactory.iconText(
                   onPressed: widget.state.bookingInFlight
                       ? null
-                      : () => context
-                          .read<GigOfferDetailBloc>()
-                          .add(const BookThisOffer()),
+                      : _onBookThisServicePressed,
                   isLoading: widget.state.bookingInFlight,
+                  icon: Icons.event_available_outlined,
+                  text: L10n.get("gigs_offer_book_cta"),
                   height: 54,
                   width: double.infinity,
                   borderRadius: BorderRadius.circular(16),
-                  child: Text(
-                    L10n.get("gigs_offer_book_cta"),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
                   ),
                 ),
         ),

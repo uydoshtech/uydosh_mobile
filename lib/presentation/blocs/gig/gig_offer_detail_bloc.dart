@@ -1,4 +1,5 @@
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -54,7 +55,9 @@ class GigOfferDetailBloc extends Bloc<GigOfferDetailEvent, GigOfferDetailState> 
         final offer = await _service.getOffer(e.offerId);
         emit(GigOfferDetailLoaded(offer));
       } catch (err) {
-        emit(GigOfferDetailError(err.toString()));
+        emit(
+          GigOfferDetailError(ErrorMessageHelper.sanitizeErrorMessage(err)),
+        );
       }
     });
     on<BookThisOffer>((e, emit) async {
@@ -69,7 +72,9 @@ class GigOfferDetailBloc extends Bloc<GigOfferDetailEvent, GigOfferDetailState> 
         );
         emit(GigOfferBookingCreated(booking));
       } catch (err) {
-        emit(GigOfferDetailError(err.toString()));
+        emit(
+          GigOfferDetailError(ErrorMessageHelper.sanitizeErrorMessage(err)),
+        );
       }
     });
   }

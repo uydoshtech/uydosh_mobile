@@ -1095,11 +1095,9 @@ class MainNavigationState extends State<MainNavigation>
                 onTap: (index) {
                   HapticFeedbackUtils.impact();
 
-                  // Handle authentication requirements
-                  if ((index == 1 || index == 2) && !_isAuthenticated) {
-                    // Favorites and Conversations require authentication
-                    return; // Don"t navigate, stay on current screen
-                  }
+                  // Messages (2) and Create (3) are gated inside
+                  // [CustomCurvedNavigationBar] for anonymous users; Services (1)
+                  // is intentionally public.
 
                   // Manual tab change ends any in-progress create flow,
                   // so the previous-index tracker shouldn't bleed into a
