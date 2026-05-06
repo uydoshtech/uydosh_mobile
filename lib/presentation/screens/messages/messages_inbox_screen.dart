@@ -43,7 +43,6 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexibl
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -948,94 +947,102 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             : Colors.black;
     final unselectedTextColor = themeState.unselectedTabTextColor;
 
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardColor),
-        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-      ),
-      child: Stack(
-        children: [
-          // Animated background slider
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            left: _selectedTabIndex == 0 ? 2 : null,
-            right: _selectedTabIndex == 1 ? 2 : null,
-            top: 2,
-            bottom: 2,
-            child: Container(
-              width:
-                  (MediaQuery.sizeOf(context).width - 32 - 4) /
-                  2, // Parent horizontal padding (16*2) and thumb inset (2*2)
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                gradient: ThreeDSurfaceStyle.surfaceGradient(
-                  context,
-                  primaryColor,
-                ),
-                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-              ),
-            ),
+    const height = 48.0;
+    const thumbInset = 2.0;
+    const innerRadius = 22.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final innerTrack =
+            (constraints.maxWidth - thumbInset * 2).clamp(0.0, double.infinity);
+        final segmentWidth = innerTrack / 2;
+        final thumbLeft = thumbInset + _selectedTabIndex * segmentWidth;
+
+        return Container(
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(height / 2),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardColor),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           ),
-          // Toggle buttons
-          Row(
+          child: Stack(
             children: [
-              // Incoming button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedbackUtils.selection();
-                    setState(() {
-                      _selectedTabIndex = 0;
-                      _userPickedTab = true;
-                    });
-                  },
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
+              // Sliding thumb — same pattern as [NeumorphicSegmentedSwitch]:
+              // `left` + `width` so [AnimatedPositioned] interpolates a smooth slide.
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: thumbLeft,
+                top: thumbInset,
+                bottom: thumbInset,
+                width: segmentWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(innerRadius),
+                    gradient: ThreeDSurfaceStyle.surfaceGradient(
+                      context,
+                      primaryColor,
                     ),
-                    child: _ToggleTabContent(
-                      isSelected: _selectedTabIndex == 0,
-                      label: "Мои\nобъявления",
-                      badgeCount: incomingCount,
-                      selectedTextColor: selectedTextColor,
-                      unselectedTextColor: unselectedTextColor,
-                    ),
+                    boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
                   ),
                 ),
               ),
-              // Outgoing button
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedbackUtils.selection();
-                    setState(() {
-                      _selectedTabIndex = 1;
-                      _userPickedTab = true;
-                    });
-                  },
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: _ToggleTabContent(
-                      isSelected: _selectedTabIndex == 1,
-                      label: "Чужие\nобъявления",
-                      badgeCount: outgoingCount,
-                      selectedTextColor: selectedTextColor,
-                      unselectedTextColor: unselectedTextColor,
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedbackUtils.selection();
+                        setState(() {
+                          _selectedTabIndex = 0;
+                          _userPickedTab = true;
+                        });
+                      },
+                      child: Container(
+                        height: height,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(height / 2),
+                        ),
+                        child: _ToggleTabContent(
+                          isSelected: _selectedTabIndex == 0,
+                          label: "Мои\nобъявления",
+                          badgeCount: incomingCount,
+                          selectedTextColor: selectedTextColor,
+                          unselectedTextColor: unselectedTextColor,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedbackUtils.selection();
+                        setState(() {
+                          _selectedTabIndex = 1;
+                          _userPickedTab = true;
+                        });
+                      },
+                      child: Container(
+                        height: height,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(height / 2),
+                        ),
+                        child: _ToggleTabContent(
+                          isSelected: _selectedTabIndex == 1,
+                          label: "Чужие\nобъявления",
+                          badgeCount: outgoingCount,
+                          selectedTextColor: selectedTextColor,
+                          unselectedTextColor: unselectedTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1818,6 +1825,7 @@ class _ToggleTabContent extends StatelessWidget {
     const twoLineFontSize = 13.0;
     const twoLineHeight = 1.15;
     final hasUnread = badgeCount > 0;
+    // Matches [_SegmentedSwitchTab]: opacity + scale only (no slide).
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeInOut,
@@ -1826,85 +1834,80 @@ class _ToggleTabContent extends StatelessWidget {
         duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
         scale: isSelected ? 1.0 : 0.96,
-        child: AnimatedSlide(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          offset: isSelected ? Offset.zero : const Offset(0, 0.06),
-          child: Center(
-            child: DefaultTextStyle(
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: targetColor,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      ThemeIcon(Icons.mail, size: 18, color: targetColor),
-                      if (hasUnread)
-                        Positioned(
-                          right: -4,
-                          top: -4,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 1.5,
-                              ),
+        child: Center(
+          child: DefaultTextStyle(
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: targetColor,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ThemeIcon(Icons.mail, size: 18, color: targetColor),
+                    if (hasUnread)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.5,
                             ),
                           ),
                         ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                if (!isTwoLine)
+                  Text(label)
+                else
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        labelParts[0],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: twoLineFontSize,
+                          height: twoLineHeight,
+                          fontWeight:
+                              isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                          color: targetColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        labelParts[1],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: twoLineFontSize,
+                          height: twoLineHeight,
+                          fontWeight:
+                              isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                          color: targetColor,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(width: 8),
-                  if (!isTwoLine)
-                    Text(label)
-                  else
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          labelParts[0],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: twoLineFontSize,
-                            height: twoLineHeight,
-                            fontWeight:
-                                isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w600,
-                            color: targetColor,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          labelParts[1],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: twoLineFontSize,
-                            height: twoLineHeight,
-                            fontWeight:
-                                isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w600,
-                            color: targetColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
         ),
