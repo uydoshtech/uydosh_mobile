@@ -125,6 +125,10 @@ abstract class IGigService {
     bool isRemote = false,
     DateTime? expiresAt,
   });
+  Future<GigRequest> updateRequest({
+    required int id,
+    required Map<String, dynamic> patch,
+  });
   Future<GigRequest> cancelRequest(int id);
 
   // Bids
@@ -496,6 +500,19 @@ class GigService implements IGigService {
       (json) => GigRequest.fromJson(json as Map<String, dynamic>),
       basePath: _base,
       data: _RawJsonBody(body),
+    );
+  }
+
+  @override
+  Future<GigRequest> updateRequest({
+    required int id,
+    required Map<String, dynamic> patch,
+  }) async {
+    return _oauthClient.patch<GigRequest, _RawJsonBody>(
+      "/gigs/requests/$id",
+      (json) => GigRequest.fromJson(json as Map<String, dynamic>),
+      basePath: _base,
+      data: _RawJsonBody(patch),
     );
   }
 

@@ -1,25 +1,28 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
-/// Read-only detail view for a `GigRequest` (open task posted by a client).
+/// Detail view for a `GigRequest` (open task posted by a client).
 ///
-/// Bottom CTA opens a chat with the request author. The chat is created
-/// against the gig-request context (`POST /conversations` with
-/// `context_type='gig_request'`), so it's properly scoped to this request
-/// and idempotent — re-opening the screen and tapping again surfaces the
-/// same conversation rather than creating a duplicate.
+/// Providers see a bottom CTA to message the client. The author of an
+/// **open** task sees **Edit** (and a three-dot menu) instead; once the task
+/// is no longer open, neither CTA is shown.
 class GigRequestDetailScreen extends StatefulWidget {
   const GigRequestDetailScreen({required this.requestId, super.key});
 
@@ -36,41 +39,87 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   @override
   void initState() {
     super.initState();
+    UserListingState().initialize();
+    unawaited(UserListingState().refreshUserId());
     _future = getIt<IGigService>().getRequest(widget.requestId);
+  }
+
+  Future<void> _editRequest(GigRequest request) async {
+    final updated = await context.pushEditGigRequest(request);
+    if (updated != null && mounted) {
+      setState(() {
+        _future = getIt<IGigService>().getRequest(widget.requestId);
+      });
+    }
+  }
+
+  List<Widget> _appBarActions(BuildContext context, GigRequest request) {
+    final open = request.status == GigRequestStatus.open;
+    final isOwner = UserListingState().isOwner(request.clientUserId);
+    if (!isOwner || !open) return const <Widget>[];
+    return [
+      ActionDropdownMenu(
+        padding: const EdgeInsets.only(right: 12),
+        items: [
+          ActionMenuItem(
+            value: "edit_task",
+            icon: Icons.edit_outlined,
+            textKey: "gigs_request_edit_cta",
+            onPressed: () => unawaited(_editRequest(request)),
+          ),
+        ],
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: Text(L10n.get("gigs_request_detail_title")),
-      ),
-      body: FutureBuilder<GigRequest>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(snap.error.toString()),
+    return ListenableBuilder(
+      listenable: UserListingState(),
+      builder: (context, _) {
+        return FutureBuilder<GigRequest>(
+          future: _future,
+          builder: (context, snap) {
+            return Scaffold(
+              appBar: AppBar(
+                leading: ThreeDAppBarIconButton.backLeading(context),
+                title: Text(L10n.get("gigs_request_detail_title")),
+                actions: snap.hasData ? _appBarActions(context, snap.data!) : const <Widget>[],
               ),
+              body: _buildBody(context, snap),
             );
-          }
-          final request = snap.data;
-          if (request == null) {
-            return const SizedBox.shrink();
-          }
-          return _RequestDetailContent(
-            request: request,
-            contactInFlight: _contactInFlight,
-            onContactPressed: () => _openChat(request),
-          );
-        },
-      ),
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AsyncSnapshot<GigRequest> snap) {
+    if (snap.connectionState != ConnectionState.done) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (snap.hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(snap.error.toString()),
+        ),
+      );
+    }
+    final request = snap.data;
+    if (request == null) {
+      return const SizedBox.shrink();
+    }
+    final isOwner = UserListingState().isOwner(request.clientUserId);
+    final canEdit = isOwner && request.status == GigRequestStatus.open;
+    final showContact = !isOwner;
+
+    return _RequestDetailContent(
+      request: request,
+      contactInFlight: _contactInFlight,
+      onContactPressed: () => _openChat(request),
+      onEditPressed: canEdit ? () => unawaited(_editRequest(request)) : null,
+      showContactCta: showContact,
     );
   }
 
@@ -135,11 +184,15 @@ class _RequestDetailContent extends StatelessWidget {
     required this.request,
     required this.contactInFlight,
     required this.onContactPressed,
+    required this.showContactCta,
+    this.onEditPressed,
   });
 
   final GigRequest request;
   final bool contactInFlight;
   final VoidCallback onContactPressed;
+  final bool showContactCta;
+  final VoidCallback? onEditPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -148,11 +201,13 @@ class _RequestDetailContent extends StatelessWidget {
     final categoryName = request.category?.localizedName(language) ?? "";
     final description = _localizedDescription(language);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final hasBottomCta = onEditPressed != null || showContactCta;
+    final listBottomPad = hasBottomCta ? 110.0 + bottomInset : 24.0 + bottomInset;
 
     return Stack(
       children: [
         ListView(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 110 + bottomInset),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, listBottomPad),
           children: [
             ThreeDElevatedSurface(
               baseColor: scheme.surface,
@@ -269,24 +324,39 @@ class _RequestDetailContent extends StatelessWidget {
             ],
           ],
         ),
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 16 + bottomInset,
-          child: PrimaryButtonFactory.iconText(
-            onPressed: contactInFlight ? null : onContactPressed,
-            icon: Icons.chat_bubble_outline,
-            text: L10n.get("gigs_request_contact_cta"),
-            isLoading: contactInFlight,
-            height: 54,
-            width: double.infinity,
-            borderRadius: BorderRadius.circular(16),
-            textStyle: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            ),
+        if (hasBottomCta)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16 + bottomInset,
+            child: onEditPressed != null
+                ? PrimaryButton(
+                    onPressed: onEditPressed,
+                    height: 54,
+                    width: double.infinity,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Text(
+                      L10n.get("gigs_request_edit_cta"),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  )
+                : PrimaryButtonFactory.iconText(
+                    onPressed: contactInFlight ? null : onContactPressed,
+                    icon: Icons.chat_bubble_outline,
+                    text: L10n.get("gigs_request_contact_cta"),
+                    isLoading: contactInFlight,
+                    height: 54,
+                    width: double.infinity,
+                    borderRadius: BorderRadius.circular(16),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
           ),
-        ),
       ],
     );
   }

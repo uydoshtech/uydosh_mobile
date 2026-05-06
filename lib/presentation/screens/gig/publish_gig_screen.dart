@@ -47,6 +47,7 @@ class PublishGigScreen extends StatefulWidget {
     super.key,
     this.initialMode = GigPublishMode.task,
     this.editingOffer,
+    this.editingRequest,
   });
 
   final GigPublishMode initialMode;
@@ -58,6 +59,11 @@ class PublishGigScreen extends StatefulWidget {
   /// [SubmitGigOfferEdit] (PATCH /gigs/offers/:id) instead of creating a
   /// new offer.
   final GigOffer? editingOffer;
+
+  /// When non-null, the screen runs in "edit task" mode: same as [editingOffer]
+  /// but for a client's open [GigRequest] — [SubmitGigRequestEdit] → PATCH
+  /// `/gigs/requests/:id`.
+  final GigRequest? editingRequest;
 
   @override
   State<PublishGigScreen> createState() => _PublishGigScreenState();
@@ -119,16 +125,25 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   String _currency = "UZS";
   static const List<String> _supportedCurrencies = ["UZS", "USD"];
 
-  bool get _isEditing => widget.editingOffer != null;
+  bool get _isEditingOffer => widget.editingOffer != null;
+
+  bool get _isEditingRequest => widget.editingRequest != null;
 
   @override
   void initState() {
     super.initState();
-    // Edit flow always operates on the service flavor — there's no
-    // request-edit equivalent and the toggle is hidden anyway.
-    _mode = _isEditing ? GigPublishMode.service : widget.initialMode;
+    assert(
+      widget.editingOffer == null || widget.editingRequest == null,
+      "editingOffer and editingRequest are mutually exclusive",
+    );
+    _mode = widget.editingOffer != null
+        ? GigPublishMode.service
+        : widget.editingRequest != null
+            ? GigPublishMode.task
+            : widget.initialMode;
 
     final offer = widget.editingOffer;
+    final editingReq = widget.editingRequest;
     if (offer != null) {
       // Prefer the embedded category from the API response; fall back to
       // the local cache lookup so the picker still shows the correct chip
@@ -146,6 +161,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           offer.minDurationMinutes?.toString() ?? "";
       _isRemote = offer.isRemote;
       _currency = offer.currencyCode;
+    } else if (editingReq != null) {
+      _selectedCategory =
+          editingReq.category ?? GigCategoryCache.getById(editingReq.categoryId);
+      _titleController.text = editingReq.title;
+      _descriptionController.text = editingReq.descriptionRu ?? "";
+      _budgetType = editingReq.budgetType;
+      _budgetController.text = editingReq.budgetAmount?.toString() ?? "";
+      _addressController.text = editingReq.addressText ?? "";
+      _isRemote = editingReq.isRemote;
+      _currency = editingReq.currencyCode;
     }
   }
 
@@ -161,7 +186,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   }
 
   void _setMode(GigPublishMode next) {
-    if (_isEditing) return; // mode is locked while editing an existing offer
+    if (_isEditingOffer || _isEditingRequest) {
+      return;
+    }
     if (next == _mode) return;
     setState(() {
       _mode = next;
@@ -213,20 +240,38 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       final budget = _budgetController.text.trim().isEmpty
           ? null
           : int.tryParse(_budgetController.text.trim());
-      context.read<GigPostRequestBloc>().add(
-            SubmitGigRequest(
-              categoryId: _selectedCategory!.id,
-              title: _titleController.text.trim(),
-              budgetType: _budgetType,
-              budgetAmount: budget,
-              currencyCode: _currency,
-              descriptionRu: desc,
-              addressText: _addressController.text.trim().isEmpty
-                  ? null
-                  : _addressController.text.trim(),
-              isRemote: _isRemote,
-            ),
-          );
+      final addr = _addressController.text.trim().isEmpty
+          ? null
+          : _addressController.text.trim();
+      final editingTask = widget.editingRequest;
+      if (editingTask != null) {
+        context.read<GigPostRequestBloc>().add(
+              SubmitGigRequestEdit(
+                requestId: editingTask.id,
+                categoryId: _selectedCategory!.id,
+                title: _titleController.text.trim(),
+                budgetType: _budgetType,
+                budgetAmount: budget,
+                currencyCode: _currency,
+                descriptionRu: desc,
+                addressText: addr,
+                isRemote: _isRemote,
+              ),
+            );
+      } else {
+        context.read<GigPostRequestBloc>().add(
+              SubmitGigRequest(
+                categoryId: _selectedCategory!.id,
+                title: _titleController.text.trim(),
+                budgetType: _budgetType,
+                budgetAmount: budget,
+                currencyCode: _currency,
+                descriptionRu: desc,
+                addressText: addr,
+                isRemote: _isRemote,
+              ),
+            );
+      }
     } else {
       final price = int.tryParse(_priceController.text.trim());
       if (price == null) return;
@@ -278,9 +323,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       appBar: AppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(
-          _isEditing
+          _isEditingOffer
               ? L10n.get("gigs_edit_offer_title")
-              : L10n.get("gigs_publish_screen_title"),
+              : _isEditingRequest
+                  ? L10n.get("gigs_edit_request_title")
+                  : L10n.get("gigs_publish_screen_title"),
         ),
       ),
       // Two listeners — one per bloc — handle the success/error toasts.
@@ -297,6 +344,14 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   ),
                 );
                 Navigator.of(context).pop();
+              } else if (state is GigRequestEditSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text(L10n.get("gigs_edit_request_success_toast")),
+                  ),
+                );
+                Navigator.of(context).pop<GigRequest>(state.updated);
               } else if (state is GigPostRequestError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
@@ -362,7 +417,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                     children: [
-                      if (!_isEditing) ...[
+                      if (!_isEditingOffer && !_isEditingRequest) ...[
                         _PublishModeToggle(
                           value: _mode,
                           onChanged: _setMode,
@@ -483,7 +538,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         width: double.infinity,
                         borderRadius: BorderRadius.circular(16),
                         child: Text(
-                          _isEditing
+                          _isEditingOffer || _isEditingRequest
                               ? L10n.get("gigs_edit_offer_submit")
                               : (_mode == GigPublishMode.task
                                   ? L10n.get("gigs_post_request_submit")
@@ -605,7 +660,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       // set-primary endpoints we don't ship yet — so the uploader is
       // hidden in edit mode. Users keep their existing photos as-is and
       // can manage covers from a future dedicated photo screen.
-      if (!_isEditing) ...[
+      if (!_isEditingOffer) ...[
         const SizedBox(height: 14),
         // Reuses the same uploader that powers create/edit-listing — same
         // pick / crop / camera flow, same primary-photo pill, same drag

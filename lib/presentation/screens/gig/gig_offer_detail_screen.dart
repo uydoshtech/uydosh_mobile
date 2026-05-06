@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -6,6 +8,7 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -23,31 +26,66 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Same as listings: owner checks need a loaded user id. Gigs are reachable
+    // from the tab bar without visiting Home first, so initialize here.
+    UserListingState().initialize();
+    unawaited(UserListingState().refreshUserId());
     context.read<GigOfferDetailBloc>().add(FetchGigOfferDetail(widget.offerId));
+  }
+
+  Future<void> _editOffer(GigOffer offer) async {
+    final detailBloc = context.read<GigOfferDetailBloc>();
+    final updated = await context.pushEditGigOffer(offer);
+    if (updated != null && mounted) {
+      detailBloc.add(FetchGigOfferDetail(offer.id));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GigOfferDetailBloc, GigOfferDetailState>(
-      listener: (context, state) {
-        if (state is GigOfferBookingCreated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.get("gigs_booking_created_toast"))),
-          );
-          context.pushMyGigBookings();
-        } else if (state is GigOfferDetailError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            leading: ThreeDAppBarIconButton.backLeading(context),
-            title: Text(L10n.get("gigs_offer_detail_title")),
-          ),
-          body: _buildBody(context, state),
+    return ListenableBuilder(
+      listenable: UserListingState(),
+      builder: (context, _) {
+        return BlocConsumer<GigOfferDetailBloc, GigOfferDetailState>(
+          listener: (context, state) {
+            if (state is GigOfferBookingCreated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(L10n.get("gigs_booking_created_toast"))),
+              );
+              context.pushMyGigBookings();
+            } else if (state is GigOfferDetailError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          builder: (context, state) {
+            final offerForMenu =
+                state is GigOfferDetailLoaded ? state.offer : null;
+            final showOwnerActions = offerForMenu != null &&
+                UserListingState().isOwner(offerForMenu.providerUserId);
+            return Scaffold(
+              appBar: AppBar(
+                leading: ThreeDAppBarIconButton.backLeading(context),
+                title: Text(L10n.get("gigs_offer_detail_title")),
+                actions: [
+                  if (showOwnerActions)
+                    ActionDropdownMenu(
+                      padding: const EdgeInsets.only(right: 12),
+                      items: [
+                        ActionMenuItem(
+                          value: "edit_offer",
+                          icon: Icons.edit_outlined,
+                          textKey: "gigs_offer_edit_cta",
+                          onPressed: () => unawaited(_editOffer(offerForMenu)),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+              body: _buildBody(context, state),
+            );
+          },
         );
       },
     );
@@ -66,15 +104,22 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       );
     }
     if (state is GigOfferDetailLoaded) {
-      return _OfferDetailContent(state: state);
+      return _OfferDetailContent(
+        state: state,
+        onEditOffer: _editOffer,
+      );
     }
     return const SizedBox.shrink();
   }
 }
 
 class _OfferDetailContent extends StatelessWidget {
-  const _OfferDetailContent({required this.state});
+  const _OfferDetailContent({
+    required this.state,
+    required this.onEditOffer,
+  });
   final GigOfferDetailLoaded state;
+  final Future<void> Function(GigOffer offer) onEditOffer;
 
   @override
   Widget build(BuildContext context) {
@@ -245,13 +290,7 @@ class _OfferDetailContent extends StatelessWidget {
           // detail so the screen reflects the new state immediately.
           child: UserListingState().isOwner(offer.providerUserId)
               ? PrimaryButton(
-                  onPressed: () async {
-                    final detailBloc = context.read<GigOfferDetailBloc>();
-                    final updated = await context.pushEditGigOffer(offer);
-                    if (updated != null) {
-                      detailBloc.add(FetchGigOfferDetail(offer.id));
-                    }
-                  },
+                  onPressed: () => unawaited(onEditOffer(offer)),
                   height: 54,
                   width: double.infinity,
                   borderRadius: BorderRadius.circular(16),

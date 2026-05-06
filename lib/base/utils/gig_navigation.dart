@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
+import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
@@ -95,6 +96,29 @@ extension GigNavigatorExtensions on BuildContext {
           child: PublishGigScreen(
             initialMode: GigPublishMode.service,
             editingOffer: offer,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Opens [PublishGigScreen] in edit-task mode for the request author while
+  /// the task is still [GigRequestStatus.open]. Returns the updated request.
+  Future<GigRequest?> pushEditGigRequest(GigRequest request) {
+    return Navigator.of(this).push<GigRequest>(
+      MaterialPageRoute<GigRequest>(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => GigPostRequestBloc(getIt<IGigService>()),
+            ),
+            BlocProvider(
+              create: (_) => GigPostOfferBloc(getIt<IGigService>()),
+            ),
+          ],
+          child: PublishGigScreen(
+            initialMode: GigPublishMode.task,
+            editingRequest: request,
           ),
         ),
       ),

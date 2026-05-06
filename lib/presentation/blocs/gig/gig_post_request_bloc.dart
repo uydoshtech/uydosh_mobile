@@ -31,6 +31,29 @@ class SubmitGigRequest extends GigPostRequestEvent {
   final bool isRemote;
 }
 
+class SubmitGigRequestEdit extends GigPostRequestEvent {
+  const SubmitGigRequestEdit({
+    required this.requestId,
+    required this.categoryId,
+    required this.title,
+    required this.budgetType,
+    this.budgetAmount,
+    this.currencyCode = "UZS",
+    this.descriptionRu,
+    this.addressText,
+    this.isRemote = false,
+  });
+  final int requestId;
+  final int categoryId;
+  final String title;
+  final GigRequestBudgetType budgetType;
+  final int? budgetAmount;
+  final String currencyCode;
+  final String? descriptionRu;
+  final String? addressText;
+  final bool isRemote;
+}
+
 abstract class GigPostRequestState {
   const GigPostRequestState();
 }
@@ -48,6 +71,11 @@ class GigPostRequestSubmitting extends GigPostRequestState {
 class GigPostRequestSuccess extends GigPostRequestState {
   const GigPostRequestSuccess(this.created);
   final GigRequest created;
+}
+
+class GigRequestEditSuccess extends GigPostRequestState {
+  const GigRequestEditSuccess(this.updated);
+  final GigRequest updated;
 }
 
 class GigPostRequestError extends GigPostRequestState {
@@ -73,6 +101,29 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
           isRemote: e.isRemote,
         );
         emit(GigPostRequestSuccess(req));
+      } catch (err) {
+        emit(GigPostRequestError(err.toString()));
+      }
+    });
+
+    on<SubmitGigRequestEdit>((e, emit) async {
+      emit(const GigPostRequestSubmitting());
+      try {
+        final patch = <String, dynamic>{
+          "category_id": e.categoryId,
+          "title": e.title,
+          "budget_type": gigBudgetTypeToString(e.budgetType),
+          "currency_code": e.currencyCode,
+          "description_ru": e.descriptionRu,
+          "address_text": e.addressText,
+          "is_remote": e.isRemote,
+          "budget_amount": e.budgetType == GigRequestBudgetType.open
+              ? null
+              : e.budgetAmount,
+        };
+        final updated =
+            await _service.updateRequest(id: e.requestId, patch: patch);
+        emit(GigRequestEditSuccess(updated));
       } catch (err) {
         emit(GigPostRequestError(err.toString()));
       }
