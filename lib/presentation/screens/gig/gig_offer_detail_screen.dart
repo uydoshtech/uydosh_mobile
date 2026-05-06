@@ -217,11 +217,12 @@ class _OfferDetailContentStatefulState
 
     final topPad =
         8.0 + ThemeState().mainShellGlassExtraTopInset(context);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Stack(
       children: [
         ListView(
-          padding: EdgeInsets.fromLTRB(16, topPad, 16, 152),
+          padding: EdgeInsets.fromLTRB(16, topPad, 16, 152 + bottomInset),
           children: [
             if (offer.photos.isNotEmpty &&
                 _photoPageController != null) ...[
@@ -332,7 +333,7 @@ class _OfferDetailContentStatefulState
         Positioned(
           left: 16,
           right: 16,
-          bottom: 16,
+          bottom: 16 + bottomInset,
           // Owners can't book their own offer — swap the booking CTA for
           // an edit entry point that opens the publish screen prefilled
           // from this offer. After a successful save we re-fetch the

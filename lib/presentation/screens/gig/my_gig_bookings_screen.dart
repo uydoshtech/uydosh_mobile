@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Which role filter is currently applied to "My bookings".
 enum _BookingRole { all, client, provider }
@@ -139,6 +140,19 @@ class _BookingTile extends StatelessWidget {
     }
   }
 
+  bool get _hasActionButtons {
+    switch (booking.status) {
+      case GigBookingStatus.pending:
+      case GigBookingStatus.accepted:
+      case GigBookingStatus.inProgress:
+        return true;
+      case GigBookingStatus.completed:
+      case GigBookingStatus.cancelled:
+      case GigBookingStatus.disputed:
+        return false;
+    }
+  }
+
   String _statusLabel() {
     switch (booking.status) {
       case GigBookingStatus.pending:
@@ -160,71 +174,83 @@ class _BookingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final statusColor = _statusColor(context);
+    final statusChip = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        _statusLabel(),
+        style: TextStyle(
+          color: statusColor,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+      ),
+    );
+
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    booking.titleSnapshot,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      booking.titleSnapshot,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurface,
+                      ),
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _statusLabel(),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
+                    const SizedBox(height: 8),
+                    ListingPaymentsOutlineBadge(
+                      label:
+                          "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${booking.currencyCode}",
                     ),
-                  ),
+                    if (booking.scheduledStartAt != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        L10n.getWithParams(
+                          "gigs_scheduled_at",
+                          params: {"when": booking.scheduledStartAt!},
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${booking.currencyCode}",
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurface,
               ),
-            ),
-            if (booking.scheduledStartAt != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                L10n.getWithParams(
-                  "gigs_scheduled_at",
-                  params: {"when": booking.scheduledStartAt!},
-                ),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: scheme.onSurface.withValues(alpha: 0.6),
-                ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: _hasActionButtons
+                    ? MainAxisAlignment.spaceBetween
+                    : MainAxisAlignment.start,
+                children: [
+                  statusChip,
+                  if (_hasActionButtons)
+                    _BookingActions(booking: booking),
+                ],
               ),
             ],
-            const SizedBox(height: 12),
-            _BookingActions(booking: booking),
-          ],
+          ),
         ),
       ),
     );
@@ -252,6 +278,7 @@ class _BookingActions extends StatelessWidget {
               ),
           text: L10n.get("gigs_action_cancel"),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          neumorphicSoftUi: true,
         ),
       );
     }
@@ -274,9 +301,13 @@ class _BookingActions extends StatelessWidget {
 
     if (actions.isEmpty) return const SizedBox.shrink();
     return Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        for (final a in actions) ...[a, const SizedBox(width: 8)],
+        for (var i = 0; i < actions.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          actions[i],
+        ],
       ],
     );
   }
