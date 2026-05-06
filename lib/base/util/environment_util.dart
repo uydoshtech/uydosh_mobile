@@ -124,6 +124,19 @@ abstract class EnvironmentUtil {
   /// completed, or when offline with no cache).
   static String get basePath => RemoteConfigService.apiBasePath;
 
+  /// Paths such as `/images/gig-offers/1/1.jpg` stored on the API host.
+  ///
+  /// Used by image widgets: if a relative path is opened on Flutter Web without
+  /// this prefix, the browser requests the **app** origin and may get HTML
+  /// (e.g. the SPA shell) instead of bytes, which surfaces as a decode error.
+  /// Prefix [basePath] for relative paths; leave `http(s)://…` unchanged.
+  static String hostedImageUrl(String pathOrUrl) {
+    final s = pathOrUrl.trim();
+    if (s.isEmpty) return s;
+    if (s.startsWith("http://") || s.startsWith("https://")) return s;
+    return "$basePath$s";
+  }
+
   /// Web URL for shareable links (https). Messengers like Telegram only make
   /// https:// links clickable, not custom schemes like uydosh://.
   ///

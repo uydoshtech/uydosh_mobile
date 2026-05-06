@@ -247,3 +247,55 @@ class CompactPriceBadge extends StatelessWidget {
     );
   }
 }
+
+/// Green-outlined chip with a payments icon, matching listing tiles and
+/// [ListingDetailMetaBadges] so marketplace prices stay visually consistent.
+class ListingPaymentsOutlineBadge extends StatelessWidget {
+  const ListingPaymentsOutlineBadge({
+    required this.label,
+    super.key,
+    this.foregroundColor = Colors.green,
+    this.padding = const EdgeInsets.all(4),
+    this.borderRadius = 8,
+    this.iconSize = 18,
+    this.fontSize = 14,
+  });
+
+  final String label;
+  final Color foregroundColor;
+  final EdgeInsetsGeometry padding;
+  final double borderRadius;
+  final double iconSize;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: foregroundColor, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(
+            Icons.payments,
+            size: iconSize,
+            color: foregroundColor,
+            useThemeColor: false,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: fontSize,
+              color: foregroundColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

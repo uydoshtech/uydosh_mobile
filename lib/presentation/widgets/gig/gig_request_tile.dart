@@ -1,13 +1,11 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_participant_avatar_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Reusable card for a single open [GigRequest] in any vertical list/feed.
@@ -68,7 +66,8 @@ class GigRequestTile extends StatelessWidget {
                             Icon(
                               request.category!.icon,
                               size: 14,
-                              color: scheme.secondary,
+                              color:
+                                  scheme.onSurface.withValues(alpha: 0.72),
                             ),
                             const SizedBox(width: 6),
                           ],
@@ -80,7 +79,8 @@ class GigRequestTile extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 letterSpacing: 0.5,
-                                color: scheme.secondary,
+                                color:
+                                    scheme.onSurface.withValues(alpha: 0.72),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -110,7 +110,7 @@ class GigRequestTile extends StatelessWidget {
                 top: 12,
                 end: 12,
                 child: IgnorePointer(
-                  child: _OwnerAvatar(
+                  child: GigParticipantAvatarBadge(
                     avatarUrl: request.clientAvatarUrl,
                     displayName: request.clientDisplayName,
                     ringColor: scheme.surface,
@@ -120,84 +120,6 @@ class GigRequestTile extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Compact circular avatar for the request owner (client). Falls back to
-/// initials when no avatar URL is available, then to a person icon when
-/// the display name is missing/blank. Mirrors the avatar pipeline used in
-/// the grouped conversations list (ClipOval + thin separator ring).
-class _OwnerAvatar extends StatelessWidget {
-  const _OwnerAvatar({
-    required this.avatarUrl,
-    required this.displayName,
-    required this.ringColor,
-  });
-
-  static const double _size = 40;
-
-  final String? avatarUrl;
-  final String? displayName;
-  final Color ringColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final url = resolveAvatarUrl(avatarUrl);
-    final cacheExtent = (_size * MediaQuery.devicePixelRatioOf(context)).round();
-
-    Widget fallback() {
-      final initials = StringUtils.extractInitials(displayName ?? "");
-      return Container(
-        color: scheme.primaryContainer,
-        alignment: Alignment.center,
-        child: initials.isNotEmpty
-            ? Text(
-                initials,
-                style: TextStyle(
-                  color: scheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              )
-            : Icon(
-                Icons.person,
-                size: 20,
-                color: scheme.onPrimaryContainer,
-              ),
-      );
-    }
-
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipOval(
-              child: url != null
-                  ? CachedNetworkImage(
-                      imageUrl: url,
-                      fit: BoxFit.cover,
-                      memCacheWidth: cacheExtent,
-                      memCacheHeight: cacheExtent,
-                      placeholder: (_, __) => fallback(),
-                      errorWidget: (_, __, ___) => fallback(),
-                    )
-                  : fallback(),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: ringColor, width: 1.5),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

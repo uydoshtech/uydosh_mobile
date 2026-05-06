@@ -28,6 +28,7 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -468,34 +469,8 @@ class _ListingTileState extends State<ListingTile>
                                 ],
                                 // Price (inline with top icons)
                                 if (widget.listing.price > 0) ...[
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.green,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const ThemeIcon(
-                                          Icons.payments,
-                                          size: 18,
-                                          color: Colors.green,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          "${widget.listing.price}",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  ListingPaymentsOutlineBadge(
+                                    label: "${widget.listing.price}",
                                   ),
                                   const SizedBox(width: 6),
                                 ],

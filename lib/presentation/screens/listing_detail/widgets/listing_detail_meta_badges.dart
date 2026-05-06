@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Listing type, gender, and price chips (shown in a dedicated tile on listing detail).
 class ListingDetailMetaBadges extends StatelessWidget {
@@ -114,31 +115,9 @@ class ListingDetailMetaBadges extends StatelessWidget {
                     ],
                   ),
                 ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: priceColor, width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ThemeIconFactory.detail(
-                      icon: Icons.payments,
-                      size: 18,
-                      color: priceColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${listingDetail.price} y.e.",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: priceColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              ListingPaymentsOutlineBadge(
+                label: "${listingDetail.price} y.e.",
+                foregroundColor: priceColor,
               ),
             ],
           ),

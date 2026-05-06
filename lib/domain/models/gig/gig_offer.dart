@@ -1,6 +1,17 @@
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_provider_profile.dart";
 
+double? _offerJsonToDouble(dynamic raw) {
+  if (raw == null) return null;
+  if (raw is num) return raw.toDouble();
+  if (raw is String) {
+    final s = raw.trim().replaceAll(",", ".");
+    if (s.isEmpty) return null;
+    return double.tryParse(s);
+  }
+  return null;
+}
+
 class GigOfferPhoto {
   const GigOfferPhoto({
     required this.id,
@@ -111,12 +122,16 @@ class GigOffer {
         providerAvatarUrl = profile["avatar_url"] as String?;
       }
       if (p["gig_provider_profile"] is Map<String, dynamic>) {
-        final gp = p["gig_provider_profile"] as Map<String, dynamic>;
-        providerProfile = GigProviderProfile.fromJson(gp);
+        final gp = Map<String, dynamic>.from(
+          p["gig_provider_profile"] as Map<String, dynamic>,
+        );
+        final uid = gp["user_id"] ?? p["id"];
+        if (uid is num) {
+          gp["user_id"] = uid;
+          providerProfile = GigProviderProfile.fromJson(gp);
+        }
         final ra = gp["rating_avg"];
-        providerRatingAvg = ra is num
-            ? ra.toDouble()
-            : (ra is String ? double.tryParse(ra) : null);
+        providerRatingAvg = _offerJsonToDouble(ra);
         providerRatingCount = (gp["rating_count"] as num?)?.toInt();
         providerCompletedJobsCount =
             (gp["completed_jobs_count"] as num?)?.toInt();

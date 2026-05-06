@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Mirror of [PostGigRequestScreen] but for the *provider* side: lets a user
@@ -96,14 +97,13 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
     return BlocConsumer<GigPostOfferBloc, GigPostOfferState>(
       listener: (context, state) {
         if (state is GigPostOfferSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.get("gigs_post_offer_success_toast"))),
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("gigs_post_offer_success_toast"),
           );
           Navigator.of(context).pop();
         } else if (state is GigPostOfferError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ToastTheme.showError(context, message: state.message);
         }
       },
       builder: (context, state) {

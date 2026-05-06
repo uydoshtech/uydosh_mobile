@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Two flavors of "publish something to the gig hub":
@@ -362,27 +363,21 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           BlocListener<GigPostOfferBloc, GigPostOfferState>(
             listener: (context, state) {
               if (state is GigPostOfferSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text(L10n.get("gigs_post_offer_success_toast")),
-                  ),
+                ToastTheme.showSuccess(
+                  context,
+                  message: L10n.get("gigs_post_offer_success_toast"),
                 );
                 Navigator.of(context).pop();
               } else if (state is GigOfferEditSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text(L10n.get("gigs_edit_offer_success_toast")),
-                  ),
+                ToastTheme.showSuccess(
+                  context,
+                  message: L10n.get("gigs_edit_offer_success_toast"),
                 );
                 // Pop the updated offer back to the detail screen so it can
                 // re-render without a follow-up GET round trip.
                 Navigator.of(context).pop<GigOffer>(state.updated);
               } else if (state is GigPostOfferError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                ToastTheme.showError(context, message: state.message);
               }
             },
           ),

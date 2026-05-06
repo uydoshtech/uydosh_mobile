@@ -707,6 +707,8 @@ class AppStrings {
       "gigs_offer_book_cta": "Book this service",
       "gigs_offer_edit_cta": "Edit service",
       "gigs_offer_about": "About this service",
+      "gigs_offer_provider_fallback": "Service provider",
+      "gigs_offer_provider_completed_jobs": "{count} jobs completed",
       "gigs_booking_created_toast": "Booking created.",
 
       "gigs_post_request_title": "Post a task",
@@ -2000,6 +2002,8 @@ class AppStrings {
       "gigs_offer_book_cta": "Заказать услугу",
       "gigs_offer_edit_cta": "Редактировать услугу",
       "gigs_offer_about": "Об этой услуге",
+      "gigs_offer_provider_fallback": "Исполнитель",
+      "gigs_offer_provider_completed_jobs": "Выполнено заказов: {count}",
       "gigs_booking_created_toast": "Заказ создан.",
 
       "gigs_post_request_title": "Опубликовать задачу",
@@ -3306,6 +3310,8 @@ class AppStrings {
       "gigs_offer_book_cta": "Xizmatni buyurtma qilish",
       "gigs_offer_edit_cta": "Xizmatni tahrirlash",
       "gigs_offer_about": "Xizmat haqida",
+      "gigs_offer_provider_fallback": "Bajaruvchi",
+      "gigs_offer_provider_completed_jobs": "Bajarilgan buyurtmalar: {count}",
       "gigs_booking_created_toast": "Buyurtma yaratildi.",
 
       "gigs_post_request_title": "Vazifa joylash",

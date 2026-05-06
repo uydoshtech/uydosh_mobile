@@ -222,7 +222,8 @@ class _RequestDetailContent extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           letterSpacing: 0.5,
-                          color: scheme.secondary,
+                          color:
+                              scheme.onSurface.withValues(alpha: 0.72),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
