@@ -1517,15 +1517,28 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Future<void> _openChatScreen(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
+    final isGigRequest = conversation.contextType == "gig_request";
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder:
             (context) => ChatScreen(
               conversationId: conversation.id,
-              listingId: conversation.listingId,
-              listingTypeId: conversation.listingTypeId,
+              // Listing-only fields: leave null for gig conversations so
+              // ChatScreen falls back to its gig branches (no "View
+              // listing" / "Complain about listing" actions, etc.).
+              listingId: isGigRequest ? null : conversation.listingId,
+              listingTypeId: isGigRequest ? null : conversation.listingTypeId,
               // Server convention: listing owner is always `participant_id`.
-              listingOwnerUserId: conversation.participantId,
+              // For gig conversations the request author is also the
+              // `participant_id` (set authoritatively by the backend), so
+              // this still happens to be correct — but we leave it null for
+              // gig chats since the field is semantically "listing owner".
+              listingOwnerUserId:
+                  isGigRequest ? null : conversation.participantId,
+              gigRequestId:
+                  isGigRequest ? conversation.gigRequestId : null,
+              gigRequestTitle:
+                  isGigRequest ? conversation.gigRequestTitle : null,
               otherUserInitials: StringUtils.extractInitials(
                 conversation.otherUserName,
               ),

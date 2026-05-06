@@ -15,12 +15,22 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     required this.displayName,
     required this.actionMenuItems,
     super.key,
+    this.subtitle,
     this.peerAvatarUrl,
     this.peerInitials,
     /// Opens the peer's profile (e.g. [ListingOwnerProfileScreen]) when set.
     this.onPeerAvatarTap,
   });
   final String displayName;
+
+  /// Optional secondary line shown beneath [displayName].
+  ///
+  /// Used by gig-request chats to anchor the conversation to the task title
+  /// (a provider may be talking to several clients about different tasks
+  /// concurrently). Listing chats currently leave this null and rely on the
+  /// inbox tile + "View listing" action menu instead.
+  final String? subtitle;
+
   final String? peerAvatarUrl;
   final String? peerInitials;
   final List<ActionMenuItem> actionMenuItems;
@@ -51,15 +61,38 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               _peerAvatar(),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  displayName,
-                  style: TextStyle(
-                    color: onBarColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      displayName,
+                      style: TextStyle(
+                        color: onBarColor,
+                        // Tighten the primary title slightly when a subtitle
+                        // is present so the two lines comfortably fit
+                        // [kToolbarHeight] without inflating the AppBar.
+                        fontSize: subtitle == null ? 20 : 17,
+                        fontWeight: FontWeight.bold,
+                        height: 1.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (subtitle != null && subtitle!.isNotEmpty)
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          color: onBarColor.withValues(alpha: 0.78),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          height: 1.15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
               ),
             ],

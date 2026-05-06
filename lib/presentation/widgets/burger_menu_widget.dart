@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
+import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
@@ -213,7 +214,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            _navigateToMainIndex(context, 4);
+            _navigateToMainIndex(context, 3);
           },
         ),
       );
@@ -246,7 +247,11 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            _navigateToMainIndex(context, 1);
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const FavoritesScreen(),
+              ),
+            );
           },
         ),
       );

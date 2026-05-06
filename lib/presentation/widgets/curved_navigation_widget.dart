@@ -15,7 +15,6 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 class CustomCurvedNavigationBar extends StatefulWidget {
   const CustomCurvedNavigationBar({
     required this.currentIndex, required this.onTap, required this.navigationKey, required this.isAuthenticated, super.key,
-    this.isAdmin = false,
     this.hasUnreadMessages = false,
     this.incomingMessageTravelDotTrigger = 0,
   });
@@ -24,10 +23,6 @@ class CustomCurvedNavigationBar extends StatefulWidget {
   final Function(int) onTap;
   final GlobalKey<CurvedNavigationBarState> navigationKey;
   final bool isAuthenticated;
-
-  /// Whether the current user has the `admin` role. Drives admin-only
-  /// affordances such as the Services tab.
-  final bool isAdmin;
   final bool hasUnreadMessages;
   final int incomingMessageTravelDotTrigger;
 
@@ -47,14 +42,10 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
-            // Re-key by item count so the package's cached `_length`
-            // (set once in `initState`) is recomputed when the Services
-            // tab is added/removed (admin role flip). Without this the
-            // curve dip and active bubble are positioned for the old
-            // item count, which leaves the selected slot looking empty.
+            // Item count is fixed (4) post 2026-Q2 nav rework, so the
+            // package's cached `_length` no longer needs invalidation.
             child: CurvedNavigationBar(
-              key: ValueKey<int>(items.length),
-              index: _getAdjustedIndex(widget.currentIndex),
+              index: widget.currentIndex,
               height: 70.0,
               color: _getCurvedColor(context), // Theme-dependent curved color
               // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
@@ -130,33 +121,28 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     );
   }
 
-  // Build navigation items based on authentication and admin status.
+  // Build navigation items. Layout (post 2026-Q2 nav rework):
+  //   0 = Housing      (public)
+  //   1 = Services hub (public — gates auth at each action boundary)
+  //   2 = Messages     (auth required)
+  //   3 = Create       (auth required)
   //
-  // The Services tab (logical _currentIndex 3) is admin-only; non-admin
-  // users see a 4-item bar where Create occupies bar position 3.
+  // Favorites was removed from the bar (still reachable from drawer/profile).
   List<Widget> _buildNavigationItems(bool isAuthenticated) {
-    final items = <Widget>[
-      _buildNavigationItem(Icons.home, "home", widget.currentIndex == 0),
+    return <Widget>[
+      _buildNavigationItem(Icons.home, "nav_housing", widget.currentIndex == 0),
       _buildNavigationItem(
-        Icons.favorite,
-        "favorites",
+        Icons.handyman_outlined,
+        "menu_gigs",
         widget.currentIndex == 1,
-      ), // Favorites always visible, redirects to auth if not authenticated
-      _buildConversationsItem(), // Messages always visible, redirects to auth if not authenticated
-      if (widget.isAdmin)
-        _buildNavigationItem(
-          Icons.handyman_outlined,
-          "menu_gigs",
-          widget.currentIndex == 3,
-        ), // Services hub - admin only.
+      ),
+      _buildConversationsItem(),
       _buildNavigationItem(
         Icons.add,
         "create_listing",
-        widget.currentIndex == 4,
-      ), // Create always visible, redirects to auth if not authenticated
+        widget.currentIndex == 3,
+      ),
     ];
-
-    return items;
   }
 
   // Build conversations item (selectable, like other navigation items)
@@ -231,56 +217,22 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     );
   }
 
-  /// Map the logical `_currentIndex` from `MainNavigation` to a bar position
-  /// in the rendered items list. Logical indices:
-  ///   0=Home, 1=Favorites, 2=Conversations, 3=Services, 4=Create.
-  /// For non-admins the Services slot is hidden, so logical 4 collapses to
-  /// bar position 3.
-  int _getAdjustedIndex(int currentIndex) {
-    if (!widget.isAdmin && currentIndex >= 4) {
-      return currentIndex - 1;
-    }
-    return currentIndex;
-  }
-
-  /// Translate a tap on a bar position back to the logical `_currentIndex`
-  /// understood by `MainNavigation` (and gate auth for protected tabs).
+  /// Handle a tap on a bar position. Logical indices match bar positions
+  /// 1-to-1 since the 2026-Q2 nav rework:
+  ///   0 = Housing  (public)
+  ///   1 = Services (public — auth gated per-action inside the hub)
+  ///   2 = Messages (auth required)
+  ///   3 = Create   (auth required)
   void _handleNavigationTap(int barIndex, bool isAuthenticated) {
-    // Translate bar position to logical index (account for hidden Services).
-    final logicalIndex = (!widget.isAdmin && barIndex >= 3)
-        ? barIndex + 1
-        : barIndex;
-
-    switch (logicalIndex) {
+    switch (barIndex) {
       case 0:
-        // Home - always accessible
-        widget.onTap(0);
-        return;
       case 1:
-        // Favorites - redirect to auth if not authenticated, then go to home
-        if (isAuthenticated) {
-          widget.onTap(1);
-        } else {
-          _launchAuthWizard(context);
-        }
+        widget.onTap(barIndex);
         return;
       case 2:
-        // Conversations/Messages - redirect to auth if not authenticated
-        if (isAuthenticated) {
-          widget.onTap(2);
-        } else {
-          _launchAuthWizard(context);
-        }
-        return;
       case 3:
-        // Services hub (admin-only). Browseable without auth; the hub itself
-        // is informational and each action gates auth at its own boundary.
-        widget.onTap(3);
-        return;
-      case 4:
-        // Create Listing - redirect to auth if not authenticated
         if (isAuthenticated) {
-          widget.onTap(4);
+          widget.onTap(barIndex);
         } else {
           _launchAuthWizard(context);
         }

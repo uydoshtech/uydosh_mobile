@@ -19,6 +19,7 @@ import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -66,6 +67,8 @@ class ChatScreen extends StatefulWidget {
     this.listingId,
     this.listingTypeId,
     this.listingOwnerUserId,
+    this.gigRequestId,
+    this.gigRequestTitle,
     this.otherUserInitials,
     this.otherUserName,
     this.otherUserId,
@@ -83,6 +86,18 @@ class ChatScreen extends StatefulWidget {
   /// listing author so quick-question chips can address the counterparty.
   /// By server convention owner == `conversation.participant_id`.
   final int? listingOwnerUserId;
+
+  /// Set when this chat is anchored to a gig request rather than a listing.
+  /// Powers the header subtitle + the "View task" action menu entry.
+  /// Mutually exclusive with [listingId] in practice — a conversation has
+  /// exactly one context.
+  final int? gigRequestId;
+
+  /// Cached gig-request title plumbed by callers that already have it
+  /// (inbox tile, gig request detail screen). The chat will simply omit
+  /// the subtitle when this is null.
+  final String? gigRequestTitle;
+
   final String? otherUserInitials;
   final String? otherUserName;
   final int? otherUserId;
@@ -1061,6 +1076,10 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
+            // For gig conversations, anchor the header on the task title so
+            // providers know which request they're discussing without
+            // leaving the chat. Listing chats keep the single-line header.
+            subtitle: widget.gigRequestTitle,
             peerAvatarUrl: _peerAvatarUrl,
             peerInitials: widget.otherUserInitials,
             onPeerAvatarTap: _navigateToUserProfile,
@@ -1379,6 +1398,13 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _navigateToGigRequestDetail() {
+    final id = widget.gigRequestId;
+    if (id == null) return;
+    HapticFeedbackUtils.selection();
+    context.pushGigRequestDetail(id);
+  }
+
   void _navigateToUserProfile() {
     // Prefer widget.otherUserId, fall back to deriving from messages
     final otherUserId =
@@ -1487,6 +1513,21 @@ class _ChatScreenState extends State<ChatScreen> {
           icon: Icons.article,
           textKey: "view_listing",
           onPressed: _navigateToListingDetail,
+        ),
+      );
+    }
+
+    // View task option - the gig-conversation analogue of "View listing".
+    // Mutually exclusive with the listing branch above in practice (a
+    // conversation belongs to exactly one context), but we don't enforce
+    // that here so future contexts (gig_offer/gig_booking) can co-exist.
+    if (widget.gigRequestId != null) {
+      items.add(
+        ActionMenuItem(
+          value: "view_task",
+          icon: Icons.assignment_outlined,
+          textKey: "gigs_request_detail_title",
+          onPressed: _navigateToGigRequestDetail,
         ),
       );
     }

@@ -57,6 +57,44 @@ abstract class EnvironmentUtil {
     defaultValue: "https://uydoshtech.github.io/delete-account.html",
   );
 
+  /// Compile-time default for the Yandex Maps JS API key. Used as the
+  /// last-resort fallback by [RemoteConfigService] (so map tiles still load
+  /// on first launch before the first RC fetch completes) and as the
+  /// `--dart-define` build-time override for engineers.
+  ///
+  /// Rotating this key requires an app update; rotating the value in
+  /// Firebase Remote Config does not. Restrict the key in the Yandex
+  /// console (HTTP referer / app bundle id) so an extracted copy is
+  /// useless off-platform.
+  static const compileTimeYandexMapsApiKey = String.fromEnvironment(
+    "YANDEX_MAPS_API_KEY",
+    defaultValue: "b7e30079-55fe-44d0-960c-50a03c3715e6",
+  );
+
+  /// Compile-time default for the primary Google Gemini API key. Last-resort
+  /// fallback used by [RemoteConfigService] before the first successful RC
+  /// fetch. Override via `--dart-define=GEMINI_API_KEY=…` at build time.
+  ///
+  /// `defaultValue: ""` deliberately fails closed: if Remote Config has not
+  /// yet provided a key (and no `--dart-define` was supplied), the app
+  /// reports Gemini as not configured rather than shipping a usable key in
+  /// the binary. Real keys live in Firebase Remote Config so they can be
+  /// rotated without an app update.
+  static const compileTimeGeminiApiKey = String.fromEnvironment(
+    "GEMINI_API_KEY",
+    defaultValue: "",
+  );
+
+  /// Compile-time default for the secondary Google Gemini API key. Same
+  /// rationale as [compileTimeGeminiApiKey]; used by the client as a
+  /// fallback when the primary key returns a transient/key error. Note:
+  /// per Google's docs, multiple keys under the same Cloud project share
+  /// one quota pool — this is for resilience, not for doubling quota.
+  static const compileTimeGeminiApiKey2 = String.fromEnvironment(
+    "GEMINI_API_KEY_2",
+    defaultValue: "",
+  );
+
   /// Current API base URL.
   ///
   /// Resolves at runtime from Remote Config (cached locally), falling back
@@ -83,6 +121,21 @@ abstract class EnvironmentUtil {
   /// Public "delete account" instructions URL. Resolves at runtime from
   /// Remote Config, falling back to [compileTimeDeleteAccount].
   static String get deleteAccount => RemoteConfigService.deleteAccountUrl;
+
+  /// Yandex Maps JS API key. Resolves at runtime from Remote Config,
+  /// falling back to [compileTimeYandexMapsApiKey].
+  static String get yandexMapsApiKey =>
+      RemoteConfigService.yandexMapsApiKey;
+
+  /// Primary Google Gemini API key. Resolves at runtime from Remote
+  /// Config, falling back to [compileTimeGeminiApiKey] (empty by default;
+  /// see that constant's doc for why).
+  static String get geminiApiKey => RemoteConfigService.geminiApiKey;
+
+  /// Secondary Google Gemini API key (same Cloud project as the primary;
+  /// used for fallback on transient key errors). Resolves at runtime from
+  /// Remote Config, falling back to [compileTimeGeminiApiKey2].
+  static String get geminiApiKey2 => RemoteConfigService.geminiApiKey2;
 
   /// Convenience that returns `<API_BASE_PATH>/<api>` only when
   /// `API_BASE_PATH` was provided via `--dart-define` at build time,

@@ -1,3 +1,5 @@
+import "package:uy_dosh/base/util/environment_util.dart";
+
 /// Global configuration for the app
 class AppConfig {
   // Loading indicator configuration
@@ -18,6 +20,10 @@ class AppConfig {
   static const bool enableSoundEffects = true;
   static const bool enableAnimations = true;
 
-  // Maps configuration
-  static const String yandexMapsApiKey = "b7e30079-55fe-44d0-960c-50a03c3715e6";
+  /// Yandex Maps JS API key. Resolved at runtime from Firebase Remote
+  /// Config (key: `yandex_maps_api_key`) so it can be rotated without
+  /// shipping an app update. Falls back to
+  /// [EnvironmentUtil.compileTimeYandexMapsApiKey] on first cold launch
+  /// before Remote Config has fetched.
+  static String get yandexMapsApiKey => EnvironmentUtil.yandexMapsApiKey;
 }

@@ -1,3 +1,5 @@
+import "package:uy_dosh/base/util/environment_util.dart";
+
 /// Google Gemini (Google AI) API configuration.
 ///
 /// Google AI Studio: `UyDosh_API_Key`, `UyDosh_API_Key_2`. Project:
@@ -9,23 +11,36 @@
 /// See [AI Studio rate limits](https://aistudio.google.com/rate-limit) for your
 /// project’s current numbers. Higher throughput requires a paid tier / billing.
 ///
-/// TODO: Move keys to `--dart-define`, CI secrets, or remote config before
-/// shipping broadly — keys in source can be extracted from the app binary.
+/// **Key sourcing:** Keys are no longer hardcoded. They resolve at runtime
+/// from Firebase Remote Config (keys: `gemini_api_key`, `gemini_api_key_2`)
+/// via [EnvironmentUtil], so they can be rotated without an app update.
+/// Compile-time fallbacks default to `""` (fail closed); engineers can
+/// inject keys for local builds with
+/// `--dart-define=GEMINI_API_KEY=… --dart-define=GEMINI_API_KEY_2=…`.
+///
+/// Reminder: any key shipped to clients is fundamentally extractable from
+/// the binary. Restrict the keys in Google Cloud Console (Android package
+/// + SHA-256, iOS bundle id) and consider proxying Gemini calls through
+/// the backend long-term.
 abstract final class GeminiConfig {
-  static const String apiKey = "AIzaSyCPmgewzP0p9W9b4aCJz8wQTDy53cw8AZE";
+  /// Primary Gemini API key. Resolved at runtime from Remote Config.
+  static String get apiKey => EnvironmentUtil.geminiApiKey;
 
   /// Secondary key (same project). Helps if one key is invalid; **not** a
-  /// second quota bucket while limits remain project-scoped.
-  static const String apiKey2 = "AIzaSyAvuvab7wcxaZ9jg5pvUEaFC6LPNnca_MY";
+  /// second quota bucket while limits remain project-scoped. Resolved at
+  /// runtime from Remote Config.
+  static String get apiKey2 => EnvironmentUtil.geminiApiKey2;
 
   /// Non-empty keys in preference order (fallback for transient / key errors).
   static List<String> get apiKeys {
     final keys = <String>[];
-    if (apiKey.isNotEmpty) {
-      keys.add(apiKey);
+    final primary = apiKey;
+    if (primary.isNotEmpty) {
+      keys.add(primary);
     }
-    if (apiKey2.isNotEmpty) {
-      keys.add(apiKey2);
+    final secondary = apiKey2;
+    if (secondary.isNotEmpty) {
+      keys.add(secondary);
     }
     return keys;
   }

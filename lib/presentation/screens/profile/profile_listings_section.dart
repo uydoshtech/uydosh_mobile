@@ -7,10 +7,8 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/router/main_navigation.dart"
-    show mainNavigationKey;
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
+import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
@@ -218,17 +216,11 @@ class ProfileListingsSection extends StatelessWidget {
   }
 
   void _openFavoritesTab(BuildContext context) {
-    const favoritesTabIndex = 1;
-    final navState = mainNavigationKey.currentState;
-    if (navState != null) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      navState.navigateToIndex(favoritesTabIndex);
-      return;
-    }
-    Navigator.of(context).pushReplacement(
+    // Favorites is no longer a bottom-nav tab — push it as a standalone
+    // route on top of whatever is currently visible (the profile screen).
+    Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) =>
-            AppRouter.buildMainNavigation(initialIndex: favoritesTabIndex),
+        builder: (context) => const FavoritesScreen(),
       ),
     );
   }

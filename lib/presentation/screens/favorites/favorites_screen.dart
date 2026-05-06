@@ -327,11 +327,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Favorites tab is hosted inside MainNavigation's Scaffold. Wrap in our own
-    // Scaffold so the tile surface/shadows render against the same background
-    // as Home's feed (otherwise shadows can look "off" on different parents).
+    // Favorites is no longer a bottom-nav tab — it's reached from the drawer
+    // and from the profile screen, both of which push it as a standalone
+    // route. We give it its own Scaffold + AppBar (back-leading) so a pushed
+    // route always has navigation chrome of its own. The body keeps the
+    // same background as Home's feed so tile shadows continue to read
+    // correctly.
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(L10n.get("favorites_title")),
+        leading: const BackButton(),
+      ),
       body: ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, child) => _buildBody(),

@@ -47,6 +47,9 @@ abstract class RemoteConfigService {
   static const _kTermsOfServiceUrl = "terms_of_service_url";
   static const _kPrivacyPolicyUrl = "privacy_policy_url";
   static const _kDeleteAccountUrl = "delete_account_url";
+  static const _kYandexMapsApiKey = "yandex_maps_api_key";
+  static const _kGeminiApiKey = "gemini_api_key";
+  static const _kGeminiApiKey2 = "gemini_api_key_2";
 
   /// Prefix for SharedPreferences cache keys. The `api_base_path` cache key
   /// (`uydosh.remote_config.api_base_path`) intentionally matches the value
@@ -62,6 +65,9 @@ abstract class RemoteConfigService {
     _kTermsOfServiceUrl: EnvironmentUtil.compileTimeTermsOfService,
     _kPrivacyPolicyUrl: EnvironmentUtil.compileTimePrivacyPolicy,
     _kDeleteAccountUrl: EnvironmentUtil.compileTimeDeleteAccount,
+    _kYandexMapsApiKey: EnvironmentUtil.compileTimeYandexMapsApiKey,
+    _kGeminiApiKey: EnvironmentUtil.compileTimeGeminiApiKey,
+    _kGeminiApiKey2: EnvironmentUtil.compileTimeGeminiApiKey2,
   };
 
   /// Currently-active values. Seeded from [_defaults], overridden by the
@@ -88,6 +94,20 @@ abstract class RemoteConfigService {
   /// Public "delete account" instructions URL. Safe to call before
   /// [initialize].
   static String get deleteAccountUrl => _values[_kDeleteAccountUrl]!;
+
+  /// Yandex Maps JS API key. Safe to call before [initialize] (returns the
+  /// compile-time default until init completes / RC fetch lands).
+  static String get yandexMapsApiKey => _values[_kYandexMapsApiKey]!;
+
+  /// Primary Google Gemini API key. Safe to call before [initialize]; will
+  /// return `""` until the first RC fetch lands (unless overridden via
+  /// `--dart-define=GEMINI_API_KEY=…` at build time). Callers should treat
+  /// an empty string as "not configured".
+  static String get geminiApiKey => _values[_kGeminiApiKey]!;
+
+  /// Secondary Google Gemini API key (fallback for transient/key errors).
+  /// Same caveats as [geminiApiKey].
+  static String get geminiApiKey2 => _values[_kGeminiApiKey2]!;
 
   /// Initialize Remote Config. Call once during app bootstrap, after
   /// `Firebase.initializeApp()` and before any service that issues HTTP

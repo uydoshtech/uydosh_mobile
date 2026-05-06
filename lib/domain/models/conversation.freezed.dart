@@ -41,6 +41,10 @@ mixin _$Conversation {
   String? get contextType => throw _privateConstructorUsedError;
   @JsonKey(name: "context_id")
   int? get contextId => throw _privateConstructorUsedError;
+  @JsonKey(name: "gig_request_id")
+  int? get gigRequestId => throw _privateConstructorUsedError;
+  @JsonKey(name: "gig_request_title")
+  String? get gigRequestTitle => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_at")
   String? get lastMessageAt => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_content")
@@ -80,6 +84,8 @@ abstract class $ConversationCopyWith<$Res> {
       @JsonKey(name: "listing_id") int? listingId,
       @JsonKey(name: "context_type") String? contextType,
       @JsonKey(name: "context_id") int? contextId,
+      @JsonKey(name: "gig_request_id") int? gigRequestId,
+      @JsonKey(name: "gig_request_title") String? gigRequestTitle,
       @JsonKey(name: "last_message_at") String? lastMessageAt,
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
@@ -116,6 +122,8 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
     Object? listingId = freezed,
     Object? contextType = freezed,
     Object? contextId = freezed,
+    Object? gigRequestId = freezed,
+    Object? gigRequestTitle = freezed,
     Object? lastMessageAt = freezed,
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
@@ -161,6 +169,14 @@ class _$ConversationCopyWithImpl<$Res, $Val extends Conversation>
           ? _value.contextId
           : contextId // ignore: cast_nullable_to_non_nullable
               as int?,
+      gigRequestId: freezed == gigRequestId
+          ? _value.gigRequestId
+          : gigRequestId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gigRequestTitle: freezed == gigRequestTitle
+          ? _value.gigRequestTitle
+          : gigRequestTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
       lastMessageAt: freezed == lastMessageAt
           ? _value.lastMessageAt
           : lastMessageAt // ignore: cast_nullable_to_non_nullable
@@ -239,6 +255,8 @@ abstract class _$$ConversationImplCopyWith<$Res>
       @JsonKey(name: "listing_id") int? listingId,
       @JsonKey(name: "context_type") String? contextType,
       @JsonKey(name: "context_id") int? contextId,
+      @JsonKey(name: "gig_request_id") int? gigRequestId,
+      @JsonKey(name: "gig_request_title") String? gigRequestTitle,
       @JsonKey(name: "last_message_at") String? lastMessageAt,
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
@@ -275,6 +293,8 @@ class __$$ConversationImplCopyWithImpl<$Res>
     Object? listingId = freezed,
     Object? contextType = freezed,
     Object? contextId = freezed,
+    Object? gigRequestId = freezed,
+    Object? gigRequestTitle = freezed,
     Object? lastMessageAt = freezed,
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
@@ -320,6 +340,14 @@ class __$$ConversationImplCopyWithImpl<$Res>
           ? _value.contextId
           : contextId // ignore: cast_nullable_to_non_nullable
               as int?,
+      gigRequestId: freezed == gigRequestId
+          ? _value.gigRequestId
+          : gigRequestId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gigRequestTitle: freezed == gigRequestTitle
+          ? _value.gigRequestTitle
+          : gigRequestTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
       lastMessageAt: freezed == lastMessageAt
           ? _value.lastMessageAt
           : lastMessageAt // ignore: cast_nullable_to_non_nullable
@@ -365,6 +393,8 @@ class _$ConversationImpl implements _Conversation {
       @JsonKey(name: "listing_id") this.listingId,
       @JsonKey(name: "context_type") this.contextType,
       @JsonKey(name: "context_id") this.contextId,
+      @JsonKey(name: "gig_request_id") this.gigRequestId,
+      @JsonKey(name: "gig_request_title") this.gigRequestTitle,
       @JsonKey(name: "last_message_at") this.lastMessageAt,
       @JsonKey(name: "last_message_content") this.lastMessageContent,
       @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
@@ -407,6 +437,12 @@ class _$ConversationImpl implements _Conversation {
   @JsonKey(name: "context_id")
   final int? contextId;
   @override
+  @JsonKey(name: "gig_request_id")
+  final int? gigRequestId;
+  @override
+  @JsonKey(name: "gig_request_title")
+  final String? gigRequestTitle;
+  @override
   @JsonKey(name: "last_message_at")
   final String? lastMessageAt;
   @override
@@ -429,7 +465,7 @@ class _$ConversationImpl implements _Conversation {
 
   @override
   String toString() {
-    return 'Conversation(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listing: $listing, otherUser: $otherUser, unreadCount: $unreadCount)';
+    return 'Conversation(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listing: $listing, otherUser: $otherUser, unreadCount: $unreadCount)';
   }
 
   @override
@@ -454,6 +490,10 @@ class _$ConversationImpl implements _Conversation {
                 other.contextType == contextType) &&
             (identical(other.contextId, contextId) ||
                 other.contextId == contextId) &&
+            (identical(other.gigRequestId, gigRequestId) ||
+                other.gigRequestId == gigRequestId) &&
+            (identical(other.gigRequestTitle, gigRequestTitle) ||
+                other.gigRequestTitle == gigRequestTitle) &&
             (identical(other.lastMessageAt, lastMessageAt) ||
                 other.lastMessageAt == lastMessageAt) &&
             (identical(other.lastMessageContent, lastMessageContent) ||
@@ -482,6 +522,8 @@ class _$ConversationImpl implements _Conversation {
       listingId,
       contextType,
       contextId,
+      gigRequestId,
+      gigRequestTitle,
       lastMessageAt,
       lastMessageContent,
       lastMessageSenderId,
@@ -517,6 +559,8 @@ abstract class _Conversation implements Conversation {
       @JsonKey(name: "listing_id") final int? listingId,
       @JsonKey(name: "context_type") final String? contextType,
       @JsonKey(name: "context_id") final int? contextId,
+      @JsonKey(name: "gig_request_id") final int? gigRequestId,
+      @JsonKey(name: "gig_request_title") final String? gigRequestTitle,
       @JsonKey(name: "last_message_at") final String? lastMessageAt,
       @JsonKey(name: "last_message_content") final String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
@@ -559,6 +603,12 @@ abstract class _Conversation implements Conversation {
   @override
   @JsonKey(name: "context_id")
   int? get contextId;
+  @override
+  @JsonKey(name: "gig_request_id")
+  int? get gigRequestId;
+  @override
+  @JsonKey(name: "gig_request_title")
+  String? get gigRequestTitle;
   @override
   @JsonKey(name: "last_message_at")
   String? get lastMessageAt;
@@ -610,6 +660,10 @@ mixin _$ConversationSummary {
   String? get contextType => throw _privateConstructorUsedError;
   @JsonKey(name: "context_id")
   int? get contextId => throw _privateConstructorUsedError;
+  @JsonKey(name: "gig_request_id")
+  int? get gigRequestId => throw _privateConstructorUsedError;
+  @JsonKey(name: "gig_request_title")
+  String? get gigRequestTitle => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_at")
   String? get lastMessageAt => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_content")
@@ -688,6 +742,8 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "listing_id") int? listingId,
       @JsonKey(name: "context_type") String? contextType,
       @JsonKey(name: "context_id") int? contextId,
+      @JsonKey(name: "gig_request_id") int? gigRequestId,
+      @JsonKey(name: "gig_request_title") String? gigRequestTitle,
       @JsonKey(name: "last_message_at") String? lastMessageAt,
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
@@ -739,6 +795,8 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? listingId = freezed,
     Object? contextType = freezed,
     Object? contextId = freezed,
+    Object? gigRequestId = freezed,
+    Object? gigRequestTitle = freezed,
     Object? lastMessageAt = freezed,
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
@@ -802,6 +860,14 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.contextId
           : contextId // ignore: cast_nullable_to_non_nullable
               as int?,
+      gigRequestId: freezed == gigRequestId
+          ? _value.gigRequestId
+          : gigRequestId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gigRequestTitle: freezed == gigRequestTitle
+          ? _value.gigRequestTitle
+          : gigRequestTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
       lastMessageAt: freezed == lastMessageAt
           ? _value.lastMessageAt
           : lastMessageAt // ignore: cast_nullable_to_non_nullable
@@ -924,6 +990,8 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "listing_id") int? listingId,
       @JsonKey(name: "context_type") String? contextType,
       @JsonKey(name: "context_id") int? contextId,
+      @JsonKey(name: "gig_request_id") int? gigRequestId,
+      @JsonKey(name: "gig_request_title") String? gigRequestTitle,
       @JsonKey(name: "last_message_at") String? lastMessageAt,
       @JsonKey(name: "last_message_content") String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,
@@ -973,6 +1041,8 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? listingId = freezed,
     Object? contextType = freezed,
     Object? contextId = freezed,
+    Object? gigRequestId = freezed,
+    Object? gigRequestTitle = freezed,
     Object? lastMessageAt = freezed,
     Object? lastMessageContent = freezed,
     Object? lastMessageSenderId = freezed,
@@ -1036,6 +1106,14 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.contextId
           : contextId // ignore: cast_nullable_to_non_nullable
               as int?,
+      gigRequestId: freezed == gigRequestId
+          ? _value.gigRequestId
+          : gigRequestId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      gigRequestTitle: freezed == gigRequestTitle
+          ? _value.gigRequestTitle
+          : gigRequestTitle // ignore: cast_nullable_to_non_nullable
+              as String?,
       lastMessageAt: freezed == lastMessageAt
           ? _value.lastMessageAt
           : lastMessageAt // ignore: cast_nullable_to_non_nullable
@@ -1153,6 +1231,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "listing_id") this.listingId,
       @JsonKey(name: "context_type") this.contextType,
       @JsonKey(name: "context_id") this.contextId,
+      @JsonKey(name: "gig_request_id") this.gigRequestId,
+      @JsonKey(name: "gig_request_title") this.gigRequestTitle,
       @JsonKey(name: "last_message_at") this.lastMessageAt,
       @JsonKey(name: "last_message_content") this.lastMessageContent,
       @JsonKey(name: "last_message_sender_id") this.lastMessageSenderId,
@@ -1208,6 +1288,12 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "context_id")
   final int? contextId;
+  @override
+  @JsonKey(name: "gig_request_id")
+  final int? gigRequestId;
+  @override
+  @JsonKey(name: "gig_request_title")
+  final String? gigRequestTitle;
   @override
   @JsonKey(name: "last_message_at")
   final String? lastMessageAt;
@@ -1288,7 +1374,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1313,6 +1399,10 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.contextType == contextType) &&
             (identical(other.contextId, contextId) ||
                 other.contextId == contextId) &&
+            (identical(other.gigRequestId, gigRequestId) ||
+                other.gigRequestId == gigRequestId) &&
+            (identical(other.gigRequestTitle, gigRequestTitle) ||
+                other.gigRequestTitle == gigRequestTitle) &&
             (identical(other.lastMessageAt, lastMessageAt) ||
                 other.lastMessageAt == lastMessageAt) &&
             (identical(other.lastMessageContent, lastMessageContent) ||
@@ -1378,6 +1468,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         listingId,
         contextType,
         contextId,
+        gigRequestId,
+        gigRequestTitle,
         lastMessageAt,
         lastMessageContent,
         lastMessageSenderId,
@@ -1433,6 +1525,8 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "listing_id") final int? listingId,
       @JsonKey(name: "context_type") final String? contextType,
       @JsonKey(name: "context_id") final int? contextId,
+      @JsonKey(name: "gig_request_id") final int? gigRequestId,
+      @JsonKey(name: "gig_request_title") final String? gigRequestTitle,
       @JsonKey(name: "last_message_at") final String? lastMessageAt,
       @JsonKey(name: "last_message_content") final String? lastMessageContent,
       @JsonKey(name: "last_message_sender_id") final int? lastMessageSenderId,
@@ -1495,6 +1589,12 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   @JsonKey(name: "context_id")
   int? get contextId;
+  @override
+  @JsonKey(name: "gig_request_id")
+  int? get gigRequestId;
+  @override
+  @JsonKey(name: "gig_request_title")
+  String? get gigRequestTitle;
   @override
   @JsonKey(name: "last_message_at")
   String? get lastMessageAt;

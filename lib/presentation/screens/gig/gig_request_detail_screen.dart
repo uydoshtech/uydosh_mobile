@@ -104,6 +104,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
         MaterialPageRoute<void>(
           builder: (_) => ChatScreen(
             conversationId: conversation.id,
+            gigRequestId: request.id,
+            gigRequestTitle: request.title,
             otherUserId: request.clientUserId,
             otherUserName: clientName.isNotEmpty ? clientName : null,
             otherUserInitials: clientName.isNotEmpty

@@ -11,6 +11,7 @@ class AppStrings {
     "en": {
       // ===== NAVIGATION =====
       "home": "Listings",
+      "nav_housing": "Housing",
       "favorites": "Favorites",
       "add_to_favorites": "Add to favorites",
       "added_to_favorites": "Added to favorites",
@@ -1254,6 +1255,7 @@ class AppStrings {
     "ru": {
       // ===== NAVIGATION =====
       "home": "Объявления",
+      "nav_housing": "Жильё",
       "favorites": "Избранное",
       "add_to_favorites": "Добавить в избранное",
       "added_to_favorites": "Добавлено в избранное",
@@ -2519,6 +2521,7 @@ class AppStrings {
     "uz": {
       // ===== NAVIGATION =====
       "home": "E'lonlar",
+      "nav_housing": "Uy-joy",
       "favorites": "Sevimlilar",
       "add_to_favorites": "Sevimlilariga qo'shish",
       "added_to_favorites": "Sevimlilariga qo'shildi",
