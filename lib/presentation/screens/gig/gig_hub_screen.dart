@@ -565,7 +565,7 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
 /// Categories come from [GigCategoryCache] (a static, admin-ordered list
 /// baked into the app), so the ribbon renders synchronously on the first
 /// frame with no loading state.
-class _CategoryRibbon extends StatelessWidget {
+class _CategoryRibbon extends StatefulWidget {
   const _CategoryRibbon({
     required this.categories,
     required this.selectedCategoryId,
@@ -576,11 +576,71 @@ class _CategoryRibbon extends StatelessWidget {
   final int? selectedCategoryId;
   final ValueChanged<int?> onSelected;
 
+  @override
+  State<_CategoryRibbon> createState() => _CategoryRibbonState();
+}
+
+class _CategoryRibbonState extends State<_CategoryRibbon> {
+  late List<GlobalKey> _itemKeys;
+
   /// Tall enough to seat a 36-px chip (`vertical: 8` × 2 + ~20 line height)
   /// plus 8 px of vertical breathing room above and below so shadows from
   /// the active chip don't get clipped by the host viewport.
   static const double _ribbonHeight = 56;
   static const double _chipPadV = 8;
+
+  List<GlobalKey> _newItemKeys(int count) =>
+      List<GlobalKey>.generate(count, (_) => GlobalKey());
+
+  int _selectedIndex() {
+    final id = widget.selectedCategoryId;
+    if (id == null) return 0;
+    final i = widget.categories.indexWhere((c) => c.id == id);
+    if (i < 0) return 0;
+    return i + 1;
+  }
+
+  void _scrollSelectionToCenter() {
+    if (!mounted) return;
+    final index = _selectedIndex();
+    if (index < 0 || index >= _itemKeys.length) return;
+    final ctx = _itemKeys[index].currentContext;
+    if (ctx == null) return;
+    final disableMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    Scrollable.ensureVisible(
+      ctx,
+      alignment: 0.5,
+      duration: disableMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _itemKeys = _newItemKeys(widget.categories.length + 1);
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _scrollSelectionToCenter());
+  }
+
+  @override
+  void didUpdateWidget(covariant _CategoryRibbon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newCount = widget.categories.length + 1;
+    final categoriesLengthChanged =
+        widget.categories.length != oldWidget.categories.length;
+    if (newCount != _itemKeys.length) {
+      _itemKeys = _newItemKeys(newCount);
+    }
+    if (widget.selectedCategoryId != oldWidget.selectedCategoryId ||
+        categoriesLengthChanged) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _scrollSelectionToCenter());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -597,23 +657,25 @@ class _CategoryRibbon extends StatelessWidget {
         // view to clip at a safer outer boundary.
         clipBehavior: Clip.none,
         padding: const EdgeInsets.fromLTRB(16, _chipPadV, 16, _chipPadV),
-        itemCount: categories.length + 1,
+        itemCount: widget.categories.length + 1,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           if (i == 0) {
             return _CategoryChip(
+              key: _itemKeys[0],
               icon: Icons.apps_rounded,
               label: L10n.get("all"),
-              isSelected: selectedCategoryId == null,
-              onTap: () => onSelected(null),
+              isSelected: widget.selectedCategoryId == null,
+              onTap: () => widget.onSelected(null),
             );
           }
-          final c = categories[i - 1];
+          final c = widget.categories[i - 1];
           return _CategoryChip(
+            key: _itemKeys[i],
             icon: gigCategoryIcon(c.code),
             label: c.localizedName(language),
-            isSelected: selectedCategoryId == c.id,
-            onTap: () => onSelected(c.id),
+            isSelected: widget.selectedCategoryId == c.id,
+            onTap: () => widget.onSelected(c.id),
           );
         },
       ),
@@ -627,6 +689,7 @@ class _CategoryChip extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    super.key,
   });
 
   final IconData icon;
