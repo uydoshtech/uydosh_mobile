@@ -17,6 +17,7 @@ class SubmitGigOffer extends GigPostOfferEvent {
     required this.title,
     required this.pricingType,
     required this.price,
+    this.currencyCode = "UZS",
     this.descriptionRu,
     this.minDurationMinutes,
     this.isRemote = false,
@@ -25,6 +26,7 @@ class SubmitGigOffer extends GigPostOfferEvent {
   final String title;
   final GigPricingType pricingType;
   final int price;
+  final String currencyCode;
   final String? descriptionRu;
   final int? minDurationMinutes;
   final bool isRemote;
@@ -88,6 +90,7 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
           title: e.title,
           pricingType: e.pricingType,
           price: e.price,
+          currencyCode: e.currencyCode,
           descriptionRu: e.descriptionRu,
           minDurationMinutes: e.minDurationMinutes,
           isRemote: e.isRemote,

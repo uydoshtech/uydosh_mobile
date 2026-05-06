@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -12,6 +11,7 @@ import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -45,6 +45,13 @@ class PublishGigScreen extends StatefulWidget {
 }
 
 class _PublishGigScreenState extends State<PublishGigScreen> {
+  // Field length caps — mirror the create/edit listing screens so users get
+  // consistent limits across all forms in the app.
+  static const int _titleMaxLength = 50;
+  static const int _titleCounterVisibleAt = 40;
+  static const int _descriptionMaxLength = 1000;
+  static const int _descriptionCounterVisibleAt = 700;
+
   // Shared form scaffolding. Re-validating with the same key across modes
   // is fine because the conditionally-mounted fields drop out of the form
   // tree when their mode is inactive.
@@ -65,7 +72,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   GigCategory? _selectedCategory;
   bool _isRemote = false;
   bool _showCategoryError = false;
+  bool _showTitleError = false;
+  bool _showAmountError = false;
   late GigPublishMode _mode;
+
+  /// ISO-4217-ish code shown as the prefix on the budget/price input. Shared
+  /// between task and service modes so a user who flips back and forth keeps
+  /// their currency choice. Backend default is also "UZS", so the empty
+  /// state matches what the API would record on its own.
+  String _currency = "UZS";
+  static const List<String> _supportedCurrencies = ["UZS", "USD"];
 
   @override
   void initState() {
@@ -99,16 +115,40 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       // do clear the category-missing error indicator though; it'll be
       // re-set on next submit if still missing.
       _showCategoryError = false;
+      // Mode swap may move the relevant amount field (budget ↔ price), so
+      // drop any stale error indicator until the user re-submits.
+      _showAmountError = false;
     });
   }
 
-  void _submit() {
-    final formValid = _formKey.currentState!.validate();
-    final categoryMissing = _selectedCategory == null;
-    if (categoryMissing != _showCategoryError) {
-      setState(() => _showCategoryError = categoryMissing);
+  bool _isAmountMissing() {
+    final String text;
+    if (_mode == GigPublishMode.task) {
+      if (_budgetType == GigRequestBudgetType.open) return false;
+      text = _budgetController.text.trim();
+    } else {
+      text = _priceController.text.trim();
     }
-    if (!formValid || categoryMissing) return;
+    if (text.isEmpty) return true;
+    final n = int.tryParse(text);
+    return n == null || n <= 0;
+  }
+
+  void _submit() {
+    final titleMissing = _titleController.text.trim().isEmpty;
+    final categoryMissing = _selectedCategory == null;
+    final amountMissing = _isAmountMissing();
+
+    if (titleMissing != _showTitleError ||
+        categoryMissing != _showCategoryError ||
+        amountMissing != _showAmountError) {
+      setState(() {
+        _showTitleError = titleMissing;
+        _showCategoryError = categoryMissing;
+        _showAmountError = amountMissing;
+      });
+    }
+    if (titleMissing || categoryMissing || amountMissing) return;
 
     final desc = _descriptionController.text.trim().isEmpty
         ? null
@@ -124,6 +164,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               title: _titleController.text.trim(),
               budgetType: _budgetType,
               budgetAmount: budget,
+              currencyCode: _currency,
               descriptionRu: desc,
               addressText: _addressController.text.trim().isEmpty
                   ? null
@@ -143,6 +184,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               title: _titleController.text.trim(),
               pricingType: _pricingType,
               price: price,
+              currencyCode: _currency,
               descriptionRu: desc,
               // Min-duration only meaningful for hourly pricing — drop it
               // otherwise so we don't ship a misleading value to the API.
@@ -268,18 +310,34 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         L10n.get("gigs_post_request_field_title"),
                       ),
                       _PlateField(
+                        showErrorBorder: _showTitleError,
                         child: TextFormField(
                           controller: _titleController,
                           textInputAction: TextInputAction.next,
+                          maxLength: _titleMaxLength,
+                          maxLines: 1,
                           style: _fieldTextStyle(context),
                           decoration: _plateInputDecoration(
                             context,
                             hint: L10n.get("gigs_post_request_field_title"),
                           ),
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty)
-                                  ? L10n.get("gigs_post_request_required")
-                                  : null,
+                          onChanged: (_) {
+                            if (_showTitleError) {
+                              setState(() => _showTitleError = false);
+                            }
+                          },
+                          buildCounter: (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) =>
+                              _buildSubtleCounter(
+                            context,
+                            currentLength: currentLength,
+                            maxLength: maxLength ?? _titleMaxLength,
+                            visibleAt: _titleCounterVisibleAt,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -291,12 +349,25 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                           controller: _descriptionController,
                           maxLines: 5,
                           minLines: 4,
+                          maxLength: _descriptionMaxLength,
                           style: _fieldTextStyle(context),
                           decoration: _plateInputDecoration(
                             context,
                             hint: L10n.get(
                               "gigs_post_request_field_description",
                             ),
+                          ),
+                          buildCounter: (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) =>
+                              _buildSubtleCounter(
+                            context,
+                            currentLength: currentLength,
+                            maxLength: maxLength ?? _descriptionMaxLength,
+                            visibleAt: _descriptionCounterVisibleAt,
                           ),
                         ),
                       ),
@@ -351,14 +422,18 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       if (_budgetType != GigRequestBudgetType.open) ...[
         const SizedBox(height: 14),
         _FieldLabel(L10n.get("gigs_post_request_field_amount")),
-        _PlateField(
-          child: TextFormField(
-            controller: _budgetController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: _fieldTextStyle(context),
-            decoration: _plateInputDecoration(context, hint: "UZS"),
-          ),
+        _CurrencyAmountField(
+          controller: _budgetController,
+          currency: _currency,
+          supportedCurrencies: _supportedCurrencies,
+          onCurrencyChanged: (c) => setState(() => _currency = c),
+          hint: "0",
+          showError: _showAmountError,
+          onChanged: (_) {
+            if (_showAmountError) {
+              setState(() => _showAmountError = false);
+            }
+          },
         ),
       ],
       const SizedBox(height: 14),
@@ -385,24 +460,18 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       ),
       const SizedBox(height: 14),
       _FieldLabel(L10n.get("gigs_post_offer_field_price")),
-      _PlateField(
-        child: TextFormField(
-          controller: _priceController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: _fieldTextStyle(context),
-          decoration: _plateInputDecoration(context, hint: "UZS"),
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) {
-              return L10n.get("gigs_post_request_required");
-            }
-            final n = int.tryParse(v.trim());
-            if (n == null || n <= 0) {
-              return L10n.get("gigs_post_request_required");
-            }
-            return null;
-          },
-        ),
+      _CurrencyAmountField(
+        controller: _priceController,
+        currency: _currency,
+        supportedCurrencies: _supportedCurrencies,
+        onCurrencyChanged: (c) => setState(() => _currency = c),
+        hint: "0",
+        showError: _showAmountError,
+        onChanged: (_) {
+          if (_showAmountError) {
+            setState(() => _showAmountError = false);
+          }
+        },
       ),
       if (_pricingType == GigPricingType.hourly) ...[
         const SizedBox(height: 14),
@@ -425,26 +494,42 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Mode toggle — Task / Service.
+// Neumorphic segmented switch
 //
-// Visually mirrors the inbox screen's incoming/outgoing switcher: a 3D pill
-// container with an animated sliding thumb that rides under the active
-// segment. We keep haptics on tap so it feels identical to the inbox tab.
+// Reusable N-segment switcher modeled on the messages inbox tab toggle: a
+// 3D pill container with an animated sliding thumb that rides under the
+// active segment. Used for the Task/Service publish-mode toggle as well as
+// for the budget-type and pricing-type pickers below.
 // ---------------------------------------------------------------------------
 
-class _PublishModeToggle extends StatelessWidget {
-  const _PublishModeToggle({required this.value, required this.onChanged});
+class _SwitchEntry<T> {
+  const _SwitchEntry({required this.value, required this.label, this.icon});
+  final T value;
+  final String label;
+  final IconData? icon;
+}
 
-  final GigPublishMode value;
-  final ValueChanged<GigPublishMode> onChanged;
+class _NeumorphicSegmentedSwitch<T> extends StatelessWidget {
+  const _NeumorphicSegmentedSwitch({
+    required this.value,
+    required this.entries,
+    required this.onChanged,
+    this.height = 48,
+  });
 
-  static const double _height = 48;
-  static const double _outerRadius = 24;
-  static const double _innerRadius = 22;
+  final T value;
+  final List<_SwitchEntry<T>> entries;
+  final ValueChanged<T> onChanged;
+  final double height;
+
   static const double _thumbInset = 2;
+
+  double _outerRadius() => height / 2;
+  double _innerRadius() => height / 2 - _thumbInset;
 
   @override
   Widget build(BuildContext context) {
+    assert(entries.isNotEmpty, "Switch needs at least one entry");
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, _) {
@@ -458,97 +543,89 @@ class _PublishModeToggle extends StatelessWidget {
                 : Colors.black;
         final unselectedTextColor = themeState.unselectedTabTextColor;
 
-        final isTask = value == GigPublishMode.task;
+        final selectedIndex = entries.indexWhere((e) => e.value == value);
+        // Anchor the thumb to index 0 if no match (defensive — keeps the
+        // switch from "disappearing" the thumb on a stale value).
+        final activeIndex = selectedIndex < 0 ? 0 : selectedIndex;
 
         return LayoutBuilder(
           builder: (context, constraints) {
-              final thumbWidth =
-                  (constraints.maxWidth - _thumbInset * 2) / 2;
-              return Container(
-                height: _height,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_outerRadius),
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                    context,
-                    cardColor,
-                  ),
-                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+            final segmentWidth =
+                (constraints.maxWidth - _thumbInset * 2) / entries.length;
+
+            return Container(
+              height: height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_outerRadius()),
+                gradient: ThreeDSurfaceStyle.surfaceGradient(
+                  context,
+                  cardColor,
                 ),
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      left: isTask ? _thumbInset : null,
-                      right: isTask ? null : _thumbInset,
-                      top: _thumbInset,
-                      bottom: _thumbInset,
-                      child: Container(
-                        width: thumbWidth,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(_innerRadius),
-                          gradient: ThreeDSurfaceStyle.surfaceGradient(
-                            context,
-                            primaryColor,
-                          ),
-                          boxShadow:
-                              ThreeDSurfaceStyle.elevatedShadows(context),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              ),
+              child: Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    left: _thumbInset + segmentWidth * activeIndex,
+                    top: _thumbInset,
+                    bottom: _thumbInset,
+                    width: segmentWidth,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(_innerRadius()),
+                        gradient: ThreeDSurfaceStyle.surfaceGradient(
+                          context,
+                          primaryColor,
                         ),
+                        boxShadow:
+                            ThreeDSurfaceStyle.elevatedShadows(context),
                       ),
                     ),
-                    Row(
-                      children: [
+                  ),
+                  Row(
+                    children: [
+                      for (var i = 0; i < entries.length; i++)
                         Expanded(
-                          child: _PublishModeTab(
-                            icon: Icons.assignment_outlined,
-                            label: L10n.get("gigs_publish_mode_task"),
-                            isSelected: isTask,
+                          child: _SwitchTab(
+                            entry: entries[i],
+                            isSelected: i == activeIndex,
+                            height: height,
                             selectedTextColor: selectedTextColor,
                             unselectedTextColor: unselectedTextColor,
                             onTap: () {
+                              if (i == activeIndex) return;
                               HapticFeedbackUtils.selection();
-                              onChanged(GigPublishMode.task);
+                              onChanged(entries[i].value);
                             },
                           ),
                         ),
-                        Expanded(
-                          child: _PublishModeTab(
-                            icon: Icons.handyman_outlined,
-                            label: L10n.get("gigs_publish_mode_service"),
-                            isSelected: !isTask,
-                            selectedTextColor: selectedTextColor,
-                            unselectedTextColor: unselectedTextColor,
-                            onTap: () {
-                              HapticFeedbackUtils.selection();
-                              onChanged(GigPublishMode.service);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
   }
 }
 
-class _PublishModeTab extends StatelessWidget {
-  const _PublishModeTab({
-    required this.icon,
-    required this.label,
+class _SwitchTab<T> extends StatelessWidget {
+  const _SwitchTab({
+    required this.entry,
     required this.isSelected,
+    required this.height,
     required this.selectedTextColor,
     required this.unselectedTextColor,
     required this.onTap,
   });
 
-  final IconData icon;
-  final String label;
+  final _SwitchEntry<T> entry;
   final bool isSelected;
+  final double height;
   final Color selectedTextColor;
   final Color unselectedTextColor;
   final VoidCallback onTap;
@@ -560,7 +637,7 @@ class _PublishModeTab extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: SizedBox(
-        height: _PublishModeToggle._height,
+        height: height,
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeInOut,
@@ -570,31 +647,64 @@ class _PublishModeTab extends StatelessWidget {
             curve: Curves.easeOutCubic,
             scale: isSelected ? 1.0 : 0.96,
             child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 18, color: color),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w600,
-                        color: color,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (entry.icon != null) ...[
+                      Icon(entry.icon, size: 18, color: color),
+                      const SizedBox(width: 6),
+                    ],
+                    Flexible(
+                      child: Text(
+                        entry.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
+                          color: color,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PublishModeToggle extends StatelessWidget {
+  const _PublishModeToggle({required this.value, required this.onChanged});
+
+  final GigPublishMode value;
+  final ValueChanged<GigPublishMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _NeumorphicSegmentedSwitch<GigPublishMode>(
+      value: value,
+      onChanged: onChanged,
+      entries: [
+        _SwitchEntry(
+          value: GigPublishMode.task,
+          label: L10n.get("gigs_publish_mode_task"),
+          icon: Icons.assignment_outlined,
+        ),
+        _SwitchEntry(
+          value: GigPublishMode.service,
+          label: L10n.get("gigs_publish_mode_service"),
+          icon: Icons.handyman_outlined,
+        ),
+      ],
     );
   }
 }
@@ -605,6 +715,36 @@ class _PublishModeTab extends StatelessWidget {
 // Kept duplicated for now to keep this change contained; promote to a
 // shared `gig_form_widgets.dart` once the legacy screens are retired.
 // ---------------------------------------------------------------------------
+
+/// Subtle "currentLength/maxLength" badge — hidden until the user is close
+/// to the cap, then shown in muted text (red once at the limit). Mirrors
+/// the counter style used by the create/edit listing screens.
+Widget? _buildSubtleCounter(
+  BuildContext context, {
+  required int currentLength,
+  required int maxLength,
+  required int visibleAt,
+}) {
+  if (currentLength < visibleAt) return null;
+  final isAtLimit = currentLength >= maxLength;
+  final theme = Theme.of(context);
+  final color = isAtLimit
+      ? theme.colorScheme.error
+      : (ThemeState().isLightTheme
+          ? Colors.grey[700]
+          : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8));
+  return Padding(
+    padding: const EdgeInsets.only(top: 4, right: 4),
+    child: Text(
+      "$currentLength/$maxLength",
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: color,
+      ),
+    ),
+  );
+}
 
 TextStyle _fieldTextStyle(BuildContext context) {
   return TextStyle(
@@ -634,6 +774,10 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
     focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    // Validation feedback is rendered as a red border on the surrounding
+    // plate (see `_PlateField.showErrorBorder`); collapse the inline error
+    // text so no red copy ever appears beneath the field.
+    errorStyle: const TextStyle(height: 0, fontSize: 0),
     contentPadding:
         const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     isDense: true,
@@ -675,6 +819,162 @@ class _PlateField extends StatelessWidget {
       theme: Theme.of(context),
       showErrorBorder: showErrorBorder,
       child: child,
+    );
+  }
+}
+
+/// Numeric input plate with a tappable currency code on the leading edge.
+///
+/// The chip itself shows the active code (e.g. "UZS"); tapping it opens a
+/// bottom sheet with [supportedCurrencies] so the user can switch. A
+/// vertical hairline divider separates the chip from the typed amount so
+/// the prefix reads as "part of the value", not a stray button.
+class _CurrencyAmountField extends StatelessWidget {
+  const _CurrencyAmountField({
+    required this.controller,
+    required this.currency,
+    required this.supportedCurrencies,
+    required this.onCurrencyChanged,
+    this.hint,
+    this.showError = false,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String currency;
+  final List<String> supportedCurrencies;
+  final ValueChanged<String> onCurrencyChanged;
+  final String? hint;
+  final bool showError;
+  final ValueChanged<String>? onChanged;
+
+  /// Maps a currency code → leading flag emoji. The codebase already uses
+  /// Unicode flag emojis (auth wizard, chat translation prompts) so they
+  /// render consistently here without dragging in flag image assets.
+  static String _flagFor(String currencyCode) {
+    switch (currencyCode) {
+      case "USD":
+        return "🇺🇸";
+      case "RUB":
+        return "🇷🇺";
+      case "EUR":
+        return "🇪🇺";
+      case "UZS":
+      default:
+        return "🇺🇿";
+    }
+  }
+
+  Future<void> _pickCurrency(BuildContext context) async {
+    HapticFeedbackUtils.selection();
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        final scheme = Theme.of(context).colorScheme;
+        return SafeArea(
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: supportedCurrencies.length,
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: scheme.onSurface.withValues(alpha: 0.08),
+            ),
+            itemBuilder: (_, i) {
+              final code = supportedCurrencies[i];
+              final isSelected = code == currency;
+              return ListTile(
+                leading: Text(
+                  _flagFor(code),
+                  style: const TextStyle(fontSize: 24),
+                ),
+                title: Text(
+                  code,
+                  style: TextStyle(
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+                trailing: isSelected
+                    ? Icon(Icons.check_rounded, color: scheme.secondary)
+                    : null,
+                onTap: () => Navigator.of(context).pop(code),
+              );
+            },
+          ),
+        );
+      },
+    );
+    if (picked != null && picked != currency) {
+      onCurrencyChanged(picked);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dividerColor = scheme.onSurface.withValues(alpha: 0.18);
+    final chipColor = ThemeState().isLightTheme
+        ? Colors.black
+        : scheme.onSurface;
+
+    return _PlateField(
+      showErrorBorder: showError,
+      child: Row(
+        children: [
+          InkWell(
+            borderRadius: const BorderRadius.horizontal(
+              left: Radius.circular(16),
+            ),
+            onTap: () => _pickCurrency(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _flagFor(currency),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    currency,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: chipColor,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: chipColor.withValues(alpha: 0.7),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(width: 1, height: 24, color: dividerColor),
+          Expanded(
+            child: TextFormField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: _fieldTextStyle(context),
+              decoration: _plateInputDecoration(context, hint: hint),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -855,27 +1155,26 @@ class _BudgetTypePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = <(GigRequestBudgetType, String)>[
-      (GigRequestBudgetType.fixed, L10n.get("gigs_budget_type_fixed")),
-      (GigRequestBudgetType.hourly, L10n.get("gigs_budget_type_hourly")),
-      (GigRequestBudgetType.open, L10n.get("gigs_budget_type_open")),
-    ];
-    return _PlateField(
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          children: [
-            for (final entry in entries)
-              Expanded(
-                child: _SegmentButton(
-                  label: entry.$2,
-                  selected: entry.$1 == value,
-                  onTap: () => onChanged(entry.$1),
-                ),
-              ),
-          ],
+    return _NeumorphicSegmentedSwitch<GigRequestBudgetType>(
+      value: value,
+      onChanged: onChanged,
+      entries: [
+        _SwitchEntry(
+          value: GigRequestBudgetType.fixed,
+          label: L10n.get("gigs_budget_type_fixed"),
+          icon: Icons.price_change_outlined,
         ),
-      ),
+        _SwitchEntry(
+          value: GigRequestBudgetType.hourly,
+          label: L10n.get("gigs_budget_type_hourly"),
+          icon: Icons.schedule_outlined,
+        ),
+        _SwitchEntry(
+          value: GigRequestBudgetType.open,
+          label: L10n.get("gigs_budget_type_open"),
+          icon: Icons.gavel_outlined,
+        ),
+      ],
     );
   }
 }
@@ -887,90 +1186,26 @@ class _PricingTypePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = <(GigPricingType, String)>[
-      (GigPricingType.fixed, L10n.get("gigs_pricing_type_fixed")),
-      (GigPricingType.hourly, L10n.get("gigs_pricing_type_hourly")),
-      (GigPricingType.perUnit, L10n.get("gigs_pricing_type_per_unit")),
-    ];
-    return _PlateField(
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          children: [
-            for (final entry in entries)
-              Expanded(
-                child: _SegmentButton(
-                  label: entry.$2,
-                  selected: entry.$1 == value,
-                  onTap: () => onChanged(entry.$1),
-                ),
-              ),
-          ],
+    return _NeumorphicSegmentedSwitch<GigPricingType>(
+      value: value,
+      onChanged: onChanged,
+      entries: [
+        _SwitchEntry(
+          value: GigPricingType.fixed,
+          label: L10n.get("gigs_pricing_type_fixed"),
+          icon: Icons.price_change_outlined,
         ),
-      ),
-    );
-  }
-}
-
-/// Selected segment uses the app's standard "raised chip" treatment
-/// (gradient + dual shadows + brand button color), matching `AmenityToggle`
-/// and the rest of the app's highlighted-selection styling.
-class _SegmentButton extends StatelessWidget {
-  const _SegmentButton({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final chipBase = selected
-        ? (isBlueTheme
-            ? BlueThemeColors.buttonPrimary
-            : theme.colorScheme.primary)
-        : (isBlueTheme
-            ? BlueThemeColors.card
-            : theme.colorScheme.surfaceContainerHighest);
-    final textColor = isBlueTheme
-        ? (selected
-            ? BlueThemeColors.textPrimary
-            : theme.colorScheme.onSurfaceVariant)
-        : (selected
-            ? theme.colorScheme.onPrimary
-            : theme.colorScheme.onSurface.withValues(alpha: 0.75));
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: selected
-              ? ThreeDSurfaceStyle.surfaceGradient(context, chipBase)
-              : null,
-          boxShadow: selected
-              ? ThreeDSurfaceStyle.elevatedShadows(context)
-              : null,
+        _SwitchEntry(
+          value: GigPricingType.hourly,
+          label: L10n.get("gigs_pricing_type_hourly"),
+          icon: Icons.schedule_outlined,
         ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: textColor,
-          ),
+        _SwitchEntry(
+          value: GigPricingType.perUnit,
+          label: L10n.get("gigs_pricing_type_per_unit"),
+          icon: Icons.straighten_outlined,
         ),
-      ),
+      ],
     );
   }
 }
@@ -990,7 +1225,7 @@ class _RemoteTogglePlate extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return _PlateField(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
             Expanded(
@@ -1003,10 +1238,9 @@ class _RemoteTogglePlate extends StatelessWidget {
                 ),
               ),
             ),
-            Switch(
+            NeumorphicThemeAwareToggle(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: scheme.secondary,
             ),
           ],
         ),

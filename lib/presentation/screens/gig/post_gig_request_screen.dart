@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -29,6 +30,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
   GigRequestBudgetType _budgetType = GigRequestBudgetType.fixed;
   bool _isRemote = false;
   bool _showCategoryError = false;
+  bool _showTitleError = false;
 
   @override
   void initState() {
@@ -48,12 +50,16 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
   }
 
   void _submit() {
-    final formValid = _formKey.currentState!.validate();
+    final titleMissing = _titleController.text.trim().isEmpty;
     final categoryMissing = _selectedCategory == null;
-    if (categoryMissing != _showCategoryError) {
-      setState(() => _showCategoryError = categoryMissing);
+    if (titleMissing != _showTitleError ||
+        categoryMissing != _showCategoryError) {
+      setState(() {
+        _showTitleError = titleMissing;
+        _showCategoryError = categoryMissing;
+      });
     }
-    if (!formValid || categoryMissing) {
+    if (titleMissing || categoryMissing) {
       return;
     }
     final budget = _budgetController.text.isEmpty
@@ -127,6 +133,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                 const SizedBox(height: 14),
                 _FieldLabel(L10n.get("gigs_post_request_field_title")),
                 _PlateField(
+                  showErrorBorder: _showTitleError,
                   child: TextFormField(
                     controller: _titleController,
                     textInputAction: TextInputAction.next,
@@ -135,9 +142,11 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                       context,
                       hint: L10n.get("gigs_post_request_field_title"),
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? L10n.get("gigs_post_request_required")
-                        : null,
+                    onChanged: (_) {
+                      if (_showTitleError) {
+                        setState(() => _showTitleError = false);
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -253,6 +262,10 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
     focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    // Validation feedback is rendered as a red border on the surrounding
+    // plate (see `_PlateField.showErrorBorder`); collapse the inline error
+    // text so no red copy ever appears beneath the field.
+    errorStyle: const TextStyle(height: 0, fontSize: 0),
     contentPadding:
         const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     isDense: true,
@@ -596,7 +609,7 @@ class _RemoteTogglePlate extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return _PlateField(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
             Expanded(
@@ -609,10 +622,9 @@ class _RemoteTogglePlate extends StatelessWidget {
                 ),
               ),
             ),
-            Switch(
+            NeumorphicThemeAwareToggle(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: scheme.secondary,
             ),
           ],
         ),

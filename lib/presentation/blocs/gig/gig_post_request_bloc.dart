@@ -17,6 +17,7 @@ class SubmitGigRequest extends GigPostRequestEvent {
     required this.title,
     required this.budgetType,
     this.budgetAmount,
+    this.currencyCode = "UZS",
     this.descriptionRu,
     this.scheduledAt,
     this.addressText,
@@ -26,6 +27,7 @@ class SubmitGigRequest extends GigPostRequestEvent {
   final String title;
   final GigRequestBudgetType budgetType;
   final int? budgetAmount;
+  final String currencyCode;
   final String? descriptionRu;
   final DateTime? scheduledAt;
   final String? addressText;
@@ -90,6 +92,7 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
           title: e.title,
           budgetType: e.budgetType,
           budgetAmount: e.budgetAmount,
+          currencyCode: e.currencyCode,
           descriptionRu: e.descriptionRu,
           scheduledAt: e.scheduledAt,
           addressText: e.addressText,

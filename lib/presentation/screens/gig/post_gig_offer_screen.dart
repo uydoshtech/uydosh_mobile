@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -33,6 +34,8 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
   GigPricingType _pricingType = GigPricingType.fixed;
   bool _isRemote = false;
   bool _showCategoryError = false;
+  bool _showTitleError = false;
+  bool _showPriceError = false;
 
   @override
   void initState() {
@@ -50,16 +53,26 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
   }
 
   void _submit() {
-    final formValid = _formKey.currentState!.validate();
+    final titleMissing = _titleController.text.trim().isEmpty;
     final categoryMissing = _selectedCategory == null;
-    if (categoryMissing != _showCategoryError) {
-      setState(() => _showCategoryError = categoryMissing);
+    final priceText = _priceController.text.trim();
+    final parsedPrice = int.tryParse(priceText);
+    final priceMissing =
+        priceText.isEmpty || parsedPrice == null || parsedPrice <= 0;
+
+    if (titleMissing != _showTitleError ||
+        categoryMissing != _showCategoryError ||
+        priceMissing != _showPriceError) {
+      setState(() {
+        _showTitleError = titleMissing;
+        _showCategoryError = categoryMissing;
+        _showPriceError = priceMissing;
+      });
     }
-    if (!formValid || categoryMissing) {
+    if (titleMissing || categoryMissing || priceMissing) {
       return;
     }
-    final price = int.tryParse(_priceController.text);
-    if (price == null) return;
+    final price = parsedPrice;
     final minDuration = _minDurationController.text.trim().isEmpty
         ? null
         : int.tryParse(_minDurationController.text.trim());
@@ -132,6 +145,7 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                 const SizedBox(height: 14),
                 _FieldLabel(L10n.get("gigs_post_request_field_title")),
                 _PlateField(
+                  showErrorBorder: _showTitleError,
                   child: TextFormField(
                     controller: _titleController,
                     textInputAction: TextInputAction.next,
@@ -140,9 +154,11 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                       context,
                       hint: L10n.get("gigs_post_request_field_title"),
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? L10n.get("gigs_post_request_required")
-                        : null,
+                    onChanged: (_) {
+                      if (_showTitleError) {
+                        setState(() => _showTitleError = false);
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -168,6 +184,7 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                 const SizedBox(height: 14),
                 _FieldLabel(L10n.get("gigs_post_offer_field_price")),
                 _PlateField(
+                  showErrorBorder: _showPriceError,
                   child: TextFormField(
                     controller: _priceController,
                     keyboardType: TextInputType.number,
@@ -179,15 +196,10 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                       context,
                       hint: "UZS",
                     ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return L10n.get("gigs_post_request_required");
+                    onChanged: (_) {
+                      if (_showPriceError) {
+                        setState(() => _showPriceError = false);
                       }
-                      final n = int.tryParse(v.trim());
-                      if (n == null || n <= 0) {
-                        return L10n.get("gigs_post_request_required");
-                      }
-                      return null;
                     },
                   ),
                 ),
@@ -273,6 +285,10 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
     focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
     focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
+    // Validation feedback is rendered as a red border on the surrounding
+    // plate (see `_PlateField.showErrorBorder`); collapse the inline error
+    // text so no red copy ever appears beneath the field.
+    errorStyle: const TextStyle(height: 0, fontSize: 0),
     contentPadding:
         const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     isDense: true,
@@ -616,7 +632,7 @@ class _RemoteTogglePlate extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return _PlateField(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
             Expanded(
@@ -629,10 +645,9 @@ class _RemoteTogglePlate extends StatelessWidget {
                 ),
               ),
             ),
-            Switch(
+            NeumorphicThemeAwareToggle(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: scheme.secondary,
             ),
           ],
         ),
