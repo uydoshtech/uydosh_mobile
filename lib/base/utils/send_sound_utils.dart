@@ -16,10 +16,22 @@ class SendSoundUtils {
   static DateTime? _lastSelectionSoundAt;
   static const Duration _selectionThrottle = Duration(milliseconds: 60);
 
-  /// Web uses MP3: Chromium's WebAudio pipeline often rejects `.m4a` here
-  /// (`DEMUXER_ERROR_NO_SUPPORTED_STREAMS`) even for valid AAC.
-  static String get _clickAsset =>
-      kIsWeb ? "sounds/click.mp3" : "sounds/click.m4a";
+  static const String _clickAssetNative = "sounds/click.m4a";
+  static const String _clickAssetWebBundle = "assets/sounds/click_web.wav";
+
+  /// Web: load PCM via [BytesSource] so playback uses a `data:` URL. Asset URLs
+  /// hit `HTMLAudioElement` with `crossOrigin = anonymous` (see
+  /// audioplayers_web [WrappedPlayer]); missing CORS on static hosting yields
+  /// `MEDIA_ELEMENT_ERROR` even for valid MP3/M4A.
+  static Future<Uint8List>? _webClickSoundBytesFuture;
+
+  static Future<Source> _clickSource() async {
+    if (!kIsWeb) return AssetSource(_clickAssetNative);
+    _webClickSoundBytesFuture ??=
+        rootBundle.load(_clickAssetWebBundle).then((bd) => bd.buffer.asUint8List());
+    final bytes = await _webClickSoundBytesFuture!;
+    return BytesSource(bytes, mimeType: "audio/wav");
+  }
 
   static bool _selectionPlayerInitialized = false;
 
@@ -87,7 +99,7 @@ class SendSoundUtils {
         try {
           await _player.stop();
         } catch (_) {}
-        await _player.play(AssetSource(_clickAsset));
+        await _player.play(await _clickSource());
       } catch (_) {
         // Ignore AbortError and similar (e.g. play interrupted by pause on web).
       }
@@ -106,9 +118,13 @@ class SendSoundUtils {
     _lastSelectionSoundAt = now;
     _ensureSelectionPlayerReady();
     unawaited(
-      _selectionPlayer
-          .play(AssetSource(_clickAsset))
-          .catchError((_) { /* Ignore AbortError on web */ }),
+      () async {
+        try {
+          await _selectionPlayer.play(await _clickSource());
+        } catch (_) {
+          /* Ignore AbortError / web decode failures */
+        }
+      }(),
     );
   }
 }

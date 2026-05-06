@@ -125,6 +125,9 @@ class $AssetsSoundsGen {
   /// File path: assets/sounds/click.mp3
   String get clickMp3 => 'assets/sounds/click.mp3';
 
+  /// File path: assets/sounds/click_web.wav
+  String get clickWeb => 'assets/sounds/click_web.wav';
+
   /// File path: assets/sounds/error.m4a
   String get error => 'assets/sounds/error.m4a';
 
@@ -138,7 +141,8 @@ class $AssetsSoundsGen {
   String get whooshRefresh => 'assets/sounds/whoosh_refresh.m4a';
 
   /// List of all assets
-  List<String> get values => [sources, clickM4a, clickMp3, error, like, success, whooshRefresh];
+  List<String> get values =>
+      [sources, clickM4a, clickMp3, clickWeb, error, like, success, whooshRefresh];
 }
 
 class $AssetsIconComponentsGen {
