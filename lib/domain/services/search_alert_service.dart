@@ -102,7 +102,11 @@ class SearchAlertService implements ISearchAlertService {
       );
 
       final created = r["created"];
-      if (created is bool && created == false) {
+      final merged = r["merged"];
+      // `created: false` plus `merged: true` means the backend widened an
+      // existing alert's price range to include this new search — treat as
+      // a successful save, not a duplicate.
+      if (created is bool && created == false && !(merged is bool && merged)) {
         return alreadyExistsErrorToken;
       }
 
