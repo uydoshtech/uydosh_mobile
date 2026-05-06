@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -85,7 +87,7 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
               builder: (context, state) {
                 if (state is GigBookingsLoading ||
                     state is GigBookingsInitial) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: HouseLoadingIndicator());
                 }
                 if (state is GigBookingsError) {
                   return Center(child: Text(state.message));
@@ -200,7 +202,7 @@ class _BookingTile extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              "${booking.agreedAmount} ${booking.currencyCode}",
+              "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${booking.currencyCode}",
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: scheme.onSurface,

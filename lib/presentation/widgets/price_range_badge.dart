@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -119,19 +120,23 @@ class PriceRangeHelper {
   /// Format price range for display
   /// Returns the price range as a string (e.g., "50-250" or "50" when equal)
   static String formatPriceRange(int minPrice, int maxPrice) {
+    final minStr = IntFormatUtils.withDotThousands(minPrice);
+    final maxStr = IntFormatUtils.withDotThousands(maxPrice);
     if (minPrice == maxPrice) {
-      return "$minPrice";
+      return minStr;
     }
-    return "$minPrice-$maxPrice";
+    return "$minStr-$maxStr";
   }
 
   /// Format price range with "y.e." suffix
   /// When min and max are equal, shows single price (e.g. "50 y.e.")
   static String formatPriceRangeWithYue(int minPrice, int maxPrice) {
+    final minStr = IntFormatUtils.withDotThousands(minPrice);
+    final maxStr = IntFormatUtils.withDotThousands(maxPrice);
     if (minPrice == maxPrice) {
-      return "$minPrice y.e.";
+      return "$minStr y.e.";
     }
-    return "$minPrice - $maxPrice y.e.";
+    return "$minStr - $maxStr y.e.";
   }
 
   /// Format price range with thousand separators
@@ -163,17 +168,7 @@ class PriceRangeHelper {
 
   /// Helper method to format a single price with thousand separators
   static String _formatPriceWithSeparators(int price) {
-    final priceString = price.toString();
-    final buffer = StringBuffer();
-
-    for (var i = 0; i < priceString.length; i++) {
-      if (i > 0 && (priceString.length - i) % 3 == 0) {
-        buffer.write(",");
-      }
-      buffer.write(priceString[i]);
-    }
-
-    return buffer.toString();
+    return IntFormatUtils.withDotThousands(price);
   }
 
   /// Get localized price range label

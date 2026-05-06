@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
@@ -47,7 +48,7 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
       body: BlocBuilder<GigOffersBloc, GigOffersState>(
         builder: (context, state) {
           if (state is GigOffersLoading || state is GigOffersInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: HouseLoadingIndicator());
           }
           if (state is GigOffersError) {
             return _ErrorView(
@@ -78,7 +79,7 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
                   if (i >= state.offers.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(child: HouseLoadingIndicator()),
                     );
                   }
                   return GigOfferTile(offer: state.offers[i]);

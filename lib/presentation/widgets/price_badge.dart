@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -95,31 +96,19 @@ class PriceBadge extends StatelessWidget {
 /// Helper class for price utilities
 /// Centralizes all price formatting logic
 class PriceHelper {
-  /// Format price for display
-  /// Currently returns the price as a string with "y.e." suffix, but can be extended
-  /// to add thousand separators, decimal places, etc.
+  /// Format price for display with `.` thousands grouping (e.g. 500.000).
   static String formatPrice(int price) {
-    return price.toString();
+    return IntFormatUtils.withDotThousands(price);
   }
 
   /// Format price with "y.e." suffix
   static String formatPriceWithYue(int price) {
-    return "${price.toString()} y.e.";
+    return "${IntFormatUtils.withDotThousands(price)} y.e.";
   }
 
   /// Format price with thousand separators
   static String formatPriceWithSeparators(int price) {
-    final priceString = price.toString();
-    final buffer = StringBuffer();
-
-    for (var i = 0; i < priceString.length; i++) {
-      if (i > 0 && (priceString.length - i) % 3 == 0) {
-        buffer.write(",");
-      }
-      buffer.write(priceString[i]);
-    }
-
-    return buffer.toString();
+    return IntFormatUtils.withDotThousands(price);
   }
 
   /// Format price with currency symbol

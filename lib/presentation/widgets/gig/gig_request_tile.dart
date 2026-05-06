@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -27,7 +28,7 @@ class GigRequestTile extends StatelessWidget {
         ? L10n.getWithParams(
             "gigs_request_budget_fixed",
             params: {
-              "amount": request.budgetAmount!.toString(),
+              "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
               "currency": request.currencyCode,
             },
           )

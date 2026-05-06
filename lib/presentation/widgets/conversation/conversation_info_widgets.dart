@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -279,7 +280,7 @@ class ConversationPriceDisplay extends StatelessWidget {
   static String _formatPriceRange(ConversationSummary conversation) {
     final price = conversation.listingPrice;
     if (price != null) {
-      return "$price y.e.";
+      return "${IntFormatUtils.withDotThousands(price)} y.e.";
     }
     return "";
   }

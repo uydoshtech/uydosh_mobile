@@ -9,11 +9,13 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
@@ -100,7 +102,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
 
   Widget _buildBody(BuildContext context, GigOfferDetailState state) {
     if (state is GigOfferDetailLoading || state is GigOfferDetailInitial) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: HouseLoadingIndicator());
     }
     if (state is GigOfferDetailError) {
       return Center(
@@ -242,67 +244,62 @@ class _OfferDetailContentStatefulState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (categoryName.isNotEmpty)
-                      Row(
-                        children: [
-                          if (offer.category != null) ...[
-                            Icon(
-                              offer.category!.icon,
-                              size: 14,
-                              color: scheme.onSurface.withValues(alpha: 0.72),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Expanded(
-                            child: Text(
-                              categoryName.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 0.5,
-                                color: scheme.onSurface
-                                    .withValues(alpha: 0.72),
-                                fontWeight: FontWeight.w700,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (categoryName.isNotEmpty)
+                                Row(
+                                  children: [
+                                    if (offer.category != null) ...[
+                                      Icon(
+                                        offer.category!.icon,
+                                        size: 14,
+                                        color: scheme.onSurface
+                                            .withValues(alpha: 0.72),
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    Expanded(
+                                      child: Text(
+                                        categoryName.toUpperCase(),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          letterSpacing: 0.5,
+                                          color: scheme.onSurface
+                                              .withValues(alpha: 0.72),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              if (categoryName.isNotEmpty)
+                                const SizedBox(height: 4),
+                              Text(
+                                offer.title,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.onSurface,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    const SizedBox(height: 4),
-                    Text(
-                      offer.title,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ListingPaymentsOutlineBadge(
-                      label: _priceLine(offer),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (description.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              ThreeDElevatedSurface(
-                baseColor: scheme.surface,
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        L10n.get("gigs_offer_about"),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
                         ),
-                      ),
-                      const SizedBox(height: 6),
+                        const SizedBox(width: 10),
+                        ListingPaymentsOutlineBadge(
+                          label: _priceLine(offer),
+                        ),
+                      ],
+                    ),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 16),
                       Text(
                         description,
                         style: TextStyle(
@@ -311,10 +308,10 @@ class _OfferDetailContentStatefulState
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-            ],
+            ),
             const SizedBox(height: 14),
             _GigOfferProviderBottomTile(
               offer: offer,
@@ -331,18 +328,17 @@ class _OfferDetailContentStatefulState
           // from this offer. After a successful save we re-fetch the
           // detail so the screen reflects the new state immediately.
           child: UserListingState().isOwner(offer.providerUserId)
-              ? PrimaryButton(
+              ? PrimaryButtonFactory.iconTextCentered(
                   onPressed: () =>
                       unawaited(widget.onEditOffer(offer)),
+                  icon: Icons.edit_outlined,
+                  text: L10n.get("gigs_offer_edit_cta"),
                   height: 54,
                   width: double.infinity,
                   borderRadius: BorderRadius.circular(16),
-                  child: Text(
-                    L10n.get("gigs_offer_edit_cta"),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
                   ),
                 )
               : PrimaryButton(
@@ -369,7 +365,10 @@ class _OfferDetailContentStatefulState
   }
 
   String _priceLine(GigOffer o) {
-    final params = {"amount": o.price.toString(), "currency": o.currencyCode};
+    final params = {
+      "amount": IntFormatUtils.withDotThousands(o.price),
+      "currency": o.currencyCode,
+    };
     switch (o.pricingType) {
       case GigPricingType.hourly:
         return L10n.getWithParams("gigs_price_per_hour", params: params);

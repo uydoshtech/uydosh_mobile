@@ -6,12 +6,15 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -96,7 +99,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
 
   Widget _buildBody(BuildContext context, AsyncSnapshot<GigRequest> snap) {
     if (snap.connectionState != ConnectionState.done) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: HouseLoadingIndicator());
     }
     if (snap.hasError) {
       return Center(
@@ -217,15 +220,32 @@ class _RequestDetailContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (categoryName.isNotEmpty)
-                      Text(
-                        categoryName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          letterSpacing: 0.5,
-                          color:
-                              scheme.onSurface.withValues(alpha: 0.72),
-                          fontWeight: FontWeight.w700,
-                        ),
+                      Row(
+                        children: [
+                          if (request.category != null) ...[
+                            Icon(
+                              request.category!.icon,
+                              size: 14,
+                              color:
+                                  scheme.onSurface.withValues(alpha: 0.72),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Expanded(
+                            child: Text(
+                              categoryName.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                letterSpacing: 0.5,
+                                color: scheme.onSurface
+                                    .withValues(alpha: 0.72),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     const SizedBox(height: 4),
                     Text(
@@ -391,7 +411,7 @@ class _RequestDetailContent extends StatelessWidget {
       return L10n.getWithParams(
         "gigs_request_budget_fixed",
         params: {
-          "amount": request.budgetAmount!.toString(),
+          "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
           "currency": request.currencyCode,
         },
       );

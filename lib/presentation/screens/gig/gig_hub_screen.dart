@@ -12,12 +12,15 @@ import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -194,33 +197,36 @@ class _GigHubBodyState extends State<_GigHubBody> {
         ? 16.0 + ThemeState().mainShellGlassExtraTopInset(context)
         : 16.0;
 
-    final scrollable = RefreshIndicator(
+    final scrollable = UydoshRefreshIndicator.mainShell(
       onRefresh: _onRefresh,
-      child: CustomScrollView(
-        controller: _scrollController,
-        // Allow pull-to-refresh even when the body is short / empty.
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          // Pinned header keeps the feed switch + category ribbon visible
-          // while the underlying list scrolls, so users can change feed or
-          // category without scrolling back to the top first.
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _GigHubPinnedHeaderDelegate(
-              topPadding: topPad,
-              feed: _feed,
-              onFeedChanged: _onFeedChanged,
-              categories: _categories,
-              selectedCategoryId: _selectedCategoryId,
-              onCategorySelected: _onCategorySelected,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      edgeOffset: topPad,
+      child: PullToRefreshStretchHaptics(
+        child: CustomScrollView(
+          controller: _scrollController,
+          // Allow pull-to-refresh even when the body is short / empty.
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // Pinned header keeps the feed switch + category ribbon visible
+            // while the underlying list scrolls, so users can change feed or
+            // category without scrolling back to the top first.
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _GigHubPinnedHeaderDelegate(
+                topPadding: topPad,
+                feed: _feed,
+                onFeedChanged: _onFeedChanged,
+                categories: _categories,
+                selectedCategoryId: _selectedCategoryId,
+                onCategorySelected: _onCategorySelected,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              ),
             ),
-          ),
-          ..._buildFeedSlivers(context),
-          // Bottom padding scaled so the last feed item clears the floating
-          // "My bookings" FAB without being covered by it.
-          const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
-        ],
+            ..._buildFeedSlivers(context),
+            // Bottom padding scaled so the last feed item clears the floating
+            // "My bookings" FAB without being covered by it.
+            const SliverPadding(padding: EdgeInsets.only(bottom: 96)),
+          ],
+        ),
       ),
     );
 
@@ -713,7 +719,7 @@ class _LoadingSliver extends StatelessWidget {
     return const SliverToBoxAdapter(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: HouseLoadingIndicator()),
       ),
     );
   }
@@ -726,7 +732,7 @@ class _LoadingMoreFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.all(16),
-      child: Center(child: CircularProgressIndicator()),
+      child: Center(child: HouseLoadingIndicator()),
     );
   }
 }
