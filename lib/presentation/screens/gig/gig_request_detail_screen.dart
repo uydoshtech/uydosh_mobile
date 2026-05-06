@@ -143,11 +143,12 @@ class _RequestDetailContent extends StatelessWidget {
     final language = LanguageState().currentLanguage;
     final categoryName = request.category?.localizedName(language) ?? "";
     final description = _localizedDescription(language);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 110 + bottomInset),
           children: [
             ThreeDElevatedSurface(
               baseColor: scheme.surface,
@@ -267,7 +268,7 @@ class _RequestDetailContent extends StatelessWidget {
         Positioned(
           left: 16,
           right: 16,
-          bottom: 16,
+          bottom: 16 + bottomInset,
           child: PrimaryButtonFactory.iconTextCentered(
             onPressed: contactInFlight ? null : onContactPressed,
             icon: Icons.chat_bubble_outline,
