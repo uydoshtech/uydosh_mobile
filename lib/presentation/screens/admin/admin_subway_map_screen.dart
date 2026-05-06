@@ -288,7 +288,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
   static const List<_OverlayConfig> _overlayConfigs = [
     _OverlayConfig("bazaar_chorsu.svg", 0, 220, 30, 30, sizeScale: 1.1),
     _OverlayConfig("tv_tower.svg", 240, 120, 56, 60, useColorFilter: true),
-    _OverlayConfig("monument2.svg", 200, 340, 20, 20, sizeScale: 2.0),
+    _OverlayConfig("monument2.svg", 160, 340, 20, 20, sizeScale: 2.0),
     _OverlayConfig("airport.svg", 200, 625, 50, 27, useColorFilter: true),
     _OverlayConfig("city_park.svg", 30, 335, 25, 40, useColorFilter: true),
     _OverlayConfig("bus_hub.svg", 25, 580, 22, 22),

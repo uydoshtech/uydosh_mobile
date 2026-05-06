@@ -675,11 +675,11 @@ class _SplashScreenState extends State<SplashScreen>
     _titleController.forward();
     _subtitleController.forward(); // Start simultaneously with title
 
-    // Navigate after text animations finish. Cut from 2500ms → 1000ms — the
-    // title/subtitle slide-in is ~800ms, so 1s is enough for the user to
-    // register the brand text before we move on. Saves ~1.5s of cold-start
-    // perceived latency on first launch / version upgrade.
-    await Future.delayed(const Duration(milliseconds: 1000));
+    // Navigate after text animations finish. The title/subtitle slide-in is
+    // ~800ms; we then hold for an extra 2s (1s register + 1s read) so the
+    // slogan is comfortably readable on first launch / version upgrade
+    // before we move on.
+    await Future.delayed(const Duration(milliseconds: 2000));
     if (mounted) {
       final onboardingState = OnboardingState();
       if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {

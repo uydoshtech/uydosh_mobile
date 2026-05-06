@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:country_picker/country_picker.dart" as cp;
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/material.dart";
@@ -12,12 +11,63 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+
+/// Phone-country picker offerings, in order of display.
+///
+/// Used to be backed by `package:country_picker`'s 250-entry catalog filtered
+/// down to the same set; replaced with this static list so we can drop the
+/// dependency. Keep iso2 keys uppercase to match [Country.iso2] / firebase
+/// auth conventions. Values are E.164 country calling codes (no leading "+").
+///
+/// New entries: add the iso2 + dial code here, and ensure the country exists
+/// in [CountryCache] so display names render in all three locales.
+const Map<String, String> _allowedPhoneDialCodes = <String, String>{
+  "UZ": "998",
+  "RU": "7",
+  "KZ": "7",
+  "KG": "996",
+  "TJ": "992",
+  "TM": "993",
+  "AZ": "994",
+  "AM": "374",
+  "GE": "995",
+  "BY": "375",
+  "UA": "380",
+  "MD": "373",
+  "EE": "372",
+  "LV": "371",
+  "LT": "370",
+  "US": "1",
+};
+
+/// Order in which the picker renders the allowed countries. UZ first (the
+/// default for our market), USA last, ex-Soviet block in the middle ordered
+/// by familiarity rather than alphabetically.
+const List<String> _allowedPhoneIsoOrder = <String>[
+  "UZ", "RU", "KZ", "KG", "TJ", "TM",
+  "AZ", "AM", "GE", "BY", "UA", "MD",
+  "EE", "LV", "LT",
+  "US",
+];
+
+/// Materialized [Country] entries for the picker. Each [Country] still carries
+/// its localized names from [CountryCache]; the picker layers dial code on top
+/// via [_allowedPhoneDialCodes].
+List<Country> _allowedPhoneCountries() {
+  final out = <Country>[];
+  for (final iso in _allowedPhoneIsoOrder) {
+    final c = CountryCache.getCountryByIso2(iso);
+    if (c != null) out.add(c);
+  }
+  return out;
+}
 
 /// Modal bottom sheet that walks the user through Firebase Phone Auth:
 ///
@@ -576,94 +626,20 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     final themeTextColor = AuthWizardTheme.getBottomSheetTextColor();
     final searchFill = themeTextColor.withValues(alpha: 0.08);
 
-    final service = cp.CountryService();
-    final all = service.getAll();
+    // Allowed phone-auth countries materialized from [CountryCache] (for
+    // localized names + flag) augmented with our private dial-code table.
+    // Migrated off `package:country_picker` to drop a ~100 KB AOT dep that
+    // shipped a 250-country catalog when we only ever expose 16.
+    final allowedCountries = _allowedPhoneCountries();
 
-    // We intentionally do NOT rely on `country_picker` translations here.
-    // On some targets (notably web) `country_picker` localizations can fall back
-    // to English if its delegates are not provided by the host app.
-    // Instead, display/search names use our app's own RU/UZ/EN country catalog.
-    const _fallbackRuNames = <String, String>{
-      "UZ": "Узбекистан",
-      "RU": "Россия",
-      "KZ": "Казахстан",
-      "KG": "Киргизия",
-      "TJ": "Таджикистан",
-      "TM": "Туркменистан",
-      "AZ": "Азербайджан",
-      "AM": "Армения",
-      "GE": "Грузия",
-      "BY": "Беларусь",
-      "UA": "Украина",
-      "MD": "Молдова",
-      "EE": "Эстония",
-      "LV": "Латвия",
-      "LT": "Литва",
-      "US": "США",
-    };
+    String displayName(Country c) =>
+        c.getLocalizedName(L10n.currentLanguage);
 
-    const _fallbackUzNames = <String, String>{
-      "UZ": "O'zbekiston",
-      "RU": "Rossiya",
-      "KZ": "Qozog'iston",
-      "KG": "Qirg'iziston",
-      "TJ": "Tojikiston",
-      "TM": "Turkmaniston",
-      "AZ": "Ozarbayjon",
-      "AM": "Armaniston",
-      "GE": "Gruziya",
-      "BY": "Belarus",
-      "UA": "Ukraina",
-      "MD": "Moldova",
-      "EE": "Estoniya",
-      "LV": "Latviya",
-      "LT": "Litva",
-      "US": "AQSh",
-    };
+    String dialCode(Country c) => _allowedPhoneDialCodes[c.iso2] ?? "";
 
-    String displayName(cp.Country c) {
-      final iso = c.countryCode.toUpperCase();
-      final lang = L10n.currentLanguage;
-      final cached =
-          CountryCache.getCountryByIso2(iso)?.getLocalizedName(lang).trim();
-      if (cached != null && cached.isNotEmpty) return cached;
-      if (lang == "ru") return _fallbackRuNames[iso] ?? c.name;
-      if (lang == "uz") return _fallbackUzNames[iso] ?? c.name;
-      return c.name;
-    }
-
-    // Ex‑Soviet countries (plus USA at the bottom).
-    // Kept in a stable, predictable order; search results preserve this order.
-    const allowedIsoOrder = <String>[
-      "UZ",
-      "RU",
-      "KZ",
-      "KG",
-      "TJ",
-      "TM",
-      "AZ",
-      "AM",
-      "GE",
-      "BY",
-      "UA",
-      "MD",
-      "EE",
-      "LV",
-      "LT",
-      "US", // always last
-    ];
-
-    final byIso = <String, cp.Country>{
-      for (final c in all) c.countryCode: c,
-    };
-    final allowedCountries = <cp.Country>[
-      for (final iso in allowedIsoOrder)
-        if (byIso.containsKey(iso)) byIso[iso]!,
-    ];
-
-    List<cp.Country> filter(String rawQuery) {
+    List<Country> filter(String rawQuery) {
       var q = rawQuery.trim().toLowerCase();
-      if (q.isEmpty) return List<cp.Country>.from(allowedCountries);
+      if (q.isEmpty) return List<Country>.from(allowedCountries);
       if (q.startsWith("+")) q = q.substring(1).trim();
 
       // Tiny synonym help for common adjective searches.
@@ -678,11 +654,14 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       };
       q = synonyms[q] ?? q;
 
-      bool matches(cp.Country c) {
-        final name = displayName(c).toLowerCase();
-        if (c.phoneCode.startsWith(q)) return true;
-        if (c.countryCode.toLowerCase().startsWith(q)) return true;
-        return name.contains(q);
+      bool matches(Country c) {
+        if (dialCode(c).startsWith(q)) return true;
+        if (c.iso2.toLowerCase().startsWith(q)) return true;
+        // Match across all three localizations so a Russian-locale user can
+        // still find "Uzbekistan" by typing the English name.
+        return c.nameEn.toLowerCase().contains(q) ||
+            c.nameRu.toLowerCase().contains(q) ||
+            c.nameUz.toLowerCase().contains(q);
       }
 
       return allowedCountries.where(matches).toList();
@@ -729,11 +708,12 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                           itemBuilder: (ctx, i) {
                             final c = filtered[i];
                             final name = displayName(c);
-                            final isSelected = c.phoneCode == _selectedDialCode;
+                            final code = dialCode(c);
+                            final isSelected = code == _selectedDialCode;
                             return ListTile(
                               dense: true,
                               leading: Text(
-                                c.flagEmoji,
+                                c.flag,
                                 style: const TextStyle(fontSize: 22),
                               ),
                               title: Text(
@@ -745,7 +725,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                                 ),
                               ),
                               trailing: Text(
-                                "+${c.phoneCode}",
+                                "+$code",
                                 style: TextStyle(
                                   color: themeTextColor.withValues(alpha: 0.8),
                                   fontWeight: FontWeight.w600,
@@ -753,8 +733,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                               ),
                               onTap: () {
                                 setState(() {
-                                  _selectedDialCode = c.phoneCode;
-                                  _selectedFlagEmoji = c.flagEmoji;
+                                  _selectedDialCode = code;
+                                  _selectedFlagEmoji = c.flag;
                                 });
                                 Navigator.of(ctx).pop();
                                 WidgetsBinding.instance.addPostFrameCallback((_) {

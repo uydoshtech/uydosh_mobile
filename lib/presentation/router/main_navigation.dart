@@ -35,6 +35,7 @@ import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
 import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
@@ -66,6 +67,7 @@ class MainNavigationState extends State<MainNavigation>
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   bool _isAuthenticated = false;
+  bool _isAdmin = false;
   int _incomingMessageTravelDotTrigger = 0;
   int _lastObservedUnreadCount = 0;
   DateTime? _lastTravelDotPlayedAt;
@@ -107,9 +109,11 @@ class MainNavigationState extends State<MainNavigation>
     _authStateListener = () {
       if (mounted) {
         _checkAuthenticationStatus();
+        unawaited(_refreshAdminStatus());
       }
     };
     AuthenticationState().addListener(_authStateListener);
+    unawaited(_refreshAdminStatus());
 
     _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
     _unreadMessagesListener = _onUnreadMessagesChanged;
@@ -132,6 +136,37 @@ class MainNavigationState extends State<MainNavigation>
     // listener fired earlier while AppBar target wasn't mounted), ensure we
     // still attempt to show the tutorial once the AppBar is visible.
     _scheduleMaybeShowNotificationsBellTutorial();
+  }
+
+  /// Reads the current user role from `SessionManager` and updates the
+  /// `_isAdmin` flag, which gates admin-only UI affordances such as the
+  /// Services tab in the bottom nav. Safe to call repeatedly: only triggers
+  /// `setState` when the value actually changes.
+  Future<void> _refreshAdminStatus() async {
+    if (!AuthenticationState().isAuthenticated) {
+      _applyAdminStatus(false);
+      return;
+    }
+    try {
+      final role = await SessionManager.getUserRole();
+      _applyAdminStatus(role == "admin");
+    } catch (_) {
+      // If the role can't be read for any reason, fail closed (non-admin).
+      _applyAdminStatus(false);
+    }
+  }
+
+  void _applyAdminStatus(bool next) {
+    if (!mounted) return;
+    if (next == _isAdmin) return;
+    setState(() {
+      _isAdmin = next;
+      // If the Services tab disappears under the user (e.g. role change), kick
+      // them back to Home so the bottom nav never points at a hidden slot.
+      if (!_isAdmin && _currentIndex == 3) {
+        _currentIndex = 0;
+      }
+    });
   }
 
   Future<void> _initProfileCompletionFromCache() async {
@@ -285,7 +320,7 @@ class MainNavigationState extends State<MainNavigation>
             "🔐 AppRouter: User on messages screen but not authenticated, redirecting to auth wizard",
           );
           _redirectToAuthWizard();
-        } else if (_currentIndex == 3) {
+        } else if (_currentIndex == 4) {
           // Create Listing screen
           debugPrint(
             "🔐 AppRouter: User on create listing screen but not authenticated, redirecting to auth wizard",
@@ -628,6 +663,7 @@ class MainNavigationState extends State<MainNavigation>
   //     which breaks if we feed them stale values.
   // ---------------------------------------------------------------------------
   late final Widget _favoritesTab = const FavoritesScreen();
+  late final Widget _servicesTab = const GigHubScreen(embedded: true);
   late final Widget _createListingTab = BlocProvider(
     create: (_) => SubwayStationsBloc(),
     child: BlocProvider(
@@ -646,6 +682,7 @@ class MainNavigationState extends State<MainNavigation>
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
       ),
+      _servicesTab,
       _createListingTab,
     ];
   }
@@ -689,6 +726,8 @@ class MainNavigationState extends State<MainNavigation>
       case 2:
         return L10n.text("conversations", style: titleStyle);
       case 3:
+        return L10n.text("menu_gigs", style: titleStyle);
+      case 4:
         return L10n.text("create_listing_title", style: titleStyle);
       default:
         return const SizedBox.shrink();
@@ -960,6 +999,7 @@ class MainNavigationState extends State<MainNavigation>
                 currentIndex: _currentIndex,
                 navigationKey: _bottomNavigationKey,
                 isAuthenticated: _isAuthenticated,
+                isAdmin: _isAdmin,
                 hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
                 incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
                 onTap: (index) {

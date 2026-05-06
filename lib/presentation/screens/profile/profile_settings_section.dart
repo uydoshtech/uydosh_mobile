@@ -3,7 +3,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -263,14 +262,6 @@ List<ActionMenuItem> buildProfileActionMenuItems({
             ),
           ),
         );
-      },
-    ),
-    ActionMenuItem(
-      value: "gigs",
-      icon: Icons.handyman_outlined,
-      textKey: "menu_gigs",
-      onPressed: () {
-        context.pushGigHub();
       },
     ),
     if (userRole == "admin")

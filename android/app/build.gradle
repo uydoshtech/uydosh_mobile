@@ -51,11 +51,16 @@ android {
             appVersionCode: "${flutter.versionCode}",
         ]
 
-        // Ship native libs only for the ABIs we care about. Drops x86/x86_64
-        // (emulator-only) from production APK splits and AAB. Play Store will
-        // still serve the right ABI via App Bundle + Dynamic Delivery.
+        // Ship native libs only for arm64-v8a. We dropped armv7 entirely —
+        // 32-bit ARM devices on Android 8+ (our minSdk=26) are vanishingly
+        // rare and each ABI we keep doubles the native code (Flutter engine
+        // ~7 MB, Yandex MapKit ~3 MB, app Dart snapshot ~3–4 MB).
+        // x86 / x86_64 are emulator-only and explicitly excluded below.
+        //
+        // If you need armv7 back, add 'armeabi-v7a' here AND change
+        // ANDROID_PLATFORMS in the Makefile to 'android-arm,android-arm64'.
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
+            abiFilters 'arm64-v8a'
         }
     }
 
@@ -90,7 +95,11 @@ android {
     // out (or build a debug-flavoured APK; debug builds bypass excludes).
     packagingOptions {
         jniLibs {
-            excludes += ['lib/x86/**', 'lib/x86_64/**']
+            excludes += [
+                'lib/x86/**',
+                'lib/x86_64/**',
+                'lib/armeabi-v7a/**',
+            ]
         }
     }
 }

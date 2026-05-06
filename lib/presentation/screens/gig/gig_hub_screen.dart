@@ -1,21 +1,35 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 
 /// Entry point into the gig economy module: browse offers, post a task,
 /// or open the bookings tab. Reachable from the main app via
-/// `context.pushGigHub()` (see `gig_navigation.dart`).
+/// `context.pushGigHub()` (see `gig_navigation.dart`) or as the Services tab
+/// in the bottom navigation bar (rendered with [embedded] = true so it
+/// doesn't draw its own [Scaffold]/[AppBar]).
 class GigHubScreen extends StatelessWidget {
-  const GigHubScreen({super.key});
+  const GigHubScreen({super.key, this.embedded = false});
+
+  /// When true, the screen renders only its body content, suitable for use
+  /// inside a tab host (e.g. `MainNavigation`) that already provides the
+  /// surrounding [Scaffold] and [AppBar].
+  final bool embedded;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(L10n.get("gigs_hub_title"))),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+    // When hosted inside `MainNavigation`, the shell uses
+    // `extendBodyBehindAppBar`, so this body would render under the app bar
+    // unless we offset by the device top padding the same way other main
+    // tabs (e.g. Favorites, Home) do.
+    final topPad = embedded
+        ? 16.0 + ThemeState().mainShellGlassExtraTopInset(context)
+        : 16.0;
+    final body = ListView(
+        padding: EdgeInsets.fromLTRB(16, topPad, 16, 32),
         children: [
           _HubTile(
             icon: Icons.search_rounded,
@@ -57,7 +71,14 @@ class GigHubScreen extends StatelessWidget {
             },
           ),
         ],
-      ),
+      );
+
+    if (embedded) {
+      return body;
+    }
+    return Scaffold(
+      appBar: AppBar(title: Text(L10n.get("gigs_hub_title"))),
+      body: body,
     );
   }
 }

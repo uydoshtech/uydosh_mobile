@@ -47,17 +47,29 @@ commit-version: bump-build ## Bump version and commit changes
 #                                    equivalent automatically through the AAB
 #                                    target.
 #   --target-platform=$(ANDROID_PLATFORMS)
-#                                    Drops x86_64 (emulator-only) from the AAB
-#                                    so Flutter doesn't even compile that
-#                                    Dart→native snapshot. The Gradle
-#                                    `ndk.abiFilters` block alone is ignored
-#                                    by Flutter when generating per-ABI
-#                                    snapshots. Cuts the AAB upload by ~10 MB
-#                                    and speeds up CI.
+#                                    Restricts Flutter's per-ABI Dart AOT
+#                                    snapshots to arm64-v8a only. We dropped
+#                                    armv7 (32-bit) — the userbase on
+#                                    pre-2017 ARM-only devices is negligible
+#                                    on Android 8+ (our minSdk=26) and the
+#                                    32-bit slice contributes ~9–11 MB of
+#                                    duplicated `libapp.so` + `libflutter.so`
+#                                    + native plugin code per device.
+#                                    The Gradle `ndk.abiFilters` block alone
+#                                    is ignored by Flutter when generating
+#                                    per-ABI snapshots, so this flag is the
+#                                    one that actually matters. Cuts the AAB
+#                                    upload by ~12 MB and shaves CI time too.
+#
+#                                    To restore armv7 support: change to
+#                                    `android-arm,android-arm64` here AND
+#                                    add `'armeabi-v7a'` back to
+#                                    `ndk.abiFilters` in
+#                                    `android/app/build.gradle`.
 
 ANDROID_SYMBOLS := build/symbols/android
 IOS_SYMBOLS := build/symbols/ios
-ANDROID_PLATFORMS := android-arm,android-arm64
+ANDROID_PLATFORMS := android-arm64
 
 build-apk: ## Build release per-ABI APKs (sideload only; Play uses AAB)
 	flutter build apk --release \

@@ -213,7 +213,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            _navigateToMainIndex(context, 3);
+            _navigateToMainIndex(context, 4);
           },
         ),
       );

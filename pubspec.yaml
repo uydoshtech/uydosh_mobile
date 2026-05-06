@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.237+219
+version: 1.1.237+221
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -46,8 +46,12 @@ dependencies:
 
   # Networking
   dio: ^5.8.0+1
+  # pretty_dio_logger: only constructed inside `if (kDebugMode)` in
+  # `public_dio_configurator.dart`, so the Dart AOT tree-shaker drops the
+  # entire package from release binaries. It must stay in `dependencies:`
+  # (not `dev_dependencies:`) because lib/ code references its types at
+  # compile time; dev deps are unavailable to lib/ code.
   pretty_dio_logger: ^1.4.0
-  logger: ^2.5.0
   curved_navigation_bar: ^1.0.6
   flutter_svg: ^2.1.0
   smooth_page_indicator: ^1.1.0
@@ -112,7 +116,6 @@ dependencies:
   dio_cache_interceptor: ^4.0.6
   device_info_plus: ^12.4.0
   package_info_plus: ^9.0.1
-  country_picker: ^2.0.27
 
 dev_dependencies:
   flutter_test:
