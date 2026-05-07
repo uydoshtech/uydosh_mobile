@@ -4,7 +4,6 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
@@ -96,7 +95,6 @@ class ListingFormMetroSection extends StatelessWidget {
               scrollController: metroLineScrollController,
               onSelectedItemChanged: (index) {
                 onDismissKeyboard();
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 onLineChanged(index);
               },
@@ -222,7 +220,6 @@ class ListingFormMetroSection extends StatelessWidget {
                 scrollController: metroStationScrollController,
                 onSelectedItemChanged: (index) {
                   onDismissKeyboard();
-                  HapticFeedbackUtils.impact();
                   SendSoundUtils.playCupertinoWheelSound();
                   onStationChanged(index);
                 },

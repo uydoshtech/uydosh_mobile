@@ -9,7 +9,6 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
@@ -188,7 +187,6 @@ class _SearchBottomSheetMetroSectionState
                       itemExtent: 40,
                       scrollController: widget.metroLineScrollController,
                       onSelectedItemChanged: (index) {
-                        HapticFeedbackUtils.impact();
                         SendSoundUtils.playCupertinoWheelSound();
                         widget.onSubwayLineChanged(index);
                       },
@@ -350,7 +348,6 @@ class _SearchBottomSheetMetroSectionState
               itemExtent: 40,
               scrollController: widget.stationPickerController,
               onSelectedItemChanged: (index) {
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 widget.onStationChanged(index);
               },

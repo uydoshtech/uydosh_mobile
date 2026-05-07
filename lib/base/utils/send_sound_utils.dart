@@ -5,6 +5,7 @@ import "package:flutter/foundation.dart"
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.
 /// Uses custom asset when possible; falls back to SystemSound on Android.
@@ -128,23 +129,31 @@ class SendSoundUtils {
     );
   }
 
-  /// For [CupertinoPicker] wheels: on iOS the framework already plays a short
-  /// system tick while the wheel moves; our bundled click would stack on top.
-  /// Other platforms use the bundled click only.
+  /// For [CupertinoPicker] wheels: on iOS there is no bundled click (picker
+  /// uses system tick while scrolling); still give [HapticFeedbackUtils.impact]
+  /// at settle. On other platforms, plays the bundled click with the same light
+  /// impact fired immediately before [AudioPlayer.play] so taptic and audio
+  /// stay aligned.
   static void playCupertinoWheelSound() {
-    if (!SoundEffectsState().isEnabled) return;
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      HapticFeedbackUtils.impact();
+      return;
+    }
+    if (!SoundEffectsState().isEnabled) {
+      HapticFeedbackUtils.impact();
       return;
     }
     _enqueueBundledSelectionClick(
       minInterval: _wheelBundledClickMinInterval,
       volume: 0.82,
+      hapticImpactImmediatelyBeforePlay: true,
     );
   }
 
   static void _enqueueBundledSelectionClick({
     required Duration minInterval,
     required double volume,
+    bool hapticImpactImmediatelyBeforePlay = false,
   }) {
     final now = DateTime.now();
     if (_lastBundledClickAt != null &&
@@ -159,7 +168,11 @@ class SendSoundUtils {
           await _selectionPlayer.stop();
         } catch (_) {}
         await _selectionPlayer.setVolume(volume);
-        await _selectionPlayer.play(await _clickSource());
+        final src = await _clickSource();
+        if (hapticImpactImmediatelyBeforePlay) {
+          HapticFeedbackUtils.impact();
+        }
+        await _selectionPlayer.play(src);
       } catch (_) {
         /* Ignore AbortError / web decode failures */
       }

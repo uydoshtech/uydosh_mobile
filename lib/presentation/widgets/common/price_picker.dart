@@ -2,9 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -17,7 +15,6 @@ class PricePicker extends StatelessWidget {
     this.useThemeColors = true,
     this.isRequired = false,
     this.height = 80,
-    this.enableHapticFeedback = true,
     this.showArrows = true,
   });
   /// The currently selected price in dollars
@@ -34,9 +31,6 @@ class PricePicker extends StatelessWidget {
 
   /// Custom height for the picker container (default: 80)
   final double height;
-
-  /// Whether to show haptic feedback (default: true)
-  final bool enableHapticFeedback;
 
   /// Custom price icon color (if null, uses theme-aware color)
   final Color? priceIconColor;
@@ -63,9 +57,6 @@ class PricePicker extends StatelessWidget {
   void _onPriceChanged(int index) {
     final newPrice = (index + 1) * 10;
 
-    if (enableHapticFeedback && HapticFeedbackState().isEnabled) {
-      HapticFeedbackUtils.impact();
-    }
     SendSoundUtils.playCupertinoWheelSound();
 
     onPriceChanged(newPrice);

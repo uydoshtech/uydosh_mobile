@@ -2,7 +2,6 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -173,7 +172,6 @@ class _LocationPickerState extends State<LocationPicker> {
               scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
                 FocusScope.of(context).unfocus();
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 widget.onLocationChanged(index - 1);
                 if (widget.onMetroReset != null && index > 0) {

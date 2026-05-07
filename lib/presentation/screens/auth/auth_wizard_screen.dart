@@ -1838,7 +1838,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 initialItem: initialIndex,
               ),
               onSelectedItemChanged: (index) {
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 final previousIso2 = _selectedCountryIso2;
                 final newIso2 = countries[index].iso2;
@@ -1986,7 +1985,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               itemExtent: 50,
               changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               onSelectedItemChanged: (index) {
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 // Update selection as user scrolls
                 logger.d(
@@ -2108,7 +2106,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               itemExtent: 50,
               changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               onSelectedItemChanged: (index) {
-                HapticFeedbackUtils.impact();
                 SendSoundUtils.playCupertinoWheelSound();
                 // Update selection as user scrolls
                 logger.d(

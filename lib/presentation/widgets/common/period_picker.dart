@@ -2,7 +2,6 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -106,7 +105,6 @@ class _PeriodPickerState extends State<PeriodPicker> {
                   itemExtent: widget.itemExtent,
                   scrollController: _scrollController,
                   onSelectedItemChanged: (index) {
-                    HapticFeedbackUtils.impact();
                     SendSoundUtils.playCupertinoWheelSound();
                     widget.onChanged(_options[index]);
                   },

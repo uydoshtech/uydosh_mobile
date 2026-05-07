@@ -1789,7 +1789,6 @@ class _InviteProviderBookingDialogState
     final step = CurrencyDisplayUtils.amountNudgeStep(_taskCurrencyCode);
     final amount = index * step;
     final text = amount <= 0 ? "" : IntFormatUtils.withDotThousands(amount);
-    HapticFeedbackUtils.impact();
     SendSoundUtils.playCupertinoWheelSound();
     _inviteAmountWheelMute = true;
     _amountController.value = TextEditingValue(

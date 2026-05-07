@@ -1927,7 +1927,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           itemBuilder: (index) =>
               _buildCountryPickerSheetRow(sheetContext, countries[index]),
           onSelectedItemChanged: (index) {
-            HapticFeedbackUtils.impact();
             SendSoundUtils.playCupertinoWheelSound();
             pendingIso2 = countries[index].iso2;
           },
@@ -2027,7 +2026,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             );
           },
           onSelectedItemChanged: (index) {
-            HapticFeedbackUtils.impact();
             SendSoundUtils.playCupertinoWheelSound();
             pendingRegionId = index == 0 ? null : _regions[index - 1].id;
           },
@@ -2078,7 +2076,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             );
           },
           onSelectedItemChanged: (index) {
-            HapticFeedbackUtils.impact();
             SendSoundUtils.playCupertinoWheelSound();
             pendingUniversityId =
                 index == 0 ? null : _universities[index - 1].id;
