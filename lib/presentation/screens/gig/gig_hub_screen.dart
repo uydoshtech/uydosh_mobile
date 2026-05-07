@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
     show GigPublishMode;
+import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
@@ -818,6 +819,17 @@ class _CategoryChip extends StatelessWidget {
                 : Colors.black;
         final inactiveFg = themeState.unselectedTabTextColor;
         final radius = const BorderRadius.all(Radius.circular(22));
+        final iconColor = isSelected
+            ? activeFg
+            : inactiveFg.withValues(alpha: 0.85);
+        final labelStyle = TextStyle(
+          fontSize: 13,
+          fontWeight:
+              isSelected ? FontWeight.w700 : FontWeight.w600,
+          color: isSelected
+              ? activeFg
+              : inactiveFg.withValues(alpha: 0.9),
+        );
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -840,26 +852,19 @@ class _CategoryChip extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
-                  icon,
-                  size: 18,
-                  color: isSelected
-                      ? activeFg
-                      : inactiveFg.withValues(alpha: 0.85),
+                GigCategoryIconBadge(
+                  icon: icon,
+                  iconColor: iconColor,
+                  badgeBackgroundColor: isSelected
+                      ? activeFg.withValues(alpha: 0.16)
+                      : inactiveFg.withValues(alpha: 0.12),
+                  dimension: 28.6,
+                  iconSize: 16.5,
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w600,
-                    color: isSelected
-                        ? activeFg
-                        : inactiveFg.withValues(alpha: 0.9),
-                  ),
-                ),
+                const SizedBox(width: 8),
+                Text(label, style: labelStyle),
               ],
             ),
           ),

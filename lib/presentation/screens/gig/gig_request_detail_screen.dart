@@ -13,6 +13,7 @@ import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -21,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Detail view for a `GigRequest` (open task posted by a client).
 ///
@@ -268,11 +270,12 @@ class _RequestDetailContent extends StatelessWidget {
                       Row(
                         children: [
                           if (request.category != null) ...[
-                            Icon(
-                              request.category!.icon,
-                              size: 14,
-                              color:
+                            GigCategoryIconBadge(
+                              icon: request.category!.icon,
+                              iconColor:
                                   scheme.onSurface.withValues(alpha: 0.72),
+                              badgeBackgroundColor: scheme.onSurface
+                                  .withValues(alpha: 0.12),
                             ),
                             const SizedBox(width: 8),
                           ],
@@ -302,14 +305,17 @@ class _RequestDetailContent extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      _budgetLine(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
+                    if (request.budgetAmount != null)
+                      ListingPaymentsOutlineBadge(label: _budgetLine())
+                    else
+                      Text(
+                        _budgetLine(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
                       ),
-                    ),
                     if (request.addressText != null &&
                         request.addressText!.isNotEmpty) ...[
                       const SizedBox(height: 10),

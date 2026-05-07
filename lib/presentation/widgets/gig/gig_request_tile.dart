@@ -6,6 +6,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_participant_avatar_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -74,11 +75,12 @@ class GigRequestTile extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (request.category?.icon != null) ...[
-                            Icon(
-                              request.category!.icon,
-                              size: 14,
-                              color:
+                            GigCategoryIconBadge(
+                              icon: request.category!.icon,
+                              iconColor:
                                   scheme.onSurface.withValues(alpha: 0.72),
+                              badgeBackgroundColor: scheme.onSurface
+                                  .withValues(alpha: 0.12),
                             ),
                             const SizedBox(width: 8),
                           ],

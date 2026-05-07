@@ -3,7 +3,7 @@ import "package:uy_dosh/base/cache/gig_category_cache.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 
 IconData? gigCategoryIconForConversationSummary(ConversationSummary c) {
@@ -49,10 +49,33 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = conversationListingLeadingIcon(conversation);
+
+    var badgeIconColor = iconColor;
+    var badgeBgColor = iconColor.withValues(alpha: 0.14);
+    if (gigCategoryIconForConversationSummary(conversation) == null &&
+        conversation.listingTypeId != null) {
+      final code = ListingTypeHelper.getCodeFromId(conversation.listingTypeId!);
+      if (code != "unknown") {
+        final tint = ListingTypeHelper.getColor(code);
+        badgeIconColor = tint;
+        badgeBgColor = tint.withValues(alpha: 0.18);
+      }
+    }
+
+    final badgeDimension = iconSize + 4;
+    final glyphSize = (iconSize * 0.64).clamp(11.0, 14.5);
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          ThemeIcon(icon, size: iconSize, color: iconColor),
+          GigCategoryIconBadge(
+            icon: icon,
+            iconColor: badgeIconColor,
+            badgeBackgroundColor: badgeBgColor,
+            dimension: badgeDimension,
+            iconSize: glyphSize,
+          ),
           const SizedBox(width: 8),
         ],
         Expanded(

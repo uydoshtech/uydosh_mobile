@@ -15,6 +15,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -266,11 +267,12 @@ class _OfferDetailContentStatefulState
                                 Row(
                                   children: [
                                     if (offer.category != null) ...[
-                                      Icon(
-                                        offer.category!.icon,
-                                        size: 14,
-                                        color: scheme.onSurface
+                                      GigCategoryIconBadge(
+                                        icon: offer.category!.icon,
+                                        iconColor: scheme.onSurface
                                             .withValues(alpha: 0.72),
+                                        badgeBackgroundColor: scheme.onSurface
+                                            .withValues(alpha: 0.12),
                                       ),
                                       const SizedBox(width: 8),
                                     ],
