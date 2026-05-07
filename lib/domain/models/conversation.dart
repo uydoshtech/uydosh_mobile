@@ -53,6 +53,8 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "gig_request_title") String? gigRequestTitle,
     /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
     @JsonKey(name: "gig_category_id") int? gigCategoryId,
+    /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
+    @JsonKey(name: "gig_budget_type") String? gigBudgetType,
     @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
     @JsonKey(name: "last_message_sender_id") int? lastMessageSenderId,

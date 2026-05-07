@@ -51,8 +51,7 @@ class OutgoingConversationTile extends StatelessWidget {
         final hasSubwayStation = conversation.subwayStationNameUz != null ||
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
-        final hasListingPrice =
-            conversation.listingPrice != null && conversation.listingPrice! > 0;
+        final hasBudgetBadge = conversationSummaryShowsBudgetBadge(conversation);
 
         // Show the avatar of whoever sent the most recent message: the current
         // user when they were the last sender, otherwise the conversation
@@ -137,7 +136,7 @@ class OutgoingConversationTile extends StatelessWidget {
                         ),
                         iconColor: iconColor,
                       ),
-                      if (hasLocation || hasSubwayStation || hasListingPrice) ...[
+                      if (hasLocation || hasSubwayStation || hasBudgetBadge) ...[
                         const SizedBox(height: 8),
                         ConversationLocationInfo(
                           conversation: conversation,

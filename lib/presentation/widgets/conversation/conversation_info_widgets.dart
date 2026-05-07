@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
@@ -8,6 +9,15 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Shared widgets for displaying conversation/listing info in the messages inbox.
 /// Used by ConversationTile, OutgoingConversationTile, and GroupedConversationsList.
+
+/// Whether the grouped/header budget row should show (numeric listing price or gig open budget).
+bool conversationSummaryShowsBudgetBadge(ConversationSummary conversation) {
+  final numeric =
+      conversation.listingPrice != null && conversation.listingPrice! > 0;
+  final gigOpen = conversation.contextType == 'gig_request' &&
+      conversation.gigBudgetType == 'open';
+  return numeric || gigOpen;
+}
 
 /// Avatar content - initials or person icon fallback.
 class ConversationAvatarContent extends StatelessWidget {
@@ -188,6 +198,26 @@ class ConversationLocationInfo extends StatelessWidget {
               ConversationPriceDisplay(
                 conversation: conversation,
                 textColor: textColor,
+              ),
+            ] else if (showPrice &&
+                conversation.contextType == 'gig_request' &&
+                conversation.gigBudgetType == 'open') ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const ThemeIcon(Icons.payments, color: Colors.green, size: 16),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      L10n.get("gigs_request_budget_open"),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ],

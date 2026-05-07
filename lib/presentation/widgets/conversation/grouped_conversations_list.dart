@@ -225,9 +225,8 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
             firstConversation.subwayStationNameUz != null ||
                 firstConversation.subwayStationNameRu != null ||
                 firstConversation.subwayStationNameEn != null;
-        final hasListingPrice =
-            firstConversation.listingPrice != null &&
-                firstConversation.listingPrice! > 0;
+        final hasBudgetBadge =
+            conversationSummaryShowsBudgetBadge(firstConversation);
 
         final groupUnreadCount = _getGroupUnreadCount(conversations);
 
@@ -296,7 +295,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                   ),
                                   if (hasLocation ||
                                       hasSubwayStation ||
-                                      hasListingPrice) ...[
+                                      hasBudgetBadge) ...[
                                     const SizedBox(height: 8),
                                     ConversationLocationInfo(
                                       conversation: firstConversation,
