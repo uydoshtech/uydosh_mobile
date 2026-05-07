@@ -360,9 +360,8 @@ class GeminiService {
       return null;
     }
 
-    if (targetLanguageCode == "en" && !_hasCyrillic(trimmed)) {
-      return trimmed;
-    }
+    // Never shortcut Latin script → "already English": Uzbek Latin uses the same
+    // letters as English but is not English (mirrors chat translate-unseen).
     if (targetLanguageCode == "ru" && _hasCyrillic(trimmed) && !_hasLatinLetter(trimmed)) {
       return trimmed;
     }

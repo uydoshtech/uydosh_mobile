@@ -8,6 +8,20 @@ abstract class GigPostOfferEvent {
   const GigPostOfferEvent();
 }
 
+sealed class GigOfferEditPhotoSlot {
+  const GigOfferEditPhotoSlot();
+}
+
+class GigOfferEditPhotoExisting extends GigOfferEditPhotoSlot {
+  const GigOfferEditPhotoExisting(this.photoId);
+  final int photoId;
+}
+
+class GigOfferEditPhotoNew extends GigOfferEditPhotoSlot {
+  const GigOfferEditPhotoNew(this.path);
+  final String path;
+}
+
 class SubmitGigOffer extends GigPostOfferEvent {
   const SubmitGigOffer({
     required this.categoryId,
@@ -44,9 +58,9 @@ class SubmitGigOffer extends GigPostOfferEvent {
 }
 
 /// Owner-only edit of an existing offer. Goes through `PATCH /gigs/offers/:id`
-/// with whichever subset of fields the screen wants to overwrite. The
-/// publish flow (`SubmitGigOffer`) still owns photo upload — for v1 the edit
-/// screen only modifies text/numeric/category fields.
+/// with whichever subset of fields the screen wants to overwrite. Photo adds
+/// use `POST /gigs/offers/:id/photos`; order uses `POST .../photos/reorder`
+/// when [photoSlots] / [photoOrderDirty] call for it.
 class SubmitGigOfferEdit extends GigPostOfferEvent {
   const SubmitGigOfferEdit({
     required this.offerId,
@@ -58,6 +72,8 @@ class SubmitGigOfferEdit extends GigPostOfferEvent {
     this.descriptionRu,
     this.minDurationMinutes,
     this.isRemote = false,
+    this.photoSlots = const <GigOfferEditPhotoSlot>[],
+    this.photoOrderDirty = false,
   });
   final int offerId;
   final int categoryId;
@@ -68,6 +84,14 @@ class SubmitGigOfferEdit extends GigPostOfferEvent {
   final String? descriptionRu;
   final int? minDurationMinutes;
   final bool isRemote;
+
+  /// Final gallery order after save (existing ids + new local paths). Empty
+  /// means there is nothing to upload and no intended reorder from this submit.
+  final List<GigOfferEditPhotoSlot> photoSlots;
+
+  /// True if the user dragged tiles or changed primary — reorder should run
+  /// together with any new uploads so slot 0 becomes cover.
+  final bool photoOrderDirty;
 }
 
 abstract class GigPostOfferState {
@@ -153,25 +177,63 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
     on<SubmitGigOfferEdit>((e, emit) async {
       emit(const GigPostOfferSubmitting());
       try {
-        // Build a sparse patch — sending the full set of fields is harmless
-        // (the backend `updateOffer` accepts a `Partial<…>`) but keeping
-        // only the user-editable subset documents which fields this screen
-        // actually owns. Photo edits are a separate, future workflow.
         final patch = <String, dynamic>{
           "category_id": e.categoryId,
           "title": e.title,
           "pricing_type": gigPricingTypeToString(e.pricingType),
           "price": e.price,
           "currency_code": e.currencyCode,
-          // Send `null` (not "") when description was cleared so the server
-          // can wipe the column rather than store an empty string.
           "description_ru": e.descriptionRu,
           "min_duration_minutes":
               e.pricingType == GigPricingType.hourly ? e.minDurationMinutes : null,
           "is_remote": e.isRemote,
         };
-        final updated = await _service.updateOffer(id: e.offerId, patch: patch);
-        emit(GigOfferEditSuccess(updated));
+        await _service.updateOffer(id: e.offerId, patch: patch);
+
+        final pathToId = <String, int>{};
+        for (final slot in e.photoSlots) {
+          if (slot is GigOfferEditPhotoNew) {
+            try {
+              final id = await _service.uploadOfferPhoto(
+                offerId: e.offerId,
+                photoPath: slot.path,
+                isPrimary: false,
+              );
+              if (id > 0) {
+                pathToId[slot.path] = id;
+              }
+            } catch (_) {
+              // Best-effort — same rationale as create flow photo uploads.
+            }
+          }
+        }
+
+        final orderedIds = <int>[];
+        for (final slot in e.photoSlots) {
+          if (slot is GigOfferEditPhotoExisting) {
+            orderedIds.add(slot.photoId);
+          } else if (slot is GigOfferEditPhotoNew) {
+            final id = pathToId[slot.path];
+            if (id != null && id > 0) {
+              orderedIds.add(id);
+            }
+          }
+        }
+
+        final shouldReorder = e.photoOrderDirty || pathToId.isNotEmpty;
+        if (shouldReorder && orderedIds.length > 1) {
+          try {
+            await _service.reorderOfferPhotos(
+              offerId: e.offerId,
+              photoIds: orderedIds,
+            );
+          } catch (_) {
+            // Photos exist; order is a refinement.
+          }
+        }
+
+        final fresh = await _service.getOffer(e.offerId);
+        emit(GigOfferEditSuccess(fresh));
       } catch (err) {
         emit(GigPostOfferError(err.toString()));
       }

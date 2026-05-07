@@ -14,7 +14,10 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
+import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -28,6 +31,16 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
+  return Photo(
+    id: p.id,
+    photoUrl: p.photoUrl,
+    photoOrder: p.photoOrder,
+    isPrimary: p.isPrimary,
+    createdAt: "1970-01-01T00:00:00.000Z",
+  );
+}
 
 /// Two flavors of "publish something to the gig hub":
 ///
@@ -57,10 +70,9 @@ class PublishGigScreen extends StatefulWidget {
 
   /// When non-null, the screen runs in "edit service" mode: the
   /// task/service toggle is hidden, all service fields are prefilled from
-  /// the offer, the photo uploader is hidden (photo edits are not part of
-  /// v1), the submit button reads "Save", and submission dispatches
-  /// [SubmitGigOfferEdit] (PATCH /gigs/offers/:id) instead of creating a
-  /// new offer.
+  /// the offer, the submit button reads "Save", and submission dispatches
+  /// [SubmitGigOfferEdit] (PATCH /gigs/offers/:id) followed by any photo
+  /// add/reorder work.
   final GigOffer? editingOffer;
 
   /// When non-null, the screen runs in "edit task" mode: same as [editingOffer]
@@ -121,6 +133,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   /// means "no explicit choice" — the bloc/server fall back to slot 0.
   int? _primaryPhotoIndex;
 
+  /// Edit-offer only: server-backed gallery rows for [PhotoUploader].
+  List<Photo> _existingOfferPhotos = [];
+
+  /// Edit-offer only: combined existing + new tiles (includes drag order).
+  List<PhotoItem> _orderedOfferPhotos = [];
+
+  bool _photoOrderDirty = false;
+  final Set<int> _deletingOfferPhotoIds = {};
+  final Set<int> _makingOfferPhotoPrimaryIds = {};
+
   /// ISO-4217-ish code shown as the prefix on the budget/price input. Shared
   /// between task and service modes so a user who flips back and forth keeps
   /// their currency choice. Backend default is also "UZS", so the empty
@@ -164,6 +186,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           offer.minDurationMinutes?.toString() ?? "";
       _isRemote = offer.isRemote;
       _currency = offer.currencyCode;
+      _existingOfferPhotos = [
+        for (final p in offer.photos) _photoFromGigOfferPhoto(p),
+      ];
+      _rebuildOfferOrderedPhotos();
     } else if (editingReq != null) {
       _selectedCategory =
           editingReq.category ?? GigCategoryCache.getById(editingReq.categoryId);
@@ -283,6 +309,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           : int.tryParse(_minDurationController.text.trim());
       final editing = widget.editingOffer;
       if (editing != null) {
+        final slots = <GigOfferEditPhotoSlot>[
+          for (final item in _orderedOfferPhotos)
+            if (item is ExistingPhotoItem)
+              GigOfferEditPhotoExisting(item.photo.id)
+            else if (item is NewPhotoItem)
+              GigOfferEditPhotoNew(item.path),
+        ];
         context.read<GigPostOfferBloc>().add(
               SubmitGigOfferEdit(
                 offerId: editing.id,
@@ -295,6 +328,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 minDurationMinutes:
                     _pricingType == GigPricingType.hourly ? minDuration : null,
                 isRemote: _isRemote,
+                photoSlots: slots,
+                photoOrderDirty: _photoOrderDirty,
               ),
             );
       } else {
@@ -667,57 +702,176 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           ),
         ),
       ],
-      // Photo editing on existing offers requires backend delete /
-      // set-primary endpoints we don't ship yet — so the uploader is
-      // hidden in edit mode. Users keep their existing photos as-is and
-      // can manage covers from a future dedicated photo screen.
-      if (!_isEditingOffer) ...[
-        const SizedBox(height: 14),
-        // Reuses the same uploader that powers create/edit-listing — same
-        // pick / crop / camera flow, same primary-photo pill, same drag
-        // reorder. Create flow always starts from a blank slate, so we
-        // feed it `existingPhotos: const []`.
+      const SizedBox(height: 14),
+        // Same uploader as create/edit listing: pick, delete, drag to reorder.
+        // Edit-offer hydrates existing [Photo] rows and deletes sync to the API
+        // immediately; add/reorder run on Save (mirrors edit-listing semantics).
         PhotoUploader(
           selectedPhotos: _selectedPhotos,
           onPhotosChanged: (photos) {
             setState(() {
               _selectedPhotos = photos;
-              // Mirror create-listing: first picked photo becomes primary
-              // by default. Stays sticky if the user already chose one.
               if (photos.isNotEmpty && _primaryPhotoIndex == null) {
                 _primaryPhotoIndex = 0;
               } else if (photos.isEmpty) {
                 _primaryPhotoIndex = null;
               }
+              if (_isEditingOffer) {
+                _rebuildOfferOrderedPhotos();
+                _photoOrderDirty = true;
+              }
             });
           },
-          existingPhotos: const [],
-          onDeleteExistingPhoto: (_) {},
+          existingPhotos:
+              _isEditingOffer ? _existingOfferPhotos : const <Photo>[],
+          onDeleteExistingPhoto:
+              _isEditingOffer ? _deleteExistingOfferPhoto : (_) {},
           onMakePhotoPrimary: (_) {},
-          onMakeNewPhotoPrimary: (i) =>
-              setState(() => _primaryPhotoIndex = i),
-          deletingPhotoIds: const {},
-          makingPhotoPrimaryIds: const {},
+          onMakeNewPhotoPrimary: _isEditingOffer
+              ? null
+              : (i) => setState(() => _primaryPhotoIndex = i),
+          deletingPhotoIds:
+              _isEditingOffer ? _deletingOfferPhotoIds : const <int>{},
+          makingPhotoPrimaryIds:
+              _isEditingOffer ? _makingOfferPhotoPrimaryIds : const <int>{},
           maxPhotos: AppConfig.maxPhotosPerGigOffer,
-          // Drive the grid off `_selectedPhotos` directly so drag-reorder
-          // updates both the on-screen order and the upload order on
-          // submit (slot 0 is uploaded as primary unless the user
-          // explicitly tapped a different tile).
-          orderedItems: [
-            for (final path in _selectedPhotos) NewPhotoItem(path),
-          ],
-          onReorderItems: (newOrder) {
-            setState(() {
-              _selectedPhotos = [
-                for (final item in newOrder)
-                  if (item is NewPhotoItem) item.path,
-              ];
-              _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
-            });
-          },
+          orderedItems: _isEditingOffer
+              ? _orderedOfferPhotos
+              : [
+                  for (final path in _selectedPhotos) NewPhotoItem(path),
+                ],
+          onReorderItems: _isEditingOffer
+              ? (newOrder) {
+                  setState(() {
+                    _orderedOfferPhotos = newOrder;
+                    _selectedPhotos = [
+                      for (final item in newOrder)
+                        if (item is NewPhotoItem) item.path,
+                    ];
+                    _primaryPhotoIndex =
+                        _selectedPhotos.isEmpty ? null : 0;
+                    _photoOrderDirty = true;
+                  });
+                }
+              : (newOrder) {
+                  setState(() {
+                    _selectedPhotos = [
+                      for (final item in newOrder)
+                        if (item is NewPhotoItem) item.path,
+                    ];
+                    _primaryPhotoIndex =
+                        _selectedPhotos.isEmpty ? null : 0;
+                  });
+                },
         ),
-      ],
     ];
+  }
+
+  void _rebuildOfferOrderedPhotos() {
+    if (!_isEditingOffer) return;
+    final prev = _orderedOfferPhotos;
+    final prevKeys = prev.map((e) => e.stableKey).toList();
+
+    final fresh = <PhotoItem>[];
+    final primaryIndex = _existingOfferPhotos.indexWhere((p) => p.isPrimary);
+    if (primaryIndex > 0) {
+      fresh.add(ExistingPhotoItem(_existingOfferPhotos[primaryIndex]));
+      for (var i = 0; i < _existingOfferPhotos.length; i++) {
+        if (i == primaryIndex) continue;
+        fresh.add(ExistingPhotoItem(_existingOfferPhotos[i]));
+      }
+    } else {
+      for (final p in _existingOfferPhotos) {
+        fresh.add(ExistingPhotoItem(p));
+      }
+    }
+    for (final path in _selectedPhotos) {
+      fresh.add(NewPhotoItem(path));
+    }
+
+    if (prevKeys.isEmpty) {
+      _orderedOfferPhotos = fresh;
+      return;
+    }
+
+    final freshByKey = {for (final item in fresh) item.stableKey: item};
+    final merged = <PhotoItem>[];
+    final used = <String>{};
+    for (final key in prevKeys) {
+      final item = freshByKey[key];
+      if (item != null) {
+        merged.add(item);
+        used.add(key);
+      }
+    }
+    for (final item in fresh) {
+      if (!used.contains(item.stableKey)) {
+        merged.add(item);
+      }
+    }
+    _orderedOfferPhotos = merged;
+  }
+
+  Future<void> _deleteExistingOfferPhoto(int index) async {
+    final offer = widget.editingOffer;
+    if (offer == null) return;
+    final photo = _existingOfferPhotos[index];
+
+    final shouldDelete = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "delete_photo",
+      messageKey: "delete_photo_confirmation",
+    );
+
+    if (shouldDelete ?? false) {
+      try {
+        setState(() {
+          _deletingOfferPhotoIds.add(photo.id);
+        });
+
+        await getIt<IGigService>().deleteOfferPhoto(
+          offerId: offer.id,
+          photoId: photo.id,
+        );
+
+        final wasPrimary = photo.isPrimary;
+        final remainingAfter = _existingOfferPhotos.length - 1;
+
+        setState(() {
+          _existingOfferPhotos.removeAt(index);
+          _deletingOfferPhotoIds.remove(photo.id);
+          if (wasPrimary && remainingAfter > 0) {
+            _existingOfferPhotos[0] =
+                _existingOfferPhotos[0].copyWith(isPrimary: true);
+            for (var i = 1; i < _existingOfferPhotos.length; i++) {
+              _existingOfferPhotos[i] =
+                  _existingOfferPhotos[i].copyWith(isPrimary: false);
+            }
+          }
+          _rebuildOfferOrderedPhotos();
+        });
+
+        if (remainingAfter == 0) {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("last_photo_deleted"),
+          );
+        } else {
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("photo_deleted_success"),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _deletingOfferPhotoIds.remove(photo.id);
+        });
+        ToastTheme.showError(
+          context,
+          message: L10n.get("error_deleting_photo"),
+        );
+      }
+    }
   }
 }
 

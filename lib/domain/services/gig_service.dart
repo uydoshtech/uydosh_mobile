@@ -89,11 +89,22 @@ abstract class IGigService {
   /// photo upload path: reads the file, encodes it as a base64
   /// `data:image/jpeg;base64,...` payload, posts to
   /// `POST /gigs/offers/:id/photos`. The server handles content moderation,
-  /// watermarking, and storage.
-  Future<void> uploadOfferPhoto({
+  /// watermarking, and storage. Returns the new photo row id, or `-1` if the
+  /// response omitted it.
+  Future<int> uploadOfferPhoto({
     required int offerId,
     required String photoPath,
     bool isPrimary = false,
+  });
+
+  Future<void> deleteOfferPhoto({
+    required int offerId,
+    required int photoId,
+  });
+
+  Future<void> reorderOfferPhotos({
+    required int offerId,
+    required List<int> photoIds,
   });
 
   // Requests
@@ -396,7 +407,7 @@ class GigService implements IGigService {
   }
 
   @override
-  Future<void> uploadOfferPhoto({
+  Future<int> uploadOfferPhoto({
     required int offerId,
     required String photoPath,
     bool isPrimary = false,
@@ -407,7 +418,7 @@ class GigService implements IGigService {
     }
     final bytes = await file.readAsBytes();
     final imageData = "data:image/jpeg;base64,${base64Encode(bytes)}";
-    await _oauthClient.post<Map<String, dynamic>, _RawJsonBody>(
+    final response = await _oauthClient.post<Map<String, dynamic>, _RawJsonBody>(
       "/gigs/offers/$offerId/photos",
       (json) => json as Map<String, dynamic>,
       basePath: _base,
@@ -415,6 +426,39 @@ class GigService implements IGigService {
         "image_data": imageData,
         "is_primary": isPrimary,
       }),
+    );
+    final photo = response["photo"];
+    if (photo is Map<String, dynamic>) {
+      final rawId = photo["id"];
+      if (rawId is int) return rawId;
+      if (rawId is num) return rawId.toInt();
+    }
+    return -1;
+  }
+
+  @override
+  Future<void> deleteOfferPhoto({
+    required int offerId,
+    required int photoId,
+  }) async {
+    await _oauthClient.delete<Map<String, dynamic>, _RawJsonBody>(
+      "/gigs/offers/$offerId/photos/$photoId",
+      (json) => json as Map<String, dynamic>,
+      basePath: _base,
+      data: _RawJsonBody({}),
+    );
+  }
+
+  @override
+  Future<void> reorderOfferPhotos({
+    required int offerId,
+    required List<int> photoIds,
+  }) async {
+    await _oauthClient.post<Map<String, dynamic>, _RawJsonBody>(
+      "/gigs/offers/$offerId/photos/reorder",
+      (json) => json as Map<String, dynamic>,
+      basePath: _base,
+      data: _RawJsonBody({"photo_ids": photoIds}),
     );
   }
 

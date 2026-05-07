@@ -399,6 +399,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
                       return GigFeedTileSwipeWrapper(
                         entityId: offer.id,
                         enabled: isOwner,
+                        notifyGigHubFeedsOnDelete: false,
                         borderRadius:
                             const BorderRadius.all(Radius.circular(18)),
                         dismissKeyPrefix: "gig-offer-hub",
@@ -471,6 +472,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
                       return GigFeedTileSwipeWrapper(
                         entityId: request.id,
                         enabled: isOwner,
+                        notifyGigHubFeedsOnDelete: false,
                         borderRadius:
                             const BorderRadius.all(Radius.circular(16)),
                         dismissKeyPrefix: "gig-request-hub",

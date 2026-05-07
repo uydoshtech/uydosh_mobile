@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -27,6 +28,7 @@ class GigFeedTileSwipeWrapper extends StatefulWidget {
     required this.errorMessageKey,
     required this.onConfirmDelete,
     required this.onRemovedFromList,
+    this.notifyGigHubFeedsOnDelete = true,
     super.key,
   });
 
@@ -41,6 +43,11 @@ class GigFeedTileSwipeWrapper extends StatefulWidget {
   final String errorMessageKey;
   final Future<void> Function(IGigService service) onConfirmDelete;
   final VoidCallback onRemovedFromList;
+
+  /// When true, a successful delete tells [GigHubScreen] (embedded tab) to
+  /// refetch. Disable on the hub itself — it already drops the row via
+  /// [onRemovedFromList].
+  final bool notifyGigHubFeedsOnDelete;
 
   @override
   State<GigFeedTileSwipeWrapper> createState() =>
@@ -97,6 +104,9 @@ class _GigFeedTileSwipeWrapperState extends State<GigFeedTileSwipeWrapper> {
         try {
           await widget.onConfirmDelete(getIt<IGigService>());
           if (!context.mounted) return false;
+          if (widget.notifyGigHubFeedsOnDelete) {
+            getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
+          }
           ToastTheme.showSuccess(
             context,
             message: L10n.get(widget.successMessageKey),
