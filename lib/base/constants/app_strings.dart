@@ -282,6 +282,8 @@ class AppStrings {
           "3D scan is too large to upload. Please try scanning a smaller area.",
       "room_scan_not_supported":
           "3D room scan requires an iPhone or iPad with LiDAR.",
+      "room_scan_camera_required":
+          "3D scan needs camera access. If you chose Don't Allow, turn on the camera for UyDosh in Settings.",
       "room_scan_disabled_globally":
           "3D room scanning is turned off in app settings. It may be available again later.",
       "add_room_scan_3d": "Add 3D room scan",
@@ -1617,6 +1619,8 @@ class AppStrings {
       "room_scan_too_large":
           "3D-скан слишком большой для загрузки. Попробуйте отсканировать меньшую область.",
       "room_scan_not_supported": "3D-скан требует iPhone или iPad с LiDAR.",
+      "room_scan_camera_required":
+          "Для 3D-сканирования нужен доступ к камере. Если вы нажали «Запретить», включите камеру для UyDosh в Настройках.",
       "room_scan_disabled_globally":
           "3D-сканирование комнаты отключено в настройках приложения. Позже оно может снова стать доступным.",
       "add_room_scan_3d": "Добавить 3D-скан комнаты",
@@ -2981,6 +2985,8 @@ class AppStrings {
           "3D skan yuklash uchun juda katta. Iltimos, kichikroq hududni skanerlab ko'ring.",
       "room_scan_not_supported":
           "3D skan uchun LiDARli iPhone yoki iPad kerak.",
+      "room_scan_camera_required":
+          "3D skan uchun kamera ruxsati kerak. «Ruxsat bermaslik»ni tanlasangiz, Sozlamalarda UyDosh uchun kamerani yoqing.",
       "room_scan_disabled_globally":
           "3D xona skanlash ilova sozlamalarida o'chirilgan. Keyinroq yana yoqilishi mumkin.",
       "add_room_scan_3d": "3D xona skanini qo'shish",

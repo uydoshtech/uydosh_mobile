@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -134,14 +135,29 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         );
         return;
       }
-      // Same warm-up as listing photos: rationale (and Settings path when
-      // needed) before any capture UI. RoomPlan uses the camera; the OS
-      // prompt still fires from native once the scan session starts.
-      final granted = await CameraPermissionGate.ensure(
+      // Rationale first (see [CameraPermissionGate]). That gate does not
+      // call `Permission.camera.request()` — listing photos rely on the camera
+      // plugin instead. RoomPlan only touches the camera inside native
+      // `startScan`, which used to surface the iOS sheet on top of the black
+      // capture UI. Request here so the system dialog appears over this
+      // Flutter screen instead.
+      final rationaleOk = await CameraPermissionGate.ensure(
         context,
         purpose: CameraPermissionPurpose.roomPlan3dScan,
       );
-      if (!granted || !mounted) return;
+      if (!rationaleOk || !mounted) return;
+
+      final camStatus = await Permission.camera.request();
+      if (!camStatus.isGranted) {
+        if (!mounted) return;
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("room_scan_camera_required"),
+        );
+        return;
+      }
+      if (!mounted) return;
+
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
         "enableMultiRoom": false,
         "strings": <String, String>{
