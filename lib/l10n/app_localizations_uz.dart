@@ -388,6 +388,28 @@ class AppLocalizationsUz extends AppLocalizations {
       'O\'zingiz haqingizda biroz gapirib bering?';
 
   @override
+  String get quick_question_generic_price => 'Narxi qancha?';
+
+  @override
+  String get quick_question_generic_whats_included => 'Narxga nimalar kiradi?';
+
+  @override
+  String get quick_question_generic_when_available =>
+      'Qachon bo\'sh vaqtingiz bor?';
+
+  @override
+  String get quick_question_generic_how_soon =>
+      'Qanchalik tez boshlash mumkin?';
+
+  @override
+  String get quick_question_generic_arrangement =>
+      'Qanday tashkil qilish qulay?';
+
+  @override
+  String get quick_question_generic_clarify_details =>
+      'Tafsilotlarni aniqlashtirsak bo\'ladimi?';
+
+  @override
   String get private_room => 'Shaxsiy xona';
 
   @override

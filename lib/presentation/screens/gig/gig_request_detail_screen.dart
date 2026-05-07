@@ -200,9 +200,11 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       final clientName = (request.clientDisplayName ?? "").trim();
       navigator.push(
         MaterialPageRoute<void>(
+          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
           builder: (_) => ChatScreen(
             conversationId: conversation.id,
             gigRequestId: request.id,
+            gigRequestDetailRouteBelow: true,
             gigRequestTitle: request.title,
             otherUserId: request.clientUserId,
             otherUserName: clientName.isNotEmpty ? clientName : null,
@@ -272,7 +274,7 @@ class _RequestDetailContent extends StatelessWidget {
                               color:
                                   scheme.onSurface.withValues(alpha: 0.72),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                           ],
                           Expanded(
                             child: Text(

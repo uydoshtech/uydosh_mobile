@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "dart:ui";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 
 enum ToastDismissReason { completed, preempted }
 
@@ -83,6 +84,9 @@ class ToastTheme {
   }
 
   /// Shows a success toast with green background and rolling animation
+  ///
+  /// By default plays the app success sound (respects the sound effects setting).
+  /// Pass [playSound]: false if the caller already played audio for this event.
   static void showSuccess(
     BuildContext context, {
     required String message,
@@ -91,7 +95,9 @@ class ToastTheme {
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
     IconData? leadingIcon,
+    bool playSound = true,
   }) {
+    if (playSound) SoundService().playSuccess();
     if (useRollingAnimation) {
       _showRollingToast(
         context,
@@ -118,7 +124,9 @@ class ToastTheme {
     BuildContext context, {
     required String message,
     Duration? duration,
+    bool playSound = true,
   }) {
+    if (playSound) SoundService().playSuccess();
     _showSnackBar(
       context,
       message: message,
@@ -128,6 +136,8 @@ class ToastTheme {
   }
 
   /// Shows an error toast with red background and rolling animation
+  ///
+  /// By default plays the app error sound. See [showSuccess] for [playSound].
   static void showError(
     BuildContext context, {
     required String message,
@@ -136,7 +146,9 @@ class ToastTheme {
     VoidCallback? onDismissed,
     void Function(ToastDismissReason reason)? onClosed,
     IconData? leadingIcon,
+    bool playSound = true,
   }) {
+    if (playSound) SoundService().playError();
     if (useRollingAnimation) {
       _showRollingToast(
         context,
@@ -163,7 +175,9 @@ class ToastTheme {
     BuildContext context, {
     required String message,
     Duration? duration,
+    bool playSound = true,
   }) {
+    if (playSound) SoundService().playError();
     _showSnackBar(
       context,
       message: message,

@@ -226,6 +226,14 @@ class AppStrings {
       "quick_question_seeker_budget": "What is your budget?",
       "quick_question_seeker_how_long": "How long are you looking to rent?",
       "quick_question_seeker_about_you": "Could you tell me about yourself?",
+      "quick_question_generic_price": "How much does it cost?",
+      "quick_question_generic_whats_included":
+          "What's included in the price?",
+      "quick_question_generic_when_available": "When are you available?",
+      "quick_question_generic_how_soon": "How soon can we start?",
+      "quick_question_generic_arrangement":
+          "How would you like to arrange this?",
+      "quick_question_generic_clarify_details": "Can we clarify the details?",
       "private_room": "Private Room",
       "with_photo": "With photo",
       "search_filter_private_room": "Own room",
@@ -1522,6 +1530,12 @@ class AppStrings {
       "quick_question_seeker_budget": "Какой у вас бюджет?",
       "quick_question_seeker_how_long": "На какой срок ищете?",
       "quick_question_seeker_about_you": "Расскажете немного о себе?",
+      "quick_question_generic_price": "Сколько стоит?",
+      "quick_question_generic_whats_included": "Что входит в стоимость?",
+      "quick_question_generic_when_available": "Когда вы свободны?",
+      "quick_question_generic_how_soon": "Как быстро можно начать?",
+      "quick_question_generic_arrangement": "Как удобнее организовать?",
+      "quick_question_generic_clarify_details": "Можно уточнить детали?",
       "private_room": "Отдельная комната",
       "with_photo": "С фото",
       "search_filter_private_room": "Отдельная комната",
@@ -2845,6 +2859,14 @@ class AppStrings {
           "Qancha muddatga ijaraga qidiryapsiz?",
       "quick_question_seeker_about_you":
           "O'zingiz haqingizda biroz gapirib bering?",
+      "quick_question_generic_price": "Narxi qancha?",
+      "quick_question_generic_whats_included": "Narxga nimalar kiradi?",
+      "quick_question_generic_when_available":
+          "Qachon bo'sh vaqtingiz bor?",
+      "quick_question_generic_how_soon": "Qanchalik tez boshlash mumkin?",
+      "quick_question_generic_arrangement": "Qanday tashkil qilish qulay?",
+      "quick_question_generic_clarify_details":
+          "Tafsilotlarni aniqlashtirsak bo'ladimi?",
       "private_room": "Shaxsiy xona",
       "with_photo": "Surat bilan",
       "search_filter_private_room": "Shaxsiy xona",

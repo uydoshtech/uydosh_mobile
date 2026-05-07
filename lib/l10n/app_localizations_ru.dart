@@ -387,6 +387,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get quick_question_seeker_about_you => 'Расскажете немного о себе?';
 
   @override
+  String get quick_question_generic_price => 'Сколько стоит?';
+
+  @override
+  String get quick_question_generic_whats_included => 'Что входит в стоимость?';
+
+  @override
+  String get quick_question_generic_when_available => 'Когда вы свободны?';
+
+  @override
+  String get quick_question_generic_how_soon => 'Как быстро можно начать?';
+
+  @override
+  String get quick_question_generic_arrangement => 'Как удобнее организовать?';
+
+  @override
+  String get quick_question_generic_clarify_details => 'Можно уточнить детали?';
+
+  @override
   String get private_room => 'Отдельная комната';
 
   @override

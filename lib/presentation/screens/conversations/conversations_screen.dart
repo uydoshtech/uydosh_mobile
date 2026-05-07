@@ -227,6 +227,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
         builder:
             (context) => ChatScreen(
               conversationId: conversationId,

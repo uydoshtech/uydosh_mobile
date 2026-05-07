@@ -185,6 +185,7 @@ class _ArchivedConversationsScreenState
     final isGigRequest = conversation.contextType == "gig_request";
     await Navigator.of(context).push(
       MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
         builder: (_) => ChatScreen(
           conversationId: conversation.id,
           listingId: isGigRequest ? null : conversation.listingId,

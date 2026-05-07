@@ -790,6 +790,42 @@ abstract class AppLocalizations {
   /// **'Could you tell me about yourself?'**
   String get quick_question_seeker_about_you;
 
+  /// No description provided for @quick_question_generic_price.
+  ///
+  /// In en, this message translates to:
+  /// **'How much does it cost?'**
+  String get quick_question_generic_price;
+
+  /// No description provided for @quick_question_generic_whats_included.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s included in the price?'**
+  String get quick_question_generic_whats_included;
+
+  /// No description provided for @quick_question_generic_when_available.
+  ///
+  /// In en, this message translates to:
+  /// **'When are you available?'**
+  String get quick_question_generic_when_available;
+
+  /// No description provided for @quick_question_generic_how_soon.
+  ///
+  /// In en, this message translates to:
+  /// **'How soon can we start?'**
+  String get quick_question_generic_how_soon;
+
+  /// No description provided for @quick_question_generic_arrangement.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like to arrange this?'**
+  String get quick_question_generic_arrangement;
+
+  /// No description provided for @quick_question_generic_clarify_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Can we clarify the details?'**
+  String get quick_question_generic_clarify_details;
+
   /// No description provided for @private_room.
   ///
   /// In en, this message translates to:

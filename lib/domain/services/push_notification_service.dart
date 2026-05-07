@@ -219,21 +219,34 @@ class PushNotificationService implements IPushNotificationService {
 
     if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
     final navigatorKey = getIt<GlobalKey<NavigatorState>>();
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
+    final nav = navigatorKey.currentState;
+    if (nav == null) return;
 
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ChatScreen(
-          conversationId: conversationId,
-          listingId: (listingId != null && listingId > 0) ? listingId : null,
-          otherUserInitials: StringUtils.extractInitials(senderName),
-          otherUserName: senderName,
-          otherUserId: (senderId != null && senderId > 0) ? senderId : null,
-          otherUserAvatar: null,
+    final targetName = ChatScreen.routeName(conversationId);
+    nav.popUntil((route) {
+      if (route.isFirst) return true;
+      return route.settings.name == targetName;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!nav.mounted) return;
+      final topName = ModalRoute.of(nav.context)?.settings.name;
+      if (topName == targetName) return;
+
+      nav.push(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(name: targetName),
+          builder: (_) => ChatScreen(
+            conversationId: conversationId,
+            listingId: (listingId != null && listingId > 0) ? listingId : null,
+            otherUserInitials: StringUtils.extractInitials(senderName),
+            otherUserName: senderName,
+            otherUserId: (senderId != null && senderId > 0) ? senderId : null,
+            otherUserAvatar: null,
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   void _navigateToListingFromSearchAlert(RemoteMessage message) {

@@ -4,6 +4,7 @@ import "package:audioplayers/audioplayers.dart";
 import "package:flutter/foundation.dart"
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/services.dart";
+import "package:uy_dosh/base/state/sound_effects_state.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.
 /// Uses custom asset when possible; falls back to SystemSound on Android.
@@ -79,6 +80,7 @@ class SendSoundUtils {
   /// Plays the send confirmation sound at full volume (1.0).
   /// Uses SystemSound (reliable on Android) with audioplayers fallback for iOS.
   static void playSendSound() {
+    if (!SoundEffectsState().isEnabled) return;
     unawaited(_playSendSoundImpl());
   }
 
@@ -110,6 +112,7 @@ class SendSoundUtils {
   /// Plays the click sound for spinner/picker selection feedback.
   /// Throttled to avoid overlap during rapid scroll; uses low-latency mode.
   static void playSelectionSound() {
+    if (!SoundEffectsState().isEnabled) return;
     final now = DateTime.now();
     if (_lastSelectionSoundAt != null &&
         now.difference(_lastSelectionSoundAt!) < _selectionThrottle) {

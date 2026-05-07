@@ -19,12 +19,10 @@ class QuickQuestionsWidget extends StatelessWidget {
   /// The key is passed so callers can log analytics without re-matching text.
   final void Function(String questionText, String questionKey) onQuestionTap;
 
-  /// Listing type that scopes the chip set. `null` falls back to the legacy
-  /// "asking about housing" set (pre-refactor behaviour).
+  /// Retained for API stability; quick questions are category-agnostic.
   final int? listingTypeId;
 
-  /// When the current viewer is the listing's author the chip set inverts —
-  /// they talk to a counterparty, not to themselves.
+  /// Retained for API stability; chip text does not depend on viewer role.
   final bool isViewerListingOwner;
 
   /// When true, strip has no fill (parent provides frosted glass).

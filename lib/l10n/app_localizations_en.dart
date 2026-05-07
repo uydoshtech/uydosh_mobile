@@ -385,6 +385,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could you tell me about yourself?';
 
   @override
+  String get quick_question_generic_price => 'How much does it cost?';
+
+  @override
+  String get quick_question_generic_whats_included =>
+      'What\'s included in the price?';
+
+  @override
+  String get quick_question_generic_when_available => 'When are you available?';
+
+  @override
+  String get quick_question_generic_how_soon => 'How soon can we start?';
+
+  @override
+  String get quick_question_generic_arrangement =>
+      'How would you like to arrange this?';
+
+  @override
+  String get quick_question_generic_clarify_details =>
+      'Can we clarify the details?';
+
+  @override
   String get private_room => 'Private Room';
 
   @override

@@ -1481,7 +1481,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
             logger.d("🧭 [Frontend] ChatScreen created successfully");
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (context) => chatScreen));
+            ).push(
+              MaterialPageRoute(
+                settings: RouteSettings(
+                  name: ChatScreen.routeName(conversation.id),
+                ),
+                builder: (context) => chatScreen,
+              ),
+            );
             logger.d("🧭 [Frontend] Navigation completed successfully");
           } catch (navigationError) {
             logger.d("❌ [Frontend] Navigation error: $navigationError");
@@ -1592,6 +1599,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
               try {
                 Navigator.of(context).push(
                   MaterialPageRoute(
+                    settings: RouteSettings(
+                      name: ChatScreen.routeName(existingConversation.id),
+                    ),
                     builder: (context) => ChatScreen(
                       conversationId: existingConversation.id,
                       listingId: widget.listingId,

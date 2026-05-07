@@ -3,6 +3,7 @@ import "dart:ui" show ImageFilter;
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -61,6 +62,10 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ChatScreen extends StatefulWidget {
+  /// Root [Navigator] route name for this conversation. Push with
+  /// `RouteSettings(name: routeName(conversationId))` so deep links / push
+  /// handling can pop back to an existing chat instead of stacking another.
+  static String routeName(int conversationId) => "/chat/$conversationId";
 
   const ChatScreen({
     required this.conversationId, super.key,
@@ -69,6 +74,10 @@ class ChatScreen extends StatefulWidget {
     this.listingOwnerUserId,
     this.gigRequestId,
     this.gigRequestTitle,
+    /// When true, [GigRequestDetailScreen] for [gigRequestId] is already on
+    /// the stack under this chat (e.g. opened via Contact on that screen).
+    /// "View task" should pop to it instead of pushing a duplicate route.
+    this.gigRequestDetailRouteBelow = false,
     this.otherUserInitials,
     this.otherUserName,
     this.otherUserId,
@@ -97,6 +106,8 @@ class ChatScreen extends StatefulWidget {
   /// (inbox tile, gig request detail screen). The chat will simply omit
   /// the subtitle when this is null.
   final String? gigRequestTitle;
+
+  final bool gigRequestDetailRouteBelow;
 
   final String? otherUserInitials;
   final String? otherUserName;
@@ -206,6 +217,23 @@ class _ChatScreenState extends State<ChatScreen> {
     return items;
   }
 
+  /// Web/desktop-style chat: Enter sends, Shift+Enter still inserts a newline.
+  KeyEventResult _messageComposerOnKeyEvent(FocusNode node, KeyEvent event) {
+    if (!kIsWeb) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey != LogicalKeyboardKey.enter) {
+      return KeyEventResult.ignored;
+    }
+    if (HardwareKeyboard.instance.isShiftPressed) {
+      return KeyEventResult.ignored;
+    }
+    if (_isSendingMessage) return KeyEventResult.handled;
+    if (_messageController.text.trim().isEmpty) return KeyEventResult.handled;
+    HapticFeedbackUtils.impact();
+    _sendMessage();
+    return KeyEventResult.handled;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -216,7 +244,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
     _messageController = TextEditingController();
     _scrollController = ScrollController();
-    _messageFocusNode = FocusNode();
+    _messageFocusNode = FocusNode(onKeyEvent: _messageComposerOnKeyEvent);
     _peerAvatarUrl = widget.otherUserAvatar;
 
     // Load translation prefs FIRST so the very first /translate-unseen call
@@ -1402,6 +1430,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final id = widget.gigRequestId;
     if (id == null) return;
     HapticFeedbackUtils.selection();
+    if (widget.gigRequestDetailRouteBelow) {
+      Navigator.of(context).pop();
+      return;
+    }
     context.pushGigRequestDetail(id);
   }
 

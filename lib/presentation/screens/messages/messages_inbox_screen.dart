@@ -20,6 +20,7 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
@@ -1307,6 +1308,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// performs the real optimistic removal + API call.
   void _archiveConversation(ConversationSummary conversation) {
     HapticFeedbackUtils.tapticChain();
+    SendSoundUtils.playSelectionSound();
 
     final id = conversation.id;
 
@@ -1527,6 +1529,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final isGigRequest = conversation.contextType == "gig_request";
     await Navigator.of(context).push(
       MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
         builder:
             (context) => ChatScreen(
               conversationId: conversation.id,

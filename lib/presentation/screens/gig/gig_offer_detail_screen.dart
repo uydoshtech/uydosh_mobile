@@ -272,7 +272,7 @@ class _OfferDetailContentStatefulState
                                         color: scheme.onSurface
                                             .withValues(alpha: 0.72),
                                       ),
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: 8),
                                     ],
                                     Expanded(
                                       child: Text(
