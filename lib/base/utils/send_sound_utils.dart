@@ -14,8 +14,13 @@ class SendSoundUtils {
   /// Dedicated player for picker/spinner tick sounds.
   /// Uses low-latency mode and throttling for smooth scroll feedback.
   static final AudioPlayer _selectionPlayer = AudioPlayer();
-  static DateTime? _lastSelectionSoundAt;
-  static const Duration _selectionThrottle = Duration(milliseconds: 60);
+  static DateTime? _lastBundledClickAt;
+  /// Short taps / sliders: keep responsive.
+  static const Duration _bundledClickMinInterval =
+      Duration(milliseconds: 60);
+  /// Wheels often settle in bursts; a longer gap avoids clicks piling up.
+  static const Duration _wheelBundledClickMinInterval =
+      Duration(milliseconds: 120);
 
   static const String _clickAssetNative = "sounds/click.m4a";
   static const String _clickAssetWebBundle = "assets/sounds/click_web.wav";
@@ -117,7 +122,10 @@ class SendSoundUtils {
   /// Throttled; serialized stop→play so rapid triggers do not stack volume.
   static void playSelectionSound() {
     if (!SoundEffectsState().isEnabled) return;
-    _enqueueBundledSelectionClick();
+    _enqueueBundledSelectionClick(
+      minInterval: _bundledClickMinInterval,
+      volume: 1.0,
+    );
   }
 
   /// For [CupertinoPicker] wheels: on iOS the framework already plays a short
@@ -128,22 +136,29 @@ class SendSoundUtils {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       return;
     }
-    _enqueueBundledSelectionClick();
+    _enqueueBundledSelectionClick(
+      minInterval: _wheelBundledClickMinInterval,
+      volume: 0.82,
+    );
   }
 
-  static void _enqueueBundledSelectionClick() {
+  static void _enqueueBundledSelectionClick({
+    required Duration minInterval,
+    required double volume,
+  }) {
     final now = DateTime.now();
-    if (_lastSelectionSoundAt != null &&
-        now.difference(_lastSelectionSoundAt!) < _selectionThrottle) {
+    if (_lastBundledClickAt != null &&
+        now.difference(_lastBundledClickAt!) < minInterval) {
       return;
     }
-    _lastSelectionSoundAt = now;
+    _lastBundledClickAt = now;
     _ensureSelectionPlayerReady();
     _selectionAssetChain = _selectionAssetChain.then((_) async {
       try {
         try {
           await _selectionPlayer.stop();
         } catch (_) {}
+        await _selectionPlayer.setVolume(volume);
         await _selectionPlayer.play(await _clickSource());
       } catch (_) {
         /* Ignore AbortError / web decode failures */
