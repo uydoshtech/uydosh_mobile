@@ -6,12 +6,80 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
+import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
+
+/// Stable id for grouping inbox threads that belong to the same listing or
+/// the same gig row. Listing chats use [ConversationSummary.listingId]. Gig
+/// rows omit `listing_id`; we bucket by request/offer/booking id instead of
+/// `-conversation.id` (which produced one card per thread).
+int conversationGroupKey(ConversationSummary c) {
+  final listingId = c.listingId;
+  if (listingId != null) {
+    return listingId;
+  }
+  final ctx = c.contextType;
+  if (ctx == "gig_request") {
+    final id = c.gigRequestId ?? c.contextId;
+    if (id != null) {
+      return -2000000000 - id;
+    }
+  } else if (ctx == "gig_offer") {
+    final id = c.contextId;
+    if (id != null) {
+      return -2100000000 - id;
+    }
+  } else if (ctx == "gig_booking") {
+    final id = c.contextId;
+    if (id != null) {
+      return -2200000000 - id;
+    }
+  }
+  return -c.id;
+}
+
+bool _sameCalendarDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// Latest [lastMessageAt]/[updatedAt] in the group (for ordering + date strips).
+DateTime _groupLatestMessageTime(List<ConversationSummary> convs) {
+  if (convs.isEmpty) {
+    return DateTime.now().toLocal();
+  }
+  DateTime? latest;
+  for (final c in convs) {
+    final t = DateTime.parse(c.lastMessageAt ?? c.updatedAt).toLocal();
+    if (latest == null || t.isAfter(latest)) {
+      latest = t;
+    }
+  }
+  return latest!;
+}
+
+DateTime _groupLatestActivityDay(List<ConversationSummary> convs) {
+  final t = _groupLatestMessageTime(convs);
+  return DateTime(t.year, t.month, t.day);
+}
+
+List<Widget> _intersperseGap(List<Widget> items, double gap) {
+  if (items.isEmpty) {
+    return const [];
+  }
+  final out = <Widget>[items.first];
+  for (var i = 1; i < items.length; i++) {
+    out
+      ..add(SizedBox(height: gap))
+      ..add(items[i]);
+  }
+  return out;
+}
 
 class GroupedConversationsList extends StatefulWidget {
   const GroupedConversationsList({
@@ -27,6 +95,9 @@ class GroupedConversationsList extends StatefulWidget {
     /// Passed through to inner [ConversationTile]s (e.g. inbox with day headers).
     this.showActivityTimeOnly = false,
     this.onConversationLongPress,
+    /// When true, expanded rows use [OutgoingConversationTile] (messages tab
+    /// "others' listings" / initiator side) instead of [ConversationTile].
+    this.useOutgoingInnerTiles = false,
   });
   final List<ConversationSummary> conversations;
   final int? currentUserId;
@@ -36,6 +107,7 @@ class GroupedConversationsList extends StatefulWidget {
   final double? itemSpacing;
   final bool showActivityTimeOnly;
   final Function(ConversationSummary)? onConversationLongPress;
+  final bool useOutgoingInnerTiles;
 
   @override
   State<GroupedConversationsList> createState() =>
@@ -58,19 +130,16 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     super.didUpdateWidget(oldWidget);
     // Recompute when input list or user context changes.
     if (!identical(oldWidget.conversations, widget.conversations) ||
-        oldWidget.currentUserId != widget.currentUserId) {
+        oldWidget.currentUserId != widget.currentUserId ||
+        oldWidget.useOutgoingInnerTiles != widget.useOutgoingInnerTiles) {
       _recompute();
     }
   }
 
   void _recompute() {
-    // Group conversations by listing ID. Gig-module conversations
-    // (`context_type='gig_request'` etc.) carry `listing_id == null`, so we
-    // give each one a unique synthetic group key (negated conversation id)
-    // to keep them in their own row instead of all collapsing under "0".
     final groupedConversations = <int, List<ConversationSummary>>{};
     for (final conversation in widget.conversations) {
-      final groupKey = conversation.listingId ?? -conversation.id;
+      final groupKey = conversationGroupKey(conversation);
       (groupedConversations[groupKey] ??= []).add(conversation);
     }
 
@@ -121,10 +190,8 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         if (aHasUnread && !bHasUnread) return -1;
         if (!aHasUnread && bHasUnread) return 1;
 
-        final aLatest =
-            aConversations.first.lastMessageAt ?? aConversations.first.updatedAt;
-        final bLatest =
-            bConversations.first.lastMessageAt ?? bConversations.first.updatedAt;
+        final aLatest = _groupLatestMessageTime(aConversations);
+        final bLatest = _groupLatestMessageTime(bConversations);
         return bLatest.compareTo(aLatest);
       });
 
@@ -150,51 +217,59 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (widget.embedInParentScrollView) {
-      final gap = widget.itemSpacing ?? 10;
-      final children = <Widget>[];
-      for (var i = 0; i < _sortedListingIds.length; i++) {
-        if (i > 0) {
-          children.add(SizedBox(height: gap));
-        }
-        final listingId = _sortedListingIds[i];
-        final conversations = _groupedConversations[listingId] ?? const [];
-        final isExpanded = _expandedGroups[listingId] ?? false;
-        children.add(
-          _buildGroupCard(
-            listingId: listingId,
-            conversations: conversations,
-            isExpanded: isExpanded,
+  List<Widget> _buildDatedSegments(BuildContext context) {
+    final segments = <Widget>[];
+    DateTime? lastEmittedDay;
+
+    for (var i = 0; i < _sortedListingIds.length; i++) {
+      final listingId = _sortedListingIds[i];
+      final conversations = _groupedConversations[listingId] ?? const [];
+      final isExpanded = _expandedGroups[listingId] ?? false;
+      final day = _groupLatestActivityDay(conversations);
+
+      if (lastEmittedDay == null || !_sameCalendarDay(lastEmittedDay, day)) {
+        segments.add(
+          DateHeaderWidget(
+            dateString: MessageGroupingUtils.formatDateHeader(day, context),
+            date: day,
+            padding:
+                segments.isEmpty
+                    ? const EdgeInsets.only(top: 8, bottom: 6)
+                    : const EdgeInsets.only(top: 4, bottom: 6),
           ),
         );
+        lastEmittedDay = day;
       }
+
+      segments.add(
+        _buildGroupCard(
+          listingId: listingId,
+          conversations: conversations,
+          isExpanded: isExpanded,
+        ),
+      );
+    }
+    return segments;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gap = widget.itemSpacing ?? 10;
+
+    if (widget.embedInParentScrollView) {
       return Padding(
         padding: widget.padding ?? EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+          children: _intersperseGap(_buildDatedSegments(context), gap),
         ),
       );
     }
 
     return CommonListView(
       padding: widget.padding ?? const EdgeInsets.all(16),
-      itemSpacing: widget.itemSpacing ?? 10,
-      itemCount: _sortedListingIds.length,
-      itemBuilder: (context, index) {
-        final listingId = _sortedListingIds[index];
-        final conversations = _groupedConversations[listingId] ?? const [];
-        final isExpanded =
-            _expandedGroups[listingId] ?? false; // Default to collapsed
-
-        return _buildGroupCard(
-          listingId: listingId,
-          conversations: conversations,
-          isExpanded: isExpanded,
-        );
-      },
+      itemSpacing: gap,
+      children: _buildDatedSegments(context),
     );
   }
 
@@ -281,6 +356,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                       color: textColor,
                                     ),
                                     iconColor: iconColor,
+                                    titleMaxLines: 2,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -437,19 +513,33 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                   children: [
                     const Divider(height: 1),
                     ...conversations.map(
-                      (conversation) => ConversationTile(
-                        conversation: conversation,
-                        currentUserId: widget.currentUserId,
-                        onTap: () => widget.onConversationTap(conversation),
-                        isGrouped:
-                            true, // Add this parameter to style differently
-                        showActivityTimeOnly: widget.showActivityTimeOnly,
-                        onLongPress: widget.onConversationLongPress == null
-                            ? null
-                            : () => widget.onConversationLongPress!(
-                                  conversation,
-                                ),
-                      ),
+                      (conversation) => widget.useOutgoingInnerTiles
+                          ? OutgoingConversationTile(
+                              conversation: conversation,
+                              currentUserId: widget.currentUserId,
+                              showActivityTimeOnly: widget.showActivityTimeOnly,
+                              onTap: () =>
+                                  widget.onConversationTap(conversation),
+                              onLongPress: widget.onConversationLongPress == null
+                                  ? null
+                                  : () => widget.onConversationLongPress!(
+                                        conversation,
+                                      ),
+                            )
+                          : ConversationTile(
+                              conversation: conversation,
+                              currentUserId: widget.currentUserId,
+                              onTap: () =>
+                                  widget.onConversationTap(conversation),
+                              isGrouped:
+                                  true, // Add this parameter to style differently
+                              showActivityTimeOnly: widget.showActivityTimeOnly,
+                              onLongPress: widget.onConversationLongPress == null
+                                  ? null
+                                  : () => widget.onConversationLongPress!(
+                                        conversation,
+                                      ),
+                            ),
                     ),
                   ],
                 ),

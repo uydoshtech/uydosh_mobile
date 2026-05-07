@@ -642,7 +642,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }
 
   /// Trailing swipe (end→start, i.e. left in LTR) with stepped haptics like
-  /// [MessagesInboxScreen._wrapWithArchiveSwipe].
+  /// the messages inbox archive-swipe pattern.
   Widget _wrapSearchAlertSwipeDelete({
     required Widget child,
     required SearchAlert alert,

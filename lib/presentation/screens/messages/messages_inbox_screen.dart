@@ -31,8 +31,6 @@ import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
-import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
-import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
@@ -51,9 +49,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
-import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/grouped_conversations_list.dart";
-import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/messages/inbox_push_banner.dart";
 
 class MessagesInboxScreen extends StatefulWidget {
@@ -105,9 +101,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// 5s undo window. They are hidden from every list/badge computation; the
   /// real `ArchiveConversation` event only fires once the countdown elapses.
   final Set<int> _pendingArchiveIds = <int>{};
-
-  /// Per-conversation step counter for swipe-to-archive haptics.
-  final Map<int, int> _archiveSwipeHapticStepById = <int, int>{};
 
   /// Whether the user currently has at least one archived conversation. Drives
   /// visibility of the "Archive" entry points (app-bar action + pinned row) —
@@ -899,8 +892,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  /// Task-scoped inbox: single chronological list, no my/other toggle or
-  /// calendar day headers (the task title already appears on each tile).
+  /// Task-scoped inbox: same grouped-by-gig UI without my/other tabs.
   Widget _buildGigScopedConversationsList(
     List<ConversationSummary> conversations,
   ) {
@@ -919,45 +911,16 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         onRefresh: _onInboxPullRefresh,
         edgeOffset: 0.0,
         child: PullToRefreshStretchHaptics(
-          child: CommonListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            physics: const AlwaysScrollableScrollPhysics(),
+          child: GroupedConversationsList(
+            conversations: sorted,
+            currentUserId: _currentUserId,
+            embedInParentScrollView: true,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             itemSpacing: 12,
-            itemCount: sorted.length,
-            itemBuilder: (context, index) {
-              final conversation = sorted[index];
-              final outgoingTile =
-                  _currentUserId != null &&
-                  conversation.initiatorId == _currentUserId;
-              return Padding(
-                padding: EdgeInsets.only(top: index == 0 ? 8 : 0),
-                child: _wrapWithArchiveSwipe(
-                  conversation: conversation,
-                  child: outgoingTile
-                      ? OutgoingConversationTile(
-                          conversation: conversation,
-                          currentUserId: _currentUserId,
-                          showActivityTimeOnly: true,
-                          onTap: () {
-                            _openChatScreen(conversation);
-                          },
-                          onLongPress: () =>
-                              _promptConversationActions(conversation),
-                        )
-                      : ConversationTile(
-                          conversation: conversation,
-                          currentUserId: _currentUserId,
-                          isGrouped: false,
-                          showActivityTimeOnly: true,
-                          onTap: () {
-                            _openChatScreen(conversation);
-                          },
-                          onLongPress: () =>
-                              _promptConversationActions(conversation),
-                        ),
-                ),
-              );
-            },
+            showActivityTimeOnly: true,
+            useOutgoingInnerTiles: false,
+            onConversationTap: _openChatScreen,
+            onConversationLongPress: _promptConversationActions,
           ),
         ),
       ),
@@ -1202,20 +1165,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     return _buildDayGroupedConversationsList(
       conversations,
-      outgoingTiles: type == "outgoing",
+      outgoingInnerTiles: type == "outgoing",
     );
-  }
-
-  /// Calendar day (local midnight boundary) for last activity on a thread.
-  DateTime _activityCalendarDay(ConversationSummary c) {
-    final raw = c.lastMessageAt ?? c.updatedAt;
-    final dt = DateTime.parse(raw).toLocal();
-    return DateTime(dt.year, dt.month, dt.day);
-  }
-
-  String _activityDayKey(ConversationSummary c) {
-    final d = _activityCalendarDay(c);
-    return "${d.year}-${d.month.toString().padLeft(2, "0")}-${d.day.toString().padLeft(2, "0")}";
   }
 
   List<ConversationSummary> _sortConversationsForInbox(
@@ -1242,51 +1193,22 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     });
   }
 
-  List<_InboxListEntry> _inboxEntriesWithDayHeaders(
-    List<ConversationSummary> conversations,
-  ) {
+  /// One grouped listing/gig block for the whole tab (no per-day buckets, so
+  /// the same gig is not repeated under different date headers).
+  List<_InboxListEntry> _groupedInboxEntries(
+    List<ConversationSummary> conversations, {
+    required bool outgoingInnerTiles,
+  }) {
     final sorted = _sortConversationsForInbox(conversations);
-    final entries = <_InboxListEntry>[];
-    String? lastDayKey;
-    for (final c in sorted) {
-      final key = _activityDayKey(c);
-      if (key != lastDayKey) {
-        lastDayKey = key;
-        entries.add(_InboxDayHeader(_activityCalendarDay(c)));
-      }
-      entries.add(_InboxConversationRow(c));
+    if (sorted.isEmpty) {
+      return [];
     }
-    return entries;
-  }
-
-  /// Incoming: calendar day headers, then collapsible listing groups for that day.
-  List<_InboxListEntry> _incomingEntriesWithDaySections(
-    List<ConversationSummary> conversations,
-  ) {
-    final sorted = _sortConversationsForInbox(conversations);
-    final entries = <_InboxListEntry>[];
-    String? lastDayKey;
-    var dayBucket = <ConversationSummary>[];
-
-    void flushDay() {
-      if (dayBucket.isEmpty) {
-        return;
-      }
-      entries.add(_InboxIncomingDaySection(List<ConversationSummary>.from(dayBucket)));
-      dayBucket = [];
-    }
-
-    for (final c in sorted) {
-      final key = _activityDayKey(c);
-      if (key != lastDayKey) {
-        flushDay();
-        lastDayKey = key;
-        entries.add(_InboxDayHeader(_activityCalendarDay(c)));
-      }
-      dayBucket.add(c);
-    }
-    flushDay();
-    return entries;
+    return [
+      _InboxGroupedSection(
+        conversations: sorted,
+        outgoingInnerTiles: outgoingInnerTiles,
+      ),
+    ];
   }
 
   /// Show the archive/read bottom sheet for a conversation. Runs the archive
@@ -1537,85 +1459,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     ToastTheme.showWarning(context, message: message);
   }
 
-  /// Wrap a tile in a leading-swipe [Dismissible] that archives on release.
-  /// Trailing-only swipe (end→start) — avoids conflicting with the chat list
-  /// scroll and mirrors WhatsApp/Telegram iOS behavior.
-  Widget _wrapWithArchiveSwipe({
-    required Widget child,
-    required ConversationSummary conversation,
-  }) {
-    final hasUnread = (conversation.unreadCount ?? 0) > 0 &&
-        _currentUserId != null &&
-        conversation.lastMessageSenderId != _currentUserId;
-
-    final ts = ThemeState();
-    // Blue theme uses `primaryColor == background`, so the old styling could
-    // make the swipe affordance invisible. Use a high-contrast white affordance
-    // on blue, and keep the existing primary-tinted affordance on light theme.
-    final swipeFgColor = ts.isBlueTheme ? Colors.white : ts.primaryColor;
-    final swipeBgColor = ts.isBlueTheme
-        ? Colors.white.withValues(alpha: 0.14)
-        : ts.primaryColor.withValues(alpha: 0.18);
-
-    return Dismissible(
-      key: ValueKey("conv-swipe-${conversation.id}"),
-      direction: DismissDirection.endToStart,
-      onUpdate: (details) {
-        // Fire "chain" ticks as the swipe progresses (similar to pull-to-refresh
-        // stretch haptics): multiple small steps instead of a single impact.
-        //
-        // Dismissible reports progress in [0..1]. We map it to discrete steps
-        // so users feel ticks while dragging, not only after dismissal.
-        final steps = 7;
-        final currentStep = (details.progress * steps).floor();
-        final lastStep = _archiveSwipeHapticStepById[conversation.id] ?? 0;
-
-        if (currentStep > lastStep) {
-          for (var i = lastStep; i < currentStep; i++) {
-            HapticFeedbackUtils.selectionClick();
-          }
-          _archiveSwipeHapticStepById[conversation.id] = currentStep;
-        } else if (currentStep <= 0 && lastStep != 0) {
-          _archiveSwipeHapticStepById[conversation.id] = 0;
-        }
-      },
-      confirmDismiss: (_) async {
-        if (hasUnread) {
-          _showArchiveWarning(L10n.get("archive_failed_has_unread"));
-          return false;
-        }
-        return true;
-      },
-      onDismissed: (_) {
-        _archiveSwipeHapticStepById.remove(conversation.id);
-        _archiveConversation(conversation);
-      },
-      background: Container(
-        alignment: AlignmentDirectional.centerEnd,
-        padding: const EdgeInsetsDirectional.only(end: 24),
-        decoration: BoxDecoration(
-          color: swipeBgColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ThemeIcon(Icons.archive_outlined, color: swipeFgColor),
-            const SizedBox(width: 8),
-            Text(
-              L10n.get("archive"),
-              style: TextStyle(
-                color: swipeFgColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-      child: child,
-    );
-  }
-
   Future<void> _openArchivedConversations() async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
@@ -1674,13 +1517,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   Widget _buildDayGroupedConversationsList(
     List<ConversationSummary> conversations, {
-    required bool outgoingTiles,
+    required bool outgoingInnerTiles,
   }) {
     final entries = <_InboxListEntry>[
       if (_shouldRenderPushBannerRow) _InboxPushBannerRow(),
-      ...(outgoingTiles
-          ? _inboxEntriesWithDayHeaders(conversations)
-          : _incomingEntriesWithDaySections(conversations)),
+      ..._groupedInboxEntries(
+        conversations,
+        outgoingInnerTiles: outgoingInnerTiles,
+      ),
     ];
     return CommonListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -1689,7 +1533,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
-        final isFirstRow = index == 0;
         return switch (entry) {
           _InboxPushBannerRow() => Padding(
             // Slightly larger top breathing room so the banner doesn't kiss
@@ -1716,17 +1559,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                     onDismiss: _onPushBannerDismiss,
                   ),
           ),
-          _InboxDayHeader(:final dayStart) => DateHeaderWidget(
-            dateString: MessageGroupingUtils.formatDateHeader(
-              dayStart,
-              context,
-            ),
-            date: dayStart,
-            padding: isFirstRow
-                ? const EdgeInsets.only(top: 8, bottom: 6)
-                : null,
-          ),
-          _InboxIncomingDaySection(:final conversations) =>
+          _InboxGroupedSection(:final conversations, :final outgoingInnerTiles) =>
             GroupedConversationsList(
               conversations: conversations,
               currentUserId: _currentUserId,
@@ -1734,31 +1567,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               padding: EdgeInsets.zero,
               itemSpacing: 12,
               showActivityTimeOnly: true,
+              useOutgoingInnerTiles: outgoingInnerTiles,
               onConversationTap: _openChatScreen,
               onConversationLongPress: _promptConversationActions,
-            ),
-          _InboxConversationRow(:final conversation) => _wrapWithArchiveSwipe(
-              conversation: conversation,
-              child: outgoingTiles
-                  ? OutgoingConversationTile(
-                      conversation: conversation,
-                      currentUserId: _currentUserId,
-                      showActivityTimeOnly: true,
-                      onTap: () {
-                        _openChatScreen(conversation);
-                      },
-                      onLongPress: () => _promptConversationActions(conversation),
-                    )
-                  : ConversationTile(
-                      conversation: conversation,
-                      currentUserId: _currentUserId,
-                      isGrouped: false,
-                      showActivityTimeOnly: true,
-                      onTap: () {
-                        _openChatScreen(conversation);
-                      },
-                      onLongPress: () => _promptConversationActions(conversation),
-                    ),
             ),
         };
       },
@@ -1804,19 +1615,13 @@ final class _InboxPushBannerRow extends _InboxListEntry {
   _InboxPushBannerRow();
 }
 
-final class _InboxDayHeader extends _InboxListEntry {
-  _InboxDayHeader(this.dayStart);
-  final DateTime dayStart;
-}
-
-final class _InboxConversationRow extends _InboxListEntry {
-  _InboxConversationRow(this.conversation);
-  final ConversationSummary conversation;
-}
-
-final class _InboxIncomingDaySection extends _InboxListEntry {
-  _InboxIncomingDaySection(this.conversations);
+final class _InboxGroupedSection extends _InboxListEntry {
+  _InboxGroupedSection({
+    required this.conversations,
+    required this.outgoingInnerTiles,
+  });
   final List<ConversationSummary> conversations;
+  final bool outgoingInnerTiles;
 }
 
 /// Floating pill button that opens [ArchivedConversationsScreen]. Surfaced

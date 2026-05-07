@@ -135,6 +135,7 @@ class OutgoingConversationTile extends StatelessWidget {
                           color: textColor,
                         ),
                         iconColor: iconColor,
+                        titleMaxLines: 2,
                       ),
                       if (hasLocation || hasSubwayStation || hasBudgetBadge) ...[
                         const SizedBox(height: 8),

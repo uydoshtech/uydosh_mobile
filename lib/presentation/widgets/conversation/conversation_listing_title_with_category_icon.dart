@@ -41,12 +41,17 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
     required this.iconColor,
     super.key,
     this.iconSize = 22,
+    this.titleMaxLines = 1,
   });
 
   final ConversationSummary conversation;
   final TextStyle textStyle;
   final Color iconColor;
   final double iconSize;
+
+  /// Listing / gig title line cap. Inbox group headers use 2 so long titles
+  /// are readable; dense [ListTile] rows keep the default of 1.
+  final int titleMaxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +80,9 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
     final glyphSize = (iconSize * 0.64).clamp(11.0, 14.5) * badgeScale;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: titleMaxLines > 1
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
       children: [
         if (icon != null) ...[
           GigCategoryIconBadge(
@@ -91,7 +98,7 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
           child: Text(
             resolvedConversationListingTitle(conversation),
             style: textStyle,
-            maxLines: 1,
+            maxLines: titleMaxLines,
             overflow: TextOverflow.ellipsis,
           ),
         ),
