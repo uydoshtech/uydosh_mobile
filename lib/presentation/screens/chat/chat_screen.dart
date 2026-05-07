@@ -1790,7 +1790,7 @@ class _InviteProviderBookingDialogState
     final amount = index * step;
     final text = amount <= 0 ? "" : IntFormatUtils.withDotThousands(amount);
     HapticFeedbackUtils.impact();
-    SendSoundUtils.playSelectionSound();
+    SendSoundUtils.playCupertinoWheelSound();
     _inviteAmountWheelMute = true;
     _amountController.value = TextEditingValue(
       text: text,
@@ -2008,6 +2008,8 @@ class _InviteProviderBookingDialogState
                                 Expanded(
                                   child: CupertinoPicker(
                                     backgroundColor: Colors.transparent,
+                                    changeReportingBehavior:
+                                        ChangeReportingBehavior.onScrollEnd,
                                     scrollController: _amountSpinnerController,
                                     itemExtent: 40,
                                     onSelectedItemChanged:

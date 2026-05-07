@@ -91,12 +91,13 @@ class ListingFormMetroSection extends StatelessWidget {
           Expanded(
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: 40,
               scrollController: metroLineScrollController,
               onSelectedItemChanged: (index) {
                 onDismissKeyboard();
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playMetroWheelSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 onLineChanged(index);
               },
               children: [
@@ -216,12 +217,13 @@ class ListingFormMetroSection extends StatelessWidget {
             Expanded(
               child: CupertinoPicker(
                 backgroundColor: Colors.transparent,
+                changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
                 itemExtent: 40,
                 scrollController: metroStationScrollController,
                 onSelectedItemChanged: (index) {
                   onDismissKeyboard();
                   HapticFeedbackUtils.impact();
-                  SendSoundUtils.playMetroWheelSound();
+                  SendSoundUtils.playCupertinoWheelSound();
                   onStationChanged(index);
                 },
                 children: currentStations

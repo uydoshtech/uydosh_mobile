@@ -915,11 +915,12 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                         height: 80,
                         child: CupertinoPicker(
                           backgroundColor: Colors.transparent,
+                          changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
                           itemExtent: 40,
                           scrollController: _messageLimitScrollController,
                           onSelectedItemChanged: (index) {
                             HapticFeedbackUtils.impact();
-                            SendSoundUtils.playSelectionSound();
+                            SendSoundUtils.playCupertinoWheelSound();
                             setState(() {
                               _selectedMessageLimit = _kMessageLimitChoices[index];
                             });

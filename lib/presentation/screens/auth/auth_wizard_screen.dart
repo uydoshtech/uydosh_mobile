@@ -1833,12 +1833,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             height: 220,
             child: CupertinoPicker(
               itemExtent: 44,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               scrollController: FixedExtentScrollController(
                 initialItem: initialIndex,
               ),
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 final previousIso2 = _selectedCountryIso2;
                 final newIso2 = countries[index].iso2;
                 setState(() {
@@ -1983,9 +1984,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             height: 200,
             child: CupertinoPicker(
               itemExtent: 50,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 // Update selection as user scrolls
                 logger.d(
                   "Region picker: User scrolled to index $index, region: ${_getRegionName(_regions[index])}",
@@ -2104,9 +2106,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             height: 200,
             child: CupertinoPicker(
               itemExtent: 50,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 // Update selection as user scrolls
                 logger.d(
                   "University picker: User scrolled to index $index, university: ${_getUniversityName(_universities[index])}",

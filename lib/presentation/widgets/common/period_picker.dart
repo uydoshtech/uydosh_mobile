@@ -102,11 +102,12 @@ class _PeriodPickerState extends State<PeriodPicker> {
               Expanded(
                 child: CupertinoPicker(
                   backgroundColor: Colors.transparent,
+                  changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
                   itemExtent: widget.itemExtent,
                   scrollController: _scrollController,
                   onSelectedItemChanged: (index) {
                     HapticFeedbackUtils.impact();
-                    SendSoundUtils.playSelectionSound();
+                    SendSoundUtils.playCupertinoWheelSound();
                     widget.onChanged(_options[index]);
                   },
                   children: _options.map<Widget>((days) {

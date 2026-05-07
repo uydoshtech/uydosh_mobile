@@ -117,12 +117,13 @@ class _GenderPickerState extends State<GenderPicker> {
           Expanded(
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: widget.itemExtent,
               scrollController: _effectiveController,
               onSelectedItemChanged: (index) {
                 FocusScope.of(context).unfocus();
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 widget.onGenderChanged(_genderOptions[index]);
               },
               children: [

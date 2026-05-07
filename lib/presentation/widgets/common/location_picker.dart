@@ -165,6 +165,7 @@ class _LocationPickerState extends State<LocationPicker> {
           Expanded(
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
                 background: selectionOverlayFill,
               ),
@@ -173,7 +174,7 @@ class _LocationPickerState extends State<LocationPicker> {
               onSelectedItemChanged: (index) {
                 FocusScope.of(context).unfocus();
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playLocationWheelSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 widget.onLocationChanged(index - 1);
                 if (widget.onMetroReset != null && index > 0) {
                   widget.onMetroReset!();

@@ -66,7 +66,7 @@ class PricePicker extends StatelessWidget {
     if (enableHapticFeedback && HapticFeedbackState().isEnabled) {
       HapticFeedbackUtils.impact();
     }
-    SendSoundUtils.playSelectionSound();
+    SendSoundUtils.playCupertinoWheelSound();
 
     onPriceChanged(newPrice);
   }
@@ -92,6 +92,7 @@ class PricePicker extends StatelessWidget {
           Expanded(
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: 40,
               scrollController: FixedExtentScrollController(
                 initialItem: initialIndex,

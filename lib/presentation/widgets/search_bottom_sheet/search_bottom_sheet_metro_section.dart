@@ -184,11 +184,12 @@ class _SearchBottomSheetMetroSectionState
                   Expanded(
                     child: CupertinoPicker(
                       backgroundColor: Colors.transparent,
+                      changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
                       itemExtent: 40,
                       scrollController: widget.metroLineScrollController,
                       onSelectedItemChanged: (index) {
                         HapticFeedbackUtils.impact();
-                        SendSoundUtils.playMetroWheelSound();
+                        SendSoundUtils.playCupertinoWheelSound();
                         widget.onSubwayLineChanged(index);
                       },
                       children: [
@@ -345,11 +346,12 @@ class _SearchBottomSheetMetroSectionState
           Expanded(
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
+              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: 40,
               scrollController: widget.stationPickerController,
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playMetroWheelSound();
+                SendSoundUtils.playCupertinoWheelSound();
                 widget.onStationChanged(index);
               },
               children: [
