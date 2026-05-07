@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
@@ -5,14 +6,17 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
+import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
@@ -28,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -97,13 +102,34 @@ class _GigHubBodyState extends State<_GigHubBody> {
   @override
   void initState() {
     super.initState();
+    UserListingState().initialize();
+    unawaited(UserListingState().refreshUserId());
     _scrollController.addListener(_onScroll);
+    getIt<GigHubFeedsRefreshNotifier>().addListener(_onPublishFlowClosed);
   }
 
   @override
   void dispose() {
+    getIt<GigHubFeedsRefreshNotifier>().removeListener(_onPublishFlowClosed);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Refetch both feeds (e.g. after [GigNavigatorExtensions.pushPublishGig] pops).
+  void _onPublishFlowClosed() {
+    if (!mounted) return;
+    context.read<GigOffersBloc>().add(
+          FetchGigOffers(
+            refresh: true,
+            categoryId: _selectedCategoryId,
+          ),
+        );
+    context.read<GigRequestsBloc>().add(
+          FetchGigRequests(
+            refresh: true,
+            categoryId: _selectedCategoryId,
+          ),
+        );
   }
 
   void _onScroll() {
@@ -347,7 +373,33 @@ class _GigHubBodyState extends State<_GigHubBody> {
                   if (i >= state.offers.length) {
                     return const _LoadingMoreFooter();
                   }
-                  return GigOfferTile(offer: state.offers[i]);
+                  final offer = state.offers[i];
+                  return ListenableBuilder(
+                    listenable: UserListingState(),
+                    builder: (context, _) {
+                      final isOwner = UserListingState().isOwner(
+                        offer.providerUserId,
+                      );
+                      return GigFeedTileSwipeWrapper(
+                        entityId: offer.id,
+                        enabled: isOwner,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(18)),
+                        dismissKeyPrefix: "gig-offer-hub",
+                        confirmTitleKey: "gigs_offer_delete_title",
+                        confirmMessageKey: "gigs_offer_delete_message",
+                        successMessageKey: "gigs_offer_delete_success",
+                        errorMessageKey: "gigs_offer_delete_failed",
+                        onConfirmDelete: (s) => s.deleteOffer(offer.id),
+                        onRemovedFromList: () {
+                          context.read<GigOffersBloc>().add(
+                                RemoveGigOfferFromList(offer.id),
+                              );
+                        },
+                        child: GigOfferTile(offer: offer),
+                      );
+                    },
+                  );
                 },
               ),
             );
@@ -392,16 +444,43 @@ class _GigHubBodyState extends State<_GigHubBody> {
                   if (i >= state.requests.length) {
                     return const _LoadingMoreFooter();
                   }
-                  return GigRequestTile(
-                    request: state.requests[i],
-                    onDetailClosed: (taskWasRemoved) {
-                      if (!taskWasRemoved) return;
-                      context.read<GigRequestsBloc>().add(
-                            FetchGigRequests(
-                              refresh: true,
-                              categoryId: _selectedCategoryId,
-                            ),
-                          );
+                  final request = state.requests[i];
+                  return ListenableBuilder(
+                    listenable: UserListingState(),
+                    builder: (context, _) {
+                      final isOwner = UserListingState().isOwner(
+                            request.clientUserId,
+                          ) &&
+                          request.status == GigRequestStatus.open;
+                      return GigFeedTileSwipeWrapper(
+                        entityId: request.id,
+                        enabled: isOwner,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(16)),
+                        dismissKeyPrefix: "gig-request-hub",
+                        confirmTitleKey: "gigs_request_delete_title",
+                        confirmMessageKey: "gigs_request_delete_message",
+                        successMessageKey: "gigs_request_delete_success",
+                        errorMessageKey: "gigs_request_delete_failed",
+                        onConfirmDelete: (s) => s.cancelRequest(request.id),
+                        onRemovedFromList: () {
+                          context.read<GigRequestsBloc>().add(
+                                RemoveGigRequestFromList(request.id),
+                              );
+                        },
+                        child: GigRequestTile(
+                          request: request,
+                          onDetailClosed: (taskWasRemoved) {
+                            if (!taskWasRemoved) return;
+                            context.read<GigRequestsBloc>().add(
+                                  FetchGigRequests(
+                                    refresh: true,
+                                    categoryId: _selectedCategoryId,
+                                  ),
+                                );
+                          },
+                        ),
+                      );
                     },
                   );
                 },

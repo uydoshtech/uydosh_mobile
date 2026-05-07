@@ -16,6 +16,12 @@ class LoadMoreGigOffers extends GigOffersEvent {
   const LoadMoreGigOffers();
 }
 
+/// Drops one offer from the current loaded page after a successful owner delete.
+class RemoveGigOfferFromList extends GigOffersEvent {
+  const RemoveGigOfferFromList(this.offerId);
+  final int offerId;
+}
+
 abstract class GigOffersState {
   const GigOffersState();
 }
@@ -50,6 +56,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
   GigOffersBloc(this._service) : super(const GigOffersInitial()) {
     on<FetchGigOffers>(_onFetch);
     on<LoadMoreGigOffers>(_onLoadMore);
+    on<RemoveGigOfferFromList>(_onRemoveOffer);
   }
 
   final IGigService _service;
@@ -101,5 +108,22 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
     } catch (err) {
       emit(GigOffersError(err.toString()));
     }
+  }
+
+  void _onRemoveOffer(
+    RemoveGigOfferFromList e,
+    Emitter<GigOffersState> emit,
+  ) {
+    final s = state;
+    if (s is! GigOffersLoaded) return;
+    final next = s.offers.where((o) => o.id != e.offerId).toList();
+    emit(
+      GigOffersLoaded(
+        offers: next,
+        hasMore: s.hasMore,
+        page: s.page,
+        categoryId: s.categoryId,
+      ),
+    );
   }
 }

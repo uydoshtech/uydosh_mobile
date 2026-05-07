@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -129,8 +130,13 @@ extension GigNavigatorExtensions on BuildContext {
   /// and offer blocs in scope so the in-screen Task/Service toggle can
   /// switch flavors without re-pushing a route. The hub uses this in place
   /// of the legacy [pushPostGigRequest] / [pushPostGigOffer] entry points.
-  void pushPublishGig({GigPublishMode initialMode = GigPublishMode.task}) {
-    Navigator.of(this).push(
+  ///
+  /// When this route pops (submit success, back, or dismiss), gig hub feeds
+  /// are signaled to refetch so new tasks/services appear immediately.
+  Future<void> pushPublishGig({
+    GigPublishMode initialMode = GigPublishMode.task,
+  }) async {
+    await Navigator.of(this).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
           providers: [
@@ -145,6 +151,7 @@ extension GigNavigatorExtensions on BuildContext {
         ),
       ),
     );
+    getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
   }
 
   void pushMyGigBookings() {

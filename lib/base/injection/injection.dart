@@ -1,5 +1,6 @@
 import "package:get_it/get_it.dart";
 import "package:uy_dosh/base/api/auth_token_repository.dart";
+import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
@@ -170,5 +171,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IGigService>(
     () => GigService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<GigHubFeedsRefreshNotifier>(
+    GigHubFeedsRefreshNotifier.new,
   );
 }

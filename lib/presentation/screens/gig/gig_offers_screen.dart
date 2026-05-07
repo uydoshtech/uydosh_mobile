@@ -1,11 +1,15 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 
 class GigOffersScreen extends StatefulWidget {
@@ -21,6 +25,8 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
   @override
   void initState() {
     super.initState();
+    UserListingState().initialize();
+    unawaited(UserListingState().refreshUserId());
     _scrollController.addListener(_onScroll);
     context.read<GigOffersBloc>().add(const FetchGigOffers());
   }
@@ -82,7 +88,30 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
                       child: Center(child: HouseLoadingIndicator()),
                     );
                   }
-                  return GigOfferTile(offer: state.offers[i]);
+                  final offer = state.offers[i];
+                  return ListenableBuilder(
+                    listenable: UserListingState(),
+                    builder: (context, _) {
+                      return GigFeedTileSwipeWrapper(
+                        entityId: offer.id,
+                        enabled: UserListingState().isOwner(offer.providerUserId),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(18)),
+                        dismissKeyPrefix: "gig-offer-browse",
+                        confirmTitleKey: "gigs_offer_delete_title",
+                        confirmMessageKey: "gigs_offer_delete_message",
+                        successMessageKey: "gigs_offer_delete_success",
+                        errorMessageKey: "gigs_offer_delete_failed",
+                        onConfirmDelete: (s) => s.deleteOffer(offer.id),
+                        onRemovedFromList: () {
+                          context.read<GigOffersBloc>().add(
+                                RemoveGigOfferFromList(offer.id),
+                              );
+                        },
+                        child: GigOfferTile(offer: offer),
+                      );
+                    },
+                  );
                 },
               ),
             );

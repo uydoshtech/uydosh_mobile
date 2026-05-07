@@ -17,6 +17,12 @@ class LoadMoreGigRequests extends GigRequestsEvent {
   const LoadMoreGigRequests();
 }
 
+/// Drops one request from the current loaded page after a successful owner cancel.
+class RemoveGigRequestFromList extends GigRequestsEvent {
+  const RemoveGigRequestFromList(this.requestId);
+  final int requestId;
+}
+
 abstract class GigRequestsState {
   const GigRequestsState();
 }
@@ -56,6 +62,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
   GigRequestsBloc(this._service) : super(const GigRequestsInitial()) {
     on<FetchGigRequests>(_onFetch);
     on<LoadMoreGigRequests>(_onLoadMore);
+    on<RemoveGigRequestFromList>(_onRemoveRequest);
   }
 
   final IGigService _service;
@@ -111,5 +118,23 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
     } catch (err) {
       emit(GigRequestsError(err.toString()));
     }
+  }
+
+  void _onRemoveRequest(
+    RemoveGigRequestFromList e,
+    Emitter<GigRequestsState> emit,
+  ) {
+    final s = state;
+    if (s is! GigRequestsLoaded) return;
+    final next = s.requests.where((r) => r.id != e.requestId).toList();
+    emit(
+      GigRequestsLoaded(
+        requests: next,
+        hasMore: s.hasMore,
+        page: s.page,
+        categoryId: s.categoryId,
+        status: s.status,
+      ),
+    );
   }
 }
