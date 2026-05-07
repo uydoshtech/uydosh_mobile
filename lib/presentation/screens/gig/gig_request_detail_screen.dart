@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -250,9 +251,12 @@ class _RequestDetailContent extends StatelessWidget {
     final language = LanguageState().currentLanguage;
     final categoryName = request.category?.localizedName(language) ?? "";
     final description = _localizedDescription(language);
-    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    // Match [ListingDetailContactActionBar] structure (SafeArea + horizontal 16).
+    // Extra bottom padding (24) keeps the CTA off the browser chrome when
+    // safe-area inset is zero; on devices, SafeArea still adds system inset.
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     final hasBottomCta = onEditPressed != null || showContactCta;
-    final listBottomPad = hasBottomCta ? 110.0 + bottomInset : 24.0 + bottomInset;
+    final listBottomPad = hasBottomCta ? 118.0 + bottomInset : 24.0 + bottomInset;
 
     return Stack(
       children: [
@@ -398,37 +402,42 @@ class _RequestDetailContent extends StatelessWidget {
         ),
         if (hasBottomCta)
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16 + bottomInset,
-            child: onEditPressed != null
-                ? PrimaryButton(
-                    onPressed: onEditPressed,
-                    height: 54,
-                    width: double.infinity,
-                    borderRadius: BorderRadius.circular(16),
-                    isDisabled: editDisabled,
-                    child: Text(
-                      L10n.get("gigs_request_edit_cta"),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: onEditPressed != null
+                    ? PrimaryButtonFactory.iconText(
+                        onPressed: onEditPressed,
+                        icon: Icons.edit_outlined,
+                        text: L10n.get("gigs_request_edit_cta"),
+                        isDisabled: editDisabled,
+                        height: 54,
+                        width: double.infinity,
+                        borderRadius: BorderRadius.circular(16),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      )
+                    : PrimaryButtonFactory.iconText(
+                        onPressed: contactInFlight ? null : onContactPressed,
+                        icon: Icons.chat_bubble_outline,
+                        text: L10n.get("gigs_request_contact_cta"),
+                        isLoading: contactInFlight,
+                        height: 54,
+                        width: double.infinity,
+                        borderRadius: BorderRadius.circular(16),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                  )
-                : PrimaryButtonFactory.iconText(
-                    onPressed: contactInFlight ? null : onContactPressed,
-                    icon: Icons.chat_bubble_outline,
-                    text: L10n.get("gigs_request_contact_cta"),
-                    isLoading: contactInFlight,
-                    height: 54,
-                    width: double.infinity,
-                    borderRadius: BorderRadius.circular(16),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
+              ),
+            ),
           ),
       ],
     );
@@ -464,7 +473,7 @@ class _RequestDetailContent extends StatelessWidget {
         "gigs_request_budget_fixed",
         params: {
           "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
-          "currency": request.currencyCode,
+          "currency": CurrencyDisplayUtils.isoCode(request.currencyCode),
         },
       );
     }

@@ -951,6 +951,23 @@ class MainNavigationState extends State<MainNavigation>
         ),
         actions: [
           ListenableBuilder(
+            listenable: AuthenticationState(),
+            builder: (context, _) {
+              if (_currentIndex != 1 ||
+                  !AuthenticationState().isAuthenticated) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(right: 2),
+                child: _threeDAppBarIconButton(
+                  iconData: Icons.dynamic_feed_rounded,
+                  onPressed: () => context.pushMyPublishedGigs(),
+                  semanticsLabel: L10n.get("gigs_my_published_title"),
+                ),
+              );
+            },
+          ),
+          ListenableBuilder(
             listenable: Listenable.merge([
               AuthenticationState(),
               ActiveSearchAlertsState(),

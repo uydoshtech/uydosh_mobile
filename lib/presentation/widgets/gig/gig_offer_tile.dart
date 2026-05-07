@@ -1,5 +1,6 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -163,7 +164,7 @@ class GigOfferTile extends StatelessWidget {
   String _formatPrice(GigOffer o) {
     final params = {
       "amount": IntFormatUtils.withDotThousands(o.price),
-      "currency": o.currencyCode,
+      "currency": CurrencyDisplayUtils.isoCode(o.currencyCode),
     };
     switch (o.pricingType) {
       case GigPricingType.hourly:

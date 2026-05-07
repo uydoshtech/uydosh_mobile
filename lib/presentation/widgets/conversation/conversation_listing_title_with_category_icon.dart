@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -49,11 +51,16 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = conversationListingLeadingIcon(conversation);
+    final themeState = ThemeState();
+    final isGigCategoryBadge =
+        gigCategoryIconForConversationSummary(conversation) != null;
 
     var badgeIconColor = iconColor;
     var badgeBgColor = iconColor.withValues(alpha: 0.14);
-    if (gigCategoryIconForConversationSummary(conversation) == null &&
-        conversation.listingTypeId != null) {
+    if (isGigCategoryBadge && themeState.isBlueTheme) {
+      badgeIconColor = BlueThemeColors.textPrimary;
+      badgeBgColor = BlueThemeColors.textPrimary.withValues(alpha: 0.14);
+    } else if (!isGigCategoryBadge && conversation.listingTypeId != null) {
       final code = ListingTypeHelper.getCodeFromId(conversation.listingTypeId!);
       if (code != "unknown") {
         final tint = ListingTypeHelper.getColor(code);
@@ -62,8 +69,10 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
       }
     }
 
-    final badgeDimension = iconSize + 4;
-    final glyphSize = (iconSize * 0.64).clamp(11.0, 14.5);
+    final badgeScale =
+        themeState.isBlueTheme && icon != null ? 1.2 : 1.0;
+    final badgeDimension = (iconSize + 4) * badgeScale;
+    final glyphSize = (iconSize * 0.64).clamp(11.0, 14.5) * badgeScale;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,

@@ -20,6 +20,9 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     this.peerInitials,
     /// Opens the peer's profile (e.g. [ListingOwnerProfileScreen]) when set.
     this.onPeerAvatarTap,
+    /// Placed immediately to the left of the 3-dot overflow menu (e.g. gig
+    /// "invite to book" on task chats).
+    this.actionBeforeMenu,
   });
   final String displayName;
 
@@ -35,6 +38,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? peerInitials;
   final List<ActionMenuItem> actionMenuItems;
   final VoidCallback? onPeerAvatarTap;
+  final Widget? actionBeforeMenu;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -112,6 +116,11 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
           foregroundColor: onBarColor,
           actions: [
+            if (actionBeforeMenu != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: actionBeforeMenu,
+              ),
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: ActionDropdownMenu(

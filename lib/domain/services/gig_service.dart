@@ -142,6 +142,20 @@ abstract class IGigService {
   Future<GigBid> withdrawBid(int bidId);
   Future<GigBooking> acceptBid(int bidId);
 
+  /// Task owner skips bids: invites [providerUserId]; booking stays [pending]
+  /// until the provider accepts.
+  Future<GigBooking> inviteProviderFromRequest({
+    required int requestId,
+    required int providerUserId,
+    int? agreedAmount,
+    String currencyCode = "UZS",
+    DateTime? scheduledStartAt,
+    DateTime? scheduledEndAt,
+    String? addressText,
+    double? latitude,
+    double? longitude,
+  });
+
   // Bookings
   Future<GigBooking> bookOffer({
     required int offerId,
@@ -562,6 +576,38 @@ class GigService implements IGigService {
       "/gigs/bids/$bidId/accept",
       (json) => GigBooking.fromJson(json as Map<String, dynamic>),
       basePath: _base,
+    );
+  }
+
+  @override
+  Future<GigBooking> inviteProviderFromRequest({
+    required int requestId,
+    required int providerUserId,
+    int? agreedAmount,
+    String currencyCode = "UZS",
+    DateTime? scheduledStartAt,
+    DateTime? scheduledEndAt,
+    String? addressText,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final body = <String, dynamic>{
+      "provider_user_id": providerUserId,
+      "currency_code": currencyCode,
+      if (agreedAmount != null) "agreed_amount": agreedAmount,
+      if (scheduledStartAt != null)
+        "scheduled_start_at": scheduledStartAt.toIso8601String(),
+      if (scheduledEndAt != null)
+        "scheduled_end_at": scheduledEndAt.toIso8601String(),
+      if (addressText != null) "address_text": addressText,
+      if (latitude != null) "latitude": latitude,
+      if (longitude != null) "longitude": longitude,
+    };
+    return _oauthClient.post<GigBooking, _RawJsonBody>(
+      "/gigs/requests/$requestId/invite-provider",
+      (json) => GigBooking.fromJson(json as Map<String, dynamic>),
+      basePath: _base,
+      data: _RawJsonBody(body),
     );
   }
 

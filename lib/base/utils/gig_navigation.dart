@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/screens/gig/gig_offers_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_request_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_requests_list_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/my_gig_bookings_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/my_published_gigs_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_offer_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart";
@@ -154,13 +155,22 @@ extension GigNavigatorExtensions on BuildContext {
     getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
   }
 
-  void pushMyGigBookings() {
+  void pushMyGigBookings({String initialRoleFilter = 'all'}) {
     Navigator.of(this).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) => GigBookingsBloc(getIt<IGigService>()),
-          child: const MyGigBookingsScreen(),
+          child: MyGigBookingsScreen(initialRoleFilter: initialRoleFilter),
         ),
+      ),
+    );
+  }
+
+  /// Published gig offers and tasks for the signed-in user.
+  void pushMyPublishedGigs() {
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const MyPublishedGigsScreen(),
       ),
     );
   }

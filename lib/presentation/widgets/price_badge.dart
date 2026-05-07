@@ -239,6 +239,8 @@ class CompactPriceBadge extends StatelessWidget {
 
 /// Green-outlined chip with a payments icon, matching listing tiles and
 /// [ListingDetailMetaBadges] so marketplace prices stay visually consistent.
+/// Pass currency as an ISO code only — use [CurrencyDisplayUtils.isoCode], not
+/// [CurrencyDisplayUtils.codeWithFlag], so no flag emoji appears in this badge.
 class ListingPaymentsOutlineBadge extends StatelessWidget {
   const ListingPaymentsOutlineBadge({
     required this.label,

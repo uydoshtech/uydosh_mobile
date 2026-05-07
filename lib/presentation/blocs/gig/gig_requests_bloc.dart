@@ -7,10 +7,17 @@ abstract class GigRequestsEvent {
 }
 
 class FetchGigRequests extends GigRequestsEvent {
-  const FetchGigRequests({this.refresh = false, this.categoryId, this.status});
+  const FetchGigRequests({
+    this.refresh = false,
+    this.categoryId,
+    this.status,
+    this.clientUserId,
+  });
   final bool refresh;
   final int? categoryId;
   final GigRequestStatus? status;
+  /// When set, lists only tasks posted by this user (e.g. "my tasks").
+  final int? clientUserId;
 }
 
 class LoadMoreGigRequests extends GigRequestsEvent {
@@ -42,12 +49,14 @@ class GigRequestsLoaded extends GigRequestsState {
     required this.page,
     required this.categoryId,
     required this.status,
+    this.clientUserId,
   });
   final List<GigRequest> requests;
   final bool hasMore;
   final int page;
   final int? categoryId;
   final GigRequestStatus? status;
+  final int? clientUserId;
 }
 
 class GigRequestsError extends GigRequestsState {
@@ -78,6 +87,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
         limit: 20,
         categoryId: e.categoryId,
         status: e.status,
+        clientUserId: e.clientUserId,
       );
       emit(
         GigRequestsLoaded(
@@ -86,6 +96,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
           page: 1,
           categoryId: e.categoryId,
           status: e.status,
+          clientUserId: e.clientUserId,
         ),
       );
     } catch (err) {
@@ -105,6 +116,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
         limit: 20,
         categoryId: s.categoryId,
         status: s.status,
+        clientUserId: s.clientUserId,
       );
       emit(
         GigRequestsLoaded(
@@ -113,6 +125,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
           page: s.page + 1,
           categoryId: s.categoryId,
           status: s.status,
+          clientUserId: s.clientUserId,
         ),
       );
     } catch (err) {
@@ -134,6 +147,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
         page: s.page,
         categoryId: s.categoryId,
         status: s.status,
+        clientUserId: s.clientUserId,
       ),
     );
   }

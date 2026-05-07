@@ -771,6 +771,14 @@ class AppStrings {
       "gigs_my_bookings_tab_client": "As client",
       "gigs_my_bookings_tab_provider": "As provider",
       "gigs_my_bookings_empty": "No bookings yet.",
+      "gigs_my_published_title": "My published",
+      "gigs_my_published_tab_services": "Services",
+      "gigs_my_published_tab_tasks": "Tasks",
+      "gigs_my_published_empty_services":
+          "You have not published any services yet.",
+      "gigs_my_published_empty_tasks": "You have not posted any tasks yet.",
+      "gigs_my_published_sign_in":
+          "Sign in to see the services and tasks you have published.",
       "gigs_action_cancel": "Cancel",
       "gigs_action_mark_complete": "Mark complete",
       "gigs_status_pending": "Pending",
@@ -779,6 +787,20 @@ class AppStrings {
       "gigs_status_completed": "Completed",
       "gigs_status_cancelled": "Cancelled",
       "gigs_status_disputed": "Disputed",
+
+      "gigs_chat_menu_invite_provider_to_book": "Invite to book (needs their OK)",
+      "gigs_invite_provider_dialog_title": "Invite provider",
+      "gigs_invite_provider_dialog_body":
+          "They must accept under My bookings before the job is confirmed. Enter the agreed amount if there is no task budget.",
+      "gigs_invite_provider_dialog_field_hint": "Agreed amount (optional if task has a budget)",
+      "gigs_invite_provider_confirm": "Send invite",
+      "gigs_invite_provider_success_toast": "Invite sent. They can tap Accept under My bookings.",
+      "gigs_invite_provider_failed_toast": "Could not send invite. Try again.",
+      "gigs_invite_provider_amount_required":
+          "Enter an agreed amount, or add a budget to the task first.",
+      "gigs_invite_provider_owner_only": "Only the person who posted the task can invite.",
+      "gigs_invite_provider_not_open_task": "This task is no longer open for invites.",
+      "gigs_action_accept_booking": "Accept",
 
       "gigs_requests_title": "Open tasks",
       "gigs_requests_empty": "No open tasks right now.",
@@ -2084,6 +2106,13 @@ class AppStrings {
       "gigs_my_bookings_tab_client": "Как заказчик",
       "gigs_my_bookings_tab_provider": "Как исполнитель",
       "gigs_my_bookings_empty": "Заказов пока нет.",
+      "gigs_my_published_title": "Мои публикации",
+      "gigs_my_published_tab_services": "Услуги",
+      "gigs_my_published_tab_tasks": "Задачи",
+      "gigs_my_published_empty_services": "Вы ещё не опубликовали услуги.",
+      "gigs_my_published_empty_tasks": "Вы ещё не публиковали задачи.",
+      "gigs_my_published_sign_in":
+          "Войдите, чтобы увидеть опубликованные услуги и задачи.",
       "gigs_action_cancel": "Отменить",
       "gigs_action_mark_complete": "Завершить",
       "gigs_status_pending": "Ожидает",
@@ -2092,6 +2121,24 @@ class AppStrings {
       "gigs_status_completed": "Завершено",
       "gigs_status_cancelled": "Отменено",
       "gigs_status_disputed": "Спор",
+
+      "gigs_chat_menu_invite_provider_to_book": "Пригласить подтвердить заказ",
+      "gigs_invite_provider_dialog_title": "Пригласить исполнителя",
+      "gigs_invite_provider_dialog_body":
+          "Он должен принять заказ во вкладке «Мои заказы», прежде чем всё будет подтверждено. Введите сумму, если в задаче открытый бюджет.",
+      "gigs_invite_provider_dialog_field_hint":
+          "Согласованная сумма (если в задаче нет суммы)",
+      "gigs_invite_provider_confirm": "Отправить приглашение",
+      "gigs_invite_provider_success_toast":
+          "Приглашение отправлено. Принять можно во вкладке «Мои заказы».",
+      "gigs_invite_provider_failed_toast": "Не удалось отправить. Попробуйте ещё раз.",
+      "gigs_invite_provider_amount_required":
+          "Укажите сумму или задайте бюджет в задаче.",
+      "gigs_invite_provider_owner_only":
+          "Пригласить может только автор задачи.",
+      "gigs_invite_provider_not_open_task":
+          "Эта задача уже не доступна для приглашения.",
+      "gigs_action_accept_booking": "Принять",
 
       "gigs_requests_title": "Открытые задачи",
       "gigs_requests_empty": "Сейчас нет открытых задач.",
@@ -3412,6 +3459,15 @@ class AppStrings {
       "gigs_my_bookings_tab_client": "Buyurtmachi sifatida",
       "gigs_my_bookings_tab_provider": "Bajaruvchi sifatida",
       "gigs_my_bookings_empty": "Buyurtmalar yo'q.",
+      "gigs_my_published_title": "Men nashr qilganlar",
+      "gigs_my_published_tab_services": "Xizmatlar",
+      "gigs_my_published_tab_tasks": "Vazifalar",
+      "gigs_my_published_empty_services":
+          "Siz hali hech qanday xizmat joylashtmagansiz.",
+      "gigs_my_published_empty_tasks":
+          "Siz hali hech qanday vazifa joylashtmagansiz.",
+      "gigs_my_published_sign_in":
+          "Joylashtirgan xizmat va vazifalaringizni ko‘rish uchun kiring.",
       "gigs_action_cancel": "Bekor qilish",
       "gigs_action_mark_complete": "Tugallandi",
       "gigs_status_pending": "Kutilmoqda",
@@ -3420,6 +3476,24 @@ class AppStrings {
       "gigs_status_completed": "Tugallandi",
       "gigs_status_cancelled": "Bekor qilindi",
       "gigs_status_disputed": "Nizoli",
+
+      "gigs_chat_menu_invite_provider_to_book": "Bron qilishga taklif (tasdiqlashi kerak)",
+      "gigs_invite_provider_dialog_title": "Bajaruvchini taklif qilish",
+      "gigs_invite_provider_dialog_body":
+          "Ish tasdiqlanishidan oldin u «Buyurtmalarim»da Qabul tugmasini bosishi kerak. Vazifada summasi bo‘lmasa, kelishilgan miqdorni kiriting.",
+      "gigs_invite_provider_dialog_field_hint":
+          "Kelishilgan summa (vazifada summa yo‘q bo‘lsa majburiy)",
+      "gigs_invite_provider_confirm": "Taklif yuborish",
+      "gigs_invite_provider_success_toast":
+          "Taklif yuborildi. «Buyurtmalarim»da qabul qilishi mumkin.",
+      "gigs_invite_provider_failed_toast": "Yuborib bo‘lmadi. Qayta urinib ko‘ring.",
+      "gigs_invite_provider_amount_required":
+          "Summani kiriting yoki oldin vazifaga byudjet qo‘shing.",
+      "gigs_invite_provider_owner_only":
+          "Faqat vazifa muallifi taklif yubora oladi.",
+      "gigs_invite_provider_not_open_task":
+          "Bu vazifa endi taklif uchun ochiq emas.",
+      "gigs_action_accept_booking": "Qabul qilish",
 
       "gigs_requests_title": "Ochiq vazifalar",
       "gigs_requests_empty": "Hozircha ochiq vazifa yo'q.",

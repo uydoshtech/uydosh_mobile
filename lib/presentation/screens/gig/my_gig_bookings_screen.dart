@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
@@ -24,19 +26,41 @@ extension on _BookingRole {
       };
 }
 
+_BookingRole _bookingRoleFromApi(String raw) {
+  switch (raw) {
+    case "client":
+      return _BookingRole.client;
+    case "provider":
+      return _BookingRole.provider;
+    default:
+      return _BookingRole.all;
+  }
+}
+
 class MyGigBookingsScreen extends StatefulWidget {
-  const MyGigBookingsScreen({super.key});
+  const MyGigBookingsScreen({
+    super.key,
+    this.initialRoleFilter = 'all',
+  });
+
+  /// Passed to [FetchMyGigBookings] as `all`, `client`, or `provider`.
+  final String initialRoleFilter;
 
   @override
   State<MyGigBookingsScreen> createState() => _MyGigBookingsScreenState();
 }
 
 class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
-  _BookingRole _role = _BookingRole.all;
+  late _BookingRole _role;
+  int? _sessionUserId;
 
   @override
   void initState() {
     super.initState();
+    _role = _bookingRoleFromApi(widget.initialRoleFilter);
+    SessionManager.getUserId().then((id) {
+      if (mounted) setState(() => _sessionUserId = id);
+    });
     context
         .read<GigBookingsBloc>()
         .add(FetchMyGigBookings(role: _role.apiValue));
@@ -111,7 +135,10 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
                     itemCount: state.bookings.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 14),
                     itemBuilder: (_, i) =>
-                        _BookingTile(booking: state.bookings[i]),
+                        _BookingTile(
+                          booking: state.bookings[i],
+                          sessionUserId: _sessionUserId,
+                        ),
                   );
                 }
                 return const SizedBox.shrink();
@@ -125,8 +152,12 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
 }
 
 class _BookingTile extends StatelessWidget {
-  const _BookingTile({required this.booking});
+  const _BookingTile({
+    required this.booking,
+    required this.sessionUserId,
+  });
   final GigBooking booking;
+  final int? sessionUserId;
 
   Color _statusColor(BuildContext context) {
     switch (booking.status) {
@@ -224,7 +255,7 @@ class _BookingTile extends StatelessWidget {
                     const SizedBox(height: 8),
                     ListingPaymentsOutlineBadge(
                       label:
-                          "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${booking.currencyCode}",
+                          "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCode(booking.currencyCode)}",
                     ),
                     if (booking.scheduledStartAt != null) ...[
                       const SizedBox(height: 4),
@@ -250,7 +281,10 @@ class _BookingTile extends StatelessWidget {
                   if (_hasActionButtons) ...[
                     const SizedBox(height: 18),
                     const Expanded(child: SizedBox.shrink()),
-                    _BookingActions(booking: booking),
+                    _BookingActions(
+                      booking: booking,
+                      sessionUserId: sessionUserId,
+                    ),
                   ],
                 ],
               ),
@@ -263,12 +297,34 @@ class _BookingTile extends StatelessWidget {
 }
 
 class _BookingActions extends StatelessWidget {
-  const _BookingActions({required this.booking});
+  const _BookingActions({
+    required this.booking,
+    required this.sessionUserId,
+  });
   final GigBooking booking;
+  final int? sessionUserId;
 
   @override
   Widget build(BuildContext context) {
     final actions = <Widget>[];
+
+    final me = sessionUserId;
+    if (booking.status == GigBookingStatus.pending &&
+        me != null &&
+        booking.isProvider(me)) {
+      actions.add(
+        PrimaryButtonFactory.text(
+          onPressed: () => context.read<GigBookingsBloc>().add(
+                TransitionGigBooking(
+                  bookingId: booking.id,
+                  toStatus: GigBookingStatus.accepted,
+                ),
+              ),
+          text: L10n.get("gigs_action_accept_booking"),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        ),
+      );
+    }
 
     final canCancel = booking.status == GigBookingStatus.pending ||
         booking.status == GigBookingStatus.accepted;

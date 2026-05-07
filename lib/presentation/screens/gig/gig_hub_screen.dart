@@ -324,6 +324,21 @@ class _GigHubBodyState extends State<_GigHubBody> {
       appBar: AppBar(
         leading: ThreeDAppBarIconButton.backLeading(context),
         title: Text(L10n.get("gigs_hub_title")),
+        actions: [
+          ListenableBuilder(
+            listenable: AuthenticationState(),
+            builder: (context, _) {
+              if (!AuthenticationState().isAuthenticated) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                tooltip: L10n.get("gigs_my_published_title"),
+                icon: const Icon(Icons.dynamic_feed_rounded),
+                onPressed: () => context.pushMyPublishedGigs(),
+              );
+            },
+          ),
+        ],
       ),
       body: body,
     );

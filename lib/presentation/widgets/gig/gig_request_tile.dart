@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
@@ -38,7 +39,7 @@ class GigRequestTile extends StatelessWidget {
             "gigs_request_budget_fixed",
             params: {
               "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
-              "currency": request.currencyCode,
+              "currency": CurrencyDisplayUtils.codeWithFlag(request.currencyCode),
             },
           )
         : L10n.get("gigs_request_budget_open");

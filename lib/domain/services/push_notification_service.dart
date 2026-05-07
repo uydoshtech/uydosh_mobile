@@ -11,6 +11,7 @@ import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/device_info_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -201,6 +202,8 @@ class PushNotificationService implements IPushNotificationService {
       _navigateToMessageIfApplicable(message);
     } else if (type == "search_match") {
       _navigateToListingFromSearchAlert(message);
+    } else if (type == "gig_bid_accepted") {
+      _navigateToMyGigBookingsAsProvider(message);
     }
   }
 
@@ -278,6 +281,17 @@ class PushNotificationService implements IPushNotificationService {
       // Second fetch next frame: catches replication lag vs. initState's
       // [FetchMessages] and ensures the notification's message appears.
       _requestChatRefreshForPush(conversationId);
+    });
+  }
+
+  void _navigateToMyGigBookingsAsProvider(RemoteMessage _) {
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
+    final navigatorKey = getIt<GlobalKey<NavigatorState>>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx == null || !ctx.mounted) return;
+      ctx.pushMyGigBookings(initialRoleFilter: "provider");
     });
   }
 

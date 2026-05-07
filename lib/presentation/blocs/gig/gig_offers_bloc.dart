@@ -7,9 +7,11 @@ abstract class GigOffersEvent {
 }
 
 class FetchGigOffers extends GigOffersEvent {
-  const FetchGigOffers({this.refresh = false, this.categoryId});
+  const FetchGigOffers({this.refresh = false, this.categoryId, this.providerUserId});
   final bool refresh;
   final int? categoryId;
+  /// When set, lists only offers from this provider account (e.g. "my services").
+  final int? providerUserId;
 }
 
 class LoadMoreGigOffers extends GigOffersEvent {
@@ -40,11 +42,13 @@ class GigOffersLoaded extends GigOffersState {
     required this.hasMore,
     required this.page,
     required this.categoryId,
+    this.providerUserId,
   });
   final List<GigOffer> offers;
   final bool hasMore;
   final int page;
   final int? categoryId;
+  final int? providerUserId;
 }
 
 class GigOffersError extends GigOffersState {
@@ -71,6 +75,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
         page: 1,
         limit: 20,
         categoryId: e.categoryId,
+        providerUserId: e.providerUserId,
       );
       emit(
         GigOffersLoaded(
@@ -78,6 +83,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
           hasMore: res.hasMore,
           page: 1,
           categoryId: e.categoryId,
+          providerUserId: e.providerUserId,
         ),
       );
     } catch (err) {
@@ -96,6 +102,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
         page: s.page + 1,
         limit: 20,
         categoryId: s.categoryId,
+        providerUserId: s.providerUserId,
       );
       emit(
         GigOffersLoaded(
@@ -103,6 +110,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
           hasMore: res.hasMore,
           page: s.page + 1,
           categoryId: s.categoryId,
+          providerUserId: s.providerUserId,
         ),
       );
     } catch (err) {
@@ -123,6 +131,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
         hasMore: s.hasMore,
         page: s.page,
         categoryId: s.categoryId,
+        providerUserId: s.providerUserId,
       ),
     );
   }

@@ -11,6 +11,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
@@ -218,12 +219,12 @@ class _OfferDetailContentStatefulState
 
     final topPad =
         8.0 + ThemeState().mainShellGlassExtraTopInset(context);
-    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Stack(
       children: [
         ListView(
-          padding: EdgeInsets.fromLTRB(16, topPad, 16, 152 + bottomInset),
+          padding: EdgeInsets.fromLTRB(16, topPad, 16, 160 + bottomInset),
           children: [
             if (offer.photos.isNotEmpty &&
                 _photoPageController != null) ...[
@@ -333,42 +334,45 @@ class _OfferDetailContentStatefulState
           ],
         ),
         Positioned(
-          left: 16,
-          right: 16,
-          bottom: 16 + bottomInset,
-          // Owners can't book their own offer — swap the booking CTA for
-          // an edit entry point that opens the publish screen prefilled
-          // from this offer. After a successful save we re-fetch the
-          // detail so the screen reflects the new state immediately.
-          child: UserListingState().isOwner(offer.providerUserId)
-              ? PrimaryButtonFactory.iconText(
-                  onPressed: () =>
-                      unawaited(widget.onEditOffer(offer)),
-                  icon: Icons.edit_outlined,
-                  text: L10n.get("gigs_offer_edit_cta"),
-                  height: 54,
-                  width: double.infinity,
-                  borderRadius: BorderRadius.circular(16),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                )
-              : PrimaryButtonFactory.iconText(
-                  onPressed: widget.state.bookingInFlight
-                      ? null
-                      : _onBookThisServicePressed,
-                  isLoading: widget.state.bookingInFlight,
-                  icon: Icons.event_available_outlined,
-                  text: L10n.get("gigs_offer_book_cta"),
-                  height: 54,
-                  width: double.infinity,
-                  borderRadius: BorderRadius.circular(16),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
+          left: 0,
+          right: 0,
+          bottom: 0,
+          // Match gig request detail / listing-detail-style footer insets.
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              child: UserListingState().isOwner(offer.providerUserId)
+                  ? PrimaryButtonFactory.iconText(
+                      onPressed: () =>
+                          unawaited(widget.onEditOffer(offer)),
+                      icon: Icons.edit_outlined,
+                      text: L10n.get("gigs_offer_edit_cta"),
+                      height: 54,
+                      width: double.infinity,
+                      borderRadius: BorderRadius.circular(16),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    )
+                  : PrimaryButtonFactory.iconText(
+                      onPressed: widget.state.bookingInFlight
+                          ? null
+                          : _onBookThisServicePressed,
+                      isLoading: widget.state.bookingInFlight,
+                      icon: Icons.event_available_outlined,
+                      text: L10n.get("gigs_offer_book_cta"),
+                      height: 54,
+                      width: double.infinity,
+                      borderRadius: BorderRadius.circular(16),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+            ),
+          ),
         ),
       ],
     );
@@ -377,7 +381,7 @@ class _OfferDetailContentStatefulState
   String _priceLine(GigOffer o) {
     final params = {
       "amount": IntFormatUtils.withDotThousands(o.price),
-      "currency": o.currencyCode,
+      "currency": CurrencyDisplayUtils.isoCode(o.currencyCode),
     };
     switch (o.pricingType) {
       case GigPricingType.hourly:

@@ -20,15 +20,19 @@ import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -54,11 +58,14 @@ import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_shee
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ChatScreen extends StatefulWidget {
@@ -134,6 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // requiring the user to reopen the chat.
   String? _peerAvatarUrl;
   bool _peerProfileFetchInFlight = false;
+  bool _inviteBookingInFlight = false;
   int? _peerProfileFetchedForUserId;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
@@ -1112,6 +1120,9 @@ class _ChatScreenState extends State<ChatScreen> {
             peerAvatarUrl: _peerAvatarUrl,
             peerInitials: widget.otherUserInitials,
             onPeerAvatarTap: _navigateToUserProfile,
+            actionBeforeMenu: widget.gigRequestId != null
+                ? _buildInviteToBookAppBarButton(context)
+                : null,
             actionMenuItems: _buildActionMenuItems(),
           ),
           body: GestureDetector(
@@ -1479,6 +1490,20 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Widget _buildInviteToBookAppBarButton(BuildContext context) {
+    return IgnorePointer(
+      ignoring: _inviteBookingInFlight,
+      child: Opacity(
+        opacity: _inviteBookingInFlight ? 0.45 : 1,
+        child: ThreeDAppBarIconButton(
+          iconData: Icons.how_to_reg_outlined,
+          onPressed: () => unawaited(_inviteCounterpartyFromTaskToBook()),
+          semanticsLabel: L10n.get("gigs_chat_menu_invite_provider_to_book"),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfileMenuIcon() {
     final resolvedAvatarUrl = resolveAvatarUrl(_peerAvatarUrl);
     if (resolvedAvatarUrl != null) {
@@ -1509,6 +1534,58 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     return null;
+  }
+
+  Future<void> _inviteCounterpartyFromTaskToBook() async {
+    final rid = widget.gigRequestId;
+    final otherId = widget.otherUserId ?? _getOtherUserIdFromMessages();
+    if (rid == null || otherId == null) {
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("gigs_request_contact_failed"),
+        );
+      }
+      return;
+    }
+    if (_inviteBookingInFlight) return;
+    setState(() => _inviteBookingInFlight = true);
+    try {
+      final req = await getIt<IGigService>().getRequest(rid);
+      if (!mounted) return;
+      final me = _currentUserId ?? await SessionManager.getUserId();
+      if (me == null || me != req.clientUserId) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("gigs_invite_provider_owner_only"),
+        );
+        return;
+      }
+      if (req.status != GigRequestStatus.open) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("gigs_invite_provider_not_open_task"),
+        );
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (_) => _InviteProviderBookingDialog(
+          snackParentContext: context,
+          gigRequest: req,
+          providerUserId: otherId,
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("gigs_invite_provider_failed_toast"),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _inviteBookingInFlight = false);
+    }
   }
 
   List<ActionMenuItem> _buildActionMenuItems() {
@@ -1603,5 +1680,415 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     return items;
+  }
+}
+
+/// Confirms invite-to-book amounts for gig task chats from the ChatScreen app bar.
+class _InviteProviderBookingDialog extends StatefulWidget {
+  const _InviteProviderBookingDialog({
+    required this.snackParentContext,
+    required this.gigRequest,
+    required this.providerUserId,
+  });
+
+  final BuildContext snackParentContext;
+  final GigRequest gigRequest;
+  final int providerUserId;
+
+  @override
+  State<_InviteProviderBookingDialog> createState() =>
+      _InviteProviderBookingDialogState();
+}
+
+class _InviteProviderBookingDialogState
+    extends State<_InviteProviderBookingDialog> {
+  /// Wheel slots are `index * step` (0 … [_inviteAmountSpinnerMaxIndex] * step).
+  /// At 1.000 UZS per slot, the wheel reaches 10M UZS; higher amounts can still
+  /// be typed.
+  static const int _inviteAmountSpinnerMaxIndex = 10000;
+
+  late final TextEditingController _amountController;
+  late final FixedExtentScrollController _amountSpinnerController;
+  late int _amountSpinnerSelectedIndex;
+  bool _sending = false;
+  bool _inviteAmountWheelMute = false;
+
+  /// Normalized code from [GigRequest.currencyCode] — the same column set when
+  /// the task was created (`POST /gigs/requests`). The dialog is only shown
+  /// after [IGigService.getRequest], so this matches the posted gig price row.
+  String get _taskCurrencyCode {
+    final raw = widget.gigRequest.currencyCode.trim();
+    if (raw.isEmpty) return "UZS";
+    return raw.toUpperCase();
+  }
+
+  bool get _needsExplicitAmount =>
+      widget.gigRequest.budgetType == GigRequestBudgetType.open ||
+      widget.gigRequest.budgetAmount == null ||
+      widget.gigRequest.budgetAmount! <= 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final amt = widget.gigRequest.budgetAmount;
+    final initial =
+        amt != null && amt > 0 ? IntFormatUtils.withDotThousands(amt) : "";
+    _amountController = TextEditingController(text: initial);
+    final step = CurrencyDisplayUtils.amountNudgeStep(_taskCurrencyCode);
+    final parsed = IntFormatUtils.parseAmountInput(initial);
+    final initialSlot = _spinnerIndexForAmount(parsed, step);
+    _amountSpinnerController = FixedExtentScrollController(
+      initialItem: initialSlot,
+    );
+    _amountSpinnerSelectedIndex = initialSlot;
+    _amountController.addListener(_syncInviteAmountSpinnerFromText);
+  }
+
+  int _spinnerIndexForAmount(int? parsedAmount, int step) {
+    if (parsedAmount == null || parsedAmount <= 0 || step <= 0) return 0;
+    return (parsedAmount / step).round().clamp(0, _inviteAmountSpinnerMaxIndex);
+  }
+
+  void _syncInviteAmountSpinnerFromText() {
+    if (_inviteAmountWheelMute || _sending) return;
+    if (!_amountSpinnerController.hasClients) return;
+    final step = CurrencyDisplayUtils.amountNudgeStep(_taskCurrencyCode);
+    final parsed = IntFormatUtils.parseAmountInput(_amountController.text);
+    final idx = _spinnerIndexForAmount(parsed, step);
+    final current = _amountSpinnerController.selectedItem;
+    if (current == idx) {
+      if (_amountSpinnerSelectedIndex != idx) {
+        setState(() => _amountSpinnerSelectedIndex = idx);
+      }
+      return;
+    }
+    _inviteAmountWheelMute = true;
+    _amountSpinnerController.jumpToItem(idx);
+    _inviteAmountWheelMute = false;
+    setState(() => _amountSpinnerSelectedIndex = idx);
+  }
+
+  void _onInviteAmountSpinnerIndexChanged(int index) {
+    if (_sending) return;
+    if (_inviteAmountWheelMute) return;
+    setState(() => _amountSpinnerSelectedIndex = index);
+    final step = CurrencyDisplayUtils.amountNudgeStep(_taskCurrencyCode);
+    final amount = index * step;
+    final text = amount <= 0 ? "" : IntFormatUtils.withDotThousands(amount);
+    HapticFeedbackUtils.impact();
+    SendSoundUtils.playSelectionSound();
+    _inviteAmountWheelMute = true;
+    _amountController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+    _inviteAmountWheelMute = false;
+  }
+
+  @override
+  void dispose() {
+    _amountController.removeListener(_syncInviteAmountSpinnerFromText);
+    _amountController.dispose();
+    _amountSpinnerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_sending) return;
+
+    final parsed = IntFormatUtils.parseAmountInput(_amountController.text);
+    if (_needsExplicitAmount && (parsed == null || parsed <= 0)) {
+      ToastTheme.showError(
+        widget.snackParentContext,
+        message: L10n.get("gigs_invite_provider_amount_required"),
+      );
+      return;
+    }
+
+    setState(() => _sending = true);
+    try {
+      await getIt<IGigService>().inviteProviderFromRequest(
+        requestId: widget.gigRequest.id,
+        providerUserId: widget.providerUserId,
+        agreedAmount: parsed,
+        currencyCode: _taskCurrencyCode,
+      );
+      if (mounted) {
+        Navigator.of(context).pop();
+        ToastTheme.showSuccess(
+          widget.snackParentContext,
+          message: L10n.get("gigs_invite_provider_success_toast"),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(
+          widget.snackParentContext,
+          message: L10n.get("gigs_invite_provider_failed_toast"),
+        );
+      }
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final listingFieldStyle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: ThemeState().isLightTheme
+          ? Colors.black
+          : scheme.onSurfaceVariant,
+    );
+    final listingHintStyle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: theme.brightness == Brightness.dark
+          ? scheme.onSurfaceVariant.withValues(alpha: 0.7)
+          : Colors.grey[400]!,
+    );
+    final bodyStyle = TextStyle(
+      fontSize: 14,
+      height: 1.35,
+      fontWeight: FontWeight.w400,
+      color: scheme.onSurface.withValues(alpha: 0.92),
+    );
+    final dividerColor = scheme.onSurface.withValues(alpha: 0.18);
+    final currencyChipColor = ThemeState().isLightTheme
+        ? Colors.black
+        : scheme.onSurface;
+    final currencyCode = _taskCurrencyCode;
+    final step = CurrencyDisplayUtils.amountNudgeStep(currencyCode);
+    final plateDecoration = InputDecoration(
+      hintText: L10n.get("gigs_invite_provider_dialog_field_hint"),
+      hintStyle: listingHintStyle,
+      border: OutlineInputBorder(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        borderSide: BorderSide.none,
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        borderSide: BorderSide.none,
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        borderSide: BorderSide.none,
+      ),
+      filled: true,
+      fillColor: Colors.transparent,
+      contentPadding: const EdgeInsets.fromLTRB(10, 12, 8, 12),
+    );
+
+    return AlertDialog(
+      backgroundColor: theme.dialogTheme.backgroundColor,
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      title: Text(
+        L10n.get("gigs_invite_provider_dialog_title"),
+        style: listingFieldStyle,
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              L10n.get("gigs_invite_provider_dialog_body"),
+              style: bodyStyle,
+            ),
+            const SizedBox(height: 16),
+            LabeledFieldOverlay(
+              label: L10n.get("gigs_post_request_field_amount"),
+              child: IgnorePointer(
+                ignoring: _sending,
+                child: Opacity(
+                  opacity: _sending ? 0.45 : 1,
+                  child: WheelPickerPlateContainer(
+                    theme: theme,
+                    child: SizedBox(
+                      height: 80,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    CurrencyDisplayUtils.flagEmoji(currencyCode),
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    currencyCode,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: currencyChipColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              width: 1,
+                              height: 44,
+                              color: dividerColor,
+                            ),
+                          ),
+                          Expanded(
+                            child: SizedBox(
+                              height: 80,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextFormField(
+                                  controller: _amountController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                    decimal: false,
+                                    signed: false,
+                                  ),
+                                  inputFormatters: [
+                                    DotThousandsDigitsInputFormatter(),
+                                  ],
+                                  decoration: plateDecoration.copyWith(
+                                    contentPadding: const EdgeInsets.fromLTRB(
+                                      10,
+                                      12,
+                                      6,
+                                      12,
+                                    ),
+                                  ),
+                                  style: listingFieldStyle,
+                                  textAlignVertical: TextAlignVertical.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              width: 1,
+                              height: 52,
+                              color: dividerColor,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 120,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: CupertinoPicker(
+                                    backgroundColor: Colors.transparent,
+                                    scrollController: _amountSpinnerController,
+                                    itemExtent: 40,
+                                    onSelectedItemChanged:
+                                        _onInviteAmountSpinnerIndexChanged,
+                                    children: List.generate(
+                                      _inviteAmountSpinnerMaxIndex + 1,
+                                      (i) {
+                                        final n = i * step;
+                                        final isFocusedSlot =
+                                            i == _amountSpinnerSelectedIndex;
+                                        // Omit the centered label so the wheel
+                                        // does not duplicate the text field; keep
+                                        // neighbors as drag context only.
+                                        final label = isFocusedSlot
+                                            ? ""
+                                            : (n <= 0
+                                                ? "—"
+                                                : IntFormatUtils
+                                                    .withDotThousands(n));
+                                        return Center(
+                                          child: Text(
+                                            label,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: ThemeState().isLightTheme
+                                                  ? Colors.black
+                                                  : scheme.onSurfaceVariant,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 24,
+                                  decoration: BoxDecoration(
+                                    color: scheme.outline.withValues(alpha: 0.1),
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateArrowStripBorderRadius,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ThemeIcon(
+                                        Icons.keyboard_arrow_up,
+                                        color: scheme.onSurfaceVariant,
+                                        size: 16,
+                                      ),
+                                      ThemeIcon(
+                                        Icons.keyboard_arrow_down,
+                                        color: scheme.onSurfaceVariant,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _sending ? null : () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(
+            foregroundColor: scheme.onSurfaceVariant,
+          ),
+          child: Text(L10n.get("cancel")),
+        ),
+        TextButton(
+          onPressed: _sending ? null : () => unawaited(_submit()),
+          child: _sending
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: scheme.primary,
+                  ),
+                )
+              : Text(L10n.get("gigs_invite_provider_confirm")),
+        ),
+      ],
+    );
   }
 }

@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
@@ -538,13 +539,15 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ..._buildServiceFields(),
                       const SizedBox(height: 24),
                       if (_isEditingOffer || _isEditingRequest)
-                        PrimaryButton(
+                        PrimaryButtonFactory.iconTextCentered(
                           onPressed: submitting ? null : _submit,
                           isLoading: submitting,
                           height: 54,
                           width: double.infinity,
                           borderRadius: BorderRadius.circular(16),
-                          child: Text(submitLabel, style: submitTextStyle),
+                          icon: Icons.save_outlined,
+                          text: submitLabel,
+                          textStyle: submitTextStyle,
                         )
                       else
                         PrimaryButtonFactory.iconTextCentered(
@@ -948,23 +951,6 @@ class _CurrencyAmountField extends StatelessWidget {
   final bool showError;
   final ValueChanged<String>? onChanged;
 
-  /// Maps a currency code → leading flag emoji. The codebase already uses
-  /// Unicode flag emojis (auth wizard, chat translation prompts) so they
-  /// render consistently here without dragging in flag image assets.
-  static String _flagFor(String currencyCode) {
-    switch (currencyCode) {
-      case "USD":
-        return "🇺🇸";
-      case "RUB":
-        return "🇷🇺";
-      case "EUR":
-        return "🇪🇺";
-      case "UZS":
-      default:
-        return "🇺🇿";
-    }
-  }
-
   Future<void> _pickCurrency(BuildContext context) async {
     HapticFeedbackUtils.selection();
     final picked = await showModalBottomSheet<String>(
@@ -1009,7 +995,7 @@ class _CurrencyAmountField extends StatelessWidget {
                       final isSelected = code == currency;
                       return ListTile(
                         leading: Text(
-                          _flagFor(code),
+                          CurrencyDisplayUtils.flagEmoji(code),
                           style: const TextStyle(fontSize: 24),
                         ),
                         title: Text(
@@ -1066,7 +1052,7 @@ class _CurrencyAmountField extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _flagFor(currency),
+                    CurrencyDisplayUtils.flagEmoji(currency),
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(width: 6),
