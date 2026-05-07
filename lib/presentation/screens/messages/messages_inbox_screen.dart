@@ -64,8 +64,9 @@ class MessagesInboxScreen extends StatefulWidget {
     /// the user switches to this tab (IndexedStack keeps the widget mounted).
     /// Refetch runs only if [UnreadMessagesState] reports unread (e.g. green dot).
     this.mainTabSelected,
-    /// Non-null on [PushedMessagesInboxScaffold] from task detail: inbox shows
-    /// only `gig_request` threads tied to this request id (plus empty states).
+    /// Non-null on [PushedMessagesInboxScaffold] from task detail: lists only
+    /// `gig_request` threads for this id in one scroll (no my/other toggle or
+    /// day headers); the pushed scaffold omits the app bar title.
     this.filterGigRequestId,
   });
 
@@ -827,6 +828,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return _buildEmptyState();
     }
 
+    if (widget.filterGigRequestId != null) {
+      return _buildGigScopedConversationsList(conversations);
+    }
+
     // Filter conversations into incoming and outgoing
     final incomingConversations =
         conversations
@@ -890,6 +895,71 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             child: _buildTabButtons(incomingConversations, outgoingConversations),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Task-scoped inbox: single chronological list, no my/other toggle or
+  /// calendar day headers (the task title already appears on each tile).
+  Widget _buildGigScopedConversationsList(
+    List<ConversationSummary> conversations,
+  ) {
+    final shellGlassTop =
+        widget.showCustomHeader
+            ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
+                ? ThemeState().mainShellGlassExtraTopInset(context)
+                : 0.0)
+            : ThemeState().mainShellGlassExtraTopInset(context);
+
+    final sorted = _sortConversationsForInbox(conversations);
+
+    return Padding(
+      padding: EdgeInsets.only(top: shellGlassTop),
+      child: UydoshRefreshIndicator.mainShell(
+        onRefresh: _onInboxPullRefresh,
+        edgeOffset: 0.0,
+        child: PullToRefreshStretchHaptics(
+          child: CommonListView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemSpacing: 12,
+            itemCount: sorted.length,
+            itemBuilder: (context, index) {
+              final conversation = sorted[index];
+              final outgoingTile =
+                  _currentUserId != null &&
+                  conversation.initiatorId == _currentUserId;
+              return Padding(
+                padding: EdgeInsets.only(top: index == 0 ? 8 : 0),
+                child: _wrapWithArchiveSwipe(
+                  conversation: conversation,
+                  child: outgoingTile
+                      ? OutgoingConversationTile(
+                          conversation: conversation,
+                          currentUserId: _currentUserId,
+                          showActivityTimeOnly: true,
+                          onTap: () {
+                            _openChatScreen(conversation);
+                          },
+                          onLongPress: () =>
+                              _promptConversationActions(conversation),
+                        )
+                      : ConversationTile(
+                          conversation: conversation,
+                          currentUserId: _currentUserId,
+                          isGrouped: false,
+                          showActivityTimeOnly: true,
+                          onTap: () {
+                            _openChatScreen(conversation);
+                          },
+                          onLongPress: () =>
+                              _promptConversationActions(conversation),
+                        ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

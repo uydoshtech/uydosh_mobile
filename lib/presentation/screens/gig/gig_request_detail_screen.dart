@@ -126,14 +126,11 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       context.pushAuthWizard();
       return;
     }
-    final title = loaded?.title.trim();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder:
             (_) => PushedMessagesInboxScaffold(
               filterGigRequestId: widget.requestId,
-              appBarTitleOverride:
-                  title != null && title.isNotEmpty ? title : null,
             ),
       ),
     );
