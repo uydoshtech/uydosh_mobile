@@ -54,6 +54,7 @@ import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
@@ -1474,6 +1475,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
               listingId: widget.listingId,
               listingTypeId: listingDetail.listingTypeId,
               listingOwnerUserId: listingDetail.user.id,
+              listingTitle:
+                  resolvedListingChatTitleFromListingDetail(listingDetail),
               otherUserInitials: StringUtils.extractInitials(displayName),
               otherUserName: displayName.isNotEmpty ? displayName : null,
               otherUserId: listingDetail.user.id,
@@ -1608,6 +1611,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                       listingTypeId: existingConversation.listingTypeId,
                       // Server convention: listing owner is `participant_id`.
                       listingOwnerUserId: existingConversation.participantId,
+                      listingTitle:
+                          resolvedConversationListingTitle(
+                            existingConversation,
+                          ),
                       otherUserInitials: StringUtils.extractInitials(
                         existingConversation.otherUserName,
                       ),

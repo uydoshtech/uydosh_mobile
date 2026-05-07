@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -224,6 +225,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 ? conv.participantId
                 : conv.initiatorId)
             : null;
+    final isGigRequest = conv?.contextType == "gig_request";
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -231,10 +233,18 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         builder:
             (context) => ChatScreen(
               conversationId: conversationId,
-              listingId: conv?.listingId,
-              listingTypeId: conv?.listingTypeId,
+              listingId: isGigRequest ? null : conv?.listingId,
+              listingTypeId: isGigRequest ? null : conv?.listingTypeId,
               // Server convention: listing owner is always `participant_id`.
-              listingOwnerUserId: conv?.participantId,
+              listingOwnerUserId:
+                  isGigRequest ? null : conv?.participantId,
+              gigRequestId: isGigRequest ? conv?.gigRequestId : null,
+              gigRequestTitle:
+                  isGigRequest ? conv?.gigRequestTitle : null,
+              listingTitle:
+                  conv != null && !isGigRequest
+                      ? resolvedConversationListingTitle(conv)
+                      : null,
               otherUserInitials:
                   conv != null
                       ? StringUtils.extractInitials(conv.otherUserName)

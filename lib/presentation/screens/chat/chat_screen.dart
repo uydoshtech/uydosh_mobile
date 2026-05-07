@@ -81,6 +81,7 @@ class ChatScreen extends StatefulWidget {
     this.listingOwnerUserId,
     this.gigRequestId,
     this.gigRequestTitle,
+    this.listingTitle,
     /// When true, [GigRequestDetailScreen] for [gigRequestId] is already on
     /// the stack under this chat (e.g. opened via Contact on that screen).
     /// "View task" should pop to it instead of pushing a duplicate route.
@@ -113,6 +114,10 @@ class ChatScreen extends StatefulWidget {
   /// (inbox tile, gig request detail screen). The chat will simply omit
   /// the subtitle when this is null.
   final String? gigRequestTitle;
+
+  /// Listing headline for the app bar when [listingId] is set (preset-aware
+  /// callers pass the same string as inbox tiles).
+  final String? listingTitle;
 
   final bool gigRequestDetailRouteBelow;
 
@@ -839,6 +844,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  String? _chatHeaderSubtitle() {
+    final gig = widget.gigRequestTitle?.trim();
+    if (gig != null && gig.isNotEmpty) return gig;
+    final listing = widget.listingTitle?.trim();
+    if (widget.listingId != null &&
+        listing != null &&
+        listing.isNotEmpty) {
+      return listing;
+    }
+    return null;
+  }
+
   String _getPeerDisplayName(BuildContext context) {
     final name = widget.otherUserName?.trim();
     if (name != null && name.isNotEmpty) {
@@ -1113,10 +1130,7 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
-            // For gig conversations, anchor the header on the task title so
-            // providers know which request they're discussing without
-            // leaving the chat. Listing chats keep the single-line header.
-            subtitle: widget.gigRequestTitle,
+            subtitle: _chatHeaderSubtitle(),
             peerAvatarUrl: _peerAvatarUrl,
             peerInitials: widget.otherUserInitials,
             onPeerAvatarTap: _navigateToUserProfile,

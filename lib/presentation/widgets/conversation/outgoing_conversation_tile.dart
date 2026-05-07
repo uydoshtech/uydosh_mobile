@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 
 class OutgoingConversationTile extends StatelessWidget {
@@ -52,6 +53,8 @@ class OutgoingConversationTile extends StatelessWidget {
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
         final hasBudgetBadge = conversationSummaryShowsBudgetBadge(conversation);
+        final isListingMarketplace =
+            conversationSummaryIsListingMarketplaceChat(conversation);
 
         // Show the avatar of whoever sent the most recent message: the current
         // user when they were the last sender, otherwise the conversation
@@ -128,6 +131,18 @@ class OutgoingConversationTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (isListingMarketplace) ...[
+                        Text(
+                          conversation.otherUserName ?? "Unknown User",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                      ],
                       ConversationListingTitleWithCategoryIcon(
                         conversation: conversation,
                         textStyle: TextStyle(

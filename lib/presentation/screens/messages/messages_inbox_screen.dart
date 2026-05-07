@@ -29,6 +29,7 @@ import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
@@ -1501,6 +1502,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   isGigRequest ? conversation.gigRequestId : null,
               gigRequestTitle:
                   isGigRequest ? conversation.gigRequestTitle : null,
+              listingTitle:
+                  !isGigRequest
+                      ? resolvedConversationListingTitle(conversation)
+                      : null,
               otherUserInitials: StringUtils.extractInitials(
                 conversation.otherUserName,
               ),

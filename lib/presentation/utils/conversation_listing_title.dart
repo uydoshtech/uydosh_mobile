@@ -1,6 +1,29 @@
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
+
+/// Housing / marketplace listing threads (anything not under the gig chat
+/// surfaces).
+bool conversationSummaryIsListingMarketplaceChat(ConversationSummary c) {
+  final t = c.contextType;
+  return t != "gig_request" && t != "gig_offer" && t != "gig_booking";
+}
+
+/// Same resolution as [resolvedConversationListingTitle] but from full listing
+/// detail when opening chat from [ListingDetailScreen].
+String resolvedListingChatTitleFromListingDetail(ListingDetail d) {
+  final tid = d.listingTypeId;
+  if (ListingUtils.usesPresetListingTitle(tid)) {
+    return L10n.get(
+      ListingUtils.presetListingTitleL10nKey(
+        listingTypeId: tid,
+        gender: d.gender,
+      ),
+    );
+  }
+  return d.title;
+}
 
 /// Resolves the human-readable title shown on a conversation tile / group
 /// header.

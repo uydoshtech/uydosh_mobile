@@ -173,7 +173,7 @@ class _LocationPickerState extends State<LocationPicker> {
               onSelectedItemChanged: (index) {
                 FocusScope.of(context).unfocus();
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playLocationWheelSound();
                 widget.onLocationChanged(index - 1);
                 if (widget.onMetroReset != null && index > 0) {
                   widget.onMetroReset!();

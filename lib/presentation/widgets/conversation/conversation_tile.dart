@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 
 class ConversationTile extends StatelessWidget {
@@ -62,6 +63,14 @@ class ConversationTile extends StatelessWidget {
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
 
+        final isListingMarketplace =
+            conversationSummaryIsListingMarketplaceChat(conversation);
+        final unreadBoldName =
+            conversation.unreadCount != null &&
+                conversation.unreadCount! > 0 &&
+                currentUserId != null &&
+                conversation.lastMessageSenderId != currentUserId;
+
         final listTile = ListTile(
           onTap: onTap,
           onLongPress: onLongPress,
@@ -111,19 +120,44 @@ class ConversationTile extends StatelessWidget {
                     userNameOverride: initialsName,
                   ),
                 ),
-          title: isGrouped
-              ? null // Hide title entirely for grouped conversations to remove empty space
-              : ConversationListingTitleWithCategoryIcon(
-                  conversation: conversation,
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                  iconColor: iconColor,
-                ),
+          title:
+              isGrouped && !isListingMarketplace
+                  ? null
+                  : isListingMarketplace
+                  ? Text(
+                      conversation.otherUserName ?? "Unknown User",
+                      style: TextStyle(
+                        fontWeight:
+                            unreadBoldName ? FontWeight.bold : FontWeight.normal,
+                        color: textColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : ConversationListingTitleWithCategoryIcon(
+                      conversation: conversation,
+                      textStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                      iconColor: iconColor,
+                    ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isListingMarketplace) ...[
+                ConversationListingTitleWithCategoryIcon(
+                  conversation: conversation,
+                  textStyle: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    color: secondaryTextColor,
+                  ),
+                  iconColor: iconColor,
+                  iconSize: 18,
+                ),
+                const SizedBox(height: 4),
+              ],
               if (conversation.lastMessageContent != null) ...[
                 Text(
                   conversation.lastMessageContent!,

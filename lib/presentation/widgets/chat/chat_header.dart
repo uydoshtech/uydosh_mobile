@@ -26,12 +26,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   });
   final String displayName;
 
-  /// Optional secondary line shown beneath [displayName].
-  ///
-  /// Used by gig-request chats to anchor the conversation to the task title
-  /// (a provider may be talking to several clients about different tasks
-  /// concurrently). Listing chats currently leave this null and rely on the
-  /// inbox tile + "View listing" action menu instead.
+  /// Optional secondary line beneath [displayName] (gig task title or listing
+  /// headline).
   final String? subtitle;
 
   final String? peerAvatarUrl;

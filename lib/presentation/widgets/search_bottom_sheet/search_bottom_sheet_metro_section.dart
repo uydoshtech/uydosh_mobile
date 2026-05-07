@@ -188,7 +188,7 @@ class _SearchBottomSheetMetroSectionState
                       scrollController: widget.metroLineScrollController,
                       onSelectedItemChanged: (index) {
                         HapticFeedbackUtils.impact();
-                        SendSoundUtils.playSelectionSound();
+                        SendSoundUtils.playMetroWheelSound();
                         widget.onSubwayLineChanged(index);
                       },
                       children: [
@@ -349,7 +349,7 @@ class _SearchBottomSheetMetroSectionState
               scrollController: widget.stationPickerController,
               onSelectedItemChanged: (index) {
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playMetroWheelSound();
                 widget.onStationChanged(index);
               },
               children: [

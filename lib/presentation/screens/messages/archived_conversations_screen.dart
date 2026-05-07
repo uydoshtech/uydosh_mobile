@@ -17,6 +17,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -196,6 +197,10 @@ class _ArchivedConversationsScreenState
           gigRequestId: isGigRequest ? conversation.gigRequestId : null,
           gigRequestTitle:
               isGigRequest ? conversation.gigRequestTitle : null,
+          listingTitle:
+              !isGigRequest
+                  ? resolvedConversationListingTitle(conversation)
+                  : null,
           otherUserInitials:
               StringUtils.extractInitials(conversation.otherUserName),
           otherUserName: conversation.otherUserName,

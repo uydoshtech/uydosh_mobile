@@ -96,7 +96,7 @@ class ListingFormMetroSection extends StatelessWidget {
               onSelectedItemChanged: (index) {
                 onDismissKeyboard();
                 HapticFeedbackUtils.impact();
-                SendSoundUtils.playSelectionSound();
+                SendSoundUtils.playMetroWheelSound();
                 onLineChanged(index);
               },
               children: [
@@ -221,7 +221,7 @@ class ListingFormMetroSection extends StatelessWidget {
                 onSelectedItemChanged: (index) {
                   onDismissKeyboard();
                   HapticFeedbackUtils.impact();
-                  SendSoundUtils.playSelectionSound();
+                  SendSoundUtils.playMetroWheelSound();
                   onStationChanged(index);
                 },
                 children: currentStations
