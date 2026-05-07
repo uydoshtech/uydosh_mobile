@@ -684,6 +684,10 @@ mixin _$ConversationSummary {
   int? get listingGender => throw _privateConstructorUsedError;
   @JsonKey(name: "listing_price")
   int? get listingPrice => throw _privateConstructorUsedError;
+
+  /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
+  @JsonKey(name: "price_currency_code")
+  String? get priceCurrencyCode => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_name")
   String? get otherUserName => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_avatar")
@@ -757,6 +761,7 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "listing_type_id") int? listingTypeId,
       @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
+      @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
@@ -811,6 +816,7 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? listingTypeId = freezed,
     Object? listingGender = freezed,
     Object? listingPrice = freezed,
+    Object? priceCurrencyCode = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
     Object? unreadCount = freezed,
@@ -910,6 +916,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.listingPrice
           : listingPrice // ignore: cast_nullable_to_non_nullable
               as int?,
+      priceCurrencyCode: freezed == priceCurrencyCode
+          ? _value.priceCurrencyCode
+          : priceCurrencyCode // ignore: cast_nullable_to_non_nullable
+              as String?,
       otherUserName: freezed == otherUserName
           ? _value.otherUserName
           : otherUserName // ignore: cast_nullable_to_non_nullable
@@ -1011,6 +1021,7 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "listing_type_id") int? listingTypeId,
       @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
+      @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
@@ -1063,6 +1074,7 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? listingTypeId = freezed,
     Object? listingGender = freezed,
     Object? listingPrice = freezed,
+    Object? priceCurrencyCode = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
     Object? unreadCount = freezed,
@@ -1162,6 +1174,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.listingPrice
           : listingPrice // ignore: cast_nullable_to_non_nullable
               as int?,
+      priceCurrencyCode: freezed == priceCurrencyCode
+          ? _value.priceCurrencyCode
+          : priceCurrencyCode // ignore: cast_nullable_to_non_nullable
+              as String?,
       otherUserName: freezed == otherUserName
           ? _value.otherUserName
           : otherUserName // ignore: cast_nullable_to_non_nullable
@@ -1258,6 +1274,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "listing_type_id") this.listingTypeId,
       @JsonKey(name: "listing_gender") this.listingGender,
       @JsonKey(name: "listing_price") this.listingPrice,
+      @JsonKey(name: "price_currency_code") this.priceCurrencyCode,
       @JsonKey(name: "other_user_name") this.otherUserName,
       @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
       @JsonKey(name: "unread_count") this.unreadCount,
@@ -1341,6 +1358,11 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "listing_price")
   final int? listingPrice;
+
+  /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
+  @override
+  @JsonKey(name: "price_currency_code")
+  final String? priceCurrencyCode;
   @override
   @JsonKey(name: "other_user_name")
   final String? otherUserName;
@@ -1396,7 +1418,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1443,6 +1465,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.listingGender == listingGender) &&
             (identical(other.listingPrice, listingPrice) ||
                 other.listingPrice == listingPrice) &&
+            (identical(other.priceCurrencyCode, priceCurrencyCode) ||
+                other.priceCurrencyCode == priceCurrencyCode) &&
             (identical(other.otherUserName, otherUserName) ||
                 other.otherUserName == otherUserName) &&
             (identical(other.otherUserAvatar, otherUserAvatar) ||
@@ -1503,6 +1527,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         listingTypeId,
         listingGender,
         listingPrice,
+        priceCurrencyCode,
         otherUserName,
         otherUserAvatar,
         unreadCount,
@@ -1561,6 +1586,7 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "listing_type_id") final int? listingTypeId,
       @JsonKey(name: "listing_gender") final int? listingGender,
       @JsonKey(name: "listing_price") final int? listingPrice,
+      @JsonKey(name: "price_currency_code") final String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") final String? otherUserName,
       @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
       @JsonKey(name: "unread_count") final int? unreadCount,
@@ -1650,6 +1676,11 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   @JsonKey(name: "listing_price")
   int? get listingPrice;
+
+  /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
+  @override
+  @JsonKey(name: "price_currency_code")
+  String? get priceCurrencyCode;
   @override
   @JsonKey(name: "other_user_name")
   String? get otherUserName;

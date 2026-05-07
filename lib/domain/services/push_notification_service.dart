@@ -6,6 +6,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/navigation/top_named_route_tracker.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/device_info_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -14,6 +15,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
+import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
@@ -202,6 +204,22 @@ class PushNotificationService implements IPushNotificationService {
     }
   }
 
+  /// When notification opens a chat that is **already** on screen (no new
+  /// [ChatScreen] is pushed), [ChatScreen.initState] does not run again —
+  /// trigger a message refetch so the tapped new message appears.
+  void _requestChatRefreshForPush(int conversationId) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final key = getIt<GlobalKey<NavigatorState>>();
+      final nav = key.currentState;
+      if (nav == null || !nav.mounted) return;
+      final ctx = nav.overlay?.context ?? key.currentContext;
+      if (ctx == null || !ctx.mounted) return;
+      ctx.read<MessagingBloc>().add(
+            RefreshMessages(conversationId: conversationId),
+          );
+    });
+  }
+
   void _navigateToMessageIfApplicable(RemoteMessage message) {
     final data = message.data;
     if (data["type"] != "new_message") return;
@@ -228,24 +246,38 @@ class PushNotificationService implements IPushNotificationService {
       return route.settings.name == targetName;
     });
 
+    if (topNamedRouteTracker.topName == targetName ||
+        UnreadMessagesState().activeConversationId == conversationId) {
+      _requestChatRefreshForPush(conversationId);
+      return;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!nav.mounted) return;
-      final topName = ModalRoute.of(nav.context)?.settings.name;
-      if (topName == targetName) return;
+      if (topNamedRouteTracker.topName == targetName ||
+          UnreadMessagesState().activeConversationId == conversationId) {
+        _requestChatRefreshForPush(conversationId);
+        return;
+      }
 
-      nav.push(
+      nav.push<void>(
         MaterialPageRoute<void>(
           settings: RouteSettings(name: targetName),
           builder: (_) => ChatScreen(
             conversationId: conversationId,
-            listingId: (listingId != null && listingId > 0) ? listingId : null,
+            listingId:
+                (listingId != null && listingId > 0) ? listingId : null,
             otherUserInitials: StringUtils.extractInitials(senderName),
             otherUserName: senderName,
-            otherUserId: (senderId != null && senderId > 0) ? senderId : null,
+            otherUserId:
+                (senderId != null && senderId > 0) ? senderId : null,
             otherUserAvatar: null,
           ),
         ),
       );
+      // Second fetch next frame: catches replication lag vs. initState's
+      // [FetchMessages] and ensures the notification's message appears.
+      _requestChatRefreshForPush(conversationId);
     });
   }
 

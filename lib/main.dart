@@ -20,6 +20,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/log_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/navigation/top_named_route_tracker.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
@@ -475,7 +476,7 @@ class _MyAppState extends State<MyApp> {
             theme: ThemeState().currentThemeData,
             debugShowCheckedModeBanner: false,
             navigatorKey: widget.navigatorKey,
-            navigatorObservers: [routeObserver],
+            navigatorObservers: [routeObserver, topNamedRouteTracker],
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,

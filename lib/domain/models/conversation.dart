@@ -62,6 +62,8 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "listing_type_id") int? listingTypeId,
     @JsonKey(name: "listing_gender") int? listingGender,
     @JsonKey(name: "listing_price") int? listingPrice,
+    /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
+    @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
     @JsonKey(name: "other_user_name") String? otherUserName,
     @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
     @JsonKey(name: "unread_count") int? unreadCount,

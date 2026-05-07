@@ -971,6 +971,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   currentPage,
                   conversationId,
                 ) {
+                  if (conversationId != widget.conversationId) return;
                   setState(() {
                     _applyMessagesAndMarkNewOnes(messages);
                   });

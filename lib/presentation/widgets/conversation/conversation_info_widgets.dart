@@ -279,8 +279,13 @@ class ConversationPriceDisplay extends StatelessWidget {
 
   static String _formatPriceRange(ConversationSummary conversation) {
     final price = conversation.listingPrice;
-    if (price != null) {
-      return "${IntFormatUtils.withDotThousands(price)} y.e.";
+    if (price != null && price > 0) {
+      final formatted = IntFormatUtils.withDotThousands(price);
+      final cc = conversation.priceCurrencyCode?.trim();
+      if (cc != null && cc.isNotEmpty) {
+        return "$formatted $cc";
+      }
+      return "$formatted y.e.";
     }
     return "";
   }
