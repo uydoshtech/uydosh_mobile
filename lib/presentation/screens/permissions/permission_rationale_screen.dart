@@ -4,8 +4,8 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
 /// Result returned by [PermissionRationaleScreen] via [Navigator.pop]:
-///   - [allow]    → user tapped the primary CTA, caller should request the
-///                  underlying OS permission.
+///   - [allow]    → user tapped the primary CTA (OS permission may already
+///                  have been requested via [PermissionRationaleScreen.onBeforePopAllow]).
 ///   - [skip]     → user dismissed the screen ("Not now" / back gesture).
 ///   - [openSettings] → user tapped "Open Settings" (only used by the
 ///                  "permanently denied" variant of the screen).
@@ -32,6 +32,7 @@ class PermissionRationaleScreen extends StatelessWidget {
     this.secondaryLabel,
     this.tertiaryLabel,
     this.onTertiary,
+    this.onBeforePopAllow,
   });
 
   /// Icon shown above the title (e.g. [Icons.camera_alt],
@@ -52,6 +53,11 @@ class PermissionRationaleScreen extends StatelessWidget {
   /// camera-denied screen). Only rendered when [tertiaryLabel] is set.
   final String? tertiaryLabel;
   final VoidCallback? onTertiary;
+
+  /// When non-null, runs before popping with [PermissionRationaleResult.allow].
+  /// Keeps this route visible while awaiting the OS permission UI so the route
+  /// underneath (e.g. onboarding) does not show through.
+  final Future<void> Function()? onBeforePopAllow;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +106,12 @@ class PermissionRationaleScreen extends StatelessWidget {
               const Spacer(flex: 2),
               _PermissionPrimaryButton(
                 label: primaryLabel,
-                onPressed: () {
+                onPressed: () async {
+                  final hook = onBeforePopAllow;
+                  if (hook != null) {
+                    await hook();
+                  }
+                  if (!context.mounted) return;
                   Navigator.of(context)
                       .pop(PermissionRationaleResult.allow);
                 },

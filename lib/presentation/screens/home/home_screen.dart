@@ -1213,7 +1213,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 ),
                 onPressed: () {
                   HapticFeedbackUtils.impact();
-                  _exitInlineSearch();
+                  unawaited(_dismissInlineSearchClearingPersistedFilters());
                 },
                 tooltip: L10n.get("close"),
               ),
@@ -1378,10 +1378,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _handleClearFiltersFromEmptyState() async {
-    // Don't clear persisted filters here. This CTA is meant to recover from an
-    // empty feed by exiting inline-search mode, while keeping the user's last
-    // chosen filters in the search sheet.
     if (!mounted) return;
+    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
+    if (!mounted) return;
+    if (widget.isSearchMode) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
     _exitInlineSearch();
   }
 
@@ -1843,6 +1848,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     _performSearch();
   }
 
+  /// Resets filters to defaults (local + server when logged in) so a later
+  /// cold start does not restore the previous search, then closes inline mode.
+  /// The Settings toggle "Restore filters on app start" is unchanged.
+  Future<void> _dismissInlineSearchClearingPersistedFilters() async {
+    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
+    if (!mounted) return;
+    _exitInlineSearch();
+  }
+
   void _exitInlineSearch({bool animated = true}) {
     final refreshToken = ++_inlineSearchExitRefreshToken;
     if (mounted) {
@@ -1875,9 +1889,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _dispatchFeedRefresh();
     }());
   }
-
-  // NOTE: We intentionally do NOT clear persisted filters when dismissing the
-  // ribbon; it only exits inline-search mode and shows the full feed.
 
   void _pushFullSearchResultsRoute() {
     final locationId = _searchFiltersState.selectedLocationIndex;
@@ -1990,7 +2001,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           : ThreeDAppBarIconButton.leadingSlot(
               child: ThreeDAppBarIconButton(
                 iconData: Icons.close,
-                onPressed: _exitInlineSearch,
+                onPressed: () => unawaited(
+                  _dismissInlineSearchClearingPersistedFilters(),
+                ),
                 semanticsLabel: L10n.get("close"),
               ),
             ),

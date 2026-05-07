@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -133,6 +134,14 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         );
         return;
       }
+      // Same warm-up as listing photos: rationale (and Settings path when
+      // needed) before any capture UI. RoomPlan uses the camera; the OS
+      // prompt still fires from native once the scan session starts.
+      final granted = await CameraPermissionGate.ensure(
+        context,
+        purpose: CameraPermissionPurpose.roomPlan3dScan,
+      );
+      if (!granted || !mounted) return;
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
         "enableMultiRoom": false,
         "strings": <String, String>{

@@ -4,6 +4,46 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/presentation/screens/permissions/permission_rationale_screen.dart";
 
+/// Which feature is asking for camera access — drives the first-run title,
+/// body, and icon on [PermissionRationaleScreen]. Settings / denied copy stays
+/// shared (camera is still off in iOS Settings).
+enum CameraPermissionPurpose {
+  /// Listing photos — watermark, in-app capture.
+  listingPhotos,
+
+  /// LiDAR / RoomPlan room scan before native capture.
+  roomPlan3dScan,
+}
+
+class _CameraFirstRunCopy {
+  const _CameraFirstRunCopy({
+    required this.titleKey,
+    required this.bodyKey,
+    required this.icon,
+  });
+
+  final String titleKey;
+  final String bodyKey;
+  final IconData icon;
+}
+
+_CameraFirstRunCopy _firstRunCopy(CameraPermissionPurpose purpose) {
+  switch (purpose) {
+    case CameraPermissionPurpose.listingPhotos:
+      return const _CameraFirstRunCopy(
+        titleKey: "permission_camera_title",
+        bodyKey: "permission_camera_body",
+        icon: Icons.camera_alt_rounded,
+      );
+    case CameraPermissionPurpose.roomPlan3dScan:
+      return const _CameraFirstRunCopy(
+        titleKey: "permission_camera_room_scan_title",
+        bodyKey: "permission_camera_room_scan_body",
+        icon: Icons.view_in_ar,
+      );
+  }
+}
+
 /// Pre-permission **rationale** for camera access.
 ///
 /// Why a rationale at all? iOS only ever surfaces its system camera prompt
@@ -43,7 +83,13 @@ abstract final class CameraPermissionGate {
   ///               actual OS-level permission ask if needed.
   ///   - `false` → user dismissed the rationale, or asked us to open
   ///               Settings (still a "don't open the camera" signal).
-  static Future<bool> ensure(BuildContext context) async {
+  ///
+  /// [purpose] selects onboarding-style copy for the first-run rationale
+  /// (photos vs 3D room scan). Defaults to [CameraPermissionPurpose.listingPhotos].
+  static Future<bool> ensure(
+    BuildContext context, {
+    CameraPermissionPurpose purpose = CameraPermissionPurpose.listingPhotos,
+  }) async {
     final hint = await _safeStatusHint();
     if (hint.isGranted || hint.isLimited) {
       // Already granted: skip rationale entirely, let the camera open.
@@ -59,6 +105,7 @@ abstract final class CameraPermissionGate {
       logger.d("📷 Camera permission gate: hint=permanentlyDenied → settings rationale");
       final result = await _showRationale(
         context,
+        icon: Icons.camera_alt_rounded,
         title: L10n.get("permission_camera_denied_title"),
         body: L10n.get("permission_camera_denied_body"),
         primaryLabel: L10n.get("permission_camera_open_settings"),
@@ -75,11 +122,15 @@ abstract final class CameraPermissionGate {
     // see the class doc above for why. We just return true on consent
     // and let the camera plugin trigger the real iOS prompt itself.
     if (!context.mounted) return false;
-    logger.d("📷 Camera permission gate: hint=$hint → first-run rationale");
+    logger.d(
+      "📷 Camera permission gate: hint=$hint purpose=$purpose → first-run rationale",
+    );
+    final copy = _firstRunCopy(purpose);
     final consent = await _showRationale(
       context,
-      title: L10n.get("permission_camera_title"),
-      body: L10n.get("permission_camera_body"),
+      icon: copy.icon,
+      title: L10n.get(copy.titleKey),
+      body: L10n.get(copy.bodyKey),
       primaryLabel: L10n.get("permission_camera_cta"),
       secondaryLabel: L10n.get("permission_not_now"),
     );
@@ -111,6 +162,7 @@ abstract final class CameraPermissionGate {
 
   static Future<PermissionRationaleResult?> _showRationale(
     BuildContext context, {
+    required IconData icon,
     required String title,
     required String body,
     required String primaryLabel,
@@ -120,7 +172,7 @@ abstract final class CameraPermissionGate {
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => PermissionRationaleScreen(
-          icon: Icons.camera_alt_rounded,
+          icon: icon,
           title: title,
           body: body,
           primaryLabel: primaryLabel,

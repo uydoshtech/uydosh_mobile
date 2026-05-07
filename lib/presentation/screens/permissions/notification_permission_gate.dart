@@ -85,6 +85,7 @@ abstract final class NotificationPermissionGate {
       }
     }
 
+    var registeredOk = false;
     if (!context.mounted) return false;
     final consent = await _showRationale(
       context,
@@ -92,6 +93,11 @@ abstract final class NotificationPermissionGate {
       body: L10n.get("permission_notifications_body"),
       primaryLabel: L10n.get("permission_notifications_cta"),
       secondaryLabel: L10n.get("permission_not_now"),
+      onBeforePopAllow: () async {
+        registeredOk = await push.requestPermissionAndRegister(
+          openSettingsOnDenied: false,
+        );
+      },
     );
 
     // Persist the fact that we've shown the rationale, so the
@@ -108,10 +114,7 @@ abstract final class NotificationPermissionGate {
     if (consent != PermissionRationaleResult.allow) return false;
 
     if (!context.mounted) return false;
-    final ok = await push.requestPermissionAndRegister(
-      openSettingsOnDenied: false,
-    );
-    return ok;
+    return registeredOk;
   }
 
   /// `true` iff the rationale screen has been surfaced to the user at
@@ -169,6 +172,7 @@ abstract final class NotificationPermissionGate {
     required String body,
     required String primaryLabel,
     required String secondaryLabel,
+    Future<void> Function()? onBeforePopAllow,
   }) {
     return Navigator.of(context).push<PermissionRationaleResult>(
       MaterialPageRoute(
@@ -179,6 +183,7 @@ abstract final class NotificationPermissionGate {
           body: body,
           primaryLabel: primaryLabel,
           secondaryLabel: secondaryLabel,
+          onBeforePopAllow: onBeforePopAllow,
         ),
       ),
     );

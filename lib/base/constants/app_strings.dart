@@ -516,6 +516,9 @@ class AppStrings {
       "permission_camera_title": "Take listing photos",
       "permission_camera_body":
           "UyDosh needs camera access so you can capture listing photos right inside the app. We add the UyDosh watermark automatically so your photos can't be reused on other listings.",
+      "permission_camera_room_scan_title": "3D room scan",
+      "permission_camera_room_scan_body":
+          "UyDosh needs camera access to capture a LiDAR room scan. The 3D model is uploaded to your listing so people can understand the space before they visit.",
       "permission_camera_cta": "Allow camera access",
       "permission_camera_denied_title": "Camera access is off",
       "permission_camera_denied_body":
@@ -1855,6 +1858,9 @@ class AppStrings {
       "permission_camera_title": "Фото для объявления",
       "permission_camera_body":
           "UyDosh нужен доступ к камере, чтобы вы могли снимать фото объявления прямо в приложении. Мы автоматически добавляем водяной знак UyDosh, чтобы фото нельзя было использовать в чужих объявлениях.",
+      "permission_camera_room_scan_title": "3D‑скан комнаты",
+      "permission_camera_room_scan_body":
+          "UyDosh нужен доступ к камере, чтобы снять LiDAR‑скан комнаты. 3D‑модель загружается в объявление, чтобы люди понимали пространство до просмотра.",
       "permission_camera_cta": "Разрешить доступ к камере",
       "permission_camera_denied_title": "Доступ к камере выключен",
       "permission_camera_denied_body":
@@ -3212,6 +3218,9 @@ class AppStrings {
       "permission_camera_title": "E'lon uchun rasm",
       "permission_camera_body":
           "UyDosh kameraga kirish ruxsatini so'raydi, shunda siz e'lon rasmlarini to'g'ridan-to'g'ri ilovada olishingiz mumkin. Biz UyDosh suv belgisini avtomatik qo'shamiz, shunda rasmlardan boshqa e'lonlarda foydalanib bo'lmaydi.",
+      "permission_camera_room_scan_title": "Xonanining 3D skani",
+      "permission_camera_room_scan_body":
+          "UyDosh LiDAR yordamida xona 3D skanini olish uchun kameraga ruxsat so'raydi. 3D model e'loningizga yuklanadi, shunda odamlar ko'rishdan oldin makonni tushunishlari mumkin.",
       "permission_camera_cta": "Kameraga ruxsat berish",
       "permission_camera_denied_title": "Kameraga kirish o'chirilgan",
       "permission_camera_denied_body":

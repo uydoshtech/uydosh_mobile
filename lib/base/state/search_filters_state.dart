@@ -592,7 +592,10 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   // Clear all search filters
-  Future<void> clearAllFilters({bool persistRemote = true}) async {
+  Future<void> clearAllFilters({
+    bool persistRemote = true,
+    bool flushRemoteImmediately = false,
+  }) async {
     _selectedListingTypeId = 2;
     _selectedLocationIndex = 0;
     _selectedSubwayLine = 0;
@@ -622,7 +625,15 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     notifyListeners();
-    if (persistRemote && !_suppressRemotePersist) _scheduleRemotePersist();
+    if (persistRemote && !_suppressRemotePersist) {
+      if (flushRemoteImmediately) {
+        _remoteSaveDebounce?.cancel();
+        _remoteSaveDebounce = null;
+        await _flushRemotePersist();
+      } else {
+        _scheduleRemotePersist();
+      }
+    }
   }
 
   /// Restores fields and persisted prefs after a modal temporarily changed filters
