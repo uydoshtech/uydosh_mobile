@@ -80,7 +80,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (subtitle != null && subtitle!.isNotEmpty)
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
                       Text(
                         subtitle!,
                         style: TextStyle(
@@ -92,6 +93,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ],
                   ],
                 ),
               ),
