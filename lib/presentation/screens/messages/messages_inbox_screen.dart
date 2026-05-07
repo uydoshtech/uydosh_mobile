@@ -64,6 +64,9 @@ class MessagesInboxScreen extends StatefulWidget {
     /// the user switches to this tab (IndexedStack keeps the widget mounted).
     /// Refetch runs only if [UnreadMessagesState] reports unread (e.g. green dot).
     this.mainTabSelected,
+    /// Non-null on [PushedMessagesInboxScaffold] from task detail: inbox shows
+    /// only `gig_request` threads tied to this request id (plus empty states).
+    this.filterGigRequestId,
   });
 
   final bool showCustomHeader;
@@ -71,6 +74,9 @@ class MessagesInboxScreen extends StatefulWidget {
   /// `true` when this screen is the selected main tab; `null` when opened
   /// from the drawer or another route (tab visibility does not apply).
   final bool? mainTabSelected;
+
+  /// When set, only conversations for this open task are listed.
+  final int? filterGigRequestId;
 
   @override
   State<MessagesInboxScreen> createState() => _MessagesInboxScreenState();
@@ -178,6 +184,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void didUpdateWidget(covariant MessagesInboxScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.filterGigRequestId != widget.filterGigRequestId) {
+      setState(() => _lastDisplayedConversations = null);
+      _loadConversations();
+    }
     if (widget.mainTabSelected != true) {
       return;
     }
@@ -434,7 +444,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// [_shouldShowPushBanner] (we hold off the commit), so a single check is
   /// enough — but we expose this for clarity at the call site.
   bool get _shouldRenderPushBannerRow =>
-      _shouldShowPushBanner || _pushBannerClosing;
+      widget.filterGigRequestId == null &&
+      (_shouldShowPushBanner || _pushBannerClosing);
 
   Future<void> _onPushBannerPressed() async {
     if (_pushBannerBusy) return;
@@ -530,12 +541,35 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     });
   }
 
+  bool _conversationBelongsToFilteredGigRequest(
+    ConversationSummary c,
+    int gigRequestId,
+  ) {
+    if (c.contextType != "gig_request") return false;
+    final rid = c.gigRequestId ?? c.contextId;
+    return rid == gigRequestId;
+  }
+
+  /// Base inbox rules: drop pending archives; optionally require at least one
+  /// message (full inbox). Task-scoped view lists all matching threads so the
+  /// client sees providers who opened a chat even before the first message.
   List<ConversationSummary> _visibleInboxConversations(
     List<ConversationSummary> conversations,
-  ) => conversations
-      .where(conversationHasMessagesForInbox)
-      .where((c) => !_pendingArchiveIds.contains(c.id))
-      .toList();
+  ) {
+    var list = conversations
+        .where((c) => !_pendingArchiveIds.contains(c.id))
+        .toList();
+
+    final gigId = widget.filterGigRequestId;
+    if (gigId != null) {
+      list = list
+          .where((c) => _conversationBelongsToFilteredGigRequest(c, gigId))
+          .toList();
+    } else {
+      list = list.where(conversationHasMessagesForInbox).toList();
+    }
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -552,7 +586,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           backgroundColor: backgroundColor,
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
-          floatingActionButton: _hasArchivedChats
+          floatingActionButton:
+              _hasArchivedChats && widget.filterGigRequestId == null
               ? Padding(
                 // Lift the pill above the main bottom bar.
                 padding: const EdgeInsets.only(bottom: 24),
@@ -594,9 +629,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // keep the default left tab.
               _maybeApplyInitialTabRule(visible);
 
-              // Calculate total unread count and update global state
-              final totalUnreadCount = _calculateTotalUnreadCount(visible);
-              UnreadMessagesState().updateUnreadCount(totalUnreadCount);
+              // Full inbox only: task-filtered route must not overwrite the
+              // shell unread badge (those threads are a subset).
+              if (widget.filterGigRequestId == null) {
+                final totalUnreadCount = _calculateTotalUnreadCount(visible);
+                UnreadMessagesState().updateUnreadCount(totalUnreadCount);
+              }
             },
             conversationsCleared: () {
               if (mounted) {
@@ -1316,9 +1354,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       _pendingArchiveIds.add(id);
     });
     // Recompute the unread badge right away so the home tab dot disappears
-    // synchronously with the ribbon, not after the bloc emits.
+    // synchronously with the ribbon, not after the bloc emits. Task-scoped
+    // inbox keeps a filtered cache — do not touch global unreads.
     final cache = _lastDisplayedConversations;
-    if (cache != null) {
+    if (widget.filterGigRequestId == null && cache != null) {
       UnreadMessagesState().updateUnreadCount(
         _calculateTotalUnreadCount(
           cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
@@ -1366,7 +1405,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         });
         // Restore the unread badge now that the chat is visible again.
         final cache = _lastDisplayedConversations;
-        if (cache != null) {
+        if (widget.filterGigRequestId == null && cache != null) {
           UnreadMessagesState().updateUnreadCount(
             _calculateTotalUnreadCount(
               cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
@@ -1670,6 +1709,13 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildEmptyState() {
+    if (widget.filterGigRequestId != null) {
+      return UydoshEmptyColumn(
+        icon: Icons.chat_bubble_outline,
+        title: L10n.get("gigs_request_messages_empty"),
+        subtitle: L10n.get("gigs_request_messages_empty_subtitle"),
+      );
+    }
     return UydoshEmptyColumn(
       icon: Icons.chat_bubble_outline,
       title: L10n.get("no_messages"),

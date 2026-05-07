@@ -4,8 +4,10 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -13,6 +15,7 @@ import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -89,7 +92,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     }
   }
 
-  List<Widget> _appBarActions(BuildContext context, GigRequest request) {
+  List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
     final isOwner = UserListingState().isOwner(request.clientUserId);
     if (!isOwner || !open) return const <Widget>[];
@@ -118,6 +121,38 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     ];
   }
 
+  void _openTaskChats(GigRequest? loaded) {
+    if (!AuthenticationState().isAuthenticated) {
+      context.pushAuthWizard();
+      return;
+    }
+    final title = loaded?.title.trim();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (_) => PushedMessagesInboxScaffold(
+              filterGigRequestId: widget.requestId,
+              appBarTitleOverride:
+                  title != null && title.isNotEmpty ? title : null,
+            ),
+      ),
+    );
+  }
+
+  Widget _messagesInboxAppBarButton({
+    required bool hasOwnerOverflow,
+    GigRequest? loadedRequest,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(right: hasOwnerOverflow ? 4 : 12),
+      child: ThreeDAppBarIconButton(
+        iconData: Icons.chat_bubble_outline,
+        onPressed: () => _openTaskChats(loadedRequest),
+        semanticsLabel: L10n.get("gigs_request_messages_appbar_semantics"),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -126,11 +161,21 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
         return FutureBuilder<GigRequest>(
           future: _future,
           builder: (context, snap) {
+            final request = snap.data;
+            final showOwnerMenu = request != null &&
+                UserListingState().isOwner(request.clientUserId) &&
+                request.status == GigRequestStatus.open;
             return Scaffold(
               appBar: AppBar(
                 leading: ThreeDAppBarIconButton.backLeading(context),
                 title: Text(L10n.get("gigs_request_detail_title")),
-                actions: snap.hasData ? _appBarActions(context, snap.data!) : const <Widget>[],
+                actions: [
+                  _messagesInboxAppBarButton(
+                    hasOwnerOverflow: showOwnerMenu,
+                    loadedRequest: request,
+                  ),
+                  if (request != null) ..._ownerOverflowMenu(context, request),
+                ],
               ),
               body: _buildBody(context, snap),
             );

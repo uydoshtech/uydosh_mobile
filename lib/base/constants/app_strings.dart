@@ -810,6 +810,11 @@ class AppStrings {
       "gigs_request_description_label": "About this task",
       "gigs_request_contact_cta": "Message client",
       "gigs_request_contact_failed": "Couldn't open chat. Please try again.",
+      "gigs_request_messages_appbar_semantics": "Chats for this task",
+      "gigs_request_messages_title": "Task chats",
+      "gigs_request_messages_empty": "No chats for this task yet.",
+      "gigs_request_messages_empty_subtitle":
+          "When providers write to you here, threads will appear in this list.",
 
       "gigs_price_per_hour": "{amount} {currency}/hr",
       "gigs_price_per_unit": "{amount} {currency}/unit",
@@ -2148,6 +2153,11 @@ class AppStrings {
       "gigs_request_description_label": "Об этой задаче",
       "gigs_request_contact_cta": "Написать заказчику",
       "gigs_request_contact_failed": "Не удалось открыть чат. Попробуйте снова.",
+      "gigs_request_messages_appbar_semantics": "Чаты по этой задаче",
+      "gigs_request_messages_title": "Чаты по задаче",
+      "gigs_request_messages_empty": "Пока нет переписки по этой задаче.",
+      "gigs_request_messages_empty_subtitle":
+          "Когда исполнители напишут вам, диалоги появятся в этом списке.",
 
       "gigs_price_per_hour": "{amount} {currency}/час",
       "gigs_price_per_unit": "{amount} {currency}/ед.",
@@ -3503,6 +3513,11 @@ class AppStrings {
       "gigs_request_description_label": "Vazifa haqida",
       "gigs_request_contact_cta": "Buyurtmachiga yozish",
       "gigs_request_contact_failed": "Chatni ochib bo'lmadi. Qayta urinib ko'ring.",
+      "gigs_request_messages_appbar_semantics": "Ushbu vazifa bo'yicha chatlar",
+      "gigs_request_messages_title": "Vazifa chatlari",
+      "gigs_request_messages_empty": "Bu vazifa bo'yicha hali chat yo'q.",
+      "gigs_request_messages_empty_subtitle":
+          "Ijrochilar yozganda suhbatlar shu yerda ko'rinadi.",
 
       "gigs_price_per_hour": "{amount} {currency}/soat",
       "gigs_price_per_unit": "{amount} {currency}/dona",

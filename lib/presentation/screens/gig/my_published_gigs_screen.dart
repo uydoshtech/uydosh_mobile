@@ -111,6 +111,7 @@ class _MyPublishedLists extends StatefulWidget {
 
 class _MyPublishedListsState extends State<_MyPublishedLists> {
   _PublishedTab _tab = _PublishedTab.services;
+  bool _didAutoSelectInitialTab = false;
   final _servicesScroll = ScrollController();
   final _tasksScroll = ScrollController();
 
@@ -168,6 +169,30 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
     setState(() => _tab = next);
   }
 
+  /// Open tasks when services are empty (or failed) but tasks have rows.
+  void _tryAutoSelectInitialTab() {
+    if (_didAutoSelectInitialTab || !mounted) return;
+    final offersState = context.read<GigOffersBloc>().state;
+    final requestsState = context.read<GigRequestsBloc>().state;
+
+    final offersSettled =
+        offersState is GigOffersLoaded || offersState is GigOffersError;
+    final requestsSettled = requestsState is GigRequestsLoaded ||
+        requestsState is GigRequestsError;
+    if (!offersSettled || !requestsSettled) return;
+
+    final hasServices = offersState is GigOffersLoaded &&
+        offersState.offers.isNotEmpty;
+    final hasTasks = requestsState is GigRequestsLoaded &&
+        requestsState.requests.isNotEmpty;
+
+    _didAutoSelectInitialTab = true;
+
+    if (!hasServices && hasTasks) {
+      setState(() => _tab = _PublishedTab.tasks);
+    }
+  }
+
   Future<void> _refreshServices() async {
     final bloc = context.read<GigOffersBloc>();
     bloc.add(
@@ -196,45 +221,55 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: NeumorphicSegmentedSwitch<_PublishedTab>(
-            value: _tab,
-            onChanged: _onTabChanged,
-            entries: [
-              SegmentedSwitchEntry(
-                value: _PublishedTab.services,
-                label: L10n.get("gigs_my_published_tab_services"),
-                icon: Icons.handyman_outlined,
-              ),
-              SegmentedSwitchEntry(
-                value: _PublishedTab.tasks,
-                label: L10n.get("gigs_my_published_tab_tasks"),
-                icon: Icons.assignment_outlined,
-              ),
-            ],
-          ),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<GigOffersBloc, GigOffersState>(
+          listener: (_, __) => _tryAutoSelectInitialTab(),
         ),
-        Expanded(
-          child: IndexedStack(
-            index: _tab == _PublishedTab.services ? 0 : 1,
-            children: [
-              _ServicesListView(
-                scrollController: _servicesScroll,
-                userId: widget.userId,
-                onRefresh: _refreshServices,
-              ),
-              _TasksListView(
-                scrollController: _tasksScroll,
-                userId: widget.userId,
-                onRefresh: _refreshTasks,
-              ),
-            ],
-          ),
+        BlocListener<GigRequestsBloc, GigRequestsState>(
+          listener: (_, __) => _tryAutoSelectInitialTab(),
         ),
       ],
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: NeumorphicSegmentedSwitch<_PublishedTab>(
+              value: _tab,
+              onChanged: _onTabChanged,
+              entries: [
+                SegmentedSwitchEntry(
+                  value: _PublishedTab.services,
+                  label: L10n.get("gigs_my_published_tab_services"),
+                  icon: Icons.handyman_outlined,
+                ),
+                SegmentedSwitchEntry(
+                  value: _PublishedTab.tasks,
+                  label: L10n.get("gigs_my_published_tab_tasks"),
+                  icon: Icons.assignment_outlined,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: IndexedStack(
+              index: _tab == _PublishedTab.services ? 0 : 1,
+              children: [
+                _ServicesListView(
+                  scrollController: _servicesScroll,
+                  userId: widget.userId,
+                  onRefresh: _refreshServices,
+                ),
+                _TasksListView(
+                  scrollController: _tasksScroll,
+                  userId: widget.userId,
+                  onRefresh: _refreshTasks,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

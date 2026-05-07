@@ -20,7 +20,20 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 /// liquid-glass bar on the home tab. The only difference vs. the bottom-nav
 /// variant is a back leading (pushed route has no drawer to open).
 class PushedMessagesInboxScaffold extends StatelessWidget {
-  const PushedMessagesInboxScaffold({super.key});
+  const PushedMessagesInboxScaffold({
+    super.key,
+    /// When non-null with [filterGigRequestId], replaces the generic
+    /// "Conversations" app bar title (e.g. the task headline).
+    this.appBarTitleOverride,
+    /// When non-null, the body lists only chats for this open task.
+    this.filterGigRequestId,
+  });
+
+  /// Task title or other short headline for the scoped inbox route.
+  final String? appBarTitleOverride;
+
+  /// Open-task id for [MessagesInboxScreen.filterGigRequestId].
+  final int? filterGigRequestId;
 
   Widget _threeDAppBarIconButton({
     required IconData iconData,
@@ -237,7 +250,10 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
                   ),
                 ),
               ),
-              const MessagesInboxScreen(showCustomHeader: false),
+              MessagesInboxScreen(
+                showCustomHeader: false,
+                filterGigRequestId: filterGigRequestId,
+              ),
             ],
           ),
         );
@@ -246,6 +262,47 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
   }
 
   Widget _getAppBarTitle(BuildContext context) {
+    final override = appBarTitleOverride?.trim();
+    if (override != null && override.isNotEmpty) {
+      final baseStyle =
+          Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ) ??
+          TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          );
+      return Text(
+        override,
+        style: baseStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+      );
+    }
+
+    if (filterGigRequestId != null) {
+      final titleStyle =
+          Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ) ??
+          TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          );
+      return Text(
+        L10n.get("gigs_request_messages_title"),
+        style: titleStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+      );
+    }
+
     final titleStyle =
         Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
           fontSize: 20,

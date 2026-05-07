@@ -29,11 +29,30 @@ class CurrencyDisplayUtils {
     }
   }
 
-  /// ISO code only (no flag). Use for [ListingPaymentsOutlineBadge] and tight chips.
+  /// ISO 4217 code only (no flag). Use for [ListingPaymentsOutlineBadge] and tight chips.
+  ///
+  /// Strips a leading flag emoji (e.g. when the API or stored value mirrors
+  /// [codeWithFlag]: `"🇺🇿 UZS"`).
   static String isoCode(String currencyCode) {
-    final c = currencyCode.trim();
-    if (c.isEmpty) return "UZS";
-    return c.toUpperCase();
+    final trimmed = currencyCode.trim();
+    if (trimmed.isEmpty) return "UZS";
+
+    for (final raw in trimmed.split(RegExp(r"\s+"))) {
+      final part = raw.trim();
+      if (part.length == 3 && RegExp(r"^[A-Za-z]{3}$").hasMatch(part)) {
+        return part.toUpperCase();
+      }
+    }
+
+    final lettersOnly = trimmed.replaceAll(RegExp(r"[^A-Za-z]"), "");
+    if (lettersOnly.length == 3) {
+      return lettersOnly.toUpperCase();
+    }
+    if (lettersOnly.length > 3) {
+      return lettersOnly.substring(lettersOnly.length - 3).toUpperCase();
+    }
+
+    return trimmed.toUpperCase();
   }
 
   /// ISO code with regional flag for read-only lines (`{currency}` in L10n).

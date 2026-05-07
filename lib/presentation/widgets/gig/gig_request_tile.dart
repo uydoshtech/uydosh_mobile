@@ -39,7 +39,7 @@ class GigRequestTile extends StatelessWidget {
             "gigs_request_budget_fixed",
             params: {
               "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
-              "currency": CurrencyDisplayUtils.codeWithFlag(request.currencyCode),
+              "currency": CurrencyDisplayUtils.isoCode(request.currencyCode),
             },
           )
         : L10n.get("gigs_request_budget_open");

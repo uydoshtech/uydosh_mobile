@@ -7,6 +7,7 @@ import "package:uy_dosh/base/constants/app_colors.dart" show AppColors, BlueThem
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -284,6 +285,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
 
   // Launch authentication wizard
   void _launchAuthWizard(BuildContext context) {
+    HapticFeedbackUtils.impact();
     context
         .pushReplaceAuthWizard()
         .then((_) {
