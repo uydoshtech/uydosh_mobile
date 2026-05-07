@@ -65,6 +65,11 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
               value: _role,
               onChanged: _onRoleChanged,
               intrinsicWidthFirstSegment: true,
+              firstSegmentWidthScale: 1.2,
+              // Short "All" label is still much narrower than the other tabs by
+              // intrinsic measure; keep a minimum share of the bar so the thumb
+              // does not look like a tiny sliver.
+              firstSegmentMinFractionOfBar: 0.26,
               entries: [
                 SegmentedSwitchEntry(
                   value: _BookingRole.all,

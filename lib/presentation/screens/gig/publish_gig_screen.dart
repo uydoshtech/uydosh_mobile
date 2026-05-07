@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -157,7 +158,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       // locale columns (uz/en) are left untouched on save.
       _descriptionController.text = offer.descriptionRu ?? "";
       _pricingType = offer.pricingType;
-      _priceController.text = offer.price.toString();
+      _priceController.text = IntFormatUtils.withDotThousands(offer.price);
       _minDurationController.text =
           offer.minDurationMinutes?.toString() ?? "";
       _isRemote = offer.isRemote;
@@ -168,7 +169,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _titleController.text = editingReq.title;
       _descriptionController.text = editingReq.descriptionRu ?? "";
       _budgetType = editingReq.budgetType;
-      _budgetController.text = editingReq.budgetAmount?.toString() ?? "";
+      _budgetController.text = editingReq.budgetAmount != null
+          ? IntFormatUtils.withDotThousands(editingReq.budgetAmount!)
+          : "";
       _addressController.text = editingReq.addressText ?? "";
       _isRemote = editingReq.isRemote;
       _currency = editingReq.currencyCode;
@@ -213,7 +216,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       text = _priceController.text.trim();
     }
     if (text.isEmpty) return true;
-    final n = int.tryParse(text);
+    final n = IntFormatUtils.parseAmountInput(text);
     return n == null || n <= 0;
   }
 
@@ -238,9 +241,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         : _descriptionController.text.trim();
 
     if (_mode == GigPublishMode.task) {
-      final budget = _budgetController.text.trim().isEmpty
-          ? null
-          : int.tryParse(_budgetController.text.trim());
+      final budget = IntFormatUtils.parseAmountInput(_budgetController.text.trim());
       final addr = _addressController.text.trim().isEmpty
           ? null
           : _addressController.text.trim();
@@ -274,7 +275,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             );
       }
     } else {
-      final price = int.tryParse(_priceController.text.trim());
+      final price = IntFormatUtils.parseAmountInput(_priceController.text.trim());
       if (price == null) return;
       final minDuration = _minDurationController.text.trim().isEmpty
           ? null
@@ -407,6 +408,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                     (_mode == GigPublishMode.service &&
                         offerState is GigPostOfferSubmitting);
 
+                final submitLabel = _isEditingOffer || _isEditingRequest
+                    ? L10n.get("gigs_edit_offer_submit")
+                    : (_mode == GigPublishMode.task
+                        ? L10n.get("gigs_post_request_submit")
+                        : L10n.get("gigs_post_offer_submit"));
+                const submitTextStyle = TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                );
+
                 return Form(
                   key: _formKey,
                   child: ListView(
@@ -526,24 +537,26 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                       else
                         ..._buildServiceFields(),
                       const SizedBox(height: 24),
-                      PrimaryButton(
-                        onPressed: submitting ? null : _submit,
-                        isLoading: submitting,
-                        height: 54,
-                        width: double.infinity,
-                        borderRadius: BorderRadius.circular(16),
-                        child: Text(
-                          _isEditingOffer || _isEditingRequest
-                              ? L10n.get("gigs_edit_offer_submit")
-                              : (_mode == GigPublishMode.task
-                                  ? L10n.get("gigs_post_request_submit")
-                                  : L10n.get("gigs_post_offer_submit")),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
+                      if (_isEditingOffer || _isEditingRequest)
+                        PrimaryButton(
+                          onPressed: submitting ? null : _submit,
+                          isLoading: submitting,
+                          height: 54,
+                          width: double.infinity,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Text(submitLabel, style: submitTextStyle),
+                        )
+                      else
+                        PrimaryButtonFactory.iconTextCentered(
+                          onPressed: submitting ? null : _submit,
+                          isLoading: submitting,
+                          height: 54,
+                          width: double.infinity,
+                          borderRadius: BorderRadius.circular(16),
+                          icon: Icons.add_rounded,
+                          text: submitLabel,
+                          textStyle: submitTextStyle,
                         ),
-                      ),
                     ],
                   ),
                 );
@@ -715,17 +728,20 @@ class _PublishModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeumorphicSegmentedSwitch<GigPublishMode>(
       value: value,
+      height: 60,
       onChanged: onChanged,
       entries: [
         SegmentedSwitchEntry(
-          value: GigPublishMode.task,
-          label: L10n.get("gigs_publish_mode_task"),
-          icon: Icons.assignment_outlined,
-        ),
-        SegmentedSwitchEntry(
           value: GigPublishMode.service,
           label: L10n.get("gigs_publish_mode_service"),
+          subtitle: L10n.get("gigs_publish_mode_service_subtitle"),
           icon: Icons.handyman_outlined,
+        ),
+        SegmentedSwitchEntry(
+          value: GigPublishMode.task,
+          label: L10n.get("gigs_publish_mode_task"),
+          subtitle: L10n.get("gigs_publish_mode_task_subtitle"),
+          icon: Icons.assignment_outlined,
         ),
       ],
     );
@@ -1077,7 +1093,7 @@ class _CurrencyAmountField extends StatelessWidget {
             child: TextFormField(
               controller: controller,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [DotThousandsDigitsInputFormatter()],
               style: _fieldTextStyle(context),
               decoration: _plateInputDecoration(context, hint: hint),
               onChanged: onChanged,

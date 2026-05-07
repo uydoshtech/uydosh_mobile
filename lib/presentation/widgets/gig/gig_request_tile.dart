@@ -15,9 +15,17 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 /// [GigNavigatorExtensions] helper. Used by both the standalone
 /// "Open tasks" list and the inline feed on the Services hub.
 class GigRequestTile extends StatelessWidget {
-  const GigRequestTile({required this.request, super.key});
+  const GigRequestTile({
+    required this.request,
+    this.onDetailClosed,
+    super.key,
+  });
 
   final GigRequest request;
+
+  /// Called after returning from [GigRequestDetailScreen]. [taskWasRemoved] is
+  /// `true` when the owner deleted/cancelled the open task from that screen.
+  final void Function(bool taskWasRemoved)? onDetailClosed;
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +50,11 @@ class GigRequestTile extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             HapticFeedbackUtils.lightImpact();
-            context.pushGigRequestDetail(request.id);
+            final removed = await context.pushGigRequestDetail(request.id);
+            if (!context.mounted) return;
+            onDetailClosed?.call(removed == true);
           },
           borderRadius: BorderRadius.circular(16),
           // Stack so the client avatar can dock in the top-right corner

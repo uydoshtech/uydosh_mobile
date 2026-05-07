@@ -1,0 +1,14 @@
+---
+description: Icon + text on full-width buttons — tight grouping, centered as one unit
+globs: lib/presentation/widgets/common/button_icon_label.dart
+alwaysApply: false
+---
+
+# Icon + label on buttons
+
+For a **single** leading or trailing icon with label on a wide button:
+
+- Keep a **tight** gap (8px) between icon and label.
+- **Center icon + label as one group** (do not put the icon in one fixed slot and center only the label in the remaining width — that creates a large empty gap).
+
+Implement this via [ButtonIconLabel](lib/presentation/widgets/common/button_icon_label.dart) or the same Row pattern (`MainAxisAlignment.center`, `mainAxisSize: max`, `Flexible(fit: FlexFit.loose)` around the label for ellipsis). Use symmetric fixed slots only when **both** sides have icons.

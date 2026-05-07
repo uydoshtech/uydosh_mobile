@@ -166,9 +166,10 @@ extension GigNavigatorExtensions on BuildContext {
     );
   }
 
-  void pushGigRequestDetail(int requestId) {
-    Navigator.of(this).push(
-      MaterialPageRoute<void>(
+  /// Returns `true` when the request was cancelled/removed by the viewer (owner).
+  Future<bool?> pushGigRequestDetail(int requestId) {
+    return Navigator.of(this).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (_) => GigRequestDetailScreen(requestId: requestId),
       ),
     );

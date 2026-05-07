@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -10,11 +12,16 @@ class SegmentedSwitchEntry<T> {
     required this.value,
     required this.label,
     this.icon,
+    this.subtitle,
   });
 
   final T value;
   final String label;
   final IconData? icon;
+
+  /// Optional second line shown under [label], e.g. on the Publish Task/Service
+  /// segmented control.
+  final String? subtitle;
 }
 
 /// Reusable N-segment switcher: a 3D pill container with an animated sliding
@@ -29,6 +36,8 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
     required this.onChanged,
     this.height = 48,
     this.intrinsicWidthFirstSegment = false,
+    this.firstSegmentWidthScale = 1,
+    this.firstSegmentMinFractionOfBar,
     super.key,
   });
 
@@ -42,8 +51,19 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
   /// When false, every segment gets the same width (original behavior).
   final bool intrinsicWidthFirstSegment;
 
+  /// Horizontal-only: multiplies the first segment’s **width** (thumb + column).
+  /// Does not change [height]. Only used when [intrinsicWidthFirstSegment] is true.
+  final double firstSegmentWidthScale;
+
+  /// When set (with [intrinsicWidthFirstSegment]), the first segment uses at least
+  /// this fraction of the inner bar width so short labels are not dwarfed by
+  /// longer siblings (intrinsic width alone is often too small).
+  final double? firstSegmentMinFractionOfBar;
+
   static const double _thumbInset = 2;
   static const double _tabHorizontalPadding = 6;
+  /// Mirrors horizontal padding inside [_SegmentedSwitchTab] (label row).
+  static const double _tabInnerHorizontalPadding = 6;
   static const double _iconSize = 18;
   static const double _iconTextGap = 6;
 
@@ -74,6 +94,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
       w += _iconSize + _iconTextGap;
     }
     w += painter.width;
+    w += _tabInnerHorizontalPadding * 2;
     // Small slack so layout / icon glyph boxes don’t clip the label.
     return w + 2;
   }
@@ -87,13 +108,21 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
       return List.filled(entries.length, w);
     }
     final measured = _measureFirstSegmentWidth(context);
-    final w0 = measured < kMinInteractiveDimension
+    final base = measured < kMinInteractiveDimension
         ? kMinInteractiveDimension.toDouble()
         : measured;
-    if (w0 > totalInner) {
+    var w0 = base * firstSegmentWidthScale;
+    if (firstSegmentMinFractionOfBar != null) {
+      w0 = math.max(w0, totalInner * firstSegmentMinFractionOfBar!);
+    }
+    final minForRest =
+        (entries.length - 1) * kMinInteractiveDimension.toDouble();
+    final maxW0 = totalInner - minForRest;
+    if (maxW0 < kMinInteractiveDimension || totalInner <= minForRest) {
       final w = totalInner / entries.length;
       return List.filled(entries.length, w);
     }
+    w0 = w0.clamp(kMinInteractiveDimension.toDouble(), maxW0);
     final rem = totalInner - w0;
     final wRest = rem / (entries.length - 1);
     return [w0, ...List.filled(entries.length - 1, wRest)];
@@ -235,6 +264,57 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected ? selectedTextColor : unselectedTextColor;
+    final subtitle = entry.subtitle;
+    final hasSubtitle = subtitle != null && subtitle.isNotEmpty;
+
+    final labelRow = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (entry.icon != null) ...[
+          Icon(entry.icon, size: 18, color: color),
+          const SizedBox(width: 6),
+        ],
+        Flexible(
+          child: Text(
+            entry.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final content = hasSubtitle
+        ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(width: double.infinity, child: labelRow),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.15,
+                  fontWeight: FontWeight.w500,
+                  color:
+                      color.withValues(alpha: isSelected ? 0.88 : 0.72),
+                ),
+              ),
+            ],
+          )
+        : labelRow;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -250,31 +330,11 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
             scale: isSelected ? 1.0 : 0.96,
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (entry.icon != null) ...[
-                      Icon(entry.icon, size: 18, color: color),
-                      const SizedBox(width: 6),
-                    ],
-                    Flexible(
-                      child: Text(
-                        entry.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w600,
-                          color: color,
-                        ),
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: hasSubtitle ? 6 : 0,
                 ),
+                child: content,
               ),
             ),
           ),

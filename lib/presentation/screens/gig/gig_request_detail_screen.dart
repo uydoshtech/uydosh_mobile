@@ -14,6 +14,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -38,6 +39,7 @@ class GigRequestDetailScreen extends StatefulWidget {
 class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   late Future<GigRequest> _future;
   bool _contactInFlight = false;
+  bool _deleteInFlight = false;
 
   @override
   void initState() {
@@ -56,6 +58,34 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     }
   }
 
+  Future<void> _confirmAndDeleteTask(GigRequest request) async {
+    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "gigs_request_delete_title",
+      messageKey: "gigs_request_delete_message",
+    );
+    if (confirmed != true || !mounted) return;
+    if (_deleteInFlight) return;
+    setState(() => _deleteInFlight = true);
+    try {
+      await getIt<IGigService>().cancelRequest(request.id);
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("gigs_request_delete_success"),
+      );
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("gigs_request_delete_failed"),
+      );
+    } finally {
+      if (mounted) setState(() => _deleteInFlight = false);
+    }
+  }
+
   List<Widget> _appBarActions(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
     final isOwner = UserListingState().isOwner(request.clientUserId);
@@ -68,7 +98,17 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
             value: "edit_task",
             icon: Icons.edit_outlined,
             textKey: "gigs_request_edit_cta",
+            enabled: !_deleteInFlight,
             onPressed: () => unawaited(_editRequest(request)),
+          ),
+          ActionMenuItem(
+            value: "delete_task",
+            icon: Icons.delete_outline_rounded,
+            textKey: "gigs_request_delete_menu",
+            iconColor: Colors.red,
+            textColor: Colors.red,
+            enabled: !_deleteInFlight,
+            onPressed: () => unawaited(_confirmAndDeleteTask(request)),
           ),
         ],
       ),
@@ -123,6 +163,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       onContactPressed: () => _openChat(request),
       onEditPressed: canEdit ? () => unawaited(_editRequest(request)) : null,
       showContactCta: showContact,
+      editDisabled: _deleteInFlight,
     );
   }
 
@@ -189,6 +230,7 @@ class _RequestDetailContent extends StatelessWidget {
     required this.onContactPressed,
     required this.showContactCta,
     this.onEditPressed,
+    this.editDisabled = false,
   });
 
   final GigRequest request;
@@ -196,6 +238,7 @@ class _RequestDetailContent extends StatelessWidget {
   final VoidCallback onContactPressed;
   final bool showContactCta;
   final VoidCallback? onEditPressed;
+  final bool editDisabled;
 
   @override
   Widget build(BuildContext context) {
@@ -356,6 +399,7 @@ class _RequestDetailContent extends StatelessWidget {
                     height: 54,
                     width: double.infinity,
                     borderRadius: BorderRadius.circular(16),
+                    isDisabled: editDisabled,
                     child: Text(
                       L10n.get("gigs_request_edit_cta"),
                       style: const TextStyle(

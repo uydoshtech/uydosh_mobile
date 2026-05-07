@@ -17,6 +17,8 @@ import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
+    show GigPublishMode;
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
@@ -225,7 +227,9 @@ class _GigHubBodyState extends State<_GigHubBody> {
       listenable: AuthenticationState(),
       builder: (context, _) {
         final signedIn = AuthenticationState().isAuthenticated;
-        final bottomClearance = signedIn ? 96.0 : 16.0;
+        // Stacked (+) publish + "My bookings" pill when signed in; (+) mode
+        // follows the active feed (service vs task).
+        final bottomClearance = signedIn ? 152.0 : 16.0;
 
         final scrollable = UydoshRefreshIndicator.mainShell(
           onRefresh: _onRefresh,
@@ -252,8 +256,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
                   ),
                 ),
                 ..._buildFeedSlivers(context, bottomClearance),
-                // Bottom padding scaled so the last feed item clears the floating
-                // "My bookings" FAB without being covered by it (signed-in only).
+                // Bottom padding clears the stacked FABs when both are shown.
                 SliverPadding(
                   padding: EdgeInsets.only(bottom: bottomClearance),
                 ),
@@ -272,7 +275,15 @@ class _GigHubBodyState extends State<_GigHubBody> {
               Positioned(
                 right: 16,
                 bottom: 16,
-                child: _MyBookingsFab(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _HubPublishFab(feed: _feed),
+                    const SizedBox(height: 12),
+                    _MyBookingsFab(),
+                  ],
+                ),
               ),
           ],
         );
@@ -381,7 +392,18 @@ class _GigHubBodyState extends State<_GigHubBody> {
                   if (i >= state.requests.length) {
                     return const _LoadingMoreFooter();
                   }
-                  return GigRequestTile(request: state.requests[i]);
+                  return GigRequestTile(
+                    request: state.requests[i],
+                    onDetailClosed: (taskWasRemoved) {
+                      if (!taskWasRemoved) return;
+                      context.read<GigRequestsBloc>().add(
+                            FetchGigRequests(
+                              refresh: true,
+                              categoryId: _selectedCategoryId,
+                            ),
+                          );
+                    },
+                  );
                 },
               ),
             );
@@ -416,9 +438,8 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<int?> onCategorySelected;
   final Color backgroundColor;
 
-  /// Segmented switch height (matches [NeumorphicSegmentedSwitch] default and
-  /// [MessagesInboxScreen] toggle).
-  static const double _switchHeight = 48;
+  /// Tall enough for title + subtitle (same Task/Service phrasing as Publish).
+  static const double _switchHeight = 60;
 
   /// Vertical padding around the primary toggle (matches messages inbox).
   static const double _togglePadTop = 8;
@@ -477,11 +498,15 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
                     SegmentedSwitchEntry(
                       value: GigHubFeed.services,
                       label: L10n.get("gigs_hub_feed_services"),
+                      subtitle:
+                          L10n.get("gigs_publish_mode_service_subtitle"),
                       icon: Icons.handyman_outlined,
                     ),
                     SegmentedSwitchEntry(
                       value: GigHubFeed.tasks,
                       label: L10n.get("gigs_hub_feed_tasks"),
+                      subtitle:
+                          L10n.get("gigs_publish_mode_task_subtitle"),
                       icon: Icons.assignment_outlined,
                     ),
                   ],
@@ -761,6 +786,121 @@ class _CategoryChip extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Circular + FAB above [_MyBookingsFab]. Matches whichever feed segment is
+/// active: publish a **service** on [GigHubFeed.services], **post a task** on
+/// [GigHubFeed.tasks].
+class _HubPublishFab extends StatefulWidget {
+  const _HubPublishFab({required this.feed});
+
+  final GigHubFeed feed;
+
+  static const double _size = 56;
+
+  @override
+  State<_HubPublishFab> createState() => _HubPublishFabState();
+}
+
+class _HubPublishFabState extends State<_HubPublishFab> {
+  bool _pressed = false;
+
+  void _setPressed(bool v) {
+    if (_pressed != v) setState(() => _pressed = v);
+  }
+
+  GigPublishMode get _publishMode =>
+      widget.feed == GigHubFeed.tasks
+          ? GigPublishMode.task
+          : GigPublishMode.service;
+
+  String get _semanticLabel =>
+      widget.feed == GigHubFeed.tasks
+          ? L10n.get("gigs_hub_post_title")
+          : L10n.get("gigs_hub_publish_offer_title");
+
+  void _onTap() {
+    HapticFeedbackUtils.lightImpact();
+    context.pushPublishGig(initialMode: _publishMode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final fg = themeState.isBlueTheme ? Colors.white : Colors.black;
+    final base = Theme.of(context).colorScheme.surface;
+    final radius =
+        BorderRadius.circular(_HubPublishFab._size / 2);
+    final label = _semanticLabel;
+
+    final content = Icon(Icons.add_rounded, color: fg, size: 28);
+
+    final liquidBody = SizedBox(
+      width: _HubPublishFab._size,
+      height: _HubPublishFab._size,
+      child: LiquidGlassPlate(
+        height: _HubPublishFab._size,
+        borderRadius: radius,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => _setPressed(true),
+          onTapUp: (_) => _setPressed(false),
+          onTapCancel: () => _setPressed(false),
+          onTap: _onTap,
+          child: Center(child: content),
+        ),
+      ),
+    );
+
+    final shadows = _pressed
+        ? ThreeDSurfaceStyle.pressedShadows(context)
+        : ThreeDSurfaceStyle.elevatedShadows(context);
+
+    final legacyBody = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: radius,
+        splashFactory: NoSplash.splashFactory,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        onTap: _onTap,
+        onHighlightChanged: _setPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          width: _HubPublishFab._size,
+          height: _HubPublishFab._size,
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            boxShadow: shadows,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+            ),
+            child: Center(child: content),
+          ),
+        ),
+      ),
+    );
+
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        label: label,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          child: useLiquidGlass ? liquidBody : legacyBody,
+        ),
+      ),
     );
   }
 }

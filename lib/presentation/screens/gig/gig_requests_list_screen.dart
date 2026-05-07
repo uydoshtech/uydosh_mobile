@@ -58,7 +58,15 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             itemCount: requests.length,
             separatorBuilder: (_, __) => const SizedBox(height: 14),
-            itemBuilder: (_, i) => GigRequestTile(request: requests[i]),
+            itemBuilder: (_, i) => GigRequestTile(
+              request: requests[i],
+              onDetailClosed: (taskWasRemoved) {
+                if (!taskWasRemoved) return;
+                setState(() {
+                  _future = getIt<IGigService>().listRequests();
+                });
+              },
+            ),
           );
         },
       ),
