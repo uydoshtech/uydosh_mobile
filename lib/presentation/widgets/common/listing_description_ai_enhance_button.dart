@@ -1,9 +1,13 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -19,6 +23,7 @@ class ListingDescriptionAiEnhanceButton extends StatefulWidget {
   const ListingDescriptionAiEnhanceButton({
     required this.controller,
     super.key,
+
     /// When true, omit outer alignment/padding for use in a [Row] with the char counter.
     this.inlineWithCounter = false,
     this.enhance,
@@ -51,6 +56,7 @@ class _ListingDescriptionAiEnhanceButtonState
     extends State<ListingDescriptionAiEnhanceButton>
     with SingleTickerProviderStateMixin {
   bool _loading = false;
+  ListingAiQuotaSnapshot? _quotaSnap;
 
   /// High-contrast label/icon on dark inputs (blue theme) and light inputs (light theme).
   /// Uses [ColorScheme.onSurface] (app primary text: white / black), not [ColorScheme.primary]
@@ -105,6 +111,16 @@ class _ListingDescriptionAiEnhanceButtonState
       ),
     ]).animate(_sparkleBlinkController);
     _sparkleBlinkController.forward();
+    unawaited(_loadQuotaHint());
+  }
+
+  Future<void> _loadQuotaHint() async {
+    final gemini = getIt<GeminiService>();
+    final q = await gemini.fetchListingAiQuota();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _quotaSnap = q);
   }
 
   @override
@@ -116,7 +132,8 @@ class _ListingDescriptionAiEnhanceButtonState
   Widget _blinkingSparkleIcon(BuildContext context) {
     return FadeTransition(
       opacity: _sparkleOpacity,
-      child: ThemeIcon(Icons.auto_awesome, size: 18, color: _accentColor(context)),
+      child:
+          ThemeIcon(Icons.auto_awesome, size: 18, color: _accentColor(context)),
     );
   }
 
@@ -155,10 +172,8 @@ class _ListingDescriptionAiEnhanceButtonState
         return;
       }
       if (outcome.quotaExceeded) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("listing_ai_enhance_quota_exceeded"),
-        );
+        unawaited(GeminiQuotaExceededSheet.show(context));
+        unawaited(_loadQuotaHint());
         return;
       }
       if (outcome.authRequired) {
@@ -210,16 +225,61 @@ class _ListingDescriptionAiEnhanceButtonState
           return const SizedBox.shrink();
         }
         final button = _buildButton(context);
-        // When used inline with the description counter, the adjacent Template button
-        // expects a fixed gap after the AI action. Keep that spacing inside this
-        // widget so it disappears when the AI action is hidden.
+        final lowAi =
+            _quotaSnap != null && _quotaSnap!.shouldShowLowListingAiHint;
+        final hint = lowAi
+            ? GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AiPremiumPlaceholderScreen(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: widget.inlineWithCounter ? 2 : 4,
+                  ),
+                  child: Text(
+                    L10n.getWithParams(
+                      "ai_allowance_inline_listing_ai_hint",
+                      params: {
+                        "translate": "${_quotaSnap!.translateRemaining}",
+                        "enhance": "${_quotaSnap!.enhanceRemaining}",
+                      },
+                    ),
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.2,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              )
+            : null;
+
         if (widget.inlineWithCounter) {
           return Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: button,
+            child: hint == null
+                ? button
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [button, hint],
+                  ),
           );
         }
-        return button;
+        final columnChildren = <Widget>[button];
+        if (hint != null) {
+          columnChildren.add(hint);
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: columnChildren,
+        );
       },
     );
   }
@@ -251,42 +311,40 @@ class _ListingDescriptionAiEnhanceButtonState
         _buildEnhanceLabel(context),
       ],
     );
-    final button =
-        widget.inlineWithCounter
-            ? TextButton(
-              onPressed: _loading ? null : _onPressed,
-              style: TextButton.styleFrom(
-                foregroundColor: accent,
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                alignment: Alignment.centerLeft,
-              ),
-              child: inlineChild,
-            )
-            : TextButton.icon(
-              onPressed: _loading ? null : _onPressed,
-              icon:
-                  _loading
-                      ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: accent,
-                        ),
-                      )
-                      : _blinkingSparkleIcon(context),
-              label: _buildEnhanceLabel(context),
-              style: TextButton.styleFrom(
-                foregroundColor: accent,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-              ),
-            );
+    final button = widget.inlineWithCounter
+        ? TextButton(
+            onPressed: _loading ? null : _onPressed,
+            style: TextButton.styleFrom(
+              foregroundColor: accent,
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              alignment: Alignment.centerLeft,
+            ),
+            child: inlineChild,
+          )
+        : TextButton.icon(
+            onPressed: _loading ? null : _onPressed,
+            icon: _loading
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: accent,
+                    ),
+                  )
+                : _blinkingSparkleIcon(context),
+            label: _buildEnhanceLabel(context),
+            style: TextButton.styleFrom(
+              foregroundColor: accent,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+          );
     if (widget.inlineWithCounter) {
       return button;
     }
@@ -299,4 +357,3 @@ class _ListingDescriptionAiEnhanceButtonState
     );
   }
 }
-

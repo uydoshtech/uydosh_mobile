@@ -12,6 +12,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
@@ -45,6 +46,7 @@ import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.d
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_input.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
@@ -57,6 +59,7 @@ import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -76,19 +79,23 @@ class ChatScreen extends StatefulWidget {
   static String routeName(int conversationId) => "/chat/$conversationId";
 
   const ChatScreen({
-    required this.conversationId, super.key,
+    required this.conversationId,
+    super.key,
     this.listingId,
     this.listingTypeId,
     this.listingOwnerUserId,
+
     /// Backend `conversation.context_type` (`gig_request`, `gig_offer`, …).
     /// Used with [conversationParticipantId] when [listingOwnerUserId] is insufficient
     /// (e.g. task client is `participant_id` for `gig_request` chats).
     this.conversationContextType,
+
     /// Backend `participant_id` for this thread (see inbox / gig models).
     this.conversationParticipantId,
     this.gigRequestId,
     this.gigRequestTitle,
     this.listingTitle,
+
     /// When true, [GigRequestDetailScreen] for [gigRequestId] is already on
     /// the stack under this chat (e.g. opened via Contact on that screen).
     /// "View task" should pop to it instead of pushing a duplicate route.
@@ -151,8 +158,10 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
-  bool _hasLoadedMessagesForConversation = false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
-  final Set<int> _newMessageIds = {}; // Track which messages are new in this session
+  bool _hasLoadedMessagesForConversation =
+      false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
+  final Set<int> _newMessageIds =
+      {}; // Track which messages are new in this session
   UserProfile? _currentUserProfile; // Store the current user's profile
   // Authoritative peer avatar URL for this session. Initialised from the
   // constructor prop (what the previous screen knew), then overwritten with
@@ -207,6 +216,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
   int? _lastIncomingSoundMessageId;
+  ListingAiQuotaSnapshot? _listingAiQuotaRibbon;
 
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
 
@@ -286,6 +296,10 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     _loadSecurityRibbonState();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_loadChatAiQuotaRibbon());
+    });
+
     _lastObservedUnreadCount = UnreadMessagesState().unreadCount;
     _unreadMessagesListener = _onUnreadMessagesChanged;
     UnreadMessagesState().addListener(_unreadMessagesListener);
@@ -312,6 +326,14 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  Future<void> _loadChatAiQuotaRibbon() async {
+    final q = await getIt<GeminiService>().fetchListingAiQuota();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _listingAiQuotaRibbon = q);
+  }
+
   void _onUnreadMessagesChanged() {
     final current = UnreadMessagesState().unreadCount;
     final previous = _lastObservedUnreadCount;
@@ -321,7 +343,8 @@ class _ChatScreenState extends State<ChatScreen> {
     // Only if this chat screen is the visible (top) route.
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     // Only refresh for pushes targeting THIS conversation.
-    final incomingConversationId = UnreadMessagesState().lastIncomingConversationId;
+    final incomingConversationId =
+        UnreadMessagesState().lastIncomingConversationId;
     if (incomingConversationId != widget.conversationId) return;
     // Ignore non-changes (extra safety).
     if (current == previous) return;
@@ -510,10 +533,8 @@ class _ChatScreenState extends State<ChatScreen> {
       if (!mounted) {
         return;
       }
-      ToastTheme.showError(
-        context,
-        message: L10n.get("chat_translation_quota_exceeded"),
-      );
+      unawaited(GeminiQuotaExceededSheet.show(context));
+      unawaited(_loadChatAiQuotaRibbon());
     } catch (e) {
       logger.d("💬 [ChatScreen] Translation request failed: $e");
     } finally {
@@ -787,8 +808,9 @@ class _ChatScreenState extends State<ChatScreen> {
         final evidence = data["evidence_message_ids"];
 
         if ((risk == "medium" || risk == "high") && evidence is List) {
-          final ids =
-              evidence.map((e) => e is int ? e : int.tryParse("$e")).whereType<int>();
+          final ids = evidence
+              .map((e) => e is int ? e : int.tryParse("$e"))
+              .whereType<int>();
           if (mounted) {
             setState(() {
               for (final id in ids) {
@@ -805,10 +827,9 @@ class _ChatScreenState extends State<ChatScreen> {
         if (risk == "medium" || risk == "high") {
           setStateIfMounted(() {
             _safetyWarningActive = true;
-            _safetyWarningSeverity =
-                risk == "high"
-                    ? ChatSafetyWarningSeverity.high
-                    : ChatSafetyWarningSeverity.medium;
+            _safetyWarningSeverity = risk == "high"
+                ? ChatSafetyWarningSeverity.high
+                : ChatSafetyWarningSeverity.medium;
             _safetyWarningRawReason =
                 (reason != null && reason.trim().isNotEmpty)
                     ? reason.trim()
@@ -876,9 +897,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final gig = widget.gigRequestTitle?.trim();
     if (gig != null && gig.isNotEmpty) return gig;
     final listing = widget.listingTitle?.trim();
-    if (widget.listingId != null &&
-        listing != null &&
-        listing.isNotEmpty) {
+    if (widget.listingId != null && listing != null && listing.isNotEmpty) {
       return listing;
     }
     return null;
@@ -895,8 +914,7 @@ class _ChatScreenState extends State<ChatScreen> {
   EdgeInsets _messagesListPadding(BuildContext context) {
     const base = EdgeInsets.all(16);
     if (!ThemeState().isBlueTheme) return base;
-    final extra =
-        _glassComposerEstimatedHeight +
+    final extra = _glassComposerEstimatedHeight +
         MediaQuery.viewPaddingOf(context).bottom;
     return base.copyWith(bottom: base.bottom + extra);
   }
@@ -910,8 +928,7 @@ class _ChatScreenState extends State<ChatScreen> {
           loading: () {},
           conversationsLoaded: (conversations, hasMore, currentPage) {},
           conversationsCleared: () {},
-          messagesLoaded:
-              (messages, hasMore, currentPage, conversationId) {},
+          messagesLoaded: (messages, hasMore, currentPage, conversationId) {},
           conversationCreated: (conversation) {},
           messageSent: (message) {
             setState(() {
@@ -1000,6 +1017,38 @@ class _ChatScreenState extends State<ChatScreen> {
           severity: _safetyWarningSeverity,
           onClose: _dismissSafetyWarning,
         ),
+      if (_listingAiQuotaRibbon != null &&
+          _listingAiQuotaRibbon!.shouldShowLowChatTranslateHint)
+        Material(
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.55),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AiPremiumPlaceholderScreen(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Text(
+                L10n.getWithParams(
+                  "ai_allowance_inline_chat_hint",
+                  params: {
+                    "count": "${_listingAiQuotaRibbon!.chatTranslateRemaining}",
+                  },
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+          ),
+        ),
     ];
   }
 
@@ -1009,79 +1058,79 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           MultiBlocListener(
             listeners: [
-          BlocListener<MessagingBloc, MessagingState>(
-            listener: (context, state) {
-              if (!mounted) return;
-              state.when(
-                initial: () {},
-                loading: () {},
-                conversationsLoaded:
-                    (conversations, hasMore, currentPage) {},
-                conversationsCleared: () {},
-                messagesLoaded: (
-                  messages,
-                  hasMore,
-                  currentPage,
-                  conversationId,
-                ) {
-                  if (conversationId != widget.conversationId) return;
-                  setState(() {
-                    _applyMessagesAndMarkNewOnes(messages);
-                  });
-                  _finishRefreshSkeletonIfNeeded();
-                  _refreshPeerAvatarIfPossible();
-                  context.read<MessagingBloc>().add(
-                    MarkMessagesAsRead(conversationId: conversationId),
-                  );
+              BlocListener<MessagingBloc, MessagingState>(
+                listener: (context, state) {
+                  if (!mounted) return;
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    conversationsLoaded:
+                        (conversations, hasMore, currentPage) {},
+                    conversationsCleared: () {},
+                    messagesLoaded: (
+                      messages,
+                      hasMore,
+                      currentPage,
+                      conversationId,
+                    ) {
+                      if (conversationId != widget.conversationId) return;
+                      setState(() {
+                        _applyMessagesAndMarkNewOnes(messages);
+                      });
+                      _finishRefreshSkeletonIfNeeded();
+                      _refreshPeerAvatarIfPossible();
+                      context.read<MessagingBloc>().add(
+                            MarkMessagesAsRead(conversationId: conversationId),
+                          );
 
-                  final latestMessage =
-                      messages.isNotEmpty ? messages.last : null;
-                  final latest = latestMessage?.content;
-                  final latestSenderId = latestMessage?.senderId;
-                  if (latest != null &&
-                      latestSenderId != null &&
-                      _currentUserId != null &&
-                      latestSenderId != _currentUserId) {
-                    _maybeRunSafetyCheck(triggerText: latest);
-                  }
-                },
-                conversationCreated: (conversation) {},
-                messageSent: (message) {
-                  setState(() {
-                    _messages = [..._messages, message];
-                    _newMessageIds.clear();
-                    _newMessageIds.add(message.id);
-                  });
-                  _messageController.clear();
-                  _scrollToBottom();
-                  HapticFeedbackUtils.impact();
-                },
-                messagesMarkedAsRead: (conversationId, markedCount) {},
-                error: (message) {
-                  _finishRefreshSkeletonIfNeeded();
-                },
-              );
-            },
-          ),
-          BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
-            listener: (context, state) {
-              if (!mounted) return;
-              state.when(
-                initial: () {},
-                loading: () {},
-                loaded: (profile) {
-                  setState(() {
-                    _currentUserProfile = profile;
-                  });
-                },
-                error: (message) {
-                  logger.d(
-                    "❌ [ChatScreen] Error loading current user profile: $message",
+                      final latestMessage =
+                          messages.isNotEmpty ? messages.last : null;
+                      final latest = latestMessage?.content;
+                      final latestSenderId = latestMessage?.senderId;
+                      if (latest != null &&
+                          latestSenderId != null &&
+                          _currentUserId != null &&
+                          latestSenderId != _currentUserId) {
+                        _maybeRunSafetyCheck(triggerText: latest);
+                      }
+                    },
+                    conversationCreated: (conversation) {},
+                    messageSent: (message) {
+                      setState(() {
+                        _messages = [..._messages, message];
+                        _newMessageIds.clear();
+                        _newMessageIds.add(message.id);
+                      });
+                      _messageController.clear();
+                      _scrollToBottom();
+                      HapticFeedbackUtils.impact();
+                    },
+                    messagesMarkedAsRead: (conversationId, markedCount) {},
+                    error: (message) {
+                      _finishRefreshSkeletonIfNeeded();
+                    },
                   );
                 },
-              );
-            },
-          ),
+              ),
+              BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
+                listener: (context, state) {
+                  if (!mounted) return;
+                  state.when(
+                    initial: () {},
+                    loading: () {},
+                    loaded: (profile) {
+                      setState(() {
+                        _currentUserProfile = profile;
+                      });
+                    },
+                    error: (message) {
+                      logger.d(
+                        "❌ [ChatScreen] Error loading current user profile: $message",
+                      );
+                    },
+                  );
+                },
+              ),
             ],
             child: BlocBuilder<MessagingBloc, MessagingState>(
               buildWhen: (previous, current) {
@@ -1100,27 +1149,25 @@ class _ChatScreenState extends State<ChatScreen> {
                 return state.when(
                   initial: _buildLoadingState,
                   loading: _buildLoadingState,
-                  conversationsLoaded:
-                      (conversations, hasMore, currentPage) =>
-                          _hasLoadedMessagesForConversation
-                              ? _buildMessagesList(_messages)
-                              : _buildLoadingState(),
+                  conversationsLoaded: (conversations, hasMore, currentPage) =>
+                      _hasLoadedMessagesForConversation
+                          ? _buildMessagesList(_messages)
+                          : _buildLoadingState(),
                   conversationsCleared: _buildEmptyState,
-                  messagesLoaded:
-                      (
-                        messages,
-                        hasMore,
-                        currentPage,
-                        conversationId,
-                      ) => _buildMessagesList(messages),
-                  conversationCreated:
-                      (conversation) =>
-                          _hasLoadedMessagesForConversation
-                              ? _buildMessagesList(_messages)
-                              : _buildLoadingState(),
+                  messagesLoaded: (
+                    messages,
+                    hasMore,
+                    currentPage,
+                    conversationId,
+                  ) =>
+                      _buildMessagesList(messages),
+                  conversationCreated: (conversation) =>
+                      _hasLoadedMessagesForConversation
+                          ? _buildMessagesList(_messages)
+                          : _buildLoadingState(),
                   messageSent: (message) => _buildEmptyState(),
-                  messagesMarkedAsRead:
-                      (conversationId, markedCount) => _buildEmptyState(),
+                  messagesMarkedAsRead: (conversationId, markedCount) =>
+                      _buildEmptyState(),
                   error: _buildErrorState,
                 );
               },
@@ -1172,50 +1219,48 @@ class _ChatScreenState extends State<ChatScreen> {
               // Hide keyboard when tapping outside of text input
               FocusScope.of(context).unfocus();
             },
-            child:
-                themeState.isBlueTheme
-                    ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Positioned.fill(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top:
-                                  MediaQuery.paddingOf(context).top +
-                                  kToolbarHeight,
-                            ),
-                            child: Column(
-                              children: [
-                                ..._chatLeadingRibbonWidgets(),
-                                _messageScrollExpanded(),
-                              ],
-                            ),
+            child: themeState.isBlueTheme
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Positioned.fill(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.paddingOf(context).top +
+                                kToolbarHeight,
+                          ),
+                          child: Column(
+                            children: [
+                              ..._chatLeadingRibbonWidgets(),
+                              _messageScrollExpanded(),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: RepaintBoundary(
-                            child: _blueGlassComposerPanel(),
-                          ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: RepaintBoundary(
+                          child: _blueGlassComposerPanel(),
                         ),
-                      ],
-                    )
-                    : Column(
-                      children: [
-                        ..._chatLeadingRibbonWidgets(),
-                        _messageScrollExpanded(),
-                        _chatComposerWithListener(
-                          blendWithGlassBackdrop: false,
-                        ),
-                        QuickQuestionsWidget(
-                          onQuestionTap: _onQuestionTap,
-                          listingTypeId: widget.listingTypeId,
-                          isViewerServiceOfferer: _isViewerServiceOfferer,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      ..._chatLeadingRibbonWidgets(),
+                      _messageScrollExpanded(),
+                      _chatComposerWithListener(
+                        blendWithGlassBackdrop: false,
+                      ),
+                      QuickQuestionsWidget(
+                        onQuestionTap: _onQuestionTap,
+                        listingTypeId: widget.listingTypeId,
+                        isViewerServiceOfferer: _isViewerServiceOfferer,
+                      ),
+                    ],
+                  ),
           ),
         );
       },
@@ -1266,67 +1311,66 @@ class _ChatScreenState extends State<ChatScreen> {
       itemSpacing: 0, // Message grouping handles spacing
       itemCount: groupedItems.length,
       itemBuilder: (context, index) {
-          // Since we're using reverse: true, we need to reverse the index
-          final itemIndex = groupedItems.length - 1 - index;
-          final item = groupedItems[itemIndex];
+        // Since we're using reverse: true, we need to reverse the index
+        final itemIndex = groupedItems.length - 1 - index;
+        final item = groupedItems[itemIndex];
 
-          return switch (item) {
-            DateHeaderListItem(:final date) => DateHeaderWidget(
-                dateString:
-                    MessageGroupingUtils.formatDateHeader(date, context),
-                date: date,
-              ),
-            MessageListItem(
-              :final message,
-              :final isCurrentUser,
-              :final isLatest,
-            ) =>
-              MessageBubble(
-                key: ValueKey("message_${message.id}_${message.createdAt}"),
-                message: message,
-                isCurrentUser: isCurrentUser,
-                isLatest: isLatest,
-                riskLevel: _messageRiskById[message.id],
-                riskReason: () {
-                  final raw = _messageSafetyReasonById[message.id];
-                  if (raw == null || raw.isEmpty) return null;
-                  return _localizedSafetyReason(raw);
-                }(),
-                onRiskBadgeTap: () {
-                  final riskLevel = _messageRiskById[message.id];
-                  if (riskLevel == null) return;
-                  _openSuspiciousMessageSheet(
-                    message: message,
-                    riskLevel: riskLevel,
-                  );
-                },
-                onAnimationComplete: () {
-                  setStateIfMounted(() => _newMessageIds.remove(message.id));
-                },
-                currentUserProfile: _currentUserProfile,
-                otherUserInitials: widget.otherUserInitials,
-                otherUserAvatarUrl: _peerAvatarUrl,
-                translation: _translationsById[message.id],
-                isTranslating: _translationInFlightIds.contains(message.id),
-                // The global "Show original messages" mode flips the default
-                // for every translated bubble; the per-message set acts as
-                // exceptions so taps on the in-bubble toggle still work.
-                showOriginal: _showOriginalAll
-                    ^ _showOriginalMessageIds.contains(message.id),
-                onToggleTranslation: _translationsById[message.id] == null
-                    ? null
-                    : () {
-                        setState(() {
-                          if (_showOriginalMessageIds.contains(message.id)) {
-                            _showOriginalMessageIds.remove(message.id);
-                          } else {
-                            _showOriginalMessageIds.add(message.id);
-                          }
-                        });
-                      },
-              ),
-          };
-        },
+        return switch (item) {
+          DateHeaderListItem(:final date) => DateHeaderWidget(
+              dateString: MessageGroupingUtils.formatDateHeader(date, context),
+              date: date,
+            ),
+          MessageListItem(
+            :final message,
+            :final isCurrentUser,
+            :final isLatest,
+          ) =>
+            MessageBubble(
+              key: ValueKey("message_${message.id}_${message.createdAt}"),
+              message: message,
+              isCurrentUser: isCurrentUser,
+              isLatest: isLatest,
+              riskLevel: _messageRiskById[message.id],
+              riskReason: () {
+                final raw = _messageSafetyReasonById[message.id];
+                if (raw == null || raw.isEmpty) return null;
+                return _localizedSafetyReason(raw);
+              }(),
+              onRiskBadgeTap: () {
+                final riskLevel = _messageRiskById[message.id];
+                if (riskLevel == null) return;
+                _openSuspiciousMessageSheet(
+                  message: message,
+                  riskLevel: riskLevel,
+                );
+              },
+              onAnimationComplete: () {
+                setStateIfMounted(() => _newMessageIds.remove(message.id));
+              },
+              currentUserProfile: _currentUserProfile,
+              otherUserInitials: widget.otherUserInitials,
+              otherUserAvatarUrl: _peerAvatarUrl,
+              translation: _translationsById[message.id],
+              isTranslating: _translationInFlightIds.contains(message.id),
+              // The global "Show original messages" mode flips the default
+              // for every translated bubble; the per-message set acts as
+              // exceptions so taps on the in-bubble toggle still work.
+              showOriginal: _showOriginalAll ^
+                  _showOriginalMessageIds.contains(message.id),
+              onToggleTranslation: _translationsById[message.id] == null
+                  ? null
+                  : () {
+                      setState(() {
+                        if (_showOriginalMessageIds.contains(message.id)) {
+                          _showOriginalMessageIds.remove(message.id);
+                        } else {
+                          _showOriginalMessageIds.add(message.id);
+                        }
+                      });
+                    },
+            ),
+        };
+      },
       showRefreshIndicator: true,
       onRefresh: () async {
         await _refreshMessagesWithSkeleton();
@@ -1358,10 +1402,12 @@ class _ChatScreenState extends State<ChatScreen> {
     if (completer == null || completer.isCompleted) return;
 
     final startedAt = _refreshSkeletonStartedAt;
-    final elapsed =
-        startedAt == null ? Duration.zero : DateTime.now().difference(startedAt);
-    final remaining =
-        elapsed >= _minSkeletonDuration ? Duration.zero : _minSkeletonDuration - elapsed;
+    final elapsed = startedAt == null
+        ? Duration.zero
+        : DateTime.now().difference(startedAt);
+    final remaining = elapsed >= _minSkeletonDuration
+        ? Duration.zero
+        : _minSkeletonDuration - elapsed;
 
     Future<void>.delayed(remaining, () {
       setStateIfMounted(() => _showRefreshSkeleton = false);
@@ -1428,10 +1474,9 @@ class _ChatScreenState extends State<ChatScreen> {
     // Add appropriate greeting based on current language
     final greeting = _getGreetingForCurrentLanguage();
     // Lowercase the first letter of the question
-    final lowercasedQuestion =
-        question.isEmpty
-            ? question
-            : question[0].toLowerCase() + question.substring(1);
+    final lowercasedQuestion = question.isEmpty
+        ? question
+        : question[0].toLowerCase() + question.substring(1);
     _messageController.text = "$greeting $lowercasedQuestion";
     // Don't steal focus / open keyboard when tapping a quick question.
     // If keyboard is already open, tapping a chip should dismiss it.
@@ -1482,17 +1527,16 @@ class _ChatScreenState extends State<ChatScreen> {
     if (widget.listingId != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder:
-              (context) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create:
-                        (context) => ListingDetailBloc(getIt<IListingService>()),
-                  ),
-                  BlocProvider(create: (_) => ListingDetailPageBloc()),
-                ],
-                child: ListingDetailScreen(listingId: widget.listingId!),
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) =>
+                    ListingDetailBloc(getIt<IListingService>()),
               ),
+              BlocProvider(create: (_) => ListingDetailPageBloc()),
+            ],
+            child: ListingDetailScreen(listingId: widget.listingId!),
+          ),
         ),
       );
     }
@@ -1511,19 +1555,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _navigateToUserProfile() {
     // Prefer widget.otherUserId, fall back to deriving from messages
-    final otherUserId =
-        widget.otherUserId ?? _getOtherUserIdFromMessages();
+    final otherUserId = widget.otherUserId ?? _getOtherUserIdFromMessages();
     if (otherUserId != null) {
       HapticFeedbackUtils.selection();
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder:
-              (context) => BlocProvider(
-                create:
-                    (context) =>
-                        ListingOwnerProfileBloc(getIt<IUserProfileService>()),
-                child: ListingOwnerProfileScreen(userId: otherUserId),
-              ),
+          builder: (context) => BlocProvider(
+            create: (context) =>
+                ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+            child: ListingOwnerProfileScreen(userId: otherUserId),
+          ),
         ),
       );
     }
@@ -1534,11 +1575,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder:
-            (context) => BlocProvider<ComplaintBloc>(
-              create: (context) => ComplaintBloc(getIt<IComplaintService>()),
-              child: CreateComplaintScreen(listingId: widget.listingId!),
-            ),
+        builder: (context) => BlocProvider<ComplaintBloc>(
+          create: (context) => ComplaintBloc(getIt<IComplaintService>()),
+          child: CreateComplaintScreen(listingId: widget.listingId!),
+        ),
       ),
     );
 
@@ -1575,8 +1615,10 @@ class _ChatScreenState extends State<ChatScreen> {
           fit: BoxFit.cover,
           memCacheWidth: 48,
           memCacheHeight: 48,
-          placeholder: (context, url) => const ThemeIcon(Icons.person, size: 20),
-          errorWidget: (context, url, error) => const ThemeIcon(Icons.person, size: 20),
+          placeholder: (context, url) =>
+              const ThemeIcon(Icons.person, size: 20),
+          errorWidget: (context, url, error) =>
+              const ThemeIcon(Icons.person, size: 20),
         ),
       );
     }
@@ -1650,8 +1692,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   List<ActionMenuItem> _buildActionMenuItems() {
     final items = <ActionMenuItem>[];
-    final otherUserId =
-        widget.otherUserId ?? _getOtherUserIdFromMessages();
+    final otherUserId = widget.otherUserId ?? _getOtherUserIdFromMessages();
 
     items.add(
       ActionMenuItem(
@@ -1944,9 +1985,7 @@ class _InviteProviderBookingDialogState
     final listingFieldStyle = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
-      color: ThemeState().isLightTheme
-          ? Colors.black
-          : scheme.onSurfaceVariant,
+      color: ThemeState().isLightTheme ? Colors.black : scheme.onSurfaceVariant,
     );
     final listingHintStyle = TextStyle(
       fontSize: 16,
@@ -1962,9 +2001,8 @@ class _InviteProviderBookingDialogState
       color: scheme.onSurface.withValues(alpha: 0.92),
     );
     final dividerColor = scheme.onSurface.withValues(alpha: 0.18);
-    final currencyChipColor = ThemeState().isLightTheme
-        ? Colors.black
-        : scheme.onSurface;
+    final currencyChipColor =
+        ThemeState().isLightTheme ? Colors.black : scheme.onSurface;
     final currencyCode = _taskCurrencyCode;
     final step = CurrencyDisplayUtils.amountNudgeStep(currencyCode);
     final plateDecoration = InputDecoration(
@@ -2028,13 +2066,15 @@ class _InviteProviderBookingDialogState
                         children: [
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    CurrencyDisplayUtils.flagEmoji(currencyCode),
+                                    CurrencyDisplayUtils.flagEmoji(
+                                        currencyCode),
                                     style: const TextStyle(fontSize: 18),
                                   ),
                                   const SizedBox(width: 6),
@@ -2142,7 +2182,8 @@ class _InviteProviderBookingDialogState
                                 Container(
                                   width: 24,
                                   decoration: BoxDecoration(
-                                    color: scheme.outline.withValues(alpha: 0.1),
+                                    color:
+                                        scheme.outline.withValues(alpha: 0.1),
                                     borderRadius: ThreeDSurfaceStyle
                                         .wheelPickerPlateArrowStripBorderRadius,
                                   ),

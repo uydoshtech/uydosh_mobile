@@ -1,12 +1,16 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/logout_service.dart"
     show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -24,6 +28,7 @@ import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
+import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_header_section.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_listings_section.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_settings_section.dart";
@@ -37,6 +42,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
+import "package:uy_dosh/presentation/widgets/profile/ai_allowance_upsell_banner.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ProfileScreenData {
@@ -90,6 +96,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _cachedGooglePhotoUrl;
   bool _achievementCheckScheduled = false;
   DateTime? _lastAchievementCheckTime;
+  ListingAiQuotaSnapshot? _listingAiQuota;
+  bool _listingAiQuotaLoading = false;
 
   @override
   void initState() {
@@ -97,6 +105,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
     _loadUserRole();
     _loadCachedProfileData();
+    unawaited(_refreshListingAiQuota());
+  }
+
+  Future<void> _refreshListingAiQuota() async {
+    if (!AuthenticationState().isAuthenticated || _userBlocked) {
+      if (mounted) {
+        setState(() {
+          _listingAiQuotaLoading = false;
+          _listingAiQuota = null;
+        });
+      }
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() => _listingAiQuotaLoading = true);
+    final snap = await getIt<GeminiService>().fetchListingAiQuota();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _listingAiQuotaLoading = false;
+      _listingAiQuota = snap;
+    });
   }
 
   Future<void> _loadCachedProfileData() async {
@@ -113,6 +146,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _cachedUserProfile = results[2] as UserProfile?;
       _userBlocked = results[3]! as bool;
     });
+
+    unawaited(_refreshListingAiQuota());
 
     // Always opportunistically refresh from the server after showing the
     // cached profile. This keeps the screen instant-render from cache but
@@ -134,6 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userBlocked = results[1]! as bool;
       _userRoleLoaded = true;
     });
+    unawaited(_refreshListingAiQuota());
     if (_userRole == null) {
       await _refreshUserRoleFromServer();
     }
@@ -232,6 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } finally {
       _refreshingRole = false;
+      unawaited(_refreshListingAiQuota());
     }
   }
 
@@ -435,6 +472,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getLocalizedUniversityName: _getLocalizedUniversityName,
               ),
               const SizedBox(height: 24),
+              if (!_userBlocked && AuthenticationState().isAuthenticated)
+                ValueListenableBuilder<bool>(
+                  valueListenable:
+                      ClientGeminiListingUiConfig.hideGeminiListingUi,
+                  builder: (context, hideListingGeminiUi, _) {
+                    return AiAllowanceUpsellBanner(
+                      snapshot: _listingAiQuota,
+                      isLoading: _listingAiQuotaLoading,
+                      hideListingGeminiUi: hideListingGeminiUi,
+                      onUpgradeTap: () {
+                        Navigator.of(context).push<void>(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const AiPremiumPlaceholderScreen(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              if (!_userBlocked && AuthenticationState().isAuthenticated)
+                const SizedBox(height: 24),
               ProfileListingsSection(
                 userRole: _userRole,
                 onAchievementsOpened: () => setState(() {}),

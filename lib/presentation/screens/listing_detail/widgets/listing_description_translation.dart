@@ -13,6 +13,8 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -28,6 +30,7 @@ class ListingDescriptionTranslation extends StatefulWidget {
     this.descriptionRu,
     this.descriptionEn,
     this.descriptionUz,
+
     /// When set, title and translation controls share one row (controls at the end).
     this.listingTitle,
     this.listingTitleStyle,
@@ -41,6 +44,7 @@ class ListingDescriptionTranslation extends StatefulWidget {
   /// Shown on the same row as translation controls, start-aligned.
   final String? listingTitle;
   final TextStyle? listingTitleStyle;
+
   /// Optional DB-backed translations from [GET /listings/:id] (skip Gemini when set).
   final String? descriptionRu;
   final String? descriptionEn;
@@ -59,12 +63,22 @@ class _ListingDescriptionTranslationState
   final Map<String, String> _cache = {};
   String? _loadingLang;
   String? _error;
+  ListingAiQuotaSnapshot? _quotaSnap;
   final List<TapGestureRecognizer> _telegramRecognizers = [];
 
   @override
   void initState() {
     super.initState();
     _mergeDbIntoCache();
+    unawaited(_loadListingAiQuotaHint());
+  }
+
+  Future<void> _loadListingAiQuotaHint() async {
+    final q = await _gemini.fetchListingAiQuota();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _quotaSnap = q);
   }
 
   @override
@@ -117,11 +131,13 @@ class _ListingDescriptionTranslationState
     if (digitsOnly.length >= 12 && digitsOnly.contains("998")) {
       final idx = digitsOnly.lastIndexOf("998");
       final rest = digitsOnly.substring(idx + 3);
-      if (rest.length >= 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
+      if (rest.length >= 9 &&
+          RegExp(r"^9[0134679]\d{7}$").hasMatch(rest.substring(0, 9))) {
         return rest.substring(0, 9);
       }
     }
-    if (digitsOnly.length == 9 && RegExp(r"^9[0134679]\d{7}$").hasMatch(digitsOnly)) {
+    if (digitsOnly.length == 9 &&
+        RegExp(r"^9[0134679]\d{7}$").hasMatch(digitsOnly)) {
       return digitsOnly;
     }
     if (digitsOnly.length > 9) {
@@ -275,11 +291,11 @@ class _ListingDescriptionTranslationState
   }
 
   String _codeForTarget(_TranslationTarget t) => switch (t) {
-    _TranslationTarget.en => "en",
-    _TranslationTarget.ru => "ru",
-    _TranslationTarget.uz => "uz",
-    _TranslationTarget.original => "",
-  };
+        _TranslationTarget.en => "en",
+        _TranslationTarget.ru => "ru",
+        _TranslationTarget.uz => "uz",
+        _TranslationTarget.original => "",
+      };
 
   String? get _activeCode =>
       _target == _TranslationTarget.original ? null : _codeForTarget(_target);
@@ -331,10 +347,12 @@ class _ListingDescriptionTranslationState
         return;
       }
       if (outcome.quotaExceeded) {
+        unawaited(GeminiQuotaExceededSheet.show(context));
         setState(() {
           _target = _TranslationTarget.original;
-          _error = L10n.get("listing_translation_quota_exceeded");
+          _error = null;
         });
+        unawaited(_loadListingAiQuotaHint());
         return;
       }
       if (outcome.authRequired) {
@@ -403,9 +421,8 @@ class _ListingDescriptionTranslationState
         selected ? selectedBorderColor : baseBorder.withValues(alpha: 0.45);
 
     // Blue theme primary matches the card background — spinner would disappear.
-    final progressColor = isBlueTheme
-        ? ListingDetailThemeHelper.iconColor
-        : scheme.primary;
+    final progressColor =
+        isBlueTheme ? ListingDetailThemeHelper.iconColor : scheme.primary;
 
     final baseFill = ListingDetailThemeHelper.amenityChipBackgroundColor;
     final fillColor = selected
@@ -469,8 +486,7 @@ class _ListingDescriptionTranslationState
               children: [
                 Text(
                   widget.listingTitle!,
-                  style:
-                      widget.listingTitleStyle ??
+                  style: widget.listingTitleStyle ??
                       const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -498,9 +514,8 @@ class _ListingDescriptionTranslationState
 
   Widget _buildTranslationContent(BuildContext context) {
     final code = _activeCode;
-    final waitingForTranslation = code != null &&
-        _loadingLang == code &&
-        !_cache.containsKey(code);
+    final waitingForTranslation =
+        code != null && _loadingLang == code && !_cache.containsKey(code);
 
     final controls = Row(
       mainAxisSize: MainAxisSize.min,
@@ -525,8 +540,7 @@ class _ListingDescriptionTranslationState
       ],
     );
 
-    final titleStyle =
-        widget.listingTitleStyle ??
+    final titleStyle = widget.listingTitleStyle ??
         const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.bold,
@@ -554,11 +568,38 @@ class _ListingDescriptionTranslationState
             alignment: AlignmentDirectional.centerStart,
             child: controls,
           ),
+        if (_quotaSnap != null && _quotaSnap!.shouldShowLowListingAiHint)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AiPremiumPlaceholderScreen(),
+                  ),
+                );
+              },
+              child: Text(
+                L10n.getWithParams(
+                  "ai_allowance_inline_listing_ai_hint",
+                  params: {
+                    "translate": "${_quotaSnap!.translateRemaining}",
+                    "enhance": "${_quotaSnap!.enhanceRemaining}",
+                  },
+                ),
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.25,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
         SizedBox(
-          height:
-              widget.listingTitle != null && widget.listingTitle!.isNotEmpty
-                  ? 12
-                  : 8,
+          height: widget.listingTitle != null && widget.listingTitle!.isNotEmpty
+              ? 12
+              : 8,
         ),
         if (waitingForTranslation)
           _ListingDescriptionTranslationSkeleton(
@@ -647,9 +688,7 @@ class _ListingDescriptionTranslationSkeleton extends StatelessWidget {
           textStyle,
           maxW,
         );
-        final boxH = (measured > 0
-                ? measured + expansionSlack
-                : minStackH)
+        final boxH = (measured > 0 ? measured + expansionSlack : minStackH)
             .clamp(minStackH, double.infinity);
 
         return SizedBox(

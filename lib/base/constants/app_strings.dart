@@ -498,6 +498,27 @@ class AppStrings {
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
+      "ai_allowance_banner_title": "AI assistant usage",
+      "ai_allowance_meter_translate":
+          "Listing translations left (UTC month): {count}",
+      "ai_allowance_meter_enhance": "AI listing improvements left: {count}",
+      "ai_allowance_meter_chat": "Chat translations left: {count}",
+      "ai_allowance_meter_unlimited": "Unlimited",
+      "ai_allowance_premium_active_until": "AI Premium active until {date}",
+      "ai_allowance_month_reset_note":
+          "Limits reset each calendar month (UTC).",
+      "ai_allowance_upgrade_cta": "Learn about Premium",
+      "ai_quota_exceeded_sheet_title": "Monthly AI limit reached",
+      "ai_quota_exceeded_sheet_body":
+          "You’ve used your allowance for this period. Premium adds higher monthly limits. Limits reset on the 1st of each month (UTC).",
+      "ai_quota_exceeded_sheet_dismiss": "OK",
+      "ai_premium_placeholder_title": "AI Premium",
+      "ai_premium_placeholder_body":
+          "In-app checkout for AI Premium (Payme / Click) will be available here soon.",
+      "ai_allowance_inline_listing_ai_hint":
+          "Listing AI: {translate} translations · {enhance} improvements left this month (UTC).",
+      "ai_allowance_inline_chat_hint":
+          "Chat translations left this month (UTC): {count}",
       "listing_description_template_label": "Template",
       "listing_description_template_room_needed":
           "Looking for a room/flatshare.\nFormat: (private/shared).\nTimeline: (move-in + duration).\nMust-haves: (quiet/guests/pets).",
@@ -1893,6 +1914,28 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
+      "ai_allowance_banner_title": "Использование AI-помощника",
+      "ai_allowance_meter_translate":
+          "Осталось переводов объявлений (UTC-месяц): {count}",
+      "ai_allowance_meter_enhance":
+          "Осталось улучшений описания AI: {count}",
+      "ai_allowance_meter_chat": "Осталось переводов в чате: {count}",
+      "ai_allowance_meter_unlimited": "Без лимита",
+      "ai_allowance_premium_active_until": "AI Premium до {date}",
+      "ai_allowance_month_reset_note":
+          "Лимиты обновляются каждый календарный месяц (UTC).",
+      "ai_allowance_upgrade_cta": "Узнать про Premium",
+      "ai_quota_exceeded_sheet_title": "Достигнут месячный лимит AI",
+      "ai_quota_exceeded_sheet_body":
+          "Лимит на этот период израсходован. Premium даёт более высокие лимиты. Сброс — 1-го числа каждого месяца (UTC).",
+      "ai_quota_exceeded_sheet_dismiss": "ОК",
+      "ai_premium_placeholder_title": "AI Premium",
+      "ai_premium_placeholder_body":
+          "Оплата AI Premium (Payme / Click) в приложении скоро появится здесь.",
+      "ai_allowance_inline_listing_ai_hint":
+          "AI для объявлений: {translate} переводов · {enhance} улучшений в этом месяце (UTC).",
+      "ai_allowance_inline_chat_hint":
+          "Переводов в чате в этом месяце (UTC): {count}",
       "listing_description_template_label": "Шаблон",
       "listing_description_template_room_needed":
           "Ищу комнату/подселение.\nФормат: (отдельная/подселение).\nСрок: (заезд + на сколько).\nВажно: (тихо/гости/животные).",
@@ -3307,6 +3350,28 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
+      "ai_allowance_banner_title": "AI yordamchisi",
+      "ai_allowance_meter_translate":
+          "Qolgan e'lon tarjimalari (UTC oy): {count}",
+      "ai_allowance_meter_enhance":
+          "Qolgan AI yaxshilashlar: {count}",
+      "ai_allowance_meter_chat": "Chat tarjimalari qoldi: {count}",
+      "ai_allowance_meter_unlimited": "Cheksiz",
+      "ai_allowance_premium_active_until": "AI Premium {date} gacha",
+      "ai_allowance_month_reset_note":
+          "Limitlar har UTC kalender oyida yangilanadi.",
+      "ai_allowance_upgrade_cta": "Premium haqida",
+      "ai_quota_exceeded_sheet_title": "AI uchun oylik limit tugadi",
+      "ai_quota_exceeded_sheet_body":
+          "Bu davr uchun limitingiz tugadi. Premium yuqori oylik limitlar beradi. Limitlar har oyning 1-kuni (UTC) yangilanadi.",
+      "ai_quota_exceeded_sheet_dismiss": "OK",
+      "ai_premium_placeholder_title": "AI Premium",
+      "ai_premium_placeholder_body":
+          "AI Premium uchun ilova ichida to‘lov (Payme / Click) tez orada shu yerda bo‘ladi.",
+      "ai_allowance_inline_listing_ai_hint":
+          "E'lon AI: {translate} tarjima · {enhance} yaxshilash qoldi (UTC oy).",
+      "ai_allowance_inline_chat_hint":
+          "Bu oy chat tarjimalari qoldi (UTC): {count}",
       "listing_description_template_label": "Shablon",
       "listing_description_template_room_needed":
           "Xona/qo‘shilish qidiryapman.\nFormat: (alohida/qo‘shilish).\nMuddat: (kirish sanasi + qancha).\nMuhim: (tinchlik/mehmon/uy hayvoni).",

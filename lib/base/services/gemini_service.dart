@@ -22,7 +22,10 @@ class ListingTranslateOutcome {
   final bool authRequired;
 
   bool get isSuccess =>
-      text != null && text!.trim().isNotEmpty && !quotaExceeded && !authRequired;
+      text != null &&
+      text!.trim().isNotEmpty &&
+      !quotaExceeded &&
+      !authRequired;
 }
 
 /// Result for backend-metered listing “improve with AI”.
@@ -38,7 +41,10 @@ class ListingEnhanceOutcome {
   final bool authRequired;
 
   bool get isSuccess =>
-      text != null && text!.trim().isNotEmpty && !quotaExceeded && !authRequired;
+      text != null &&
+      text!.trim().isNotEmpty &&
+      !quotaExceeded &&
+      !authRequired;
 }
 
 /// Snapshot from `GET /app/gemini/listing-ai-quota`.
@@ -86,6 +92,40 @@ class ListingAiQuotaSnapshot {
       premiumUntil: pu,
     );
   }
+
+  /// Backend uses a large display cap for admins; treat as unlimited in UI.
+  static const int unlimitedMeterThreshold = 100000;
+
+  bool get isPremiumActive =>
+      premiumUntil != null && premiumUntil!.isAfter(DateTime.now());
+
+  bool isUnlimitedMeter(int remaining) =>
+      remaining >= ListingAiQuotaSnapshot.unlimitedMeterThreshold;
+
+  /// Whether to show a subtle scarcity hint near listing AI actions (free tier).
+  bool get shouldShowLowListingAiHint {
+    if (isPremiumActive) {
+      return false;
+    }
+    if (isUnlimitedMeter(translateRemaining) ||
+        isUnlimitedMeter(enhanceRemaining)) {
+      return false;
+    }
+    final minRem = translateRemaining < enhanceRemaining
+        ? translateRemaining
+        : enhanceRemaining;
+    return minRem <= 2;
+  }
+
+  bool get shouldShowLowChatTranslateHint {
+    if (isPremiumActive) {
+      return false;
+    }
+    if (isUnlimitedMeter(chatTranslateRemaining)) {
+      return false;
+    }
+    return chatTranslateRemaining <= 2;
+  }
 }
 
 typedef _BackendGeminiOutcome = ({
@@ -102,8 +142,8 @@ class GeminiService {
   GeminiService({
     IPublicApiClient? publicApiClient,
     IOAuthApiClient? oauthApiClient,
-  }) : _publicApiClient = publicApiClient,
-       _oauthApiClient = oauthApiClient;
+  })  : _publicApiClient = publicApiClient,
+        _oauthApiClient = oauthApiClient;
 
   final IPublicApiClient? _publicApiClient;
   final IOAuthApiClient? _oauthApiClient;
@@ -163,7 +203,8 @@ class GeminiService {
     for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
       final key = GeminiConfig.apiKeys[i];
       try {
-        final response = await _modelForKey(key).generateContent([Content.text(prompt)]);
+        final response =
+            await _modelForKey(key).generateContent([Content.text(prompt)]);
         final out = _extractResponseText(response);
         if (out != null) {
           return out;
@@ -230,14 +271,16 @@ class GeminiService {
     }
   }
 
-  static const Duration _translateListingOverallTimeout = Duration(seconds: 150);
+  static const Duration _translateListingOverallTimeout =
+      Duration(seconds: 150);
 
   static const Duration _enhanceListingOverallTimeout = Duration(seconds: 90);
 
   static const Duration _directGenerateContentTimeout = Duration(seconds: 60);
 
   /// Rewrites the listing description for clarity and grammar; same language as input.
-  Future<ListingEnhanceOutcome> enhanceListingDescription({required String text}) async {
+  Future<ListingEnhanceOutcome> enhanceListingDescription(
+      {required String text}) async {
     try {
       return await _enhanceListingDescriptionImpl(text: text).timeout(
         _enhanceListingOverallTimeout,
@@ -254,7 +297,8 @@ class GeminiService {
     }
   }
 
-  Future<ListingEnhanceOutcome> _enhanceListingDescriptionImpl({required String text}) async {
+  Future<ListingEnhanceOutcome> _enhanceListingDescriptionImpl(
+      {required String text}) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
       return const ListingEnhanceOutcome();
@@ -282,9 +326,8 @@ class GeminiService {
     for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
       final key = GeminiConfig.apiKeys[i];
       try {
-        final response = await _modelForEnhanceKey(key)
-            .generateContent([Content.text(prompt)])
-            .timeout(_directGenerateContentTimeout);
+        final response = await _modelForEnhanceKey(key).generateContent(
+            [Content.text(prompt)]).timeout(_directGenerateContentTimeout);
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
           final s = out.trim();
@@ -359,9 +402,8 @@ class GeminiService {
     for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
       final key = GeminiConfig.apiKeys[i];
       try {
-        final response = await _modelForEnhanceKey(key)
-            .generateContent([Content.text(prompt)])
-            .timeout(_directGenerateContentTimeout);
+        final response = await _modelForEnhanceKey(key).generateContent(
+            [Content.text(prompt)]).timeout(_directGenerateContentTimeout);
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
           final s = out.trim();
@@ -391,7 +433,8 @@ class GeminiService {
     return null;
   }
 
-  static String _buildGigEnhancePrompt(String trimmed, {required bool isOffer}) {
+  static String _buildGigEnhancePrompt(String trimmed,
+      {required bool isOffer}) {
     final langBlock = _languagePreserveInstruction(trimmed);
     final domainHint = isOffer
         ? "a service the user offers (e.g. cleaning, repair, tutoring, design)"
@@ -472,7 +515,9 @@ class GeminiService {
     }
 
     // Local shortcut avoids a round-trip; server treats this as noop without consuming quota too.
-    if (targetLanguageCode == "ru" && _hasCyrillic(trimmed) && !_hasLatinLetter(trimmed)) {
+    if (targetLanguageCode == "ru" &&
+        _hasCyrillic(trimmed) &&
+        !_hasLatinLetter(trimmed)) {
       return ListingTranslateOutcome(text: trimmed);
     }
 
@@ -514,14 +559,14 @@ class GeminiService {
     for (var i = 0; i < GeminiConfig.apiKeys.length; i++) {
       final key = GeminiConfig.apiKeys[i];
       try {
-        final response = await _modelForKey(key)
-            .generateContent([Content.text(prompt)])
-            .timeout(_directGenerateContentTimeout);
+        final response = await _modelForKey(key).generateContent(
+            [Content.text(prompt)]).timeout(_directGenerateContentTimeout);
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
           return ListingTranslateOutcome(text: out);
         }
-        logger.w("Gemini translate: empty response for $targetLanguageCode (key index $i)");
+        logger.w(
+            "Gemini translate: empty response for $targetLanguageCode (key index $i)");
       } on TimeoutException catch (e, st) {
         logger.w(
           "Gemini translate timed out (key index $i): $e",
@@ -621,7 +666,8 @@ class GeminiService {
       if (status != 200) {
         final skipDirect = _backendIndicatesRateLimitedBody(data);
         if (skipDirect) {
-          logger.d("Gemini backend rate limited (HTTP $status); skipping direct SDK");
+          logger.d(
+              "Gemini backend rate limited (HTTP $status); skipping direct SDK");
         } else {
           logger.d(
             "Gemini backend HTTP $status — ${data is Map ? data["error"] : data} (trying direct Gemini)",
@@ -648,7 +694,8 @@ class GeminiService {
       }
       final map = Map<String, dynamic>.from(data);
       if (map.containsKey("error")) {
-        logger.d("Gemini backend error: ${map["error"]} (trying direct Gemini)");
+        logger
+            .d("Gemini backend error: ${map["error"]} (trying direct Gemini)");
         return (
           text: null,
           skipDirectGemini: _backendIndicatesRateLimitedBody(map),
@@ -709,7 +756,8 @@ class GeminiService {
     }
   }
 
-  Future<_BackendGeminiOutcome> _improveListingViaBackend({required String text}) async {
+  Future<_BackendGeminiOutcome> _improveListingViaBackend(
+      {required String text}) async {
     final dio = _oauthApiClient?.dio ?? _publicApiClient?.dio;
     if (dio == null) {
       return (
