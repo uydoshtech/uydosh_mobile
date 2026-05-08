@@ -10,7 +10,6 @@ This repo can upload a signed `.aab` to Google Play automatically via GitHub Act
   - `play_release_status` (default: `draft`)
 
 The workflow builds:
-- APK (for GitHub Releases)
 - AAB (for Google Play)
 
 ## Required GitHub Secrets

@@ -1,4 +1,4 @@
-name: Build & Release Android APK
+name: Build & Release Android AAB
 
 on:
   push:
@@ -16,11 +16,11 @@ on:
         default: "draft"
 
 concurrency:
-  group: release-apk
+  group: release-aab
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -87,19 +87,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build release APK
-        run: flutter build apk --release
-
       - name: Build release App Bundle (AAB)
         run: flutter build appbundle --release
-
-      - name: Upload APK as workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-          retention-days: 30
 
       - name: Upload AAB as workflow artifact
         uses: actions/upload-artifact@v4
@@ -122,50 +111,6 @@ jobs:
             release_status:"${PLAY_RELEASE_STATUS}" \
             changelog:"Automated upload from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7} (${GITHUB_REF_NAME})."
 
-      - name: Publish to uydosh_client "android-latest" release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: android-latest
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
-        run: |
-          set -euo pipefail
-          SHORT_SHA="${GITHUB_SHA::7}"
-          NOTES="Automated build from commit ${SHORT_SHA} on $(date -u +'%Y-%m-%dT%H:%M:%SZ')."
-
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
-          fi
-
-          gh release create "$TAG" "$APK_PATH" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "UyDosh Android APK (latest)" \
-            --notes "$NOTES" \
-            --target "$GITHUB_SHA" \
-            --latest
-
-      - name: Publish to uydoshtech.github.io "android-latest" release
-        env:
-          GH_TOKEN: ${{ secrets.SITE_REPO_TOKEN }}
-          SITE_REPO: uydoshtech/uydoshtech.github.io
-          TAG: android-latest
-          APK_PATH: build/app/outputs/flutter-apk/app-release.apk
-        run: |
-          set -euo pipefail
-          SHORT_SHA="${GITHUB_SHA::7}"
-          NOTES="Automated build from uydosh_client@${SHORT_SHA} on $(date -u +'%Y-%m-%dT%H:%M:%SZ').
-
-          If your browser warns about unknown sources, you may need to allow installs from this source."
-
-          if gh release view "$TAG" --repo "$SITE_REPO" >/dev/null 2>&1; then
-            gh release delete "$TAG" --repo "$SITE_REPO" --yes --cleanup-tag
-          fi
-
-          gh release create "$TAG" "$APK_PATH" \
-            --repo "$SITE_REPO" \
-            --title "UyDosh Android APK (latest)" \
-            --notes "$NOTES" \
-            --latest
-
       - name: Notify by email on success
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -177,18 +122,14 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           from: UyDosh CI <${{ secrets.MAIL_USERNAME }}>
           to: ${{ secrets.MAIL_USERNAME }}
-          subject: "[UyDosh] Android APK build #${{ github.run_number }} succeeded"
+          subject: "[UyDosh] Android AAB upload #${{ github.run_number }} succeeded"
           body: |
-            Android APK build completed successfully.
+            Android AAB build + Play upload completed successfully.
 
             Commit:   ${{ github.sha }}
             Branch:   ${{ github.ref_name }}
             Message:  ${{ github.event.head_commit.message }}
             Run:      ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Downloads (android-latest release):
-              - ${{ github.server_url }}/${{ github.repository }}/releases/tag/android-latest
-              - https://github.com/uydoshtech/uydoshtech.github.io/releases/tag/android-latest
 
       - name: Notify by email on failure
         if: failure()
@@ -201,9 +142,9 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           from: UyDosh CI <${{ secrets.MAIL_USERNAME }}>
           to: ${{ secrets.MAIL_USERNAME }}
-          subject: "[UyDosh] Android APK build #${{ github.run_number }} FAILED"
+          subject: "[UyDosh] Android AAB upload #${{ github.run_number }} FAILED"
           body: |
-            Android APK build FAILED.
+            Android AAB build and/or Play upload FAILED.
 
             Commit:   ${{ github.sha }}
             Branch:   ${{ github.ref_name }}
