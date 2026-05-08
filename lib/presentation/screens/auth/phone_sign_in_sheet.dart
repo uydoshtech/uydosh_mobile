@@ -670,117 +670,120 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      // Default is `useSafeArea: false`, which wraps the sheet in
+      // MediaQuery.removePadding(removeTop: true), so descendant SafeArea
+      // treats the status bar/notch inset as zero. Enable safe area here so the
+      // list stays below Dynamic Island — same flag as other app bottom sheets.
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
             final filtered = filter(_countrySearchController.text);
-            return SafeArea(
-              child: AnimatedPadding(
-                duration: const Duration(milliseconds: 150),
-                curve: Curves.easeOut,
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
-                ),
-                child: GlassBottomSheetSurface(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+            return AnimatedPadding(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: GlassBottomSheetSurface(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AuthWizardTheme.getBottomSheetHandleColor(ctx),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(height: 12),
-                      Flexible(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) => Divider(
-                            height: 1,
-                            color: themeTextColor.withValues(alpha: 0.08),
-                          ),
-                          itemBuilder: (ctx, i) {
-                            final c = filtered[i];
-                            final name = displayName(c);
-                            final code = dialCode(c);
-                            final isSelected = code == _selectedDialCode;
-                            return ListTile(
-                              dense: true,
-                              leading: Text(
-                                c.flag,
-                                style: const TextStyle(fontSize: 22),
-                              ),
-                              title: Text(
-                                name,
-                                style: TextStyle(
-                                  color: themeTextColor,
-                                  fontWeight:
-                                      isSelected ? FontWeight.w700 : FontWeight.w500,
-                                ),
-                              ),
-                              trailing: Text(
-                                "+$code",
-                                style: TextStyle(
-                                  color: themeTextColor.withValues(alpha: 0.8),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _selectedDialCode = code;
-                                  _selectedFlagEmoji = c.flag;
-                                });
-                                Navigator.of(ctx).pop();
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) _phoneFocus.requestFocus();
-                                });
-                              },
-                            );
-                          },
+                    ),
+                    const SizedBox(height: 12),
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: themeTextColor.withValues(alpha: 0.08),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _countrySearchController,
-                        autofocus: true,
-                        style: TextStyle(color: themeTextColor),
-                        cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
-                        decoration: InputDecoration(
-                          labelText: L10n.get("search"),
-                          labelStyle: TextStyle(
-                            color: themeTextColor.withValues(alpha: 0.7),
-                          ),
-                          hintStyle: TextStyle(
-                            color: themeTextColor.withValues(alpha: 0.5),
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: themeTextColor.withValues(alpha: 0.7),
-                          ),
-                          filled: true,
-                          fillColor: searchFill,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: themeTextColor.withValues(alpha: 0.2),
+                        itemBuilder: (ctx, i) {
+                          final c = filtered[i];
+                          final name = displayName(c);
+                          final code = dialCode(c);
+                          final isSelected = code == _selectedDialCode;
+                          return ListTile(
+                            dense: true,
+                            leading: Text(
+                              c.flag,
+                              style: const TextStyle(fontSize: 22),
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AuthWizardTheme.getBottomSheetCursorColor(),
+                            title: Text(
+                              name,
+                              style: TextStyle(
+                                color: themeTextColor,
+                                fontWeight:
+                                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                              ),
                             ),
+                            trailing: Text(
+                              "+$code",
+                              style: TextStyle(
+                                color: themeTextColor.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _selectedDialCode = code;
+                                _selectedFlagEmoji = c.flag;
+                              });
+                              Navigator.of(ctx).pop();
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) _phoneFocus.requestFocus();
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _countrySearchController,
+                      autofocus: true,
+                      style: TextStyle(color: themeTextColor),
+                      cursorColor: AuthWizardTheme.getBottomSheetCursorColor(),
+                      decoration: InputDecoration(
+                        labelText: L10n.get("search"),
+                        labelStyle: TextStyle(
+                          color: themeTextColor.withValues(alpha: 0.7),
+                        ),
+                        hintStyle: TextStyle(
+                          color: themeTextColor.withValues(alpha: 0.5),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: themeTextColor.withValues(alpha: 0.7),
+                        ),
+                        filled: true,
+                        fillColor: searchFill,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: themeTextColor.withValues(alpha: 0.2),
                           ),
                         ),
-                        onChanged: (_) => setModalState(() {}),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: AuthWizardTheme.getBottomSheetCursorColor(),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                      onChanged: (_) => setModalState(() {}),
+                    ),
+                  ],
                 ),
               ),
             );

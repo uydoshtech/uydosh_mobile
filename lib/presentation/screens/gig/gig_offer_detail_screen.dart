@@ -3,7 +3,9 @@ import "dart:async";
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -14,10 +16,13 @@ import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
@@ -51,6 +56,32 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     final updated = await context.pushEditGigOffer(offer);
     if (updated != null && mounted) {
       detailBloc.add(FetchGigOfferDetail(offer.id));
+    }
+  }
+
+  Future<void> _deleteOffer(GigOffer offer) async {
+    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "gigs_offer_delete_title",
+      messageKey: "gigs_offer_delete_message",
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await getIt<IGigService>().deleteOffer(offer.id);
+      if (!mounted) return;
+      getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("gigs_offer_delete_success"),
+      );
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("gigs_offer_delete_failed"),
+        );
+      }
     }
   }
 
@@ -91,6 +122,15 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                           icon: Icons.edit_outlined,
                           textKey: "gigs_offer_edit_cta",
                           onPressed: () => unawaited(_editOffer(offerForMenu)),
+                        ),
+                        ActionMenuItem(
+                          value: "delete_offer",
+                          icon: Icons.delete_outline_rounded,
+                          textKey: "gigs_offer_delete_menu",
+                          onPressed: () =>
+                              unawaited(_deleteOffer(offerForMenu)),
+                          iconColor: Colors.red,
+                          textColor: Colors.red,
                         ),
                       ],
                     ),

@@ -10,6 +10,7 @@ class ThreeDTextField extends StatefulWidget {
     this.maxLines = 1,
     this.minLines,
     this.enabled = true,
+    this.onTap,
     this.onSubmitted,
     this.textCapitalization = TextCapitalization.none,
     this.textInputAction,
@@ -29,6 +30,7 @@ class ThreeDTextField extends StatefulWidget {
   final int? minLines;
   final int? maxLines;
   final bool enabled;
+  final VoidCallback? onTap;
   final ValueChanged<String>? onSubmitted;
   final TextCapitalization textCapitalization;
   final TextInputAction? textInputAction;
@@ -202,6 +204,7 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   minLines: widget.minLines,
                   textCapitalization: widget.textCapitalization,
                   textInputAction: widget.textInputAction,
+                  onTap: widget.onTap,
                   onSubmitted: widget.onSubmitted,
                 ),
               ],

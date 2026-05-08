@@ -758,6 +758,7 @@ class AppStrings {
           "It will be removed from the task list for everyone. You can't undo this in the app.",
       "gigs_request_delete_success": "Task removed.",
       "gigs_request_delete_failed": "Couldn't remove the task. Try again.",
+      "gigs_offer_delete_menu": "Delete service",
       "gigs_offer_delete_title": "Delete this service?",
       "gigs_offer_delete_message":
           "It will be removed from the services list for everyone. You can't undo this in the app.",
@@ -2103,6 +2104,7 @@ class AppStrings {
           "Задача пропадёт из списка для всех. В приложении это действие нельзя отменить.",
       "gigs_request_delete_success": "Задача удалена.",
       "gigs_request_delete_failed": "Не удалось удалить задачу. Попробуйте снова.",
+      "gigs_offer_delete_menu": "Удалить услугу",
       "gigs_offer_delete_title": "Удалить услугу?",
       "gigs_offer_delete_message":
           "Услуга пропадёт из списка для всех. В приложении это действие нельзя отменить.",
@@ -3466,6 +3468,7 @@ class AppStrings {
           "U hamma uchun ro'yxatdan yo'qoladi. Ilovada bekor qilib bo'lmaydi.",
       "gigs_request_delete_success": "Vazifa o'chirildi.",
       "gigs_request_delete_failed": "Vazifani o'chirib bo'lmadi. Qayta urinib ko'ring.",
+      "gigs_offer_delete_menu": "Xizmatni o'chirish",
       "gigs_offer_delete_title": "Xizmatni o'chirasizmi?",
       "gigs_offer_delete_message":
           "U hamma uchun ro'yxatdan yo'qoladi. Ilovada bekor qilib bo'lmaydi.",
