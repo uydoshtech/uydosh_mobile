@@ -8,6 +8,29 @@ import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, Tar
 import "package:sign_in_with_apple/sign_in_with_apple.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
+/// Result of a successful Apple sign-in: the Firebase [UserCredential]
+/// plus the one-shot `authorizationCode` Apple returned. The auth code
+/// is needed by the backend to exchange for a long-lived refresh token
+/// (so we can call Apple's `auth/revoke` at account deletion time per
+/// App Review Guideline 5.1.1(v)). It is short-lived (~5 min) and
+/// single-use, so the caller MUST forward it to the server immediately
+/// — there is no second chance.
+class AppleSignInResult {
+  AppleSignInResult({
+    required this.userCredential,
+    required this.authorizationCode,
+  });
+
+  final UserCredential userCredential;
+
+  /// The Apple `authorization_code` to POST to `/users/apple-bind`.
+  /// Almost always non-null on a successful sign-in; modeled as
+  /// nullable because Apple has, on rare occasions, returned a
+  /// credential without one and we don't want to crash the auth flow
+  /// over it.
+  final String? authorizationCode;
+}
+
 /// Sign in with Apple wrapper that mirrors [GoogleAuthService] in shape:
 /// kicks off the native ASAuthorization flow, exchanges the resulting
 /// identity token for a Firebase credential, and returns the Firebase
@@ -89,7 +112,13 @@ class AppleAuthService {
   /// Trigger the native Sign in with Apple flow and exchange the result
   /// for a Firebase session. Returns `null` if the user cancels at the
   /// system sheet (mirrors [GoogleAuthService.signInWithGoogle]).
-  Future<UserCredential?> signInWithApple() async {
+  ///
+  /// On success the returned [AppleSignInResult] also carries Apple's
+  /// one-shot `authorizationCode`. The caller is responsible for
+  /// forwarding that code to `/users/apple-bind` immediately so the
+  /// server can persist a refresh token for later revocation (App
+  /// Review Guideline 5.1.1(v)).
+  Future<AppleSignInResult?> signInWithApple() async {
     try {
       if (!isAvailable) {
         // Belt-and-braces guard: callers should already have hidden the
@@ -151,7 +180,10 @@ class AppleAuthService {
         }
       }
 
-      return userCredential;
+      return AppleSignInResult(
+        userCredential: userCredential,
+        authorizationCode: appleCredential.authorizationCode,
+      );
     } catch (e, st) {
       await _record(e, st, step: "signInWithApple");
       logger.d("Error signing in with Apple: $e");

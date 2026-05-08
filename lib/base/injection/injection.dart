@@ -112,7 +112,7 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<IAuthService>(
-    () => AuthService(getIt<IPublicApiClient>()),
+    () => AuthService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IOtpService>(

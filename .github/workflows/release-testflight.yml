@@ -47,8 +47,13 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Install CocoaPods
-        run: cd ios && pod install
+      - name: Install CocoaPods deps
+        run: |
+          set -euo pipefail
+          cd ios
+          pod --version
+          # Repo can be stale on fresh runners; update only when needed.
+          pod install --repo-update
 
       - name: Build IPA (Flutter)
         env:

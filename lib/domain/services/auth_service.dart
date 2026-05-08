@@ -1,3 +1,5 @@
+import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -26,14 +28,33 @@ abstract class IAuthService {
     String? avatarUrl,
   });
 
+  /// Best-effort: forward Apple's one-shot `authorization_code` to the
+  /// backend so it can exchange it for a refresh token and persist it
+  /// for later revocation at account-deletion time (App Review
+  /// Guideline 5.1.1(v)). Failures must NOT block sign-in — the worst
+  /// case is that account deletion can't revoke the Apple session,
+  /// which the user can still do manually via Settings → Apple ID.
+  Future<void> appleBind({required String authorizationCode});
+
   Future<bool> refreshToken();
   Future<void> logout();
 }
 
+class _AppleBindRequest implements IJsonEncodable {
+  _AppleBindRequest({required this.authorizationCode});
+  final String authorizationCode;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "authorization_code": authorizationCode,
+      };
+}
+
 class AuthService implements IAuthService {
 
-  AuthService(this._apiClient);
+  AuthService(this._apiClient, this._oauthApiClient);
   final IPublicApiClient _apiClient;
+  final IOAuthApiClient _oauthApiClient;
 
   @override
   Future<AuthResponse> register(String email) async {
@@ -127,6 +148,27 @@ class AuthService implements IAuthService {
       return response;
     } catch (e) {
       throw Exception("Firebase phone auth failed: $e");
+    }
+  }
+
+  @override
+  Future<void> appleBind({required String authorizationCode}) async {
+    // Best-effort: never throw out of this method. The endpoint itself
+    // also returns 200 on its own internal failures, so most errors
+    // here are transport-level (network down, 401 from a stale token,
+    // etc.). All non-fatal: account deletion will still work, it just
+    // won't be able to revoke the Apple session at Apple's side.
+    try {
+      await _oauthApiClient
+          .post<Map<String, dynamic>, _AppleBindRequest>(
+        "/users/apple-bind",
+        (json) => json is Map
+            ? Map<String, dynamic>.from(json)
+            : <String, dynamic>{},
+        data: _AppleBindRequest(authorizationCode: authorizationCode),
+      );
+    } catch (e) {
+      logger.d("Apple bind (non-fatal): $e");
     }
   }
 
