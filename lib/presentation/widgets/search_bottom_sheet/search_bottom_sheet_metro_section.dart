@@ -72,8 +72,10 @@ class _SearchBottomSheetMetroSectionState
   int _lastSeenLine = 0;
   static const Duration _hintDebounceDelay = Duration(milliseconds: 1000);
 
-  final LayerLink _metroAllStationsHintLayerLink = LayerLink();
-  OverlayEntry? _metroAllStationsHintOverlayEntry;
+  /// Floats [NeumorphicHintBubble] above the station wheel via [OverlayPortal]
+  /// — does not inflate the bottom sheet scroll area (when inline mode is off).
+  final OverlayPortalController _metroAllStationsHintPortalController =
+      OverlayPortalController();
 
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
@@ -95,10 +97,8 @@ class _SearchBottomSheetMetroSectionState
       _scheduleHintDebounce(currentLine);
     }
 
-    // Replacing the station placeholder with a real [CupertinoPicker] often
-    // leaves the [LayerLink] leader unlinked for a frame. A single post-frame
-    // sync can miss [_shouldShowHint] becoming true only after the async
-    // station list arrives, so the explainer never inserts. Resync twice.
+    // After the async station list mounts, [OverlayChildLayoutInfo] may need a
+    // second frame before the paint transform is usable.
     final stationsArrived = oldWidget.currentStations.isEmpty &&
         widget.currentStations.isNotEmpty &&
         currentLine > 0 &&
@@ -107,11 +107,10 @@ class _SearchBottomSheetMetroSectionState
         !SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _syncMetroAllStationsHintOverlay();
+        _syncMetroAllStationsHintPortal();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          _metroAllStationsHintOverlayEntry?.markNeedsBuild();
-          _syncMetroAllStationsHintOverlay();
+          _syncMetroAllStationsHintPortal();
         });
       });
     }
@@ -119,7 +118,9 @@ class _SearchBottomSheetMetroSectionState
 
   @override
   void dispose() {
-    _removeMetroAllStationsHintOverlay();
+    if (_metroAllStationsHintPortalController.isShowing) {
+      _metroAllStationsHintPortalController.hide();
+    }
     _hintDebounceTimer?.cancel();
     TooltipsState().removeListener(_onTooltipsStateChanged);
     super.dispose();
@@ -142,72 +143,60 @@ class _SearchBottomSheetMetroSectionState
 
   void _onTooltipsStateChanged() {
     if (!mounted) return;
-    // Re-read the per-tip dismissal flag too: when the user re-enables tips
-    // from settings, [TooltipsState.enableAndResetAll] resets per-tip flags
-    // back to false and we want this section to surface the hint again
-    // without requiring a full sheet remount.
     _loadAllStationsHintDismissed();
-    // [markNeedsBuild] only helps when an entry already exists. If tips were
-    // off or the overlay failed to insert, we must run a full sync after the
-    // next frame (LayerLink + [Overlay] are only valid post-layout).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _syncMetroAllStationsHintOverlay();
+      if (mounted) _syncMetroAllStationsHintPortal();
     });
-    _metroAllStationsHintOverlayEntry?.markNeedsBuild();
-    // Inline hint reads [TooltipsState].enabled in [_shouldShowHint]; without
-    // a rebuild the bubble stays stale when the user toggles Settings > Tips.
     setStateIfMounted(() {});
   }
 
-  /// Overlay that owns this bottom-sheet subtree (hint [LayerLink] leader is
-  /// here). Avoid [Overlay.maybeOf] alone: some modal routes only expose the
-  /// overlay through the navigator.
-  OverlayState? _hintOverlay() {
-    final fromWalk = Overlay.maybeOf(context);
-    if (fromWalk != null) return fromWalk;
-    return Navigator.maybeOf(context)?.overlay;
-  }
-
-  void _removeMetroAllStationsHintOverlay() {
-    _metroAllStationsHintOverlayEntry?.remove();
-    _metroAllStationsHintOverlayEntry = null;
-  }
-
-  void _syncMetroAllStationsHintOverlay() {
+  /// Show or hide [OverlayPortal] — call from post-frame only.
+  void _syncMetroAllStationsHintPortal() {
     if (!mounted) return;
     if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
-      _removeMetroAllStationsHintOverlay();
+      if (_metroAllStationsHintPortalController.isShowing) {
+        _metroAllStationsHintPortalController.hide();
+      }
       return;
     }
-    if (!_shouldShowHint) {
-      _removeMetroAllStationsHintOverlay();
-      return;
-    }
-    final overlay = _hintOverlay();
-    if (overlay == null) return;
-
-    if (_metroAllStationsHintOverlayEntry == null) {
-      _metroAllStationsHintOverlayEntry = OverlayEntry(
-        builder: (_) => _buildMetroAllStationsHintOverlay(),
-      );
-      overlay.insert(_metroAllStationsHintOverlayEntry!);
+    if (_shouldShowHint) {
+      _metroAllStationsHintPortalController.show();
     } else {
-      _metroAllStationsHintOverlayEntry!.markNeedsBuild();
+      if (_metroAllStationsHintPortalController.isShowing) {
+        _metroAllStationsHintPortalController.hide();
+      }
     }
   }
 
-  Widget _buildMetroAllStationsHintOverlay() {
+  Widget _buildMetroAllStationsHintPortalOverlay(
+    BuildContext context,
+    OverlayChildLayoutInfo layoutInfo,
+  ) {
+    if (!_shouldShowHint) {
+      return const SizedBox.shrink();
+    }
+
+    final t = layoutInfo.childPaintTransform;
+    final det = t.determinant();
+    if (det == 0.0 || det.isNaN) {
+      return const SizedBox.shrink();
+    }
+
+    final anchorTopCenter = MatrixUtils.transformPoint(
+      t,
+      Offset(layoutInfo.childSize.width / 2, 0),
+    );
+
     final theme = Theme.of(context);
-    return TooltipFade(
-      visible: _shouldShowHint,
-      collapse: false,
-      duration: const Duration(milliseconds: 260),
-      child: CompositedTransformFollower(
-        link: _metroAllStationsHintLayerLink,
-        showWhenUnlinked: false,
-        targetAnchor: Alignment.topCenter,
-        followerAnchor: Alignment.bottomCenter,
-        offset: const Offset(0, -6),
+    final viewInsetsBottom =
+        MediaQuery.maybeViewInsetsOf(context)?.bottom ?? 0;
+
+    return Positioned.fill(
+      bottom: viewInsetsBottom,
+      child: CustomSingleChildLayout(
+        delegate: _MetroAllStationsHintLayoutDelegate(
+          anchorTopCenterInOverlay: anchorTopCenter,
+        ),
         child: Material(
           type: MaterialType.transparency,
           child: Padding(
@@ -239,6 +228,9 @@ class _SearchBottomSheetMetroSectionState
 
   Future<void> _dismissAllStationsHint() async {
     setStateIfMounted(() => _allStationsHintDismissed = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncMetroAllStationsHintPortal();
+    });
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(
@@ -254,10 +246,8 @@ class _SearchBottomSheetMetroSectionState
 
     if (!SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _syncMetroAllStationsHintOverlay();
+        if (mounted) _syncMetroAllStationsHintPortal();
       });
-    } else {
-      _removeMetroAllStationsHintOverlay();
     }
 
     return Column(
@@ -408,13 +398,15 @@ class _SearchBottomSheetMetroSectionState
     );
   }
 
-  /// [CompositedTransformTarget] for overlay hints; omitted in inline mode.
+  /// [OverlayPortal] floats the hint above wheels when inline flag is false.
   Widget _wrapStationPickerWithHintAnchor(Widget child) {
     if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
       return child;
     }
-    return CompositedTransformTarget(
-      link: _metroAllStationsHintLayerLink,
+    return OverlayPortal.overlayChildLayoutBuilder(
+      controller: _metroAllStationsHintPortalController,
+      overlayLocation: OverlayChildLocation.nearestOverlay,
+      overlayChildBuilder: _buildMetroAllStationsHintPortalOverlay,
       child: child,
     );
   }
@@ -594,4 +586,46 @@ class _SearchBottomSheetMetroSectionState
       ),
     );
   }
+}
+
+/// Anchors “all stations” hint bubble just above top-center of the metro
+/// station [OverlayPortal] child (coordinates are in overlay space).
+class _MetroAllStationsHintLayoutDelegate extends SingleChildLayoutDelegate {
+  const _MetroAllStationsHintLayoutDelegate({
+    required this.anchorTopCenterInOverlay,
+  });
+
+  final Offset anchorTopCenterInOverlay;
+
+  static const double _gapAboveTargetPx = 6;
+  static const double _horizontalMarginPx = 8;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return BoxConstraints(
+      minWidth: 0,
+      minHeight: 0,
+      maxWidth: constraints.maxWidth,
+      maxHeight: constraints.maxHeight,
+    );
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final double dxDesired =
+        anchorTopCenterInOverlay.dx - childSize.width / 2;
+    final double leftBound = _horizontalMarginPx;
+    final double rightBoundCandidate =
+        size.width - childSize.width - _horizontalMarginPx;
+    final double rightBound =
+        rightBoundCandidate < leftBound ? leftBound : rightBoundCandidate;
+    final dx = dxDesired.clamp(leftBound, rightBound);
+    final dy =
+        anchorTopCenterInOverlay.dy - childSize.height - _gapAboveTargetPx;
+    return Offset(dx, dy);
+  }
+
+  @override
+  bool shouldRelayout(covariant _MetroAllStationsHintLayoutDelegate oldDelegate) =>
+      anchorTopCenterInOverlay != oldDelegate.anchorTopCenterInOverlay;
 }

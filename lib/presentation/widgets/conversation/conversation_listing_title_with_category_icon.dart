@@ -82,10 +82,11 @@ class ConversationListingTitleWithCategoryIcon extends StatelessWidget {
     final badgeDimension = (iconSize + 4) * badgeScale;
     final glyphSize = (iconSize * 0.64).clamp(11.0, 14.5) * badgeScale;
 
+    // Always center the badge with the title line(s). Call sites often pass
+    // `titleMaxLines: 2` for headers while short preset titles still occupy one
+    // line — [CrossAxisAlignment.start] would top-align the glyph and look off.
     return Row(
-      crossAxisAlignment: titleMaxLines > 1
-          ? CrossAxisAlignment.start
-          : CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (icon != null) ...[
           GigCategoryIconBadge(

@@ -6,10 +6,9 @@ class SearchBottomSheetHintsConfig {
 
   /// Metro “search all stations on this line” explainer bubble.
   ///
-  /// - **true** (default): Hint is a [Column] child above the line / station
-  ///   pickers. Slightly taller sheet, but reliable (no [Overlay] / [LayerLink]
-  ///   issues inside modal bottom sheets).
-  /// - **false**: Hint is drawn in an [Overlay] anchored to the station wheel
-  ///   (does not grow sheet height; can fail to composite on some platforms).
-  static bool metroAllStationsHintUsesInlineColumn = true;
+  /// - **false** (default): Hint floats via [OverlayPortal] over the overlay
+  ///   stack (does **not** add height to bottom sheet scroll content).
+  /// - **true**: Hint is inlined in the metro [Column] above the pickers —
+  ///   taller sheet; use if you must avoid overlays on a particular route.
+  static bool metroAllStationsHintUsesInlineColumn = false;
 }
