@@ -5,6 +5,15 @@ on:
     tags:
       - "android-*"
   workflow_dispatch:
+    inputs:
+      play_track:
+        description: "Google Play track (internal, alpha, beta, production)"
+        required: false
+        default: "internal"
+      play_release_status:
+        description: "Google Play release status (draft, completed, inProgress)"
+        required: false
+        default: "draft"
 
 concurrency:
   group: release-apk
@@ -35,6 +44,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
       - name: Decode Android keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -56,11 +71,27 @@ jobs:
           storeFile=../upload-keystore.jks
           EOF
 
+      - name: Decode Google Play service account JSON
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
+        run: |
+          set -euo pipefail
+          # Accept either raw JSON (recommended for GH Secrets) or base64 (older setup).
+          if [[ "${PLAY_SERVICE_ACCOUNT_JSON_BASE64}" == \{* ]]; then
+            printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON_BASE64" > /tmp/play-service-account.json
+          else
+            printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON_BASE64" | tr -d '[:space:]' | base64 -d > /tmp/play-service-account.json
+          fi
+          test -s /tmp/play-service-account.json
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build release APK
         run: flutter build apk --release
+
+      - name: Build release App Bundle (AAB)
+        run: flutter build appbundle --release
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
@@ -69,6 +100,27 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload AAB as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload AAB to Google Play (testing track)
+        env:
+          SUPPLY_JSON_KEY: /tmp/play-service-account.json
+          PLAY_TRACK: ${{ inputs.play_track || 'internal' }}
+          PLAY_RELEASE_STATUS: ${{ inputs.play_release_status || 'draft' }}
+        run: |
+          set -euo pipefail
+          bundle exec fastlane android upload_play \
+            aab_path:"build/app/outputs/bundle/release/app-release.aab" \
+            track:"${PLAY_TRACK}" \
+            release_status:"${PLAY_RELEASE_STATUS}" \
+            changelog:"Automated upload from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7} (${GITHUB_REF_NAME})."
 
       - name: Publish to uydosh_client "android-latest" release
         env:

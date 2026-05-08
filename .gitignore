@@ -73,3 +73,6 @@ app.*.map.json
 /android/key.properties
 *.jks
 *.keystore
+
+# Play Console "Android developer verification" token (account-specific)
+/android/app/src/main/assets/adi-registration.properties

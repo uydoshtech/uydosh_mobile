@@ -1,0 +1,24 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload an AAB to Google Play (internal by default)"
+  lane :upload_play do |options|
+    aab_path = options[:aab_path] || "build/app/outputs/bundle/release/app-release.aab"
+    track = options[:track] || "internal"
+    release_status = options[:release_status] || "draft" # draft|completed|inProgress|halted
+    version_name = options[:version_name]
+
+    supply(
+      aab: aab_path,
+      track: track,
+      release_status: release_status,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      changelog: options[:changelog],
+      version_name: version_name,
+    )
+  end
+end
+
