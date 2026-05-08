@@ -331,7 +331,10 @@ class SearchFiltersState extends ChangeNotifier {
       // Apply listing type from profile role when no saved preference
       if (savedListingTypeId == null) {
         final role = await _getUserRole();
-        final defaultType = role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
+        final tenantLike =
+            role == "tenant" || role == "service_requester";
+        final defaultType =
+            tenantLike ? 2 : 1; // tenant/requester=Need roommate (2), landlord/provider=Needs Room (1)
         _selectedListingTypeId = defaultType;
         await prefs.setInt("search_listing_type_id", defaultType);
         updated = true;
@@ -377,8 +380,10 @@ class SearchFiltersState extends ChangeNotifier {
 
       if (savedListingTypeId == null) {
         final role = await _getUserRole();
+        final tenantLike =
+            role == "tenant" || role == "service_requester";
         final defaultType =
-            role == "tenant" ? 2 : 1; // tenant=Need roommate (2), landlord=Needs Room (1)
+            tenantLike ? 2 : 1; // tenant/requester vs landlord/provider
         await setListingTypeId(defaultType);
       }
 

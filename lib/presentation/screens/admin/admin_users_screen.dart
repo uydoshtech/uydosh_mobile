@@ -484,6 +484,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         return L10n.get("role_tenant");
       case "landlord":
         return L10n.get("role_landlord");
+      case "service_requester":
+        return L10n.get("role_service_requester");
+      case "service_provider":
+        return L10n.get("role_service_provider");
       case "manager":
         return L10n.get("role_manager");
       case "admin":

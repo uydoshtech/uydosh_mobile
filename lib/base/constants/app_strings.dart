@@ -34,6 +34,8 @@ class AppStrings {
       "role_landlord": "Landlord",
       "role_manager": "Manager",
       "role_admin": "Admin",
+      "role_service_provider": "Service provider",
+      "role_service_requester": "Service requester",
       "profile_completion": "Profile completion",
       "profile_completion_hint":
           "A completed profile means more accurate matches and comfortable co-living.",
@@ -1380,6 +1382,8 @@ class AppStrings {
       "role_landlord": "Арендодатель",
       "role_manager": "Менеджер",
       "role_admin": "Администратор",
+      "role_service_provider": "Исполнитель услуг",
+      "role_service_requester": "Заказчик услуг",
       "profile_completion": "Заполнение профиля",
       "profile_completion_hint":
           "Заполненный профиль = более точные совпадения и комфортное соседство.",
@@ -2751,6 +2755,8 @@ class AppStrings {
       "role_landlord": "Ijaraga beruvchi",
       "role_manager": "Menejer",
       "role_admin": "Administrator",
+      "role_service_provider": "Xizmat koʻrsatuvchi",
+      "role_service_requester": "Xizmatga ehtiyoji bor",
       "profile_completion": "Profil to'ldirilishi",
       "profile_completion_hint":
           "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",

@@ -60,6 +60,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get role_admin => 'Admin';
 
   @override
+  String get role_service_provider => 'Service provider';
+
+  @override
+  String get role_service_requester => 'Service requester';
+
+  @override
   String get profile_completion => 'Profile completion';
 
   @override

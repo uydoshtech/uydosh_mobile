@@ -17,6 +17,8 @@
   "role_landlord": "Арендодатель",
   "role_manager": "Менеджер",
   "role_admin": "Администратор",
+  "role_service_provider": "Исполнитель услуг",
+  "role_service_requester": "Заказчик услуг",
   "profile_completion": "Заполнение профиля",
   "profile_completion_hint": "Заполненный профиль = более точные совпадения и комфортное соседство.",
   "complete_profile_prompt_title": "Заполните профиль",

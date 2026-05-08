@@ -17,6 +17,8 @@
   "role_landlord": "Ijaraga beruvchi",
   "role_manager": "Menejer",
   "role_admin": "Administrator",
+  "role_service_provider": "Xizmat koʻrsatuvchi",
+  "role_service_requester": "Xizmatga ehtiyoji bor",
   "profile_completion": "Profil to'ldirilishi",
   "profile_completion_hint": "Profil to'liq bo'lsa, mosliklar aniqroq va qo'shnichilik qulayroq bo'ladi.",
   "complete_profile_prompt_title": "Profilni to'ldiring",

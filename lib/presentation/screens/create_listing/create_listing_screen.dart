@@ -153,7 +153,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final gender = await genderFuture;
 
     if (!mounted) return;
-    final defaultType = role == "tenant" ? 1 : 2;
+    final tenantLikeRole =
+        role == "tenant" || role == "service_requester";
+    final defaultType = tenantLikeRole ? 1 : 2;
     final defaultGender = (gender == 1 || gender == 2) ? gender! : 1;
     setState(() {
       _defaultListingTypeFromProfile = defaultType;

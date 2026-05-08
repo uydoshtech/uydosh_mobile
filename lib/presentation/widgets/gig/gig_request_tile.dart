@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -13,12 +15,13 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_participant_avatar_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 /// Reusable card for a single open [GigRequest] in any vertical list/feed.
 ///
@@ -51,9 +54,11 @@ class GigRequestTile extends StatefulWidget {
   State<GigRequestTile> createState() => _GigRequestTileState();
 }
 
-class _GigRequestTileState extends State<GigRequestTile> {
+class _GigRequestTileState extends State<GigRequestTile>
+    with TickerProviderStateMixin {
   bool _isTogglingFavorite = false;
   late Listenable _favoriteListenable;
+  FavoriteHeartPulseController? _favoritePulse;
 
   @override
   void initState() {
@@ -61,6 +66,14 @@ class _GigRequestTileState extends State<GigRequestTile> {
     _favoriteListenable = Listenable.merge([
       GigFavoritesState().listenableForRequest(widget.request.id),
     ]);
+    if (widget.showFavoriteIndicator) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    }
   }
 
   @override
@@ -71,6 +84,25 @@ class _GigRequestTileState extends State<GigRequestTile> {
         GigFavoritesState().listenableForRequest(widget.request.id),
       ]);
     }
+    final need = widget.showFavoriteIndicator;
+    final had = oldWidget.showFavoriteIndicator;
+    if (need && !had) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    } else if (!need && had) {
+      _favoritePulse?.dispose();
+      _favoritePulse = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _favoritePulse?.dispose();
+    super.dispose();
   }
 
   Future<void> _handleFavoriteTap(BuildContext context) async {
@@ -80,6 +112,7 @@ class _GigRequestTileState extends State<GigRequestTile> {
         gigFav.isRequestFavorite(widget.request.id);
     gigFav.toggleRequestLocal(widget.request.id);
     if (!wasFavorite) {
+      unawaited(_favoritePulse?.playTapPulse());
       favScreen.markDirty();
     }
     setState(() => _isTogglingFavorite = true);
@@ -216,15 +249,24 @@ class _GigRequestTileState extends State<GigRequestTile> {
                     listenable: _favoriteListenable,
                     builder: (context, child) {
                       if (!AuthenticationState().isAuthenticated) {
+                        _favoritePulse?.setFavoriteOutlineState(
+                          isFavorite: true,
+                        );
                         return const SizedBox.shrink();
                       }
                       if (UserListingState()
                           .isOwner(widget.request.clientUserId)) {
+                        _favoritePulse?.setFavoriteOutlineState(
+                          isFavorite: true,
+                        );
                         return const SizedBox.shrink();
                       }
                       final isFavorite = widget.forceFavorite ??
                           GigFavoritesState()
                               .isRequestFavorite(widget.request.id);
+                      _favoritePulse?.setFavoriteOutlineState(
+                        isFavorite: isFavorite,
+                      );
                       return Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -240,29 +282,39 @@ class _GigRequestTileState extends State<GigRequestTile> {
                               child: Center(
                                 child: Opacity(
                                   opacity: _isTogglingFavorite ? 0.6 : 1,
-                                  child: _isTogglingFavorite
-                                      ? SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              isFavorite
-                                                  ? AppColors.favoriteActive
-                                                  : AppColors.favoriteInactive,
+                                  child: AnimatedBuilder(
+                                    animation: _favoritePulse!.listenable,
+                                    builder: (context, child) {
+                                      return Transform.scale(
+                                        scale: _favoritePulse!.scale,
+                                        child: child,
+                                      );
+                                    },
+                                    child: _isTogglingFavorite
+                                        ? SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                isFavorite
+                                                    ? AppColors.favoriteActive
+                                                    : AppColors
+                                                        .favoriteInactive,
+                                              ),
                                             ),
+                                          )
+                                        : ThemeIcon(
+                                            isFavorite
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isFavorite
+                                                ? AppColors.favoriteActive
+                                                : AppColors.favoriteInactive,
+                                            size: 22,
                                           ),
-                                        )
-                                      : ThemeIcon(
-                                          isFavorite
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: isFavorite
-                                              ? AppColors.favoriteActive
-                                              : AppColors.favoriteInactive,
-                                          size: 22,
-                                        ),
+                                  ),
                                 ),
                               ),
                             ),

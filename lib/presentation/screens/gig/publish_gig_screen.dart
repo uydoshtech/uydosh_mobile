@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 const int _gigMinDurationStepMinutes = 5;
@@ -160,6 +161,27 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   final Set<int> _deletingOfferPhotoIds = {};
   final Set<int> _makingOfferPhotoPrimaryIds = {};
 
+  /// When true, [Navigator.pop] after a successful submit is allowed despite a
+  /// dirty form (same pattern as [EditListingScreen] / [EditProfileScreen]).
+  bool _allowPopWithoutConfirm = false;
+
+  GigPublishMode _baselineMode = GigPublishMode.task;
+  String _baselineTitle = "";
+  String _baselineDescription = "";
+  int? _baselineCategoryId;
+  GigRequestBudgetType _baselineBudgetType = GigRequestBudgetType.fixed;
+  String _baselineBudgetText = "";
+  String _baselineAddressText = "";
+  GigPricingType _baselinePricingType = GigPricingType.fixed;
+  String _baselinePriceText = "";
+  int _baselineMinDurationMinutes = _gigMinDurationFallbackMinutes;
+  bool _baselineRemote = false;
+  String _baselineCurrency = "UZS";
+  bool _baselineDescriptionExpanded = false;
+  List<String> _baselineSelectedPhotos = const <String>[];
+  int? _baselinePrimaryPhotoIndex;
+  String _baselineOfferPhotosFingerprint = "";
+
   /// ISO-4217-ish code shown as the prefix on the budget/price input. Shared
   /// between task and service modes so a user who flips back and forth keeps
   /// their currency choice. Backend default is also "UZS", so the empty
@@ -219,10 +241,105 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _isRemote = editingReq.isRemote;
       _currency = editingReq.currencyCode;
     }
+    _captureBaseline();
+    // [PopScope.canPop] is evaluated when this widget rebuilds. Plain
+    // [TextEditingController] edits do not rebuild the parent — same fix as
+    // [EditListingScreen] (controller listeners → setState).
+    _titleController.addListener(_rebuildPopScopeDisposition);
+    _descriptionController.addListener(_rebuildPopScopeDisposition);
+    _budgetController.addListener(_rebuildPopScopeDisposition);
+    _addressController.addListener(_rebuildPopScopeDisposition);
+    _priceController.addListener(_rebuildPopScopeDisposition);
+  }
+
+  void _rebuildPopScopeDisposition() {
+    if (mounted) setState(() {});
+  }
+
+  void _captureBaseline() {
+    _baselineMode = _mode;
+    _baselineTitle = _titleController.text;
+    _baselineDescription = _descriptionController.text;
+    _baselineCategoryId = _selectedCategory?.id;
+    _baselineBudgetType = _budgetType;
+    _baselineBudgetText = _budgetController.text;
+    _baselineAddressText = _addressController.text;
+    _baselinePricingType = _pricingType;
+    _baselinePriceText = _priceController.text;
+    _baselineMinDurationMinutes = _minDurationMinutes;
+    _baselineRemote = _isRemote;
+    _baselineCurrency = _currency;
+    _baselineDescriptionExpanded = _isDescriptionExpanded;
+    _baselineSelectedPhotos = List<String>.from(_selectedPhotos);
+    _baselinePrimaryPhotoIndex = _primaryPhotoIndex;
+    _baselineOfferPhotosFingerprint =
+        _isEditingOffer ? _offerPhotosFingerprint(_orderedOfferPhotos) : "";
+  }
+
+  String _offerPhotosFingerprint(List<PhotoItem> items) {
+    final parts = <String>[];
+    for (final item in items) {
+      if (item is ExistingPhotoItem) {
+        parts.add("e:${item.photo.id}");
+      } else if (item is NewPhotoItem) {
+        parts.add("n:${item.path}");
+      }
+    }
+    return parts.join("|");
+  }
+
+  bool _listsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  bool _isFormDirty() {
+    if (_mode != _baselineMode) return true;
+    if (_titleController.text != _baselineTitle) return true;
+    if (_descriptionController.text != _baselineDescription) return true;
+    if (_selectedCategory?.id != _baselineCategoryId) return true;
+    if (_isRemote != _baselineRemote) return true;
+    if (_currency != _baselineCurrency) return true;
+    if (_isDescriptionExpanded != _baselineDescriptionExpanded) return true;
+
+    if (_mode == GigPublishMode.task) {
+      if (_budgetType != _baselineBudgetType) return true;
+      if (_budgetController.text != _baselineBudgetText) return true;
+      if (_addressController.text != _baselineAddressText) return true;
+    } else {
+      if (_pricingType != _baselinePricingType) return true;
+      if (_priceController.text != _baselinePriceText) return true;
+      if (_minDurationMinutes != _baselineMinDurationMinutes) return true;
+      if (_isEditingOffer) {
+        if (_offerPhotosFingerprint(_orderedOfferPhotos) !=
+            _baselineOfferPhotosFingerprint) {
+          return true;
+        }
+      } else {
+        if (!_listsEqual(_selectedPhotos, _baselineSelectedPhotos)) return true;
+        if (_primaryPhotoIndex != _baselinePrimaryPhotoIndex) return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> _onPopInvoked(bool didPop, dynamic result) async {
+    if (didPop) return;
+    final leave = await UnsavedChangesDialog.show(context);
+    if (!mounted || !leave) return;
+    Navigator.of(context).pop(result);
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_rebuildPopScopeDisposition);
+    _descriptionController.removeListener(_rebuildPopScopeDisposition);
+    _budgetController.removeListener(_rebuildPopScopeDisposition);
+    _addressController.removeListener(_rebuildPopScopeDisposition);
+    _priceController.removeListener(_rebuildPopScopeDisposition);
     _titleController.dispose();
     _descriptionController.dispose();
     _budgetController.dispose();
@@ -371,72 +488,79 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   @override
   Widget build(BuildContext context) {
     final language = LanguageState().currentLanguage;
-    return Scaffold(
-      appBar: AppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: Text(
-          _isEditingOffer
-              ? L10n.get("gigs_edit_offer_title")
-              : _isEditingRequest
-                  ? L10n.get("gigs_edit_request_title")
-                  : L10n.get("gigs_publish_screen_title"),
+    return PopScope(
+      canPop: _allowPopWithoutConfirm || !_isFormDirty(),
+      onPopInvokedWithResult: _onPopInvoked,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: ThreeDAppBarIconButton.backLeading(context),
+          title: Text(
+            _isEditingOffer
+                ? L10n.get("gigs_edit_offer_title")
+                : _isEditingRequest
+                    ? L10n.get("gigs_edit_request_title")
+                    : L10n.get("gigs_publish_screen_title"),
+          ),
         ),
-      ),
-      // Two listeners — one per bloc — handle the success/error toasts.
-      // `MultiBlocListener` keeps the body free of nested builders.
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<GigPostRequestBloc, GigPostRequestState>(
-            listener: (context, state) {
-              if (state is GigPostRequestSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text(L10n.get("gigs_post_request_success_toast")),
-                  ),
-                );
-                Navigator.of(context).pop();
-              } else if (state is GigRequestEditSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text(L10n.get("gigs_edit_request_success_toast")),
-                  ),
-                );
-                Navigator.of(context).pop<GigRequest>(state.updated);
-              } else if (state is GigPostRequestError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-          ),
-          BlocListener<GigPostOfferBloc, GigPostOfferState>(
-            listener: (context, state) {
-              if (state is GigPostOfferSuccess) {
-                ToastTheme.showSuccess(
-                  context,
-                  message: L10n.get("gigs_post_offer_success_toast"),
-                );
-                Navigator.of(context).pop();
-              } else if (state is GigOfferEditSuccess) {
-                ToastTheme.showSuccess(
-                  context,
-                  message: L10n.get("gigs_edit_offer_success_toast"),
-                );
-                // Pop the updated offer back to the detail screen so it can
-                // re-render without a follow-up GET round trip.
-                Navigator.of(context).pop<GigOffer>(state.updated);
-              } else if (state is GigPostOfferError) {
-                ToastTheme.showError(context, message: state.message);
-              }
-            },
-          ),
-        ],
-        child: BlocBuilder<GigPostRequestBloc, GigPostRequestState>(
-          builder: (context, requestState) {
-            return BlocBuilder<GigPostOfferBloc, GigPostOfferState>(
-              builder: (context, offerState) {
+        // Two listeners — one per bloc — handle the success/error toasts.
+        // `MultiBlocListener` keeps the body free of nested builders.
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<GigPostRequestBloc, GigPostRequestState>(
+              listener: (context, state) {
+                if (state is GigPostRequestSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(L10n.get("gigs_post_request_success_toast")),
+                    ),
+                  );
+                  _allowPopWithoutConfirm = true;
+                  Navigator.of(context).pop();
+                } else if (state is GigRequestEditSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(L10n.get("gigs_edit_request_success_toast")),
+                    ),
+                  );
+                  _allowPopWithoutConfirm = true;
+                  Navigator.of(context).pop<GigRequest>(state.updated);
+                } else if (state is GigPostRequestError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
+              },
+            ),
+            BlocListener<GigPostOfferBloc, GigPostOfferState>(
+              listener: (context, state) {
+                if (state is GigPostOfferSuccess) {
+                  ToastTheme.showSuccess(
+                    context,
+                    message: L10n.get("gigs_post_offer_success_toast"),
+                  );
+                  _allowPopWithoutConfirm = true;
+                  Navigator.of(context).pop();
+                } else if (state is GigOfferEditSuccess) {
+                  ToastTheme.showSuccess(
+                    context,
+                    message: L10n.get("gigs_edit_offer_success_toast"),
+                  );
+                  _allowPopWithoutConfirm = true;
+                  // Pop the updated offer back to the detail screen so it can
+                  // re-render without a follow-up GET round trip.
+                  Navigator.of(context).pop<GigOffer>(state.updated);
+                } else if (state is GigPostOfferError) {
+                  ToastTheme.showError(context, message: state.message);
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<GigPostRequestBloc, GigPostRequestState>(
+            builder: (context, requestState) {
+              return BlocBuilder<GigPostOfferBloc, GigPostOfferState>(
+                builder: (context, offerState) {
                 // Both blocs are seeded from the same [GigCategoryCache], so
                 // the picker can read either one — but we still pull from
                 // whichever matches the current mode in case future cache
@@ -616,6 +740,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             );
           },
         ),
+      ),
       ),
     );
   }

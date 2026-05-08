@@ -292,63 +292,58 @@ class _BookingTile extends StatelessWidget {
       baseColor: scheme.surface,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 18, 20),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      booking.titleSnapshot,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                      ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    booking.titleSnapshot,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
                     ),
-                    const SizedBox(height: 8),
-                    ListingPaymentsOutlineBadge(
-                      label:
-                          "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCode(booking.currencyCode)}",
-                    ),
-                    if (booking.scheduledStartAt != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        L10n.getWithParams(
-                          "gigs_scheduled_at",
-                          params: {"when": booking.scheduledStartAt!},
-                        ),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: scheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                statusChip,
+              ],
+            ),
+            const SizedBox(height: 8),
+            ListingPaymentsOutlineBadge(
+              label:
+                  "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCode(booking.currencyCode)}",
+            ),
+            if (_hasActionButtons) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: _BookingActions(
+                  booking: booking,
+                  sessionUserId: sessionUserId,
                 ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  statusChip,
-                  if (_hasActionButtons) ...[
-                    const SizedBox(height: 18),
-                    const Expanded(child: SizedBox.shrink()),
-                    _BookingActions(
-                      booking: booking,
-                      sessionUserId: sessionUserId,
-                    ),
-                  ],
-                ],
+            ],
+            if (booking.scheduledStartAt != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                L10n.getWithParams(
+                  "gigs_scheduled_at",
+                  params: {"when": booking.scheduledStartAt!},
+                ),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: scheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -463,7 +458,7 @@ class _BookingActionsState extends State<_BookingActions> {
           padding: _pad,
           borderRadius: _pill,
           neumorphicSoftUi: true,
-          neumorphicFillColor: const Color(0xFF5E35B1),
+          neumorphicFillColor: const Color(0xFF43A047),
           textColor: Colors.white,
           isLoading: _chatOpening,
         ),
@@ -510,15 +505,11 @@ class _BookingActionsState extends State<_BookingActions> {
     }
 
     if (actions.isEmpty) return const SizedBox.shrink();
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        for (var i = 0; i < actions.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          actions[i],
-        ],
-      ],
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.start,
+      children: actions,
     );
   }
 

@@ -60,6 +60,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get role_admin => 'Administrator';
 
   @override
+  String get role_service_provider => 'Xizmat koʻrsatuvchi';
+
+  @override
+  String get role_service_requester => 'Xizmatga ehtiyoji bor';
+
+  @override
   String get profile_completion => 'Profil to\'ldirilishi';
 
   @override

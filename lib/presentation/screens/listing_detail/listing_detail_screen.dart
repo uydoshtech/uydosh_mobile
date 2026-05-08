@@ -31,7 +31,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
-import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -171,7 +170,6 @@ class ListingDetailScreen extends StatefulWidget {
 
 class _ListingDetailScreenState extends State<ListingDetailScreen>
     with TickerProviderStateMixin {
-  late AnimationController _heartAnimationController;
   // The warning-blink controller used to live here and run forever, even on
   // listings with zero complaints (the vast majority). It now lives inside
   // [ListingDetailComplaintsCard] which is only mounted when there's
@@ -201,12 +199,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     // Initialize favorites state
     FavoritesState().initialize();
 
-    // Initialize heart animation with optimized controller
-    _heartAnimationController = AnimationUtils.createAnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150),
-    );
-
     // Initialize page controller for photo carousel
     _pageController = PageController();
     _scrollController = ScrollController();
@@ -228,7 +220,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   @override
   void dispose() {
-    AnimationUtils.disposeAnimationController(_heartAnimationController);
     _pageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -314,22 +305,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         logger.d("🔄 Loading state reset in finally block");
       }
     }
-  }
-
-  // Pulsate heart animation when adding to favorites
-  void _pulsateHeart() {
-    // Pulsate 3 times
-    _heartAnimationController.forward().then((_) {
-      _heartAnimationController.reverse().then((_) {
-        _heartAnimationController.forward().then((_) {
-          _heartAnimationController.reverse().then((_) {
-            _heartAnimationController.forward().then((_) {
-              _heartAnimationController.reverse();
-            });
-          });
-        });
-      });
-    });
   }
 
   // Check favorite status from server and sync with global state
@@ -1133,11 +1108,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
     // Store current state to determine if we're adding or removing
     final wasFavorite = isFavorite;
-
-    // If we're adding to favorites, trigger animation immediately
-    if (!wasFavorite) {
-      _pulsateHeart();
-    }
 
     // Call API to toggle favorite
     try {
@@ -2145,7 +2115,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         child: Padding(
           padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
               ListingDetailMetaBadges(listingDetail: listingDetail),

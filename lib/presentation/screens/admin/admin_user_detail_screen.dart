@@ -820,6 +820,14 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         label: L10n.get("role_landlord"),
       ),
       _RoleOption(
+        value: "service_requester",
+        label: L10n.get("role_service_requester"),
+      ),
+      _RoleOption(
+        value: "service_provider",
+        label: L10n.get("role_service_provider"),
+      ),
+      _RoleOption(
         value: "manager",
         label: L10n.get("role_manager"),
       ),
@@ -836,6 +844,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         return L10n.get("role_tenant");
       case "landlord":
         return L10n.get("role_landlord");
+      case "service_requester":
+        return L10n.get("role_service_requester");
+      case "service_provider":
+        return L10n.get("role_service_provider");
       case "manager":
         return L10n.get("role_manager");
       case "admin":

@@ -60,6 +60,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get role_admin => 'Администратор';
 
   @override
+  String get role_service_provider => 'Исполнитель услуг';
+
+  @override
+  String get role_service_requester => 'Заказчик услуг';
+
+  @override
   String get profile_completion => 'Заполнение профиля';
 
   @override

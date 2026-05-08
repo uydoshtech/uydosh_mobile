@@ -17,6 +17,8 @@
   "role_landlord": "Landlord",
   "role_manager": "Manager",
   "role_admin": "Admin",
+  "role_service_provider": "Service provider",
+  "role_service_requester": "Service requester",
   "profile_completion": "Profile completion",
   "profile_completion_hint": "A completed profile means more accurate matches and comfortable co-living.",
   "complete_profile_prompt_title": "Complete your profile",

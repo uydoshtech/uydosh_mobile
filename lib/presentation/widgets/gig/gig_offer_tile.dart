@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -15,6 +17,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -48,9 +51,11 @@ class GigOfferTile extends StatefulWidget {
   State<GigOfferTile> createState() => _GigOfferTileState();
 }
 
-class _GigOfferTileState extends State<GigOfferTile> {
+class _GigOfferTileState extends State<GigOfferTile>
+    with TickerProviderStateMixin {
   bool _isTogglingFavorite = false;
   late Listenable _favoriteListenable;
+  FavoriteHeartPulseController? _favoritePulse;
 
   @override
   void initState() {
@@ -58,6 +63,14 @@ class _GigOfferTileState extends State<GigOfferTile> {
     _favoriteListenable = Listenable.merge([
       GigFavoritesState().listenableForOffer(widget.offer.id),
     ]);
+    if (widget.showFavoriteIndicator) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    }
   }
 
   @override
@@ -68,6 +81,25 @@ class _GigOfferTileState extends State<GigOfferTile> {
         GigFavoritesState().listenableForOffer(widget.offer.id),
       ]);
     }
+    final need = widget.showFavoriteIndicator;
+    final had = oldWidget.showFavoriteIndicator;
+    if (need && !had) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    } else if (!need && had) {
+      _favoritePulse?.dispose();
+      _favoritePulse = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _favoritePulse?.dispose();
+    super.dispose();
   }
 
   Future<void> _handleFavoriteTap(BuildContext context) async {
@@ -77,6 +109,7 @@ class _GigOfferTileState extends State<GigOfferTile> {
         widget.forceFavorite ?? gigFav.isOfferFavorite(widget.offer.id);
     gigFav.toggleOfferLocal(widget.offer.id);
     if (!wasFavorite) {
+      unawaited(_favoritePulse?.playTapPulse());
       favScreen.markDirty();
     }
     setState(() => _isTogglingFavorite = true);
@@ -162,7 +195,9 @@ class _GigOfferTileState extends State<GigOfferTile> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 48),
+                      padding: EdgeInsetsDirectional.only(
+                        end: widget.showFavoriteIndicator ? 52 : 48,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -225,78 +260,121 @@ class _GigOfferTileState extends State<GigOfferTile> {
               PositionedDirectional(
                 top: 0,
                 end: 0,
-                child: IgnorePointer(
-                  child: GigParticipantAvatarBadge(
-                    avatarUrl: widget.offer.providerAvatarUrl,
-                    displayName: widget.offer.providerDisplayName,
-                    ringColor: scheme.surface,
-                  ),
-                ),
-              ),
-              if (widget.showFavoriteIndicator)
-                PositionedDirectional(
-                  top: 0,
-                  end: 44,
-                  child: ListenableBuilder(
-                    listenable: _favoriteListenable,
-                    builder: (context, child) {
-                      if (!AuthenticationState().isAuthenticated) {
-                        return const SizedBox.shrink();
-                      }
-                      if (UserListingState()
-                          .isOwner(widget.offer.providerUserId)) {
-                        return const SizedBox.shrink();
-                      }
-                      final isFavorite = widget.forceFavorite ??
-                          GigFavoritesState()
-                              .isOfferFavorite(widget.offer.id);
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _isTogglingFavorite
-                              ? null
-                              : () => _handleFavoriteTap(context),
-                          borderRadius: BorderRadius.circular(22),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: Center(
-                                child: Opacity(
-                                  opacity: _isTogglingFavorite ? 0.6 : 1,
-                                  child: _isTogglingFavorite
-                                      ? SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              isFavorite
-                                                  ? AppColors.favoriteActive
-                                                  : AppColors.favoriteInactive,
-                                            ),
+                child: widget.showFavoriteIndicator
+                    ? ListenableBuilder(
+                        listenable: _favoriteListenable,
+                        builder: (context, child) {
+                          final showInteractiveHeart =
+                              AuthenticationState().isAuthenticated &&
+                                  !UserListingState().isOwner(
+                                    widget.offer.providerUserId,
+                                  );
+                          if (!showInteractiveHeart) {
+                            _favoritePulse?.setFavoriteOutlineState(
+                              isFavorite: true,
+                            );
+                            return IgnorePointer(
+                              child: GigParticipantAvatarBadge(
+                                avatarUrl: widget.offer.providerAvatarUrl,
+                                displayName:
+                                    widget.offer.providerDisplayName,
+                                ringColor: scheme.surface,
+                              ),
+                            );
+                          }
+                          final isFavorite = widget.forceFavorite ??
+                              GigFavoritesState()
+                                  .isOfferFavorite(widget.offer.id);
+                          _favoritePulse?.setFavoriteOutlineState(
+                            isFavorite: isFavorite,
+                          );
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _isTogglingFavorite
+                                      ? null
+                                      : () => _handleFavoriteTap(context),
+                                  borderRadius: BorderRadius.circular(22),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: Center(
+                                        child: Opacity(
+                                          opacity:
+                                              _isTogglingFavorite ? 0.6 : 1,
+                                          child: AnimatedBuilder(
+                                            animation:
+                                                _favoritePulse!.listenable,
+                                            builder: (context, child) {
+                                              return Transform.scale(
+                                                scale: _favoritePulse!.scale,
+                                                child: child,
+                                              );
+                                            },
+                                            child: _isTogglingFavorite
+                                                ? SizedBox(
+                                                    width: 20,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                              Color>(
+                                                        isFavorite
+                                                            ? AppColors
+                                                                .favoriteActive
+                                                            : AppColors
+                                                                .favoriteInactive,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : ThemeIcon(
+                                                    isFavorite
+                                                        ? Icons.favorite
+                                                        : Icons
+                                                              .favorite_border,
+                                                    color: isFavorite
+                                                        ? AppColors
+                                                              .favoriteActive
+                                                        : AppColors
+                                                              .favoriteInactive,
+                                                    size: 22,
+                                                  ),
                                           ),
-                                        )
-                                      : ThemeIcon(
-                                          isFavorite
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: isFavorite
-                                              ? AppColors.favoriteActive
-                                              : AppColors.favoriteInactive,
-                                          size: 22,
                                         ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                              const SizedBox(height: 6),
+                              IgnorePointer(
+                                child: GigParticipantAvatarBadge(
+                                  avatarUrl: widget.offer.providerAvatarUrl,
+                                  displayName:
+                                      widget.offer.providerDisplayName,
+                                  ringColor: scheme.surface,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      )
+                    : IgnorePointer(
+                        child: GigParticipantAvatarBadge(
+                          avatarUrl: widget.offer.providerAvatarUrl,
+                          displayName: widget.offer.providerDisplayName,
+                          ringColor: scheme.surface,
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
+              ),
             ],
           ),
         ),

@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -10,10 +12,14 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
+
+/// Space between the last chip run and the favorite control.
+const double _kMetaBadgesFavoriteGap = 8;
 
 /// Listing type, gender, and price chips (shown in a dedicated tile on listing detail).
 class ListingDetailMetaBadges extends StatelessWidget {
@@ -52,85 +58,105 @@ class ListingDetailMetaBadges extends StatelessWidget {
     final priceColor =
         listingDetail.isActive ? Colors.green : AppColors.statusInactive;
 
-    // Two-zone layout:
-    //   • left  — wrapping chips (type / gender / price); may overflow to a
-    //     second run when the row gets tight, just like before.
-    //   • right — favorite heart, pinned to the trailing edge of the tile.
-    // Wrapped in a `Row` so the heart can use `Spacer` / `Expanded` to push
-    // itself to the rightmost side. Vertical centering keeps the heart on
-    // the same baseline as the chips even when they wrap to two lines.
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
+    // [Row] + [Expanded] keeps the heart on the tile’s trailing edge; a [Stack]
+    // can shrink-wrap to the [Wrap]’s intrinsic width so `Positioned` “end” is
+    // not the card edge. Parent column should use [CrossAxisAlignment.stretch]
+    // (see `_metaBadgesTile`) so this row gets a tight width.
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        AuthenticationState(),
+        UserListingState(),
+      ]),
+      builder: (context, _) {
+        final showFavorite =
+            AuthenticationState().isAuthenticated &&
+            !UserListingState().isOwner(listingDetail.user.id);
+        return SizedBox(
+          width: double.infinity,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ListingTypeBadge(
-                listingTypeCode: listingDetail.listingType.code,
-                fontSize: 12,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              ),
-              if (listingDetail.gender != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    // Keep existing layout; just make fill slightly tinted (also in light theme).
-                    color: ListingDetailThemeHelper.genderColor(
-                      listingDetail.gender!,
-                    ).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: ListingDetailThemeHelper.genderColor(
-                        listingDetail.gender!,
+              Expanded(
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    ListingTypeBadge(
+                      listingTypeCode: listingDetail.listingType.code,
+                      fontSize: 12,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                      width: 1.0,
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ThemeIconFactory.detail(
-                        icon: _genderIcon(listingDetail.gender!),
-                        color: ListingDetailThemeHelper.genderColor(
-                          listingDetail.gender!,
+                    if (listingDetail.gender != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        _genderLabel(listingDetail.gender!),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                        decoration: BoxDecoration(
+                          // Keep existing layout; just make fill slightly tinted (also in light theme).
                           color: ListingDetailThemeHelper.genderColor(
                             listingDetail.gender!,
+                          ).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: ListingDetailThemeHelper.genderColor(
+                              listingDetail.gender!,
+                            ),
+                            width: 1.0,
                           ),
                         ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ThemeIconFactory.detail(
+                              icon: _genderIcon(listingDetail.gender!),
+                              color: ListingDetailThemeHelper.genderColor(
+                                listingDetail.gender!,
+                              ),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              _genderLabel(listingDetail.gender!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: ListingDetailThemeHelper.genderColor(
+                                  listingDetail.gender!,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
+                    ListingPaymentsOutlineBadge(
+                      label: "${listingDetail.price} y.e.",
+                      foregroundColor: priceColor,
+                      fontSize: 12,
+                      iconSize: 16,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 4,
+                      ),
+                    ),
+                  ],
                 ),
-              ListingPaymentsOutlineBadge(
-                label: "${listingDetail.price} y.e.",
-                foregroundColor: priceColor,
               ),
+              if (showFavorite) ...[
+                SizedBox(width: _kMetaBadgesFavoriteGap),
+                _FavoriteHeartChip(
+                  listingId: listingDetail.id,
+                  ownerUserId: listingDetail.user.id,
+                ),
+              ],
             ],
           ),
-        ),
-        // "Add to favorites" heart — pinned to the rightmost edge of the
-        // tile. Visible only to authenticated users who don't own this
-        // listing. Uses the same scale-pulse animation as the home/favorites
-        // listing tiles for visual consistency.
-        _FavoriteHeartChip(
-          listingId: listingDetail.id,
-          ownerUserId: listingDetail.user.id,
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -154,39 +180,25 @@ class _FavoriteHeartChip extends StatefulWidget {
 }
 
 class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scale;
+    with TickerProviderStateMixin {
+  late final FavoriteHeartPulseController _pulse;
   bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _pulse = FavoriteHeartPulseController(
       vsync: this,
-      duration: const Duration(milliseconds: 140),
-    );
-    _scale = Tween<double>(begin: 1.0, end: 1.45).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-        reverseCurve: Curves.easeInCubic,
-      ),
+      repaint: () {
+        if (mounted) setState(() {});
+      },
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulse.dispose();
     super.dispose();
-  }
-
-  Future<void> _pulse() async {
-    _controller
-      ..stop()
-      ..value = 0;
-    await _controller.forward();
-    await _controller.reverse();
   }
 
   Future<void> _onTap() async {
@@ -201,7 +213,7 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
     // the network round-trip is hidden behind the visual feedback.
     favoritesState.toggleFavorite(widget.listingId);
     if (!wasFavorite) {
-      _pulse();
+      unawaited(_pulse.playTapPulse());
       // Mark Favorites list dirty so the screen refetches next open.
       favoritesState.markDirty();
     }
@@ -243,27 +255,28 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
       ]),
       builder: (context, _) {
         if (!AuthenticationState().isAuthenticated) {
+          _pulse.setFavoriteOutlineState(isFavorite: true);
           return const SizedBox.shrink();
         }
         // Owners can't favorite their own listing — keep parity with the
         // dropdown-menu "Add to favorites" gating.
         if (UserListingState().isOwner(widget.ownerUserId)) {
+          _pulse.setFavoriteOutlineState(isFavorite: true);
           return const SizedBox.shrink();
         }
 
         final isFavorite = FavoritesState().isFavorite(widget.listingId);
+        _pulse.setFavoriteOutlineState(isFavorite: isFavorite);
         final activeColor = AppColors.favoriteActive;
 
         return AnimatedBuilder(
-          animation: _scale,
+          animation: _pulse.listenable,
           builder: (context, child) {
-            return Transform.scale(scale: _scale.value, child: child);
+            return Transform.scale(scale: _pulse.scale, child: child);
           },
           // Borderless heart that matches the listing-tile heart (size 20,
-          // same favorite color tokens). Pinned to the rightmost edge of
-          // the meta-badges row by the parent `Row` layout — only the
-          // internal `EdgeInsets.all(6)` keeps the icon off the tile's
-          // trailing border so the ripple has room to breathe.
+          // same favorite color tokens). Sits in the trailing column of the
+          // badges [Row]; EdgeInsets.all(6) gives the ripple room.
           child: Material(
             color: Colors.transparent,
             shape: const CircleBorder(),

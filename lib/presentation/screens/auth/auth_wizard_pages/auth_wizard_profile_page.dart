@@ -231,30 +231,63 @@ class AuthWizardProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: roleMissing,
-                    child: _buildRoleOption(
-                      context,
-                      "landlord",
-                      L10n.get("role_landlord"),
-                      Icons.home_work,
+                Row(
+                  children: [
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: roleMissing,
+                        child: _buildRoleOption(
+                          context,
+                          "landlord",
+                          L10n.get("role_landlord"),
+                          Icons.home_work,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 20),
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: roleMissing,
+                        child: _buildRoleOption(
+                          context,
+                          "tenant",
+                          L10n.get("role_tenant"),
+                          Icons.key,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: roleMissing,
-                    child: _buildRoleOption(
-                      context,
-                      "tenant",
-                      L10n.get("role_tenant"),
-                      Icons.key,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: roleMissing,
+                        child: _buildRoleOption(
+                          context,
+                          "service_requester",
+                          L10n.get("role_service_requester"),
+                          Icons.assignment_ind,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 20),
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: roleMissing,
+                        child: _buildRoleOption(
+                          context,
+                          "service_provider",
+                          L10n.get("role_service_provider"),
+                          Icons.home_repair_service,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

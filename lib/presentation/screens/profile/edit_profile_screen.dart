@@ -205,8 +205,15 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     }
     if (mounted) {
       _isAdmin = role == "admin";
-      final resolved =
-          (role == "admin" || role == "landlord") ? role! : "tenant";
+      final resolved = (role != null &&
+              (role == "admin" ||
+                  role == "landlord" ||
+                  role == "tenant" ||
+                  role == "manager" ||
+                  role == "service_provider" ||
+                  role == "service_requester"))
+          ? role
+          : "tenant";
       _selectedRole.value = resolved;
       _baselineRole = resolved;
       _isRoleLoaded.value = true;
@@ -778,6 +785,20 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                     "role_tenant",
                                   ),
                                   icon: Icons.key,
+                                ),
+                                DropdownOption(
+                                  value: "service_requester",
+                                  label: L10n.get(
+                                    "role_service_requester",
+                                  ),
+                                  icon: Icons.assignment_ind,
+                                ),
+                                DropdownOption(
+                                  value: "service_provider",
+                                  label: L10n.get(
+                                    "role_service_provider",
+                                  ),
+                                  icon: Icons.home_repair_service,
                                 ),
                               ],
                             ),

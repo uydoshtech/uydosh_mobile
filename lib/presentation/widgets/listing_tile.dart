@@ -23,6 +23,7 @@ import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -66,9 +67,8 @@ class ListingTile extends StatefulWidget {
 }
 
 class _ListingTileState extends State<ListingTile>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _heartAnimationController;
-  late Animation<double> _heartScaleAnimation;
+    with TickerProviderStateMixin {
+  FavoriteHeartPulseController? _favoritePulse;
   bool _isTogglingFavorite = false;
   // View count UI state lives in a dedicated notifier so the owner-only
   // "views + active badge" area can rebuild on its own when the count lands,
@@ -109,6 +109,14 @@ class _ListingTileState extends State<ListingTile>
     super.initState();
     _updateCachedValues();
     _favoriteListenable = _buildFavoriteListenable();
+    if (widget.showHeartIcon || widget.showFavoriteIndicator) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    }
     if (widget.showActiveStatus) {
       // Delay view count load so tiles that scroll off quickly don't fire requests
       _viewCountDelayTimer = Timer(_viewCountLoadDelay, () {
@@ -116,17 +124,6 @@ class _ListingTileState extends State<ListingTile>
         if (mounted) _loadViewCount();
       });
     }
-    _heartAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 140),
-      vsync: this,
-    );
-    _heartScaleAnimation = Tween<double>(begin: 1.0, end: 1.45).animate(
-      CurvedAnimation(
-        parent: _heartAnimationController,
-        curve: Curves.easeOutBack,
-        reverseCurve: Curves.easeInCubic,
-      ),
-    );
   }
 
   @override
@@ -142,6 +139,20 @@ class _ListingTileState extends State<ListingTile>
       // to the right per-id FavoritesState notifier.
       _favoriteListenable = _buildFavoriteListenable();
     }
+    final needPulse = widget.showHeartIcon || widget.showFavoriteIndicator;
+    final hadPulse =
+        oldWidget.showHeartIcon || oldWidget.showFavoriteIndicator;
+    if (needPulse && !hadPulse) {
+      _favoritePulse = FavoriteHeartPulseController(
+        vsync: this,
+        repaint: () {
+          if (mounted) setState(() {});
+        },
+      );
+    } else if (!needPulse && hadPulse) {
+      _favoritePulse?.dispose();
+      _favoritePulse = null;
+    }
   }
 
   @override
@@ -149,7 +160,7 @@ class _ListingTileState extends State<ListingTile>
     _viewCountDelayTimer?.cancel();
     _viewCountDelayTimer = null;
     _viewCountState.dispose();
-    _heartAnimationController.dispose();
+    _favoritePulse?.dispose();
     super.dispose();
   }
 
@@ -174,11 +185,7 @@ class _ListingTileState extends State<ListingTile>
   }
 
   Future<void> _pulsateHeart() async {
-    // Single quick "pop" (1 pulse) — conspicuous but not long.
-    _heartAnimationController.stop();
-    _heartAnimationController.value = 0;
-    await _heartAnimationController.forward();
-    await _heartAnimationController.reverse();
+    await _favoritePulse?.playTapPulse();
   }
 
   /// Shared favorite-toggle handler used by both the interactive heart
@@ -504,11 +511,17 @@ class _ListingTileState extends State<ListingTile>
                               listenable: _favoriteListenable,
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
+                                  _favoritePulse?.setFavoriteOutlineState(
+                                    isFavorite: true,
+                                  );
                                   return const SizedBox.shrink();
                                 }
                                 // Owners can't favorite their own listing.
                                 if (UserListingState()
                                     .isOwner(widget.listing.userId)) {
+                                  _favoritePulse?.setFavoriteOutlineState(
+                                    isFavorite: true,
+                                  );
                                   return const SizedBox.shrink();
                                 }
 
@@ -517,6 +530,9 @@ class _ListingTileState extends State<ListingTile>
                                     FavoritesState().isFavorite(
                                       widget.listing.id,
                                     );
+                                _favoritePulse?.setFavoriteOutlineState(
+                                  isFavorite: isFavorite,
+                                );
                                 // Keep the layout slot at the icon's 20x20
                                 // footprint, but expand the tap target to be
                                 // easier to hit without shifting the row.
@@ -539,11 +555,10 @@ class _ListingTileState extends State<ListingTile>
                                             opacity:
                                                 _isTogglingFavorite ? 0.6 : 1.0,
                                             child: AnimatedBuilder(
-                                              animation: _heartScaleAnimation,
+                                              animation: _favoritePulse!.listenable,
                                               builder: (context, child) {
                                                 return Transform.scale(
-                                                  scale:
-                                                      _heartScaleAnimation.value,
+                                                  scale: _favoritePulse!.scale,
                                                   child: _isTogglingFavorite
                                                       ? SizedBox(
                                                           width: 20,
@@ -596,20 +611,29 @@ class _ListingTileState extends State<ListingTile>
                               listenable: _favoriteListenable,
                               builder: (context, child) {
                                 if (!AuthenticationState().isAuthenticated) {
+                                  _favoritePulse?.setFavoriteOutlineState(
+                                    isFavorite: true,
+                                  );
                                   return const SizedBox.shrink();
                                 }
                                 // Owners can't favorite their own listing.
                                 if (UserListingState()
                                     .isOwner(widget.listing.userId)) {
+                                  _favoritePulse?.setFavoriteOutlineState(
+                                    isFavorite: true,
+                                  );
                                   return const SizedBox.shrink();
                                 }
                                 final isFavorite = FavoritesState()
                                     .isFavorite(widget.listing.id);
+                                _favoritePulse?.setFavoriteOutlineState(
+                                  isFavorite: isFavorite,
+                                );
                                 return AnimatedBuilder(
-                                  animation: _heartScaleAnimation,
+                                  animation: _favoritePulse!.listenable,
                                   builder: (context, child) {
                                     return Transform.scale(
-                                      scale: _heartScaleAnimation.value,
+                                      scale: _favoritePulse!.scale,
                                       child: child,
                                     );
                                   },

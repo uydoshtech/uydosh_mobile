@@ -55,7 +55,7 @@ class ProfileListingsSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildGroupedMenuCard(context),
-        if (userRole == "landlord") ...[
+        if (userRole == "landlord" || userRole == "service_provider") ...[
           const SizedBox(height: 8),
           _buildManagePropertyButton(context),
         ],

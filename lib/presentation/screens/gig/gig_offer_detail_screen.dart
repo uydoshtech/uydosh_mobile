@@ -35,6 +35,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -47,12 +48,20 @@ class GigOfferDetailScreen extends StatefulWidget {
   State<GigOfferDetailScreen> createState() => _GigOfferDetailScreenState();
 }
 
-class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
+class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
+    with TickerProviderStateMixin {
   bool _offerFavoriteBusy = false;
+  late final FavoriteHeartPulseController _offerFavPulse;
 
   @override
   void initState() {
     super.initState();
+    _offerFavPulse = FavoriteHeartPulseController(
+      vsync: this,
+      repaint: () {
+        if (mounted) setState(() {});
+      },
+    );
     // Same as listings: owner checks need a loaded user id. Gigs are reachable
     // from the tab bar without visiting Home first, so initialize here.
     UserListingState().initialize();
@@ -101,6 +110,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     final was = gigFav.isOfferFavorite(offer.id);
     gigFav.toggleOfferLocal(offer.id);
     if (!was) {
+      unawaited(_offerFavPulse.playTapPulse());
       screenFav.markDirty();
     }
     setState(() => _offerFavoriteBusy = true);
@@ -119,6 +129,12 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
         setState(() => _offerFavoriteBusy = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _offerFavPulse.dispose();
+    super.dispose();
   }
 
   @override
@@ -173,6 +189,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                         builder: (context, _) {
                           final fav = GigFavoritesState()
                               .isOfferFavorite(offerForMenu.id);
+                          _offerFavPulse.setFavoriteOutlineState(isFavorite: fav);
                           return IconButton(
                             onPressed: _offerFavoriteBusy
                                 ? null
@@ -182,11 +199,20 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                                         offerForMenu,
                                       ),
                                     ),
-                            icon: Icon(
-                              fav ? Icons.favorite : Icons.favorite_border,
-                              color: fav
-                                  ? AppColors.favoriteActive
-                                  : AppColors.favoriteInactive,
+                            icon: AnimatedBuilder(
+                              animation: _offerFavPulse.listenable,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _offerFavPulse.scale,
+                                  child: child,
+                                );
+                              },
+                              child: Icon(
+                                fav ? Icons.favorite : Icons.favorite_border,
+                                color: fav
+                                    ? AppColors.favoriteActive
+                                    : AppColors.favoriteInactive,
+                              ),
                             ),
                           );
                         },

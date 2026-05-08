@@ -202,6 +202,18 @@ abstract class AppLocalizations {
   /// **'Admin'**
   String get role_admin;
 
+  /// No description provided for @role_service_provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Service provider'**
+  String get role_service_provider;
+
+  /// No description provided for @role_service_requester.
+  ///
+  /// In en, this message translates to:
+  /// **'Service requester'**
+  String get role_service_requester;
+
   /// No description provided for @profile_completion.
   ///
   /// In en, this message translates to:

@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -45,15 +46,23 @@ class GigRequestDetailScreen extends StatefulWidget {
   State<GigRequestDetailScreen> createState() => _GigRequestDetailScreenState();
 }
 
-class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
+class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
+    with TickerProviderStateMixin {
   late Future<GigRequest> _future;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
   bool _requestFavoriteBusy = false;
+  late final FavoriteHeartPulseController _requestFavPulse;
 
   @override
   void initState() {
     super.initState();
+    _requestFavPulse = FavoriteHeartPulseController(
+      vsync: this,
+      repaint: () {
+        if (mounted) setState(() {});
+      },
+    );
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     _future = getIt<IGigService>().getRequest(widget.requestId);
@@ -113,6 +122,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     final was = gigFav.isRequestFavorite(request.id);
     gigFav.toggleRequestLocal(request.id);
     if (!was) {
+      unawaited(_requestFavPulse.playTapPulse());
       screenFav.markDirty();
     }
     setState(() => _requestFavoriteBusy = true);
@@ -131,6 +141,12 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
         setState(() => _requestFavoriteBusy = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _requestFavPulse.dispose();
+    super.dispose();
   }
 
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
@@ -218,17 +234,29 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
                       builder: (context, _) {
                         final fav = GigFavoritesState()
                             .isRequestFavorite(request.id);
+                        _requestFavPulse.setFavoriteOutlineState(
+                          isFavorite: fav,
+                        );
                         return IconButton(
                           onPressed: _requestFavoriteBusy
                               ? null
                               : () => unawaited(
                                     _toggleRequestFavorite(request),
                                   ),
-                          icon: Icon(
-                            fav ? Icons.favorite : Icons.favorite_border,
-                            color: fav
-                                ? AppColors.favoriteActive
-                                : AppColors.favoriteInactive,
+                          icon: AnimatedBuilder(
+                            animation: _requestFavPulse.listenable,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _requestFavPulse.scale,
+                                child: child,
+                              );
+                            },
+                            child: Icon(
+                              fav ? Icons.favorite : Icons.favorite_border,
+                              color: fav
+                                  ? AppColors.favoriteActive
+                                  : AppColors.favoriteInactive,
+                            ),
                           ),
                         );
                       },

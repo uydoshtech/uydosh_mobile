@@ -19,7 +19,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-  CREATE TYPE enum_users_role AS ENUM ('tenant', 'landlord', 'manager', 'admin');
+  CREATE TYPE enum_users_role AS ENUM ('tenant', 'landlord', 'manager', 'admin', 'service_provider', 'service_requester');
 EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;

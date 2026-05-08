@@ -977,6 +977,8 @@ class MainNavigationState extends State<MainNavigation>
             builder: (context, _) {
               final signedIn = AuthenticationState().isAuthenticated;
               if (!signedIn) return const SizedBox.shrink();
+              // Services hub uses the header for "my published" + profile; skip alerts here.
+              if (_currentIndex == 1) return const SizedBox.shrink();
 
               final activeAlerts =
                   ActiveSearchAlertsState().hasActiveEnabledAlerts;
