@@ -117,11 +117,7 @@ class _GigRequestTileState extends State<GigRequestTile>
     }
     setState(() => _isTogglingFavorite = true);
     try {
-      final ok =
-          await getIt<IGigService>().toggleFavoriteRequest(widget.request.id);
-      if (!ok) {
-        throw Exception("toggle failed");
-      }
+      await getIt<IGigService>().toggleFavoriteRequest(widget.request.id);
       if (wasFavorite && widget.onFavoriteRemoved != null) {
         widget.onFavoriteRemoved!();
       }

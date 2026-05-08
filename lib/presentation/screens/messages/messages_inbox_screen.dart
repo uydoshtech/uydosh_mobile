@@ -843,6 +843,25 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             )
             .toList();
 
+    final showInboxTabs =
+        incomingConversations.isNotEmpty && outgoingConversations.isNotEmpty;
+    // Without the toggle, pick the sole non-empty lane regardless of [_selectedTabIndex].
+    final displayIncoming =
+        showInboxTabs ? _selectedTabIndex == 0 : incomingConversations.isNotEmpty;
+
+    // Space under glass header / above list: tab strip (8 + 48 + 12) vs strip top only.
+    const listTopWithTabs = 68.0;
+    const listTopWithoutTabs = 8.0;
+    final listTopInset = showInboxTabs ? listTopWithTabs : listTopWithoutTabs;
+
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableInboxToggleAnim =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    const inboxToggleAnimDuration = Duration(milliseconds: 420);
+    final toggleAnimDuration =
+        enableInboxToggleAnim ? inboxToggleAnimDuration : Duration.zero;
+
     final shellGlassTop =
         widget.showCustomHeader
             ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
@@ -857,19 +876,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       padding: EdgeInsets.only(top: shellGlassTop),
       child: Stack(
         children: [
-          // List scrolls "under" the glass tab switcher.
+          // List scrolls "under" the glass tab switcher (when visible).
           Positioned.fill(
-            child: Padding(
-              // 8 top + 48 switch + 12 bottom
-              padding: const EdgeInsets.only(top: 68),
+            child: AnimatedPadding(
+              duration: toggleAnimDuration,
+              curve: Curves.easeInOut,
+              padding: EdgeInsets.only(top: listTopInset),
               child: UydoshRefreshIndicator.mainShell(
                 onRefresh: _onInboxPullRefresh,
-                // The scrollable is already positioned under the switch (68px),
-                // so keep the indicator anchored to the top of this area.
+                // Scrollable inset matches tab strip animation.
                 edgeOffset: 0.0,
                 child: PullToRefreshStretchHaptics(
                   child:
-                      _selectedTabIndex == 0
+                      displayIncoming
                           ? _buildConversationsList(
                             incomingConversations,
                             "incoming",
@@ -886,7 +905,49 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             left: 0,
             right: 0,
             top: 0,
-            child: _buildTabButtons(incomingConversations, outgoingConversations),
+            child: AnimatedSwitcher(
+              duration: toggleAnimDuration,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                final curved = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                  reverseCurve: Curves.easeInCubic,
+                );
+                final slide = Tween<Offset>(
+                  begin: const Offset(0, -0.22),
+                  end: Offset.zero,
+                ).animate(curved);
+                final scale = Tween<double>(
+                  begin: 0.92,
+                  end: 1.0,
+                ).animate(curved);
+                return FadeTransition(
+                  opacity: curved,
+                  child: SlideTransition(
+                    position: slide,
+                    child: ScaleTransition(
+                      scale: scale,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    ),
+                  ),
+                );
+              },
+              child:
+                  showInboxTabs
+                      ? KeyedSubtree(
+                        key: const ValueKey<String>("inbox-tabs-on"),
+                        child: _buildTabButtons(
+                          incomingConversations,
+                          outgoingConversations,
+                        ),
+                      )
+                      : SizedBox.shrink(
+                        key: const ValueKey<String>("inbox-tabs-off"),
+                      ),
+            ),
           ),
         ],
       ),

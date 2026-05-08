@@ -201,9 +201,11 @@ abstract class IGigService {
   });
 
   /// Bookmark a service offer (gig) for later.
+  /// Returns whether the offer is favorited *after* the toggle (not "request ok").
   Future<bool> toggleFavoriteOffer(int offerId);
 
   /// Bookmark an open task (gig request) for later.
+  /// Returns whether the task is favorited *after* the toggle (not "request ok").
   Future<bool> toggleFavoriteRequest(int requestId);
 
   Future<({List<GigOffer> offers, bool hasMore})> listFavoriteOffers({

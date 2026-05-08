@@ -114,11 +114,9 @@ class _GigOfferTileState extends State<GigOfferTile>
     }
     setState(() => _isTogglingFavorite = true);
     try {
-      final ok =
-          await getIt<IGigService>().toggleFavoriteOffer(widget.offer.id);
-      if (!ok) {
-        throw Exception("toggle failed");
-      }
+      // Response `isFavorited` is the new state after toggle (false when removing),
+      // not a success flag. Presence of 200 + parsed body means success.
+      await getIt<IGigService>().toggleFavoriteOffer(widget.offer.id);
       if (wasFavorite && widget.onFavoriteRemoved != null) {
         widget.onFavoriteRemoved!();
       }
