@@ -62,8 +62,7 @@ platform :ios do
     export_options_plist = File.expand_path(export_options_plist, project_root)
 
     sh("cd \"#{project_root}\" && flutter pub get")
-    # Keep CocoaPods specs fresh on CI runners.
-    sh("cd \"#{project_root}/ios\" && pod install --repo-update")
+    # CocoaPods install is handled in CI workflow for better logs.
 
     build_name = options[:build_name]
     build_number = options[:build_number]
