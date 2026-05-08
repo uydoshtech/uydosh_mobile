@@ -47,7 +47,11 @@ def update_pubspec_version(major, minor, patch, build_number):
     with open(pubspec_path, 'w') as f:
         f.write(content)
     
-    print(f"Updated pubspec.yaml to version: {new_version}")
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RESET = "\033[0m"
+    colored_version = f"{YELLOW}{major}.{minor}.{patch}{RESET}{GREEN}+{build_number}{RESET}"
+    print(f"Updated pubspec.yaml to version: {colored_version}")
 
 def update_version_constants(major, minor, patch, build_number):
     """Update version constants file"""
