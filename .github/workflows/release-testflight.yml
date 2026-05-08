@@ -48,7 +48,6 @@ jobs:
         run: |
           set -euo pipefail
           ruby -v
-          bundle exec pod --version
           echo "$(bundle exec ruby -e 'print Gem.bindir')" >> "$GITHUB_PATH"
 
       - name: Install dependencies
@@ -58,12 +57,11 @@ jobs:
         run: |
           set -euo pipefail
           set -x
+          bundle exec pod --version
+          bundle exec pod env
           cd ios
-          which pod
-          pod --version
-          pod env
           # Show full output to diagnose CI failures.
-          pod install --repo-update --verbose
+          bundle exec pod install --repo-update --verbose
 
       - name: Build IPA (Flutter)
         env:
