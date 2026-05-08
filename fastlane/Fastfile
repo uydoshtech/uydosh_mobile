@@ -57,13 +57,17 @@ platform :ios do
   lane :build_ipa do |options|
     export_options_plist = options[:export_options_plist] || "ios/ExportOptions.plist"
 
-    sh("flutter pub get")
-    sh("cd ios && pod install")
+    # Fastlane executes with cwd=`fastlane/` in many setups; make paths stable.
+    project_root = File.expand_path("..", __dir__)
+    export_options_plist = File.expand_path(export_options_plist, project_root)
+
+    sh("cd \"#{project_root}\" && flutter pub get")
+    sh("cd \"#{project_root}/ios\" && pod install")
 
     build_name = options[:build_name]
     build_number = options[:build_number]
 
-    cmd = ["flutter", "build", "ipa", "--release", "--export-options-plist=#{export_options_plist}"]
+    cmd = ["cd", project_root, "&&", "flutter", "build", "ipa", "--release", "--export-options-plist=#{export_options_plist}"]
     cmd << "--build-name=#{build_name}" if build_name && !build_name.to_s.strip.empty?
     cmd << "--build-number=#{build_number}" if build_number && !build_number.to_s.strip.empty?
     sh(cmd.join(" "))
@@ -72,7 +76,8 @@ platform :ios do
   desc "Upload an IPA to TestFlight (App Store Connect API key recommended)"
   lane :upload_testflight do |options|
     ipa_path = options[:ipa_path]
-    ipa_path ||= Dir["build/ios/ipa/*.ipa"].sort.last
+    project_root = File.expand_path("..", __dir__)
+    ipa_path ||= Dir[File.join(project_root, "build/ios/ipa/*.ipa")].sort.last
 
     UI.user_error!("No IPA found at build/ios/ipa/*.ipa; run ios build_ipa first") if ipa_path.nil?
 
