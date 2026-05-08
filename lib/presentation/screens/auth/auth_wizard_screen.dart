@@ -579,9 +579,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       stage = "apple_get_credential";
-      final userCredential = await _appleAuth.signInWithApple();
+      final appleResult = await _appleAuth.signInWithApple();
 
-      if (userCredential == null || userCredential.user == null) {
+      if (appleResult == null || appleResult.userCredential.user == null) {
         // User cancelled the system sheet.
         if (!kIsWeb) {
           await _crashlytics.setCustomKey(
@@ -600,7 +600,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
-      final user = userCredential.user!;
+      final user = appleResult.userCredential.user!;
 
       setStateIfMounted(() {
         _isGoogleSignedIn = true; // shared "is authenticated" gate
@@ -623,6 +623,22 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       stage = "backend_auth";
       await _authenticateWithBackend(authMethod: _AuthMethod.apple);
+
+      // Bind the one-shot Apple `authorization_code` to our user row
+      // so we can revoke the Apple refresh token when this user
+      // deletes their account (App Review Guideline 5.1.1(v)). This
+      // MUST run after [_authenticateWithBackend] succeeds because
+      // /users/apple-bind requires the session token that endpoint
+      // mints. The call is fire-and-forget — failures are logged
+      // inside [AuthService.appleBind] and never surfaced to the UI.
+      final authorizationCode = appleResult.authorizationCode;
+      if (authorizationCode != null && authorizationCode.isNotEmpty) {
+        unawaited(
+          getIt<IAuthService>().appleBind(
+            authorizationCode: authorizationCode,
+          ),
+        );
+      }
 
       setStateIfMounted(() {
         _isAuthenticating = false;
