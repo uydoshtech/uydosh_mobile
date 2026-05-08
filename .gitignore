@@ -76,3 +76,11 @@ app.*.map.json
 
 # Play Console "Android developer verification" token (account-specific)
 /android/app/src/main/assets/adi-registration.properties
+
+# Apple Developer .p8 keys (APNs / Sign in with Apple). Single-download
+# private credentials — once leaked they cannot be re-protected, only
+# revoked. Already burned us once: AuthKey_3X5CRF27LN.p8 was committed
+# to history at c88df24. If a .p8 ever shows up here again, REVOKE the
+# corresponding key in the Apple Developer portal before doing anything
+# else.
+*.p8
