@@ -1,8 +1,10 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -19,7 +21,102 @@ bool conversationSummaryShowsBudgetBadge(ConversationSummary conversation) {
   return numeric || gigOpen;
 }
 
-/// Avatar content - initials or person icon fallback.
+/// Row for gig grouped inbox headers: author / provider avatar + name.
+class ConversationGigOwnerRow extends StatelessWidget {
+  const ConversationGigOwnerRow({
+    required this.conversation,
+    required this.textColor,
+    required this.mutedColor,
+    required this.avatarColor,
+    required this.avatarIconColor,
+    super.key,
+  });
+
+  final ConversationSummary conversation;
+  final Color textColor;
+  final Color mutedColor;
+  final Color avatarColor;
+  final Color avatarIconColor;
+
+  static const double _avatarSize = 28;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = conversation.gigOwnerName?.trim();
+    if (name == null || name.isEmpty) return const SizedBox.shrink();
+
+    final url = resolveAvatarUrl(conversation.gigOwnerAvatar);
+    final cacheExtent =
+        (_avatarSize * MediaQuery.devicePixelRatioOf(context)).round();
+
+    Widget fallbackAvatar() {
+      final initials = StringUtils.extractInitials(name);
+      return CircleAvatar(
+        radius: _avatarSize / 2,
+        backgroundColor: avatarColor,
+        child: initials.isNotEmpty
+            ? Text(
+                initials,
+                style: TextStyle(
+                  color: avatarIconColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              )
+            : ThemeIcon(Icons.person, color: avatarIconColor, size: 16),
+      );
+    }
+
+    final avatar = url != null
+        ? ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: url,
+              width: _avatarSize,
+              height: _avatarSize,
+              fit: BoxFit.cover,
+              memCacheWidth: cacheExtent,
+              memCacheHeight: cacheExtent,
+              placeholder: (_, __) => fallbackAvatar(),
+              errorWidget: (_, __, ___) => fallbackAvatar(),
+            ),
+          )
+        : fallbackAvatar();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        avatar,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                L10n.get("author"),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: mutedColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 class ConversationAvatarContent extends StatelessWidget {
   const ConversationAvatarContent({
     required this.conversation,

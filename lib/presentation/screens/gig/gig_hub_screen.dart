@@ -1152,13 +1152,15 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 90),
               transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
                 children: [
-                  if (showDot) ...[
-                    Transform.translate(
-                      offset: const Offset(6, 0),
+                  pillBody,
+                  if (showDot)
+                    Positioned(
+                      right: 6,
+                      top: 10,
                       child: PulseThenBlinkDotWidget(
                         trigger: pendingState.dotTrigger,
                         color: unreadColor,
@@ -1168,8 +1170,6 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
                         borderWidth: 2,
                       ),
                     ),
-                  ],
-                  pillBody,
                 ],
               ),
             ),

@@ -670,6 +670,7 @@ mixin _$ConversationSummary {
   int? get gigCategoryId => throw _privateConstructorUsedError;
 
   /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
+  /// For offers/bookings mirrors pricing type from the server when present.
   @JsonKey(name: "gig_budget_type")
   String? get gigBudgetType => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_at")
@@ -696,6 +697,12 @@ mixin _$ConversationSummary {
   String? get otherUserName => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar => throw _privateConstructorUsedError;
+
+  /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
+  @JsonKey(name: "gig_owner_name")
+  String? get gigOwnerName => throw _privateConstructorUsedError;
+  @JsonKey(name: "gig_owner_avatar")
+  String? get gigOwnerAvatar => throw _privateConstructorUsedError;
   @JsonKey(name: "unread_count")
   int? get unreadCount =>
       throw _privateConstructorUsedError; // Location and metro station data
@@ -769,6 +776,8 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "gig_owner_name") String? gigOwnerName,
+      @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
       @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
       @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
@@ -825,6 +834,8 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? priceCurrencyCode = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
+    Object? gigOwnerName = freezed,
+    Object? gigOwnerAvatar = freezed,
     Object? unreadCount = freezed,
     Object? listingSubwayLineId = freezed,
     Object? listingSubwayStationId = freezed,
@@ -938,6 +949,14 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.otherUserAvatar
           : otherUserAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      gigOwnerName: freezed == gigOwnerName
+          ? _value.gigOwnerName
+          : gigOwnerName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gigOwnerAvatar: freezed == gigOwnerAvatar
+          ? _value.gigOwnerAvatar
+          : gigOwnerAvatar // ignore: cast_nullable_to_non_nullable
+              as String?,
       unreadCount: freezed == unreadCount
           ? _value.unreadCount
           : unreadCount // ignore: cast_nullable_to_non_nullable
@@ -1035,6 +1054,8 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "gig_owner_name") String? gigOwnerName,
+      @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
       @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,
       @JsonKey(name: "listing_subway_station_id") int? listingSubwayStationId,
@@ -1089,6 +1110,8 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? priceCurrencyCode = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
+    Object? gigOwnerName = freezed,
+    Object? gigOwnerAvatar = freezed,
     Object? unreadCount = freezed,
     Object? listingSubwayLineId = freezed,
     Object? listingSubwayStationId = freezed,
@@ -1202,6 +1225,14 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.otherUserAvatar
           : otherUserAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      gigOwnerName: freezed == gigOwnerName
+          ? _value.gigOwnerName
+          : gigOwnerName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      gigOwnerAvatar: freezed == gigOwnerAvatar
+          ? _value.gigOwnerAvatar
+          : gigOwnerAvatar // ignore: cast_nullable_to_non_nullable
+              as String?,
       unreadCount: freezed == unreadCount
           ? _value.unreadCount
           : unreadCount // ignore: cast_nullable_to_non_nullable
@@ -1294,6 +1325,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "price_currency_code") this.priceCurrencyCode,
       @JsonKey(name: "other_user_name") this.otherUserName,
       @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
+      @JsonKey(name: "gig_owner_name") this.gigOwnerName,
+      @JsonKey(name: "gig_owner_avatar") this.gigOwnerAvatar,
       @JsonKey(name: "unread_count") this.unreadCount,
       @JsonKey(name: "listing_subway_line_id") this.listingSubwayLineId,
       @JsonKey(name: "listing_subway_station_id") this.listingSubwayStationId,
@@ -1352,6 +1385,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   final int? gigCategoryId;
 
   /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
+  /// For offers/bookings mirrors pricing type from the server when present.
   @override
   @JsonKey(name: "gig_budget_type")
   final String? gigBudgetType;
@@ -1391,6 +1425,14 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "other_user_avatar")
   final String? otherUserAvatar;
+
+  /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
+  @override
+  @JsonKey(name: "gig_owner_name")
+  final String? gigOwnerName;
+  @override
+  @JsonKey(name: "gig_owner_avatar")
+  final String? gigOwnerAvatar;
   @override
   @JsonKey(name: "unread_count")
   final int? unreadCount;
@@ -1440,7 +1482,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, gigOwnerName: $gigOwnerName, gigOwnerAvatar: $gigOwnerAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1495,6 +1537,10 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.otherUserName == otherUserName) &&
             (identical(other.otherUserAvatar, otherUserAvatar) ||
                 other.otherUserAvatar == otherUserAvatar) &&
+            (identical(other.gigOwnerName, gigOwnerName) ||
+                other.gigOwnerName == gigOwnerName) &&
+            (identical(other.gigOwnerAvatar, gigOwnerAvatar) ||
+                other.gigOwnerAvatar == gigOwnerAvatar) &&
             (identical(other.unreadCount, unreadCount) ||
                 other.unreadCount == unreadCount) &&
             (identical(other.listingSubwayLineId, listingSubwayLineId) ||
@@ -1555,6 +1601,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         priceCurrencyCode,
         otherUserName,
         otherUserAvatar,
+        gigOwnerName,
+        gigOwnerAvatar,
         unreadCount,
         listingSubwayLineId,
         listingSubwayStationId,
@@ -1615,6 +1663,8 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "price_currency_code") final String? priceCurrencyCode,
       @JsonKey(name: "other_user_name") final String? otherUserName,
       @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
+      @JsonKey(name: "gig_owner_name") final String? gigOwnerName,
+      @JsonKey(name: "gig_owner_avatar") final String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") final int? unreadCount,
       @JsonKey(name: "listing_subway_line_id") final int? listingSubwayLineId,
       @JsonKey(name: "listing_subway_station_id")
@@ -1680,6 +1730,7 @@ abstract class _ConversationSummary implements ConversationSummary {
   int? get gigCategoryId;
 
   /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
+  /// For offers/bookings mirrors pricing type from the server when present.
   @override
   @JsonKey(name: "gig_budget_type")
   String? get gigBudgetType;
@@ -1718,6 +1769,14 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar;
+
+  /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
+  @override
+  @JsonKey(name: "gig_owner_name")
+  String? get gigOwnerName;
+  @override
+  @JsonKey(name: "gig_owner_avatar")
+  String? get gigOwnerAvatar;
   @override
   @JsonKey(name: "unread_count")
   int? get unreadCount; // Location and metro station data

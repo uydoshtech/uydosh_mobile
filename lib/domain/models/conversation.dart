@@ -51,9 +51,9 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "context_id") int? contextId,
     @JsonKey(name: "gig_request_id") int? gigRequestId,
     @JsonKey(name: "gig_request_title") String? gigRequestTitle,
-    /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
+    /// Gig category id (`gig_categories.id`) for gig-scoped chats.
     @JsonKey(name: "gig_category_id") int? gigCategoryId,
-    /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
+    /// Budget / pricing type from the gig surface (`open`, `hourly`, etc.).
     @JsonKey(name: "gig_budget_type") String? gigBudgetType,
     @JsonKey(name: "last_message_at") String? lastMessageAt,
     @JsonKey(name: "last_message_content") String? lastMessageContent,
@@ -68,6 +68,9 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
     @JsonKey(name: "other_user_name") String? otherUserName,
     @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+    /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
+    @JsonKey(name: "gig_owner_name") String? gigOwnerName,
+    @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
     @JsonKey(name: "unread_count") int? unreadCount,
     // Location and metro station data
     @JsonKey(name: "listing_subway_line_id") int? listingSubwayLineId,

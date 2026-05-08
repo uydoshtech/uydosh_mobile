@@ -9,9 +9,12 @@ import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 
 IconData? gigCategoryIconForConversationSummary(ConversationSummary c) {
-  if (c.contextType != "gig_request") return null;
   final id = c.gigCategoryId;
   if (id == null) return null;
+  final ctx = c.contextType;
+  if (ctx != "gig_request" && ctx != "gig_offer" && ctx != "gig_booking") {
+    return null;
+  }
   return gigCategoryIcon(GigCategoryCache.getById(id)?.code);
 }
 

@@ -81,6 +81,8 @@ _$ConversationSummaryImpl _$$ConversationSummaryImplFromJson(
       priceCurrencyCode: json['price_currency_code'] as String?,
       otherUserName: json['other_user_name'] as String?,
       otherUserAvatar: json['other_user_avatar'] as String?,
+      gigOwnerName: json['gig_owner_name'] as String?,
+      gigOwnerAvatar: json['gig_owner_avatar'] as String?,
       unreadCount: (json['unread_count'] as num?)?.toInt(),
       listingSubwayLineId: (json['listing_subway_line_id'] as num?)?.toInt(),
       listingSubwayStationId:
@@ -126,6 +128,8 @@ Map<String, dynamic> _$$ConversationSummaryImplToJson(
       'price_currency_code': instance.priceCurrencyCode,
       'other_user_name': instance.otherUserName,
       'other_user_avatar': instance.otherUserAvatar,
+      'gig_owner_name': instance.gigOwnerName,
+      'gig_owner_avatar': instance.gigOwnerAvatar,
       'unread_count': instance.unreadCount,
       'listing_subway_line_id': instance.listingSubwayLineId,
       'listing_subway_station_id': instance.listingSubwayStationId,

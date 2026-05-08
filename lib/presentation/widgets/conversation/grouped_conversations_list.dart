@@ -6,6 +6,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -369,6 +370,22 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                       color: secondaryTextColor,
                                     ),
                                   ),
+                                  if (!conversationSummaryIsListingMarketplaceChat(
+                                        firstConversation,
+                                      ) &&
+                                      (firstConversation.gigOwnerName != null &&
+                                          firstConversation.gigOwnerName!
+                                              .trim()
+                                              .isNotEmpty)) ...[
+                                    const SizedBox(height: 8),
+                                    ConversationGigOwnerRow(
+                                      conversation: firstConversation,
+                                      textColor: textColor,
+                                      mutedColor: secondaryTextColor,
+                                      avatarColor: avatarColor,
+                                      avatarIconColor: avatarIconColor,
+                                    ),
+                                  ],
                                   if (hasLocation ||
                                       hasSubwayStation ||
                                       hasBudgetBadge) ...[
