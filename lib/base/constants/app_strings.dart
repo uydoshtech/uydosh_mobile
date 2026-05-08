@@ -162,6 +162,8 @@ class AppStrings {
       "chat_translate_picker_title": "Translate this chat to",
       "chat_translate_picker_auto": "Auto (use my language)",
       "chat_translating": "Translating…",
+      "chat_translation_quota_exceeded":
+          "You've used all free chat translations this month. Upgrade via Payme or Click for more.",
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
       "menu_enable_notifications": "Enable notifications",
@@ -1543,6 +1545,8 @@ class AppStrings {
       "chat_translate_picker_title": "Перевести этот чат на",
       "chat_translate_picker_auto": "Авто (мой язык)",
       "chat_translating": "Перевод…",
+      "chat_translation_quota_exceeded":
+          "Лимит бесплатных переводов чата на месяц исчерпан. Подключите премиум через Payme или Click.",
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
@@ -2952,6 +2956,8 @@ class AppStrings {
       "chat_translate_picker_title": "Ushbu chatni quyidagi tilga tarjima qilish",
       "chat_translate_picker_auto": "Avto (mening tilim)",
       "chat_translating": "Tarjima qilinmoqda…",
+      "chat_translation_quota_exceeded":
+          "Bu oy uchun bepul chat tarjamalari tugadi. Payme yoki Click orqali kengaytiring.",
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
       "menu_enable_notifications": "Bildirishnomalarni yoqish",

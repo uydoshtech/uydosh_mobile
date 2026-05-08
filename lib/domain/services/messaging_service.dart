@@ -99,6 +99,9 @@ abstract class IMessagingService {
   /// Server returns both cached and freshly generated translations so the
   /// client can use a single call as the source of truth. Capped to 50 ids
   /// per request.
+  ///
+  /// Throws [ChatTranslateQuotaExceededException] when the monthly Gemini
+  /// chat translation quota is exhausted (`403`, `code: gemini_quota_exceeded`).
   Future<Map<String, dynamic>> translateUnseenMessages({
     required int conversationId,
     required List<int> messageIds,
@@ -680,16 +683,26 @@ class MessagingService implements IMessagingService {
   }) async {
     await _checkAuthentication();
     final ids = messageIds.take(50).toList();
-    final response =
-        await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
-      "/conversations/$conversationId/translate-unseen",
-      (json) => json as Map<String, dynamic>,
-      data: _TranslateUnseenRequest(
-        messageIds: ids,
-        targetLanguage: targetLanguage,
-      ),
-    );
-    return response;
+    try {
+      final response =
+          await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
+        "/conversations/$conversationId/translate-unseen",
+        (json) => json as Map<String, dynamic>,
+        data: _TranslateUnseenRequest(
+          messageIds: ids,
+          targetLanguage: targetLanguage,
+        ),
+      );
+      return response;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map && data["code"] == "gemini_quota_exceeded") {
+          throw ChatTranslateQuotaExceededException();
+        }
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -790,6 +803,11 @@ class MessagingService implements IMessagingService {
       return "document";
     }
   }
+}
+
+/// Monthly Gemini chat translation quota exceeded (`403` `gemini_quota_exceeded`).
+class ChatTranslateQuotaExceededException implements Exception {
+  ChatTranslateQuotaExceededException();
 }
 
 class _SafetyCheckRequest implements IJsonEncodable {

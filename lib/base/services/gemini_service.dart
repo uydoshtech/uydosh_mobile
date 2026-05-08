@@ -46,18 +46,22 @@ class ListingAiQuotaSnapshot {
   const ListingAiQuotaSnapshot({
     required this.translateRemaining,
     required this.enhanceRemaining,
+    this.chatTranslateRemaining = 0,
     this.premiumUntil,
   });
 
   final int translateRemaining;
   final int enhanceRemaining;
+  final int chatTranslateRemaining;
   final DateTime? premiumUntil;
 
   factory ListingAiQuotaSnapshot.fromJson(Map<String, dynamic> m) {
     final td = m["translate"];
     final ed = m["enhance"];
+    final cd = m["chat_translate"];
     int tr = 0;
     int er = 0;
+    int cr = 0;
     if (td is Map<String, dynamic>) {
       final r = td["remaining"];
       tr = r is int ? r : int.tryParse("$r") ?? 0;
@@ -65,6 +69,10 @@ class ListingAiQuotaSnapshot {
     if (ed is Map<String, dynamic>) {
       final r = ed["remaining"];
       er = r is int ? r : int.tryParse("$r") ?? 0;
+    }
+    if (cd is Map<String, dynamic>) {
+      final r = cd["remaining"];
+      cr = r is int ? r : int.tryParse("$r") ?? 0;
     }
     DateTime? pu;
     final ps = m["premium_until"];
@@ -74,6 +82,7 @@ class ListingAiQuotaSnapshot {
     return ListingAiQuotaSnapshot(
       translateRemaining: tr,
       enhanceRemaining: er,
+      chatTranslateRemaining: cr,
       premiumUntil: pu,
     );
   }

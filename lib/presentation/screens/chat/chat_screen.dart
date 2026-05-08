@@ -506,6 +506,14 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
       if (changed) setState(() {});
+    } on ChatTranslateQuotaExceededException catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ToastTheme.showError(
+        context,
+        message: L10n.get("chat_translation_quota_exceeded"),
+      );
     } catch (e) {
       logger.d("💬 [ChatScreen] Translation request failed: $e");
     } finally {
