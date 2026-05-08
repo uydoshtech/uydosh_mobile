@@ -4,9 +4,7 @@
     android:versionName="${appVersionName}">
     <!-- Permissions for camera and gallery access -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Use Android Photo Picker / SAF where possible; avoid broad media/storage permissions -->
     
     <!-- Permissions for Yandex Maps -->
     <uses-permission android:name="android.permission.INTERNET"/>

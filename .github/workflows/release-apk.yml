@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -91,7 +91,7 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload AAB as workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
@@ -113,7 +113,7 @@ jobs:
 
       - name: Notify by email on success
         if: success()
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v16
         with:
           server_address: smtp.gmail.com
           server_port: 465
@@ -133,7 +133,7 @@ jobs:
 
       - name: Notify by email on failure
         if: failure()
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v16
         with:
           server_address: smtp.gmail.com
           server_port: 465
