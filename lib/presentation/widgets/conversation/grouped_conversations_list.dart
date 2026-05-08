@@ -275,17 +275,17 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     if (!mounted) return;
     if (_groupExpandCoachDismissed || !TooltipsState().enabled) return;
     if (_groupCoachSequenceActive) return;
-    int? targetId;
-    for (final id in _sortedListingIds) {
-      final convs = _groupedConversations[id] ?? const [];
-      if (convs.length < 2) continue;
-      if (_groupHasIncomingUnread(convs)) continue;
-      final expanded = _expandedGroups[id] ?? false;
-      if (!expanded) {
-        targetId = id;
-        break;
-      }
-    }
+
+    final targetId = _sortedListingIds.cast<int?>().firstWhere(
+          (id) {
+            final convs = _groupedConversations[id] ?? const [];
+            final isCollapsed = !(_expandedGroups[id] ?? false);
+            final canVisiblyExpand =
+                convs.length > 1 && !_groupHasIncomingUnread(convs);
+            return canVisiblyExpand && isCollapsed;
+          },
+          orElse: () => null,
+        );
     if (targetId == null) return;
     unawaited(_runGroupExpandCoachSequence(targetId));
   }
