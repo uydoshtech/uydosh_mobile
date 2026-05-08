@@ -557,8 +557,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                               currentUserId: widget.currentUserId,
                               onTap: () =>
                                   widget.onConversationTap(conversation),
-                              isGrouped:
-                                  true, // Add this parameter to style differently
+                              isGrouped: true,
                               showActivityTimeOnly: widget.showActivityTimeOnly,
                               onLongPress: widget.onConversationLongPress == null
                                   ? null

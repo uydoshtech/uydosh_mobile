@@ -482,22 +482,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   valueListenable:
                       ClientGeminiListingUiConfig.hideGeminiListingUi,
                   builder: (context, hideListingGeminiUi, _) {
-                    return AiAllowanceUpsellBanner(
+                    final allowanceVisible = AiAllowanceUpsellBanner.willShowContent(
                       snapshot: _listingAiQuota,
                       isLoading: _listingAiQuotaLoading,
-                      hideListingGeminiUi: hideListingGeminiUi,
-                      onUpgradeTap: () {
-                        Navigator.of(context).push<void>(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const AiPremiumPlaceholderScreen(),
-                          ),
-                        );
-                      },
+                    );
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AiAllowanceUpsellBanner(
+                          snapshot: _listingAiQuota,
+                          isLoading: _listingAiQuotaLoading,
+                          hideListingGeminiUi: hideListingGeminiUi,
+                          onUpgradeTap: () {
+                            Navigator.of(context).push<void>(
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    const AiPremiumPlaceholderScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        if (allowanceVisible) const SizedBox(height: 24),
+                      ],
                     );
                   },
                 ),
-              if (!_userBlocked && AuthenticationState().isAuthenticated)
-                const SizedBox(height: 24),
               ProfileSettingsSection(
                 onLogout: () => _showLogoutDialog(context),
                 onDeleteAccount: () => _showDeleteAccountDialog(context),

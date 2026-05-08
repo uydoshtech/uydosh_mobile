@@ -121,10 +121,16 @@ class ConversationTile extends StatelessWidget {
                   ),
                 ),
           title:
-              isGrouped && !isListingMarketplace
-                  ? null
-                  : isListingMarketplace
-                  ? Text(
+              !isGrouped && !isListingMarketplace
+                  ? ConversationListingTitleWithCategoryIcon(
+                      conversation: conversation,
+                      textStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                      iconColor: iconColor,
+                    )
+                  : Text(
                       conversation.otherUserName ?? "Unknown User",
                       style: TextStyle(
                         fontWeight:
@@ -133,19 +139,13 @@ class ConversationTile extends StatelessWidget {
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    )
-                  : ConversationListingTitleWithCategoryIcon(
-                      conversation: conversation,
-                      textStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                      iconColor: iconColor,
                     ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isListingMarketplace) ...[
+              // Listing / preset title row: on grouped inbox cards the parent
+              // header already shows it — omit here to avoid duplication.
+              if (isListingMarketplace && !isGrouped) ...[
                 ConversationListingTitleWithCategoryIcon(
                   conversation: conversation,
                   textStyle: TextStyle(

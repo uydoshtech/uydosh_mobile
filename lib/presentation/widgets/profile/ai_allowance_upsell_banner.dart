@@ -35,6 +35,23 @@ class AiAllowanceUpsellBanner extends StatelessWidget {
         s.isUnlimitedMeter(s.chatTranslateRemaining);
   }
 
+  /// True when [build] will lay out non-zero height (loading placeholder or card).
+  static bool willShowContent({
+    required ListingAiQuotaSnapshot? snapshot,
+    required bool isLoading,
+  }) {
+    if (isLoading) {
+      return true;
+    }
+    final snap = snapshot;
+    if (snap == null) {
+      return false;
+    }
+    return !(snap.isUnlimitedMeter(snap.translateRemaining) &&
+        snap.isUnlimitedMeter(snap.enhanceRemaining) &&
+        snap.isUnlimitedMeter(snap.chatTranslateRemaining));
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
