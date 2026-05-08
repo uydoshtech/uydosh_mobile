@@ -225,7 +225,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 ? conv.participantId
                 : conv.initiatorId)
             : null;
-    final isGigRequest = conv?.contextType == "gig_request";
+    final rawCtx = conv?.contextType?.trim().toLowerCase();
+    final isGigConversation =
+        (rawCtx != null && rawCtx.startsWith("gig_")) ||
+        (conv?.gigRequestId != null);
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -233,18 +236,18 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         builder:
             (context) => ChatScreen(
               conversationId: conversationId,
-              listingId: isGigRequest ? null : conv?.listingId,
-              listingTypeId: isGigRequest ? null : conv?.listingTypeId,
+              listingId: isGigConversation ? null : conv?.listingId,
+              listingTypeId:
+                  isGigConversation ? null : conv?.listingTypeId,
               // Server convention: listing owner is always `participant_id`.
               listingOwnerUserId:
-                  isGigRequest ? null : conv?.participantId,
+                  isGigConversation ? null : conv?.participantId,
               conversationContextType: conv?.contextType,
               conversationParticipantId: conv?.participantId,
-              gigRequestId: isGigRequest ? conv?.gigRequestId : null,
-              gigRequestTitle:
-                  isGigRequest ? conv?.gigRequestTitle : null,
+              gigRequestId: conv?.gigRequestId,
+              gigRequestTitle: conv?.gigRequestTitle,
               listingTitle:
-                  conv != null && !isGigRequest
+                  conv != null && !isGigConversation
                       ? resolvedConversationListingTitle(conv)
                       : null,
               otherUserInitials:

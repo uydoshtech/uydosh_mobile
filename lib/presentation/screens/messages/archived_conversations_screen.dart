@@ -183,24 +183,27 @@ class _ArchivedConversationsScreenState
   Future<void> _openChat(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
-    final isGigRequest = conversation.contextType == "gig_request";
+    final rawCtx = conversation.contextType?.trim().toLowerCase();
+    final isGigConversation =
+        (rawCtx != null && rawCtx.startsWith("gig_")) ||
+        conversation.gigRequestId != null;
     await Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
         builder: (_) => ChatScreen(
           conversationId: conversation.id,
-          listingId: isGigRequest ? null : conversation.listingId,
-          listingTypeId: isGigRequest ? null : conversation.listingTypeId,
+          listingId: isGigConversation ? null : conversation.listingId,
+          listingTypeId:
+              isGigConversation ? null : conversation.listingTypeId,
           // Server convention: listing owner is always `participant_id`.
           listingOwnerUserId:
-              isGigRequest ? null : conversation.participantId,
+              isGigConversation ? null : conversation.participantId,
           conversationContextType: conversation.contextType,
           conversationParticipantId: conversation.participantId,
-          gigRequestId: isGigRequest ? conversation.gigRequestId : null,
-          gigRequestTitle:
-              isGigRequest ? conversation.gigRequestTitle : null,
+          gigRequestId: conversation.gigRequestId,
+          gigRequestTitle: conversation.gigRequestTitle,
           listingTitle:
-              !isGigRequest
+              !isGigConversation
                   ? resolvedConversationListingTitle(conversation)
                   : null,
           otherUserInitials:

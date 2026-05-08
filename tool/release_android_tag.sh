@@ -31,7 +31,18 @@ git fetch --prune origin >/dev/null
 
 SHA="$(git rev-parse --short HEAD)"
 
-echo "Tagging ${TAG} -> ${SHA}"
+YELLOW=$'\033[93m'
+GREEN=$'\033[92m'
+RESET=$'\033[0m'
+
+if [[ "${VERSION_RAW}" =~ ^([0-9]+\.[0-9]+\.[0-9]+)\+([0-9]+)$ ]]; then
+  VERSION_COLORED="${YELLOW}${BASH_REMATCH[1]}${RESET}${GREEN}+${BASH_REMATCH[2]}${RESET}"
+else
+  VERSION_COLORED="${VERSION_RAW}"
+fi
+
+TAG_COLORED="android-${VERSION_COLORED//+/-}"
+echo "Tagging ${TAG_COLORED} -> ${SHA}"
 git tag "${TAG}"
 git push origin "${TAG}"
 

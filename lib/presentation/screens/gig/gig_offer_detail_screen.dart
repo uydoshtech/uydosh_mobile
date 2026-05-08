@@ -349,6 +349,8 @@ class _OfferDetailContentStatefulState
             conversationId: conversation.id,
             conversationContextType: "gig_booking",
             conversationParticipantId: booking.providerUserId,
+            gigRequestId: conversation.gigRequestId,
+            gigRequestTitle: conversation.gigRequestTitle,
             otherUserId: offer.providerUserId,
             otherUserName: name,
             otherUserInitials: StringUtils.extractInitials(name),

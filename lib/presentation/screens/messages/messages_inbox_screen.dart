@@ -1540,7 +1540,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Future<void> _openChatScreen(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
-    final isGigRequest = conversation.contextType == "gig_request";
+    final rawCtx = conversation.contextType?.trim().toLowerCase();
+    final isGigConversation =
+        (rawCtx != null && rawCtx.startsWith("gig_")) ||
+        conversation.gigRequestId != null;
     await Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
@@ -1550,23 +1553,22 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // Listing-only fields: leave null for gig conversations so
               // ChatScreen falls back to its gig branches (no "View
               // listing" / "Complain about listing" actions, etc.).
-              listingId: isGigRequest ? null : conversation.listingId,
-              listingTypeId: isGigRequest ? null : conversation.listingTypeId,
+              listingId: isGigConversation ? null : conversation.listingId,
+              listingTypeId:
+                  isGigConversation ? null : conversation.listingTypeId,
               // Server convention: listing owner is always `participant_id`.
               // For gig conversations the request author is also the
               // `participant_id` (set authoritatively by the backend), so
               // this still happens to be correct — but we leave it null for
               // gig chats since the field is semantically "listing owner".
               listingOwnerUserId:
-                  isGigRequest ? null : conversation.participantId,
+                  isGigConversation ? null : conversation.participantId,
               conversationContextType: conversation.contextType,
               conversationParticipantId: conversation.participantId,
-              gigRequestId:
-                  isGigRequest ? conversation.gigRequestId : null,
-              gigRequestTitle:
-                  isGigRequest ? conversation.gigRequestTitle : null,
+              gigRequestId: conversation.gigRequestId,
+              gigRequestTitle: conversation.gigRequestTitle,
               listingTitle:
-                  !isGigRequest
+                  !isGigConversation
                       ? resolvedConversationListingTitle(conversation)
                       : null,
               otherUserInitials: StringUtils.extractInitials(
