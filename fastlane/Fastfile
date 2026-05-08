@@ -7,6 +7,23 @@ platform :android do
     track = options[:track] || "internal"
     release_status = options[:release_status] || "draft" # draft|completed|inProgress|halted
     version_name = options[:version_name]
+    changelog = options[:changelog]
+
+    # Flutter versionCode is the "+build" suffix in pubspec.yaml (e.g. 1.2.3+249 -> 249)
+    version_code =
+      begin
+        pubspec = File.read("pubspec.yaml")
+        match = pubspec.match(/^\s*version:\s*\d+\.\d+\.\d+\+(\d+)\s*$/)
+        match ? match[1].to_i : nil
+      rescue
+        nil
+      end
+
+    if changelog && !changelog.to_s.strip.empty? && version_code
+      changelog_dir = File.join("fastlane", "metadata", "android", "en-US", "changelogs")
+      FileUtils.mkdir_p(changelog_dir)
+      File.write(File.join(changelog_dir, "#{version_code}.txt"), changelog.to_s.strip + "\n")
+    end
 
     supply(
       aab: aab_path,
@@ -16,7 +33,8 @@ platform :android do
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      changelog: options[:changelog],
+      skip_upload_changelogs: changelog.nil? || changelog.to_s.strip.empty?,
+      metadata_path: "fastlane/metadata/android",
       version_name: version_name,
     )
   end
