@@ -55,18 +55,15 @@ jobs:
         run: flutter pub get
 
       - name: Install CocoaPods deps (verbose)
-        env:
-          # CocoaPods pulls ActiveSupport, which expects Logger constant to be loaded.
-          # On some GitHub macOS Ruby builds, it's not preloaded, so force it.
-          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           set -x
-          bundle exec pod --version
-          bundle exec pod env
+          # Load stdlib logger *inside* Bundler context to avoid default-gem version conflicts.
+          bundle exec ruby -rlogger -S pod --version
+          bundle exec ruby -rlogger -S pod env
           cd ios
           # Show full output to diagnose CI failures.
-          bundle exec pod install --repo-update --verbose
+          bundle exec ruby -rlogger -S pod install --repo-update --verbose
 
       - name: Build IPA (Flutter)
         env:
