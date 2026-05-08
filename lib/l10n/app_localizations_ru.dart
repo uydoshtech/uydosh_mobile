@@ -1260,7 +1260,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pets_have_dog => 'Есть собака';
 
   @override
-  String get lifestyle_preferences => 'Предпочтения образа жизни';
+  String get lifestyle_preferences => 'Образ жизни';
 
   @override
   String get very_messy => 'Грязный';
@@ -2157,6 +2157,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get favorites_empty_title => 'Пока нет избранного';
+
+  @override
+  String get favorites_tab_listings => 'Жильё';
+
+  @override
+  String get favorites_tab_services => 'Услуги';
+
+  @override
+  String get favorites_tab_tasks => 'Задачи';
 
   @override
   String get favorites_browse_button => 'Просмотреть объявления';

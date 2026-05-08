@@ -413,7 +413,11 @@ class _GigHubBodyState extends State<_GigHubBody> {
                                 RemoveGigOfferFromList(offer.id),
                               );
                         },
-                        child: GigOfferTile(offer: offer),
+                        child: GigOfferTile(
+                          offer: offer,
+                          showFavoriteIndicator:
+                              !isOwner && AuthenticationState().isAuthenticated,
+                        ),
                       );
                     },
                   );
@@ -488,6 +492,10 @@ class _GigHubBodyState extends State<_GigHubBody> {
                         },
                         child: GigRequestTile(
                           request: request,
+                          showFavoriteIndicator: !UserListingState().isOwner(
+                                request.clientUserId,
+                              ) &&
+                              AuthenticationState().isAuthenticated,
                           onDetailClosed: (taskWasRemoved) {
                             if (!taskWasRemoved) return;
                             context.read<GigRequestsBloc>().add(

@@ -199,6 +199,22 @@ abstract class IGigService {
     required int bookingId,
     required String providerCode, // "payme" | "click"
   });
+
+  /// Bookmark a service offer (gig) for later.
+  Future<bool> toggleFavoriteOffer(int offerId);
+
+  /// Bookmark an open task (gig request) for later.
+  Future<bool> toggleFavoriteRequest(int requestId);
+
+  Future<({List<GigOffer> offers, bool hasMore})> listFavoriteOffers({
+    int page = 1,
+    int limit = 50,
+  });
+
+  Future<({List<GigRequest> requests, bool hasMore})> listFavoriteRequests({
+    int page = 1,
+    int limit = 50,
+  });
 }
 
 class GigService implements IGigService {
@@ -459,6 +475,77 @@ class GigService implements IGigService {
       (json) => json as Map<String, dynamic>,
       basePath: _base,
       data: _RawJsonBody({"photo_ids": photoIds}),
+    );
+  }
+
+  // ---- Gig bookmarks (favorites) -------------------------------------------
+  @override
+  Future<bool> toggleFavoriteOffer(int offerId) async {
+    final map = await _oauthClient.put<Map<String, dynamic>, _RawJsonBody>(
+      "/gigs/favorites/offers/$offerId/toggle",
+      (json) => json as Map<String, dynamic>,
+      basePath: _base,
+      data: _RawJsonBody({}),
+    );
+    return map["isFavorited"] == true;
+  }
+
+  @override
+  Future<bool> toggleFavoriteRequest(int requestId) async {
+    final map = await _oauthClient.put<Map<String, dynamic>, _RawJsonBody>(
+      "/gigs/favorites/requests/$requestId/toggle",
+      (json) => json as Map<String, dynamic>,
+      basePath: _base,
+      data: _RawJsonBody({}),
+    );
+    return map["isFavorited"] == true;
+  }
+
+  @override
+  Future<({List<GigOffer> offers, bool hasMore})> listFavoriteOffers({
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final qp = <String, dynamic>{"page": page, "limit": limit};
+    return _oauthClient.get<({List<GigOffer> offers, bool hasMore})>(
+      "/gigs/favorites/offers",
+      (json) {
+        if (json is Map<String, dynamic>) {
+          final list = (json["offers"] as List? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(GigOffer.fromJson)
+              .toList();
+          final hasMore = json["hasMore"] as bool? ?? false;
+          return (offers: list, hasMore: hasMore);
+        }
+        return (offers: const <GigOffer>[], hasMore: false);
+      },
+      basePath: _base,
+      queryParameters: qp,
+    );
+  }
+
+  @override
+  Future<({List<GigRequest> requests, bool hasMore})> listFavoriteRequests({
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final qp = <String, dynamic>{"page": page, "limit": limit};
+    return _oauthClient.get<({List<GigRequest> requests, bool hasMore})>(
+      "/gigs/favorites/requests",
+      (json) {
+        if (json is Map<String, dynamic>) {
+          final list = (json["requests"] as List? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(GigRequest.fromJson)
+              .toList();
+          final hasMore = json["hasMore"] as bool? ?? false;
+          return (requests: list, hasMore: hasMore);
+        }
+        return (requests: const <GigRequest>[], hasMore: false);
+      },
+      basePath: _base,
+      queryParameters: qp,
     );
   }
 

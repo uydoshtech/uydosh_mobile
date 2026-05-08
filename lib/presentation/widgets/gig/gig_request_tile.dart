@@ -1,12 +1,21 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/currency_display_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_participant_avatar_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -16,10 +25,14 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 /// Tapping the tile pushes [GigRequestDetailScreen] via the
 /// [GigNavigatorExtensions] helper. Used by both the standalone
 /// "Open tasks" list and the inline feed on the Services hub.
-class GigRequestTile extends StatelessWidget {
+class GigRequestTile extends StatefulWidget {
   const GigRequestTile({
     required this.request,
     this.onDetailClosed,
+    this.showFavoriteIndicator = false,
+    this.forceFavorite,
+    this.onFavoriteRemoved,
+    this.onFavoriteRemovalFailed,
     super.key,
   });
 
@@ -29,45 +42,109 @@ class GigRequestTile extends StatelessWidget {
   /// `true` when the owner deleted/cancelled the open task from that screen.
   final void Function(bool taskWasRemoved)? onDetailClosed;
 
+  final bool showFavoriteIndicator;
+  final bool? forceFavorite;
+  final VoidCallback? onFavoriteRemoved;
+  final VoidCallback? onFavoriteRemovalFailed;
+
+  @override
+  State<GigRequestTile> createState() => _GigRequestTileState();
+}
+
+class _GigRequestTileState extends State<GigRequestTile> {
+  bool _isTogglingFavorite = false;
+  late Listenable _favoriteListenable;
+
+  @override
+  void initState() {
+    super.initState();
+    _favoriteListenable = Listenable.merge([
+      GigFavoritesState().listenableForRequest(widget.request.id),
+    ]);
+  }
+
+  @override
+  void didUpdateWidget(GigRequestTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.request.id != widget.request.id) {
+      _favoriteListenable = Listenable.merge([
+        GigFavoritesState().listenableForRequest(widget.request.id),
+      ]);
+    }
+  }
+
+  Future<void> _handleFavoriteTap(BuildContext context) async {
+    final gigFav = GigFavoritesState();
+    final favScreen = FavoritesState();
+    final wasFavorite = widget.forceFavorite ??
+        gigFav.isRequestFavorite(widget.request.id);
+    gigFav.toggleRequestLocal(widget.request.id);
+    if (!wasFavorite) {
+      favScreen.markDirty();
+    }
+    setState(() => _isTogglingFavorite = true);
+    try {
+      final ok =
+          await getIt<IGigService>().toggleFavoriteRequest(widget.request.id);
+      if (!ok) {
+        throw Exception("toggle failed");
+      }
+      if (wasFavorite && widget.onFavoriteRemoved != null) {
+        widget.onFavoriteRemoved!();
+      }
+    } catch (_) {
+      gigFav.toggleRequestLocal(widget.request.id);
+      widget.onFavoriteRemovalFailed?.call();
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isTogglingFavorite = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
-    final categoryName = request.category?.localizedName(language) ?? "";
-    final budgetLine = request.budgetAmount != null
+    final categoryName = widget.request.category?.localizedName(language) ?? "";
+    final budgetLine = widget.request.budgetAmount != null
         ? L10n.getWithParams(
             "gigs_request_budget_fixed",
             params: {
-              "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
-              "currency": CurrencyDisplayUtils.isoCode(request.currencyCode),
+              "amount":
+                  IntFormatUtils.withDotThousands(widget.request.budgetAmount!),
+              "currency":
+                  CurrencyDisplayUtils.isoCode(widget.request.currencyCode),
             },
           )
         : L10n.get("gigs_request_budget_open");
 
+    final rightPad =
+        widget.showFavoriteIndicator ? 100.0 : 64.0;
+
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
-      // Wrap the inner Padding in a Material+InkWell so the ripple is
-      // clipped to the surface's rounded shape and matches the elevation
-      // visual.
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () async {
             HapticFeedbackUtils.lightImpact();
-            final removed = await context.pushGigRequestDetail(request.id);
+            final removed =
+                await context.pushGigRequestDetail(widget.request.id);
             if (!context.mounted) return;
-            onDetailClosed?.call(removed == true);
+            widget.onDetailClosed?.call(removed == true);
           },
           borderRadius: BorderRadius.circular(16),
-          // Stack so the client avatar can dock in the top-right corner
-          // overlaying the right edge of the text column — matches the
-          // collapsed chat-group header layout.
           child: Stack(
             children: [
               Padding(
-                // Reserve right padding for the 40px avatar (+gap) so long
-                // titles/category labels don't slide under it.
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 64, 16),
+                padding: EdgeInsetsDirectional.fromSTEB(16, 16, rightPad, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -75,9 +152,9 @@ class GigRequestTile extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (request.category?.icon != null) ...[
+                          if (widget.request.category?.icon != null) ...[
                             GigCategoryIconBadge(
-                              icon: request.category!.icon,
+                              icon: widget.request.category!.icon,
                               iconColor:
                                   scheme.onSurface.withValues(alpha: 0.72),
                               badgeBackgroundColor: scheme.onSurface
@@ -103,7 +180,7 @@ class GigRequestTile extends StatelessWidget {
                       ),
                     const SizedBox(height: 4),
                     Text(
-                      request.title,
+                      widget.request.title,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -125,12 +202,76 @@ class GigRequestTile extends StatelessWidget {
                 end: 12,
                 child: IgnorePointer(
                   child: GigParticipantAvatarBadge(
-                    avatarUrl: request.clientAvatarUrl,
-                    displayName: request.clientDisplayName,
+                    avatarUrl: widget.request.clientAvatarUrl,
+                    displayName: widget.request.clientDisplayName,
                     ringColor: scheme.surface,
                   ),
                 ),
               ),
+              if (widget.showFavoriteIndicator)
+                PositionedDirectional(
+                  top: 8,
+                  end: 52,
+                  child: ListenableBuilder(
+                    listenable: _favoriteListenable,
+                    builder: (context, child) {
+                      if (!AuthenticationState().isAuthenticated) {
+                        return const SizedBox.shrink();
+                      }
+                      if (UserListingState()
+                          .isOwner(widget.request.clientUserId)) {
+                        return const SizedBox.shrink();
+                      }
+                      final isFavorite = widget.forceFavorite ??
+                          GigFavoritesState()
+                              .isRequestFavorite(widget.request.id);
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isTogglingFavorite
+                              ? null
+                              : () => _handleFavoriteTap(context),
+                          borderRadius: BorderRadius.circular(22),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: Center(
+                                child: Opacity(
+                                  opacity: _isTogglingFavorite ? 0.6 : 1,
+                                  child: _isTogglingFavorite
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              isFavorite
+                                                  ? AppColors.favoriteActive
+                                                  : AppColors.favoriteInactive,
+                                            ),
+                                          ),
+                                        )
+                                      : ThemeIcon(
+                                          isFavorite
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: isFavorite
+                                              ? AppColors.favoriteActive
+                                              : AppColors.favoriteInactive,
+                                          size: 22,
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),

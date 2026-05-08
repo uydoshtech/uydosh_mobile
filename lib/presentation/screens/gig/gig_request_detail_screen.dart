@@ -1,10 +1,13 @@
 import "dart:async";
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -46,6 +49,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   late Future<GigRequest> _future;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
+  bool _requestFavoriteBusy = false;
 
   @override
   void initState() {
@@ -53,6 +57,11 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     _future = getIt<IGigService>().getRequest(widget.requestId);
+    unawaited(
+      _future.then((r) {
+        GigFavoritesState().syncFromRequests([r]);
+      }),
+    );
   }
 
   Future<void> _editRequest(GigRequest request) async {
@@ -61,6 +70,11 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       setState(() {
         _future = getIt<IGigService>().getRequest(widget.requestId);
       });
+      unawaited(
+        _future.then((r) {
+          GigFavoritesState().syncFromRequests([r]);
+        }),
+      );
     }
   }
 
@@ -89,6 +103,33 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       );
     } finally {
       if (mounted) setState(() => _deleteInFlight = false);
+    }
+  }
+
+  Future<void> _toggleRequestFavorite(GigRequest request) async {
+    if (_requestFavoriteBusy) return;
+    final gigFav = GigFavoritesState();
+    final screenFav = FavoritesState();
+    final was = gigFav.isRequestFavorite(request.id);
+    gigFav.toggleRequestLocal(request.id);
+    if (!was) {
+      screenFav.markDirty();
+    }
+    setState(() => _requestFavoriteBusy = true);
+    try {
+      await getIt<IGigService>().toggleFavoriteRequest(request.id);
+    } catch (_) {
+      gigFav.toggleRequestLocal(request.id);
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _requestFavoriteBusy = false);
+      }
     }
   }
 
@@ -162,11 +203,36 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
             final showOwnerMenu = request != null &&
                 UserListingState().isOwner(request.clientUserId) &&
                 request.status == GigRequestStatus.open;
+            final canFavoriteTask = request != null &&
+                AuthenticationState().isAuthenticated &&
+                !UserListingState().isOwner(request.clientUserId);
             return Scaffold(
               appBar: AppBar(
                 leading: ThreeDAppBarIconButton.backLeading(context),
                 title: Text(L10n.get("gigs_request_detail_title")),
                 actions: [
+                  if (canFavoriteTask)
+                    ListenableBuilder(
+                      listenable: GigFavoritesState()
+                          .listenableForRequest(request.id),
+                      builder: (context, _) {
+                        final fav = GigFavoritesState()
+                            .isRequestFavorite(request.id);
+                        return IconButton(
+                          onPressed: _requestFavoriteBusy
+                              ? null
+                              : () => unawaited(
+                                    _toggleRequestFavorite(request),
+                                  ),
+                          icon: Icon(
+                            fav ? Icons.favorite : Icons.favorite_border,
+                            color: fav
+                                ? AppColors.favoriteActive
+                                : AppColors.favoriteInactive,
+                          ),
+                        );
+                      },
+                    ),
                   _messagesInboxAppBarButton(
                     hasOwnerOverflow: showOwnerMenu,
                     loadedRequest: request,

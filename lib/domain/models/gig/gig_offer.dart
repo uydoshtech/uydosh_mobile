@@ -92,6 +92,7 @@ class GigOffer {
     this.providerRatingCount,
     this.providerCompletedJobsCount,
     this.providerIsVerified,
+    this.isFavorited,
   });
 
   factory GigOffer.fromJson(Map<String, dynamic> json) {
@@ -176,6 +177,7 @@ class GigOffer {
       providerRatingCount: providerRatingCount,
       providerCompletedJobsCount: providerCompletedJobsCount,
       providerIsVerified: providerIsVerified,
+      isFavorited: json["is_favorited"] as bool?,
     );
   }
 
@@ -208,6 +210,7 @@ class GigOffer {
   final int? providerRatingCount;
   final int? providerCompletedJobsCount;
   final bool? providerIsVerified;
+  final bool? isFavorited;
 
   String? primaryPhotoUrl() {
     if (photos.isEmpty) return null;

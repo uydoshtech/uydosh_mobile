@@ -1257,7 +1257,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pets_have_dog => 'Have a dog';
 
   @override
-  String get lifestyle_preferences => 'Lifestyle Preferences';
+  String get lifestyle_preferences => 'Lifestyle';
 
   @override
   String get very_messy => 'Very Messy';
@@ -2147,6 +2147,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get favorites_empty_title => 'No favorites yet';
+
+  @override
+  String get favorites_tab_listings => 'Listings';
+
+  @override
+  String get favorites_tab_services => 'Services';
+
+  @override
+  String get favorites_tab_tasks => 'Tasks';
 
   @override
   String get favorites_browse_button => 'Browse Listings';

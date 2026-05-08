@@ -1,12 +1,15 @@
 import "dart:async";
 
 import "package:cached_network_image/cached_network_image.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -41,6 +44,8 @@ class GigOfferDetailScreen extends StatefulWidget {
 }
 
 class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
+  bool _offerFavoriteBusy = false;
+
   @override
   void initState() {
     super.initState();
@@ -85,6 +90,33 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     }
   }
 
+  Future<void> _toggleOfferFavorite(BuildContext context, GigOffer offer) async {
+    if (_offerFavoriteBusy) return;
+    final gigFav = GigFavoritesState();
+    final screenFav = FavoritesState();
+    final was = gigFav.isOfferFavorite(offer.id);
+    gigFav.toggleOfferLocal(offer.id);
+    if (!was) {
+      screenFav.markDirty();
+    }
+    setState(() => _offerFavoriteBusy = true);
+    try {
+      await getIt<IGigService>().toggleFavoriteOffer(offer.id);
+    } catch (_) {
+      gigFav.toggleOfferLocal(offer.id);
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _offerFavoriteBusy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -92,6 +124,9 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       builder: (context, _) {
         return BlocConsumer<GigOfferDetailBloc, GigOfferDetailState>(
           listener: (context, state) {
+            if (state is GigOfferDetailLoaded) {
+              GigFavoritesState().syncFromOffers([state.offer]);
+            }
             if (state is GigOfferBookingCreated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(L10n.get("gigs_booking_created_toast"))),
@@ -108,11 +143,39 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                 state is GigOfferDetailLoaded ? state.offer : null;
             final showOwnerActions = offerForMenu != null &&
                 UserListingState().isOwner(offerForMenu.providerUserId);
+            final canFavoriteOffer = offerForMenu != null &&
+                AuthenticationState().isAuthenticated &&
+                !UserListingState().isOwner(offerForMenu.providerUserId);
             return Scaffold(
               appBar: AppBar(
                 leading: ThreeDAppBarIconButton.backLeading(context),
                 title: Text(L10n.get("gigs_offer_detail_title")),
                 actions: [
+                  if (canFavoriteOffer)
+                    ListenableBuilder(
+                      listenable: GigFavoritesState()
+                          .listenableForOffer(offerForMenu.id),
+                      builder: (context, _) {
+                        final fav = GigFavoritesState()
+                            .isOfferFavorite(offerForMenu.id);
+                        return IconButton(
+                          onPressed: _offerFavoriteBusy
+                              ? null
+                              : () => unawaited(
+                                    _toggleOfferFavorite(
+                                      context,
+                                      offerForMenu,
+                                    ),
+                                  ),
+                          icon: Icon(
+                            fav ? Icons.favorite : Icons.favorite_border,
+                            color: fav
+                                ? AppColors.favoriteActive
+                                : AppColors.favoriteInactive,
+                          ),
+                        );
+                      },
+                    ),
                   if (showOwnerActions)
                     ActionDropdownMenu(
                       padding: const EdgeInsets.only(right: 12),

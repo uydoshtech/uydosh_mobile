@@ -2401,7 +2401,7 @@ abstract class AppLocalizations {
   /// No description provided for @lifestyle_preferences.
   ///
   /// In en, this message translates to:
-  /// **'Lifestyle Preferences'**
+  /// **'Lifestyle'**
   String get lifestyle_preferences;
 
   /// No description provided for @very_messy.
@@ -4083,6 +4083,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No favorites yet'**
   String get favorites_empty_title;
+
+  /// No description provided for @favorites_tab_listings.
+  ///
+  /// In en, this message translates to:
+  /// **'Listings'**
+  String get favorites_tab_listings;
+
+  /// No description provided for @favorites_tab_services.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get favorites_tab_services;
+
+  /// No description provided for @favorites_tab_tasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get favorites_tab_tasks;
 
   /// No description provided for @favorites_browse_button.
   ///

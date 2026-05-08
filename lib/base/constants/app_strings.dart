@@ -634,7 +634,7 @@ class AppStrings {
       "pets_have_dog": "Have a dog",
 
       // Slider labels
-      "lifestyle_preferences": "Lifestyle Preferences",
+      "lifestyle_preferences": "Lifestyle",
       "very_messy": "Very Messy",
       "messy": "Messy",
       "average": "Average",
@@ -1151,6 +1151,9 @@ class AppStrings {
       // ===== FAVORITES =====
       "favorites_title": "Favorites",
       "favorites_empty_title": "No favorites yet",
+      "favorites_tab_listings": "Listings",
+      "favorites_tab_services": "Services",
+      "favorites_tab_tasks": "Tasks",
       "favorites_browse_button": "Browse Listings",
 
       // ===== VIEW HISTORY =====
@@ -1979,7 +1982,7 @@ class AppStrings {
       "pets_have_dog": "Есть собака",
 
       // Slider labels
-      "lifestyle_preferences": "Предпочтения образа жизни",
+      "lifestyle_preferences": "Образ жизни",
       "very_messy": "Грязный",
       "messy": "Неопрятный",
       "average": "Средне",
@@ -2506,6 +2509,9 @@ class AppStrings {
       // ===== FAVORITES =====
       "favorites_title": "Избранное",
       "favorites_empty_title": "Пока нет избранного",
+      "favorites_tab_listings": "Жильё",
+      "favorites_tab_services": "Услуги",
+      "favorites_tab_tasks": "Задачи",
       "favorites_browse_button": "Просмотреть объявления",
 
       "view_history_title": "История просмотров",
@@ -3343,7 +3349,7 @@ class AppStrings {
       "pets_have_dog": "Menda it bor",
 
       // Slider labels
-      "lifestyle_preferences": "Turmush tarzi afzalliklari",
+      "lifestyle_preferences": "Turmush tarzi",
       "very_messy": "Juda iflos",
       "messy": "Iflos",
       "average": "O'rtacha",
@@ -3869,6 +3875,9 @@ class AppStrings {
       // ===== FAVORITES =====
       "favorites_title": "Sevimlilar",
       "favorites_empty_title": "Hali sevimlilar yo'q",
+      "favorites_tab_listings": "Uy-joy",
+      "favorites_tab_services": "Xizmatlar",
+      "favorites_tab_tasks": "Vazifalar",
       "favorites_browse_button": "E'lonlarni ko'rish",
 
       "view_history_title": "Ko'rilganlar tarixi",

@@ -3,6 +3,8 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -31,6 +33,11 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     _future = getIt<IGigService>().listRequests();
+    unawaited(
+      _future.then((v) {
+        GigFavoritesState().syncFromRequests(v.requests);
+      }),
+    );
   }
 
   @override
@@ -93,6 +100,10 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
                     },
                     child: GigRequestTile(
                       request: request,
+                      showFavoriteIndicator: !UserListingState().isOwner(
+                            request.clientUserId,
+                          ) &&
+                          AuthenticationState().isAuthenticated,
                       onDetailClosed: (taskWasRemoved) {
                         if (!taskWasRemoved) return;
                         setState(() {

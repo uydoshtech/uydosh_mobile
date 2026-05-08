@@ -1,35 +1,117 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/currency_display_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_participant_avatar_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Reusable card for a single [GigOffer] in any vertical list/feed.
 ///
 /// Tapping the tile pushes [GigOfferDetailScreen] via the [GigNavigatorExtensions]
 /// helper. Used by both the "Browse services" list and the inline feed on
 /// the Services hub.
-class GigOfferTile extends StatelessWidget {
-  const GigOfferTile({required this.offer, super.key});
+class GigOfferTile extends StatefulWidget {
+  const GigOfferTile({
+    required this.offer,
+    this.showFavoriteIndicator = false,
+    this.forceFavorite,
+    this.onFavoriteRemoved,
+    this.onFavoriteRemovalFailed,
+    super.key,
+  });
 
   final GigOffer offer;
+  final bool showFavoriteIndicator;
+  final bool? forceFavorite;
+  final VoidCallback? onFavoriteRemoved;
+  final VoidCallback? onFavoriteRemovalFailed;
+
+  @override
+  State<GigOfferTile> createState() => _GigOfferTileState();
+}
+
+class _GigOfferTileState extends State<GigOfferTile> {
+  bool _isTogglingFavorite = false;
+  late Listenable _favoriteListenable;
+
+  @override
+  void initState() {
+    super.initState();
+    _favoriteListenable = Listenable.merge([
+      GigFavoritesState().listenableForOffer(widget.offer.id),
+    ]);
+  }
+
+  @override
+  void didUpdateWidget(GigOfferTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.offer.id != widget.offer.id) {
+      _favoriteListenable = Listenable.merge([
+        GigFavoritesState().listenableForOffer(widget.offer.id),
+      ]);
+    }
+  }
+
+  Future<void> _handleFavoriteTap(BuildContext context) async {
+    final gigFav = GigFavoritesState();
+    final favScreen = FavoritesState();
+    final wasFavorite =
+        widget.forceFavorite ?? gigFav.isOfferFavorite(widget.offer.id);
+    gigFav.toggleOfferLocal(widget.offer.id);
+    if (!wasFavorite) {
+      favScreen.markDirty();
+    }
+    setState(() => _isTogglingFavorite = true);
+    try {
+      final ok =
+          await getIt<IGigService>().toggleFavoriteOffer(widget.offer.id);
+      if (!ok) {
+        throw Exception("toggle failed");
+      }
+      if (wasFavorite && widget.onFavoriteRemoved != null) {
+        widget.onFavoriteRemoved!();
+      }
+    } catch (_) {
+      gigFav.toggleOfferLocal(widget.offer.id);
+      widget.onFavoriteRemovalFailed?.call();
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isTogglingFavorite = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
-    final categoryName = offer.category?.localizedName(language) ?? "";
-    final photo = offer.primaryPhotoUrl();
+    final categoryName =
+        widget.offer.category?.localizedName(language) ?? "";
+    final photo = widget.offer.primaryPhotoUrl();
 
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
@@ -38,7 +120,7 @@ class GigOfferTile extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(18)),
         onTap: () {
           HapticFeedbackUtils.lightImpact();
-          context.pushGigOfferDetail(offer.id);
+          context.pushGigOfferDetail(widget.offer.id);
         },
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -88,9 +170,9 @@ class GigOfferTile extends StatelessWidget {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (offer.category?.icon != null) ...[
+                                if (widget.offer.category?.icon != null) ...[
                                   GigCategoryIconBadge(
-                                    icon: offer.category!.icon,
+                                    icon: widget.offer.category!.icon,
                                     iconColor: scheme.onSurface
                                         .withValues(alpha: 0.72),
                                     badgeBackgroundColor: scheme.onSurface
@@ -116,7 +198,7 @@ class GigOfferTile extends StatelessWidget {
                             ),
                           const SizedBox(height: 6),
                           Text(
-                            offer.title,
+                            widget.offer.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -127,13 +209,14 @@ class GigOfferTile extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           ListingPaymentsOutlineBadge(
-                            label: _formatPrice(offer),
+                            label: _formatGigOfferTilePrice(widget.offer),
                           ),
-                          if (_gigOfferTileHasRating(offer)) ...[
+                          if (_gigOfferTileHasRating(widget.offer)) ...[
                             const SizedBox(height: 8),
                             _GigOfferTileRatingStars(
-                              rating: offer.providerRatingAvg,
-                              reviewCount: offer.providerRatingCount ?? 0,
+                              rating: widget.offer.providerRatingAvg,
+                              reviewCount:
+                                  widget.offer.providerRatingCount ?? 0,
                               scheme: scheme,
                             ),
                           ],
@@ -148,32 +231,96 @@ class GigOfferTile extends StatelessWidget {
                 end: 0,
                 child: IgnorePointer(
                   child: GigParticipantAvatarBadge(
-                    avatarUrl: offer.providerAvatarUrl,
-                    displayName: offer.providerDisplayName,
+                    avatarUrl: widget.offer.providerAvatarUrl,
+                    displayName: widget.offer.providerDisplayName,
                     ringColor: scheme.surface,
                   ),
                 ),
               ),
+              if (widget.showFavoriteIndicator)
+                PositionedDirectional(
+                  top: 0,
+                  end: 44,
+                  child: ListenableBuilder(
+                    listenable: _favoriteListenable,
+                    builder: (context, child) {
+                      if (!AuthenticationState().isAuthenticated) {
+                        return const SizedBox.shrink();
+                      }
+                      if (UserListingState()
+                          .isOwner(widget.offer.providerUserId)) {
+                        return const SizedBox.shrink();
+                      }
+                      final isFavorite = widget.forceFavorite ??
+                          GigFavoritesState()
+                              .isOfferFavorite(widget.offer.id);
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isTogglingFavorite
+                              ? null
+                              : () => _handleFavoriteTap(context),
+                          borderRadius: BorderRadius.circular(22),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: Center(
+                                child: Opacity(
+                                  opacity: _isTogglingFavorite ? 0.6 : 1,
+                                  child: _isTogglingFavorite
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              isFavorite
+                                                  ? AppColors.favoriteActive
+                                                  : AppColors.favoriteInactive,
+                                            ),
+                                          ),
+                                        )
+                                      : ThemeIcon(
+                                          isFavorite
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: isFavorite
+                                              ? AppColors.favoriteActive
+                                              : AppColors.favoriteInactive,
+                                          size: 22,
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  String _formatPrice(GigOffer o) {
-    final params = {
-      "amount": IntFormatUtils.withDotThousands(o.price),
-      "currency": CurrencyDisplayUtils.isoCode(o.currencyCode),
-    };
-    switch (o.pricingType) {
-      case GigPricingType.hourly:
-        return L10n.getWithParams("gigs_price_per_hour", params: params);
-      case GigPricingType.perUnit:
-        return L10n.getWithParams("gigs_price_per_unit", params: params);
-      case GigPricingType.fixed:
-        return L10n.getWithParams("gigs_price_fixed", params: params);
-    }
+String _formatGigOfferTilePrice(GigOffer o) {
+  final params = {
+    "amount": IntFormatUtils.withDotThousands(o.price),
+    "currency": CurrencyDisplayUtils.isoCode(o.currencyCode),
+  };
+  switch (o.pricingType) {
+    case GigPricingType.hourly:
+      return L10n.getWithParams("gigs_price_per_hour", params: params);
+    case GigPricingType.perUnit:
+      return L10n.getWithParams("gigs_price_per_unit", params: params);
+    case GigPricingType.fixed:
+      return L10n.getWithParams("gigs_price_fixed", params: params);
   }
 }
 

@@ -1271,7 +1271,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get pets_have_dog => 'Menda it bor';
 
   @override
-  String get lifestyle_preferences => 'Turmush tarzi afzalliklari';
+  String get lifestyle_preferences => 'Turmush tarzi';
 
   @override
   String get very_messy => 'Juda iflos';
@@ -2180,6 +2180,15 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get favorites_empty_title => 'Hali sevimlilar yo\'q';
+
+  @override
+  String get favorites_tab_listings => 'Uy-joy';
+
+  @override
+  String get favorites_tab_services => 'Xizmatlar';
+
+  @override
+  String get favorites_tab_tasks => 'Vazifalar';
 
   @override
   String get favorites_browse_button => 'E\'lonlarni ko\'rish';
