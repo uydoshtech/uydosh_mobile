@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
 import "package:uy_dosh/base/config/gemini_config.dart";
@@ -31,6 +30,21 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+const int _gigMinDurationStepMinutes = 5;
+const int _gigMinDurationFloorMinutes = 5;
+const int _gigMinDurationCeilingMinutes = 1440;
+const int _gigMinDurationFallbackMinutes = 60;
+
+/// Snaps saved/API values onto the spinner grid and applies sane bounds.
+int _snapGigMinDurationMinutes(int? rawMinutes) {
+  if (rawMinutes == null || rawMinutes <= 0) {
+    return _gigMinDurationFallbackMinutes;
+  }
+  final stepped =
+      (rawMinutes / _gigMinDurationStepMinutes).round() * _gigMinDurationStepMinutes;
+  return stepped.clamp(_gigMinDurationFloorMinutes, _gigMinDurationCeilingMinutes);
+}
 
 Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
   return Photo(
@@ -113,8 +127,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
   // Service-only.
   final _priceController = TextEditingController();
-  final _minDurationController = TextEditingController();
   GigPricingType _pricingType = GigPricingType.fixed;
+
+  /// Used when [GigPricingType.hourly] is selected ([_snapGigMinDurationMinutes]
+  /// aligns edit-mode values with five-minute slots).
+  int _minDurationMinutes = _gigMinDurationFallbackMinutes;
 
   GigCategory? _selectedCategory;
   bool _isRemote = false;
@@ -182,8 +199,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _descriptionController.text = offer.descriptionRu ?? "";
       _pricingType = offer.pricingType;
       _priceController.text = IntFormatUtils.withDotThousands(offer.price);
-      _minDurationController.text =
-          offer.minDurationMinutes?.toString() ?? "";
+      _minDurationMinutes = _snapGigMinDurationMinutes(offer.minDurationMinutes);
       _isRemote = offer.isRemote;
       _currency = offer.currencyCode;
       _existingOfferPhotos = [
@@ -212,7 +228,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     _budgetController.dispose();
     _addressController.dispose();
     _priceController.dispose();
-    _minDurationController.dispose();
     super.dispose();
   }
 
@@ -304,9 +319,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     } else {
       final price = IntFormatUtils.parseAmountInput(_priceController.text.trim());
       if (price == null) return;
-      final minDuration = _minDurationController.text.trim().isEmpty
-          ? null
-          : int.tryParse(_minDurationController.text.trim());
       final editing = widget.editingOffer;
       if (editing != null) {
         final slots = <GigOfferEditPhotoSlot>[
@@ -325,8 +337,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 price: price,
                 currencyCode: _currency,
                 descriptionRu: desc,
-                minDurationMinutes:
-                    _pricingType == GigPricingType.hourly ? minDuration : null,
+                minDurationMinutes: _pricingType == GigPricingType.hourly
+                    ? _minDurationMinutes
+                    : null,
                 isRemote: _isRemote,
                 photoSlots: slots,
                 photoOrderDirty: _photoOrderDirty,
@@ -343,8 +356,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 descriptionRu: desc,
                 // Min-duration only meaningful for hourly pricing — drop it
                 // otherwise so we don't ship a misleading value to the API.
-                minDurationMinutes:
-                    _pricingType == GigPricingType.hourly ? minDuration : null,
+                minDurationMinutes: _pricingType == GigPricingType.hourly
+                    ? _minDurationMinutes
+                    : null,
                 isRemote: _isRemote,
                 photoPaths: List<String>.unmodifiable(_selectedPhotos),
                 primaryPhotoIndex: _primaryPhotoIndex,
@@ -614,7 +628,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         onChanged: (v) => setState(() => _budgetType = v),
       ),
       const SizedBox(height: 14),
-      // Budget amount + Remote toggle share one row (50/50). When the user
+      // Budget amount + Remote toggle share one row (60/40 flex). When the user
       // picks "open budget" there's no amount input, so the remote toggle
       // takes the full width on its own to keep the layout balanced.
       if (_budgetType != GigRequestBudgetType.open)
@@ -666,7 +680,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         onChanged: (v) => setState(() => _pricingType = v),
       ),
       const SizedBox(height: 14),
-      // Price + Remote toggle share one row (50/50).
+      // Price + Remote toggle share one row (60/40 flex for digit width).
       _AmountAndRemoteRow(
         amountLabel: L10n.get("gigs_post_offer_field_price"),
         remoteLabel: L10n.get("gigs_post_request_field_remote"),
@@ -690,15 +704,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         const SizedBox(height: 14),
         _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
         _PlateField(
-          child: TextFormField(
-            controller: _minDurationController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: _fieldTextStyle(context),
-            decoration: _plateInputDecoration(
-              context,
-              hint: L10n.get("gigs_post_offer_field_min_duration_hint"),
-            ),
+          child: _MinDurationMinuteSpinner(
+            minutes: _minDurationMinutes,
+            onChanged: (v) => setState(() => _minDurationMinutes = v),
+            textStyle: _fieldTextStyle(context),
           ),
         ),
       ],
@@ -1041,6 +1050,17 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   );
 }
 
+/// Tighter horizontal padding for the gig price / budget amount digits so
+/// long UZS values (with thousand separators) fit without growing the row.
+InputDecoration _currencyAmountInputDecoration(
+    BuildContext context, {
+  String? hint,
+}) {
+  return _plateInputDecoration(context, hint: hint).copyWith(
+    contentPadding: const EdgeInsets.fromLTRB(8, 14, 10, 14),
+  );
+}
+
 class _FieldLabel extends StatelessWidget {
   const _FieldLabel(this.text);
   final String text;
@@ -1080,12 +1100,76 @@ class _PlateField extends StatelessWidget {
   }
 }
 
+/// Stepper for hourly offers: changes in five-minute increments between
+/// [_gigMinDurationFloorMinutes] and [_gigMinDurationCeilingMinutes].
+class _MinDurationMinuteSpinner extends StatelessWidget {
+  const _MinDurationMinuteSpinner({
+    required this.minutes,
+    required this.onChanged,
+    required this.textStyle,
+  });
+
+  final int minutes;
+  final ValueChanged<int> onChanged;
+  final TextStyle textStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final iconColor = scheme.onSurface;
+    final canDecrease = minutes > _gigMinDurationFloorMinutes;
+    final canIncrease = minutes < _gigMinDurationCeilingMinutes;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: canDecrease
+                ? () {
+                    HapticFeedbackUtils.selection();
+                    onChanged(
+                      (minutes - _gigMinDurationStepMinutes).clamp(
+                        _gigMinDurationFloorMinutes,
+                        _gigMinDurationCeilingMinutes,
+                      ),
+                    );
+                  }
+                : null,
+            icon: Icon(Icons.remove_circle_outline, color: iconColor),
+          ),
+          Expanded(
+            child: Text(
+              "$minutes",
+              textAlign: TextAlign.center,
+              style: textStyle,
+            ),
+          ),
+          IconButton(
+            onPressed: canIncrease
+                ? () {
+                    HapticFeedbackUtils.selection();
+                    onChanged(
+                      (minutes + _gigMinDurationStepMinutes).clamp(
+                        _gigMinDurationFloorMinutes,
+                        _gigMinDurationCeilingMinutes,
+                      ),
+                    );
+                  }
+                : null,
+            icon: Icon(Icons.add_circle_outline, color: iconColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Numeric input plate with a tappable currency code on the leading edge.
 ///
-/// The chip itself shows the active code (e.g. "UZS"); tapping it opens a
-/// bottom sheet with [supportedCurrencies] so the user can switch. A
-/// vertical hairline divider separates the chip from the typed amount so
-/// the prefix reads as "part of the value", not a stray button.
+/// The chip shows the active code (e.g. "UZS") without the flag — flags stay
+/// in the picker sheet — so more width remains for the numeric field. A
+/// vertical hairline divider separates the chip from the typed amount.
 class _CurrencyAmountField extends StatelessWidget {
   const _CurrencyAmountField({
     required this.controller,
@@ -1199,29 +1283,24 @@ class _CurrencyAmountField extends StatelessWidget {
             onTap: () => _pickCurrency(context),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 14,
+                horizontal: 10,
                 vertical: 14,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    CurrencyDisplayUtils.flagEmoji(currency),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
                     currency,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: chipColor,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 2),
                   Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    size: 18,
+                    size: 16,
                     color: chipColor.withValues(alpha: 0.7),
                   ),
                 ],
@@ -1235,7 +1314,7 @@ class _CurrencyAmountField extends StatelessWidget {
               keyboardType: TextInputType.number,
               inputFormatters: [DotThousandsDigitsInputFormatter()],
               style: _fieldTextStyle(context),
-              decoration: _plateInputDecoration(context, hint: hint),
+              decoration: _currencyAmountInputDecoration(context, hint: hint),
               onChanged: onChanged,
             ),
           ),
@@ -1464,8 +1543,8 @@ class _PricingTypePlate extends StatelessWidget {
   }
 }
 
-/// Side-by-side row that pairs the labeled price/budget input with the
-/// labeled remote toggle. Each child takes 50% of the available width.
+/// Side-by-side row: amount column gets extra horizontal flex so long UZS
+/// amounts fit; remote toggle stays readable on the right.
 /// Uses [CrossAxisAlignment.end] so the two plates line up at their bottom
 /// edge — which is what the eye reads as "the same row" — even though the
 /// left column has an extra `_FieldLabel` above the plate.
@@ -1490,6 +1569,7 @@ class _AmountAndRemoteRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
+          flex: 60,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1498,8 +1578,9 @@ class _AmountAndRemoteRow extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
+          flex: 40,
           child: _RemoteTogglePlate(
             value: isRemote,
             label: remoteLabel,

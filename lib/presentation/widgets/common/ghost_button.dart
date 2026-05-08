@@ -25,6 +25,7 @@ class GhostButton extends StatefulWidget {
     this.textStyle,
     this.isOnboardingButton = false,
     this.neumorphicSoftUi = false,
+    this.neumorphicFillColor,
   });
 
   final VoidCallback? onPressed;
@@ -44,6 +45,9 @@ class GhostButton extends StatefulWidget {
 
   /// Flat fill matching [ColorScheme.surface], no stroke, soft dual shadows.
   final bool neumorphicSoftUi;
+
+  /// When [neumorphicSoftUi] is true, optionally use this as the gradient base instead of a flat surface.
+  final Color? neumorphicFillColor;
 
   @override
   State<GhostButton> createState() => _GhostButtonState();
@@ -147,13 +151,20 @@ class _GhostButtonState extends State<GhostButton> {
               decoration: BoxDecoration(
                 borderRadius: radius,
                 color:
-                    widget.neumorphicSoftUi
+                    widget.neumorphicSoftUi &&
+                            widget.neumorphicFillColor == null
                         ? Theme.of(context).colorScheme.surface
                         : null,
                 gradient:
-                    widget.neumorphicSoftUi
-                        ? null
-                        : ThreeDSurfaceStyle.surfaceGradient(context, bg),
+                    widget.neumorphicSoftUi &&
+                            widget.neumorphicFillColor != null
+                        ? ThreeDSurfaceStyle.surfaceGradient(
+                            context,
+                            widget.neumorphicFillColor!,
+                          )
+                        : (!widget.neumorphicSoftUi
+                            ? ThreeDSurfaceStyle.surfaceGradient(context, bg)
+                            : null),
                 border:
                     widget.neumorphicSoftUi
                         ? null
@@ -393,12 +404,15 @@ class GhostButtonFactory {
     TextStyle? textStyle,
     bool isOnboardingButton = false,
     bool neumorphicSoftUi = false,
+    Color? neumorphicFillColor,
+    BorderRadius? borderRadius,
   }) {
     return GhostButton(
       onPressed: onPressed,
       padding: padding,
       width: width,
       height: height,
+      borderRadius: borderRadius,
       isLoading: isLoading,
       isDisabled: isDisabled,
       borderColor: borderColor,
@@ -406,6 +420,7 @@ class GhostButtonFactory {
       textStyle: textStyle,
       isOnboardingButton: isOnboardingButton,
       neumorphicSoftUi: neumorphicSoftUi,
+      neumorphicFillColor: neumorphicFillColor,
       child: Text(text),
     );
   }

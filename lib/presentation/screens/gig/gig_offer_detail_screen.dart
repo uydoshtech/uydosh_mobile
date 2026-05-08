@@ -18,9 +18,13 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -122,23 +126,32 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     return ListenableBuilder(
       listenable: UserListingState(),
       builder: (context, _) {
-        return BlocConsumer<GigOfferDetailBloc, GigOfferDetailState>(
+        return BlocListener<GigOfferDetailBloc, GigOfferDetailState>(
+          listenWhen: (previous, current) =>
+              previous is GigOfferDetailLoaded &&
+              current is GigOfferDetailLoaded &&
+              previous.bookingInFlight &&
+              !current.bookingInFlight &&
+              current.activeClientBookingForOffer != null,
           listener: (context, state) {
-            if (state is GigOfferDetailLoaded) {
-              GigFavoritesState().syncFromOffers([state.offer]);
-            }
-            if (state is GigOfferBookingCreated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(L10n.get("gigs_booking_created_toast"))),
-              );
-              context.pushMyGigBookings();
-            } else if (state is GigOfferDetailError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            }
+            ToastTheme.showSuccess(
+              context,
+              message: L10n.get("gigs_booking_created_toast"),
+              leadingIcon: Icons.add_rounded,
+            );
+            context.pushMyGigBookings();
           },
-          builder: (context, state) {
+          child: BlocConsumer<GigOfferDetailBloc, GigOfferDetailState>(
+            listener: (context, state) {
+              if (state is GigOfferDetailLoaded) {
+                GigFavoritesState().syncFromOffers([state.offer]);
+              } else if (state is GigOfferDetailError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+            builder: (context, state) {
             final offerForMenu =
                 state is GigOfferDetailLoaded ? state.offer : null;
             final showOwnerActions = offerForMenu != null &&
@@ -152,29 +165,32 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                 title: Text(L10n.get("gigs_offer_detail_title")),
                 actions: [
                   if (canFavoriteOffer)
-                    ListenableBuilder(
-                      listenable: GigFavoritesState()
-                          .listenableForOffer(offerForMenu.id),
-                      builder: (context, _) {
-                        final fav = GigFavoritesState()
-                            .isOfferFavorite(offerForMenu.id);
-                        return IconButton(
-                          onPressed: _offerFavoriteBusy
-                              ? null
-                              : () => unawaited(
-                                    _toggleOfferFavorite(
-                                      context,
-                                      offerForMenu,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ListenableBuilder(
+                        listenable: GigFavoritesState()
+                            .listenableForOffer(offerForMenu.id),
+                        builder: (context, _) {
+                          final fav = GigFavoritesState()
+                              .isOfferFavorite(offerForMenu.id);
+                          return IconButton(
+                            onPressed: _offerFavoriteBusy
+                                ? null
+                                : () => unawaited(
+                                      _toggleOfferFavorite(
+                                        context,
+                                        offerForMenu,
+                                      ),
                                     ),
-                                  ),
-                          icon: Icon(
-                            fav ? Icons.favorite : Icons.favorite_border,
-                            color: fav
-                                ? AppColors.favoriteActive
-                                : AppColors.favoriteInactive,
-                          ),
-                        );
-                      },
+                            icon: Icon(
+                              fav ? Icons.favorite : Icons.favorite_border,
+                              color: fav
+                                  ? AppColors.favoriteActive
+                                  : AppColors.favoriteInactive,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   if (showOwnerActions)
                     ActionDropdownMenu(
@@ -202,6 +218,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
               body: _buildBody(context, state),
             );
           },
+        ),
         );
       },
     );
@@ -257,6 +274,7 @@ class _OfferDetailContentStateful extends StatefulWidget {
 class _OfferDetailContentStatefulState
     extends State<_OfferDetailContentStateful> {
   PageController? _photoPageController;
+  bool _bookingChatInFlight = false;
 
   @override
   void initState() {
@@ -283,9 +301,56 @@ class _OfferDetailContentStatefulState
     }
   }
 
+  String _providerDisplayName(GigOffer offer) {
+    final n = offer.providerDisplayName?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    return L10n.get("gigs_offer_provider_fallback");
+  }
+
+  Future<void> _openActiveBookingChat(GigBooking booking, GigOffer offer) async {
+    if (_bookingChatInFlight) return;
+    if (!AuthenticationState().isAuthenticated) {
+      context.pushAuthWizard();
+      return;
+    }
+    setState(() => _bookingChatInFlight = true);
+    try {
+      final conversation = await getIt<IMessagingService>().createConversation(
+        gigBookingId: booking.id,
+      );
+      if (!mounted) return;
+      final name = _providerDisplayName(offer);
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
+          builder: (_) => ChatScreen(
+            conversationId: conversation.id,
+            otherUserId: offer.providerUserId,
+            otherUserName: name,
+            otherUserInitials: StringUtils.extractInitials(name),
+            otherUserAvatar: offer.providerAvatarUrl,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("conversation_failed"),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _bookingChatInFlight = false);
+      }
+    }
+  }
+
   void _onBookThisServicePressed() {
     if (!AuthenticationState().isAuthenticated) {
       context.pushAuthWizard();
+      return;
+    }
+    if (widget.state.activeClientBookingForOffer != null) {
       return;
     }
     context.read<GigOfferDetailBloc>().add(const BookThisOffer());
@@ -313,6 +378,7 @@ class _OfferDetailContentStatefulState
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final offer = widget.state.offer;
+    final existingBooking = widget.state.activeClientBookingForOffer;
     final language = LanguageState().currentLanguage;
     final description = offer.localizedDescription(language) ?? "";
     final categoryName = offer.category?.localizedName(language) ?? "";
@@ -459,21 +525,47 @@ class _OfferDetailContentStatefulState
                         fontSize: 16,
                       ),
                     )
-                  : PrimaryButtonFactory.iconText(
-                      onPressed: widget.state.bookingInFlight
-                          ? null
-                          : _onBookThisServicePressed,
-                      isLoading: widget.state.bookingInFlight,
-                      icon: Icons.event_available_outlined,
-                      text: L10n.get("gigs_offer_book_cta"),
-                      height: 54,
-                      width: double.infinity,
-                      borderRadius: BorderRadius.circular(16),
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
+                  : existingBooking != null
+                      ? PrimaryButtonFactory.iconTextCentered(
+                          onPressed: _bookingChatInFlight
+                              ? null
+                              : () => unawaited(
+                                    _openActiveBookingChat(
+                                      existingBooking,
+                                      offer,
+                                    ),
+                                  ),
+                          isLoading: _bookingChatInFlight,
+                          icon: Icons.chat_bubble_outline_rounded,
+                          text: L10n.getWithParams(
+                            "gigs_offer_book_view_orders_cta",
+                            params: {
+                              "user_name": _providerDisplayName(offer),
+                            },
+                          ),
+                          height: 54,
+                          width: double.infinity,
+                          borderRadius: BorderRadius.circular(16),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        )
+                      : PrimaryButtonFactory.iconText(
+                          onPressed: widget.state.bookingInFlight
+                              ? null
+                              : _onBookThisServicePressed,
+                          isLoading: widget.state.bookingInFlight,
+                          icon: Icons.event_available_outlined,
+                          text: L10n.get("gigs_offer_book_cta"),
+                          height: 54,
+                          width: double.infinity,
+                          borderRadius: BorderRadius.circular(16),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
             ),
           ),
         ),
@@ -495,6 +587,120 @@ class _OfferDetailContentStatefulState
         return L10n.getWithParams("gigs_price_fixed", params: params);
     }
   }
+}
+
+/// Matches [GigOfferTile] defaults when the API omits aggregates on detail load.
+const double _kGigOfferDetailProviderPlaceholderRatingOutOfFive = 4.0;
+const int _kGigOfferDetailProviderPlaceholderReviewCount = 16;
+
+IconData _gigOfferDetailProviderStarIcon(double? averageOutOfFive, int starIndex) {
+  if (averageOutOfFive == null) {
+    return Icons.star_border_rounded;
+  }
+  final r = averageOutOfFive.clamp(0.0, 5.0);
+  final remainder = r - starIndex;
+  if (remainder >= 0.75) return Icons.star_rounded;
+  if (remainder >= 0.25) return Icons.star_half_rounded;
+  return Icons.star_border_rounded;
+}
+
+Widget _gigOfferDetailProviderRatingReviewsRow({
+  required GigOffer offer,
+  required ColorScheme scheme,
+}) {
+  final rating = offer.providerRatingAvg;
+  final reviews = offer.providerRatingCount ?? 0;
+  final reviewLabelCount =
+      reviews > 0 ? reviews : _kGigOfferDetailProviderPlaceholderReviewCount;
+  final placeholderStarColor =
+      scheme.onSurface.withValues(alpha: 0.38);
+
+  final mutedStyle = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: scheme.onSurface.withValues(alpha: 0.72),
+  );
+
+  final segments = <Widget>[];
+
+  void pushSep() {
+    if (segments.isEmpty) return;
+    segments.add(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Text("·", style: mutedStyle),
+      ),
+    );
+  }
+
+  if (rating != null) {
+    segments.add(
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < 5; i++) ...[
+            Icon(
+              _gigOfferDetailProviderStarIcon(rating, i),
+              size: 16,
+              color: Colors.amber,
+            ),
+            if (i < 4) const SizedBox(width: 2),
+          ],
+          const SizedBox(width: 8),
+          Text(
+            rating.toStringAsFixed(1),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: scheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  } else {
+    final placeholderStarIcons = <Widget>[];
+    for (var i = 0; i < 5; i++) {
+      final icon = _gigOfferDetailProviderStarIcon(
+        _kGigOfferDetailProviderPlaceholderRatingOutOfFive,
+        i,
+      );
+      placeholderStarIcons.add(
+        Icon(
+          icon,
+          size: 16,
+          color: icon == Icons.star_border_rounded
+              ? placeholderStarColor
+              : Colors.amber,
+        ),
+      );
+      if (i < 4) placeholderStarIcons.add(const SizedBox(width: 2));
+    }
+    segments.add(
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: placeholderStarIcons,
+      ),
+    );
+  }
+
+  pushSep();
+  segments.add(
+    Text(
+      L10n.plural("gigs_offer_tile_reviews", reviewLabelCount),
+      style: reviews > 0
+          ? mutedStyle
+          : mutedStyle.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.45),
+            ),
+    ),
+  );
+
+  return Wrap(
+    crossAxisAlignment: WrapCrossAlignment.center,
+    runSpacing: 6,
+    children: segments,
+  );
 }
 
 class _GigOfferProviderBottomTile extends StatelessWidget {
@@ -558,28 +764,11 @@ class _GigOfferProviderBottomTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  if (offer.providerRatingAvg != null) ...[
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 18,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "${offer.providerRatingAvg!.toStringAsFixed(1)} "
-                          "(${offer.providerRatingCount ?? 0})",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: scheme.onSurface.withValues(alpha: 0.85),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                  ],
+                  _gigOfferDetailProviderRatingReviewsRow(
+                    offer: offer,
+                    scheme: scheme,
+                  ),
+                  const SizedBox(height: 6),
                   Text(
                     L10n.getWithParams(
                       "gigs_offer_provider_completed_jobs",

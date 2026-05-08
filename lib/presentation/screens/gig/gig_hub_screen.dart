@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -33,6 +34,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
@@ -87,7 +89,7 @@ class _GigHubBody extends StatefulWidget {
   State<_GigHubBody> createState() => _GigHubBodyState();
 }
 
-class _GigHubBodyState extends State<_GigHubBody> {
+class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   GigHubFeed _feed = GigHubFeed.services;
 
@@ -100,17 +102,33 @@ class _GigHubBodyState extends State<_GigHubBody> {
   /// the chip ribbon renders on the first frame with no loading state.
   final List<GigCategory> _categories = GigCategoryCache.getOrdered();
 
+  void _onAuthForPendingBookings() {
+    unawaited(PendingGigBookingsState().refresh());
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    AuthenticationState().addListener(_onAuthForPendingBookings);
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
+    unawaited(PendingGigBookingsState().refresh());
     _scrollController.addListener(_onScroll);
     getIt<GigHubFeedsRefreshNotifier>().addListener(_onPublishFlowClosed);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(PendingGigBookingsState().refresh());
+    }
+  }
+
+  @override
   void dispose() {
+    AuthenticationState().removeListener(_onAuthForPendingBookings);
+    WidgetsBinding.instance.removeObserver(this);
     getIt<GigHubFeedsRefreshNotifier>().removeListener(_onPublishFlowClosed);
     _scrollController.dispose();
     super.dispose();
@@ -131,6 +149,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
             categoryId: _selectedCategoryId,
           ),
         );
+    unawaited(PendingGigBookingsState().refresh());
   }
 
   void _onScroll() {
@@ -219,6 +238,7 @@ class _GigHubBodyState extends State<_GigHubBody> {
               ),
             );
     }
+    await PendingGigBookingsState().refresh();
   }
 
   /// Empty-state icon: category glyph when a filter chip is selected, otherwise
@@ -1113,16 +1133,48 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
       ),
     );
 
+    final pillBody = useLiquidGlass ? liquidBody : legacyBody;
+    final unreadColor = themeState.unreadIndicatorColor;
+
     return Tooltip(
       message: label,
-      child: Semantics(
-        button: true,
-        label: label,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-          child: useLiquidGlass ? liquidBody : legacyBody,
-        ),
+      child: ListenableBuilder(
+        listenable: PendingGigBookingsState(),
+        builder: (context, _) {
+          final pendingState = PendingGigBookingsState();
+          final showDot = pendingState.hasPendingBookings;
+          final semanticLabel = showDot
+              ? "$label (${L10n.get("gigs_status_pending")})"
+              : label;
+          return Semantics(
+            button: true,
+            label: semanticLabel,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 90),
+              transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (showDot) ...[
+                    Transform.translate(
+                      offset: const Offset(6, 0),
+                      child: PulseThenBlinkDotWidget(
+                        trigger: pendingState.dotTrigger,
+                        color: unreadColor,
+                        size: 11,
+                        blinkDuration: const Duration(milliseconds: 750),
+                        borderColor: Colors.white,
+                        borderWidth: 2,
+                      ),
+                    ),
+                  ],
+                  pillBody,
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

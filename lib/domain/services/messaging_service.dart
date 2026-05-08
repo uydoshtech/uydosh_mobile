@@ -36,15 +36,18 @@ abstract class IMessagingService {
 
   /// Open (or reactivate) a conversation.
   ///
-  /// Two mutually-exclusive shapes are accepted:
+  /// Mutually-exclusive shapes are accepted:
   ///   - Listing chat: pass [listingId] + [participantId].
   ///   - Gig-request chat: pass [gigRequestId]; [participantId] is ignored
   ///     (the backend forces it to the request's `client_user_id` to prevent
   ///     address-book scraping).
+  ///   - Gig booking chat: pass [gigBookingId]; [participantId] is ignored
+  ///     (the backend sets it to the other party on that booking).
   Future<Conversation> createConversation({
     int? listingId,
     int? participantId,
     int? gigRequestId,
+    int? gigBookingId,
   });
 
   Future<void> deleteConversation(int conversationId);
@@ -311,6 +314,7 @@ class MessagingService implements IMessagingService {
     int? listingId,
     int? participantId,
     int? gigRequestId,
+    int? gigBookingId,
   }) async {
     try {
       await _checkAuthentication();
@@ -320,10 +324,14 @@ class MessagingService implements IMessagingService {
       // always a bug (e.g. forgetting to pass listingId in a refactor).
       final isListing = listingId != null;
       final isGigRequest = gigRequestId != null;
-      if (isListing == isGigRequest) {
+      final isGigBooking = gigBookingId != null;
+      final shapeCount =
+          (isListing ? 1 : 0) + (isGigRequest ? 1 : 0) + (isGigBooking ? 1 : 0);
+      if (shapeCount != 1) {
         throw ArgumentError(
-          "createConversation requires exactly one of listingId or "
-          "gigRequestId (received listingId=$listingId, gigRequestId=$gigRequestId)",
+          "createConversation requires exactly one of listingId, "
+          "gigRequestId, or gigBookingId (received listingId=$listingId, "
+          "gigRequestId=$gigRequestId, gigBookingId=$gigBookingId)",
         );
       }
       if (isListing && participantId == null) {
@@ -332,15 +340,23 @@ class MessagingService implements IMessagingService {
         );
       }
 
-      final request = isGigRequest
-          ? CreateConversationRequest(
-              contextType: "gig_request",
-              contextId: gigRequestId,
-            )
-          : CreateConversationRequest(
-              listingId: listingId,
-              participantId: participantId,
-            );
+      final CreateConversationRequest request;
+      if (isGigRequest) {
+        request = CreateConversationRequest(
+          contextType: "gig_request",
+          contextId: gigRequestId,
+        );
+      } else if (isGigBooking) {
+        request = CreateConversationRequest(
+          contextType: "gig_booking",
+          contextId: gigBookingId,
+        );
+      } else {
+        request = CreateConversationRequest(
+          listingId: listingId,
+          participantId: participantId,
+        );
+      }
 
       final response = await _apiClient
           .post<Conversation, CreateConversationRequest>("/conversations", (

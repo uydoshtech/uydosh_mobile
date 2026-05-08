@@ -211,15 +211,11 @@ class _GigOfferTileState extends State<GigOfferTile> {
                           ListingPaymentsOutlineBadge(
                             label: _formatGigOfferTilePrice(widget.offer),
                           ),
-                          if (_gigOfferTileHasRating(widget.offer)) ...[
-                            const SizedBox(height: 8),
-                            _GigOfferTileRatingStars(
-                              rating: widget.offer.providerRatingAvg,
-                              reviewCount:
-                                  widget.offer.providerRatingCount ?? 0,
-                              scheme: scheme,
-                            ),
-                          ],
+                          const SizedBox(height: 6),
+                          _GigOfferTileSocialProofRow(
+                            offer: widget.offer,
+                            scheme: scheme,
+                          ),
                         ],
                       ),
                     ),
@@ -324,9 +320,11 @@ String _formatGigOfferTilePrice(GigOffer o) {
   }
 }
 
-bool _gigOfferTileHasRating(GigOffer offer) =>
-    offer.providerRatingAvg != null ||
-    (offer.providerRatingCount != null && offer.providerRatingCount! > 0);
+/// Default tile visualization when the feed has no `rating_avg` yet.
+const double _kGigOfferTilePlaceholderRatingOutOfFive = 4.0;
+
+/// Shown when the feed payload has no `rating_count` yet (layout placeholder).
+const int _kGigOfferTilePlaceholderReviewCount = 16;
 
 IconData _gigOfferTileStarIcon(double? averageOutOfFive, int starIndex) {
   if (averageOutOfFive == null) {
@@ -339,52 +337,122 @@ IconData _gigOfferTileStarIcon(double? averageOutOfFive, int starIndex) {
   return Icons.star_border_rounded;
 }
 
-class _GigOfferTileRatingStars extends StatelessWidget {
-  const _GigOfferTileRatingStars({
-    required this.rating,
-    required this.reviewCount,
+class _GigOfferTileSocialProofRow extends StatelessWidget {
+  const _GigOfferTileSocialProofRow({
+    required this.offer,
     required this.scheme,
   });
 
-  final double? rating;
-  final int reviewCount;
+  final GigOffer offer;
   final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (var i = 0; i < 5; i++) ...[
+    final jobs = offer.providerCompletedJobsCount ?? 0;
+    final reviews = offer.providerRatingCount ?? 0;
+    final rating = offer.providerRatingAvg;
+    final reviewLabelCount =
+        reviews > 0 ? reviews : _kGigOfferTilePlaceholderReviewCount;
+    final placeholderStarColor =
+        scheme.onSurface.withValues(alpha: 0.38);
+
+    final mutedStyle = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: scheme.onSurface.withValues(alpha: 0.62),
+    );
+
+    final sepStyle = mutedStyle;
+
+    final segments = <Widget>[];
+
+    void pushSep() {
+      if (segments.isEmpty) return;
+      segments.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Text("·", style: sepStyle),
+        ),
+      );
+    }
+
+    if (rating != null) {
+      segments.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 5; i++) ...[
+              Icon(
+                _gigOfferTileStarIcon(rating, i),
+                size: 14,
+                color: Colors.amber,
+              ),
+              if (i < 4) const SizedBox(width: 1),
+            ],
+            const SizedBox(width: 6),
+            Text(
+              rating.toStringAsFixed(1),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      final placeholderStarIcons = <Widget>[];
+      for (var i = 0; i < 5; i++) {
+        final icon = _gigOfferTileStarIcon(
+          _kGigOfferTilePlaceholderRatingOutOfFive,
+          i,
+        );
+        placeholderStarIcons.add(
           Icon(
-            _gigOfferTileStarIcon(rating, i),
-            size: 16,
-            color: Colors.amber,
+            icon,
+            size: 14,
+            color: icon == Icons.star_border_rounded
+                ? placeholderStarColor
+                : Colors.amber,
           ),
-          if (i < 4) const SizedBox(width: 2),
-        ],
-        if (rating != null) ...[
-          const SizedBox(width: 8),
-          Text(
-            rating!.toStringAsFixed(1),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: scheme.onSurface,
-            ),
-          ),
-        ],
-        if (reviewCount > 0) ...[
-          const SizedBox(width: 4),
-          Text(
-            "($reviewCount)",
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface.withValues(alpha: 0.55),
-            ),
-          ),
-        ],
-      ],
+        );
+        if (i < 4) placeholderStarIcons.add(const SizedBox(width: 1));
+      }
+      segments.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: placeholderStarIcons,
+        ),
+      );
+    }
+
+    if (jobs > 0) {
+      pushSep();
+      segments.add(
+        Text(
+          L10n.plural("gigs_offer_tile_jobs", jobs),
+          style: mutedStyle,
+        ),
+      );
+    }
+
+    pushSep();
+    segments.add(
+      Text(
+        L10n.plural("gigs_offer_tile_reviews", reviewLabelCount),
+        style: reviews > 0
+            ? mutedStyle
+            : mutedStyle.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.45),
+              ),
+      ),
+    );
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 4,
+      children: segments,
     );
   }
 }

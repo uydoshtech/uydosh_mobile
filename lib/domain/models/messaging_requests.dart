@@ -10,6 +10,9 @@ part "messaging_requests.g.dart";
 ///   - Gig-request chat: `contextType='gig_request'` + `contextId=<requestId>`.
 ///     The server overwrites `participant_id` with the gig request's owner;
 ///     callers can omit it.
+///   - Gig booking chat: `contextType='gig_booking'` + `contextId=<bookingId>`.
+///     The server sets `participant_id` to the other party on the booking;
+///     callers can omit it.
 ///
 /// We intentionally serialize `null` keys as absent (`includeIfNull: false`)
 /// so the backend's "exactly one shape" validation isn't tripped by stray

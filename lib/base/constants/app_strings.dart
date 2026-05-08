@@ -720,9 +720,15 @@ class AppStrings {
       "gigs_browse_empty": "No services available yet.",
       "gigs_offer_detail_title": "Service",
       "gigs_offer_book_cta": "Book this service",
+      "gigs_offer_book_view_orders_cta":
+          "Booked: chat with {user_name}",
       "gigs_offer_edit_cta": "Edit service",
       "gigs_offer_provider_fallback": "Service provider",
       "gigs_offer_provider_completed_jobs": "{count} jobs completed",
+      "gigs_offer_tile_jobs_one": "{count} job",
+      "gigs_offer_tile_jobs_other": "{count} jobs",
+      "gigs_offer_tile_reviews_one": "{count} review",
+      "gigs_offer_tile_reviews_other": "{count} reviews",
       "gigs_booking_created_toast": "Booking created.",
 
       "gigs_post_request_title": "Post a task",
@@ -807,6 +813,8 @@ class AppStrings {
       "gigs_invite_provider_owner_only": "Only the person who posted the task can invite.",
       "gigs_invite_provider_not_open_task": "This task is no longer open for invites.",
       "gigs_action_accept_booking": "Accept",
+      "gigs_action_chat_booking": "Chat",
+      "gigs_booking_chat_peer_fallback": "Participant",
 
       "gigs_requests_title": "Open tasks",
       "gigs_requests_empty": "No open tasks right now.",
@@ -2069,9 +2077,17 @@ class AppStrings {
       "gigs_browse_empty": "Пока нет доступных услуг",
       "gigs_offer_detail_title": "Услуга",
       "gigs_offer_book_cta": "Заказать услугу",
+      "gigs_offer_book_view_orders_cta":
+          "Заказано: чат с {user_name}",
       "gigs_offer_edit_cta": "Редактировать услугу",
       "gigs_offer_provider_fallback": "Исполнитель",
       "gigs_offer_provider_completed_jobs": "Выполнено заказов: {count}",
+      "gigs_offer_tile_jobs_one": "{count} заказ",
+      "gigs_offer_tile_jobs_few": "{count} заказа",
+      "gigs_offer_tile_jobs_many": "{count} заказов",
+      "gigs_offer_tile_reviews_one": "{count} отзыв",
+      "gigs_offer_tile_reviews_few": "{count} отзыва",
+      "gigs_offer_tile_reviews_many": "{count} отзывов",
       "gigs_booking_created_toast": "Заказ создан.",
 
       "gigs_post_request_title": "Опубликовать задачу",
@@ -2159,6 +2175,8 @@ class AppStrings {
       "gigs_invite_provider_not_open_task":
           "Эта задача уже не доступна для приглашения.",
       "gigs_action_accept_booking": "Принять",
+      "gigs_action_chat_booking": "Чат",
+      "gigs_booking_chat_peer_fallback": "Участник",
 
       "gigs_requests_title": "Открытые задачи",
       "gigs_requests_empty": "Сейчас нет открытых задач.",
@@ -3436,9 +3454,13 @@ class AppStrings {
       "gigs_browse_empty": "Hozircha xizmatlar yo'q.",
       "gigs_offer_detail_title": "Xizmat",
       "gigs_offer_book_cta": "Xizmatni buyurtma qilish",
+      "gigs_offer_book_view_orders_cta":
+          "Buyurtma qilindi: {user_name} bilan chat",
       "gigs_offer_edit_cta": "Xizmatni tahrirlash",
       "gigs_offer_provider_fallback": "Bajaruvchi",
       "gigs_offer_provider_completed_jobs": "Bajarilgan buyurtmalar: {count}",
+      "gigs_offer_tile_jobs_other": "{count} buyurtma",
+      "gigs_offer_tile_reviews_other": "{count} sharh",
       "gigs_booking_created_toast": "Buyurtma yaratildi.",
 
       "gigs_post_request_title": "Vazifa joylash",
@@ -3528,6 +3550,8 @@ class AppStrings {
       "gigs_invite_provider_not_open_task":
           "Bu vazifa endi taklif uchun ochiq emas.",
       "gigs_action_accept_booking": "Qabul qilish",
+      "gigs_action_chat_booking": "Suhbat",
+      "gigs_booking_chat_peer_fallback": "Ishtirokchi",
 
       "gigs_requests_title": "Ochiq vazifalar",
       "gigs_requests_empty": "Hozircha ochiq vazifa yo'q.",

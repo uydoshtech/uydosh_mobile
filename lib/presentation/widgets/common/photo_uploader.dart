@@ -10,6 +10,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/listing_photo_import.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
@@ -88,6 +89,9 @@ class _PhotoUploaderState extends State<PhotoUploader>
   int get _effectiveMaxPhotos =>
       widget.maxPhotos ?? AppConfig.maxPhotosPerListing;
 
+  int get _totalNewPhotoSlotsUsed =>
+      widget.existingPhotos.length + widget.selectedPhotos.length;
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
@@ -99,15 +103,19 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
         if (images.isNotEmpty) {
           final remainingSlots =
-              _effectiveMaxPhotos - widget.selectedPhotos.length;
+              (_effectiveMaxPhotos - _totalNewPhotoSlotsUsed).clamp(
+                0,
+                _effectiveMaxPhotos,
+              );
           final imagesToProcess = images.take(remainingSlots).toList();
 
           if (imagesToProcess.isNotEmpty) {
             final newPhotos = List<String>.from(widget.selectedPhotos);
 
-            for (final image in imagesToProcess) {
-              newPhotos.add(image.path);
-            }
+            final materialized = await Future.wait(
+              imagesToProcess.map(materializePickedPhotoToUniqueFile),
+            );
+            newPhotos.addAll(materialized);
 
             if (widget.selectedPhotos.isEmpty &&
                 newPhotos.isNotEmpty &&
@@ -140,7 +148,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
         );
 
         if (capturedPath != null) {
-          if (widget.selectedPhotos.length < _effectiveMaxPhotos) {
+          if (_totalNewPhotoSlotsUsed < _effectiveMaxPhotos) {
             // Offer crop/rotate right after capture. Cancelling the cropper
             // silently keeps the original photo so we never punish the user
             // for taking a shot they don't want to crop.
@@ -229,7 +237,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       "listing_photos_count",
                       params: {
                         "current":
-                            "${(widget.existingPhotos.length + widget.selectedPhotos.length).clamp(0, _effectiveMaxPhotos)}",
+                            "${_totalNewPhotoSlotsUsed.clamp(0, _effectiveMaxPhotos)}",
                         "max": "$_effectiveMaxPhotos",
                       },
                     ),
@@ -420,7 +428,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ),
                   ),
                 ),
-                if (widget.selectedPhotos.length < _effectiveMaxPhotos)
+                if (_totalNewPhotoSlotsUsed < _effectiveMaxPhotos)
                   Builder(
                     builder: (context) {
                       final isLightTheme = ThemeState().isLightTheme;
