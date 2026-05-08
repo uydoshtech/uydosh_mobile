@@ -472,6 +472,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getLocalizedUniversityName: _getLocalizedUniversityName,
               ),
               const SizedBox(height: 24),
+              ProfileListingsSection(
+                userRole: _userRole,
+                onAchievementsOpened: () => setState(() {}),
+              ),
+              const SizedBox(height: 24),
               if (!_userBlocked && AuthenticationState().isAuthenticated)
                 ValueListenableBuilder<bool>(
                   valueListenable:
@@ -493,11 +498,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               if (!_userBlocked && AuthenticationState().isAuthenticated)
                 const SizedBox(height: 24),
-              ProfileListingsSection(
-                userRole: _userRole,
-                onAchievementsOpened: () => setState(() {}),
-              ),
-              const SizedBox(height: 24),
               ProfileSettingsSection(
                 onLogout: () => _showLogoutDialog(context),
                 onDeleteAccount: () => _showDeleteAccountDialog(context),
