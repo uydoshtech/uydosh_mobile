@@ -194,6 +194,8 @@ class _ArchivedConversationsScreenState
           // Server convention: listing owner is always `participant_id`.
           listingOwnerUserId:
               isGigRequest ? null : conversation.participantId,
+          conversationContextType: conversation.contextType,
+          conversationParticipantId: conversation.participantId,
           gigRequestId: isGigRequest ? conversation.gigRequestId : null,
           gigRequestTitle:
               isGigRequest ? conversation.gigRequestTitle : null,

@@ -9,8 +9,8 @@ import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 /// circular actions (e.g. profile).
 ///
 /// Use [padding] + [contentSlotSize] so the painted control matches neighbors
-/// (e.g. `padding: EdgeInsets.zero`, `contentSlotSize: 40` for a full-bleed
-/// circular avatar in a 40px neumorphic disc).
+/// (e.g. `padding: EdgeInsets.zero`, `contentSlotSize: 32` for a full-bleed
+/// circular avatar in a neumorphic disc).
 class ThreeDAppBarIconButton extends StatelessWidget {
   const ThreeDAppBarIconButton({
     required this.iconData,

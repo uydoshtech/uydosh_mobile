@@ -10,7 +10,7 @@ class QuickQuestionsWidget extends StatelessWidget {
   const QuickQuestionsWidget({
     required this.onQuestionTap,
     this.listingTypeId,
-    this.isViewerListingOwner = false,
+    this.isViewerServiceOfferer = false,
     this.blendWithGlassBackdrop = false,
     super.key,
   });
@@ -22,8 +22,8 @@ class QuickQuestionsWidget extends StatelessWidget {
   /// Retained for API stability; quick questions are category-agnostic.
   final int? listingTypeId;
 
-  /// Retained for API stability; chip text does not depend on viewer role.
-  final bool isViewerListingOwner;
+  /// When true, show provider/owner quick prompts instead of client prompts.
+  final bool isViewerServiceOfferer;
 
   /// When true, strip has no fill (parent provides frosted glass).
   final bool blendWithGlassBackdrop;
@@ -52,7 +52,7 @@ class QuickQuestionsWidget extends StatelessWidget {
 
         final keys = quickQuestionKeysFor(
           listingTypeId: listingTypeId,
-          isViewerListingOwner: isViewerListingOwner,
+          isViewerServiceOfferer: isViewerServiceOfferer,
         );
 
         return Container(

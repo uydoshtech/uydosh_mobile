@@ -236,6 +236,14 @@ class AppStrings {
       "quick_question_generic_arrangement":
           "How would you like to arrange this?",
       "quick_question_generic_clarify_details": "Can we clarify the details?",
+      "quick_question_offerer_scope": "What exactly do you need done?",
+      "quick_question_offerer_deadline": "When do you need this done by?",
+      "quick_question_offerer_where": "Where should this take place?",
+      "quick_question_offerer_budget": "What budget did you have in mind?",
+      "quick_question_offerer_materials":
+          "Will you provide materials, or should I?",
+      "quick_question_offerer_visit":
+          "Can we schedule a short call or visit to assess?",
       "private_room": "Private Room",
       "with_photo": "With photo",
       "search_filter_private_room": "Own room",
@@ -819,6 +827,9 @@ class AppStrings {
       "gigs_action_accept_booking": "Accept",
       "gigs_action_chat_booking": "Chat",
       "gigs_booking_chat_peer_fallback": "Participant",
+      "gigs_booking_cancel_confirm_title": "Cancel this booking?",
+      "gigs_booking_cancel_confirm_message":
+          "The other participant will be notified.",
 
       "gigs_requests_title": "Open tasks",
       "gigs_requests_empty": "No open tasks right now.",
@@ -1586,6 +1597,14 @@ class AppStrings {
       "quick_question_generic_how_soon": "Как быстро можно начать?",
       "quick_question_generic_arrangement": "Как удобнее организовать?",
       "quick_question_generic_clarify_details": "Можно уточнить детали?",
+      "quick_question_offerer_scope": "Что именно нужно сделать?",
+      "quick_question_offerer_deadline": "К какому сроку это нужно?",
+      "quick_question_offerer_where": "Где это будет происходить?",
+      "quick_question_offerer_budget": "Какой бюджет вы закладываете?",
+      "quick_question_offerer_materials":
+          "Материалы предоставите вы или мне брать с собой?",
+      "quick_question_offerer_visit":
+          "Можем договориться о коротком звонке или выезде для оценки?",
       "private_room": "Отдельная комната",
       "with_photo": "С фото",
       "search_filter_private_room": "Отдельная комната",
@@ -2185,6 +2204,9 @@ class AppStrings {
       "gigs_action_accept_booking": "Принять",
       "gigs_action_chat_booking": "Чат",
       "gigs_booking_chat_peer_fallback": "Участник",
+      "gigs_booking_cancel_confirm_title": "Отменить заказ?",
+      "gigs_booking_cancel_confirm_message":
+          "Второй участник получит уведомление.",
 
       "gigs_requests_title": "Открытые задачи",
       "gigs_requests_empty": "Сейчас нет открытых задач.",
@@ -2970,6 +2992,15 @@ class AppStrings {
       "quick_question_generic_arrangement": "Qanday tashkil qilish qulay?",
       "quick_question_generic_clarify_details":
           "Tafsilotlarni aniqlashtirsak bo'ladimi?",
+      "quick_question_offerer_scope": "Aynan nima qilish kerak?",
+      "quick_question_offerer_deadline": "Buni qachongacha tugatish kerak?",
+      "quick_question_offerer_where": "Bu qayerda bo'lishi kerak?",
+      "quick_question_offerer_budget":
+          "Qancha byudjet bo'lishini o'ylagansiz?",
+      "quick_question_offerer_materials":
+          "Materiallarni o'zingiz taminlaysizmi, yoki men olib kelamanmi?",
+      "quick_question_offerer_visit":
+          "Baholash uchun qisqa qo'ng'iroq yoki ko'rish belgilash mumkinmi?",
       "private_room": "Shaxsiy xona",
       "with_photo": "Surat bilan",
       "search_filter_private_room": "Shaxsiy xona",
@@ -3564,6 +3595,9 @@ class AppStrings {
       "gigs_action_accept_booking": "Qabul qilish",
       "gigs_action_chat_booking": "Suhbat",
       "gigs_booking_chat_peer_fallback": "Ishtirokchi",
+      "gigs_booking_cancel_confirm_title": "Buyurtmani bekor qilasizmi?",
+      "gigs_booking_cancel_confirm_message":
+          "Boshqa ishtirokchi xabardor qilinadi.",
 
       "gigs_requests_title": "Ochiq vazifalar",
       "gigs_requests_empty": "Hozircha ochiq vazifa yo'q.",

@@ -1067,10 +1067,12 @@ class MainNavigationState extends State<MainNavigation>
                                 hasAvatar
                                     ? EdgeInsets.zero
                                     : const EdgeInsets.all(6),
-                            contentSlotSize: hasAvatar ? 40 : 28,
+                            contentSlotSize:
+                                hasAvatar ? kAppBarAvatarContentSize : 28,
                             neumorphicSoftUi: true,
                             iconWidget: AppBarProfileIcon(
-                              iconSize: hasAvatar ? 40 : 28,
+                              iconSize:
+                                  hasAvatar ? kAppBarAvatarContentSize : 28,
                               iconColor:
                                   ThemeState().isBlueTheme
                                       ? Colors.white

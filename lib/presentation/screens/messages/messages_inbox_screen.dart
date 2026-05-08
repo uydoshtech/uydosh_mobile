@@ -1498,6 +1498,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               // gig chats since the field is semantically "listing owner".
               listingOwnerUserId:
                   isGigRequest ? null : conversation.participantId,
+              conversationContextType: conversation.contextType,
+              conversationParticipantId: conversation.participantId,
               gigRequestId:
                   isGigRequest ? conversation.gigRequestId : null,
               gigRequestTitle:

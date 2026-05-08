@@ -342,6 +342,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
           settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
           builder: (_) => ChatScreen(
             conversationId: conversation.id,
+            conversationContextType: "gig_request",
+            conversationParticipantId: request.clientUserId,
             gigRequestId: request.id,
             gigRequestDetailRouteBelow: true,
             gigRequestTitle: request.title,

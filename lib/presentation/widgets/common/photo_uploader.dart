@@ -112,18 +112,24 @@ class _PhotoUploaderState extends State<PhotoUploader>
           if (imagesToProcess.isNotEmpty) {
             final newPhotos = List<String>.from(widget.selectedPhotos);
 
-            final materialized = await Future.wait(
-              imagesToProcess.map(materializePickedPhotoToUniqueFile),
-            );
-            newPhotos.addAll(materialized);
+            for (final image in imagesToProcess) {
+              if (!mounted) break;
 
-            if (widget.selectedPhotos.isEmpty &&
+              var photoPath = await materializePickedPhotoToUniqueFile(image);
+              final croppedPath = await cropListingPhoto(context, photoPath);
+              if (croppedPath != null) photoPath = croppedPath;
+
+              newPhotos.add(photoPath);
+            }
+
+            if (mounted &&
+                widget.selectedPhotos.isEmpty &&
                 newPhotos.isNotEmpty &&
                 widget.existingPhotos.isEmpty) {
               _primaryNewPhotoIndex = 0;
             }
 
-            widget.onPhotosChanged(newPhotos);
+            if (mounted) widget.onPhotosChanged(newPhotos);
           } else {
             _showMaxPhotosDialog();
           }

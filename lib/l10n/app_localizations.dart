@@ -838,6 +838,42 @@ abstract class AppLocalizations {
   /// **'Can we clarify the details?'**
   String get quick_question_generic_clarify_details;
 
+  /// No description provided for @quick_question_offerer_scope.
+  ///
+  /// In en, this message translates to:
+  /// **'What exactly do you need done?'**
+  String get quick_question_offerer_scope;
+
+  /// No description provided for @quick_question_offerer_deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'When do you need this done by?'**
+  String get quick_question_offerer_deadline;
+
+  /// No description provided for @quick_question_offerer_where.
+  ///
+  /// In en, this message translates to:
+  /// **'Where should this take place?'**
+  String get quick_question_offerer_where;
+
+  /// No description provided for @quick_question_offerer_budget.
+  ///
+  /// In en, this message translates to:
+  /// **'What budget did you have in mind?'**
+  String get quick_question_offerer_budget;
+
+  /// No description provided for @quick_question_offerer_materials.
+  ///
+  /// In en, this message translates to:
+  /// **'Will you provide materials, or should I?'**
+  String get quick_question_offerer_materials;
+
+  /// No description provided for @quick_question_offerer_visit.
+  ///
+  /// In en, this message translates to:
+  /// **'Can we schedule a short call or visit to assess?'**
+  String get quick_question_offerer_visit;
+
   /// No description provided for @private_room.
   ///
   /// In en, this message translates to:

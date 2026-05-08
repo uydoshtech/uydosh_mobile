@@ -412,6 +412,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Can we clarify the details?';
 
   @override
+  String get quick_question_offerer_scope => 'What exactly do you need done?';
+
+  @override
+  String get quick_question_offerer_deadline =>
+      'When do you need this done by?';
+
+  @override
+  String get quick_question_offerer_where => 'Where should this take place?';
+
+  @override
+  String get quick_question_offerer_budget =>
+      'What budget did you have in mind?';
+
+  @override
+  String get quick_question_offerer_materials =>
+      'Will you provide materials, or should I?';
+
+  @override
+  String get quick_question_offerer_visit =>
+      'Can we schedule a short call or visit to assess?';
+
+  @override
   String get private_room => 'Private Room';
 
   @override

@@ -79,6 +79,12 @@ class ChatScreen extends StatefulWidget {
     this.listingId,
     this.listingTypeId,
     this.listingOwnerUserId,
+    /// Backend `conversation.context_type` (`gig_request`, `gig_offer`, …).
+    /// Used with [conversationParticipantId] when [listingOwnerUserId] is insufficient
+    /// (e.g. task client is `participant_id` for `gig_request` chats).
+    this.conversationContextType,
+    /// Backend `participant_id` for this thread (see inbox / gig models).
+    this.conversationParticipantId,
     this.gigRequestId,
     this.gigRequestTitle,
     this.listingTitle,
@@ -103,6 +109,13 @@ class ChatScreen extends StatefulWidget {
   /// listing author so quick-question chips can address the counterparty.
   /// By server convention owner == `conversation.participant_id`.
   final int? listingOwnerUserId;
+
+  /// When set with [conversationParticipantId], refines offerer-side detection for
+  /// gig threads (notably `gig_request`, where [listingOwnerUserId] is omitted).
+  final String? conversationContextType;
+
+  /// See [conversationContextType].
+  final int? conversationParticipantId;
 
   /// Set when this chat is anchored to a gig request rather than a listing.
   /// Powers the header subtitle + the "View task" action menu entry.
@@ -947,7 +960,7 @@ class _ChatScreenState extends State<ChatScreen> {
               QuickQuestionsWidget(
                 onQuestionTap: _onQuestionTap,
                 listingTypeId: widget.listingTypeId,
-                isViewerListingOwner: _isViewerListingOwner,
+                isViewerServiceOfferer: _isViewerServiceOfferer,
                 blendWithGlassBackdrop: true,
               ),
             ],
@@ -1184,7 +1197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         QuickQuestionsWidget(
                           onQuestionTap: _onQuestionTap,
                           listingTypeId: widget.listingTypeId,
-                          isViewerListingOwner: _isViewerListingOwner,
+                          isViewerServiceOfferer: _isViewerServiceOfferer,
                         ),
                       ],
                     ),
@@ -1394,6 +1407,7 @@ class _ChatScreenState extends State<ChatScreen> {
       listingId: widget.listingId,
       listingTypeId: widget.listingTypeId,
       isViewerListingOwner: _isViewerListingOwner,
+      isViewerServiceOfferer: _isViewerServiceOfferer,
       questionKey: questionKey,
     );
     // Add appropriate greeting based on current language
@@ -1409,14 +1423,31 @@ class _ChatScreenState extends State<ChatScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  /// True when the signed-in user owns the backing listing. Only returns true
-  /// when we have both ids; unknowns fall through as `false` so chips default
-  /// to the "asking about housing" set.
+  /// True when the signed-in user owns the backing listing (or gig row author
+  /// for `gig_offer` / `gig_booking` where inbox passes the same id here).
   bool get _isViewerListingOwner {
     final currentId = _currentUserId;
     final ownerId = widget.listingOwnerUserId;
     if (currentId == null || ownerId == null) return false;
     return currentId == ownerId;
+  }
+
+  /// True when quick chips should address the **client** (viewer is offerer).
+  bool get _isViewerServiceOfferer {
+    final uid = _currentUserId;
+    if (uid == null) return false;
+
+    final ctx = widget.conversationContextType?.trim().toLowerCase();
+    final part = widget.conversationParticipantId;
+
+    if (ctx == "gig_request" && part != null) {
+      return uid != part;
+    }
+    if ((ctx == "gig_offer" || ctx == "gig_booking") && part != null) {
+      return uid == part;
+    }
+
+    return _isViewerListingOwner;
   }
 
   String _getGreetingForCurrentLanguage() {

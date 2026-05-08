@@ -307,6 +307,8 @@ class GhostButtonFactory {
     double? iconSize,
     bool isOnboardingButton = false,
     bool neumorphicSoftUi = false,
+    Color? neumorphicFillColor,
+    BorderRadius? borderRadius,
   }) {
     final resolvedIconSize = iconSize ?? 22;
     final slotWidth = resolvedIconSize + 8;
@@ -315,6 +317,7 @@ class GhostButtonFactory {
       padding: padding,
       width: width,
       height: height,
+      borderRadius: borderRadius,
       isLoading: isLoading,
       isDisabled: isDisabled,
       borderColor: borderColor,
@@ -323,6 +326,7 @@ class GhostButtonFactory {
       textStyle: textStyle,
       isOnboardingButton: isOnboardingButton,
       neumorphicSoftUi: neumorphicSoftUi,
+      neumorphicFillColor: neumorphicFillColor,
       child: ButtonIconLabel(
         slotWidth: slotWidth,
         leading: ThemeIcon(

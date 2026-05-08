@@ -308,6 +308,7 @@ class AppAnalyticsService {
   Future<void> logQuickQuestionTapped({
     required String questionKey,
     required bool isViewerListingOwner,
+    required bool isViewerServiceOfferer,
     int? conversationId,
     int? listingId,
     int? listingTypeId,
@@ -317,6 +318,7 @@ class AppAnalyticsService {
       parameters: {
         "question_key": questionKey,
         "is_viewer_listing_owner": isViewerListingOwner ? 1 : 0,
+        "is_viewer_service_offerer": isViewerServiceOfferer ? 1 : 0,
         if (conversationId != null) "conversation_id": conversationId,
         if (listingId != null) "listing_id": listingId,
         if (listingTypeId != null) "listing_type_id": listingTypeId,

@@ -352,6 +352,8 @@ class _OfferDetailContentStatefulState
           settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
           builder: (_) => ChatScreen(
             conversationId: conversation.id,
+            conversationContextType: "gig_booking",
+            conversationParticipantId: booking.providerUserId,
             otherUserId: offer.providerUserId,
             otherUserName: name,
             otherUserInitials: StringUtils.extractInitials(name),

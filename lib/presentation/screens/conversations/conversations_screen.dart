@@ -238,6 +238,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               // Server convention: listing owner is always `participant_id`.
               listingOwnerUserId:
                   isGigRequest ? null : conv?.participantId,
+              conversationContextType: conv?.contextType,
+              conversationParticipantId: conv?.participantId,
               gigRequestId: isGigRequest ? conv?.gigRequestId : null,
               gigRequestTitle:
                   isGigRequest ? conv?.gigRequestTitle : null,

@@ -4,6 +4,11 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
+/// Diameter of the circular avatar in app bar actions (neighbors use 28px).
+/// The bell uses the same slot + padding → ~40px face; a full-bleed photo
+/// reads larger, so this stays smaller than that (~32px) for visual balance.
+const double kAppBarAvatarContentSize = 32;
+
 /// Person outline or the current user's cached avatar for app bar slots.
 ///
 /// The widget keeps a stable subtree across rebuilds: the fallback

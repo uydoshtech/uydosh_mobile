@@ -411,6 +411,26 @@ class AppLocalizationsRu extends AppLocalizations {
   String get quick_question_generic_clarify_details => 'Можно уточнить детали?';
 
   @override
+  String get quick_question_offerer_scope => 'Что именно нужно сделать?';
+
+  @override
+  String get quick_question_offerer_deadline => 'К какому сроку это нужно?';
+
+  @override
+  String get quick_question_offerer_where => 'Где это будет происходить?';
+
+  @override
+  String get quick_question_offerer_budget => 'Какой бюджет вы закладываете?';
+
+  @override
+  String get quick_question_offerer_materials =>
+      'Материалы предоставите вы или мне брать с собой?';
+
+  @override
+  String get quick_question_offerer_visit =>
+      'Можем договориться о коротком звонке или выезде для оценки?';
+
+  @override
   String get private_room => 'Отдельная комната';
 
   @override

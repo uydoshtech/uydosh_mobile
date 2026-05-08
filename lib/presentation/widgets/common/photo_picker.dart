@@ -9,6 +9,7 @@ import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
+import "package:uy_dosh/base/util/listing_photo_import.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
@@ -88,36 +89,43 @@ class _PhotoPickerState extends State<PhotoPicker> {
               final newPhotos = List<String>.from(widget.selectedPhotos);
               final watermarkBytes = await _loadWatermarkBytes();
 
-              // Process images in parallel for faster gallery selection
-              final results = await Future.wait(
-                imagesToProcess.map((image) async {
-                  try {
-                    final watermarkedFile = await WatermarkService.addWatermark(
-                      File(image.path),
-                      watermarkImageBytes: watermarkBytes,
+              // Crop each pick before watermarking (same order as camera).
+              // Cancelling the cropper keeps the materialized original.
+              for (final image in imagesToProcess) {
+                if (!mounted) break;
+
+                var photoPath = await materializePickedPhotoToUniqueFile(image);
+                final croppedPath = await cropListingPhoto(context, photoPath);
+                if (croppedPath != null) photoPath = croppedPath;
+
+                try {
+                  final watermarkedFile = await WatermarkService.addWatermark(
+                    File(photoPath),
+                    watermarkImageBytes: watermarkBytes,
+                  );
+                  newPhotos.add(watermarkedFile.path);
+                } catch (e) {
+                  if (kDebugMode) {
+                    debugPrint(
+                      "Error adding watermark for $photoPath: $e",
                     );
-                    return watermarkedFile.path;
-                  } catch (e) {
-                    if (kDebugMode) {
-                      debugPrint(
-                        "Error adding watermark for ${image.path}: $e",
-                      );
-                    }
-                    return image.path;
                   }
-                }),
-              );
-              newPhotos.addAll(results);
-              widget.onPhotosChanged(newPhotos);
+                  newPhotos.add(photoPath);
+                }
+              }
+
+              if (mounted) widget.onPhotosChanged(newPhotos);
             } catch (e) {
               if (kDebugMode) {
                 debugPrint("Error processing multiple images: $e");
               }
             } finally {
               // Hide loading indicator
-              setState(() {
-                _isProcessingImage = false;
-              });
+              if (mounted) {
+                setState(() {
+                  _isProcessingImage = false;
+                });
+              }
             }
           } else {
             _showMaxPhotosDialog();

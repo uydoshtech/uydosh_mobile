@@ -416,6 +416,28 @@ class AppLocalizationsUz extends AppLocalizations {
       'Tafsilotlarni aniqlashtirsak bo\'ladimi?';
 
   @override
+  String get quick_question_offerer_scope => 'Aynan nima qilish kerak?';
+
+  @override
+  String get quick_question_offerer_deadline =>
+      'Buni qachongacha tugatish kerak?';
+
+  @override
+  String get quick_question_offerer_where => 'Bu qayerda bo\'lishi kerak?';
+
+  @override
+  String get quick_question_offerer_budget =>
+      'Qancha byudjet bo\'lishini o\'ylagansiz?';
+
+  @override
+  String get quick_question_offerer_materials =>
+      'Materiallarni o\'zingiz taminlaysizmi, yoki men olib kelamanmi?';
+
+  @override
+  String get quick_question_offerer_visit =>
+      'Baholash uchun qisqa qo\'ng\'iroq yoki ko\'rish belgilash mumkinmi?';
+
+  @override
   String get private_room => 'Shaxsiy xona';
 
   @override
