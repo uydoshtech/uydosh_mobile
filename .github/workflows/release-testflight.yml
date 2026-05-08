@@ -45,26 +45,30 @@ jobs:
           bundler-cache: true
           bundler: "2.5.23"
 
-      - name: Ensure CocoaPods works with this Ruby
+      - name: Install CocoaPods (standalone, runner-local)
         run: |
           set -euo pipefail
           ruby -v
-          echo "$(bundle exec ruby -e 'print Gem.bindir')" >> "$GITHUB_PATH"
+          gem --version
+          # Install CocoaPods into the runner user's gem home to avoid Ruby/Bundler conflicts.
+          gem install cocoapods -v 1.16.2 --no-document
+          echo "$(ruby -e 'print Gem.user_dir')/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Install CocoaPods deps (verbose)
+        env:
+          # ActiveSupport expects Logger to be loaded in this Ruby build.
+          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           set -x
-          # CocoaPods pulls ActiveSupport which expects Logger, but Ruby 3.1 ships an older
-          # default logger gem (1.5.0). Ensure Bundler activates the Gemfile's logger first.
-          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "--version"'
-          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "env"'
+          pod --version
+          pod env
           cd ios
           # Show full output to diagnose CI failures.
-          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "install", "--repo-update", "--verbose"'
+          pod install --repo-update --verbose
 
       - name: Build IPA (Flutter)
         env:
