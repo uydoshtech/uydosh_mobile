@@ -56,10 +56,13 @@ jobs:
           BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           set -euo pipefail
-          ARGS=()
-          if [[ -n "${BUILD_NAME}" ]]; then ARGS+=(build_name:"${BUILD_NAME}"); fi
-          if [[ -n "${BUILD_NUMBER}" ]]; then ARGS+=(build_number:"${BUILD_NUMBER}"); fi
-          bundle exec fastlane ios build_ipa "${ARGS[@]}"
+          if [[ -n "${BUILD_NAME:-}" ]]; then
+            bundle exec fastlane ios build_ipa build_name:"${BUILD_NAME}"
+          elif [[ -n "${BUILD_NUMBER:-}" ]]; then
+            bundle exec fastlane ios build_ipa build_number:"${BUILD_NUMBER}"
+          else
+            bundle exec fastlane ios build_ipa
+          fi
 
       - name: Upload IPA as workflow artifact
         uses: actions/upload-artifact@v4
