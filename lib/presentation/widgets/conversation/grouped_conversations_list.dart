@@ -1,17 +1,24 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -88,14 +95,17 @@ class GroupedConversationsList extends StatefulWidget {
     required this.onConversationTap,
     super.key,
     this.currentUserId,
+
     /// When true, builds a [Column] of group cards for use inside another
     /// scrollable (avoids nested [ListView]).
     this.embedInParentScrollView = false,
     this.padding,
     this.itemSpacing,
+
     /// Passed through to inner [ConversationTile]s (e.g. inbox with day headers).
     this.showActivityTimeOnly = false,
     this.onConversationLongPress,
+
     /// When true, expanded rows use [OutgoingConversationTile] (messages tab
     /// "others' listings" / initiator side) instead of [ConversationTile].
     this.useOutgoingInnerTiles = false,
@@ -120,10 +130,234 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
   Map<int, List<ConversationSummary>> _groupedConversations = const {};
   List<int> _sortedListingIds = const [];
 
+  /// One-time animated expand + overlay hint for multi-thread groups; ends
+  /// collapsed again after the coach unless unread keeps the group expanded.
+  bool _groupExpandCoachDismissed = true;
+  bool _groupCoachSequenceActive = false;
+  int? _groupCoachActiveListingId;
+  bool _groupCoachDidExpandForCoach = false;
+  int? _groupCoachBubbleListingId;
+  bool _groupCoachShowBubble = false;
+  final LayerLink _groupCoachLayerLink = LayerLink();
+  OverlayEntry? _groupCoachOverlayEntry;
+
   @override
   void initState() {
     super.initState();
     _recompute();
+    unawaited(_loadGroupExpandCoachDismissed());
+    TooltipsState().addListener(_onTooltipsStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _removeGroupCoachOverlay();
+    TooltipsState().removeListener(_onTooltipsStateChanged);
+    super.dispose();
+  }
+
+  void _onTooltipsStateChanged() {
+    unawaited(_loadGroupExpandCoachDismissed());
+    if (!TooltipsState().enabled) {
+      _suppressGroupExpandCoachForDisabledTips();
+    } else {
+      _groupCoachOverlayEntry?.markNeedsBuild();
+    }
+  }
+
+  Future<void> _loadGroupExpandCoachDismissed() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dismissed =
+          prefs.getBool(TooltipsState.keyGroupedChatsExpandCoachDismissed) ??
+              false;
+      setStateIfMounted(() => _groupExpandCoachDismissed = dismissed);
+      if (!dismissed) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _maybeScheduleGroupExpandCoach();
+        });
+      }
+    } catch (_) {
+      setStateIfMounted(() => _groupExpandCoachDismissed = true);
+    }
+  }
+
+  Future<void> _persistGroupExpandCoachDismissed() async {
+    setStateIfMounted(() => _groupExpandCoachDismissed = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(
+        TooltipsState.keyGroupedChatsExpandCoachDismissed,
+        true,
+      );
+    } catch (_) {}
+  }
+
+  void _suppressGroupExpandCoachForDisabledTips() {
+    final id = _groupCoachActiveListingId;
+    if (id == null && !_groupCoachShowBubble) return;
+    _removeGroupCoachOverlay();
+    setStateIfMounted(() {
+      _groupCoachShowBubble = false;
+      _groupCoachBubbleListingId = null;
+      if (_groupCoachDidExpandForCoach && id != null) {
+        _expandedGroups[id] = false;
+      }
+      _groupCoachActiveListingId = null;
+      _groupCoachDidExpandForCoach = false;
+    });
+    _groupCoachSequenceActive = false;
+  }
+
+  void _removeGroupCoachOverlay() {
+    _groupCoachOverlayEntry?.remove();
+    _groupCoachOverlayEntry = null;
+  }
+
+  void _insertOrMarkGroupCoachOverlay() {
+    if (!mounted) return;
+    final visible = _groupCoachShowBubble &&
+        TooltipsState().enabled &&
+        _groupCoachBubbleListingId != null;
+    if (!visible) {
+      _removeGroupCoachOverlay();
+      return;
+    }
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+
+    if (_groupCoachOverlayEntry == null) {
+      _groupCoachOverlayEntry = OverlayEntry(
+        builder: (_) => _buildGroupCoachOverlay(),
+      );
+      overlay.insert(_groupCoachOverlayEntry!);
+    } else {
+      _groupCoachOverlayEntry!.markNeedsBuild();
+    }
+  }
+
+  Widget _buildGroupCoachOverlay() {
+    final listingId = _groupCoachBubbleListingId;
+    if (listingId == null) return const SizedBox.shrink();
+    final show = _groupCoachShowBubble && TooltipsState().enabled;
+    return TooltipFade(
+      visible: show,
+      collapse: false,
+      duration: const Duration(milliseconds: 260),
+      child: CompositedTransformFollower(
+        link: _groupCoachLayerLink,
+        showWhenUnlinked: false,
+        targetAnchor: Alignment.topRight,
+        followerAnchor: Alignment.bottomRight,
+        offset: const Offset(0, -6),
+        child: Material(
+          type: MaterialType.transparency,
+          child: NeumorphicHintBubble(
+            maxWidth: 268,
+            tailSide: HintBubbleTailSide.bottom,
+            tailHorizontalOffset: 48,
+            message: TextSpan(
+              text: L10n.get("grouped_chats_expand_coach_hint"),
+              style: const TextStyle(
+                fontSize: 13.5,
+                height: 1.3,
+                color: Colors.black,
+              ),
+            ),
+            onClose: () => unawaited(_completeGroupExpandCoach(listingId)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _maybeScheduleGroupExpandCoach() {
+    if (!mounted) return;
+    if (_groupExpandCoachDismissed || !TooltipsState().enabled) return;
+    if (_groupCoachSequenceActive) return;
+    int? targetId;
+    for (final id in _sortedListingIds) {
+      final convs = _groupedConversations[id] ?? const [];
+      if (convs.length < 2) continue;
+      if (_groupHasIncomingUnread(convs)) continue;
+      final expanded = _expandedGroups[id] ?? false;
+      if (!expanded) {
+        targetId = id;
+        break;
+      }
+    }
+    if (targetId == null) return;
+    unawaited(_runGroupExpandCoachSequence(targetId));
+  }
+
+  Future<void> _runGroupExpandCoachSequence(int listingId) async {
+    if (_groupCoachSequenceActive) return;
+    _groupCoachSequenceActive = true;
+    _groupCoachActiveListingId = listingId;
+    _groupCoachDidExpandForCoach = false;
+    var expandedForCoach = false;
+    var coachCompletedSuccessfully = false;
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      if (!mounted || _groupExpandCoachDismissed || !TooltipsState().enabled) {
+        return;
+      }
+      if ((_expandedGroups[listingId] ?? false)) {
+        return;
+      }
+      final convs = _groupedConversations[listingId] ?? const [];
+      if (convs.length < 2) return;
+
+      setStateIfMounted(() {
+        _expandedGroups[listingId] = true;
+        _groupCoachDidExpandForCoach = true;
+      });
+      expandedForCoach = true;
+
+      await Future<void>.delayed(const Duration(milliseconds: 480));
+      if (!mounted || _groupExpandCoachDismissed || !TooltipsState().enabled) {
+        return;
+      }
+
+      setStateIfMounted(() {
+        _groupCoachBubbleListingId = listingId;
+        _groupCoachShowBubble = true;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _insertOrMarkGroupCoachOverlay();
+      });
+
+      await Future<void>.delayed(const Duration(milliseconds: 2800));
+      if (!mounted) return;
+
+      await _completeGroupExpandCoach(listingId);
+      coachCompletedSuccessfully = true;
+    } finally {
+      _removeGroupCoachOverlay();
+      _groupCoachSequenceActive = false;
+      _groupCoachActiveListingId = null;
+      _groupCoachDidExpandForCoach = false;
+      if (mounted && expandedForCoach && !coachCompletedSuccessfully) {
+        setStateIfMounted(() {
+          _expandedGroups[listingId] = false;
+          _groupCoachShowBubble = false;
+          _groupCoachBubbleListingId = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _completeGroupExpandCoach(int listingId) async {
+    if (!mounted) return;
+    _removeGroupCoachOverlay();
+    setStateIfMounted(() {
+      _expandedGroups[listingId] = false;
+      _groupCoachShowBubble = false;
+      _groupCoachBubbleListingId = null;
+      _groupCoachActiveListingId = null;
+      _groupCoachDidExpandForCoach = false;
+    });
+    await _persistGroupExpandCoachDismissed();
   }
 
   @override
@@ -137,6 +371,18 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     }
   }
 
+  /// True when this listing group has unread messages from someone else,
+  /// so we keep the group expanded and disallow collapsing until read.
+  bool _groupHasIncomingUnread(List<ConversationSummary> conversations) {
+    if (widget.currentUserId == null) return false;
+    return conversations.any(
+      (conv) =>
+          conv.unreadCount != null &&
+          conv.unreadCount! > 0 &&
+          conv.lastMessageSenderId != widget.currentUserId,
+    );
+  }
+
   void _recompute() {
     final groupedConversations = <int, List<ConversationSummary>>{};
     for (final conversation in widget.conversations) {
@@ -147,13 +393,11 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     // Sort conversations within each group: unread first, then most recent first.
     groupedConversations.forEach((_, conversations) {
       conversations.sort((a, b) {
-        final aHasUnread =
-            a.unreadCount != null &&
+        final aHasUnread = a.unreadCount != null &&
             a.unreadCount! > 0 &&
             widget.currentUserId != null &&
             a.lastMessageSenderId != widget.currentUserId;
-        final bHasUnread =
-            b.unreadCount != null &&
+        final bHasUnread = b.unreadCount != null &&
             b.unreadCount! > 0 &&
             widget.currentUserId != null &&
             b.lastMessageSenderId != widget.currentUserId;
@@ -196,25 +440,12 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         return bLatest.compareTo(aLatest);
       });
 
-    // Auto-expand the first group with unread messages (no side-effects in build).
-    if (sortedListingIds.isNotEmpty) {
-      final firstGroupId = sortedListingIds.first;
-      final firstGroupConversations = groupedConversations[firstGroupId]!;
-      final hasUnreadInFirstGroup = firstGroupConversations.any(
-        (conv) =>
-            conv.unreadCount != null &&
-            conv.unreadCount! > 0 &&
-            widget.currentUserId != null &&
-            conv.lastMessageSenderId != widget.currentUserId,
-      );
-      if (hasUnreadInFirstGroup && !_expandedGroups.containsKey(firstGroupId)) {
-        _expandedGroups[firstGroupId] = true;
-      }
-    }
-
     setState(() {
       _groupedConversations = groupedConversations;
       _sortedListingIds = sortedListingIds;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeScheduleGroupExpandCoach();
     });
   }
 
@@ -227,8 +458,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     for (var i = 0; i < _sortedListingIds.length; i++) {
       final listingId = _sortedListingIds[i];
       final conversations = _groupedConversations[listingId] ?? const [];
+      final hasIncomingUnread = _groupHasIncomingUnread(conversations);
+      final isSingletonThreadGroup = onlyOneGroup && conversations.length == 1;
+      final storedExpanded = _expandedGroups[listingId] ?? false;
       final isExpanded =
-          onlyOneGroup || (_expandedGroups[listingId] ?? false);
+          isSingletonThreadGroup || hasIncomingUnread || storedExpanded;
+      final canToggleExpansion = !isSingletonThreadGroup &&
+          !hasIncomingUnread &&
+          (!onlyOneGroup || conversations.length > 1);
       final day = _groupLatestActivityDay(conversations);
 
       if (lastEmittedDay == null || !_sameCalendarDay(lastEmittedDay, day)) {
@@ -236,10 +473,9 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
           DateHeaderWidget(
             dateString: MessageGroupingUtils.formatDateHeader(day, context),
             date: day,
-            padding:
-                segments.isEmpty
-                    ? const EdgeInsets.only(top: 8, bottom: 6)
-                    : const EdgeInsets.only(top: 4, bottom: 6),
+            padding: segments.isEmpty
+                ? const EdgeInsets.only(top: 8, bottom: 6)
+                : const EdgeInsets.only(top: 4, bottom: 6),
           ),
         );
         lastEmittedDay = day;
@@ -250,7 +486,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
           listingId: listingId,
           conversations: conversations,
           isExpanded: isExpanded,
-          canToggleExpansion: !onlyOneGroup,
+          canToggleExpansion: canToggleExpansion,
         ),
       );
     }
@@ -475,17 +711,32 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                       const SizedBox(width: 8),
                                     ],
                                     if (canToggleExpansion)
-                                      AnimatedRotation(
-                                        turns: isExpanded ? 0.0 : 0.5,
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        curve: Curves.easeInOut,
-                                        child: ThemeIcon(
-                                          Icons.expand_less,
-                                          color: iconColor,
-                                        ),
-                                      ),
+                                      listingId == _groupCoachActiveListingId
+                                          ? CompositedTransformTarget(
+                                              link: _groupCoachLayerLink,
+                                              child: AnimatedRotation(
+                                                turns: isExpanded ? 0.0 : 0.5,
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                curve: Curves.easeInOut,
+                                                child: ThemeIcon(
+                                                  Icons.expand_less,
+                                                  color: iconColor,
+                                                ),
+                                              ),
+                                            )
+                                          : AnimatedRotation(
+                                              turns: isExpanded ? 0.0 : 0.5,
+                                              duration: const Duration(
+                                                milliseconds: 300,
+                                              ),
+                                              curve: Curves.easeInOut,
+                                              child: ThemeIcon(
+                                                Icons.expand_less,
+                                                color: iconColor,
+                                              ),
+                                            ),
                                   ],
                                 ),
                               ],
@@ -496,24 +747,20 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                     ),
                   ),
                   // Participant cluster overlay docked in the top-right
-                  // corner of the header. Always rendered so
-                  // [AnimatedOpacity] can cross-fade it in/out as the group
-                  // expands or collapses — leaving it as `if (!isExpanded)
-                  // …` would pop the cluster on/off in a single frame.
+                  // corner of the header. Always rendered; visibility is
+                  // animated inside [_ConversationParticipantStack] so
+                  // multi-person groups can stagger per avatar instead of
+                  // one [AnimatedOpacity] over the whole stack.
                   PositionedDirectional(
                     top: 10,
                     end: 12,
                     child: IgnorePointer(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 240),
-                        curve: Curves.easeInOut,
-                        opacity: isExpanded ? 0.0 : 1.0,
-                        child: _ConversationParticipantStack(
-                          conversations: conversations,
-                          avatarColor: avatarColor,
-                          avatarIconColor: avatarIconColor,
-                          ringColor: cardColor,
-                        ),
+                      child: _ConversationParticipantStack(
+                        isExpanded: isExpanded,
+                        conversations: conversations,
+                        avatarColor: avatarColor,
+                        avatarIconColor: avatarIconColor,
+                        ringColor: cardColor,
                       ),
                     ),
                   ),
@@ -546,11 +793,12 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                               isGrouped: true,
                               onTap: () =>
                                   widget.onConversationTap(conversation),
-                              onLongPress: widget.onConversationLongPress == null
-                                  ? null
-                                  : () => widget.onConversationLongPress!(
-                                        conversation,
-                                      ),
+                              onLongPress:
+                                  widget.onConversationLongPress == null
+                                      ? null
+                                      : () => widget.onConversationLongPress!(
+                                            conversation,
+                                          ),
                             )
                           : ConversationTile(
                               conversation: conversation,
@@ -559,11 +807,12 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                   widget.onConversationTap(conversation),
                               isGrouped: true,
                               showActivityTimeOnly: widget.showActivityTimeOnly,
-                              onLongPress: widget.onConversationLongPress == null
-                                  ? null
-                                  : () => widget.onConversationLongPress!(
-                                        conversation,
-                                      ),
+                              onLongPress:
+                                  widget.onConversationLongPress == null
+                                      ? null
+                                      : () => widget.onConversationLongPress!(
+                                            conversation,
+                                          ),
                             ),
                     ),
                   ],
@@ -596,8 +845,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 /// identities. The per-group
 /// unread badge in the right rail already conveys the unread signal, so
 /// avatars here are intentionally identifier-only — no per-avatar dot.
-class _ConversationParticipantStack extends StatelessWidget {
+///
+/// When the cluster has more than one slot (multiple people or a `+N`
+/// overflow chip), avatars fade in left → right when the group collapses
+/// and out right → left when it expands, so they are not tied to one
+/// shared opacity on the whole row.
+class _ConversationParticipantStack extends StatefulWidget {
   const _ConversationParticipantStack({
+    required this.isExpanded,
     required this.conversations,
     required this.avatarColor,
     required this.avatarIconColor,
@@ -619,6 +874,18 @@ class _ConversationParticipantStack extends StatelessWidget {
   /// crushes the title on the left.
   static const int _maxVisible = 5;
 
+  /// Delay between each slot starting its fade-in (multi-slot clusters only).
+  static const int _fadeStaggerMs = 64;
+
+  /// Duration each slot spends fading from 0 → 1 opacity.
+  static const int _fadeInMs = 180;
+
+  /// Single-avatar clusters use one fade (matches previous header opacity).
+  static const int _singleSlotFadeMs = 240;
+
+  /// When true, the group body is expanded and the cluster should hide.
+  final bool isExpanded;
+
   final List<ConversationSummary> conversations;
   final Color avatarColor;
   final Color avatarIconColor;
@@ -629,21 +896,130 @@ class _ConversationParticipantStack extends StatelessWidget {
   final Color ringColor;
 
   @override
-  Widget build(BuildContext context) {
-    if (conversations.isEmpty) return const SizedBox.shrink();
+  State<_ConversationParticipantStack> createState() =>
+      _ConversationParticipantStackState();
+}
 
-    final visible = conversations.take(_maxVisible).toList();
-    final overflow = conversations.length - visible.length;
+class _ConversationParticipantStackState
+    extends State<_ConversationParticipantStack>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fadeController;
 
-    final overlap =
-        _avatarSize * _avatarOverlapFraction + _avatarOverlapExtraPx;
-    final step = _avatarSize - overlap;
+  int _fadeDurationMsForSlots(int slotCount) {
+    if (slotCount <= 1) {
+      return _ConversationParticipantStack._singleSlotFadeMs;
+    }
+    return (slotCount - 1) * _ConversationParticipantStack._fadeStaggerMs +
+        _ConversationParticipantStack._fadeInMs;
+  }
+
+  void _runExpansionFadeAfterFrame() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.isExpanded) {
+        _fadeController.reverse();
+      } else {
+        _fadeController.forward(from: 0);
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final visible = widget.conversations
+        .take(_ConversationParticipantStack._maxVisible)
+        .toList();
+    final overflow = widget.conversations.length - visible.length;
     final slotCount = visible.length + (overflow > 0 ? 1 : 0);
-    final stackWidth = slotCount > 0 ? _avatarSize + (slotCount - 1) * step : 0.0;
 
-    return SizedBox(
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: _fadeDurationMsForSlots(slotCount)),
+    );
+
+    if (widget.isExpanded) {
+      _fadeController.value = 0;
+    } else if (slotCount > 1) {
+      _fadeController.value = 0;
+      _runExpansionFadeAfterFrame();
+    } else {
+      _fadeController.value = 1;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ConversationParticipantStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isExpanded != widget.isExpanded) {
+      _runExpansionFadeAfterFrame();
+    }
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  Widget _staggeredFade({required int index, required Widget child}) {
+    if (widget.conversations.isEmpty) {
+      return child;
+    }
+
+    final visible = widget.conversations
+        .take(_ConversationParticipantStack._maxVisible)
+        .toList();
+    final overflow = widget.conversations.length - visible.length;
+    final slotCount = visible.length + (overflow > 0 ? 1 : 0);
+    if (slotCount <= 1) {
+      return child;
+    }
+
+    final totalMs =
+        (slotCount - 1) * _ConversationParticipantStack._fadeStaggerMs +
+            _ConversationParticipantStack._fadeInMs;
+    final t = totalMs.toDouble();
+    final start = (index * _ConversationParticipantStack._fadeStaggerMs) / t;
+    final endRaw = (index * _ConversationParticipantStack._fadeStaggerMs +
+            _ConversationParticipantStack._fadeInMs) /
+        t;
+    final end = endRaw.clamp(start + 0.02, 1.0);
+
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: _fadeController,
+        curve: Interval(
+          start.clamp(0.0, 1.0),
+          end,
+          curve: Curves.easeOut,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.conversations.isEmpty) return const SizedBox.shrink();
+
+    final visible = widget.conversations
+        .take(_ConversationParticipantStack._maxVisible)
+        .toList();
+    final overflow = widget.conversations.length - visible.length;
+
+    final overlap = _ConversationParticipantStack._avatarSize *
+            _ConversationParticipantStack._avatarOverlapFraction +
+        _ConversationParticipantStack._avatarOverlapExtraPx;
+    final step = _ConversationParticipantStack._avatarSize - overlap;
+    final slotCount = visible.length + (overflow > 0 ? 1 : 0);
+    final stackWidth = slotCount > 0
+        ? _ConversationParticipantStack._avatarSize + (slotCount - 1) * step
+        : 0.0;
+
+    final stack = SizedBox(
       width: stackWidth,
-      height: _avatarSize,
+      height: _ConversationParticipantStack._avatarSize,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -651,28 +1027,45 @@ class _ConversationParticipantStack extends StatelessWidget {
             Positioned(
               left: i * step,
               top: 0,
-              child: _ParticipantAvatar(
-                conversation: visible[i],
-                size: _avatarSize,
-                avatarColor: avatarColor,
-                avatarIconColor: avatarIconColor,
-                ringColor: ringColor,
+              child: _staggeredFade(
+                index: i,
+                child: _ParticipantAvatar(
+                  conversation: visible[i],
+                  size: _ConversationParticipantStack._avatarSize,
+                  avatarColor: widget.avatarColor,
+                  avatarIconColor: widget.avatarIconColor,
+                  ringColor: widget.ringColor,
+                ),
               ),
             ),
           if (overflow > 0)
             Positioned(
               left: visible.length * step,
               top: 0,
-              child: _ParticipantOverflowChip(
-                count: overflow,
-                size: _avatarSize,
-                ringColor: ringColor,
-                background: avatarColor,
-                textColor: avatarIconColor,
+              child: _staggeredFade(
+                index: visible.length,
+                child: _ParticipantOverflowChip(
+                  count: overflow,
+                  size: _ConversationParticipantStack._avatarSize,
+                  ringColor: widget.ringColor,
+                  background: widget.avatarColor,
+                  textColor: widget.avatarIconColor,
+                ),
               ),
             ),
         ],
       ),
+    );
+
+    if (slotCount > 1) {
+      return stack;
+    }
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: _fadeController,
+        curve: Curves.easeInOut,
+      ),
+      child: stack,
     );
   }
 }

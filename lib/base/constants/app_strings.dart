@@ -205,6 +205,8 @@ class AppStrings {
       "archived_chats": "Archived chats",
       "archived_chats_tip":
           "Long-press an archived chat to see actions, or swipe left to unarchive.",
+      "grouped_chats_expand_coach_hint":
+          "Tap the card header (or chevron) to expand or collapse chats about the same listing.",
       "no_archived_conversations": "No archived chats",
       "no_archived_conversations_description":
           "Chats you archive will appear here",
@@ -1621,6 +1623,8 @@ class AppStrings {
       "archived_chats": "Архив чатов",
       "archived_chats_tip":
           "Удерживайте чат в архиве, чтобы открыть действия, или смахните влево, чтобы вернуть его во входящие.",
+      "grouped_chats_expand_coach_hint":
+          "Нажмите на заголовок карточки (или стрелку), чтобы развернуть или свернуть чаты по одному объявлению.",
       "no_archived_conversations": "В архиве пусто",
       "no_archived_conversations_description":
           "Архивированные чаты появятся здесь",
@@ -3066,6 +3070,8 @@ class AppStrings {
       "archived_chats": "Arxivdagi suhbatlar",
       "archived_chats_tip":
           "Amallarni ko'rish uchun arxivdagi suhbatni bosib ushlab turing yoki qayta kirish qutisiga qaytarish uchun chapga suring.",
+      "grouped_chats_expand_coach_hint":
+          "Bitta e'lon bo'yicha suhbatlarni yoyish yoki yig'ish uchun karta sarlavhasiga yoki strelkaga bosing.",
       "no_archived_conversations": "Arxivda suhbatlar yo'q",
       "no_archived_conversations_description":
           "Arxivlangan suhbatlar shu yerda ko'rinadi",

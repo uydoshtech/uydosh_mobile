@@ -24,6 +24,11 @@ class TooltipsState extends ChangeNotifier {
   static const String keyEmptySearchBellHintDismissed =
       "empty_search_bell_hint_dismissed";
 
+  /// Shown once: inbox grouped chats auto-expand/collapse to highlight the
+  /// chevron affordance.
+  static const String keyGroupedChatsExpandCoachDismissed =
+      "grouped_chats_expand_coach_dismissed";
+
   static const String _keyTooltipsEnabled = "client_tooltips_enabled";
 
   bool _enabled = true;
@@ -80,6 +85,7 @@ class TooltipsState extends ChangeNotifier {
       await prefs.setBool(keyArchivedChatsTipDismissed, false);
       await prefs.setBool(keyMetroAllStationsHintDismissed, false);
       await prefs.setBool(keyEmptySearchBellHintDismissed, false);
+      await prefs.setBool(keyGroupedChatsExpandCoachDismissed, false);
     } catch (e) {
       logger.d("Error resetting tooltip flags: $e");
     }

@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:flutter/scheduler.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -19,12 +20,23 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
+import "package:uy_dosh/presentation/widgets/search_bottom_sheet/search_bottom_sheet_hints_config.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/metro_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
 class SearchBottomSheetMetroSection extends StatefulWidget {
-  const SearchBottomSheetMetroSection({required this.searchFiltersState, required this.currentStations, required this.metroLineScrollController, required this.stationPickerController, required this.onSubwayLineChanged, required this.onStationChanged, required this.metroLineTutorialKey, required this.metroStationTutorialKey, required this.getLocalizedName, super.key,
+  const SearchBottomSheetMetroSection({
+    required this.searchFiltersState,
+    required this.currentStations,
+    required this.metroLineScrollController,
+    required this.stationPickerController,
+    required this.onSubwayLineChanged,
+    required this.onStationChanged,
+    required this.metroLineTutorialKey,
+    required this.metroStationTutorialKey,
+    required this.getLocalizedName,
+    super.key,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -60,6 +72,9 @@ class _SearchBottomSheetMetroSectionState
   int _lastSeenLine = 0;
   static const Duration _hintDebounceDelay = Duration(milliseconds: 1000);
 
+  final LayerLink _metroAllStationsHintLayerLink = LayerLink();
+  OverlayEntry? _metroAllStationsHintOverlayEntry;
+
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
   @override
@@ -79,10 +94,32 @@ class _SearchBottomSheetMetroSectionState
       _lastSeenLine = currentLine;
       _scheduleHintDebounce(currentLine);
     }
+
+    // Replacing the station placeholder with a real [CupertinoPicker] often
+    // leaves the [LayerLink] leader unlinked for a frame. A single post-frame
+    // sync can miss [_shouldShowHint] becoming true only after the async
+    // station list arrives, so the explainer never inserts. Resync twice.
+    final stationsArrived = oldWidget.currentStations.isEmpty &&
+        widget.currentStations.isNotEmpty &&
+        currentLine > 0 &&
+        widget.searchFiltersState.selectedStationId == 0;
+    if (stationsArrived &&
+        !SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _syncMetroAllStationsHintOverlay();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _metroAllStationsHintOverlayEntry?.markNeedsBuild();
+          _syncMetroAllStationsHintOverlay();
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
+    _removeMetroAllStationsHintOverlay();
     _hintDebounceTimer?.cancel();
     TooltipsState().removeListener(_onTooltipsStateChanged);
     super.dispose();
@@ -110,6 +147,82 @@ class _SearchBottomSheetMetroSectionState
     // back to false and we want this section to surface the hint again
     // without requiring a full sheet remount.
     _loadAllStationsHintDismissed();
+    // [markNeedsBuild] only helps when an entry already exists. If tips were
+    // off or the overlay failed to insert, we must run a full sync after the
+    // next frame (LayerLink + [Overlay] are only valid post-layout).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncMetroAllStationsHintOverlay();
+    });
+    _metroAllStationsHintOverlayEntry?.markNeedsBuild();
+    // Inline hint reads [TooltipsState].enabled in [_shouldShowHint]; without
+    // a rebuild the bubble stays stale when the user toggles Settings > Tips.
+    setStateIfMounted(() {});
+  }
+
+  /// Overlay that owns this bottom-sheet subtree (hint [LayerLink] leader is
+  /// here). Avoid [Overlay.maybeOf] alone: some modal routes only expose the
+  /// overlay through the navigator.
+  OverlayState? _hintOverlay() {
+    final fromWalk = Overlay.maybeOf(context);
+    if (fromWalk != null) return fromWalk;
+    return Navigator.maybeOf(context)?.overlay;
+  }
+
+  void _removeMetroAllStationsHintOverlay() {
+    _metroAllStationsHintOverlayEntry?.remove();
+    _metroAllStationsHintOverlayEntry = null;
+  }
+
+  void _syncMetroAllStationsHintOverlay() {
+    if (!mounted) return;
+    if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
+      _removeMetroAllStationsHintOverlay();
+      return;
+    }
+    if (!_shouldShowHint) {
+      _removeMetroAllStationsHintOverlay();
+      return;
+    }
+    final overlay = _hintOverlay();
+    if (overlay == null) return;
+
+    if (_metroAllStationsHintOverlayEntry == null) {
+      _metroAllStationsHintOverlayEntry = OverlayEntry(
+        builder: (_) => _buildMetroAllStationsHintOverlay(),
+      );
+      overlay.insert(_metroAllStationsHintOverlayEntry!);
+    } else {
+      _metroAllStationsHintOverlayEntry!.markNeedsBuild();
+    }
+  }
+
+  Widget _buildMetroAllStationsHintOverlay() {
+    final theme = Theme.of(context);
+    return TooltipFade(
+      visible: _shouldShowHint,
+      collapse: false,
+      duration: const Duration(milliseconds: 260),
+      child: CompositedTransformFollower(
+        link: _metroAllStationsHintLayerLink,
+        showWhenUnlinked: false,
+        targetAnchor: Alignment.topCenter,
+        followerAnchor: Alignment.bottomCenter,
+        offset: const Offset(0, -6),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: NeumorphicHintBubble(
+              maxWidth: 280,
+              tailSide: HintBubbleTailSide.bottom,
+              tailHorizontalOffset: 0,
+              message: _buildHintSpan(context, theme),
+              onClose: _dismissAllStationsHint,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadAllStationsHintDismissed() async {
@@ -139,31 +252,40 @@ class _SearchBottomSheetMetroSectionState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    if (!SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncMetroAllStationsHintOverlay();
+      });
+    } else {
+      _removeMetroAllStationsHintOverlay();
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TooltipFade(
-          visible: _shouldShowHint,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Expanded(child: SizedBox.shrink()),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: NeumorphicHintBubble(
-                      message: _buildHintSpan(context, theme),
-                      onClose: _dismissAllStationsHint,
+        if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn)
+          TooltipFade(
+            visible: _shouldShowHint,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Expanded(child: SizedBox.shrink()),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: NeumorphicHintBubble(
+                        message: _buildHintSpan(context, theme),
+                        onClose: _dismissAllStationsHint,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         _buildPickersRow(context, theme),
       ],
     );
@@ -183,7 +305,8 @@ class _SearchBottomSheetMetroSectionState
                   Expanded(
                     child: CupertinoPicker(
                       backgroundColor: Colors.transparent,
-                      changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
+                      changeReportingBehavior:
+                          ChangeReportingBehavior.onScrollEnd,
                       itemExtent: 40,
                       scrollController: widget.metroLineScrollController,
                       onSelectedItemChanged: (index) {
@@ -271,15 +394,28 @@ class _SearchBottomSheetMetroSectionState
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: TutorialTargetWrapper(
-            key: widget.metroStationTutorialKey,
-            child: widget.searchFiltersState.selectedSubwayLine > 0 &&
-                    widget.currentStations.isNotEmpty
-                ? _buildMetroStationPicker(context, theme)
-                : _buildMetroStationPlaceholder(context, theme),
+          child: _wrapStationPickerWithHintAnchor(
+            TutorialTargetWrapper(
+              key: widget.metroStationTutorialKey,
+              child: widget.searchFiltersState.selectedSubwayLine > 0 &&
+                      widget.currentStations.isNotEmpty
+                  ? _buildMetroStationPicker(context, theme)
+                  : _buildMetroStationPlaceholder(context, theme),
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  /// [CompositedTransformTarget] for overlay hints; omitted in inline mode.
+  Widget _wrapStationPickerWithHintAnchor(Widget child) {
+    if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
+      return child;
+    }
+    return CompositedTransformTarget(
+      link: _metroAllStationsHintLayerLink,
+      child: child,
     );
   }
 
