@@ -58,12 +58,13 @@ jobs:
         run: |
           set -euo pipefail
           set -x
-          # Load stdlib logger *inside* Bundler context to avoid default-gem version conflicts.
-          bundle exec ruby -rlogger -S pod --version
-          bundle exec ruby -rlogger -S pod env
+          # CocoaPods pulls ActiveSupport which expects Logger, but Ruby 3.1 ships an older
+          # default logger gem (1.5.0). Ensure Bundler activates the Gemfile's logger first.
+          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "--version"'
+          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "env"'
           cd ios
           # Show full output to diagnose CI failures.
-          bundle exec ruby -rlogger -S pod install --repo-update --verbose
+          bundle exec ruby -e 'require "bundler/setup"; require "logger"; exec Gem.bin_path("cocoapods","pod"), "install", "--repo-update", "--verbose"'
 
       - name: Build IPA (Flutter)
         env:
