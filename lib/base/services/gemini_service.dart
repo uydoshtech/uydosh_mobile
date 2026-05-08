@@ -1,22 +1,106 @@
 import "dart:async";
+import "dart:math" show Random;
 
 import "package:dio/dio.dart";
 import "package:google_generative_ai/google_generative_ai.dart";
+import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/config/gemini_config.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
-typedef _BackendTranslateOutcome = ({String? text, bool skipDirectGemini});
+/// Result for backend-metered listing translation.
+class ListingTranslateOutcome {
+  const ListingTranslateOutcome({
+    this.text,
+    this.quotaExceeded = false,
+    this.authRequired = false,
+  });
 
-/// Listing translation: prefers **backend** `POST /app/gemini/translate-listing`
-/// (server logs `[Gemini] requestId=…` for debugging), then falls back to the
-/// Google AI SDK using [GeminiConfig.apiKeys] (tries keys in order).
+  final String? text;
+  final bool quotaExceeded;
+  final bool authRequired;
+
+  bool get isSuccess =>
+      text != null && text!.trim().isNotEmpty && !quotaExceeded && !authRequired;
+}
+
+/// Result for backend-metered listing “improve with AI”.
+class ListingEnhanceOutcome {
+  const ListingEnhanceOutcome({
+    this.text,
+    this.quotaExceeded = false,
+    this.authRequired = false,
+  });
+
+  final String? text;
+  final bool quotaExceeded;
+  final bool authRequired;
+
+  bool get isSuccess =>
+      text != null && text!.trim().isNotEmpty && !quotaExceeded && !authRequired;
+}
+
+/// Snapshot from `GET /app/gemini/listing-ai-quota`.
+class ListingAiQuotaSnapshot {
+  const ListingAiQuotaSnapshot({
+    required this.translateRemaining,
+    required this.enhanceRemaining,
+    this.premiumUntil,
+  });
+
+  final int translateRemaining;
+  final int enhanceRemaining;
+  final DateTime? premiumUntil;
+
+  factory ListingAiQuotaSnapshot.fromJson(Map<String, dynamic> m) {
+    final td = m["translate"];
+    final ed = m["enhance"];
+    int tr = 0;
+    int er = 0;
+    if (td is Map<String, dynamic>) {
+      final r = td["remaining"];
+      tr = r is int ? r : int.tryParse("$r") ?? 0;
+    }
+    if (ed is Map<String, dynamic>) {
+      final r = ed["remaining"];
+      er = r is int ? r : int.tryParse("$r") ?? 0;
+    }
+    DateTime? pu;
+    final ps = m["premium_until"];
+    if (ps is String && ps.isNotEmpty) {
+      pu = DateTime.tryParse(ps);
+    }
+    return ListingAiQuotaSnapshot(
+      translateRemaining: tr,
+      enhanceRemaining: er,
+      premiumUntil: pu,
+    );
+  }
+}
+
+typedef _BackendGeminiOutcome = ({
+  String? text,
+  bool skipDirectGemini,
+  bool forbidDirectFallback,
+  bool quotaExceeded,
+  bool authRequired,
+});
+
+/// Listing translation: authenticated `POST /app/gemini/translate-listing` when
+/// [IOAuthApiClient] is registered; otherwise legacy public path (will 401 in prod).
 class GeminiService {
-  GeminiService({IPublicApiClient? publicApiClient})
-    : _publicApiClient = publicApiClient;
+  GeminiService({
+    IPublicApiClient? publicApiClient,
+    IOAuthApiClient? oauthApiClient,
+  }) : _publicApiClient = publicApiClient,
+       _oauthApiClient = oauthApiClient;
 
   final IPublicApiClient? _publicApiClient;
+  final IOAuthApiClient? _oauthApiClient;
+
+  String _newIdempotencyKey() =>
+      "${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(1 << 30)}";
 
   static final List<SafetySetting> _defaultSafetySettings = [
     SafetySetting(HarmCategory.harassment, HarmBlockThreshold.high),
@@ -54,11 +138,12 @@ class GeminiService {
     );
   }
 
-  /// True when backend proxy or direct SDK can be used for translation.
-  bool get isAvailable => _publicApiClient != null || GeminiConfig.isConfigured;
+  /// True when listing translation can run (signed-in backend and/or direct SDK keys).
+  bool get isAvailable => _oauthApiClient != null || GeminiConfig.isConfigured;
 
-  /// AI “enhance” uses the Google AI SDK only (no backend proxy yet).
-  bool get canEnhanceListingDescription => GeminiConfig.isConfigured;
+  /// Listing “improve” prefers the metered backend when OAuth is available.
+  bool get canEnhanceListingDescription =>
+      _oauthApiClient != null || GeminiConfig.isConfigured;
 
   /// Returns model text, or null if the response had no text parts.
   Future<String?> generateText(String prompt) async {
@@ -111,9 +196,9 @@ class GeminiService {
 
   /// Translates listing description to [targetLanguageCode]: `en`, `ru`, or `uz`.
   ///
-  /// Bounded by [_translateListingOverallTimeout] so the UI never waits forever
-  /// (e.g. hung SDK or long server-side 429 retry chains).
-  Future<String?> translateListingDescription({
+  /// Uses the metered backend when signed in; falls back to direct SDK only when
+  /// the server does not forbid it (e.g. not 401/403 quota or auth).
+  Future<ListingTranslateOutcome> translateListingDescription({
     required String text,
     required String targetLanguageCode,
   }) async {
@@ -127,12 +212,12 @@ class GeminiService {
           logger.w(
             "Gemini translate listing: timed out after ${_translateListingOverallTimeout.inSeconds}s",
           );
-          return null;
+          return const ListingTranslateOutcome();
         },
       );
     } catch (e, st) {
       logger.w("Gemini translate listing: $e", error: e, stackTrace: st);
-      return null;
+      return const ListingTranslateOutcome();
     }
   }
 
@@ -143,7 +228,7 @@ class GeminiService {
   static const Duration _directGenerateContentTimeout = Duration(seconds: 60);
 
   /// Rewrites the listing description for clarity and grammar; same language as input.
-  Future<String?> enhanceListingDescription({required String text}) async {
+  Future<ListingEnhanceOutcome> enhanceListingDescription({required String text}) async {
     try {
       return await _enhanceListingDescriptionImpl(text: text).timeout(
         _enhanceListingOverallTimeout,
@@ -151,22 +236,37 @@ class GeminiService {
           logger.w(
             "Gemini enhance listing: timed out after ${_enhanceListingOverallTimeout.inSeconds}s",
           );
-          return null;
+          return const ListingEnhanceOutcome();
         },
       );
     } catch (e, st) {
       logger.w("Gemini enhance listing: $e", error: e, stackTrace: st);
-      return null;
+      return const ListingEnhanceOutcome();
     }
   }
 
-  Future<String?> _enhanceListingDescriptionImpl({required String text}) async {
+  Future<ListingEnhanceOutcome> _enhanceListingDescriptionImpl({required String text}) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
-      return null;
+      return const ListingEnhanceOutcome();
     }
+
+    final backend = await _improveListingViaBackend(text: trimmed);
+    if (backend.text != null && backend.text!.trim().isNotEmpty) {
+      final s = backend.text!.trim();
+      return ListingEnhanceOutcome(
+        text: s.length > 1000 ? s.substring(0, 1000) : s,
+      );
+    }
+    if (backend.forbidDirectFallback) {
+      return ListingEnhanceOutcome(
+        quotaExceeded: backend.quotaExceeded,
+        authRequired: backend.authRequired,
+      );
+    }
+
     if (!GeminiConfig.isConfigured) {
-      return null;
+      return const ListingEnhanceOutcome();
     }
     final prompt = _buildEnhancePrompt(trimmed);
 
@@ -179,7 +279,9 @@ class GeminiService {
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
           final s = out.trim();
-          return s.length > 1000 ? s.substring(0, 1000) : s;
+          return ListingEnhanceOutcome(
+            text: s.length > 1000 ? s.substring(0, 1000) : s,
+          );
         }
         logger.w("Gemini enhance: empty response (key index $i)");
       } on TimeoutException catch (e, st) {
@@ -202,7 +304,7 @@ class GeminiService {
         );
       }
     }
-    return null;
+    return const ListingEnhanceOutcome();
   }
 
   /// Same contract as [enhanceListingDescription] but tuned for gig posts
@@ -351,34 +453,39 @@ class GeminiService {
         "RULE: Rewrite in the same language as the input. Do not translate.";
   }
 
-  Future<String?> _translateListingDescriptionImpl({
+  Future<ListingTranslateOutcome> _translateListingDescriptionImpl({
     required String text,
     required String targetLanguageCode,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
-      return null;
+      return const ListingTranslateOutcome();
     }
 
-    // Never shortcut Latin script → "already English": Uzbek Latin uses the same
-    // letters as English but is not English (mirrors chat translate-unseen).
+    // Local shortcut avoids a round-trip; server treats this as noop without consuming quota too.
     if (targetLanguageCode == "ru" && _hasCyrillic(trimmed) && !_hasLatinLetter(trimmed)) {
-      return trimmed;
+      return ListingTranslateOutcome(text: trimmed);
     }
 
     final backend = await _translateViaBackend(
       text: trimmed,
       targetLanguageCode: targetLanguageCode,
     );
-    if (backend.text != null) {
-      return backend.text;
+    if (backend.text != null && backend.text!.trim().isNotEmpty) {
+      return ListingTranslateOutcome(text: backend.text!.trim());
+    }
+    if (backend.forbidDirectFallback) {
+      return ListingTranslateOutcome(
+        quotaExceeded: backend.quotaExceeded,
+        authRequired: backend.authRequired,
+      );
     }
     if (backend.skipDirectGemini) {
-      return null;
+      return const ListingTranslateOutcome();
     }
 
     if (!GeminiConfig.isConfigured) {
-      return null;
+      return const ListingTranslateOutcome();
     }
 
     final langInstruction = switch (targetLanguageCode) {
@@ -403,7 +510,7 @@ class GeminiService {
             .timeout(_directGenerateContentTimeout);
         final out = _extractResponseText(response);
         if (out != null && out.isNotEmpty) {
-          return out;
+          return ListingTranslateOutcome(text: out);
         }
         logger.w("Gemini translate: empty response for $targetLanguageCode (key index $i)");
       } on TimeoutException catch (e, st) {
@@ -426,37 +533,81 @@ class GeminiService {
         );
       }
     }
-    return null;
+    return const ListingTranslateOutcome();
   }
 
-  Future<_BackendTranslateOutcome> _translateViaBackend({
+  Future<_BackendGeminiOutcome> _translateViaBackend({
     required String text,
     required String targetLanguageCode,
   }) async {
-    final client = _publicApiClient;
-    if (client == null) {
-      return (text: null, skipDirectGemini: false);
+    final dio = _oauthApiClient?.dio ?? _publicApiClient?.dio;
+    if (dio == null) {
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
     }
     final base = EnvironmentUtil.basePath;
     final uri = base.endsWith("/")
         ? "${base}app/gemini/translate-listing"
         : "$base/app/gemini/translate-listing";
+
+    _BackendGeminiOutcome parseForbidden(int status, Object? raw) {
+      if (status == 401) {
+        return (
+          text: null,
+          skipDirectGemini: true,
+          forbidDirectFallback: true,
+          quotaExceeded: false,
+          authRequired: true,
+        );
+      }
+      if (status == 403 && raw is Map) {
+        final map = Map<String, dynamic>.from(raw);
+        final code = "${map["code"] ?? ""}";
+        final quota = code == "gemini_quota_exceeded";
+        return (
+          text: null,
+          skipDirectGemini: true,
+          forbidDirectFallback: true,
+          quotaExceeded: quota,
+          authRequired: false,
+        );
+      }
+      return (
+        text: null,
+        skipDirectGemini: true,
+        forbidDirectFallback: true,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    }
+
     try {
-      final response = await client.dio.post<dynamic>(
+      final response = await dio.post<dynamic>(
         uri,
         data: <String, dynamic>{
           "text": text,
           "targetLanguageCode": targetLanguageCode,
         },
         options: Options(
-          headers: <String, dynamic>{"Content-Type": "application/json"},
+          headers: <String, dynamic>{
+            "Content-Type": "application/json",
+            "Idempotency-Key": _newIdempotencyKey(),
+          },
           receiveTimeout: const Duration(seconds: 120),
-          // Avoid DioException on 502/429 — we fall back to direct Gemini; not an app fault.
           validateStatus: (status) => status != null && status < 600,
         ),
       );
       final status = response.statusCode ?? 0;
       final data = response.data;
+
+      if (status == 401 || status == 403) {
+        return parseForbidden(status, data);
+      }
 
       if (status != 200) {
         final skipDirect = _backendIndicatesRateLimitedBody(data);
@@ -464,31 +615,63 @@ class GeminiService {
           logger.d("Gemini backend rate limited (HTTP $status); skipping direct SDK");
         } else {
           logger.d(
-            "Gemini backend HTTP $status — ${data is Map ? data['error'] : data} (trying direct Gemini)",
+            "Gemini backend HTTP $status — ${data is Map ? data["error"] : data} (trying direct Gemini)",
           );
         }
-        return (text: null, skipDirectGemini: skipDirect);
+        return (
+          text: null,
+          skipDirectGemini: skipDirect,
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
+        );
       }
 
       if (data is! Map) {
         logger.w("Gemini backend: unexpected response shape");
-        return (text: null, skipDirectGemini: false);
+        return (
+          text: null,
+          skipDirectGemini: false,
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
+        );
       }
       final map = Map<String, dynamic>.from(data);
       if (map.containsKey("error")) {
-        logger.d("Gemini backend error: ${map['error']} (trying direct Gemini)");
+        logger.d("Gemini backend error: ${map["error"]} (trying direct Gemini)");
         return (
           text: null,
           skipDirectGemini: _backendIndicatesRateLimitedBody(map),
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
         );
       }
       final t = map["translatedText"];
       if (t is String && t.trim().isNotEmpty) {
-        return (text: t.trim(), skipDirectGemini: false);
+        return (
+          text: t.trim(),
+          skipDirectGemini: false,
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
+        );
       }
-      return (text: null, skipDirectGemini: false);
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
     } on DioException catch (e, st) {
-      final skipDirect = _backendIndicatesRateLimitedBody(e.response?.data);
+      final status = e.response?.statusCode ?? 0;
+      final pd = e.response?.data;
+      if (status == 401 || status == 403) {
+        return parseForbidden(status, pd);
+      }
+      final skipDirect = _backendIndicatesRateLimitedBody(pd);
       if (skipDirect) {
         logger.d("Gemini backend rate limited; skipping direct SDK");
       } else {
@@ -498,11 +681,174 @@ class GeminiService {
           stackTrace: st,
         );
       }
-      return (text: null, skipDirectGemini: skipDirect);
+      return (
+        text: null,
+        skipDirectGemini: skipDirect,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
     } catch (e, st) {
       logger.w("Gemini backend: $e", error: e, stackTrace: st);
-      return (text: null, skipDirectGemini: false);
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
     }
+  }
+
+  Future<_BackendGeminiOutcome> _improveListingViaBackend({required String text}) async {
+    final dio = _oauthApiClient?.dio ?? _publicApiClient?.dio;
+    if (dio == null) {
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    }
+
+    final base = EnvironmentUtil.basePath;
+    final uri = base.endsWith("/")
+        ? "${base}app/gemini/improve-listing"
+        : "$base/app/gemini/improve-listing";
+
+    _BackendGeminiOutcome parseForbidden(int status, Object? raw) {
+      if (status == 401) {
+        return (
+          text: null,
+          skipDirectGemini: true,
+          forbidDirectFallback: true,
+          quotaExceeded: false,
+          authRequired: true,
+        );
+      }
+      if (status == 403 && raw is Map) {
+        final map = Map<String, dynamic>.from(raw);
+        final code = "${map["code"] ?? ""}";
+        final quota = code == "gemini_quota_exceeded";
+        return (
+          text: null,
+          skipDirectGemini: true,
+          forbidDirectFallback: true,
+          quotaExceeded: quota,
+          authRequired: false,
+        );
+      }
+      return (
+        text: null,
+        skipDirectGemini: true,
+        forbidDirectFallback: true,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    }
+
+    try {
+      final response = await dio.post<dynamic>(
+        uri,
+        data: <String, dynamic>{"text": text},
+        options: Options(
+          headers: <String, dynamic>{
+            "Content-Type": "application/json",
+            "Idempotency-Key": _newIdempotencyKey(),
+          },
+          receiveTimeout: const Duration(seconds: 120),
+          validateStatus: (status) => status != null && status < 600,
+        ),
+      );
+      final status = response.statusCode ?? 0;
+      final data = response.data;
+
+      if (status == 401 || status == 403) {
+        return parseForbidden(status, data);
+      }
+
+      if (status != 200 || data is! Map) {
+        return (
+          text: null,
+          skipDirectGemini: false,
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
+        );
+      }
+
+      final map = Map<String, dynamic>.from(data);
+      final improved = map["improvedText"];
+      if (improved is String && improved.trim().isNotEmpty) {
+        return (
+          text: improved.trim(),
+          skipDirectGemini: false,
+          forbidDirectFallback: false,
+          quotaExceeded: false,
+          authRequired: false,
+        );
+      }
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode ?? 0;
+      final pd = e.response?.data;
+      if (status == 401 || status == 403) {
+        return parseForbidden(status, pd);
+      }
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    } catch (_) {
+      return (
+        text: null,
+        skipDirectGemini: false,
+        forbidDirectFallback: false,
+        quotaExceeded: false,
+        authRequired: false,
+      );
+    }
+  }
+
+  Future<ListingAiQuotaSnapshot?> fetchListingAiQuota() async {
+    final dio = _oauthApiClient?.dio;
+    if (dio == null) {
+      return null;
+    }
+    final base = EnvironmentUtil.basePath;
+    final uri = base.endsWith("/")
+        ? "${base}app/gemini/listing-ai-quota"
+        : "$base/app/gemini/listing-ai-quota";
+    try {
+      final response = await dio.get<dynamic>(
+        uri,
+        options: Options(
+          validateStatus: (status) =>
+              status != null && status >= 200 && status < 500,
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      if (response.statusCode == 401) {
+        return null;
+      }
+      final raw = response.data;
+      if (raw is Map) {
+        return ListingAiQuotaSnapshot.fromJson(Map<String, dynamic>.from(raw));
+      }
+    } catch (_) {
+      /* best-effort */
+    }
+    return null;
   }
 
   static bool _backendIndicatesRateLimitedBody(Object? data) {

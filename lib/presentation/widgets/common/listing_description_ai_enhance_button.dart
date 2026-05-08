@@ -144,12 +144,31 @@ class _ListingDescriptionAiEnhanceButtonState
       _loading = true;
     });
     try {
-      final enhanced = await (widget.enhance != null
-          ? widget.enhance!.call(raw)
-          : gemini.enhanceListingDescription(text: raw));
+      final ListingEnhanceOutcome outcome;
+      if (widget.enhance != null) {
+        final t = await widget.enhance!.call(raw);
+        outcome = ListingEnhanceOutcome(text: t);
+      } else {
+        outcome = await gemini.enhanceListingDescription(text: raw);
+      }
       if (!mounted) {
         return;
       }
+      if (outcome.quotaExceeded) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("listing_ai_enhance_quota_exceeded"),
+        );
+        return;
+      }
+      if (outcome.authRequired) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("listing_translation_sign_in_required"),
+        );
+        return;
+      }
+      final enhanced = outcome.text;
       if (enhanced == null || enhanced.trim().isEmpty) {
         ToastTheme.showError(
           context,

@@ -480,6 +480,12 @@ class AppStrings {
       "listing_translating_description": "Translating…",
       "listing_translation_error": "Couldn’t translate. Try again.",
       "listing_translation_unavailable": "Translation unavailable.",
+      "listing_translation_quota_exceeded":
+          "You’ve used all free listing translations this month. Upgrade via Payme or Click for more.",
+      "listing_translation_sign_in_required":
+          "Sign in to translate listing descriptions.",
+      "listing_ai_enhance_quota_exceeded":
+          "You’ve used all free AI improvements this month. Upgrade via Payme or Click for more.",
       "chat_translated_from_en": "Translated from 🇺🇸",
       "chat_translated_from_ru": "Translated from 🇷🇺",
       "chat_translated_from_uz": "Translated from 🇺🇿",
@@ -1867,6 +1873,12 @@ class AppStrings {
       "listing_translating_description": "Перевод…",
       "listing_translation_error": "Не удалось перевести. Попробуйте снова.",
       "listing_translation_unavailable": "Перевод недоступен.",
+      "listing_translation_quota_exceeded":
+          "Лимит бесплатных переводов объявлений на месяц исчёрпан. Подключите премиум через Payme или Click.",
+      "listing_translation_sign_in_required":
+          "Войдите в аккаунт, чтобы переводить описание объявления.",
+      "listing_ai_enhance_quota_exceeded":
+          "Лимит бесплатных улучшений AI на месяц исчёрпан. Подключите премиум через Payme или Click.",
       "chat_translated_from_en": "Переведено с 🇺🇸",
       "chat_translated_from_ru": "Переведено с 🇷🇺",
       "chat_translated_from_uz": "Переведено с 🇺🇿",
@@ -3273,6 +3285,12 @@ class AppStrings {
       "listing_translating_description": "Tarjima qilinmoqda…",
       "listing_translation_error": "Tarjima qilinmadi. Qayta urinib ko‘ring.",
       "listing_translation_unavailable": "Tarjima mavjud emas.",
+      "listing_translation_quota_exceeded":
+          "Bu oy uchun bepul e'lon tarjimalari tugadi. Payme yoki Click orqali kengaytiring.",
+      "listing_translation_sign_in_required":
+          "E'lon tavsifini tarjima qilish uchun hisobingizga kiring.",
+      "listing_ai_enhance_quota_exceeded":
+          "Bu oy uchun bepul AI yaxshilashlar tugadi. Payme yoki Click orqali kengaytiring.",
       "chat_translated_from_en": "Tarjima: 🇺🇸",
       "chat_translated_from_ru": "Tarjima: 🇷🇺",
       "chat_translated_from_uz": "Tarjima: 🇺🇿",

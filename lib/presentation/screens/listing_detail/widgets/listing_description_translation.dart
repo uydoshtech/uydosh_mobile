@@ -323,13 +323,28 @@ class _ListingDescriptionTranslationState
     });
 
     try {
-      final translated = await _gemini.translateListingDescription(
+      final outcome = await _gemini.translateListingDescription(
         text: widget.originalText,
         targetLanguageCode: code,
       );
       if (!mounted) {
         return;
       }
+      if (outcome.quotaExceeded) {
+        setState(() {
+          _target = _TranslationTarget.original;
+          _error = L10n.get("listing_translation_quota_exceeded");
+        });
+        return;
+      }
+      if (outcome.authRequired) {
+        setState(() {
+          _target = _TranslationTarget.original;
+          _error = L10n.get("listing_translation_sign_in_required");
+        });
+        return;
+      }
+      final translated = outcome.text;
       if (translated == null || translated.trim().isEmpty) {
         setState(() {
           _target = _TranslationTarget.original;

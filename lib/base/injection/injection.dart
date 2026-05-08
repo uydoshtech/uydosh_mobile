@@ -58,7 +58,10 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<GeminiService>(
-    () => GeminiService(publicApiClient: getIt<IPublicApiClient>()),
+    () => GeminiService(
+      publicApiClient: getIt<IPublicApiClient>(),
+      oauthApiClient: getIt<IOAuthApiClient>(),
+    ),
   );
 
   getIt.registerLazySingleton<ILocationService>(
