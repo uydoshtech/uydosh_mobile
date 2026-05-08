@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
@@ -46,6 +47,28 @@ int _snapGigMinDurationMinutes(int? rawMinutes) {
   final stepped =
       (rawMinutes / _gigMinDurationStepMinutes).round() * _gigMinDurationStepMinutes;
   return stepped.clamp(_gigMinDurationFloorMinutes, _gigMinDurationCeilingMinutes);
+}
+
+bool _shouldRebuildGigPostRequestUI(
+  GigPostRequestState previous,
+  GigPostRequestState current,
+) {
+  if (previous.runtimeType != current.runtimeType) return true;
+  if (previous is GigPostRequestIdle && current is GigPostRequestIdle) {
+    return !identical(previous.categories, current.categories);
+  }
+  return true;
+}
+
+bool _shouldRebuildGigPostOfferUI(
+  GigPostOfferState previous,
+  GigPostOfferState current,
+) {
+  if (previous.runtimeType != current.runtimeType) return true;
+  if (previous is GigPostOfferIdle && current is GigPostOfferIdle) {
+    return !identical(previous.categories, current.categories);
+  }
+  return true;
 }
 
 Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
@@ -166,6 +189,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   /// dirty form (same pattern as [EditListingScreen] / [EditProfileScreen]).
   bool _allowPopWithoutConfirm = false;
 
+  /// Mirrors [_isFormDirty] after each form [setState] so text-field listeners
+  /// can skip rebuilding while the form stays dirty (see [_onFormTextChangedForChrome]).
+  late bool _lastFormDirtyChrome;
+
   GigPublishMode _baselineMode = GigPublishMode.task;
   String _baselineTitle = "";
   String _baselineDescription = "";
@@ -243,18 +270,33 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _currency = editingReq.currencyCode;
     }
     _captureBaseline();
+    _lastFormDirtyChrome = _isFormDirty();
     // [PopScope.canPop] is evaluated when this widget rebuilds. Plain
     // [TextEditingController] edits do not rebuild the parent — same fix as
-    // [EditListingScreen] (controller listeners → setState).
-    _titleController.addListener(_rebuildPopScopeDisposition);
-    _descriptionController.addListener(_rebuildPopScopeDisposition);
-    _budgetController.addListener(_rebuildPopScopeDisposition);
-    _addressController.addListener(_rebuildPopScopeDisposition);
-    _priceController.addListener(_rebuildPopScopeDisposition);
+    // [EditListingScreen], but only schedule a rebuild when dirty toggles so
+    // we don't repaint the whole form on every keystroke.
+    _titleController.addListener(_onFormTextChangedForChrome);
+    _descriptionController.addListener(_onFormTextChangedForChrome);
+    _budgetController.addListener(_onFormTextChangedForChrome);
+    _addressController.addListener(_onFormTextChangedForChrome);
+    _priceController.addListener(_onFormTextChangedForChrome);
   }
 
-  void _rebuildPopScopeDisposition() {
-    if (mounted) setState(() {});
+  void _snapshotFormChrome() {
+    _lastFormDirtyChrome = _isFormDirty();
+  }
+
+  void _mutateForm(VoidCallback fn) {
+    setState(fn);
+    _snapshotFormChrome();
+  }
+
+  void _onFormTextChangedForChrome() {
+    if (!mounted) return;
+    final dirty = _isFormDirty();
+    if (dirty == _lastFormDirtyChrome) return;
+    _lastFormDirtyChrome = dirty;
+    setState(() {});
   }
 
   void _captureBaseline() {
@@ -336,11 +378,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
   @override
   void dispose() {
-    _titleController.removeListener(_rebuildPopScopeDisposition);
-    _descriptionController.removeListener(_rebuildPopScopeDisposition);
-    _budgetController.removeListener(_rebuildPopScopeDisposition);
-    _addressController.removeListener(_rebuildPopScopeDisposition);
-    _priceController.removeListener(_rebuildPopScopeDisposition);
+    _titleController.removeListener(_onFormTextChangedForChrome);
+    _descriptionController.removeListener(_onFormTextChangedForChrome);
+    _budgetController.removeListener(_onFormTextChangedForChrome);
+    _addressController.removeListener(_onFormTextChangedForChrome);
+    _priceController.removeListener(_onFormTextChangedForChrome);
     _titleController.dispose();
     _descriptionController.dispose();
     _budgetController.dispose();
@@ -354,7 +396,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       return;
     }
     if (next == _mode) return;
-    setState(() {
+    _mutateForm(() {
       _mode = next;
       // A category selected for one flavor is meaningful for the other
       // (same [GigCategoryCache] source), so we keep it. We do clear the
@@ -388,7 +430,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     if (titleMissing != _showTitleError ||
         categoryMissing != _showCategoryError ||
         amountMissing != _showAmountError) {
-      setState(() {
+      _mutateForm(() {
         _showTitleError = titleMissing;
         _showCategoryError = categoryMissing;
         _showAmountError = amountMissing;
@@ -525,8 +567,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       canPop: _allowPopWithoutConfirm || !_isFormDirty(),
       onPopInvokedWithResult: _onPopInvoked,
       child: BlocBuilder<GigPostRequestBloc, GigPostRequestState>(
+        buildWhen: _shouldRebuildGigPostRequestUI,
         builder: (context, requestState) {
           return BlocBuilder<GigPostOfferBloc, GigPostOfferState>(
+            buildWhen: _shouldRebuildGigPostOfferUI,
             builder: (context, offerState) {
               final theme = Theme.of(context);
 
@@ -671,7 +715,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                           language: language,
                           showError: _showCategoryError,
                           onChanged: (c) {
-                            setState(() {
+                            _mutateForm(() {
                               _selectedCategory = c;
                               if (c != null) _showCategoryError = false;
                             });
@@ -695,7 +739,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                             ),
                             onChanged: (_) {
                               if (_showTitleError) {
-                                setState(() => _showTitleError = false);
+                                _mutateForm(() => _showTitleError = false);
                               }
                             },
                             buildCounter: (
@@ -756,7 +800,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                                       maxLength ?? _descriptionMaxLength,
                                   visibleAt: _descriptionCounterVisibleAt,
                                   isExpanded: _isDescriptionExpanded,
-                                  onToggleExpanded: () => setState(() {
+                                  onToggleExpanded: () => _mutateForm(() {
                                     _isDescriptionExpanded =
                                         !_isDescriptionExpanded;
                                   }),
@@ -810,7 +854,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
       _BudgetTypePlate(
         value: _budgetType,
-        onChanged: (v) => setState(() => _budgetType = v),
+        onChanged: (v) => _mutateForm(() => _budgetType = v),
       ),
       const SizedBox(height: 14),
       // Budget amount + Remote toggle share one row (60/40 flex). When the user
@@ -824,23 +868,23 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             controller: _budgetController,
             currency: _currency,
             supportedCurrencies: _supportedCurrencies,
-            onCurrencyChanged: (c) => setState(() => _currency = c),
+            onCurrencyChanged: (c) => _mutateForm(() => _currency = c),
             hint: "0",
             showError: _showAmountError,
             onChanged: (_) {
               if (_showAmountError) {
-                setState(() => _showAmountError = false);
+                _mutateForm(() => _showAmountError = false);
               }
             },
           ),
           isRemote: _isRemote,
-          onRemoteChanged: (v) => setState(() => _isRemote = v),
+          onRemoteChanged: (v) => _mutateForm(() => _isRemote = v),
         )
       else
         _RemoteTogglePlate(
           value: _isRemote,
           label: L10n.get("gigs_post_request_field_remote"),
-          onChanged: (v) => setState(() => _isRemote = v),
+          onChanged: (v) => _mutateForm(() => _isRemote = v),
         ),
       const SizedBox(height: 14),
       _FieldLabel(L10n.get("gigs_post_request_field_address")),
@@ -862,7 +906,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _FieldLabel(L10n.get("gigs_post_offer_field_pricing_type")),
       _PricingTypePlate(
         value: _pricingType,
-        onChanged: (v) => setState(() => _pricingType = v),
+        onChanged: (v) => _mutateForm(() => _pricingType = v),
       ),
       const SizedBox(height: 14),
       // Price + Remote toggle share one row (60/40 flex for digit width).
@@ -873,17 +917,17 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           controller: _priceController,
           currency: _currency,
           supportedCurrencies: _supportedCurrencies,
-          onCurrencyChanged: (c) => setState(() => _currency = c),
+          onCurrencyChanged: (c) => _mutateForm(() => _currency = c),
           hint: "0",
           showError: _showAmountError,
           onChanged: (_) {
             if (_showAmountError) {
-              setState(() => _showAmountError = false);
+              _mutateForm(() => _showAmountError = false);
             }
           },
         ),
         isRemote: _isRemote,
-        onRemoteChanged: (v) => setState(() => _isRemote = v),
+        onRemoteChanged: (v) => _mutateForm(() => _isRemote = v),
       ),
       if (_pricingType == GigPricingType.hourly) ...[
         const SizedBox(height: 14),
@@ -891,7 +935,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         _PlateField(
           child: _MinDurationMinuteSpinner(
             minutes: _minDurationMinutes,
-            onChanged: (v) => setState(() => _minDurationMinutes = v),
+            onChanged: (v) => _mutateForm(() => _minDurationMinutes = v),
             textStyle: _fieldTextStyle(context),
           ),
         ),
@@ -903,7 +947,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         PhotoUploader(
           selectedPhotos: _selectedPhotos,
           onPhotosChanged: (photos) {
-            setState(() {
+            _mutateForm(() {
               _selectedPhotos = photos;
               if (photos.isNotEmpty && _primaryPhotoIndex == null) {
                 _primaryPhotoIndex = 0;
@@ -923,7 +967,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           onMakePhotoPrimary: (_) {},
           onMakeNewPhotoPrimary: _isEditingOffer
               ? null
-              : (i) => setState(() => _primaryPhotoIndex = i),
+              : (i) => _mutateForm(() => _primaryPhotoIndex = i),
           deletingPhotoIds:
               _isEditingOffer ? _deletingOfferPhotoIds : const <int>{},
           makingPhotoPrimaryIds:
@@ -936,7 +980,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 ],
           onReorderItems: _isEditingOffer
               ? (newOrder) {
-                  setState(() {
+                  _mutateForm(() {
                     _orderedOfferPhotos = newOrder;
                     _selectedPhotos = [
                       for (final item in newOrder)
@@ -948,7 +992,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   });
                 }
               : (newOrder) {
-                  setState(() {
+                  _mutateForm(() {
                     _selectedPhotos = [
                       for (final item in newOrder)
                         if (item is NewPhotoItem) item.path,
@@ -1019,7 +1063,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
     if (shouldDelete ?? false) {
       try {
-        setState(() {
+        _mutateForm(() {
           _deletingOfferPhotoIds.add(photo.id);
         });
 
@@ -1031,7 +1075,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         final wasPrimary = photo.isPrimary;
         final remainingAfter = _existingOfferPhotos.length - 1;
 
-        setState(() {
+        _mutateForm(() {
           _existingOfferPhotos.removeAt(index);
           _deletingOfferPhotoIds.remove(photo.id);
           if (wasPrimary && remainingAfter > 0) {
@@ -1057,7 +1101,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           );
         }
       } catch (e) {
-        setState(() {
+        _mutateForm(() {
           _deletingOfferPhotoIds.remove(photo.id);
         });
         ToastTheme.showError(
@@ -1931,6 +1975,7 @@ class _PulsingSaveButtonState extends State<_PulsingSaveButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _opacity;
+  final AnimationSettingsState _animSettings = AnimationSettingsState();
 
   @override
   void initState() {
@@ -1938,14 +1983,37 @@ class _PulsingSaveButtonState extends State<_PulsingSaveButton>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
+    );
     _opacity = Tween<double>(begin: 0.45, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+    _animSettings.addListener(_syncRepeatPulse);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncRepeatPulse();
+  }
+
+  void _syncRepeatPulse() {
+    if (!mounted) return;
+    final disableAnim =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final allow = _animSettings.uiAnimationsEnabled && !disableAnim;
+    if (allow) {
+      if (!_controller.isAnimating) {
+        _controller.repeat(reverse: true);
+      }
+    } else {
+      _controller.stop();
+      _controller.value = 1.0;
+    }
   }
 
   @override
   void dispose() {
+    _animSettings.removeListener(_syncRepeatPulse);
     _controller.dispose();
     super.dispose();
   }

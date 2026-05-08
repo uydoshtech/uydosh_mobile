@@ -110,12 +110,7 @@ class _ListingTileState extends State<ListingTile>
     _updateCachedValues();
     _favoriteListenable = _buildFavoriteListenable();
     if (widget.showHeartIcon || widget.showFavoriteIndicator) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     }
     if (widget.showActiveStatus) {
       // Delay view count load so tiles that scroll off quickly don't fire requests
@@ -143,12 +138,7 @@ class _ListingTileState extends State<ListingTile>
     final hadPulse =
         oldWidget.showHeartIcon || oldWidget.showFavoriteIndicator;
     if (needPulse && !hadPulse) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     } else if (!needPulse && hadPulse) {
       _favoritePulse?.dispose();
       _favoritePulse = null;

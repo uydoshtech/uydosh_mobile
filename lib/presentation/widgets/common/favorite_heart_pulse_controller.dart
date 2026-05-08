@@ -9,7 +9,10 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 class FavoriteHeartPulseController {
   FavoriteHeartPulseController({
     required TickerProvider vsync,
-    required VoidCallback repaint,
+
+    /// Optional; prefer driving UI via [listenable] + [AnimatedBuilder] /
+    /// [ListenableBuilder] so pulse ticks don’t rebuild whole screens or tiles.
+    VoidCallback? repaint,
     Duration tapDuration = const Duration(milliseconds: 140),
     Duration idleCycle = const Duration(milliseconds: 2000),
   }) : _repaint = repaint {
@@ -39,7 +42,7 @@ class FavoriteHeartPulseController {
     listenable = Listenable.merge([_tapCtrl, _idleCtrl]);
   }
 
-  final VoidCallback _repaint;
+  final VoidCallback? _repaint;
   late final AnimationController _tapCtrl;
   late final Animation<double> _tapScale;
   late final AnimationController _idleCtrl;
@@ -52,7 +55,7 @@ class FavoriteHeartPulseController {
   bool _isFavorite = true;
   bool _disposed = false;
 
-  void _onAnimTick() => _repaint();
+  void _onAnimTick() => _repaint?.call();
 
   /// Current scale = idle breathing × tap pop.
   double get scale => _tapScale.value * _idleScale.value;
@@ -88,7 +91,7 @@ class FavoriteHeartPulseController {
         _idleCtrl.stop();
       }
       _idleCtrl.value = 0;
-      _repaint();
+      _repaint?.call();
     }
   }
 

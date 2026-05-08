@@ -385,6 +385,8 @@ class MessagingService implements IMessagingService {
   @override
   Future<void> deleteConversation(int conversationId) async {
     try {
+      await _checkAuthentication();
+
       await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
         "/conversations/$conversationId",
         (json) => json as Map<String, dynamic>,

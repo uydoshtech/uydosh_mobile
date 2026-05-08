@@ -187,12 +187,7 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
   @override
   void initState() {
     super.initState();
-    _pulse = FavoriteHeartPulseController(
-      vsync: this,
-      repaint: () {
-        if (mounted) setState(() {});
-      },
-    );
+    _pulse = FavoriteHeartPulseController(vsync: this);
   }
 
   @override

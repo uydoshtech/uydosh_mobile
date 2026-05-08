@@ -57,12 +57,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
   @override
   void initState() {
     super.initState();
-    _requestFavPulse = FavoriteHeartPulseController(
-      vsync: this,
-      repaint: () {
-        if (mounted) setState(() {});
-      },
-    );
+    _requestFavPulse = FavoriteHeartPulseController(vsync: this);
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     _future = getIt<IGigService>().getRequest(widget.requestId);

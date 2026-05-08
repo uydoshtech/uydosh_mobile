@@ -56,6 +56,7 @@ import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -200,6 +201,8 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showRefreshSkeleton = false;
   DateTime? _refreshSkeletonStartedAt;
   Completer<void>? _refreshCompleter;
+  bool _isAdmin = false;
+  bool _adminDeleteBusy = false;
   Timer? _incomingRefreshDebounce;
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
@@ -338,6 +341,8 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       // Get current user ID
       _currentUserId = await SessionManager.getUserId();
+      final role = await SessionManager.getUserRole();
+      final isAdmin = role == "admin";
 
       // Fetch current user profile and messages using shared blocs
       context.read<CurrentUserProfileBloc>().add(
@@ -346,6 +351,8 @@ class _ChatScreenState extends State<ChatScreen> {
       context.read<MessagingBloc>().add(
             FetchMessages(conversationId: widget.conversationId),
           );
+      if (!mounted) return;
+      setState(() => _isAdmin = isAdmin);
       _refreshPeerAvatarIfPossible();
     } catch (e) {
       logger.d("❌ [ChatScreen] Error initializing chat: $e");
@@ -1724,7 +1731,54 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
+    if (_isAdmin) {
+      items.add(
+        ActionMenuItem(
+          value: "admin_delete_conversation",
+          icon: Icons.delete_forever_outlined,
+          textKey: "admin_delete_conversation",
+          onPressed: _showAdminDeleteConversationConfirmation,
+          iconColor: Colors.red,
+          textColor: Colors.red,
+          enabled: !_adminDeleteBusy,
+        ),
+      );
+    }
+
     return items;
+  }
+
+  void _showAdminDeleteConversationConfirmation() {
+    CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "admin_delete_conversation",
+      messageKey: "admin_delete_conversation_confirmation",
+      onConfirm: () => _performAdminDeleteConversation(),
+    );
+  }
+
+  Future<void> _performAdminDeleteConversation() async {
+    if (_adminDeleteBusy || !mounted) return;
+    setState(() => _adminDeleteBusy = true);
+    try {
+      await getIt<IMessagingService>()
+          .deleteConversation(widget.conversationId);
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("admin_delete_conversation_success"),
+      );
+      context.read<MessagingBloc>().add(RefreshConversations());
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("admin_delete_conversation_error"),
+      );
+    } finally {
+      if (mounted) setState(() => _adminDeleteBusy = false);
+    }
   }
 }
 

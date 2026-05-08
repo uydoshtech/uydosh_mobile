@@ -67,12 +67,7 @@ class _GigRequestTileState extends State<GigRequestTile>
       GigFavoritesState().listenableForRequest(widget.request.id),
     ]);
     if (widget.showFavoriteIndicator) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     }
   }
 
@@ -87,12 +82,7 @@ class _GigRequestTileState extends State<GigRequestTile>
     final need = widget.showFavoriteIndicator;
     final had = oldWidget.showFavoriteIndicator;
     if (need && !had) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     } else if (!need && had) {
       _favoritePulse?.dispose();
       _favoritePulse = null;

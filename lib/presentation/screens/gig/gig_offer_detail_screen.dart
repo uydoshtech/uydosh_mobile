@@ -57,12 +57,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
   @override
   void initState() {
     super.initState();
-    _offerFavPulse = FavoriteHeartPulseController(
-      vsync: this,
-      repaint: () {
-        if (mounted) setState(() {});
-      },
-    );
+    _offerFavPulse = FavoriteHeartPulseController(vsync: this);
     // Same as listings: owner checks need a loaded user id. Gigs are reachable
     // from the tab bar without visiting Home first, so initialize here.
     UserListingState().initialize();

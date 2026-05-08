@@ -64,12 +64,7 @@ class _GigOfferTileState extends State<GigOfferTile>
       GigFavoritesState().listenableForOffer(widget.offer.id),
     ]);
     if (widget.showFavoriteIndicator) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     }
   }
 
@@ -84,12 +79,7 @@ class _GigOfferTileState extends State<GigOfferTile>
     final need = widget.showFavoriteIndicator;
     final had = oldWidget.showFavoriteIndicator;
     if (need && !had) {
-      _favoritePulse = FavoriteHeartPulseController(
-        vsync: this,
-        repaint: () {
-          if (mounted) setState(() {});
-        },
-      );
+      _favoritePulse = FavoriteHeartPulseController(vsync: this);
     } else if (!need && had) {
       _favoritePulse?.dispose();
       _favoritePulse = null;
@@ -143,6 +133,8 @@ class _GigOfferTileState extends State<GigOfferTile>
     final categoryName =
         widget.offer.category?.localizedName(language) ?? "";
     final photo = widget.offer.primaryPhotoUrl();
+    final thumbPx =
+        (84 * MediaQuery.devicePixelRatioOf(context)).round().clamp(1, 4096);
 
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
@@ -170,6 +162,8 @@ class _GigOfferTileState extends State<GigOfferTile>
                           ? CachedNetworkImage(
                               imageUrl:
                                   EnvironmentUtil.hostedImageUrl(photo),
+                              memCacheWidth: thumbPx,
+                              memCacheHeight: thumbPx,
                               fit: BoxFit.cover,
                               errorWidget: (_, __, ___) => Container(
                                 color: scheme.surfaceContainerHighest,
