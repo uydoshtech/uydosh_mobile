@@ -9,8 +9,10 @@ class QuickQuestionsWidget extends StatelessWidget {
 
   const QuickQuestionsWidget({
     required this.onQuestionTap,
+    this.conversationContextType,
     this.listingTypeId,
     this.isViewerServiceOfferer = false,
+    this.isViewerListingAuthor = false,
     this.blendWithGlassBackdrop = false,
     super.key,
   });
@@ -19,11 +21,17 @@ class QuickQuestionsWidget extends StatelessWidget {
   /// The key is passed so callers can log analytics without re-matching text.
   final void Function(String questionText, String questionKey) onQuestionTap;
 
-  /// Retained for API stability; quick questions are category-agnostic.
+  /// Mirrors [ChatScreen.conversationContextType]; used to pick gig vs housing.
+  final String? conversationContextType;
+
+  /// For housing threads: backend listing type (`1` = need room, `2` need roommate).
   final int? listingTypeId;
 
-  /// When true, show provider/owner quick prompts instead of client prompts.
+  /// Gig threads only: viewer is service offer side (paired with context type).
   final bool isViewerServiceOfferer;
+
+  /// Housing threads only: viewer wrote the backing listing / lead post.
+  final bool isViewerListingAuthor;
 
   /// When true, strip has no fill (parent provides frosted glass).
   final bool blendWithGlassBackdrop;
@@ -51,8 +59,10 @@ class QuickQuestionsWidget extends StatelessWidget {
                 );
 
         final keys = quickQuestionKeysFor(
+          conversationContextType: conversationContextType,
           listingTypeId: listingTypeId,
           isViewerServiceOfferer: isViewerServiceOfferer,
+          isViewerListingAuthor: isViewerListingAuthor,
         );
 
         return Container(

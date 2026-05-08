@@ -778,6 +778,36 @@ abstract class AppLocalizations {
   /// **'Can I come to see it soon?'**
   String get quick_question_can_visit_soon;
 
+  /// No description provided for @quick_question_roommate_still_searching.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you still looking for a roommate?'**
+  String get quick_question_roommate_still_searching;
+
+  /// No description provided for @quick_question_roommate_move_in_date.
+  ///
+  /// In en, this message translates to:
+  /// **'When would someone move in?'**
+  String get quick_question_roommate_move_in_date;
+
+  /// No description provided for @quick_question_roommate_household.
+  ///
+  /// In en, this message translates to:
+  /// **'Who lives in the flat now?'**
+  String get quick_question_roommate_household;
+
+  /// No description provided for @quick_question_roommate_rent_terms.
+  ///
+  /// In en, this message translates to:
+  /// **'How do rent and bills work?'**
+  String get quick_question_roommate_rent_terms;
+
+  /// No description provided for @quick_question_roommate_meet_soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Could we chat or meet soon?'**
+  String get quick_question_roommate_meet_soon;
+
   /// No description provided for @quick_question_seeker_move_in_when.
   ///
   /// In en, this message translates to:

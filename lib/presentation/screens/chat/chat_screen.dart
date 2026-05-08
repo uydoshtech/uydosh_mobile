@@ -991,8 +991,10 @@ class _ChatScreenState extends State<ChatScreen> {
               _chatComposerWithListener(blendWithGlassBackdrop: true),
               QuickQuestionsWidget(
                 onQuestionTap: _onQuestionTap,
+                conversationContextType: widget.conversationContextType,
                 listingTypeId: widget.listingTypeId,
                 isViewerServiceOfferer: _isViewerServiceOfferer,
+                isViewerListingAuthor: _isViewerListingOwner,
                 blendWithGlassBackdrop: true,
               ),
             ],
@@ -1256,8 +1258,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       QuickQuestionsWidget(
                         onQuestionTap: _onQuestionTap,
+                        conversationContextType: widget.conversationContextType,
                         listingTypeId: widget.listingTypeId,
                         isViewerServiceOfferer: _isViewerServiceOfferer,
+                        isViewerListingAuthor: _isViewerListingOwner,
                       ),
                     ],
                   ),

@@ -381,6 +381,25 @@ class AppLocalizationsRu extends AppLocalizations {
       'Можно прийти посмотреть на днях?';
 
   @override
+  String get quick_question_roommate_still_searching =>
+      'Вы ещё ищете сожителя?';
+
+  @override
+  String get quick_question_roommate_move_in_date =>
+      'Когда можно было бы заселиться?';
+
+  @override
+  String get quick_question_roommate_household => 'Кто уже живёт в квартире?';
+
+  @override
+  String get quick_question_roommate_rent_terms =>
+      'Как делите аренду и коммунальные?';
+
+  @override
+  String get quick_question_roommate_meet_soon =>
+      'Можем познакомиться или созвониться?';
+
+  @override
   String get quick_question_seeker_move_in_when => 'Когда планируете заехать?';
 
   @override

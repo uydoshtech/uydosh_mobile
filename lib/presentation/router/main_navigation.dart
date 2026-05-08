@@ -1033,7 +1033,6 @@ class MainNavigationState extends State<MainNavigation>
                       },
                       semanticsLabel: L10n.get("profile"),
                       iconSize: 28,
-                      neumorphicSoftUi: true,
                     );
                   }
 
@@ -1069,7 +1068,6 @@ class MainNavigationState extends State<MainNavigation>
                                     : const EdgeInsets.all(6),
                             contentSlotSize:
                                 hasAvatar ? kAppBarAvatarContentSize : 28,
-                            neumorphicSoftUi: true,
                             iconWidget: AppBarProfileIcon(
                               iconSize:
                                   hasAvatar ? kAppBarAvatarContentSize : 28,

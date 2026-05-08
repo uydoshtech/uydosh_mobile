@@ -376,6 +376,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quick_question_can_visit_soon => 'Can I come to see it soon?';
 
   @override
+  String get quick_question_roommate_still_searching =>
+      'Are you still looking for a roommate?';
+
+  @override
+  String get quick_question_roommate_move_in_date =>
+      'When would someone move in?';
+
+  @override
+  String get quick_question_roommate_household => 'Who lives in the flat now?';
+
+  @override
+  String get quick_question_roommate_rent_terms =>
+      'How do rent and bills work?';
+
+  @override
+  String get quick_question_roommate_meet_soon => 'Could we chat or meet soon?';
+
+  @override
   String get quick_question_seeker_move_in_when =>
       'When do you want to move in?';
 

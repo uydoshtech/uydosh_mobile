@@ -242,6 +242,14 @@ class AppStrings {
       "quick_question_total_price":
           "What is the total price including utilities?",
       "quick_question_can_visit_soon": "Can I come to see it soon?",
+      "quick_question_roommate_still_searching":
+          "Are you still looking for a roommate?",
+      "quick_question_roommate_move_in_date": "When would someone move in?",
+      "quick_question_roommate_household": "Who lives in the flat now?",
+      "quick_question_roommate_rent_terms":
+          "How do rent and bills work?",
+      "quick_question_roommate_meet_soon":
+          "Could we chat or meet soon?",
       "quick_question_seeker_move_in_when": "When do you want to move in?",
       "quick_question_seeker_budget": "What is your budget?",
       "quick_question_seeker_how_long": "How long are you looking to rent?",
@@ -1650,6 +1658,16 @@ class AppStrings {
       "quick_question_total_price":
           "Какая итоговая цена со всеми коммунальными?",
       "quick_question_can_visit_soon": "Можно прийти посмотреть на днях?",
+      "quick_question_roommate_still_searching":
+          "Вы ещё ищете сожителя?",
+      "quick_question_roommate_move_in_date":
+          "Когда можно было бы заселиться?",
+      "quick_question_roommate_household":
+          "Кто уже живёт в квартире?",
+      "quick_question_roommate_rent_terms":
+          "Как делите аренду и коммунальные?",
+      "quick_question_roommate_meet_soon":
+          "Можем познакомиться или созвониться?",
       "quick_question_seeker_move_in_when": "Когда планируете заехать?",
       "quick_question_seeker_budget": "Какой у вас бюджет?",
       "quick_question_seeker_how_long": "На какой срок ищете?",
@@ -3085,6 +3103,16 @@ class AppStrings {
           "Kommunal xarajatlar bilan umumiy narxi qancha?",
       "quick_question_can_visit_soon":
           "Yaqin kunlarda ko'rish uchun kelsam bo'ladimi?",
+      "quick_question_roommate_still_searching":
+          "Hali ham xonadosh qidiryapsizmi?",
+      "quick_question_roommate_move_in_date":
+          "Xonadosh qachon ko'chib kelishi mumkin?",
+      "quick_question_roommate_household":
+          "Hozir kvartirada kimlar yashaydi?",
+      "quick_question_roommate_rent_terms":
+          "Ijara va kommunal to'lovlar qanday bo'ladi?",
+      "quick_question_roommate_meet_soon":
+          "Suhbatlashish yoki uchrashish mumkinmi?",
       "quick_question_seeker_move_in_when":
           "Qachon ko'chib kelmoqchisiz?",
       "quick_question_seeker_budget": "Byudjetingiz qancha?",

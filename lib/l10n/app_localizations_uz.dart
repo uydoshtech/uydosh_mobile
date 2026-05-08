@@ -379,6 +379,26 @@ class AppLocalizationsUz extends AppLocalizations {
       'Yaqin kunlarda ko\'rish uchun kelsam bo\'ladimi?';
 
   @override
+  String get quick_question_roommate_still_searching =>
+      'Hali ham xonadosh qidiryapsizmi?';
+
+  @override
+  String get quick_question_roommate_move_in_date =>
+      'Xonadosh qachon ko\'chib kelishi mumkin?';
+
+  @override
+  String get quick_question_roommate_household =>
+      'Hozir kvartirada kimlar yashaydi?';
+
+  @override
+  String get quick_question_roommate_rent_terms =>
+      'Ijara va kommunal to\'lovlar qanday bo\'ladi?';
+
+  @override
+  String get quick_question_roommate_meet_soon =>
+      'Suhbatlashish yoki uchrashish mumkinmi?';
+
+  @override
   String get quick_question_seeker_move_in_when =>
       'Qachon ko\'chib kelmoqchisiz?';
 

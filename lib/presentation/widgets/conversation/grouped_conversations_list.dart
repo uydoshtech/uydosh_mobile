@@ -591,11 +591,11 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
 /// Horizontal cluster of participant avatars overlaid at the center of the
 /// collapsed group header. Each circle shows the "other user" of one
-/// conversation. Avatars are placed side-by-side with a small gap between
-/// them (no overlap) so every face reads as its own discrete identity. The
-/// per-group unread badge in the right rail already conveys the unread
-/// signal, so avatars here are intentionally identifier-only — no
-/// per-avatar dot.
+/// conversation. Avatars overlap slightly (~8% of diameter plus a small
+/// fixed inset) so the cluster stays compact while rings still separate
+/// identities. The per-group
+/// unread badge in the right rail already conveys the unread signal, so
+/// avatars here are intentionally identifier-only — no per-avatar dot.
 class _ConversationParticipantStack extends StatelessWidget {
   const _ConversationParticipantStack({
     required this.conversations,
@@ -605,7 +605,13 @@ class _ConversationParticipantStack extends StatelessWidget {
   });
 
   static const double _avatarSize = 36;
-  static const double _avatarGap = 2;
+
+  /// Horizontal overlap between adjacent circles as a fraction of diameter
+  /// (5–10% reads as a light stack without hiding too much of each face).
+  static const double _avatarOverlapFraction = 0.08;
+
+  /// Additional overlap in logical pixels, stacked on [_avatarOverlapFraction].
+  static const double _avatarOverlapExtraPx = 2;
 
   /// How many real participant avatars we render before falling back to a
   /// `+N` chip. Five matches the typical "team avatars" pattern (Slack,
@@ -629,32 +635,44 @@ class _ConversationParticipantStack extends StatelessWidget {
     final visible = conversations.take(_maxVisible).toList();
     final overflow = conversations.length - visible.length;
 
-    final children = <Widget>[
-      for (var i = 0; i < visible.length; i++) ...[
-        if (i > 0) const SizedBox(width: _avatarGap),
-        _ParticipantAvatar(
-          conversation: visible[i],
-          size: _avatarSize,
-          avatarColor: avatarColor,
-          avatarIconColor: avatarIconColor,
-          ringColor: ringColor,
-        ),
-      ],
-      if (overflow > 0) ...[
-        const SizedBox(width: _avatarGap),
-        _ParticipantOverflowChip(
-          count: overflow,
-          size: _avatarSize,
-          ringColor: ringColor,
-          background: avatarColor,
-          textColor: avatarIconColor,
-        ),
-      ],
-    ];
+    final overlap =
+        _avatarSize * _avatarOverlapFraction + _avatarOverlapExtraPx;
+    final step = _avatarSize - overlap;
+    final slotCount = visible.length + (overflow > 0 ? 1 : 0);
+    final stackWidth = slotCount > 0 ? _avatarSize + (slotCount - 1) * step : 0.0;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: children,
+    return SizedBox(
+      width: stackWidth,
+      height: _avatarSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (var i = 0; i < visible.length; i++)
+            Positioned(
+              left: i * step,
+              top: 0,
+              child: _ParticipantAvatar(
+                conversation: visible[i],
+                size: _avatarSize,
+                avatarColor: avatarColor,
+                avatarIconColor: avatarIconColor,
+                ringColor: ringColor,
+              ),
+            ),
+          if (overflow > 0)
+            Positioned(
+              left: visible.length * step,
+              top: 0,
+              child: _ParticipantOverflowChip(
+                count: overflow,
+                size: _avatarSize,
+                ringColor: ringColor,
+                background: avatarColor,
+                textColor: avatarIconColor,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
