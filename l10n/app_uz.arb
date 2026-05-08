@@ -588,6 +588,8 @@
   "yes_student": "Men talabaman",
   "no_student": "Men talaba emasman",
   "are_you_landlord_or_renter": "Siz ijaraga beruvchimisiz yoki ijarachimisiz?",
+  "select_your_primary_role": "Asosiy rolingizni tanlang",
+  "tap_to_select_primary_role": "Rol tanlang",
   "selected": "Tanlangan",
   "full_name_hint": "Ismingiz yoki taxallusingizni kiriting",
   "name_required": "Ism yoki taxallus talab qilinadi",

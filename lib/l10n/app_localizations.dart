@@ -2572,6 +2572,18 @@ abstract class AppLocalizations {
   /// **'Are you a landlord or renter?'**
   String get are_you_landlord_or_renter;
 
+  /// No description provided for @select_your_primary_role.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your primary role'**
+  String get select_your_primary_role;
+
+  /// No description provided for @tap_to_select_primary_role.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a role'**
+  String get tap_to_select_primary_role;
+
   /// No description provided for @selected.
   ///
   /// In en, this message translates to:

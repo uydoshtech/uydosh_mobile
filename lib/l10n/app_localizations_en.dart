@@ -1345,6 +1345,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get are_you_landlord_or_renter => 'Are you a landlord or renter?';
 
   @override
+  String get select_your_primary_role => 'Select your primary role';
+
+  @override
+  String get tap_to_select_primary_role => 'Choose a role';
+
+  @override
   String get selected => 'Selected';
 
   @override

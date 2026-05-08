@@ -580,6 +580,8 @@
   "yes_student": "Студент",
   "no_student": "Не студент",
   "are_you_landlord_or_renter": "Вы арендодатель или арендатор?",
+  "select_your_primary_role": "Выберите основную роль",
+  "tap_to_select_primary_role": "Выберите роль",
   "selected": "Выбрано",
   "full_name_hint": "Введите ваше имя или никнейм",
   "name_required": "Имя или никнейм обязательно",

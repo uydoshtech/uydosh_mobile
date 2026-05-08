@@ -1,6 +1,5 @@
 import "dart:ui" show ImageFilter;
 
-import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
@@ -8,6 +7,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -76,21 +76,11 @@ class ListingDetailContactActionBar extends StatelessWidget {
   }
 
   Widget _chatButton(BuildContext context) {
-    // "UyDosh Chat" should be the primary CTA vs Telegram.
-    const brandGreen = Color(0xFF25C06D);
-    final primaryFg = Colors.white;
-    return _GlassNeumorphicCtaButton(
-      onPressed: () {
-        HapticFeedbackUtils.impact();
-        onMessage!.call();
-      },
-      icon: CupertinoIcons.shield_fill,
-      iconColor: primaryFg,
+    return GlassGreenChatCtaButton(
+      onPressed: () => onMessage!.call(),
       label: context.l10n.uydosh_chat,
-      labelColor: primaryFg,
-      fillColor: brandGreen,
-      borderColor: brandGreen.withValues(alpha: 0.65),
-      fontWeight: FontWeight.w700,
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+      height: 48,
     );
   }
 
@@ -230,8 +220,6 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.label,
     required this.labelColor,
     required this.borderColor,
-    this.fillColor,
-    this.fontWeight = FontWeight.w600,
   });
 
   final VoidCallback onPressed;
@@ -240,8 +228,6 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final String label;
   final Color labelColor;
   final Color borderColor;
-  final Color? fillColor;
-  final FontWeight fontWeight;
 
   @override
   State<_GlassNeumorphicCtaButton> createState() =>
@@ -268,15 +254,12 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
         ? ThreeDSurfaceStyle.pressedShadows(context)
         : ThreeDSurfaceStyle.elevatedShadows(context);
 
-    final base =
-        widget.fillColor ??
-        (isDark
-            ? scheme.surface.withValues(alpha: 0.08)
-            : scheme.surface.withValues(alpha: 0.12));
-    final faceColor =
-        widget.fillColor != null ? base : base.withValues(alpha: isDark ? 0.38 : 0.55);
+    final base = isDark
+        ? scheme.surface.withValues(alpha: 0.08)
+        : scheme.surface.withValues(alpha: 0.12);
+    final faceColor = base.withValues(alpha: isDark ? 0.38 : 0.55);
     final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
-    final useBackdropBlur = enableGlass && widget.fillColor == null;
+    final useBackdropBlur = enableGlass;
 
     final labelRow = Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -294,7 +277,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: widget.fontWeight,
+              fontWeight: FontWeight.w600,
               color: widget.labelColor,
               height: 1.0,
             ),

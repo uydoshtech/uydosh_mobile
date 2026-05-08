@@ -1348,6 +1348,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get are_you_landlord_or_renter => 'Вы арендодатель или арендатор?';
 
   @override
+  String get select_your_primary_role => 'Выберите основную роль';
+
+  @override
+  String get tap_to_select_primary_role => 'Выберите роль';
+
+  @override
   String get selected => 'Выбрано';
 
   @override

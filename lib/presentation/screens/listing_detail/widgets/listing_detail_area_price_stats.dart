@@ -173,8 +173,8 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
       child: ExpansionTile(
         initiallyExpanded: false,
         dense: true,
-        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-        tilePadding: EdgeInsets.zero,
+        visualDensity: const VisualDensity(horizontal: -4, vertical: 0),
+        tilePadding: const EdgeInsets.only(top: 4, bottom: 4),
         childrenPadding: const EdgeInsets.only(top: 8, bottom: 2),
         minTileHeight: 0,
         iconColor: theme.colorScheme.onSurfaceVariant,

@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
@@ -71,8 +72,9 @@ class AuthWizardProfilePage extends StatelessWidget {
   /// the field. The parent screen sets these flags after a failed
   /// validation pass and resets them as the user touches each field.
   ///
-  /// For groups (gender / role / student) the flag covers both pills in the
-  /// row so it's visually clear that *one of them* must be picked.
+  /// For groups (gender / student) the flag covers both pills in the row so
+  /// it's visually clear that *one of them* must be picked. For role, it wraps
+  /// the primary-role dropdown.
   final bool nameMissing;
   final bool genderMissing;
   final bool regionMissing;
@@ -222,74 +224,40 @@ class AuthWizardProfilePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 32),
-            L10n.text(
-              "are_you_landlord_or_renter",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
+            ErrorBorderPulse(
+              showError: roleMissing,
+              child: ProfileDropdownControl(
+                label: L10n.get("select_your_primary_role"),
+                value: selectedRole,
+                icon: Icons.badge,
+                onChanged: onRoleSelected,
+                options: [
+                  DropdownOption(
+                    value: null,
+                    label: L10n.get("tap_to_select_primary_role"),
+                  ),
+                  DropdownOption(
+                    value: "landlord",
+                    label: L10n.get("role_landlord"),
+                    icon: Icons.home_work,
+                  ),
+                  DropdownOption(
+                    value: "tenant",
+                    label: L10n.get("role_tenant"),
+                    icon: Icons.key,
+                  ),
+                  DropdownOption(
+                    value: "service_requester",
+                    label: L10n.get("role_service_requester"),
+                    icon: Icons.assignment_ind,
+                  ),
+                  DropdownOption(
+                    value: "service_provider",
+                    label: L10n.get("role_service_provider"),
+                    icon: Icons.home_repair_service,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: ErrorBorderPulse(
-                        showError: roleMissing,
-                        child: _buildRoleOption(
-                          context,
-                          "landlord",
-                          L10n.get("role_landlord"),
-                          Icons.home_work,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Flexible(
-                      child: ErrorBorderPulse(
-                        showError: roleMissing,
-                        child: _buildRoleOption(
-                          context,
-                          "tenant",
-                          L10n.get("role_tenant"),
-                          Icons.key,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Flexible(
-                      child: ErrorBorderPulse(
-                        showError: roleMissing,
-                        child: _buildRoleOption(
-                          context,
-                          "service_requester",
-                          L10n.get("role_service_requester"),
-                          Icons.assignment_ind,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Flexible(
-                      child: ErrorBorderPulse(
-                        showError: roleMissing,
-                        child: _buildRoleOption(
-                          context,
-                          "service_provider",
-                          L10n.get("role_service_provider"),
-                          Icons.home_repair_service,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
             const SizedBox(height: 32),
             L10n.text(
@@ -402,21 +370,6 @@ class AuthWizardProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRoleOption(
-    BuildContext context,
-    String role,
-    String label,
-    IconData icon,
-  ) {
-    return _buildToggleOption(
-      context,
-      isSelected: selectedRole == role,
-      label: label,
-      icon: icon,
-      onTap: () => onRoleSelected(role),
-    );
-  }
-
   Widget _buildStudentOption(
     BuildContext context,
     bool studentValue,
@@ -432,7 +385,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     );
   }
 
-  /// Shared soft-UI pill used by the gender, role, and student toggles. Raised
+  /// Shared soft-UI pill used by the gender and student toggles. Raised
   /// neumorphic shell when unselected; recessed + tinted when selected.
   Widget _buildToggleOption(
     BuildContext context, {

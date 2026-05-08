@@ -32,7 +32,6 @@ import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dar
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -41,7 +40,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.da
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ProfileScreenData {
-
   const _ProfileScreenData({
     required this.isLoading,
     required this.hasError,
@@ -82,7 +80,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _redirectedToProfileSetup = false;
   String? _userRole;
-  int? _expandedSectionIndex; // 0 = Profile, 1 = Lifestyle Preferences (mutually exclusive)
+  int?
+      _expandedSectionIndex; // 0 = Profile, 1 = Lifestyle Preferences (mutually exclusive)
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
   bool _userBlocked = false;
@@ -160,8 +159,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } catch (_) {}
 
       try {
-        final favorites =
-            await getIt<IFavoriteService>().getUserFavorites(page: 1, limit: 100);
+        final favorites = await getIt<IFavoriteService>()
+            .getUserFavorites(page: 1, limit: 100);
         favoritesCount = favorites.length;
       } catch (_) {}
 
@@ -208,12 +207,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final response = await getIt<IOAuthApiClient>()
           .post<Map<String, dynamic>, _EmptyRequest>(
-            "/users/verify-session",
-            (json) => json as Map<String, dynamic>,
-            data: _EmptyRequest(),
-          );
+        "/users/verify-session",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
       final user = response["user"];
-      final role = user is Map<String, dynamic> ? user["role"] as String? : null;
+      final role =
+          user is Map<String, dynamic> ? user["role"] as String? : null;
       final isBlocked = user is Map<String, dynamic>
           ? (user["is_blocked"] as bool? ?? false)
           : false;
@@ -238,129 +238,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CurrentUserProfileBloc, CurrentUserProfileState>(
-        listener: (context, state) {
-          state.whenOrNull(
-            loaded: (profile) {
-              setStateIfMounted(() {
-                _cachedUserProfile = profile;
-              });
-            },
-          );
-          state.maybeWhen(
-            error: (message) {
-              if (message != profileNotFoundErrorCode ||
-                  _redirectedToProfileSetup) {
-                return;
-              }
-              _redirectedToProfileSetup = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                context.pushReplaceAuthWizard(
-                  initialPage: 2,
-                  skipExistingSessionCheck: true,
-                );
-              });
-            },
-            orElse: () {},
-          );
-        },
-        child: ListenableBuilder(
-          listenable: ThemeState(),
-          builder: (context, child) {
-            return BlocSelector<
-              CurrentUserProfileBloc,
-              CurrentUserProfileState,
-              _ProfileScreenData
-            >(
-              selector:
-                  (state) => state.map(
-                    initial:
-                        (_) => const _ProfileScreenData(
-                          isLoading: true,
-                          hasError: false,
-                          errorMessage: "",
-                          profile: null,
-                        ),
-                    loading:
-                        (_) => const _ProfileScreenData(
-                          isLoading: true,
-                          hasError: false,
-                          errorMessage: "",
-                          profile: null,
-                        ),
-                    loaded:
-                        (loadedState) => _ProfileScreenData(
-                          isLoading: false,
-                          hasError: false,
-                          errorMessage: "",
-                          profile: loadedState.profile,
-                        ),
-                    error:
-                        (errorState) => _ProfileScreenData(
-                          isLoading: false,
-                          hasError: true,
-                          errorMessage: errorState.message,
-                          profile: null,
-                        ),
+      listener: (context, state) {
+        state.whenOrNull(
+          loaded: (profile) {
+            setStateIfMounted(() {
+              _cachedUserProfile = profile;
+            });
+          },
+        );
+        state.maybeWhen(
+          error: (message) {
+            if (message != profileNotFoundErrorCode ||
+                _redirectedToProfileSetup) {
+              return;
+            }
+            _redirectedToProfileSetup = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              context.pushReplaceAuthWizard(
+                initialPage: 2,
+                skipExistingSessionCheck: true,
+              );
+            });
+          },
+          orElse: () {},
+        );
+      },
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, child) {
+          return BlocSelector<CurrentUserProfileBloc, CurrentUserProfileState,
+              _ProfileScreenData>(
+            selector: (state) => state.map(
+              initial: (_) => const _ProfileScreenData(
+                isLoading: true,
+                hasError: false,
+                errorMessage: "",
+                profile: null,
+              ),
+              loading: (_) => const _ProfileScreenData(
+                isLoading: true,
+                hasError: false,
+                errorMessage: "",
+                profile: null,
+              ),
+              loaded: (loadedState) => _ProfileScreenData(
+                isLoading: false,
+                hasError: false,
+                errorMessage: "",
+                profile: loadedState.profile,
+              ),
+              error: (errorState) => _ProfileScreenData(
+                isLoading: false,
+                hasError: true,
+                errorMessage: errorState.message,
+                profile: null,
+              ),
+            ),
+            builder: (context, data) {
+              final effectiveProfile = data.profile ?? _cachedUserProfile;
+
+              if (effectiveProfile == null &&
+                  data.isLoading &&
+                  !data.hasError) {
+                return Scaffold(
+                  body: CenteredHouseLoadingIndicator(
+                    text: L10n.get("loading"),
                   ),
-              builder: (context, data) {
-                final effectiveProfile =
-                    data.profile ?? _cachedUserProfile;
+                );
+              }
 
-                if (effectiveProfile == null &&
-                    data.isLoading &&
-                    !data.hasError) {
-                  return Scaffold(
-                    body: CenteredHouseLoadingIndicator(
-                      text: L10n.get("loading"),
-                    ),
-                  );
-                }
+              if (data.hasError &&
+                  data.errorMessage == profileNotFoundErrorCode) {
+                return Scaffold(
+                  body: CenteredHouseLoadingIndicator(
+                    text: L10n.get("loading"),
+                  ),
+                );
+              }
 
-                if (data.hasError &&
-                    data.errorMessage == profileNotFoundErrorCode) {
-                  return Scaffold(
-                    body: CenteredHouseLoadingIndicator(
-                      text: L10n.get("loading"),
-                    ),
-                  );
-                }
-
-                if (effectiveProfile == null && data.hasError) {
-                  return Scaffold(
-                    appBar: UydoshAppBar(
-                      leading: ThreeDAppBarIconButton.backLeading(
-                        context,
-                        onPressed: () {
-                          if (Navigator.of(context).canPop()) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                      title: Text(
-                        L10n.get("profile"),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    body: _buildErrorState(data.errorMessage, context),
-                  );
-                }
-
-                final profile = effectiveProfile!;
-                final now = DateTime.now();
-                final shouldCheck = !_achievementCheckScheduled ||
-                    (_lastAchievementCheckTime != null &&
-                        now.difference(_lastAchievementCheckTime!).inSeconds > 30);
-                if (shouldCheck) {
-                  _achievementCheckScheduled = true;
-                  _lastAchievementCheckTime = now;
-                  Future.microtask(
-                    () => _checkAndUnlockAchievements(profile, context),
-                  );
-                }
+              if (effectiveProfile == null && data.hasError) {
                 return Scaffold(
                   appBar: UydoshAppBar(
                     leading: ThreeDAppBarIconButton.backLeading(
@@ -378,32 +335,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    actions: [
-                      ActionDropdownMenu(
-                        items: buildProfileActionMenuItems(
-                          context: context,
-                          userBlocked: _userBlocked,
-                          userRole: _userRole,
-                          cachedUserProfile: _cachedUserProfile,
-                          onEditProfile: (profile) =>
-                              _openEditProfileScreen(context, profile),
-                          onLogout: () => _showLogoutDialog(context),
-                        ),
-                        icon: Icons.more_vert,
-                        tooltip: L10n.get("menu_settings"),
-                        padding: const EdgeInsets.only(right: 16.0),
-                      ),
-                    ],
                   ),
-                  body:
-                      data.hasError
-                          ? _buildErrorState(data.errorMessage, context)
-                          : _buildProfileContent(profile),
+                  body: _buildErrorState(data.errorMessage, context),
                 );
-              },
-            );
-          },
-        ),
+              }
+
+              final profile = effectiveProfile!;
+              final now = DateTime.now();
+              final shouldCheck = !_achievementCheckScheduled ||
+                  (_lastAchievementCheckTime != null &&
+                      now.difference(_lastAchievementCheckTime!).inSeconds >
+                          30);
+              if (shouldCheck) {
+                _achievementCheckScheduled = true;
+                _lastAchievementCheckTime = now;
+                Future.microtask(
+                  () => _checkAndUnlockAchievements(profile, context),
+                );
+              }
+              return Scaffold(
+                appBar: UydoshAppBar(
+                  leading: ThreeDAppBarIconButton.backLeading(
+                    context,
+                    onPressed: () {
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                  ),
+                  title: Text(
+                    L10n.get("profile"),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  actions: [
+                    ActionDropdownMenu(
+                      items: buildProfileActionMenuItems(
+                        context: context,
+                        userBlocked: _userBlocked,
+                        userRole: _userRole,
+                        cachedUserProfile: _cachedUserProfile,
+                        onEditProfile: (profile) =>
+                            _openEditProfileScreen(context, profile),
+                        onLogout: () => _showLogoutDialog(context),
+                      ),
+                      icon: Icons.more_vert,
+                      tooltip: L10n.get("menu_settings"),
+                      padding: const EdgeInsets.only(right: 16.0),
+                    ),
+                  ],
+                ),
+                body: data.hasError
+                    ? _buildErrorState(data.errorMessage, context)
+                    : _buildProfileContent(profile),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -424,8 +415,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 userRoleLoaded: _userRoleLoaded,
                 userBlocked: _userBlocked,
                 getRoleLabel: (role) => _getRoleLabel(role, context),
-                onEditProfile: () =>
-                    _openEditProfileScreen(context, profile),
+                onEditProfile: () => _openEditProfileScreen(context, profile),
                 onAvatarUpdated: () {
                   if (!mounted) return;
                   context.read<CurrentUserProfileBloc>().add(
@@ -433,9 +423,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                 },
               ),
-
               const SizedBox(height: 16),
-
               ProfileStatsSection(
                 profile: profile,
                 cachedGoogleDisplayName: _cachedGoogleDisplayName,
@@ -446,7 +434,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getLocalizedRegionName: _getLocalizedRegionName,
                 getLocalizedUniversityName: _getLocalizedUniversityName,
               ),
-
               const SizedBox(height: 24),
               ProfileListingsSection(
                 userRole: _userRole,
@@ -500,8 +487,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 LogoutService().performLogout();
               } else {
                 context.read<CurrentUserProfileBloc>().add(
-                  const CurrentUserProfileEvent.fetchProfile(),
-                );
+                      const CurrentUserProfileEvent.fetchProfile(),
+                    );
               }
             },
             child: Text(
@@ -611,8 +598,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       logger.d("Edit profile returned true, refreshing profile data...");
 
       context.read<CurrentUserProfileBloc>().add(
-        const CurrentUserProfileEvent.fetchProfile(),
-      );
+            const CurrentUserProfileEvent.fetchProfile(),
+          );
 
       logger.d("✅ Profile refresh event dispatched");
     } else {

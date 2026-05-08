@@ -285,7 +285,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (_isRoleLoaded.value) {
       final br = _baselineRole;
       if (br != null && _selectedRole.value != br) {
-        addLabel("are_you_landlord_or_renter", fallback: "Role");
+        addLabel("select_your_primary_role", fallback: "Role");
       }
     }
 
@@ -757,7 +757,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                             builder: (context, selectedRole, _) =>
                                 ProfileDropdownControl(
                               label: L10n.get(
-                                "are_you_landlord_or_renter",
+                                "select_your_primary_role",
                               ),
                               value: selectedRole,
                               onChanged: (value) =>
@@ -1237,7 +1237,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             Expanded(
               child: Text(
                 L10n.get(
-                  "are_you_landlord_or_renter",
+                  "select_your_primary_role",
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,

@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
@@ -552,7 +553,7 @@ class _OfferDetailContentStatefulState
                       ),
                     )
                   : existingBooking != null
-                      ? PrimaryButtonFactory.iconTextCentered(
+                      ? GlassGreenChatCtaButton(
                           onPressed: _bookingChatInFlight
                               ? null
                               : () => unawaited(
@@ -562,8 +563,7 @@ class _OfferDetailContentStatefulState
                                     ),
                                   ),
                           isLoading: _bookingChatInFlight,
-                          icon: Icons.chat_bubble_outline_rounded,
-                          text: L10n.getWithParams(
+                          label: L10n.getWithParams(
                             "gigs_offer_book_view_orders_cta",
                             params: {
                               "user_name": _providerDisplayName(offer),
@@ -572,9 +572,12 @@ class _OfferDetailContentStatefulState
                           height: 54,
                           width: double.infinity,
                           borderRadius: BorderRadius.circular(16),
+                          iconSize: 22,
                           textStyle: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
+                            color: Colors.white,
+                            height: 1.0,
                           ),
                         )
                       : PrimaryButtonFactory.iconText(

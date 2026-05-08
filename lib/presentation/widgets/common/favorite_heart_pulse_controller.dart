@@ -50,6 +50,7 @@ class FavoriteHeartPulseController {
   late final Listenable listenable;
 
   bool _isFavorite = true;
+  bool _disposed = false;
 
   void _onAnimTick() => _repaint();
 
@@ -67,7 +68,13 @@ class FavoriteHeartPulseController {
   void setFavoriteOutlineState({required bool isFavorite}) {
     if (_isFavorite == isFavorite) return;
     _isFavorite = isFavorite;
-    _syncIdlePulse();
+    // Defer: this is invoked from [ListenableBuilder] during tile build.
+    // [_idleCtrl.stop] / [repeat] notify listeners synchronously -> [_repaint]
+    // -> [setState] mid-build and layout exceptions.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_disposed) return;
+      _syncIdlePulse();
+    });
   }
 
   void _syncIdlePulse() {
@@ -86,6 +93,7 @@ class FavoriteHeartPulseController {
   }
 
   void dispose() {
+    _disposed = true;
     _settings.removeListener(_settingsListener);
     _tapCtrl.dispose();
     _idleCtrl.dispose();

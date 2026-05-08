@@ -588,6 +588,8 @@
   "yes_student": "Yes, I'm a student",
   "no_student": "No, I'm not a student",
   "are_you_landlord_or_renter": "Are you a landlord or renter?",
+  "select_your_primary_role": "Select your primary role",
+  "tap_to_select_primary_role": "Choose a role",
   "selected": "Selected",
   "full_name_hint": "Enter your name or nickname",
   "name_required": "Name or nickname is required",

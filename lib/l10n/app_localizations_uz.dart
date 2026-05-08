@@ -1360,6 +1360,12 @@ class AppLocalizationsUz extends AppLocalizations {
       'Siz ijaraga beruvchimisiz yoki ijarachimisiz?';
 
   @override
+  String get select_your_primary_role => 'Asosiy rolingizni tanlang';
+
+  @override
+  String get tap_to_select_primary_role => 'Rol tanlang';
+
+  @override
   String get selected => 'Tanlangan';
 
   @override

@@ -416,7 +416,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// ribbon; false otherwise. Splitting this out lets the post-login path
   /// decide whether to fall back to a filter-driven heuristic.
   Future<bool> _restoreInlineSearchModeFromPrefs() async {
-    if (widget.isSearchMode) return false; // dedicated results screen manages itself
+    if (widget.isSearchMode)
+      return false; // dedicated results screen manages itself
     if (!await SessionManager.isAuthenticated()) return false;
     final prefs = await SharedPreferences.getInstance();
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
@@ -872,7 +873,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             return _buildErrorState(data.errorMessage);
           }
           if (data.listings.isEmpty) {
-            return (widget.isSearchMode || _inlineSearchActive || _inlineSearchClosing)
+            return (widget.isSearchMode ||
+                    _inlineSearchActive ||
+                    _inlineSearchClosing)
                 ? _buildEmptySearchState()
                 : _buildInitialState();
           }
@@ -898,7 +901,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Positioned(
             right: 16,
             bottom: 30, // Moved down a bit from 100
-            child: BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(
+            child:
+                BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(
               selector: (state) {
                 final inSearchContext =
                     widget.isSearchMode || _inlineSearchActive;
@@ -1056,7 +1060,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // spacer, so the resulting "visual gap" equals [_inlineSearchRibbonToListGap].
     final targetHeight = math.max(
       0.0,
-      _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap - trailingSpacing,
+      _feedRibbonSpacerHeight() +
+          _inlineSearchRibbonToListGap -
+          trailingSpacing,
     );
     return AnimatedContainer(
       duration: _homeRibbonAnimationDuration(context),
@@ -1093,7 +1099,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ).animate(
               CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
             );
-            final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+            final fade =
+                CurvedAnimation(parent: animation, curve: Curves.easeOut);
             return ClipRect(
               child: SlideTransition(
                 position: slide,
@@ -1736,7 +1743,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       itemSpacing: 16.0,
       itemCount: 7,
       itemBuilder: (context, index) {
-        if (index == 0) return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
+        if (index == 0)
+          return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
         return const ListingTileSkeleton();
       },
     );
@@ -1755,12 +1763,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
           itemBuilder: (context, index) {
-            if (index == 0) return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
+            if (index == 0)
+              return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
             final listing = listings[index - 1];
             return ListingTile(
               key: ValueKey(listing.id),
               listing: listing,
-              forceFavorite: false, // Home screen listings don't force favorite state
+              forceFavorite:
+                  false, // Home screen listings don't force favorite state
               showHeartIcon: false, // Don't show heart icon on home screen
               showFavoriteIndicator:
                   true, // Show small heart when listing is in user favorites
@@ -1773,7 +1783,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           showLoadMoreIndicator: hasMore,
           hasMore: hasMore,
           loadMoreIndicator: _buildLoadMoreIndicator(),
-          cacheExtent: 500, // Larger cache for smoother scrolling of large tiles
+          cacheExtent:
+              500, // Larger cache for smoother scrolling of large tiles
         ),
       ),
     );
@@ -1937,7 +1948,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           children: [
             const ThemeIcon(Icons.refresh, size: 18),
             const SizedBox(width: 8),
-            Text(L10n.get("retry"), style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(L10n.get("retry"),
+                style: const TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -1964,7 +1976,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return UydoshAppBar(
       title: BlocConsumer<ListingsBloc, ListingsState>(
         listenWhen: (previous, current) =>
-            !_searchCountReady && current.maybeMap(loaded: (_) => true, orElse: () => false),
+            !_searchCountReady &&
+            current.maybeMap(loaded: (_) => true, orElse: () => false),
         listener: (context, state) {
           // Once *new* results arrive, allow showing the count.
           if (!_searchCountReady &&
@@ -1980,7 +1993,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               : null;
           final titleText =
               (count == null || count <= 0) ? baseTitle : "$baseTitle ($count)";
-          return Text(titleText, style: Theme.of(context).appBarTheme.titleTextStyle);
+          return Text(titleText,
+              style: Theme.of(context).appBarTheme.titleTextStyle);
         },
       ),
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
@@ -2104,7 +2118,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       ),
     );
   }
-
 }
 
 /// Notify-me control: expanding ring + bell wiggle on tap.
@@ -2240,8 +2253,7 @@ class _NotifySearchAlertGhostButtonState
 
     final label = theme.textTheme.labelLarge;
     final baseSize = label?.fontSize ?? 14;
-    final textStyle =
-        label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+    final textStyle = label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
         TextStyle(
           fontSize: baseSize * 1.2,
           height: 1.0,
@@ -2292,8 +2304,7 @@ class _NotifySearchAlertGhostButtonState
                 AnimatedBuilder(
                   animation: Listenable.merge([_idleController, _controller]),
                   builder: (context, child) {
-                    final turns =
-                        (idleEnabled ? _idleBellTurns.value : 0.0) +
+                    final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
                         (tapEnabled ? _bellTurns.value : 0.0);
                     return Transform.rotate(
                       angle: turns * 2 * math.pi,

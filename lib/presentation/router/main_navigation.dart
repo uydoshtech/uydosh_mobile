@@ -509,6 +509,7 @@ class MainNavigationState extends State<MainNavigation>
                     Row(
                       children: [
                         Expanded(
+                          flex: 2,
                           child: OutlinedButton(
                             onPressed: () {
                               HapticFeedbackUtils.impact();
@@ -516,11 +517,13 @@ class MainNavigationState extends State<MainNavigation>
                             },
                             child: Text(
                               L10n.get("complete_profile_prompt_later"),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
+                          flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
                               HapticFeedbackUtils.impact();
@@ -542,6 +545,7 @@ class MainNavigationState extends State<MainNavigation>
                             },
                             child: Text(
                               L10n.get("complete_profile_prompt_cta"),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
