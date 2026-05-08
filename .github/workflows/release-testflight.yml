@@ -74,6 +74,8 @@ jobs:
         env:
           BUILD_NAME: ${{ inputs.build_name }}
           BUILD_NUMBER: ${{ inputs.build_number }}
+          # Flutter invokes CocoaPods internally; ensure Logger is loaded for ActiveSupport/CocoaPods.
+          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           if [[ -n "${BUILD_NAME:-}" ]]; then
