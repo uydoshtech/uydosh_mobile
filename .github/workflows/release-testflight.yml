@@ -1,0 +1,80 @@
+name: Build & Release iOS TestFlight
+
+on:
+  push:
+    tags:
+      - "ios-*"
+  workflow_dispatch:
+    inputs:
+      build_name:
+        description: "Optional CFBundleShortVersionString (e.g. 1.2.3)"
+        required: false
+        default: ""
+      build_number:
+        description: "Optional CFBundleVersion (e.g. 252)"
+        required: false
+        default: ""
+
+concurrency:
+  group: release-testflight
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.7"
+          channel: stable
+          cache: true
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        run: cd ios && pod install
+
+      - name: Build IPA (Flutter)
+        env:
+          BUILD_NAME: ${{ inputs.build_name }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [[ -n "${BUILD_NAME}" ]]; then ARGS+=(build_name:"${BUILD_NAME}"); fi
+          if [[ -n "${BUILD_NUMBER}" ]]; then ARGS+=(build_number:"${BUILD_NUMBER}"); fi
+          bundle exec fastlane ios build_ipa "${ARGS[@]}"
+
+      - name: Upload IPA as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ipa
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          bundle exec fastlane ios upload_testflight
+

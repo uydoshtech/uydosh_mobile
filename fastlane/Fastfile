@@ -3,6 +3,8 @@ default_platform(:android)
 platform :android do
   desc "Upload an AAB to Google Play (internal by default)"
   lane :upload_play do |options|
+    require "fileutils"
+
     aab_path = options[:aab_path] || "build/app/outputs/bundle/release/app-release.aab"
     track = options[:track] || "internal"
     release_status = options[:release_status] || "draft" # draft|completed|inProgress|halted
@@ -19,13 +21,16 @@ platform :android do
         nil
       end
 
-    if changelog && !changelog.to_s.strip.empty? && version_code
-      changelog_dir = File.join("fastlane", "metadata", "android", "en-US", "changelogs")
+    upload_changelog = changelog && !changelog.to_s.strip.empty? && version_code
+    metadata_root = File.join("fastlane", "metadata", "android")
+
+    if upload_changelog
+      changelog_dir = File.join(metadata_root, "en-US", "changelogs")
       FileUtils.mkdir_p(changelog_dir)
       File.write(File.join(changelog_dir, "#{version_code}.txt"), changelog.to_s.strip + "\n")
     end
 
-    supply(
+    supply_options = {
       aab: aab_path,
       track: track,
       release_status: release_status,
@@ -33,9 +38,60 @@ platform :android do
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      skip_upload_changelogs: changelog.nil? || changelog.to_s.strip.empty?,
-      metadata_path: "fastlane/metadata/android",
+      skip_upload_changelogs: !upload_changelog,
       version_name: version_name,
+    }
+
+    # Fastlane's supply validates metadata_path exists if provided.
+    if upload_changelog
+      FileUtils.mkdir_p(metadata_root)
+      supply_options[:metadata_path] = metadata_root
+    end
+
+    supply(**supply_options)
+  end
+end
+
+platform :ios do
+  desc "Build an IPA with Flutter (App Store export)"
+  lane :build_ipa do |options|
+    export_options_plist = options[:export_options_plist] || "ios/ExportOptions.plist"
+
+    sh("flutter pub get")
+    sh("cd ios && pod install")
+
+    build_name = options[:build_name]
+    build_number = options[:build_number]
+
+    cmd = ["flutter", "build", "ipa", "--release", "--export-options-plist=#{export_options_plist}"]
+    cmd << "--build-name=#{build_name}" if build_name && !build_name.to_s.strip.empty?
+    cmd << "--build-number=#{build_number}" if build_number && !build_number.to_s.strip.empty?
+    sh(cmd.join(" "))
+  end
+
+  desc "Upload an IPA to TestFlight (App Store Connect API key recommended)"
+  lane :upload_testflight do |options|
+    ipa_path = options[:ipa_path]
+    ipa_path ||= Dir["build/ios/ipa/*.ipa"].sort.last
+
+    UI.user_error!("No IPA found at build/ios/ipa/*.ipa; run ios build_ipa first") if ipa_path.nil?
+
+    key_id = options[:asc_key_id] || ENV["ASC_KEY_ID"]
+    issuer_id = options[:asc_issuer_id] || ENV["ASC_ISSUER_ID"]
+    key_content = options[:asc_key_content] || ENV["ASC_KEY_P8_BASE64"]
+
+    if key_id && issuer_id && key_content
+      app_store_connect_api_key(
+        key_id: key_id,
+        issuer_id: issuer_id,
+        key_content: key_content,
+        is_key_content_base64: true,
+      )
+    end
+
+    pilot(
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: true,
     )
   end
 end
