@@ -8,5 +8,13 @@
 	<array>
 		<string>applinks:uydosh.app</string>
 	</array>
+	<!-- Sign in with Apple (App Review Guideline 4.8 — required because we
+	     also offer Google Sign-In). The "Default" value scopes the
+	     credential to this app's bundle ID; switch to "appBundleID" or a
+	     services group only if we need to share SIWA state with siblings. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

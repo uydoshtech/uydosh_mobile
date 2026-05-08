@@ -353,6 +353,7 @@ class AppStrings {
       "profile_updated_success": "Profile updated successfully",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
+      "successfully_signed_in_apple": "Successfully signed in with Apple!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "You haven't created any listings yet.",
@@ -1369,6 +1370,11 @@ class AppStrings {
       "google_sign_in_failed": "Google Sign-In failed: {error}",
       "popup_closed": "Sign-in popup was closed",
 
+      // ===== APPLE AUTHENTICATION (iOS only — required by App Store
+      //                            Review Guideline 4.8 alongside Google) =====
+      "sign_in_with_apple": "Sign in with Apple",
+      "apple_sign_in_failed": "Apple Sign-In failed: {error}",
+
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Sign in with phone",
       "sign_in_with_phone_description":
@@ -1776,6 +1782,7 @@ class AppStrings {
       "profile_updated_success": "Профиль успешно обновлен",
 
       "successfully_signed_in_google": "Успешный вход через Google!",
+      "successfully_signed_in_apple": "Успешный вход через Apple!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "Вы еще не создали ни одного объявления.",
@@ -2812,6 +2819,10 @@ class AppStrings {
       "google_sign_in_failed": "Ошибка входа через Google: {error}",
       "popup_closed": "Окно входа было закрыто",
 
+      // ===== APPLE AUTHENTICATION (iOS only) =====
+      "sign_in_with_apple": "Войти через Apple",
+      "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
+
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Войти по номеру",
       "sign_in_with_phone_description":
@@ -3229,6 +3240,8 @@ class AppStrings {
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
+      "successfully_signed_in_apple":
+          "Apple orqali muvaffaqiyatli kirdingiz!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "Siz hali hech qanday e'lon yaratmagansiz.",
@@ -4257,6 +4270,10 @@ class AppStrings {
       "signing_in": "Tizimga kirilmoqda...",
       "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",
       "popup_closed": "Kirish oynasi yopildi",
+
+      // ===== APPLE AUTHENTICATION (iOS only) =====
+      "sign_in_with_apple": "Apple orqali kirish",
+      "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
 
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Telefon raqami orqali kirish",

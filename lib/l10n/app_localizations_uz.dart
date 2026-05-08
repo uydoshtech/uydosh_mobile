@@ -2567,6 +2567,18 @@ class AppLocalizationsUz extends AppLocalizations {
   String get popup_closed => 'Kirish oynasi yopildi';
 
   @override
+  String get sign_in_with_apple => 'Apple orqali kirish';
+
+  @override
+  String get successfully_signed_in_apple =>
+      'Apple orqali muvaffaqiyatli kirdingiz!';
+
+  @override
+  String apple_sign_in_failed(String error) {
+    return 'Apple orqali kirishda xatolik: $error';
+  }
+
+  @override
   String get check_out_listing_on_uydosh => 'Bu e\'lonni UyDosh da ko\'ring!';
 
   @override

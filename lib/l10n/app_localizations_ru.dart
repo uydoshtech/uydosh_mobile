@@ -2539,6 +2539,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get popup_closed => 'Окно входа было закрыто';
 
   @override
+  String get sign_in_with_apple => 'Войти через Apple';
+
+  @override
+  String get successfully_signed_in_apple => 'Успешный вход через Apple!';
+
+  @override
+  String apple_sign_in_failed(String error) {
+    return 'Ошибка входа через Apple: $error';
+  }
+
+  @override
   String get check_out_listing_on_uydosh =>
       'Посмотрите это объявление на UyDosh!';
 

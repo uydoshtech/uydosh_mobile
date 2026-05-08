@@ -76,6 +76,18 @@ dependencies:
   
   # Google Sign-In
   google_sign_in: ^6.2.1
+
+  # Sign in with Apple (App Review Guideline 4.8 — required alongside
+  # Google on iOS). The plugin renders the native ASAuthorizationButton
+  # via [SignInWithAppleButton]; on Android/Web it falls back to a web
+  # OAuth flow which we do NOT configure here, so the button is gated
+  # to iOS/macOS in [AuthWizardGoogleSignInPage].
+  sign_in_with_apple: ^6.1.4
+  # Promoted from transitive (firebase_auth → googleapis_auth → crypto)
+  # to a direct dep because [AppleAuthService] uses [sha256] to hash
+  # the SIWA nonce. Pinning here keeps the version stable even if
+  # Firebase swaps its transitive dep.
+  crypto: ^3.0.6
   
   # Image caching
   cached_network_image: ^3.3.1

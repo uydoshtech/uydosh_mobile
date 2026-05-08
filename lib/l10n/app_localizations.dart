@@ -4781,6 +4781,24 @@ abstract class AppLocalizations {
   /// **'Sign-in popup was closed'**
   String get popup_closed;
 
+  /// No description provided for @sign_in_with_apple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get sign_in_with_apple;
+
+  /// No description provided for @successfully_signed_in_apple.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully signed in with Apple!'**
+  String get successfully_signed_in_apple;
+
+  /// No description provided for @apple_sign_in_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Sign-In failed: {error}'**
+  String apple_sign_in_failed(String error);
+
   /// No description provided for @check_out_listing_on_uydosh.
   ///
   /// In en, this message translates to:

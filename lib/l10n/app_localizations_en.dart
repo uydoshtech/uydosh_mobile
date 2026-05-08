@@ -2527,6 +2527,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get popup_closed => 'Sign-in popup was closed';
 
   @override
+  String get sign_in_with_apple => 'Sign in with Apple';
+
+  @override
+  String get successfully_signed_in_apple =>
+      'Successfully signed in with Apple!';
+
+  @override
+  String apple_sign_in_failed(String error) {
+    return 'Apple Sign-In failed: $error';
+  }
+
+  @override
   String get check_out_listing_on_uydosh => 'Check out this listing on UyDosh!';
 
   @override

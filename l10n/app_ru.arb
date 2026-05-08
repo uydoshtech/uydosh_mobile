@@ -970,6 +970,17 @@
     }
   },
   "popup_closed": "Окно входа было закрыто",
+  "sign_in_with_apple": "Войти через Apple",
+  "successfully_signed_in_apple": "Успешный вход через Apple!",
+  "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
+  "@apple_sign_in_failed": {
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "error"
+      }
+    }
+  },
   "check_out_listing_on_uydosh": "Посмотрите это объявление на UyDosh!",
   "share_subject_uz": "UyDosh - Uy e'loni",
   "share_subject_ru": "UyDosh - Объявление о жилье",

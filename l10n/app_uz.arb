@@ -978,6 +978,17 @@
     }
   },
   "popup_closed": "Kirish oynasi yopildi",
+  "sign_in_with_apple": "Apple orqali kirish",
+  "successfully_signed_in_apple": "Apple orqali muvaffaqiyatli kirdingiz!",
+  "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
+  "@apple_sign_in_failed": {
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "error"
+      }
+    }
+  },
   "check_out_listing_on_uydosh": "Bu e'lonni UyDosh da ko'ring!",
   "share_subject_uz": "UyDosh - Uy e'loni",
   "share_subject_ru": "UyDosh - Объявление о жилье",

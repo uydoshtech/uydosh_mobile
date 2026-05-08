@@ -25,6 +25,7 @@ import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
+import "package:uy_dosh/domain/services/apple_auth_service.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
@@ -46,7 +47,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
-enum _AuthMethod { google, phone }
+enum _AuthMethod { google, apple, phone }
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -164,6 +165,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
             : null,
   );
+  // Sign in with Apple is exposed via [AppleAuthService] (kept as a
+  // local instance — it's stateless beyond Firebase + Crashlytics
+  // singletons, so no DI registration is needed).
+  final AppleAuthService _appleAuth = AppleAuthService();
 
   // Auth state
   bool _isAuthenticating = false;
@@ -282,11 +287,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           );
           setStateIfMounted(() => _isAuthenticating = true);
 
-          // Best-effort infer auth method from Firebase user data.
+          // Best-effort infer auth method from Firebase user data. We
+          // only distinguish phone vs OAuth here because the backend
+          // routes those to two different endpoints (`firebase-auth` vs
+          // `firebase-phone-auth`); Google and Apple both go through
+          // the OAuth path and are indistinguishable to the server
+          // beyond the `email` claim it stores.
           final hasPhone = (user.phoneNumber ?? "").trim().isNotEmpty;
           final hasEmail = (user.email ?? "").trim().isNotEmpty;
-          final inferredMethod =
-              hasPhone && !hasEmail ? _AuthMethod.phone : _AuthMethod.google;
+          final inferredMethod = hasPhone && !hasEmail
+              ? _AuthMethod.phone
+              : (_isAppleProvider(user) ? _AuthMethod.apple : _AuthMethod.google);
           _authMethod = inferredMethod;
 
           await _authenticateWithBackend(authMethod: inferredMethod);
@@ -524,6 +535,205 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
       }
     }
+  }
+
+  /// Returns `true` if [user] was last authenticated via Apple. Used
+  /// only for analytics/breadcrumbs; the backend doesn't care which
+  /// OAuth provider produced the Firebase identity, it just needs the
+  /// `firebase_uid` + `email`.
+  bool _isAppleProvider(User user) {
+    for (final info in user.providerData) {
+      if (info.providerId == "apple.com") return true;
+    }
+    return false;
+  }
+
+  /// Apple Sign-In method. Mirrors [_signInWithGoogle] in shape but
+  /// routes through [AppleAuthService] (which handles nonce generation,
+  /// Apple → Firebase credential exchange, and capturing the one-shot
+  /// `givenName` / `familyName` on first sign-in). After Firebase auth
+  /// succeeds we reuse the same `_authenticateWithBackend` path Google
+  /// uses, because the backend's `/users/firebase-auth` endpoint is
+  /// provider-agnostic — it only needs `firebase_uid` + `email`.
+  Future<void> _signInWithApple() async {
+    if (_isAuthenticating) return;
+    if (!AppleAuthService.isAvailable) {
+      // Defensive — the button is hidden on unsupported platforms, so
+      // this branch shouldn't normally fire.
+      return;
+    }
+
+    getIt<AppAnalyticsService>().logSignInStarted(method: "apple");
+    setState(() {
+      _isAuthenticating = true;
+      _authMethod = _AuthMethod.apple;
+    });
+
+    String stage = "apple_sign_in_start";
+    try {
+      if (!kIsWeb) {
+        unawaited(_crashlytics.setCustomKey("auth_provider", "apple"));
+        unawaited(_crashlytics.setCustomKey("auth_flow", "sign_in"));
+        unawaited(_crashlytics.setCustomKey("auth_step", stage));
+        _crashlytics.log("AuthWizard: apple_sign_in_started");
+      }
+
+      stage = "apple_get_credential";
+      final userCredential = await _appleAuth.signInWithApple();
+
+      if (userCredential == null || userCredential.user == null) {
+        // User cancelled the system sheet.
+        if (!kIsWeb) {
+          await _crashlytics.setCustomKey(
+            "auth_step",
+            "apple_sign_in_cancelled",
+          );
+          _crashlytics.log("AuthWizard: apple_sign_in_cancelled");
+        }
+        getIt<AppAnalyticsService>().logSignInCancelled(
+          method: "apple",
+          stage: stage,
+        );
+        setStateIfMounted(() {
+          _isAuthenticating = false;
+        });
+        return;
+      }
+
+      final user = userCredential.user!;
+
+      setStateIfMounted(() {
+        _isGoogleSignedIn = true; // shared "is authenticated" gate
+        _currentUser = user;
+      });
+
+      // Pre-fill the profile name from Apple if Firebase now has it
+      // (AppleAuthService writes `givenName + familyName` to the
+      // Firebase user on first sign-in only).
+      final displayName = user.displayName;
+      if (displayName != null && displayName.trim().isNotEmpty &&
+          _nameController.text.isEmpty) {
+        _nameController.text = displayName.trim();
+      }
+
+      await SessionManager.storeGoogleProfile(
+        displayName: user.displayName,
+        photoUrl: user.photoURL,
+      );
+
+      stage = "backend_auth";
+      await _authenticateWithBackend(authMethod: _AuthMethod.apple);
+
+      setStateIfMounted(() {
+        _isAuthenticating = false;
+      });
+
+      if (mounted) {
+        getIt<AppAnalyticsService>().logSignInSuccess(method: "apple");
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("successfully_signed_in_apple"),
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e, st) {
+      // Map Apple's cancel codes to the same silent no-op the Google
+      // path uses. The package surfaces these as
+      // [SignInWithAppleAuthorizationException] with `.code` values
+      // like `canceled` / `unknown` (lowercase, US spelling).
+      if (_isUserCancelledAppleSignIn(e)) {
+        if (!kIsWeb) {
+          try {
+            await _crashlytics.setCustomKey(
+              "auth_step",
+              "apple_sign_in_cancelled",
+            );
+            _crashlytics.log(
+              "AuthWizard: apple_sign_in_cancelled (stage=$stage)",
+            );
+          } catch (loggingError) {
+            logger.d("Crashlytics logging failed: $loggingError");
+          }
+        }
+        getIt<AppAnalyticsService>().logSignInCancelled(
+          method: "apple",
+          stage: stage,
+          reason: _extractAuthErrorCode(e),
+        );
+        if (mounted) {
+          setState(() {
+            _isAuthenticating = false;
+          });
+        }
+        return;
+      }
+
+      if (!kIsWeb) {
+        try {
+          await _crashlytics.setCustomKey("auth_provider", "apple");
+          await _crashlytics.setCustomKey("auth_flow", "sign_in");
+          await _crashlytics.setCustomKey(
+            "auth_step",
+            "auth_wizard_sign_in_with_apple",
+          );
+          if (e is FirebaseAuthException) {
+            await _crashlytics.setCustomKey("firebase_auth_code", e.code);
+          }
+          await _crashlytics.recordError(
+            e,
+            st,
+            fatal: false,
+            reason: "Apple sign-in failed (AuthWizard)",
+          );
+        } catch (loggingError) {
+          logger.d("Crashlytics logging failed: $loggingError");
+        }
+      }
+
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "apple",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
+        errorType: e.toString().length > 100
+            ? e.toString().substring(0, 100)
+            : e.toString(),
+      );
+      getIt<AppAnalyticsService>().logLoginError(
+        method: "apple",
+        stage: stage,
+        errorCode: _extractAuthErrorCode(e),
+        errorMessage: e.toString(),
+      );
+      if (mounted) {
+        setState(() {
+          _isAuthenticating = false;
+        });
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("apple_sign_in_failed")
+              .replaceAll("{error}", e.toString()),
+        );
+      }
+    }
+  }
+
+  /// Apple's package surfaces user dismissal as a
+  /// [SignInWithAppleAuthorizationException]; on iOS the ASAuthorization
+  /// error code 1001 (`canceled`) fires when the user swipes the
+  /// system sheet away. We treat any cancel-shaped code/message as a
+  /// silent no-op, same as [_isUserCancelledSignIn] does for Google.
+  bool _isUserCancelledAppleSignIn(Object error) {
+    final raw = error.toString().toLowerCase();
+    if (raw.contains("canceled") ||
+        raw.contains("cancelled") ||
+        raw.contains("authorizationerrorcode.canceled")) {
+      return true;
+    }
+    if (error is PlatformException) {
+      final code = error.code.toLowerCase();
+      return code == "canceled" || code == "cancelled";
+    }
+    return false;
   }
 
   /// Returns `true` if [error] represents the user cancelling/dismissing
@@ -1677,6 +1887,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           isGoogleSignedIn: _isGoogleSignedIn,
                           currentUser: _currentUser,
                           onSignInWithGoogle: _signInWithGoogle,
+                          onSignInWithApple: _signInWithApple,
                           onSignInWithPhone: _signInWithPhone,
                         ),
                         AuthWizardProfilePage(

@@ -1,0 +1,185 @@
+import "dart:convert";
+import "dart:math";
+
+import "package:crypto/crypto.dart";
+import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_crashlytics/firebase_crashlytics.dart";
+import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import "package:sign_in_with_apple/sign_in_with_apple.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+
+/// Sign in with Apple wrapper that mirrors [GoogleAuthService] in shape:
+/// kicks off the native ASAuthorization flow, exchanges the resulting
+/// identity token for a Firebase credential, and returns the Firebase
+/// [UserCredential] so the rest of the app's auth pipeline (backend
+/// session, profile creation, etc.) can stay unchanged.
+///
+/// Apple-specific quirks worth knowing:
+///
+/// * Apple returns the user's full name and email **only on the very
+///   first sign-in** for a given Apple ID + bundle. We capture
+///   `givenName` / `familyName` from the credential and best-effort push
+///   them onto the Firebase user via [User.updateDisplayName] so
+///   downstream code (`currentUser.displayName`) sees them on subsequent
+///   logins too.
+/// * The user may pick "Hide My Email" — we'll receive a
+///   `@privaterelay.appleid.com` address. Treat it as a normal email; it
+///   round-trips through Apple's relay to the user's real inbox.
+/// * Firebase requires a **raw nonce** to be hashed with SHA-256 and
+///   sent to Apple as `nonce`, then provided unhashed to
+///   `OAuthProvider.credential(rawNonce: ...)`. Without this Firebase
+///   rejects the credential with `invalid_nonce`.
+class AppleAuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
+
+  /// Returns true when SIWA is supported on the current device. iOS/macOS
+  /// support it natively; Android and Web require a Service ID + return
+  /// URL we haven't configured yet, so the button is hidden there.
+  static bool get isAvailable {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
+  }
+
+  Future<void> _record(
+    Object error,
+    StackTrace stackTrace, {
+    required String step,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      await _crashlytics.setCustomKey("auth_provider", "apple");
+      await _crashlytics.setCustomKey("auth_flow", "sign_in");
+      await _crashlytics.setCustomKey("auth_step", step);
+
+      if (error is FirebaseAuthException) {
+        await _crashlytics.setCustomKey("firebase_auth_code", error.code);
+      }
+
+      await _crashlytics.recordError(
+        error,
+        stackTrace,
+        fatal: false,
+        reason: "Apple sign-in failed",
+      );
+    } catch (loggingError) {
+      logger.d("Crashlytics logging failed: $loggingError");
+    }
+  }
+
+  /// Generates a cryptographically secure random nonce to bind the
+  /// Apple identity token to this specific sign-in attempt. The hashed
+  /// form is sent to Apple; the raw form is later given to Firebase so
+  /// it can verify the binding. Length 32 follows Firebase's example.
+  String _generateRawNonce({int length = 32}) {
+    const charset =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._";
+    final random = Random.secure();
+    return List<String>.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  String _sha256(String input) {
+    return sha256.convert(utf8.encode(input)).toString();
+  }
+
+  /// Trigger the native Sign in with Apple flow and exchange the result
+  /// for a Firebase session. Returns `null` if the user cancels at the
+  /// system sheet (mirrors [GoogleAuthService.signInWithGoogle]).
+  Future<UserCredential?> signInWithApple() async {
+    try {
+      if (!isAvailable) {
+        // Belt-and-braces guard: callers should already have hidden the
+        // button on unsupported platforms.
+        logger.d("Apple sign-in attempted on unsupported platform");
+        return null;
+      }
+
+      final rawNonce = _generateRawNonce();
+      final hashedNonce = _sha256(rawNonce);
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: const [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final identityToken = appleCredential.identityToken;
+      if (identityToken == null) {
+        // Should be unreachable when the flow succeeded, but Apple has
+        // shipped this nil before — fail loudly rather than passing a
+        // null token to Firebase.
+        throw FirebaseAuthException(
+          code: "invalid-credential",
+          message: "Apple ID credential was missing an identityToken",
+        );
+      }
+
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: identityToken,
+        rawNonce: rawNonce,
+      );
+
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
+
+      // Apple sends givenName/familyName ONCE — on the very first sign-in
+      // for this Apple ID + app bundle. If we don't capture it now,
+      // there is no way to re-fetch it later. Push it onto the Firebase
+      // user so `currentUser.displayName` continues to work everywhere
+      // that already trusts Firebase as the name source.
+      final user = userCredential.user;
+      if (user != null) {
+        final newDisplayName = _composeDisplayName(
+          appleCredential.givenName,
+          appleCredential.familyName,
+        );
+        if (newDisplayName != null && (user.displayName ?? "").trim().isEmpty) {
+          try {
+            await user.updateDisplayName(newDisplayName);
+            await user.reload();
+          } catch (e) {
+            // Don't fail the whole sign-in just because we couldn't
+            // persist a nicer display name — the user can fill it in on
+            // the profile page.
+            logger.d("Apple sign-in: updateDisplayName failed: $e");
+          }
+        }
+      }
+
+      return userCredential;
+    } catch (e, st) {
+      await _record(e, st, step: "signInWithApple");
+      logger.d("Error signing in with Apple: $e");
+      rethrow;
+    }
+  }
+
+  /// Apple has no native "sign out" — clearing the Firebase session is
+  /// sufficient because there is no app-side keychain entry to wipe (the
+  /// SIWA credential lives in iOS's system Keychain and is shared with
+  /// Settings → Apple ID → Password & Security → Sign in with Apple).
+  Future<void> signOut() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      logger.d("Error signing out from Apple/Firebase: $e");
+      rethrow;
+    }
+  }
+
+  bool get isSignedIn => _auth.currentUser != null;
+
+  String? _composeDisplayName(String? given, String? family) {
+    final parts = <String>[
+      if (given != null && given.trim().isNotEmpty) given.trim(),
+      if (family != null && family.trim().isNotEmpty) family.trim(),
+    ];
+    if (parts.isEmpty) return null;
+    return parts.join(" ");
+  }
+}

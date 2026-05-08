@@ -8,5 +8,11 @@
 	<array>
 		<string>applinks:uydosh.app</string>
 	</array>
+	<!-- Sign in with Apple (kept in lockstep with Runner.entitlements so
+	     debug builds can exercise the SIWA flow on a real device). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

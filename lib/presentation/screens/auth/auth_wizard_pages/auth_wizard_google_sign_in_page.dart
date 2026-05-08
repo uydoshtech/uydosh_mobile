@@ -2,10 +2,14 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
+// Prefixed because [IconAlignment] collides with Flutter Material's
+// own `IconAlignment` exported from `package:flutter/material.dart`.
+import "package:sign_in_with_apple/sign_in_with_apple.dart" as siwa;
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/services/apple_auth_service.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -16,6 +20,7 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
     required this.isGoogleSignedIn,
     required this.currentUser,
     required this.onSignInWithGoogle,
+    required this.onSignInWithApple,
     required this.onSignInWithPhone,
     super.key,
   });
@@ -24,6 +29,12 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
   final bool isGoogleSignedIn;
   final User? currentUser;
   final VoidCallback onSignInWithGoogle;
+
+  /// Called when the user taps the Sign in with Apple button. Only
+  /// invoked on platforms where SIWA is available (iOS/macOS); on
+  /// other platforms the button is hidden entirely, so this callback
+  /// can be a no-op there if the parent prefers.
+  final VoidCallback onSignInWithApple;
   final VoidCallback onSignInWithPhone;
 
   @override
@@ -71,6 +82,39 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                   ),
                   const SizedBox(height: 40),
                   if (!widget.isGoogleSignedIn) ...[
+                    // Sign in with Apple — App Review Guideline 4.8
+                    // requires this option to be at least as prominent
+                    // as Google when both are offered. The native
+                    // [SignInWithAppleButton] is rendered by the
+                    // package and respects Apple HIG (logo, font,
+                    // localized label). Width/height match the Google
+                    // SVG button below for visual parity.
+                    if (AppleAuthService.isAvailable) ...[
+                      Center(
+                        child: SizedBox(
+                          width: 199,
+                          height: 44,
+                          child: siwa.SignInWithAppleButton(
+                            onPressed: _enabled
+                                ? () {
+                                    HapticFeedbackUtils.impact();
+                                    widget.onSignInWithApple();
+                                  }
+                                : () {},
+                            // Always-black variant matches the dark
+                            // Google SVG asset shipped below; Apple's
+                            // button keeps the same look across themes
+                            // per HIG.
+                            style: siwa.SignInWithAppleButtonStyle.black,
+                            height: 44,
+                            borderRadius: BorderRadius.circular(22),
+                            iconAlignment: siwa.IconAlignment.left,
+                            text: L10n.get("sign_in_with_apple"),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     Center(
                       child: SizedBox(
                         width: 199,
