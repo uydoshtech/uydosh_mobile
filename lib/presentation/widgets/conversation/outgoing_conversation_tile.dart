@@ -22,12 +22,15 @@ class OutgoingConversationTile extends StatelessWidget {
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
     this.onLongPress,
+    /// When true, listing title / price live on the parent [GroupedConversationsList] header — omit them here.
+    this.isGrouped = false,
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
   final int? currentUserId;
   final bool showActivityTimeOnly;
   final VoidCallback? onLongPress;
+  final bool isGrouped;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +73,10 @@ class OutgoingConversationTile extends StatelessWidget {
             : null;
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
+
+        final showFullListingBanner = !isGrouped;
+        final showMarketplaceCounterpartyNameOnly =
+            isGrouped && isListingMarketplace;
 
         final avatarLeading = resolvedAvatarUrl != null
             ? ClipOval(
@@ -126,51 +133,75 @@ class OutgoingConversationTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isListingMarketplace) ...[
-                        Text(
-                          conversation.otherUserName ?? "Unknown User",
-                          style: TextStyle(
+                if (showFullListingBanner)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isListingMarketplace) ...[
+                          Text(
+                            conversation.otherUserName ?? "Unknown User",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                        ],
+                        ConversationListingTitleWithCategoryIcon(
+                          conversation: conversation,
+                          textStyle: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: textColor,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          iconColor: iconColor,
+                          titleMaxLines: 2,
                         ),
-                        const SizedBox(height: 6),
+                        if (hasLocation || hasSubwayStation || hasBudgetBadge) ...[
+                          const SizedBox(height: 8),
+                          ConversationLocationInfo(
+                            conversation: conversation,
+                            textColor: secondaryTextColor,
+                            showPrice: true,
+                          ),
+                        ],
                       ],
-                      ConversationListingTitleWithCategoryIcon(
-                        conversation: conversation,
-                        textStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                        iconColor: iconColor,
-                        titleMaxLines: 2,
+                    ),
+                  )
+                else if (showMarketplaceCounterpartyNameOnly)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: Text(
+                      conversation.otherUserName ?? "Unknown User",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
                       ),
-                      if (hasLocation || hasSubwayStation || hasBudgetBadge) ...[
-                        const SizedBox(height: 8),
-                        ConversationLocationInfo(
-                          conversation: conversation,
-                          textColor: secondaryTextColor,
-                          showPrice: true,
-                        ),
-                      ],
-                    ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                if (showFullListingBanner || showMarketplaceCounterpartyNameOnly) ...[
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(height: 1, color: outlineVariant),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1, color: outlineVariant),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    showFullListingBanner ||
+                            showMarketplaceCounterpartyNameOnly
+                        ? 0
+                        : 12,
+                    16,
+                    12,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -163,7 +163,14 @@ class _ReorderablePhotoGridState extends State<ReorderablePhotoGrid> {
               size: Size(constraints.maxWidth, constraints.maxHeight),
               child: widget.itemBuilder(context, index, false),
             ),
-            childWhenDragging: const SizedBox.shrink(),
+            // Keep the grid slot geometry stable while dragging. `SizedBox.shrink`
+            // lets the cell report a zero footprint so siblings can overlap the
+            // gap (especially noticeable after reordering to make another photo
+            // primary).
+            childWhenDragging: SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+            ),
             child: dropTarget,
           );
         },

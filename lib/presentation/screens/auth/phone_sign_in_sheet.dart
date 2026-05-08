@@ -676,7 +676,6 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
           builder: (ctx, setModalState) {
             final filtered = filter(_countrySearchController.text);
             return SafeArea(
-              top: false,
               child: AnimatedPadding(
                 duration: const Duration(milliseconds: 150),
                 curve: Curves.easeOut,

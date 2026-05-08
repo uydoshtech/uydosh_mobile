@@ -958,8 +958,10 @@ class MainNavigationState extends State<MainNavigation>
                 return const SizedBox.shrink();
               }
               return Padding(
-                padding: const EdgeInsets.only(right: 2),
+                padding: const EdgeInsets.only(right: 10),
                 child: _threeDAppBarIconButton(
+                  borderRadius:
+                      const BorderRadius.all(Radius.circular(999)),
                   iconData: Icons.dynamic_feed_rounded,
                   onPressed: () => context.pushMyPublishedGigs(),
                   semanticsLabel: L10n.get("gigs_my_published_title"),
@@ -1292,12 +1294,17 @@ class _NotificationsBellIconState extends State<_NotificationsBellIcon>
             ],
           );
         },
-        child: ThemeIcon(
+        child: Transform.translate(
           key: ValueKey<bool>(widget.active),
-          widget.active
-              ? Icons.notifications_active
-              : Icons.notifications_none_outlined,
-          size: 26,
+          // Notification glyphs sit optically high vs. neighbor icons in the
+          // fixed 28px app-bar slot.
+          offset: const Offset(0, 1),
+          child: ThemeIcon(
+            widget.active
+                ? Icons.notifications_active
+                : Icons.notifications_none_outlined,
+            size: 26,
+          ),
         ),
       ),
     );
