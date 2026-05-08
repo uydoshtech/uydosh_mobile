@@ -112,11 +112,20 @@
 	<string>This app uses your location to show nearby listings and metro stations.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Allow HTTP image/API URLs (e.g. EC2) so USDZ download & Quick Look work -->
+	<!-- HTTP only for the default API/media host (see EnvironmentUtil.compileTimeBasePath).
+	     If Remote Config points api_base_path at another http host, add it here too. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>3.128.76.53</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
 	</dict>
 </dict>
 </plist>

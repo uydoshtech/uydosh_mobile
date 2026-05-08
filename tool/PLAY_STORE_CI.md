@@ -5,6 +5,7 @@ This repo can upload a signed `.aab` to Google Play automatically via GitHub Act
 ## Trigger
 
 - Tag a commit with `android-*` (see `tool/release_android_tag.sh`), then push the tag.
+- Or tag both platforms at once with `tool/release_mobile_tags.sh` (creates and pushes both `android-*` and `ios-*` tags).
 - Or run the workflow manually via `workflow_dispatch` and choose:
   - `play_track` (default: `internal`)
   - `play_release_status` (default: `draft`)
