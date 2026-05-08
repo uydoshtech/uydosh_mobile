@@ -43,6 +43,7 @@ jobs:
         with:
           ruby-version: "3.3"
           bundler-cache: true
+          bundler: "2.5.23"
 
       - name: Ensure CocoaPods works with this Ruby
         run: |
