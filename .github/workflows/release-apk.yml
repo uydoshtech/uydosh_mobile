@@ -47,8 +47,9 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: "3.1"
           bundler-cache: true
+          bundler: "2.5.23"
 
       - name: Decode Android keystore
         env:
