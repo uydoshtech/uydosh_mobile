@@ -36,6 +36,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     with SingleTickerProviderStateMixin {
   final _roomPlan = FlutterRoomplan();
   static const MethodChannel _roomplanChannel = MethodChannel("rkg/flutter_roomplan");
+  /// The RoomPlan plugin keeps the last capture-finished handler in a singleton; clear it on
+  /// dispose so this [State] is not retained after leaving the screen.
+  bool _registeredRoomCaptureCallback = false;
   bool _uploading = false;
   bool _starting = false;
 
@@ -44,6 +47,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
   @override
   void dispose() {
+    if (_registeredRoomCaptureCallback) {
+      _roomPlan.onRoomCaptureFinished(() {});
+    }
     _iconRotationController.dispose();
     super.dispose();
   }
@@ -68,6 +74,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
+    _registeredRoomCaptureCallback = true;
     _roomPlan.onRoomCaptureFinished(() {
       Future<void> run() async {
         final path = await _roomPlan.getUsdzFilePath();
