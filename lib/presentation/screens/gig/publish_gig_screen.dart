@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/form_dirty_field_outline.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
@@ -369,9 +370,84 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     return false;
   }
 
+  List<String> _computeChangedGigFieldLabels() {
+    final changed = <String>[];
+
+    void addLabel(String key, {required String fallback}) {
+      var label = L10n.get(key, fallback: fallback).trim();
+      label = label.replaceAll(RegExp(r":\s*$"), "").trim();
+      changed.add(label.isEmpty ? fallback : label);
+    }
+
+    if (_mode != _baselineMode) {
+      addLabel("gigs_publish_screen_title", fallback: "Publication");
+    }
+    if (_selectedCategory?.id != _baselineCategoryId) {
+      addLabel("gigs_post_request_field_category", fallback: "Category");
+    }
+    if (_titleController.text != _baselineTitle) {
+      addLabel("gigs_post_request_field_title", fallback: "Title");
+    }
+    if (_descriptionController.text != _baselineDescription) {
+      addLabel("gigs_post_request_field_description", fallback: "Description");
+    }
+    if (_isRemote != _baselineRemote) {
+      addLabel("gigs_post_request_field_remote", fallback: "Remote");
+    }
+
+    if (_mode == GigPublishMode.task) {
+      if (_budgetType != _baselineBudgetType) {
+        addLabel(
+          "gigs_post_request_field_budget_type",
+          fallback: "Budget type",
+        );
+      }
+      if (_budgetController.text != _baselineBudgetText ||
+          _currency != _baselineCurrency) {
+        addLabel("gigs_post_request_field_amount", fallback: "Budget");
+      }
+      if (_addressController.text != _baselineAddressText) {
+        addLabel("gigs_post_request_field_address", fallback: "Address");
+      }
+    } else {
+      if (_pricingType != _baselinePricingType) {
+        addLabel(
+          "gigs_post_offer_field_pricing_type",
+          fallback: "Pricing type",
+        );
+      }
+      if (_priceController.text != _baselinePriceText ||
+          _currency != _baselineCurrency) {
+        addLabel("gigs_post_offer_field_price", fallback: "Price");
+      }
+      if (_minDurationMinutes != _baselineMinDurationMinutes) {
+        addLabel(
+          "gigs_post_offer_field_min_duration",
+          fallback: "Minimum duration",
+        );
+      }
+      if (_isEditingOffer) {
+        if (_offerPhotosFingerprint(_orderedOfferPhotos) !=
+            _baselineOfferPhotosFingerprint) {
+          addLabel("listing_photos_label", fallback: "Photos");
+        }
+      } else {
+        if (!_listsEqual(_selectedPhotos, _baselineSelectedPhotos) ||
+            _primaryPhotoIndex != _baselinePrimaryPhotoIndex) {
+          addLabel("listing_photos_label", fallback: "Photos");
+        }
+      }
+    }
+
+    return changed;
+  }
+
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
     if (didPop) return;
-    final leave = await UnsavedChangesDialog.show(context);
+    final leave = await UnsavedChangesDialog.show(
+      context,
+      changedFieldLabels: _computeChangedGigFieldLabels(),
+    );
     if (!mounted || !leave) return;
     Navigator.of(context).pop(result);
   }
@@ -599,6 +675,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               final showAppBarSave =
                   isEditMode && (submitting || _isFormDirty());
 
+              Color? dirtyOutline(bool fieldChanged) =>
+                  isEditMode && fieldChanged
+                      ? formDirtyFieldOutlineColor(context)
+                      : null;
+
               final submitLabel = isEditMode
                   ? L10n.get("gigs_edit_offer_submit")
                   : (_mode == GigPublishMode.task
@@ -714,6 +795,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                           selected: _selectedCategory,
                           language: language,
                           showError: _showCategoryError,
+                          dirtyOutlineColor: dirtyOutline(
+                            _selectedCategory?.id != _baselineCategoryId,
+                          ),
                           onChanged: (c) {
                             _mutateForm(() {
                               _selectedCategory = c;
@@ -727,6 +811,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ),
                         _PlateField(
                           showErrorBorder: _showTitleError,
+                          dirtyOutlineColor: dirtyOutline(
+                            _titleController.text != _baselineTitle,
+                          ),
                           child: TextFormField(
                             controller: _titleController,
                             textInputAction: TextInputAction.next,
@@ -761,6 +848,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                           L10n.get("gigs_post_request_field_description"),
                         ),
                         _PlateField(
+                          dirtyOutlineColor: dirtyOutline(
+                            _descriptionController.text != _baselineDescription,
+                          ),
                           child: AnimatedSize(
                             duration: const Duration(milliseconds: 320),
                             reverseDuration:
@@ -811,9 +901,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ),
                         const SizedBox(height: 22),
                         if (_mode == GigPublishMode.task)
-                          ..._buildTaskFields()
+                          ..._buildTaskFields(dirtyOutline)
                         else
-                          ..._buildServiceFields(),
+                          ..._buildServiceFields(dirtyOutline),
                         const SizedBox(height: 24),
                         if (_isEditingOffer || _isEditingRequest)
                           PrimaryButtonFactory.iconTextCentered(
@@ -849,12 +939,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     );
   }
 
-  List<Widget> _buildTaskFields() {
+  List<Widget> _buildTaskFields(Color? Function(bool) dirtyOutline) {
     return [
       _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
       _BudgetTypePlate(
         value: _budgetType,
         onChanged: (v) => _mutateForm(() => _budgetType = v),
+        dirtyOutlineColor: dirtyOutline(_budgetType != _baselineBudgetType),
       ),
       const SizedBox(height: 14),
       // Budget amount + Remote toggle share one row (60/40 flex). When the user
@@ -871,6 +962,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             onCurrencyChanged: (c) => _mutateForm(() => _currency = c),
             hint: "0",
             showError: _showAmountError,
+            dirtyOutlineColor: dirtyOutline(
+              _budgetController.text != _baselineBudgetText ||
+                  _currency != _baselineCurrency,
+            ),
             onChanged: (_) {
               if (_showAmountError) {
                 _mutateForm(() => _showAmountError = false);
@@ -879,72 +974,38 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           ),
           isRemote: _isRemote,
           onRemoteChanged: (v) => _mutateForm(() => _isRemote = v),
+          remoteDirtyOutlineColor: dirtyOutline(_isRemote != _baselineRemote),
         )
       else
         _RemoteTogglePlate(
           value: _isRemote,
           label: L10n.get("gigs_post_request_field_remote"),
           onChanged: (v) => _mutateForm(() => _isRemote = v),
+          dirtyOutlineColor: dirtyOutline(_isRemote != _baselineRemote),
         ),
       const SizedBox(height: 14),
       _FieldLabel(L10n.get("gigs_post_request_field_address")),
       _PlateField(
+        dirtyOutlineColor: dirtyOutline(
+          _addressController.text != _baselineAddressText,
+        ),
         child: TextFormField(
           controller: _addressController,
           style: _fieldTextStyle(context),
-          decoration: _plateInputDecoration(
-            context,
-            hint: L10n.get("gigs_post_request_field_address"),
-          ),
         ),
       ),
     ];
   }
 
-  List<Widget> _buildServiceFields() {
-    return [
-      _FieldLabel(L10n.get("gigs_post_offer_field_pricing_type")),
-      _PricingTypePlate(
-        value: _pricingType,
-        onChanged: (v) => _mutateForm(() => _pricingType = v),
-      ),
-      const SizedBox(height: 14),
-      // Price + Remote toggle share one row (60/40 flex for digit width).
-      _AmountAndRemoteRow(
-        amountLabel: L10n.get("gigs_post_offer_field_price"),
-        remoteLabel: L10n.get("gigs_post_request_field_remote"),
-        amountField: _CurrencyAmountField(
-          controller: _priceController,
-          currency: _currency,
-          supportedCurrencies: _supportedCurrencies,
-          onCurrencyChanged: (c) => _mutateForm(() => _currency = c),
-          hint: "0",
-          showError: _showAmountError,
-          onChanged: (_) {
-            if (_showAmountError) {
-              _mutateForm(() => _showAmountError = false);
-            }
-          },
-        ),
-        isRemote: _isRemote,
-        onRemoteChanged: (v) => _mutateForm(() => _isRemote = v),
-      ),
-      if (_pricingType == GigPricingType.hourly) ...[
-        const SizedBox(height: 14),
-        _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
-        _PlateField(
-          child: _MinDurationMinuteSpinner(
-            minutes: _minDurationMinutes,
-            onChanged: (v) => _mutateForm(() => _minDurationMinutes = v),
-            textStyle: _fieldTextStyle(context),
-          ),
-        ),
-      ],
-      const SizedBox(height: 14),
-        // Same uploader as create/edit listing: pick, delete, drag to reorder.
-        // Edit-offer hydrates existing [Photo] rows and deletes sync to the API
-        // immediately; add/reorder run on Save (mirrors edit-listing semantics).
-        PhotoUploader(
+  List<Widget> _buildServiceFields(Color? Function(bool) dirtyOutline) {
+    final servicePhotosChanged = _isEditingOffer
+        ? _offerPhotosFingerprint(_orderedOfferPhotos) !=
+            _baselineOfferPhotosFingerprint
+        : !_listsEqual(_selectedPhotos, _baselineSelectedPhotos) ||
+            _primaryPhotoIndex != _baselinePrimaryPhotoIndex;
+
+    final photosChrome = dirtyOutline(servicePhotosChanged);
+    final photoUploader = PhotoUploader(
           selectedPhotos: _selectedPhotos,
           onPhotosChanged: (photos) {
             _mutateForm(() {
@@ -1001,7 +1062,71 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         _selectedPhotos.isEmpty ? null : 0;
                   });
                 },
+        );
+
+    return [
+      _FieldLabel(L10n.get("gigs_post_offer_field_pricing_type")),
+      _PricingTypePlate(
+        value: _pricingType,
+        onChanged: (v) => _mutateForm(() => _pricingType = v),
+        dirtyOutlineColor: dirtyOutline(_pricingType != _baselinePricingType),
+      ),
+      const SizedBox(height: 14),
+      // Price + Remote toggle share one row (60/40 flex for digit width).
+      _AmountAndRemoteRow(
+        amountLabel: L10n.get("gigs_post_offer_field_price"),
+        remoteLabel: L10n.get("gigs_post_request_field_remote"),
+        amountField: _CurrencyAmountField(
+          controller: _priceController,
+          currency: _currency,
+          supportedCurrencies: _supportedCurrencies,
+          onCurrencyChanged: (c) => _mutateForm(() => _currency = c),
+          hint: "0",
+          showError: _showAmountError,
+          dirtyOutlineColor: dirtyOutline(
+            _priceController.text != _baselinePriceText ||
+                _currency != _baselineCurrency,
+          ),
+          onChanged: (_) {
+            if (_showAmountError) {
+              _mutateForm(() => _showAmountError = false);
+            }
+          },
         ),
+        isRemote: _isRemote,
+        onRemoteChanged: (v) => _mutateForm(() => _isRemote = v),
+        remoteDirtyOutlineColor: dirtyOutline(_isRemote != _baselineRemote),
+      ),
+      if (_pricingType == GigPricingType.hourly) ...[
+        const SizedBox(height: 14),
+        _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
+        _PlateField(
+          dirtyOutlineColor: dirtyOutline(
+            _minDurationMinutes != _baselineMinDurationMinutes,
+          ),
+          child: _MinDurationMinuteSpinner(
+            minutes: _minDurationMinutes,
+            onChanged: (v) => _mutateForm(() => _minDurationMinutes = v),
+            textStyle: _fieldTextStyle(context),
+          ),
+        ),
+      ],
+      const SizedBox(height: 14),
+      // Same uploader as create/edit listing: pick, delete, drag to reorder.
+      // Edit-offer hydrates existing [Photo] rows and deletes sync to the API
+      // immediately; add/reorder run on Save (mirrors edit-listing semantics).
+      if (photosChrome != null)
+        DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              ThreeDSurfaceStyle.wheelPickerCornerRadius,
+            ),
+            border: Border.all(color: photosChrome, width: 1.5),
+          ),
+          child: photoUploader,
+        )
+      else
+        photoUploader,
     ];
   }
 
@@ -1315,15 +1440,21 @@ class _FieldLabel extends StatelessWidget {
 }
 
 class _PlateField extends StatelessWidget {
-  const _PlateField({required this.child, this.showErrorBorder = false});
+  const _PlateField({
+    required this.child,
+    this.showErrorBorder = false,
+    this.dirtyOutlineColor,
+  });
   final Widget child;
   final bool showErrorBorder;
+  final Color? dirtyOutlineColor;
 
   @override
   Widget build(BuildContext context) {
     return WheelPickerPlateContainer(
       theme: Theme.of(context),
       showErrorBorder: showErrorBorder,
+      dirtyOutlineColor: showErrorBorder ? null : dirtyOutlineColor,
       child: child,
     );
   }
@@ -1407,6 +1538,7 @@ class _CurrencyAmountField extends StatelessWidget {
     required this.onCurrencyChanged,
     this.hint,
     this.showError = false,
+    this.dirtyOutlineColor,
     this.onChanged,
   });
 
@@ -1416,6 +1548,7 @@ class _CurrencyAmountField extends StatelessWidget {
   final ValueChanged<String> onCurrencyChanged;
   final String? hint;
   final bool showError;
+  final Color? dirtyOutlineColor;
   final ValueChanged<String>? onChanged;
 
   Future<void> _pickCurrency(BuildContext context) async {
@@ -1503,6 +1636,7 @@ class _CurrencyAmountField extends StatelessWidget {
 
     return _PlateField(
       showErrorBorder: showError,
+      dirtyOutlineColor: showError ? null : dirtyOutlineColor,
       child: Row(
         children: [
           InkWell(
@@ -1560,6 +1694,7 @@ class _CategoryPlate extends StatelessWidget {
     required this.language,
     required this.onChanged,
     required this.showError,
+    this.dirtyOutlineColor,
   });
 
   final List<GigCategory> categories;
@@ -1567,6 +1702,7 @@ class _CategoryPlate extends StatelessWidget {
   final String language;
   final ValueChanged<GigCategory?> onChanged;
   final bool showError;
+  final Color? dirtyOutlineColor;
 
   Future<void> _pick(BuildContext context) async {
     if (categories.isEmpty) return;
@@ -1661,6 +1797,7 @@ class _CategoryPlate extends StatelessWidget {
 
     return _PlateField(
       showErrorBorder: showError,
+      dirtyOutlineColor: showError ? null : dirtyOutlineColor,
       child: InkWell(
         borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
         onTap: canTap ? () => _pick(context) : null,
@@ -1711,13 +1848,18 @@ class _CategoryPlate extends StatelessWidget {
 }
 
 class _BudgetTypePlate extends StatelessWidget {
-  const _BudgetTypePlate({required this.value, required this.onChanged});
+  const _BudgetTypePlate({
+    required this.value,
+    required this.onChanged,
+    this.dirtyOutlineColor,
+  });
   final GigRequestBudgetType value;
   final ValueChanged<GigRequestBudgetType> onChanged;
+  final Color? dirtyOutlineColor;
 
   @override
   Widget build(BuildContext context) {
-    return NeumorphicSegmentedSwitch<GigRequestBudgetType>(
+    Widget child = NeumorphicSegmentedSwitch<GigRequestBudgetType>(
       value: value,
       onChanged: onChanged,
       entries: [
@@ -1738,17 +1880,33 @@ class _BudgetTypePlate extends StatelessWidget {
         ),
       ],
     );
+    final outline = dirtyOutlineColor;
+    if (outline != null) {
+      child = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: outline, width: 1.5),
+        ),
+        child: child,
+      );
+    }
+    return child;
   }
 }
 
 class _PricingTypePlate extends StatelessWidget {
-  const _PricingTypePlate({required this.value, required this.onChanged});
+  const _PricingTypePlate({
+    required this.value,
+    required this.onChanged,
+    this.dirtyOutlineColor,
+  });
   final GigPricingType value;
   final ValueChanged<GigPricingType> onChanged;
+  final Color? dirtyOutlineColor;
 
   @override
   Widget build(BuildContext context) {
-    return NeumorphicSegmentedSwitch<GigPricingType>(
+    Widget child = NeumorphicSegmentedSwitch<GigPricingType>(
       value: value,
       onChanged: onChanged,
       entries: [
@@ -1769,6 +1927,17 @@ class _PricingTypePlate extends StatelessWidget {
         ),
       ],
     );
+    final outline = dirtyOutlineColor;
+    if (outline != null) {
+      child = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: outline, width: 1.5),
+        ),
+        child: child,
+      );
+    }
+    return child;
   }
 }
 
@@ -1784,6 +1953,7 @@ class _AmountAndRemoteRow extends StatelessWidget {
     required this.amountField,
     required this.isRemote,
     required this.onRemoteChanged,
+    this.remoteDirtyOutlineColor,
   });
 
   final String amountLabel;
@@ -1791,6 +1961,7 @@ class _AmountAndRemoteRow extends StatelessWidget {
   final Widget amountField;
   final bool isRemote;
   final ValueChanged<bool> onRemoteChanged;
+  final Color? remoteDirtyOutlineColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1814,6 +1985,7 @@ class _AmountAndRemoteRow extends StatelessWidget {
             value: isRemote,
             label: remoteLabel,
             onChanged: onRemoteChanged,
+            dirtyOutlineColor: remoteDirtyOutlineColor,
           ),
         ),
       ],
@@ -1826,15 +1998,18 @@ class _RemoteTogglePlate extends StatelessWidget {
     required this.value,
     required this.label,
     required this.onChanged,
+    this.dirtyOutlineColor,
   });
   final bool value;
   final String label;
   final ValueChanged<bool> onChanged;
+  final Color? dirtyOutlineColor;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return _PlateField(
+      dirtyOutlineColor: dirtyOutlineColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(

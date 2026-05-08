@@ -148,6 +148,17 @@ class AppStrings {
           "This removes the chat from both users' inboxes and ends the thread for them. Continue?",
       "admin_delete_conversation_success": "Conversation removed",
       "admin_delete_conversation_error": "Could not remove the conversation",
+      "admin_listing_owner_conversations_card_title": "Listing chats (admin)",
+      "admin_listing_owner_conversations_card_subtitle":
+          "See every in-app conversation between guests and this listing's owner.",
+      "admin_listing_owner_conversations_screen_title":
+          "Chats on this listing",
+      "admin_listing_owner_conversations_empty":
+          "No listing chats in the app yet.",
+      "admin_listing_owner_conversations_error":
+          "Could not load chats for this listing.",
+      "admin_listing_owner_conversations_retry": "Try again",
+      "admin_listing_owner_conversations_closed_badge": "Closed",
       "chat_translate_picker_title": "Translate this chat to",
       "chat_translate_picker_auto": "Auto (use my language)",
       "chat_translating": "Translating…",
@@ -1512,6 +1523,17 @@ class AppStrings {
           "Чат исчезнет из списков обоих пользователей, продолжить общение в этой ветке будет нельзя. Продолжить?",
       "admin_delete_conversation_success": "Переписка удалена",
       "admin_delete_conversation_error": "Не удалось удалить переписку",
+      "admin_listing_owner_conversations_card_title": "Чаты по объявлению (админ)",
+      "admin_listing_owner_conversations_card_subtitle":
+          "Все диалоги в приложении между пользователями и автором объявления.",
+      "admin_listing_owner_conversations_screen_title":
+          "Чаты по этому объявлению",
+      "admin_listing_owner_conversations_empty":
+          "Пока нет чатов по этому объявлению.",
+      "admin_listing_owner_conversations_error":
+          "Не удалось загрузить чаты объявления.",
+      "admin_listing_owner_conversations_retry": "Повторить",
+      "admin_listing_owner_conversations_closed_badge": "Закрыт",
       "chat_translate_picker_title": "Перевести этот чат на",
       "chat_translate_picker_auto": "Авто (мой язык)",
       "chat_translating": "Перевод…",
@@ -2905,6 +2927,16 @@ class AppStrings {
           "Bu chat ikkala foydalanuvchi ro‘yxatidan ham olib tashlanadi va ular uchun tugatiladi. Davom etilsinmi?",
       "admin_delete_conversation_success": "Suhbat olib tashlandi",
       "admin_delete_conversation_error": "Suhbatni olib tashlab bo‘lmadi",
+      "admin_listing_owner_conversations_card_title": "Chatlar — e‘lon (admin)",
+      "admin_listing_owner_conversations_card_subtitle":
+          "Mehmondoshlar va e‘lon egasi o‘rtasidagi barcha ilova ichidagi suhbatlar.",
+      "admin_listing_owner_conversations_screen_title": "Bu e‘lon chatlari",
+      "admin_listing_owner_conversations_empty":
+          "Hali bu e‘lon bo‘yicha chat yo‘q.",
+      "admin_listing_owner_conversations_error":
+          "E‘lon chatlarini yuklab bo‘lmadi.",
+      "admin_listing_owner_conversations_retry": "Qayta urinish",
+      "admin_listing_owner_conversations_closed_badge": "Yopilgan",
       "chat_translate_picker_title": "Ushbu chatni quyidagi tilga tarjima qilish",
       "chat_translate_picker_auto": "Avto (mening tilim)",
       "chat_translating": "Tarjima qilinmoqda…",

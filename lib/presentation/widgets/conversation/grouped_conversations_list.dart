@@ -222,10 +222,13 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     final segments = <Widget>[];
     DateTime? lastEmittedDay;
 
+    final onlyOneGroup = _sortedListingIds.length == 1;
+
     for (var i = 0; i < _sortedListingIds.length; i++) {
       final listingId = _sortedListingIds[i];
       final conversations = _groupedConversations[listingId] ?? const [];
-      final isExpanded = _expandedGroups[listingId] ?? false;
+      final isExpanded =
+          onlyOneGroup || (_expandedGroups[listingId] ?? false);
       final day = _groupLatestActivityDay(conversations);
 
       if (lastEmittedDay == null || !_sameCalendarDay(lastEmittedDay, day)) {
@@ -247,6 +250,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
           listingId: listingId,
           conversations: conversations,
           isExpanded: isExpanded,
+          canToggleExpansion: !onlyOneGroup,
         ),
       );
     }
@@ -278,6 +282,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     required int listingId,
     required List<ConversationSummary> conversations,
     required bool isExpanded,
+    required bool canToggleExpansion,
   }) {
     return ListenableBuilder(
       listenable: ThemeState(),
@@ -327,12 +332,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                   // below is enough feedback on its own.
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      setState(() {
-                        _expandedGroups[listingId] = !isExpanded;
-                      });
-                    },
+                    onTap: canToggleExpansion
+                        ? () {
+                            HapticFeedbackUtils.impact();
+                            setState(() {
+                              _expandedGroups[listingId] = !isExpanded;
+                            });
+                          }
+                        : null,
                     child: Padding(
                       padding: const EdgeInsetsDirectional.fromSTEB(
                         16,
@@ -467,17 +474,18 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                       ),
                                       const SizedBox(width: 8),
                                     ],
-                                    AnimatedRotation(
-                                      turns: isExpanded ? 0.0 : 0.5,
-                                      duration: const Duration(
-                                        milliseconds: 300,
+                                    if (canToggleExpansion)
+                                      AnimatedRotation(
+                                        turns: isExpanded ? 0.0 : 0.5,
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        curve: Curves.easeInOut,
+                                        child: ThemeIcon(
+                                          Icons.expand_less,
+                                          color: iconColor,
+                                        ),
                                       ),
-                                      curve: Curves.easeInOut,
-                                      child: ThemeIcon(
-                                        Icons.expand_less,
-                                        color: iconColor,
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ],

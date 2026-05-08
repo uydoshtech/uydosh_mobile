@@ -24,6 +24,7 @@ import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart"
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/admin_listing_conversations_service.dart";
 import "package:uy_dosh/domain/services/otp_service.dart";
 import "package:uy_dosh/domain/services/otp_service_impl.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
@@ -119,6 +120,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IMessagingService>(
     () => MessagingService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminListingConversationsService>(
+    () => AdminListingConversationsService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IComplaintService>(

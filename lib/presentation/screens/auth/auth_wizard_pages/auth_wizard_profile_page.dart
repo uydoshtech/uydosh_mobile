@@ -16,6 +16,12 @@ import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
     required this.profileScrollController,
+    required this.nameSectionKey,
+    required this.genderSectionKey,
+    required this.regionSectionKey,
+    required this.roleSectionKey,
+    required this.studentSectionKey,
+    required this.universitySectionKey,
     required this.nameController,
     required this.selectedGender,
     required this.onGenderSelected,
@@ -46,6 +52,15 @@ class AuthWizardProfilePage extends StatelessWidget {
   });
 
   final ScrollController profileScrollController;
+
+  /// Section keys for scrolling the profile form to the first invalid field.
+  final GlobalKey nameSectionKey;
+  final GlobalKey genderSectionKey;
+  final GlobalKey regionSectionKey;
+  final GlobalKey roleSectionKey;
+  final GlobalKey studentSectionKey;
+  final GlobalKey universitySectionKey;
+
   final TextEditingController nameController;
   final int? selectedGender;
   final ValueChanged<int?> onGenderSelected;
@@ -150,41 +165,47 @@ class AuthWizardProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ThreeDTextField(
-              controller: nameController,
-              hintText: L10n.get("full_name_hint"),
-              textCapitalization: TextCapitalization.words,
-              textInputAction: TextInputAction.next,
-              onTap: HapticFeedbackUtils.impact,
-              showErrorBorder: nameMissing,
+            KeyedSubtree(
+              key: nameSectionKey,
+              child: ThreeDTextField(
+                controller: nameController,
+                hintText: L10n.get("full_name_hint"),
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                onTap: HapticFeedbackUtils.impact,
+                showErrorBorder: nameMissing,
+              ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: genderMissing,
-                    child: _buildGenderOption(
-                      context,
-                      1,
-                      L10n.get("male"),
-                      Icons.male,
+            KeyedSubtree(
+              key: genderSectionKey,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: ErrorBorderPulse(
+                      showError: genderMissing,
+                      child: _buildGenderOption(
+                        context,
+                        1,
+                        L10n.get("male"),
+                        Icons.male,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: genderMissing,
-                    child: _buildGenderOption(
-                      context,
-                      2,
-                      L10n.get("female"),
-                      Icons.female,
+                  const SizedBox(width: 20),
+                  Flexible(
+                    child: ErrorBorderPulse(
+                      showError: genderMissing,
+                      child: _buildGenderOption(
+                        context,
+                        2,
+                        L10n.get("female"),
+                        Icons.female,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             Column(
@@ -210,53 +231,59 @@ class AuthWizardProfilePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _buildCountrySelector(context)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ErrorBorderPulse(
-                    showError: regionMissing,
-                    child: _buildCitySelectorColumn(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            ErrorBorderPulse(
-              showError: roleMissing,
-              child: ProfileDropdownControl(
-                label: L10n.get("select_your_primary_role"),
-                value: selectedRole,
-                icon: Icons.badge,
-                onChanged: onRoleSelected,
-                options: [
-                  DropdownOption(
-                    value: null,
-                    label: L10n.get("tap_to_select_primary_role"),
-                  ),
-                  DropdownOption(
-                    value: "landlord",
-                    label: L10n.get("role_landlord"),
-                    icon: Icons.home_work,
-                  ),
-                  DropdownOption(
-                    value: "tenant",
-                    label: L10n.get("role_tenant"),
-                    icon: Icons.key,
-                  ),
-                  DropdownOption(
-                    value: "service_requester",
-                    label: L10n.get("role_service_requester"),
-                    icon: Icons.assignment_ind,
-                  ),
-                  DropdownOption(
-                    value: "service_provider",
-                    label: L10n.get("role_service_provider"),
-                    icon: Icons.home_repair_service,
+            KeyedSubtree(
+              key: regionSectionKey,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _buildCountrySelector(context)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ErrorBorderPulse(
+                      showError: regionMissing,
+                      child: _buildCitySelectorColumn(context),
+                    ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            KeyedSubtree(
+              key: roleSectionKey,
+              child: ErrorBorderPulse(
+                showError: roleMissing,
+                child: ProfileDropdownControl(
+                  label: L10n.get("select_your_primary_role"),
+                  value: selectedRole,
+                  icon: Icons.badge,
+                  onChanged: onRoleSelected,
+                  options: [
+                    DropdownOption(
+                      value: null,
+                      label: L10n.get("tap_to_select_primary_role"),
+                    ),
+                    DropdownOption(
+                      value: "landlord",
+                      label: L10n.get("role_landlord"),
+                      icon: Icons.home_work,
+                    ),
+                    DropdownOption(
+                      value: "tenant",
+                      label: L10n.get("role_tenant"),
+                      icon: Icons.key,
+                    ),
+                    DropdownOption(
+                      value: "service_requester",
+                      label: L10n.get("role_service_requester"),
+                      icon: Icons.assignment_ind,
+                    ),
+                    DropdownOption(
+                      value: "service_provider",
+                      label: L10n.get("role_service_provider"),
+                      icon: Icons.home_repair_service,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -269,32 +296,35 @@ class AuthWizardProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: studentMissing,
-                    child: _buildStudentOption(
-                      context,
-                      true,
-                      L10n.get("yes_student"),
-                      Icons.school,
+            KeyedSubtree(
+              key: studentSectionKey,
+              child: Row(
+                children: [
+                  Flexible(
+                    child: ErrorBorderPulse(
+                      showError: studentMissing,
+                      child: _buildStudentOption(
+                        context,
+                        true,
+                        L10n.get("yes_student"),
+                        Icons.school,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: ErrorBorderPulse(
-                    showError: studentMissing,
-                    child: _buildStudentOption(
-                      context,
-                      false,
-                      L10n.get("no_student"),
-                      Icons.work,
+                  const SizedBox(width: 20),
+                  Flexible(
+                    child: ErrorBorderPulse(
+                      showError: studentMissing,
+                      child: _buildStudentOption(
+                        context,
+                        false,
+                        L10n.get("no_student"),
+                        Icons.work,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             if (isStudent ?? false) ...[
               const SizedBox(height: 32),
@@ -304,9 +334,12 @@ class AuthWizardProfilePage extends StatelessWidget {
                   L10n.get("loading_universities"),
                 )
               else if (universities.isNotEmpty)
-                ErrorBorderPulse(
-                  showError: universityMissing,
-                  child: _buildUniversitySelector(context),
+                KeyedSubtree(
+                  key: universitySectionKey,
+                  child: ErrorBorderPulse(
+                    showError: universityMissing,
+                    child: _buildUniversitySelector(context),
+                  ),
                 )
               else if (!isLoadingUniversities)
                 _buildEmptyCard(

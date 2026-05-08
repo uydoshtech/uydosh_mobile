@@ -65,6 +65,18 @@ class AuthWizardScreen extends StatefulWidget {
 class _AuthWizardScreenState extends State<AuthWizardScreen> {
   late final PageController _pageController;
   final ScrollController _profileScrollController = ScrollController();
+
+  /// Keys for [Scrollable.ensureVisible] when profile validation fails, so the
+  /// first invalid control is scrolled into view inside the profile
+  /// [SingleChildScrollView].
+  final GlobalKey _profileNameKey = GlobalKey(debugLabel: "authWizard_profile_name");
+  final GlobalKey _profileGenderKey = GlobalKey(debugLabel: "authWizard_profile_gender");
+  final GlobalKey _profileRegionKey = GlobalKey(debugLabel: "authWizard_profile_region");
+  final GlobalKey _profileRoleKey = GlobalKey(debugLabel: "authWizard_profile_role");
+  final GlobalKey _profileStudentKey = GlobalKey(debugLabel: "authWizard_profile_student");
+  final GlobalKey _profileUniversityKey =
+      GlobalKey(debugLabel: "authWizard_profile_university");
+
   int _currentPage = 0; // Start with language selection page
 
   // Form controllers
@@ -980,6 +992,54 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     LanguageState().setLanguage(languageCode, persistToServer: false);
   }
 
+  /// Scrolls the profile [SingleChildScrollView] so the first field that
+  /// failed validation is on screen (see keys on [AuthWizardProfilePage]).
+  void _scrollProfileToFirstInvalidField({
+    required bool missingName,
+    required bool missingGender,
+    required bool missingRegion,
+    required bool missingRole,
+    required bool missingStudent,
+    required bool missingUniversity,
+  }) {
+    final GlobalKey? target;
+    if (missingName) {
+      target = _profileNameKey;
+    } else if (missingGender) {
+      target = _profileGenderKey;
+    } else if (missingRegion) {
+      target = _profileRegionKey;
+    } else if (missingRole) {
+      target = _profileRoleKey;
+    } else if (missingStudent) {
+      target = _profileStudentKey;
+    } else if (missingUniversity) {
+      target = _profileUniversityKey;
+    } else {
+      target = null;
+    }
+    if (target == null) return;
+    final ctx = target.currentContext;
+    if (ctx == null) {
+      if (target == _profileUniversityKey &&
+          _profileScrollController.hasClients) {
+        _profileScrollController.animateTo(
+          _profileScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeInOut,
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeInOut,
+      alignment: 0.12,
+    );
+  }
+
   /// After authenticating an existing user, align the local language with
   /// the value stored on their server profile. This prevents the wizard's
   /// pre-auth language pick from silently overwriting their saved
@@ -1143,6 +1203,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         (_isStudent ?? false) && _selectedUniversity == null;
 
     if (missingBaseField || missingUniversity) {
+      final missingName = _nameController.text.trim().isEmpty;
+      final missingGender = _selectedGender == null;
+      final missingRegion = requiresRegion && _selectedRegionId == null;
+      final missingRole = _selectedRole == null;
+      final missingStudent = _isStudent == null;
+      final missingUniversityOnly = missingUniversity;
+
       // Flip the screen-wide validation flag so every empty control on the
       // profile page lights up with a pulsing red border (see
       // [AuthWizardProfilePage] + [ErrorBorderPulse]). The toast remains as
@@ -1150,6 +1217,18 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // first invalid field.
       setState(() {
         _showValidationErrors = true;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollProfileToFirstInvalidField(
+          missingName: missingName,
+          missingGender: missingGender,
+          missingRegion: missingRegion,
+          missingRole: missingRole,
+          missingStudent: missingStudent,
+          missingUniversity: missingUniversityOnly,
+        );
       });
 
       if (missingUniversity && !missingBaseField) {
@@ -1602,6 +1681,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,
+                          nameSectionKey: _profileNameKey,
+                          genderSectionKey: _profileGenderKey,
+                          regionSectionKey: _profileRegionKey,
+                          roleSectionKey: _profileRoleKey,
+                          studentSectionKey: _profileStudentKey,
+                          universitySectionKey: _profileUniversityKey,
                           nameController: _nameController,
                           selectedGender: _selectedGender,
                           onGenderSelected: (v) => setState(() => _selectedGender = v),

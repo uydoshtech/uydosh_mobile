@@ -166,6 +166,7 @@ abstract final class ThreeDSurfaceStyle {
     ThemeData? theme,
     bool showErrorBorder = false,
     double? errorPulseT,
+    Color? dirtyOutlineColor,
   }) {
     final t = theme ?? Theme.of(context);
     final plateBase = t.colorScheme.surface;
@@ -193,6 +194,8 @@ abstract final class ThreeDSurfaceStyle {
           ),
         );
       }
+    } else if (dirtyOutlineColor != null) {
+      border = Border.all(color: dirtyOutlineColor, width: 1.5);
     }
     return BoxDecoration(
       borderRadius: wheelPickerPlateRadius,
@@ -210,12 +213,17 @@ class WheelPickerPlateContainer extends StatefulWidget {
     required this.child,
     super.key,
     this.showErrorBorder = false,
+    this.dirtyOutlineColor,
     this.theme,
     this.clipBehavior = Clip.antiAlias,
   });
 
   final Widget child;
   final bool showErrorBorder;
+
+  /// When non-null (and [showErrorBorder] is false), draws a steady outline for
+  /// fields that differ from their original values (edit flows).
+  final Color? dirtyOutlineColor;
   final ThemeData? theme;
   final Clip clipBehavior;
 
@@ -271,6 +279,7 @@ class _WheelPickerPlateContainerState extends State<WheelPickerPlateContainer>
           context,
           theme: widget.theme,
           showErrorBorder: false,
+          dirtyOutlineColor: widget.dirtyOutlineColor,
         ),
         child: widget.child,
       );
@@ -285,6 +294,7 @@ class _WheelPickerPlateContainerState extends State<WheelPickerPlateContainer>
             theme: widget.theme,
             showErrorBorder: true,
             errorPulseT: _pulse.value,
+            dirtyOutlineColor: null,
           ),
           child: widget.child,
         );

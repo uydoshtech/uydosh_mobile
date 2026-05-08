@@ -52,6 +52,7 @@ import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_listing_owner_conversations_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
@@ -65,6 +66,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_listing_owner_messages_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
@@ -1359,6 +1361,15 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
     );
   }
 
+  void _openAdminListingOwnerConversations(ListingDetail listingDetail) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            AdminListingOwnerConversationsScreen(listingDetail: listingDetail),
+      ),
+    );
+  }
+
   Future<void> _startConversation(ListingDetail listingDetail) async {
     try {
       logger.d("🚀 [Frontend] Starting conversation creation process...");
@@ -2375,6 +2386,21 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
                 ),
               );
             },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: FutureBuilder<String?>(
+              future: _userRoleFuture,
+              builder: (context, snapshot) {
+                if (snapshot.data != "admin") {
+                  return const SizedBox.shrink();
+                }
+                return ListingDetailListingOwnerMessagesCard(
+                  onPressed: () =>
+                      _openAdminListingOwnerConversations(listingDetail),
+                );
+              },
+            ),
           ),
           // Admin-as-owner contact card. Pinned to the bottom of the body
           // so it sits below all the listing's regular content — admins
