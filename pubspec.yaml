@@ -126,7 +126,9 @@ dependencies:
   # native uCrop / TOCropViewController UIs added megabytes of platform code).
   crop_your_image: ^2.0.0
   dio_cache_interceptor: ^4.0.6
-  device_info_plus: ^12.4.0
+  # Pinned below v12 to keep iOS build compatible with CI Xcode SDK.
+  # (v12 references NSProcessInfo.isiOSAppOnVision which is not available on all runners.)
+  device_info_plus: ^11.3.0
   package_info_plus: ^9.0.1
 
 dev_dependencies:
