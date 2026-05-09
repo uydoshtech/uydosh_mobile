@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 
@@ -73,7 +73,7 @@ class MessageGroupingUtils {
           DateTime.parse(messagesForDate.first.createdAt).toLocal();
       widgets.add(
         DateHeaderWidget(
-          dateString: formatDateHeader(firstMessageDate, context),
+          dateString: AppDateUtils.formatDateHeader(firstMessageDate, context),
           date: firstMessageDate,
         ),
       );
@@ -155,26 +155,6 @@ class MessageGroupingUtils {
     // Convert to local timezone for proper date grouping
     final localDate = date.toLocal();
     return DateFormat("yyyy-MM-dd").format(localDate);
-  }
-
-  /// Formats a date for display in the date header (public for lazy building).
-  ///
-  /// Uses the localized **Today** label when [date] falls on the current local
-  /// calendar day; otherwise `d MMMM yyyy` (e.g. English "20 April 2026").
-  static String formatDateHeader(DateTime date, BuildContext context) {
-    final localDate = date.toLocal();
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final messageDay = DateTime(
-      localDate.year,
-      localDate.month,
-      localDate.day,
-    );
-    if (messageDay == today) {
-      return L10n.get("today");
-    }
-    final localeName = Localizations.localeOf(context).toString();
-    return DateFormat("d MMMM yyyy", localeName).format(localDate);
   }
 
   /// Groups messages by date and returns a map of date keys to message lists

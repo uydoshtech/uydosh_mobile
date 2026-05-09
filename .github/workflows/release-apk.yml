@@ -150,6 +150,20 @@ jobs:
             release_status:"${PLAY_RELEASE_STATUS}" \
             changelog:"Automated upload from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7} (${GITHUB_REF_NAME})."
 
+      # Marketing site (uydoshtech.github.io): APK + metadata from rolling release android-latest.
+      - name: Build release APK (website sideload)
+        run: flutter build apk --release --build-name "$BUILD_NAME" --build-number "$BUILD_NUMBER"
+
+      - name: Publish APK to marketing site (GitHub Release)
+        env:
+          UYDOSH_WEBSITE_RELEASE_TOKEN: ${{ secrets.UYDOSH_WEBSITE_RELEASE_TOKEN }}
+          BUILD_NAME: ${{ env.BUILD_NAME }}
+          BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+        run: |
+          set -euo pipefail
+          bash tool/ci/publish_mobile_to_website.sh \
+            "build/app/outputs/flutter-apk/app-release.apk"
+
       - name: Notify by email on success
         if: success()
         uses: dawidd6/action-send-mail@v16

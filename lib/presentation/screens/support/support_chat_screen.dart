@@ -3,6 +3,7 @@ import "dart:math" as math;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -339,7 +340,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                 ],
                 SizedBox(height: thread.lastMessage != null ? 10 : 8),
                 Text(
-                  _formatDate(thread.updatedAt),
+                  AppDateUtils.formatRelativePastDate(thread.updatedAt),
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.2,
@@ -372,18 +373,6 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     );
   }
 
-  String _formatDate(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inDays == 0) {
-      return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-    }
-    if (diff.inDays == 1) return L10n.get("admin_support_chat_yesterday");
-    if (diff.inDays < 7) {
-      return L10n.plural("admin_support_chat_days_ago", diff.inDays);
-    }
-    return "${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}";
-  }
 }
 
 class _UserSupportChatThreadScreen extends StatefulWidget {

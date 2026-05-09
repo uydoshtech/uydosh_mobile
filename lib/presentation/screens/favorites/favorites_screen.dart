@@ -823,10 +823,27 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                     const SizedBox(height: 24),
                     PrimaryButtonFactory.iconText(
                       onPressed: () {
-                        if (mainNavigationKey.currentState != null) {
-                          mainNavigationKey.currentState!.navigateToIndex(1);
+                        // Send the user to the Services tab (gig hub).
+                        // FavoritesScreen is pushed on top of MainNavigation,
+                        // so flipping the bottom-bar index alone is invisible
+                        // until we pop this route off. If the global key is
+                        // missing (cold start / deep link), rebuild the shell
+                        // directly on the Services tab instead of falling back
+                        // to the default Housing tab.
+                        final mainState = mainNavigationKey.currentState;
+                        if (mainState != null) {
+                          mainState.navigateToIndex(1);
+                          Navigator.of(context).popUntil(
+                            (route) => route.isFirst,
+                          );
                         } else {
-                          context.pushReplaceMainNavigation();
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute<void>(
+                              builder: (_) => AppRouter.buildMainNavigation(
+                                initialIndex: 1,
+                              ),
+                            ),
+                          );
                         }
                       },
                       icon: Icons.work_outline,

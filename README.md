@@ -533,8 +533,12 @@ dart run flutter_launcher_icons
 ```
 
 Continuous deployment and the project landing page live in a sibling
-repository; the APK is published under
-[`uydoshtech.github.io/apk/app-release.apk`](https://github.com/uydoshtech/uydoshtech.github.io/tree/main/apk).
+repository
+([`uydoshtech/uydoshtech.github.io`](https://github.com/uydoshtech/uydoshtech.github.io)).
+Android release CI uploads **`app-release.apk`** to a rolling GitHub Release
+(`android-latest`) so the site can serve
+[`.../releases/latest/download/app-release.apk`](https://github.com/uydoshtech/uydoshtech.github.io/releases/latest/download/app-release.apk).
+See `tool/PLAY_STORE_CI.md` for the **`UYDOSH_WEBSITE_RELEASE_TOKEN`** secret.
 
 ---
 

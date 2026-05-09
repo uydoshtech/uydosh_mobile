@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -13,7 +14,6 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
-import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -371,8 +371,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     }
   }
 
-  /// True when this listing group has unread messages from someone else,
-  /// so we keep the group expanded and disallow collapsing until read.
+  /// True when this listing group has unread messages from someone else.
   bool _groupHasIncomingUnread(List<ConversationSummary> conversations) {
     if (widget.currentUserId == null) return false;
     return conversations.any(
@@ -460,18 +459,22 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
       final conversations = _groupedConversations[listingId] ?? const [];
       final hasIncomingUnread = _groupHasIncomingUnread(conversations);
       final isSingletonThreadGroup = onlyOneGroup && conversations.length == 1;
-      final storedExpanded = _expandedGroups[listingId] ?? false;
-      final isExpanded =
-          isSingletonThreadGroup || hasIncomingUnread || storedExpanded;
+      final stored = _expandedGroups[listingId];
+      // Unread groups default to expanded so threads are visible; the user can
+      // still collapse (stored `false` is honored while unread).
+      final isExpanded = isSingletonThreadGroup
+          ? true
+          : hasIncomingUnread
+              ? (stored ?? true)
+              : (stored ?? false);
       final canToggleExpansion = !isSingletonThreadGroup &&
-          !hasIncomingUnread &&
           (!onlyOneGroup || conversations.length > 1);
       final day = _groupLatestActivityDay(conversations);
 
       if (lastEmittedDay == null || !_sameCalendarDay(lastEmittedDay, day)) {
         segments.add(
           DateHeaderWidget(
-            dateString: MessageGroupingUtils.formatDateHeader(day, context),
+            dateString: AppDateUtils.formatDateHeader(day, context),
             date: day,
             padding: segments.isEmpty
                 ? const EdgeInsets.only(top: 8, bottom: 6)

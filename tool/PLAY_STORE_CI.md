@@ -13,6 +13,20 @@ This repo can upload a signed `.aab` to Google Play automatically via GitHub Act
 
 The workflow builds:
 - AAB (for Google Play)
+- Release APK (for the public marketing site; see **Marketing site** below)
+
+## Marketing site (`uydoshtech.github.io`)
+
+After a successful Play upload, CI builds a signed release APK and publishes it to the **`uydoshtech/uydoshtech.github.io`** repository as a rolling GitHub Release:
+
+- Tag **`android-latest`** — used by the landing page for build metadata (`releases/tags/android-latest`).
+- Asset name **`app-release.apk`** — matches `releases/latest/download/app-release.apk` on that repo.
+
+Script: `tool/ci/publish_mobile_to_website.sh`.
+
+### Secret
+
+Add **`UYDOSH_WEBSITE_RELEASE_TOKEN`** in the **`uydosh_client`** repo secrets: a fine-grained or classic PAT that can **create releases** on **`uydoshtech/uydoshtech.github.io`** (Contents read/write on that repository is enough). If the secret is missing, the publish step prints a warning and exits successfully so store uploads still finish.
 
 ## Required GitHub Secrets
 

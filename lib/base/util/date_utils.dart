@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
 class AppDateUtils {
@@ -65,4 +66,37 @@ class AppDateUtils {
     return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year}";
   }
 
+  /// Chat / inbox date pill: localized **Today** on the current local calendar
+  /// day; otherwise `d MMMM yyyy` (locale-aware).
+  static String formatDateHeader(DateTime date, BuildContext context) {
+    final localDate = date.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDay = DateTime(
+      localDate.year,
+      localDate.month,
+      localDate.day,
+    );
+    if (messageDay == today) {
+      return L10n.get("today");
+    }
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat("d MMMM yyyy", localeName).format(localDate);
+  }
+
+  /// Compact label for a **past** [dt]: clock time when [Duration.inDays]
+  /// from now is 0, localized **yesterday** when it is 1, N days ago when it
+  /// is between 2 and 6 inclusive, else `dd.mm.yyyy`.
+  static String formatRelativePastDate(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inDays == 0) {
+      return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+    }
+    if (diff.inDays == 1) return L10n.get("admin_support_chat_yesterday");
+    if (diff.inDays < 7) {
+      return L10n.plural("admin_support_chat_days_ago", diff.inDays);
+    }
+    return "${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}";
+  }
 }

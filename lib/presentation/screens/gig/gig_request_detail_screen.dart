@@ -50,11 +50,13 @@ class GigRequestDetailScreen extends StatefulWidget {
 class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     with TickerProviderStateMixin {
   late Future<GigRequest> _future;
+
   /// Session uid fallback while [UserListingState] has not finished hydrating.
   int? _sessionUserId;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
   bool _requestFavoriteBusy = false;
+
   /// After a successful edit, parent feeds must refetch — detail shows fresh data
   /// but list tiles still hold stale [GigRequest] rows until refreshed.
   bool _editedWhileOpen = false;
@@ -197,10 +199,9 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => PushedMessagesInboxScaffold(
-              filterGigRequestId: widget.requestId,
-            ),
+        builder: (_) => PushedMessagesInboxScaffold(
+          filterGigRequestId: widget.requestId,
+        ),
       ),
     );
   }
@@ -258,8 +259,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
                         listenable: GigFavoritesState()
                             .listenableForRequest(request.id),
                         builder: (context, _) {
-                          final fav = GigFavoritesState()
-                              .isRequestFavorite(request.id);
+                          final fav =
+                              GigFavoritesState().isRequestFavorite(request.id);
                           _requestFavPulse.setFavoriteOutlineState(
                             isFavorite: fav,
                           );
@@ -291,7 +292,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
                       hasOwnerOverflow: showOwnerMenu,
                       loadedRequest: request,
                     ),
-                    if (request != null) ..._ownerOverflowMenu(context, request),
+                    if (request != null)
+                      ..._ownerOverflowMenu(context, request),
                   ],
                 ),
                 body: _buildBody(context, snap),
@@ -394,7 +396,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
   }
 }
 
-class _RequestDetailContent extends StatelessWidget {
+class _RequestDetailContent extends StatefulWidget {
   const _RequestDetailContent({
     required this.request,
     required this.contactInFlight,
@@ -412,159 +414,184 @@ class _RequestDetailContent extends StatelessWidget {
   final bool editDisabled;
 
   @override
+  State<_RequestDetailContent> createState() => _RequestDetailContentState();
+}
+
+class _RequestDetailContentState extends State<_RequestDetailContent> {
+  bool _scrollLockedBecauseShort = true;
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
-    final categoryName = request.category?.localizedName(language) ?? "";
+    final categoryName = widget.request.category?.localizedName(language) ?? "";
     final description = _localizedDescription(language);
     // Match [ListingDetailContactActionBar] structure (SafeArea + horizontal 16).
     // Extra bottom padding (24) keeps the CTA off the browser chrome when
     // safe-area inset is zero; on devices, SafeArea still adds system inset.
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    final hasBottomCta = onEditPressed != null || showContactCta;
-    final listBottomPad = hasBottomCta ? 118.0 + bottomInset : 24.0 + bottomInset;
+    final hasBottomCta = widget.onEditPressed != null || widget.showContactCta;
+    final listBottomPad =
+        hasBottomCta ? 118.0 + bottomInset : 24.0 + bottomInset;
 
     return Stack(
       children: [
-        ListView(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, listBottomPad),
-          children: [
-            ThreeDElevatedSurface(
-              baseColor: scheme.surface,
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (categoryName.isNotEmpty)
-                      Row(
-                        children: [
-                          if (request.category != null) ...[
-                            GigCategoryIconBadge(
-                              icon: request.category!.icon,
-                              iconColor:
-                                  scheme.onSurface.withValues(alpha: 0.72),
-                              badgeBackgroundColor: scheme.onSurface
-                                  .withValues(alpha: 0.12),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Expanded(
-                            child: Text(
-                              categoryName.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 0.5,
-                                color: scheme.onSurface
-                                    .withValues(alpha: 0.72),
-                                fontWeight: FontWeight.w700,
+        NotificationListener<ScrollMetricsNotification>(
+          onNotification: (n) {
+            if (!n.metrics.hasPixels) return false;
+            final shouldLock = n.metrics.maxScrollExtent <= 0;
+            if (shouldLock != _scrollLockedBecauseShort) {
+              setState(() => _scrollLockedBecauseShort = shouldLock);
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            physics: _scrollLockedBecauseShort
+                ? const NeverScrollableScrollPhysics()
+                : const BouncingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, listBottomPad),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ThreeDElevatedSurface(
+                  baseColor: scheme.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (categoryName.isNotEmpty)
+                          Row(
+                            children: [
+                              if (widget.request.category != null) ...[
+                                GigCategoryIconBadge(
+                                  icon: widget.request.category!.icon,
+                                  iconColor:
+                                      scheme.onSurface.withValues(alpha: 0.72),
+                                  badgeBackgroundColor:
+                                      scheme.onSurface.withValues(alpha: 0.12),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  categoryName.toUpperCase(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    letterSpacing: 0.5,
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.72),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.request.title,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (widget.request.budgetAmount != null)
+                          ListingPaymentsOutlineBadge(label: _budgetLine())
+                        else
+                          Text(
+                            _budgetLine(),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
                             ),
                           ),
+                        if (widget.request.addressText != null &&
+                            widget.request.addressText!.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.place_outlined,
+                                size: 16,
+                                color: scheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.request.addressText!,
+                                  style: TextStyle(
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
-                      ),
-                    const SizedBox(height: 4),
-                    Text(
-                      request.title,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: scheme.onSurface,
-                      ),
+                        if (widget.request.scheduledAt != null) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.event_outlined,
+                                size: 16,
+                                color: scheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.request.scheduledAt!,
+                                  style: TextStyle(
+                                    color: scheme.onSurface
+                                        .withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    if (request.budgetAmount != null)
-                      ListingPaymentsOutlineBadge(label: _budgetLine())
-                    else
-                      Text(
-                        _budgetLine(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                    if (request.addressText != null &&
-                        request.addressText!.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.place_outlined,
-                            size: 16,
-                            color: scheme.onSurface.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              request.addressText!,
-                              style: TextStyle(
-                                color:
-                                    scheme.onSurface.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (request.scheduledAt != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.event_outlined,
-                            size: 16,
-                            color: scheme.onSurface.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              request.scheduledAt!,
-                              style: TextStyle(
-                                color:
-                                    scheme.onSurface.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            if (description.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              ThreeDElevatedSurface(
-                baseColor: scheme.surface,
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        L10n.get("gigs_request_description_label"),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: scheme.onSurface.withValues(alpha: 0.85),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-              ),
-            ],
-          ],
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  ThreeDElevatedSurface(
+                    baseColor: scheme.surface,
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            L10n.get("gigs_request_description_label"),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: scheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            description,
+                            style: TextStyle(
+                              color: scheme.onSurface.withValues(alpha: 0.85),
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
         if (hasBottomCta)
           Positioned(
@@ -575,12 +602,12 @@ class _RequestDetailContent extends StatelessWidget {
               top: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: onEditPressed != null
+                child: widget.onEditPressed != null
                     ? PrimaryButtonFactory.iconText(
-                        onPressed: onEditPressed,
+                        onPressed: widget.onEditPressed,
                         icon: Icons.edit_outlined,
                         text: L10n.get("gigs_request_edit_cta"),
-                        isDisabled: editDisabled,
+                        isDisabled: widget.editDisabled,
                         height: 54,
                         width: double.infinity,
                         borderRadius: BorderRadius.circular(16),
@@ -590,10 +617,12 @@ class _RequestDetailContent extends StatelessWidget {
                         ),
                       )
                     : PrimaryButtonFactory.iconText(
-                        onPressed: contactInFlight ? null : onContactPressed,
+                        onPressed: widget.contactInFlight
+                            ? null
+                            : widget.onContactPressed,
                         icon: Icons.chat_bubble_outline,
                         text: L10n.get("gigs_request_contact_cta"),
-                        isLoading: contactInFlight,
+                        isLoading: widget.contactInFlight,
                         height: 54,
                         width: double.infinity,
                         borderRadius: BorderRadius.circular(16),
@@ -610,36 +639,29 @@ class _RequestDetailContent extends StatelessWidget {
   }
 
   String _localizedDescription(String language) {
+    final r = widget.request;
     switch (language) {
       case "uz":
-        return (request.descriptionUz ??
-                request.descriptionRu ??
-                request.descriptionEn ??
-                "")
+        return (r.descriptionUz ?? r.descriptionRu ?? r.descriptionEn ?? "")
             .trim();
       case "en":
-        return (request.descriptionEn ??
-                request.descriptionRu ??
-                request.descriptionUz ??
-                "")
+        return (r.descriptionEn ?? r.descriptionRu ?? r.descriptionUz ?? "")
             .trim();
       case "ru":
       default:
-        return (request.descriptionRu ??
-                request.descriptionEn ??
-                request.descriptionUz ??
-                "")
+        return (r.descriptionRu ?? r.descriptionEn ?? r.descriptionUz ?? "")
             .trim();
     }
   }
 
   String _budgetLine() {
-    if (request.budgetAmount != null) {
+    final r = widget.request;
+    if (r.budgetAmount != null) {
       return L10n.getWithParams(
         "gigs_request_budget_fixed",
         params: {
-          "amount": IntFormatUtils.withDotThousands(request.budgetAmount!),
-          "currency": CurrencyDisplayUtils.isoCode(request.currencyCode),
+          "amount": IntFormatUtils.withDotThousands(r.budgetAmount!),
+          "currency": CurrencyDisplayUtils.isoCode(r.currencyCode),
         },
       );
     }

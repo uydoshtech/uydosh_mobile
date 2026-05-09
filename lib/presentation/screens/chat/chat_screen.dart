@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
@@ -1321,7 +1322,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
         return switch (item) {
           DateHeaderListItem(:final date) => DateHeaderWidget(
-              dateString: MessageGroupingUtils.formatDateHeader(date, context),
+              dateString: AppDateUtils.formatDateHeader(date, context),
               date: date,
             ),
           MessageListItem(
