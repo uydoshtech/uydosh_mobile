@@ -3,7 +3,7 @@
 import "package:dio/dio.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/foundation.dart"
-    show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -46,7 +46,7 @@ import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
-const bool _pushDebugEnabled = kDebugMode;
+const bool _pushDebugEnabled = true;
 
 // Force-show the "Enable notifications" tile on web (Chrome) so the layout can
 // be tested without deploying to a real device. Push is not actually supported
@@ -83,6 +83,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   String? _pushPermission;
   String? _apnsTokenPreview;
   String? _fcmTokenPreview;
+  String? _fcmTokenFull;
   bool _hasBackendSessionToken = false;
 
   Future<void> _loadPushStatus() async {
@@ -263,6 +264,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
       setStateIfMounted(() {
         _pushPermission = status?.name;
+        _fcmTokenFull = fcm;
         _apnsTokenPreview = preview(apns);
         _fcmTokenPreview = preview(fcm);
         _hasBackendSessionToken =
@@ -271,6 +273,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     } catch (_) {
       setStateIfMounted(() {
         _pushPermission = "error";
+        _fcmTokenFull = null;
         _apnsTokenPreview = null;
         _fcmTokenPreview = null;
         _hasBackendSessionToken = false;
@@ -365,6 +368,40 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         await _refreshPushDebug();
                       },
                 child: const Text("Register now"),
+              ),
+              OutlinedButton(
+                onPressed: _pushDebugLoading
+                    ? null
+                    : () async {
+                        HapticFeedbackUtils.impact();
+                        setState(() => _pushDebugLoading = true);
+                        try {
+                          final r = await getIt<IPushNotificationService>()
+                              .sendTestPushToToken(_fcmTokenFull ?? "");
+                          if (!mounted) return;
+                          final disabled = r["disabled"] == true;
+                          final success = r["success"];
+                          final failure = r["failure"];
+                          final err = r["error"];
+                          final errCode =
+                              err is Map ? (err["code"]?.toString()) : null;
+                          final errMsg =
+                              err is Map ? (err["message"]?.toString()) : null;
+                          ToastTheme.showInfoSimple(
+                            context,
+                            message: disabled
+                                ? "Server push disabled (Firebase Admin not initialized)"
+                                : errCode != null
+                                    ? "Send failed ($errCode): ${errMsg ?? "unknown"}"
+                                    : "Test push sent to this device (success=$success, failure=$failure)",
+                          );
+                        } finally {
+                          if (mounted) {
+                            setState(() => _pushDebugLoading = false);
+                          }
+                        }
+                      },
+                child: const Text("Send test push"),
               ),
             ],
           ),

@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/navigation/top_named_route_tracker.dart";
@@ -20,6 +21,13 @@ import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+
+final class _EmptyJson implements IJsonEncodable {
+  const _EmptyJson();
+
+  @override
+  Map<String, dynamic> toJson() => const {};
+}
 
 /// Background message handler - must be top-level function.
 @pragma("vm:entry-point")
@@ -59,6 +67,15 @@ abstract class IPushNotificationService {
   Future<bool> requestPermissionAndRegister({
     bool openSettingsOnDenied = true,
   });
+
+  /// Debug-only helper: ask backend to send a test push to this user.
+  ///
+  /// Returns a small status map so the UI can show whether sending is disabled
+  /// on the server, or whether the send had failures.
+  Future<Map<String, dynamic>> sendTestPushFromBackend();
+
+  /// Debug helper: ask backend to send a test push to a specific FCM token.
+  Future<Map<String, dynamic>> sendTestPushToToken(String token);
 }
 
 class PushNotificationService implements IPushNotificationService {
@@ -404,6 +421,24 @@ class PushNotificationService implements IPushNotificationService {
     }
   }
 
+  @override
+  Future<Map<String, dynamic>> sendTestPushFromBackend() async {
+    if (!_isSupported) {
+      return {"ok": false, "error": "not_supported"};
+    }
+    try {
+      final res = await _oauthApiClient.post<Map<String, dynamic>, _EmptyJson>(
+        "/users/me/push-test",
+        (json) => (json as Map).cast<String, dynamic>(),
+        data: const _EmptyJson(),
+      );
+      return res;
+    } catch (e) {
+      logger.d("📲 sendTestPushFromBackend error: $e");
+      return {"ok": false, "error": e.toString()};
+    }
+  }
+
   void _scheduleRegisterRetry() {
     // Avoid infinite loops; iOS can take a bit to deliver APNs/FCM token on cold start.
     const maxAttempts = 6;
@@ -446,4 +481,34 @@ class PushNotificationService implements IPushNotificationService {
     }
     return null;
   }
+
+  @override
+  Future<Map<String, dynamic>> sendTestPushToToken(String token) async {
+    if (!_isSupported) {
+      return {"ok": false, "error": "not_supported"};
+    }
+    final t = token.trim();
+    if (t.isEmpty) {
+      return {"ok": false, "error": "missing_token"};
+    }
+    try {
+      final res =
+          await _oauthApiClient.post<Map<String, dynamic>, _SendPushTestRequest>(
+        "/users/me/push-test",
+        (json) => (json as Map).cast<String, dynamic>(),
+        data: _SendPushTestRequest(token: t),
+      );
+      return res;
+    } catch (e) {
+      logger.d("📲 sendTestPushToToken error: $e");
+      return {"ok": false, "error": e.toString()};
+    }
+  }
+}
+
+final class _SendPushTestRequest implements IJsonEncodable {
+  const _SendPushTestRequest({required this.token});
+  final String token;
+  @override
+  Map<String, dynamic> toJson() => {"token": token};
 }
