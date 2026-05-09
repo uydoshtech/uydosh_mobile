@@ -80,6 +80,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'uydosh-cd0fe.firebasestorage.app',
     iosClientId:
         '626930983094-fmdr5eqq8ulo4k9dmqott0tgdd91ukkl.apps.googleusercontent.com',
-    iosBundleId: 'com.uydosh.app.uyDosh',
+    iosBundleId: 'com.uydosh.app',
   );
 }
