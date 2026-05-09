@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Semver in yellow, build number in green (disabled when not a TTY or NO_COLOR is set).
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  C_YELLOW='\033[33m'
+  C_GREEN='\033[32m'
+  C_RESET='\033[0m'
+else
+  C_YELLOW=''
+  C_GREEN=''
+  C_RESET=''
+fi
+
 usage() {
   cat <<'EOF'
 Usage: tool/release_mobile_tags.sh [--bump {build|patch|minor|major}] [--commit]
@@ -92,6 +103,31 @@ if [[ -z "${VERSION_RAW}" ]]; then
   exit 1
 fi
 
+if [[ "${VERSION_RAW}" == *+* ]]; then
+  VERSION_SEMVER="${VERSION_RAW%%+*}"
+  VERSION_BUILD="${VERSION_RAW#*+}"
+else
+  VERSION_SEMVER="${VERSION_RAW}"
+  VERSION_BUILD=""
+fi
+
+colored_pubspec_version() {
+  if [[ -n "${VERSION_BUILD}" ]]; then
+    printf '%b' "${C_YELLOW}${VERSION_SEMVER}${C_RESET}${C_GREEN}+${VERSION_BUILD}${C_RESET}"
+  else
+    printf '%b' "${C_YELLOW}${VERSION_SEMVER}${C_RESET}"
+  fi
+}
+
+colored_platform_tag() {
+  local platform="$1"
+  if [[ -n "${VERSION_BUILD}" ]]; then
+    printf '%b' "${platform}-${C_YELLOW}${VERSION_SEMVER}${C_RESET}-${C_GREEN}${VERSION_BUILD}${C_RESET}"
+  else
+    printf '%b' "${platform}-${C_YELLOW}${VERSION_SEMVER}${C_RESET}"
+  fi
+}
+
 # Git tags: '+' is awkward in some tooling; use '-' instead (still matches workflow patterns).
 TAG_SUFFIX="${VERSION_RAW//+/-}"
 ANDROID_TAG="android-${TAG_SUFFIX}"
@@ -121,12 +157,12 @@ fi
 
 SHA="$(git rev-parse --short HEAD)"
 
-echo "Tagging ${ANDROID_TAG} -> ${SHA}"
+echo -e "Tagging $(colored_platform_tag android) -> ${SHA}"
 git tag "${ANDROID_TAG}"
-echo "Tagging ${IOS_TAG} -> ${SHA}"
+echo -e "Tagging $(colored_platform_tag ios) -> ${SHA}"
 git tag "${IOS_TAG}"
 
 git push origin "${ANDROID_TAG}" "${IOS_TAG}"
 
-echo "Done. GitHub Actions should start Android (AAB) and iOS (TestFlight) builds."
+echo -e "Done. Build version $(colored_pubspec_version). GitHub Actions should start Android (AAB) and iOS (TestFlight) builds."
 
