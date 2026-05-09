@@ -148,6 +148,21 @@ jobs:
             echo '</plist>'
           } > ios/ExportOptions-ci.plist
 
+          # Ensure the ARCHIVE phase uses Distribution/manual signing too.
+          # (Without this, Xcode may try to find iOS App Development profiles.)
+          for cfg in ios/Flutter/Release.xcconfig ios/Flutter/Profile.xcconfig; do
+            if [[ -f "${cfg}" ]]; then
+              {
+                echo ""
+                echo "// --- CI signing overrides ---"
+                echo "DEVELOPMENT_TEAM = D5THR62Q33"
+                echo "CODE_SIGN_STYLE = Manual"
+                echo "CODE_SIGN_IDENTITY = Apple Distribution"
+                echo "PROVISIONING_PROFILE_SPECIFIER = ${PROFILE_NAME}"
+              } >> "${cfg}"
+            fi
+          done
+
           {
             echo "PROFILE_NAME=${PROFILE_NAME}"
             echo "PROFILE_UUID=${PROFILE_UUID}"
