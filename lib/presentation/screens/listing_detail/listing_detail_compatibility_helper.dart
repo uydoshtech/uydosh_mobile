@@ -172,7 +172,7 @@ class ListingDetailCompatibilityHelper {
       labelKey: "pets_preference",
       currentValue: currentProfile.petsPreference,
       ownerValue: ownerProfile.petsPreference,
-      isMatch: (a, b) => a == b,
+      isMatch: _petsPreferenceCompatible,
       formatValue: _formatPetsPreference,
     );
 
@@ -208,6 +208,16 @@ class ListingDetailCompatibilityHelper {
       matches: matches,
       differences: differences,
     );
+  }
+
+  /// API slugs: `like_pets` | `dont_like_pets` | `have_cat` | `have_dog`.
+  /// Liking pets matches owning a cat or dog (either direction).
+  static bool _petsPreferenceCompatible(String a, String b) {
+    if (a == b) return true;
+    const hasPet = {'have_cat', 'have_dog'};
+    if (a == 'like_pets' && hasPet.contains(b)) return true;
+    if (b == 'like_pets' && hasPet.contains(a)) return true;
+    return false;
   }
 
   static String _getLocalizedRegionName(UserProfileRegion region) {

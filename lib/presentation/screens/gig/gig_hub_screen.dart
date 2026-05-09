@@ -516,8 +516,8 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                                 request.clientUserId,
                               ) &&
                               AuthenticationState().isAuthenticated,
-                          onDetailClosed: (taskWasRemoved) {
-                            if (!taskWasRemoved) return;
+                          onDetailClosed: (feedNeedsRefresh) {
+                            if (!feedNeedsRefresh) return;
                             context.read<GigRequestsBloc>().add(
                                   FetchGigRequests(
                                     refresh: true,

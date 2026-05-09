@@ -432,8 +432,8 @@ class _TasksListView extends StatelessWidget {
                       },
                       child: GigRequestTile(
                         request: request,
-                        onDetailClosed: (removed) {
-                          if (!removed) return;
+                        onDetailClosed: (feedNeedsRefresh) {
+                          if (!feedNeedsRefresh) return;
                           context.read<GigRequestsBloc>().add(
                                 FetchGigRequests(
                                   refresh: true,

@@ -41,9 +41,10 @@ class GigRequestTile extends StatefulWidget {
 
   final GigRequest request;
 
-  /// Called after returning from [GigRequestDetailScreen]. [taskWasRemoved] is
-  /// `true` when the owner deleted/cancelled the open task from that screen.
-  final void Function(bool taskWasRemoved)? onDetailClosed;
+  /// Called after returning from [GigRequestDetailScreen]. [feedNeedsRefresh]
+  /// is `true` when the owner cancelled the task there or edited it and left
+  /// the screen — parent lists should refetch.
+  final void Function(bool feedNeedsRefresh)? onDetailClosed;
 
   final bool showFavoriteIndicator;
   final bool? forceFavorite;
@@ -154,10 +155,10 @@ class _GigRequestTileState extends State<GigRequestTile>
         child: InkWell(
           onTap: () async {
             HapticFeedbackUtils.lightImpact();
-            final removed =
+            final refreshFeeds =
                 await context.pushGigRequestDetail(widget.request.id);
             if (!context.mounted) return;
-            widget.onDetailClosed?.call(removed == true);
+            widget.onDetailClosed?.call(refreshFeeds == true);
           },
           borderRadius: BorderRadius.circular(16),
           child: Stack(

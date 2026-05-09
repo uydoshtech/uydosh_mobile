@@ -722,28 +722,27 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                     BlocListener<GigPostRequestBloc, GigPostRequestState>(
                       listener: (context, state) {
                         if (state is GigPostRequestSuccess) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(L10n.get(
-                                "gigs_post_request_success_toast",
-                              )),
+                          ToastTheme.showSuccess(
+                            context,
+                            message: L10n.get(
+                              "gigs_post_request_success_toast",
                             ),
                           );
                           _allowPopWithoutConfirm = true;
                           Navigator.of(context).pop();
                         } else if (state is GigRequestEditSuccess) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(L10n.get(
-                                "gigs_edit_request_success_toast",
-                              )),
+                          ToastTheme.showSuccess(
+                            context,
+                            message: L10n.get(
+                              "gigs_edit_request_success_toast",
                             ),
                           );
                           _allowPopWithoutConfirm = true;
                           Navigator.of(context).pop<GigRequest>(state.updated);
                         } else if (state is GigPostRequestError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.message)),
+                          ToastTheme.showError(
+                            context,
+                            message: state.message,
                           );
                         }
                       },

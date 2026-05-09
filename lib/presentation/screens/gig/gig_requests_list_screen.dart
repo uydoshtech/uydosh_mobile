@@ -104,8 +104,8 @@ class _GigRequestsListScreenState extends State<GigRequestsListScreen> {
                             request.clientUserId,
                           ) &&
                           AuthenticationState().isAuthenticated,
-                      onDetailClosed: (taskWasRemoved) {
-                        if (!taskWasRemoved) return;
+                      onDetailClosed: (feedNeedsRefresh) {
+                        if (!feedNeedsRefresh) return;
                         setState(() {
                           _future = getIt<IGigService>().listRequests();
                         });

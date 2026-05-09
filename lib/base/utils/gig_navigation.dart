@@ -183,7 +183,8 @@ extension GigNavigatorExtensions on BuildContext {
     );
   }
 
-  /// Returns `true` when the request was cancelled/removed by the viewer (owner).
+  /// Returns `true` when feeds listing this task should refetch: the owner
+  /// cancelled it from detail, or edited it successfully then popped back.
   Future<bool?> pushGigRequestDetail(int requestId) {
     return Navigator.of(this).push<bool>(
       MaterialPageRoute<bool>(

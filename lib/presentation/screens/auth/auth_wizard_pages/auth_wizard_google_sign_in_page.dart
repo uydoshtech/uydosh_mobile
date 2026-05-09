@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
@@ -13,6 +15,7 @@ import "package:uy_dosh/domain/services/apple_auth_service.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 class AuthWizardGoogleSignInPage extends StatefulWidget {
   const AuthWizardGoogleSignInPage({
@@ -22,12 +25,17 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
     required this.onSignInWithGoogle,
     required this.onSignInWithApple,
     required this.onSignInWithPhone,
+    this.delayAppleAvatarReveal = false,
     super.key,
   });
 
   final bool isAuthenticating;
   final bool isGoogleSignedIn;
   final User? currentUser;
+
+  /// When true (Sign in with Apple), the profile photo chip is held back
+  /// briefly so the sheet does not flash a placeholder avatar immediately.
+  final bool delayAppleAvatarReveal;
   final VoidCallback onSignInWithGoogle;
 
   /// Called when the user taps the Sign in with Apple button. Only
@@ -234,68 +242,62 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     ),
                   ],
                   if (widget.isGoogleSignedIn && widget.currentUser != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: _getOnboardingTextColor(context).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          widget.currentUser!.photoURL != null
-                              ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: widget.currentUser!.photoURL!,
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 120,
-                                    memCacheHeight: 120,
-                                    placeholder: (context, url) => ThemeIcon(
-                                      Icons.person,
-                                      size: 30,
-                                      color: _getOnboardingTextColor(context),
-                                    ),
-                                    errorWidget: (context, url, error) => ThemeIcon(
-                                      Icons.person,
-                                      size: 30,
-                                      color: _getOnboardingTextColor(context),
-                                    ),
-                                  ),
-                                )
-                              : CircleAvatar(
-                                  radius: 30,
-                                  child: ThemeIcon(
-                                    Icons.person,
-                                    size: 30,
-                                    color: _getOnboardingTextColor(context),
-                                  ),
-                                ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.currentUser!.displayName ?? "User",
-                                  style: TextStyle(
-                                    color: _getOnboardingTextColor(context),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  widget.currentUser!.email ?? "",
-                                  style: TextStyle(
-                                    color: _getOnboardingTextSecondaryColor(context),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+                    Builder(
+                      builder: (context) {
+                        final surface =
+                            Theme.of(context).colorScheme.surface;
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: ThreeDSurfaceStyle.surfaceGradient(
+                              context,
+                              surface,
                             ),
+                            boxShadow:
+                                ThreeDSurfaceStyle.elevatedShadows(context),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            children: [
+                              _AuthWizardOAuthAvatar(
+                                user: widget.currentUser!,
+                                delayReveal: widget.delayAppleAvatarReveal,
+                                iconColor: _getOnboardingTextColor(context),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.currentUser!.displayName ??
+                                          "User",
+                                      style: TextStyle(
+                                        color: _getOnboardingTextColor(
+                                          context,
+                                        ),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      widget.currentUser!.email ?? "",
+                                      style: TextStyle(
+                                        color:
+                                            _getOnboardingTextSecondaryColor(
+                                              context,
+                                            ),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -330,6 +332,161 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
           ),
         );
       },
+    );
+  }
+}
+
+const double _kOAuthAvatarSize = 60;
+
+/// Raised / recessed soft-UI avatar chip; optionally delays showing the photo
+/// for Sign in with Apple (Apple does not supply an immediate profile image).
+class _AuthWizardOAuthAvatar extends StatefulWidget {
+  const _AuthWizardOAuthAvatar({
+    required this.user,
+    required this.delayReveal,
+    required this.iconColor,
+  });
+
+  final User user;
+  final bool delayReveal;
+  final Color iconColor;
+
+  @override
+  State<_AuthWizardOAuthAvatar> createState() =>
+      _AuthWizardOAuthAvatarState();
+}
+
+class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
+  static const _revealDelay = Duration(milliseconds: 520);
+
+  Timer? _revealTimer;
+  bool _revealed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncRevealSchedule(isLifecycleInit: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant _AuthWizardOAuthAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.user.uid != widget.user.uid ||
+        oldWidget.delayReveal != widget.delayReveal) {
+      _syncRevealSchedule(isLifecycleInit: false);
+    }
+  }
+
+  void _syncRevealSchedule({required bool isLifecycleInit}) {
+    _revealTimer?.cancel();
+    if (!widget.delayReveal) {
+      if (_revealed != true) {
+        if (isLifecycleInit) {
+          _revealed = true;
+        } else {
+          setState(() => _revealed = true);
+        }
+      }
+      return;
+    }
+    if (isLifecycleInit) {
+      _revealed = false;
+    } else {
+      setState(() => _revealed = false);
+    }
+    _revealTimer = Timer(_revealDelay, () {
+      if (!mounted) return;
+      setState(() => _revealed = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _revealTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surface;
+
+    final recessedPlaceholder = Container(
+      width: _kOAuthAvatarSize,
+      height: _kOAuthAvatarSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+        boxShadow: ThreeDSurfaceStyle.insetRecessedShadows(context),
+      ),
+    );
+
+    final photoUrl = widget.user.photoURL;
+    final Widget face =
+        photoUrl != null && photoUrl.isNotEmpty
+            ? ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: photoUrl,
+                width: _kOAuthAvatarSize,
+                height: _kOAuthAvatarSize,
+                fit: BoxFit.cover,
+                memCacheWidth: 120,
+                memCacheHeight: 120,
+                placeholder:
+                    (context, url) => ThemeIcon(
+                      Icons.person,
+                      size: 30,
+                      color: widget.iconColor,
+                    ),
+                errorWidget:
+                    (context, url, error) => ThemeIcon(
+                      Icons.person,
+                      size: 30,
+                      color: widget.iconColor,
+                    ),
+              ),
+            )
+            : ClipOval(
+              child: ColoredBox(
+                color: surface,
+                child: SizedBox(
+                  width: _kOAuthAvatarSize,
+                  height: _kOAuthAvatarSize,
+                  child: Center(
+                    child: ThemeIcon(
+                      Icons.person,
+                      size: 30,
+                      color: widget.iconColor,
+                    ),
+                  ),
+                ),
+              ),
+            );
+
+    final raisedOrb = Container(
+      width: _kOAuthAvatarSize,
+      height: _kOAuthAvatarSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: face,
+    );
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 280),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child:
+          _revealed
+              ? KeyedSubtree(
+                key: const ValueKey("oauth_avatar_shown"),
+                child: raisedOrb,
+              )
+              : KeyedSubtree(
+                key: const ValueKey("oauth_avatar_placeholder"),
+                child: recessedPlaceholder,
+              ),
     );
   }
 }

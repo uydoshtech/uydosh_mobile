@@ -52,6 +52,18 @@ _BookingRole _bookingRoleFromApi(String raw) {
   }
 }
 
+/// Picks a label color that stays readable on the neumorphic status chip (dark
+/// accents such as [ColorScheme.primary] on a dark blue theme were nearly
+/// identical to the chip fill).
+Color _statusChipLabelColor(Color accent, Color chipBackground) {
+  final bgL = chipBackground.computeLuminance();
+  final fgL = accent.computeLuminance();
+  if ((bgL - fgL).abs() >= 0.28) return accent;
+  return bgL < 0.5
+      ? Color.lerp(accent, Colors.white, 0.62)!
+      : Color.lerp(accent, Colors.black87, 0.42)!;
+}
+
 class MyGigBookingsScreen extends StatefulWidget {
   const MyGigBookingsScreen({
     super.key,
@@ -306,7 +318,7 @@ class _BookingTile extends StatelessWidget {
         child: Text(
           _statusLabel(),
           style: TextStyle(
-            color: statusColor,
+            color: _statusChipLabelColor(statusColor, statusBase),
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),

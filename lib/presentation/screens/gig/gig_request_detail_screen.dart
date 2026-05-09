@@ -35,7 +35,7 @@ import "package:uy_dosh/presentation/widgets/price_badge.dart";
 /// Detail view for a `GigRequest` (open task posted by a client).
 ///
 /// Providers see a bottom CTA to message the client. The author of an
-/// **open** task sees **Edit** (and a three-dot menu) instead; once the task
+/// **open** task sees **Edit** (bottom CTA and overflow menu); once the task
 /// is no longer open, neither CTA is shown.
 class GigRequestDetailScreen extends StatefulWidget {
   const GigRequestDetailScreen({required this.requestId, super.key});
@@ -52,6 +52,9 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
   bool _requestFavoriteBusy = false;
+  /// After a successful edit, parent feeds must refetch — detail shows fresh data
+  /// but list tiles still hold stale [GigRequest] rows until refreshed.
+  bool _editedWhileOpen = false;
   late final FavoriteHeartPulseController _requestFavPulse;
 
   @override
@@ -72,6 +75,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     final updated = await context.pushEditGigRequest(request);
     if (updated != null && mounted) {
       setState(() {
+        _editedWhileOpen = true;
         _future = getIt<IGigService>().getRequest(widget.requestId);
       });
       unawaited(
@@ -202,72 +206,86 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     );
   }
 
+  void _popDetailToCaller() {
+    Navigator.of(context).pop(_editedWhileOpen);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: UserListingState(),
-      builder: (context, _) {
-        return FutureBuilder<GigRequest>(
-          future: _future,
-          builder: (context, snap) {
-            final request = snap.data;
-            final showOwnerMenu = request != null &&
-                UserListingState().isOwner(request.clientUserId) &&
-                request.status == GigRequestStatus.open;
-            final canFavoriteTask = request != null &&
-                AuthenticationState().isAuthenticated &&
-                !UserListingState().isOwner(request.clientUserId);
-            return Scaffold(
-              appBar: AppBar(
-                leading: ThreeDAppBarIconButton.backLeading(context),
-                title: Text(L10n.get("gigs_request_detail_title")),
-                actions: [
-                  if (canFavoriteTask)
-                    ListenableBuilder(
-                      listenable: GigFavoritesState()
-                          .listenableForRequest(request.id),
-                      builder: (context, _) {
-                        final fav = GigFavoritesState()
-                            .isRequestFavorite(request.id);
-                        _requestFavPulse.setFavoriteOutlineState(
-                          isFavorite: fav,
-                        );
-                        return IconButton(
-                          onPressed: _requestFavoriteBusy
-                              ? null
-                              : () => unawaited(
-                                    _toggleRequestFavorite(request),
-                                  ),
-                          icon: AnimatedBuilder(
-                            animation: _requestFavPulse.listenable,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _requestFavPulse.scale,
-                                child: child,
-                              );
-                            },
-                            child: Icon(
-                              fav ? Icons.favorite : Icons.favorite_border,
-                              color: fav
-                                  ? AppColors.favoriteActive
-                                  : AppColors.favoriteInactive,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  _messagesInboxAppBarButton(
-                    hasOwnerOverflow: showOwnerMenu,
-                    loadedRequest: request,
-                  ),
-                  if (request != null) ..._ownerOverflowMenu(context, request),
-                ],
-              ),
-              body: _buildBody(context, snap),
-            );
-          },
-        );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !mounted) return;
+        _popDetailToCaller();
       },
+      child: ListenableBuilder(
+        listenable: UserListingState(),
+        builder: (context, _) {
+          return FutureBuilder<GigRequest>(
+            future: _future,
+            builder: (context, snap) {
+              final request = snap.data;
+              final showOwnerMenu = request != null &&
+                  UserListingState().isOwner(request.clientUserId) &&
+                  request.status == GigRequestStatus.open;
+              final canFavoriteTask = request != null &&
+                  AuthenticationState().isAuthenticated &&
+                  !UserListingState().isOwner(request.clientUserId);
+              return Scaffold(
+                appBar: AppBar(
+                  leading: ThreeDAppBarIconButton.backLeading(
+                    context,
+                    onPressed: _popDetailToCaller,
+                  ),
+                  title: Text(L10n.get("gigs_request_detail_title")),
+                  actions: [
+                    if (canFavoriteTask)
+                      ListenableBuilder(
+                        listenable: GigFavoritesState()
+                            .listenableForRequest(request.id),
+                        builder: (context, _) {
+                          final fav = GigFavoritesState()
+                              .isRequestFavorite(request.id);
+                          _requestFavPulse.setFavoriteOutlineState(
+                            isFavorite: fav,
+                          );
+                          return IconButton(
+                            onPressed: _requestFavoriteBusy
+                                ? null
+                                : () => unawaited(
+                                      _toggleRequestFavorite(request),
+                                    ),
+                            icon: AnimatedBuilder(
+                              animation: _requestFavPulse.listenable,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _requestFavPulse.scale,
+                                  child: child,
+                                );
+                              },
+                              child: Icon(
+                                fav ? Icons.favorite : Icons.favorite_border,
+                                color: fav
+                                    ? AppColors.favoriteActive
+                                    : AppColors.favoriteInactive,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    _messagesInboxAppBarButton(
+                      hasOwnerOverflow: showOwnerMenu,
+                      loadedRequest: request,
+                    ),
+                    if (request != null) ..._ownerOverflowMenu(context, request),
+                  ],
+                ),
+                body: _buildBody(context, snap),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

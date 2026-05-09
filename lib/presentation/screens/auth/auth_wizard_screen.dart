@@ -350,6 +350,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     getIt<AppAnalyticsService>().logSignInStarted(method: "google");
     setState(() {
       _isAuthenticating = true;
+      _authMethod = _AuthMethod.google;
     });
 
     String stage = "google_sign_in_start";
@@ -1918,6 +1919,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           onSignInWithGoogle: _signInWithGoogle,
                           onSignInWithApple: _signInWithApple,
                           onSignInWithPhone: _signInWithPhone,
+                          delayAppleAvatarReveal:
+                              _authMethod == _AuthMethod.apple,
                         ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,
