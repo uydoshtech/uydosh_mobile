@@ -2006,124 +2006,132 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                 ),
 
-                // Navigation buttons
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: Row(
-                    children: [
-                      if (_currentPage > 0)
-                        Expanded(
-                          child: Builder(
-                            builder: (context) {
-                              final label = Theme.of(context).textTheme.labelLarge;
-                              final textStyle =
-                                  label?.copyWith(
-                                        fontSize: 17,
-                                        height: 1.0,
-                                      ) ??
-                                  const TextStyle(
-                                    fontSize: 17,
-                                    height: 1.0,
-                                    fontWeight: FontWeight.w500,
+                // Navigation buttons.
+                //
+                // On the Google Sign-In page (page 1) once the user has
+                // authenticated, both Back and Next become redundant —
+                // navigation continues automatically through
+                // [_authenticateWithBackend] (which animates to the profile
+                // page or routes home for returning users). Hiding the
+                // entire button strip in that state avoids leaving the
+                // wizard with dead-end controls flashing under the success
+                // card.
+                if (!(_currentPage == 1 && _isGoogleSignedIn))
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    child: Row(
+                      children: [
+                        if (_currentPage > 0)
+                          Expanded(
+                            child: Builder(
+                              builder: (context) {
+                                final label =
+                                    Theme.of(context).textTheme.labelLarge;
+                                final textStyle =
+                                    label?.copyWith(
+                                          fontSize: 17,
+                                          height: 1.0,
+                                        ) ??
+                                    const TextStyle(
+                                      fontSize: 17,
+                                      height: 1.0,
+                                      fontWeight: FontWeight.w500,
+                                    );
+                                if (ThemeState().isLightTheme) {
+                                  return PrimaryButtonFactory.iconTextCentered(
+                                    onPressed: _previousPage,
+                                    icon: Icons.chevron_left,
+                                    text: L10n.get("back"),
+                                    width: double.infinity,
+                                    borderRadius: BorderRadius.circular(20),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 16,
+                                    ),
+                                    textStyle: textStyle,
+                                    iconSize: 22,
                                   );
-                              if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.iconTextCentered(
+                                }
+                                return GhostButtonFactory.iconTextCentered(
                                   onPressed: _previousPage,
                                   icon: Icons.chevron_left,
                                   text: L10n.get("back"),
-                                  width: double.infinity,
-                                  borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
+                                  isOnboardingButton: true,
+                                  neumorphicSoftUi: true,
                                   iconSize: 22,
                                 );
-                              }
-                              return GhostButtonFactory.iconTextCentered(
-                                onPressed: _previousPage,
-                                icon: Icons.chevron_left,
-                                text: L10n.get("back"),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 16,
-                                ),
-                                textStyle: textStyle,
-                                isOnboardingButton: true,
-                                neumorphicSoftUi: true,
-                                iconSize: 22,
-                              );
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                      if (_currentPage > 0 &&
-                          (_currentPage != 1 || _isGoogleSignedIn))
-                        const SizedBox(width: 20),
-                      // On the Google Sign-In page (page 1) we normally hide
-                      // the Next button because navigation happens
-                      // automatically after a successful sign-in. However, if
-                      // the user is *already* signed in (e.g. they signed in,
-                      // got moved to the profile page, then pressed "Back"),
-                      // they would otherwise have no way to move forward
-                      // again — only a Back button. Surface the Next button
-                      // in that case so the wizard isn't a dead-end.
-                      if (_currentPage != 1 ||
-                          (_currentPage == 1 && _isGoogleSignedIn))
-                        Expanded(
-                          child: Builder(
-                            builder: (context) {
-                              final nextText = L10n.get(_getNextButtonTextKey());
-                              final onNext = _getNextButtonAction();
-                              final label = Theme.of(context).textTheme.labelLarge;
-                              final textStyle =
-                                  label?.copyWith(
-                                        fontSize: 17,
-                                        height: 1.0,
-                                      ) ??
-                                  const TextStyle(
-                                    fontSize: 17,
-                                    height: 1.0,
-                                    fontWeight: FontWeight.w500,
+                        if (_currentPage > 0 && _currentPage != 1)
+                          const SizedBox(width: 20),
+                        // The Next button is hidden on the Google Sign-In
+                        // page (page 1) because navigation happens
+                        // automatically after a successful sign-in, and the
+                        // whole strip is hidden once signed in (handled by
+                        // the outer `if` above), so there is no dead-end.
+                        if (_currentPage != 1)
+                          Expanded(
+                            child: Builder(
+                              builder: (context) {
+                                final nextText =
+                                    L10n.get(_getNextButtonTextKey());
+                                final onNext = _getNextButtonAction();
+                                final label =
+                                    Theme.of(context).textTheme.labelLarge;
+                                final textStyle =
+                                    label?.copyWith(
+                                          fontSize: 17,
+                                          height: 1.0,
+                                        ) ??
+                                    const TextStyle(
+                                      fontSize: 17,
+                                      height: 1.0,
+                                      fontWeight: FontWeight.w500,
+                                    );
+                                if (ThemeState().isLightTheme) {
+                                  return PrimaryButtonFactory.textIconCentered(
+                                    onPressed: onNext,
+                                    text: nextText,
+                                    icon: Icons.chevron_right,
+                                    width: double.infinity,
+                                    borderRadius: BorderRadius.circular(20),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 16,
+                                    ),
+                                    textStyle: textStyle,
+                                    isLoading: _isAuthenticating,
                                   );
-                              if (ThemeState().isLightTheme) {
-                                return PrimaryButtonFactory.textIconCentered(
+                                }
+                                return GhostButtonFactory.textIconCentered(
                                   onPressed: onNext,
                                   text: nextText,
                                   icon: Icons.chevron_right,
-                                  width: double.infinity,
-                                  borderRadius: BorderRadius.circular(20),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
                                     vertical: 16,
                                   ),
                                   textStyle: textStyle,
                                   isLoading: _isAuthenticating,
+                                  isOnboardingButton: true,
+                                  neumorphicSoftUi: true,
                                 );
-                              }
-                              return GhostButtonFactory.textIconCentered(
-                                onPressed: onNext,
-                                text: nextText,
-                                icon: Icons.chevron_right,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 16,
-                                ),
-                                textStyle: textStyle,
-                                isLoading: _isAuthenticating,
-                                isOnboardingButton: true,
-                                neumorphicSoftUi: true,
-                              );
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),

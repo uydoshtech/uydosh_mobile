@@ -92,10 +92,15 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                   SizedBox(
                     width: double.infinity,
                     child: L10n.text(
-                      AuthWizardTheme.oauthStepTitleL10nKey(),
+                      widget.isGoogleSignedIn
+                          ? "successfully_logged_in"
+                          : AuthWizardTheme.oauthStepTitleL10nKey(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 15,
+                        // After successful sign-in, bump the title size by
+                        // +2px so the success copy reads as a confirmation
+                        // headline rather than the prompt it replaces.
+                        fontSize: widget.isGoogleSignedIn ? 17 : 15,
                         height: 1.25,
                         fontWeight: FontWeight.w500,
                         color: _getOnboardingTextSecondaryColor(context),

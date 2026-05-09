@@ -2527,8 +2527,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sign_in_with_google_or_apple => 'Войти через Google или Apple';
 
   @override
-  String get sign_in_with_google_description =>
-      'Продолжить через Google 👋\nБыстро и безопасно — без лишних регистраций';
+  String get successfully_logged_in => 'Вы успешно вошли';
 
   @override
   String get signing_in => 'Вход в систему...';

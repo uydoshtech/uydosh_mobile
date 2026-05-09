@@ -4763,11 +4763,11 @@ abstract class AppLocalizations {
   /// **'Sign in with Google or Apple'**
   String get sign_in_with_google_or_apple;
 
-  /// No description provided for @sign_in_with_google_description.
+  /// No description provided for @successfully_logged_in.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Google 👋\nFast and secure — no extra sign-ups'**
-  String get sign_in_with_google_description;
+  /// **'You have successfully logged in'**
+  String get successfully_logged_in;
 
   /// No description provided for @signing_in.
   ///

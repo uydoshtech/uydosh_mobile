@@ -967,7 +967,7 @@
   "publication_date": "Published on:",
   "sign_in_with_google": "Sign In with Google",
   "sign_in_with_google_or_apple": "Sign in with Google or Apple",
-  "sign_in_with_google_description": "Continue with Google 👋\nFast and secure — no extra sign-ups",
+  "successfully_logged_in": "You have successfully logged in",
   "signing_in": "Signing in...",
   "google_sign_in_failed": "Google Sign-In failed: {error}",
   "@google_sign_in_failed": {
