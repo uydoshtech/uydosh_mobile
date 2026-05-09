@@ -164,9 +164,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                         : "assets/images/ios_neutral_rd_ctn.svg";
                                 return SvgPicture.asset(
                                   svgAsset,
-                                  width: buttonWidth,
-                                  height: 44,
-                                  fit: BoxFit.fitWidth,
+                                  fit: BoxFit.contain,
                                   alignment: Alignment.center,
                                 );
                               },
