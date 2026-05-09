@@ -56,9 +56,15 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
   @override
   Widget build(BuildContext context) {
     const loaderSlotHeight = 104.0;
+    const minButtonWidth = 199.0;
+    const maxButtonWidth = 320.0;
+    const horizontalPadding = 32.0; // matches Container padding below
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth - (horizontalPadding * 2);
+        final buttonWidth = availableWidth.clamp(minButtonWidth, maxButtonWidth);
+
         return SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -92,7 +98,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     if (AppleAuthService.isAvailable) ...[
                       Center(
                         child: SizedBox(
-                          width: 199,
+                          width: buttonWidth,
                           height: 44,
                           child: siwa.SignInWithAppleButton(
                             onPressed: _enabled
@@ -117,7 +123,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     ],
                     Center(
                       child: SizedBox(
-                        width: 199,
+                        width: buttonWidth,
                         height: 44,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 90),
@@ -158,8 +164,10 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                         : "assets/images/ios_neutral_rd_ctn.svg";
                                 return SvgPicture.asset(
                                   svgAsset,
-                                  width: 199,
+                                  width: buttonWidth,
                                   height: 44,
+                                  fit: BoxFit.fitWidth,
+                                  alignment: Alignment.center,
                                 );
                               },
                             ),
@@ -198,7 +206,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     Center(
                       child: GhostButton(
                         onPressed: _enabled ? widget.onSignInWithPhone : null,
-                        width: 199,
+                        width: buttonWidth,
                         height: 44,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         borderRadius: BorderRadius.circular(22),

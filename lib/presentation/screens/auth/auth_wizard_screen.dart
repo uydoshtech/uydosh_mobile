@@ -684,6 +684,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
+      // Extra diagnostics for troubleshooting `[firebase_auth/invalid-credential]`
+      // "Invalid OAuth response from apple.com". Never log tokens; just
+      // type + message/code.
+      logger.d("AuthWizard Apple sign-in exception: ${e.runtimeType} $e");
+
       if (!kIsWeb) {
         try {
           await _crashlytics.setCustomKey("auth_provider", "apple");
@@ -691,6 +696,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           await _crashlytics.setCustomKey(
             "auth_step",
             "auth_wizard_sign_in_with_apple",
+          );
+          await _crashlytics.setCustomKey(
+            "auth_error_type",
+            e.runtimeType.toString(),
+          );
+          await _crashlytics.setCustomKey(
+            "auth_error_code",
+            _extractAuthErrorCode(e) ?? "unknown",
           );
           if (e is FirebaseAuthException) {
             await _crashlytics.setCustomKey("firebase_auth_code", e.code);

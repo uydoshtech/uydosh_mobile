@@ -130,6 +130,7 @@ class AppleAuthService {
       final rawNonce = _generateRawNonce();
       final hashedNonce = _sha256(rawNonce);
 
+      logger.d("Apple sign-in: requesting credential (nonce_sha256_len=${hashedNonce.length})");
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: const [
           AppleIDAuthorizationScopes.email,
@@ -139,6 +140,19 @@ class AppleAuthService {
       );
 
       final identityToken = appleCredential.identityToken;
+      final authorizationCode = appleCredential.authorizationCode;
+
+      // Never log raw tokens/codes. Log only presence/length so we can
+      // debug "invalid OAuth response" issues safely.
+      logger.d(
+        "Apple sign-in: credential received "
+        "(userId_present=${(appleCredential.userIdentifier ?? '').isNotEmpty}, "
+        "identityToken_len=${identityToken?.length ?? 0}, "
+        "authCode_len=${authorizationCode?.length ?? 0}, "
+        "email_present=${(appleCredential.email ?? '').isNotEmpty}, "
+        "given_present=${(appleCredential.givenName ?? '').isNotEmpty}, "
+        "family_present=${(appleCredential.familyName ?? '').isNotEmpty})",
+      );
       if (identityToken == null) {
         // Should be unreachable when the flow succeeded, but Apple has
         // shipped this nil before — fail loudly rather than passing a
@@ -154,36 +168,49 @@ class AppleAuthService {
         rawNonce: rawNonce,
       );
 
-      final userCredential = await _auth.signInWithCredential(oauthCredential);
+      try {
+        final userCredential = await _auth.signInWithCredential(oauthCredential);
 
-      // Apple sends givenName/familyName ONCE — on the very first sign-in
-      // for this Apple ID + app bundle. If we don't capture it now,
-      // there is no way to re-fetch it later. Push it onto the Firebase
-      // user so `currentUser.displayName` continues to work everywhere
-      // that already trusts Firebase as the name source.
-      final user = userCredential.user;
-      if (user != null) {
-        final newDisplayName = _composeDisplayName(
-          appleCredential.givenName,
-          appleCredential.familyName,
-        );
-        if (newDisplayName != null && (user.displayName ?? "").trim().isEmpty) {
-          try {
-            await user.updateDisplayName(newDisplayName);
-            await user.reload();
-          } catch (e) {
-            // Don't fail the whole sign-in just because we couldn't
-            // persist a nicer display name — the user can fill it in on
-            // the profile page.
-            logger.d("Apple sign-in: updateDisplayName failed: $e");
+        // Apple sends givenName/familyName ONCE — on the very first sign-in
+        // for this Apple ID + app bundle. If we don't capture it now,
+        // there is no way to re-fetch it later. Push it onto the Firebase
+        // user so `currentUser.displayName` continues to work everywhere
+        // that already trusts Firebase as the name source.
+        final user = userCredential.user;
+        if (user != null) {
+          final newDisplayName = _composeDisplayName(
+            appleCredential.givenName,
+            appleCredential.familyName,
+          );
+          if (newDisplayName != null && (user.displayName ?? "").trim().isEmpty) {
+            try {
+              await user.updateDisplayName(newDisplayName);
+              await user.reload();
+            } catch (e) {
+              // Don't fail the whole sign-in just because we couldn't
+              // persist a nicer display name — the user can fill it in on
+              // the profile page.
+              logger.d("Apple sign-in: updateDisplayName failed: $e");
+            }
           }
         }
-      }
 
-      return AppleSignInResult(
-        userCredential: userCredential,
-        authorizationCode: appleCredential.authorizationCode,
-      );
+        return AppleSignInResult(
+          userCredential: userCredential,
+          authorizationCode: authorizationCode,
+        );
+      } on FirebaseAuthException catch (e, st) {
+        // Surface more detail than the UI toast; this is the common failure
+        // path for `[firebase_auth/invalid-credential] Invalid OAuth response`.
+        logger.d(
+          "Apple sign-in: FirebaseAuthException code=${e.code} "
+          "message=${e.message} "
+          "email=${e.email} "
+          "credentialProvider=${e.credential?.providerId}",
+        );
+        await _record(e, st, step: "firebase_signInWithCredential");
+        rethrow;
+      }
     } catch (e, st) {
       await _record(e, st, step: "signInWithApple");
       logger.d("Error signing in with Apple: $e");
