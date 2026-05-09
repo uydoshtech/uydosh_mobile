@@ -525,7 +525,11 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       return _buildErrorState();
     }
 
-    final topPad = 8.0 + ThemeState().mainShellGlassExtraTopInset(context);
+    // Pushed route with a normal AppBar: the body already starts below the
+    // toolbar. [mainShellGlassExtraTopInset] is for main-tab feeds where the
+    // list scrolls under the glass shell — adding it here duplicates the status
+    // bar inset from [MediaQuery.padding] and leaves a tall empty strip.
+    const listTopPad = 8.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -550,9 +554,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           child: TabBarView(
             controller: _tabController,
             children: [
-              _buildListingsFavoritesTab(topPad),
-              _buildOffersFavoritesTab(topPad),
-              _buildRequestsFavoritesTab(topPad),
+              _buildListingsFavoritesTab(listTopPad),
+              _buildOffersFavoritesTab(listTopPad),
+              _buildRequestsFavoritesTab(listTopPad),
             ],
           ),
         ),
@@ -863,10 +867,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   Widget _buildEmptyState() {
-    final topPad = ThemeState().mainShellGlassExtraTopInset(context);
+    const refreshEdge = 8.0;
     return UydoshRefreshIndicator.mainShell(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
-      edgeOffset: topPad,
+      edgeOffset: refreshEdge,
       child: PullToRefreshStretchHaptics(
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

@@ -1761,7 +1761,7 @@ class AppStrings {
       "room_3d_dimensions_caption":
           "Приблизительные размеры (границы всего скана)",
       "room_3d_dimensions_line_template":
-          "Пол: {floorLong} × {floorShort} м · высота {height} м",
+          "Площадь пола: {floorLong} × {floorShort} м · высота {height} м",
       "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
       "room_3d_floor_only_button": "Скрыть стены",
       "room_3d_full_room_button": "Вся комната",
@@ -3218,7 +3218,7 @@ class AppStrings {
       "room_3d_dimensions_caption":
           "Taxminiy o'lchamlar (to'liq skan chegarasi)",
       "room_3d_dimensions_line_template":
-          "Pol: {floorLong} × {floorShort} m · balandlik {height} m",
+          "Pol: {floorLong} × {floorShort} м · balandlik {height} м",
       "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
       "room_3d_floor_only_button": "Devorlarni yashirish",
       "room_3d_full_room_button": "Butun xona",

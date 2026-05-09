@@ -292,11 +292,17 @@ class _GigOfferTileState extends State<GigOfferTile>
                                       : () => _handleFavoriteTap(context),
                                   borderRadius: BorderRadius.circular(22),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(6),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      6,
+                                      0,
+                                      6,
+                                      6,
+                                    ),
                                     child: SizedBox(
                                       width: 28,
                                       height: 28,
-                                      child: Center(
+                                      child: Align(
+                                        alignment: Alignment.topCenter,
                                         child: Opacity(
                                           opacity:
                                               _isTogglingFavorite ? 0.6 : 1,
