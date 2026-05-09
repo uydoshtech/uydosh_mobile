@@ -44,7 +44,6 @@ typedef _AsyncBoolPredicate = Future<bool> Function();
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _BurgerMenuProfileData {
-
   const _BurgerMenuProfileData({
     required this.isLoading,
     required this.hasError,
@@ -63,7 +62,7 @@ class _BurgerMenuProfileData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.profile?.id == profile?.id;
+        other.profile == profile;
   }
 
   @override
@@ -71,7 +70,7 @@ class _BurgerMenuProfileData {
     return isLoading.hashCode ^
         hasError.hashCode ^
         errorMessage.hashCode ^
-        (profile?.id ?? 0).hashCode;
+        (profile?.hashCode ?? 0);
   }
 }
 
@@ -90,11 +89,18 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   void initState() {
     super.initState();
     _loadCachedGoogleProfile();
-    // Listen to centralized authentication state changes
-    AuthenticationState().addListener(() {
-      if (!mounted) return;
-      _loadCachedGoogleProfile();
-    });
+    AuthenticationState().addListener(_onAuthenticationChanged);
+  }
+
+  @override
+  void dispose() {
+    AuthenticationState().removeListener(_onAuthenticationChanged);
+    super.dispose();
+  }
+
+  void _onAuthenticationChanged() {
+    if (!mounted) return;
+    _loadCachedGoogleProfile();
   }
 
   Future<void> _loadCachedGoogleProfile() async {
@@ -756,7 +762,7 @@ class _DrawerMenuItem extends StatelessWidget {
   }
 }
 
-class _AsyncVisibleMenuItem extends StatelessWidget {
+class _AsyncVisibleMenuItem extends StatefulWidget {
   const _AsyncVisibleMenuItem({
     required this.isVisible,
     required this.child,
@@ -766,15 +772,22 @@ class _AsyncVisibleMenuItem extends StatelessWidget {
   final Widget child;
 
   @override
+  State<_AsyncVisibleMenuItem> createState() => _AsyncVisibleMenuItemState();
+}
+
+class _AsyncVisibleMenuItemState extends State<_AsyncVisibleMenuItem> {
+  late final Future<bool> _visibilityFuture = widget.isVisible();
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-      future: isVisible(),
+      future: _visibilityFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox.shrink();
         }
         if (snapshot.data != true) return const SizedBox.shrink();
-        return child;
+        return widget.child;
       },
     );
   }

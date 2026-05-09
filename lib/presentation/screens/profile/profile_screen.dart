@@ -104,8 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
-    _loadUserRole();
-    _loadCachedProfileData();
+    _loadProfileScreenLocalSnapshot();
     // unawaited(_refreshListingAiQuota());
   }
 
@@ -133,19 +132,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //   });
   // }
 
-  Future<void> _loadCachedProfileData() async {
-    final results = await Future.wait([
+  /// One [Future.wait] for all local session fields used on cold open, so
+  /// [SessionManager.getIsUserBlocked] (and shared prefs access) is not
+  /// duplicated across two parallel startup paths.
+  Future<void> _loadProfileScreenLocalSnapshot() async {
+    final results = await Future.wait<Object?>([
       SessionManager.getGoogleDisplayName(),
       SessionManager.getGooglePhotoUrl(),
       SessionManager.getCachedUserProfile(),
       SessionManager.getIsUserBlocked(),
+      SessionManager.getUserRole(),
     ]);
+
+    final cachedRole = results[4] as String?;
 
     setStateIfMounted(() {
       _cachedGoogleDisplayName = results[0] as String?;
       _cachedGooglePhotoUrl = results[1] as String?;
       _cachedUserProfile = results[2] as UserProfile?;
       _userBlocked = results[3]! as bool;
+      _userRole = cachedRole;
+      _userRoleLoaded = true;
     });
 
     // unawaited(_refreshListingAiQuota());
@@ -158,20 +165,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const CurrentUserProfileEvent.fetchProfile(),
           );
     }
-  }
 
-  Future<void> _loadUserRole() async {
-    final results = await Future.wait([
-      SessionManager.getUserRole(),
-      SessionManager.getIsUserBlocked(),
-    ]);
-    setStateIfMounted(() {
-      _userRole = results[0] as String?;
-      _userBlocked = results[1]! as bool;
-      _userRoleLoaded = true;
-    });
-    // unawaited(_refreshListingAiQuota());
-    if (_userRole == null) {
+    if (cachedRole == null && mounted) {
       await _refreshUserRoleFromServer();
     }
   }

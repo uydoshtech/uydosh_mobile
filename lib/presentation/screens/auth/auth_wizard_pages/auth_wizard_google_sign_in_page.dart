@@ -290,7 +290,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                   children: [
                                     Text(
                                       widget.currentUser!.displayName ??
-                                          "User",
+                                          L10n.get("user"),
                                       style: TextStyle(
                                         color: _getOnboardingTextColor(
                                           context,
@@ -356,6 +356,9 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
 
 const double _kOAuthAvatarSize = 60;
 
+final RegExp _kOAuthEmailLocalSeparators = RegExp(r"[._-]+");
+final RegExp _kOAuthWhitespaceRuns = RegExp(r"\s+");
+
 /// Apple (and some OAuth flows) omit [User.photoURL]. Fall back to initials
 /// derived from name or email so the avatar circle matches Google visually.
 String _firebaseUserOAuthInitials(User user) {
@@ -364,8 +367,10 @@ String _firebaseUserOAuthInitials(User user) {
   final email = user.email?.trim();
   if (email == null || email.isEmpty) return "";
   final local = email.split("@").first;
-  final spaced =
-      local.replaceAll(RegExp(r"[._-]+"), " ").replaceAll(RegExp(r"\s+"), " ").trim();
+  final spaced = local
+      .replaceAll(_kOAuthEmailLocalSeparators, " ")
+      .replaceAll(_kOAuthWhitespaceRuns, " ")
+      .trim();
   return StringUtils.extractInitials(spaced.isEmpty ? local : spaced);
 }
 
