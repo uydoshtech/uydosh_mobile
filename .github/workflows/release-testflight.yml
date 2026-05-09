@@ -87,6 +87,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Install FlutterFire CLI (for Crashlytics symbols upload)
+        run: |
+          set -euo pipefail
+          dart --version
+          dart pub global activate flutterfire_cli
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
