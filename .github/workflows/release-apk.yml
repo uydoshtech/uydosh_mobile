@@ -39,12 +39,13 @@ jobs:
 
           TAG="${GITHUB_REF_NAME}"
           # TAG examples:
-          # - android-v1.2.3-45
-          # - ios-v1.2.3-45
-          # (We also accept the '+' variant for backward compatibility.)
+          # - android-1.2.3-45
+          # - ios-1.2.3-45
+          # (We also accept an optional 'v' prefix and the '+' variant for backward compatibility.)
 
-          VERSION_WITH_BUILD="${TAG#android-v}"
-          VERSION_WITH_BUILD="${VERSION_WITH_BUILD#ios-v}"
+          VERSION_WITH_BUILD="${TAG#android-}"
+          VERSION_WITH_BUILD="${VERSION_WITH_BUILD#ios-}"
+          VERSION_WITH_BUILD="${VERSION_WITH_BUILD#v}"
 
           if [[ "${VERSION_WITH_BUILD}" == *+* ]]; then
             BUILD_NAME="${VERSION_WITH_BUILD%%+*}"   # 1.2.3

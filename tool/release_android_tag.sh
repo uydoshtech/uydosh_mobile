@@ -22,7 +22,7 @@ if [[ -z "${VERSION_RAW}" ]]; then
   exit 1
 fi
 TAG_SUFFIX="${VERSION_RAW//+/-}"
-TAG="android-v${TAG_SUFFIX}"
+TAG="android-${TAG_SUFFIX}"
 
 # Do not use --tags: remote "android-latest" (GitHub release tag) often moves and
 # would conflict with a stale local copy — fetch then fails with "would clobber existing tag".
@@ -40,7 +40,7 @@ else
   VERSION_COLORED="${VERSION_RAW}"
 fi
 
-TAG_COLORED="android-v${VERSION_COLORED//+/-}"
+TAG_COLORED="android-${VERSION_COLORED//+/-}"
 echo "Tagging ${TAG_COLORED} -> ${SHA}"
 git tag "${TAG}"
 git push origin "${TAG}"
