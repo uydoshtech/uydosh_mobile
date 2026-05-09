@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -166,7 +168,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         final conversation = visible[index];
         return ConversationCard(
           conversation: conversation,
-          onTap: () => _navigateToChat(conversation.id),
+          onTap: () => unawaited(_navigateToChat(conversation.id)),
         );
       },
       showRefreshIndicator: true,
@@ -207,7 +209,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     );
   }
 
-  void _navigateToChat(int conversationId) {
+  Future<void> _navigateToChat(int conversationId) async {
+    var me = _currentUserId;
+    if (me == null) {
+      me = await SessionManager.getUserId();
+      if (mounted) setState(() => _currentUserId = me);
+    }
     // Find the conversation to get the listing ID
     ConversationSummary? conversation;
     context.read<MessagingBloc>().state.maybeWhen(
@@ -220,16 +227,13 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
     final conv = conversation;
     final otherUserId =
-        conv != null && _currentUserId != null
-            ? (conv.initiatorId == _currentUserId
-                ? conv.participantId
-                : conv.initiatorId)
-            : null;
+        conv != null ? conversationCounterpartyUserId(conv, me) : null;
     final rawCtx = conv?.contextType?.trim().toLowerCase();
     final isGigConversation =
         (rawCtx != null && rawCtx.startsWith("gig_")) ||
         (conv?.gigRequestId != null);
 
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name: ChatScreen.routeName(conversationId)),

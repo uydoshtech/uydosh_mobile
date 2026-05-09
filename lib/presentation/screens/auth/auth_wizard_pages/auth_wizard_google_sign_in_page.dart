@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 // Prefixed because [IconAlignment] collides with Flutter Material's
@@ -11,7 +12,9 @@ import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/apple_auth_service.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -26,6 +29,7 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
     required this.onSignInWithApple,
     required this.onSignInWithPhone,
     this.delayAppleAvatarReveal = false,
+    this.backendResolvedAvatarUrl,
     super.key,
   });
 
@@ -36,12 +40,15 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
   /// When true (Sign in with Apple), the profile photo chip is held back
   /// briefly so the sheet does not flash a placeholder avatar immediately.
   final bool delayAppleAvatarReveal;
+
+  /// Loaded from `/users/firebase-auth` when `profileExists` — same source as
+  /// [ProfileHeaderSection] when Firebase has no `photoURL`.
+  final String? backendResolvedAvatarUrl;
   final VoidCallback onSignInWithGoogle;
 
-  /// Called when the user taps the Sign in with Apple button. Only
-  /// invoked on platforms where SIWA is available (iOS/macOS); on
-  /// other platforms the button is hidden entirely, so this callback
-  /// can be a no-op there if the parent prefers.
+  /// Called when the user taps the Sign in with Apple button on native
+  /// (iOS/macOS). On Flutter Web the button is shown for layout only and
+  /// does not call this.
   final VoidCallback onSignInWithApple;
   final VoidCallback onSignInWithPhone;
 
@@ -85,11 +92,12 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                   SizedBox(
                     width: double.infinity,
                     child: L10n.text(
-                      "sign_in_with_google_description",
+                      AuthWizardTheme.oauthStepTitleL10nKey(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 15,
                         height: 1.25,
+                        fontWeight: FontWeight.w500,
                         color: _getOnboardingTextSecondaryColor(context),
                       ),
                     ),
@@ -103,18 +111,21 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     // package and respects Apple HIG (logo, font,
                     // localized label). Width/height match the Google
                     // SVG button below for visual parity.
-                    if (AppleAuthService.isAvailable) ...[
+                    if (AppleAuthService.isAvailable || kIsWeb) ...[
                       Center(
                         child: SizedBox(
                           width: buttonWidth,
                           height: 44,
                           child: siwa.SignInWithAppleButton(
-                            onPressed: _enabled
-                                ? () {
-                                    HapticFeedbackUtils.impact();
-                                    widget.onSignInWithApple();
-                                  }
-                                : () {},
+                            onPressed:
+                                kIsWeb
+                                    ? () {}
+                                    : _enabled
+                                    ? () {
+                                      HapticFeedbackUtils.impact();
+                                      widget.onSignInWithApple();
+                                    }
+                                    : () {},
                             // Always-black variant matches the dark
                             // Google SVG asset shipped below; Apple's
                             // button keeps the same look across themes
@@ -263,6 +274,8 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                 user: widget.currentUser!,
                                 delayReveal: widget.delayAppleAvatarReveal,
                                 iconColor: _getOnboardingTextColor(context),
+                                backendResolvedAvatarUrl:
+                                    widget.backendResolvedAvatarUrl,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -338,6 +351,19 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
 
 const double _kOAuthAvatarSize = 60;
 
+/// Apple (and some OAuth flows) omit [User.photoURL]. Fall back to initials
+/// derived from name or email so the avatar circle matches Google visually.
+String _firebaseUserOAuthInitials(User user) {
+  final fromDisplay = StringUtils.extractInitials(user.displayName);
+  if (fromDisplay.isNotEmpty) return fromDisplay;
+  final email = user.email?.trim();
+  if (email == null || email.isEmpty) return "";
+  final local = email.split("@").first;
+  final spaced =
+      local.replaceAll(RegExp(r"[._-]+"), " ").replaceAll(RegExp(r"\s+"), " ").trim();
+  return StringUtils.extractInitials(spaced.isEmpty ? local : spaced);
+}
+
 /// Raised / recessed soft-UI avatar chip; optionally delays showing the photo
 /// for Sign in with Apple (Apple does not supply an immediate profile image).
 class _AuthWizardOAuthAvatar extends StatefulWidget {
@@ -345,11 +371,13 @@ class _AuthWizardOAuthAvatar extends StatefulWidget {
     required this.user,
     required this.delayReveal,
     required this.iconColor,
+    this.backendResolvedAvatarUrl,
   });
 
   final User user;
   final bool delayReveal;
   final Color iconColor;
+  final String? backendResolvedAvatarUrl;
 
   @override
   State<_AuthWizardOAuthAvatar> createState() =>
@@ -420,7 +448,41 @@ class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
       ),
     );
 
-    final photoUrl = widget.user.photoURL;
+    final scheme = Theme.of(context).colorScheme;
+    final backendUrl = widget.backendResolvedAvatarUrl?.trim();
+    final firebaseUrl = widget.user.photoURL?.trim();
+    final photoUrl =
+        (backendUrl != null && backendUrl.isNotEmpty)
+            ? backendUrl
+            : firebaseUrl;
+    final initials = _firebaseUserOAuthInitials(widget.user);
+
+    Widget buildGlyphFallback() => ColoredBox(
+      color: scheme.primaryContainer,
+      child: SizedBox(
+        width: _kOAuthAvatarSize,
+        height: _kOAuthAvatarSize,
+        child: Center(
+          child:
+              initials.isNotEmpty
+                  ? Text(
+                    initials,
+                    style: TextStyle(
+                      color: scheme.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
+                      fontSize: _kOAuthAvatarSize * 0.35,
+                      height: 1.0,
+                    ),
+                  )
+                  : ThemeIcon(
+                    Icons.person,
+                    size: 30,
+                    color: widget.iconColor,
+                  ),
+        ),
+      ),
+    );
+
     final Widget face =
         photoUrl != null && photoUrl.isNotEmpty
             ? ClipOval(
@@ -431,36 +493,12 @@ class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
                 fit: BoxFit.cover,
                 memCacheWidth: 120,
                 memCacheHeight: 120,
-                placeholder:
-                    (context, url) => ThemeIcon(
-                      Icons.person,
-                      size: 30,
-                      color: widget.iconColor,
-                    ),
+                placeholder: (context, url) => buildGlyphFallback(),
                 errorWidget:
-                    (context, url, error) => ThemeIcon(
-                      Icons.person,
-                      size: 30,
-                      color: widget.iconColor,
-                    ),
+                    (context, url, error) => buildGlyphFallback(),
               ),
             )
-            : ClipOval(
-              child: ColoredBox(
-                color: surface,
-                child: SizedBox(
-                  width: _kOAuthAvatarSize,
-                  height: _kOAuthAvatarSize,
-                  child: Center(
-                    child: ThemeIcon(
-                      Icons.person,
-                      size: 30,
-                      color: widget.iconColor,
-                    ),
-                  ),
-                ),
-              ),
-            );
+            : ClipOval(child: buildGlyphFallback());
 
     final raisedOrb = Container(
       width: _kOAuthAvatarSize,

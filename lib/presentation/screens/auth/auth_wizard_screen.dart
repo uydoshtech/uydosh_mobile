@@ -18,11 +18,13 @@ import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/create_profile_request.dart";
 import "package:uy_dosh/domain/models/country.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/services/apple_auth_service.dart";
@@ -176,6 +178,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   User? _currentUser;
   _AuthMethod _authMethod = _AuthMethod.google;
 
+  /// Backend profile photo ([UserProfile.avatarUrl], resolved). Matches the
+  /// profile tab when Firebase has no `photoURL` (typical for Apple sign-in).
+  String? _oauthSummaryAvatarUrl;
+
+  /// Returning users used to jump straight home while "Signing in…" was still
+  /// visible; hold briefly so the success layout + avatar read clearly first.
+  static const Duration _returningUserHomeNavigationHold =
+      Duration(seconds: 2);
+
   // Navigation control
   bool _isProgrammaticNavigation = false;
 
@@ -220,9 +231,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         setState(() {
           _currentUser = user;
           _isGoogleSignedIn = user != null;
+          if (user == null) {
+            _oauthSummaryAvatarUrl = null;
+          }
         });
       }
     });
+
+    unawaited(_hydrateOAuthSummaryAvatarFromCache());
 
     // Load regions + countries when screen initializes. Countries come
     // from a static cache so this resolves synchronously in practice, but
@@ -317,6 +333,26 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
 
       if (mounted) _navigateToMainNavigation();
+    }
+  }
+
+  Future<void> _pauseThenNavigateHomeForReturningUser({
+    required Map<String, dynamic> response,
+    String? violationDialogResult,
+  }) async {
+    if (!mounted) return;
+    _reconcileLanguageFromServerProfile(response);
+    setStateIfMounted(() => _isAuthenticating = false);
+    await Future.delayed(_returningUserHomeNavigationHold);
+    if (!mounted) return;
+    final nav = Navigator.of(context);
+    _navigateToMainNavigation();
+    if (violationDialogResult == "contact_support") {
+      nav.push(
+        MaterialPageRoute<void>(
+          builder: (context) => const SupportChatScreen(),
+        ),
+      );
     }
   }
 
@@ -933,22 +969,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d(
           "✅ Returning user with existing profile - skipping to main app",
         );
-        // The backend's `preferred_language` is authoritative for returning
-        // users; restore it locally so the wizard's pre-auth language pick
-        // doesn't shadow what they already saved.
-        _reconcileLanguageFromServerProfile(response);
-        // Skip profile creation and go directly to main app
-        if (mounted) {
-          final nav = Navigator.of(context);
-          _navigateToMainNavigation();
-          if (violationDialogResult == "contact_support") {
-            nav.push(
-              MaterialPageRoute<void>(
-                builder: (context) => const SupportChatScreen(),
-              ),
-            );
-          }
-        }
+        await _pauseThenNavigateHomeForReturningUser(
+          response: response,
+          violationDialogResult: violationDialogResult,
+        );
       } else {
         logger.d("🆕 New user - proceeding to profile creation");
         logger.d("🔍 Navigating to profile creation page...");
@@ -1012,6 +1036,37 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       await AuthenticationState().refreshAuthenticationStatus();
     } catch (e) {
       logger.d("⚠️ AuthWizard: Failed to refresh AuthenticationState: $e");
+    }
+
+    await _persistProfileFromFirebaseAuthResponse(response);
+  }
+
+  Future<void> _hydrateOAuthSummaryAvatarFromCache() async {
+    try {
+      final cached = await SessionManager.getCachedUserProfile();
+      final raw = cached?.avatarUrl?.trim();
+      if (raw == null || raw.isEmpty) return;
+      setStateIfMounted(() {
+        _oauthSummaryAvatarUrl = resolveAvatarUrl(cached!.avatarUrl);
+      });
+    } catch (e) {
+      logger.d("AuthWizard: hydrate OAuth avatar from cache failed: $e");
+    }
+  }
+
+  Future<void> _persistProfileFromFirebaseAuthResponse(
+    Map<String, dynamic> response,
+  ) async {
+    final raw = response["profile"];
+    if (raw is! Map<String, dynamic>) return;
+    try {
+      final profile = UserProfile.fromJson(raw);
+      await SessionManager.storeUserProfile(profile);
+      setStateIfMounted(() {
+        _oauthSummaryAvatarUrl = resolveAvatarUrl(profile.avatarUrl);
+      });
+    } catch (e) {
+      logger.d("AuthWizard: profile from auth response parse/store failed: $e");
     }
   }
 
@@ -1127,22 +1182,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d(
           "✅ Returning user with existing profile - going directly to main app",
         );
-        // The backend's `preferred_language` is authoritative for returning
-        // users; restore it locally so the wizard's pre-auth language pick
-        // doesn't shadow what they already saved.
-        _reconcileLanguageFromServerProfile(response);
-        // Go directly to main app
-        if (mounted) {
-          final nav = Navigator.of(context);
-          _navigateToMainNavigation();
-          if (violationDialogResult == "contact_support") {
-            nav.push(
-              MaterialPageRoute<void>(
-                builder: (context) => const SupportChatScreen(),
-              ),
-            );
-          }
-        }
+        await _pauseThenNavigateHomeForReturningUser(
+          response: response,
+          violationDialogResult: violationDialogResult,
+        );
       } else {
         logger.d("🆕 New user - proceeding to profile creation");
         logger.d("🔍 Navigating to profile creation page...");
@@ -1820,12 +1863,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         _currentPage == 0
                             ? L10n.get("select_language")
                             : _currentPage == 1
-                                ? L10n.get("sign_in_with_google")
+                                ? L10n.get(AuthWizardTheme.oauthStepTitleL10nKey())
                                 : _currentPage == 2
                                     ? L10n.get("complete_profile")
                                     : "UyDosh",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                           color: _getOnboardingTextColor(context),
                         ),
@@ -1921,6 +1964,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           onSignInWithPhone: _signInWithPhone,
                           delayAppleAvatarReveal:
                               _authMethod == _AuthMethod.apple,
+                          backendResolvedAvatarUrl: _oauthSummaryAvatarUrl,
                         ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,

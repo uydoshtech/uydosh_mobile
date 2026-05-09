@@ -991,6 +991,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         child: TextFormField(
           controller: _addressController,
           style: _fieldTextStyle(context),
+          decoration: _plateInputDecoration(
+            context,
+            hint: L10n.get("gigs_post_request_field_address"),
+          ),
         ),
       ),
     ];

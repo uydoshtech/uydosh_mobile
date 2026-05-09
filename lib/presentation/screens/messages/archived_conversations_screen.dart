@@ -183,6 +183,12 @@ class _ArchivedConversationsScreenState
   Future<void> _openChat(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
+    var me = _currentUserId;
+    if (me == null) {
+      me = await SessionManager.getUserId();
+      if (!mounted) return;
+      setState(() => _currentUserId = me);
+    }
     final rawCtx = conversation.contextType?.trim().toLowerCase();
     final isGigConversation =
         (rawCtx != null && rawCtx.startsWith("gig_")) ||
@@ -209,9 +215,7 @@ class _ArchivedConversationsScreenState
           otherUserInitials:
               StringUtils.extractInitials(conversation.otherUserName),
           otherUserName: conversation.otherUserName,
-          otherUserId: conversation.initiatorId == _currentUserId
-              ? conversation.participantId
-              : conversation.initiatorId,
+          otherUserId: conversationCounterpartyUserId(conversation, me),
           otherUserAvatar: conversation.otherUserAvatar,
         ),
       ),

@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Detail view for a `GigRequest` (open task posted by a client).
@@ -49,6 +50,8 @@ class GigRequestDetailScreen extends StatefulWidget {
 class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     with TickerProviderStateMixin {
   late Future<GigRequest> _future;
+  /// Session uid fallback while [UserListingState] has not finished hydrating.
+  int? _sessionUserId;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
   bool _requestFavoriteBusy = false;
@@ -63,12 +66,23 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     _requestFavPulse = FavoriteHeartPulseController(vsync: this);
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
+    unawaited(_hydrateSessionUserId());
     _future = getIt<IGigService>().getRequest(widget.requestId);
     unawaited(
       _future.then((r) {
         GigFavoritesState().syncFromRequests([r]);
       }),
     );
+  }
+
+  Future<void> _hydrateSessionUserId() async {
+    final id = await SessionManager.getUserId();
+    if (mounted) setState(() => _sessionUserId = id);
+  }
+
+  bool _isTaskOwner(GigRequest request) {
+    final uid = UserListingState().currentUserId ?? _sessionUserId;
+    return uid != null && uid == request.clientUserId;
   }
 
   Future<void> _editRequest(GigRequest request) async {
@@ -150,11 +164,10 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
 
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
-    final isOwner = UserListingState().isOwner(request.clientUserId);
+    final isOwner = _isTaskOwner(request);
     if (!isOwner || !open) return const <Widget>[];
     return [
       ActionDropdownMenu(
-        padding: const EdgeInsets.only(right: 12),
         items: [
           ActionMenuItem(
             value: "edit_task",
@@ -197,7 +210,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     GigRequest? loadedRequest,
   }) {
     return Padding(
-      padding: EdgeInsets.only(right: hasOwnerOverflow ? 4 : 12),
+      padding: EdgeInsets.only(right: hasOwnerOverflow ? 6 : 0),
       child: ThreeDAppBarIconButton(
         iconData: Icons.chat_bubble_outline,
         onPressed: () => _openTaskChats(loadedRequest),
@@ -226,13 +239,14 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
             builder: (context, snap) {
               final request = snap.data;
               final showOwnerMenu = request != null &&
-                  UserListingState().isOwner(request.clientUserId) &&
+                  _isTaskOwner(request) &&
                   request.status == GigRequestStatus.open;
               final canFavoriteTask = request != null &&
                   AuthenticationState().isAuthenticated &&
-                  !UserListingState().isOwner(request.clientUserId);
+                  !_isTaskOwner(request);
               return Scaffold(
-                appBar: AppBar(
+                appBar: UydoshAppBar(
+                  actionsPadding: const EdgeInsets.only(right: 8),
                   leading: ThreeDAppBarIconButton.backLeading(
                     context,
                     onPressed: _popDetailToCaller,
@@ -305,7 +319,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     if (request == null) {
       return const SizedBox.shrink();
     }
-    final isOwner = UserListingState().isOwner(request.clientUserId);
+    final isOwner = _isTaskOwner(request);
     final canEdit = isOwner && request.status == GigRequestStatus.open;
     final showContact = !isOwner;
 
@@ -324,6 +338,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
+    await UserListingState().refreshUserId();
     final currentUserId = await SessionManager.getUserId();
     if (currentUserId == null) {
       if (!mounted) return;

@@ -2512,6 +2512,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sign_in_with_google => 'Sign In with Google';
 
   @override
+  String get sign_in_with_google_or_apple => 'Sign in with Google or Apple';
+
+  @override
   String get sign_in_with_google_description =>
       'Continue with Google 👋\nFast and secure — no extra sign-ups';
 

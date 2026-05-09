@@ -71,9 +71,9 @@ class AppleAuthService {
     }
   }
 
-  /// Returns true when SIWA is supported on the current device. iOS/macOS
-  /// support it natively; Android and Web require a Service ID + return
-  /// URL we haven't configured yet, so the button is hidden there.
+  /// Returns true when SIWA is supported for a **real** sign-in on this
+  /// device (native iOS/macOS only). Web may still show a non-functional
+  /// Apple button in the auth UI for layout parity.
   static bool get isAvailable {
     if (kIsWeb) return false;
     return defaultTargetPlatform == TargetPlatform.iOS ||

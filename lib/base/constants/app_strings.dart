@@ -1363,6 +1363,7 @@ class AppStrings {
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
+      "sign_in_with_google_or_apple": "Sign in with Google or Apple",
       "sign_in_with_google_description":
           "Continue with Google 👋\nFast and secure — no extra sign-ups",
 
@@ -2812,6 +2813,7 @@ class AppStrings {
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
+      "sign_in_with_google_or_apple": "Войти через Google или Apple",
       "sign_in_with_google_description":
           "Продолжить через Google 👋\nБыстро и безопасно — без лишних регистраций",
 
@@ -4264,6 +4266,7 @@ class AppStrings {
 
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Google orqali kirish",
+      "sign_in_with_google_or_apple": "Google yoki Apple orqali kirish",
       "sign_in_with_google_description":
           "Google orqali davom etish 👋\nTez va xavfsiz — ortiqcha ro'yxatdan o'tishsiz",
 

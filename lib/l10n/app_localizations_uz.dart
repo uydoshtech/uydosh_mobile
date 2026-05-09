@@ -2552,6 +2552,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get sign_in_with_google => 'Google orqali kirish';
 
   @override
+  String get sign_in_with_google_or_apple => 'Google yoki Apple orqali kirish';
+
+  @override
   String get sign_in_with_google_description =>
       'Google orqali davom etish 👋\nTez va xavfsiz — ortiqcha ro\'yxatdan o\'tishsiz';
 

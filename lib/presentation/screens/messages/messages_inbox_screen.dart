@@ -1540,6 +1540,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Future<void> _openChatScreen(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     if (!mounted) return;
+    var me = _currentUserId;
+    if (me == null) {
+      me = await SessionManager.getUserId();
+      if (!mounted) return;
+      setState(() => _currentUserId = me);
+    }
     final rawCtx = conversation.contextType?.trim().toLowerCase();
     final isGigConversation =
         (rawCtx != null && rawCtx.startsWith("gig_")) ||
@@ -1575,10 +1581,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 conversation.otherUserName,
               ),
               otherUserName: conversation.otherUserName,
-              otherUserId:
-                  conversation.initiatorId == _currentUserId
-                      ? conversation.participantId
-                      : conversation.initiatorId,
+              otherUserId: conversationCounterpartyUserId(conversation, me),
               otherUserAvatar: conversation.otherUserAvatar,
             ),
       ),
