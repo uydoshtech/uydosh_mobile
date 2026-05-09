@@ -31,6 +31,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Select Xcode 26.2
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.2"
+
+      - name: Show Xcode / SDK versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -183,6 +194,8 @@ jobs:
           CODE_SIGN_IDENTITY: Apple Distribution
         run: |
           set -euo pipefail
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
           # PROFILE_NAME / PROVISIONING_PROFILE_SPECIFIER come from previous step via GITHUB_ENV
           export PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME:?PROFILE_NAME missing}"
 
