@@ -4,7 +4,8 @@ import "dart:math";
 import "package:crypto/crypto.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:firebase_crashlytics/firebase_crashlytics.dart";
-import "package:flutter/foundation.dart" show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import "package:flutter/foundation.dart"
+    show defaultTargetPlatform, kIsWeb, TargetPlatform, debugPrint;
 import "package:sign_in_with_apple/sign_in_with_apple.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 
@@ -55,6 +56,20 @@ class AppleSignInResult {
 class AppleAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
+
+  Map<String, dynamic>? _tryDecodeJwtPayload(String jwtToken) {
+    // JWT: header.payload.signature (base64url)
+    final parts = jwtToken.split(".");
+    if (parts.length < 2) return null;
+    try {
+      final normalized = base64Url.normalize(parts[1]);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final jsonVal = json.decode(decoded);
+      return jsonVal is Map<String, dynamic> ? jsonVal : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Returns true when SIWA is supported on the current device. iOS/macOS
   /// support it natively; Android and Web require a Service ID + return
@@ -130,7 +145,10 @@ class AppleAuthService {
       final rawNonce = _generateRawNonce();
       final hashedNonce = _sha256(rawNonce);
 
-      logger.d("Apple sign-in: requesting credential (nonce_sha256_len=${hashedNonce.length})");
+      final msgStart =
+          "Apple sign-in: requesting credential (nonce_sha256_len=${hashedNonce.length})";
+      logger.d(msgStart);
+      debugPrint(msgStart);
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: const [
           AppleIDAuthorizationScopes.email,
@@ -144,15 +162,32 @@ class AppleAuthService {
 
       // Never log raw tokens/codes. Log only presence/length so we can
       // debug "invalid OAuth response" issues safely.
-      logger.d(
-        "Apple sign-in: credential received "
-        "(userId_present=${(appleCredential.userIdentifier ?? '').isNotEmpty}, "
-        "identityToken_len=${identityToken?.length ?? 0}, "
-        "authCode_len=${authorizationCode?.length ?? 0}, "
-        "email_present=${(appleCredential.email ?? '').isNotEmpty}, "
-        "given_present=${(appleCredential.givenName ?? '').isNotEmpty}, "
-        "family_present=${(appleCredential.familyName ?? '').isNotEmpty})",
-      );
+      final msgCred =
+          "Apple sign-in: credential received "
+          "(userId_present=${(appleCredential.userIdentifier ?? '').isNotEmpty}, "
+          "identityToken_len=${identityToken?.length ?? 0}, "
+          "authCode_len=${authorizationCode.length}, "
+          "email_present=${(appleCredential.email ?? '').isNotEmpty}, "
+          "given_present=${(appleCredential.givenName ?? '').isNotEmpty}, "
+          "family_present=${(appleCredential.familyName ?? '').isNotEmpty})";
+      logger.d(msgCred);
+      debugPrint(msgCred);
+
+      if (identityToken != null) {
+        final payload = _tryDecodeJwtPayload(identityToken);
+        if (payload != null) {
+          final aud = payload["aud"];
+          final iss = payload["iss"];
+          final exp = payload["exp"];
+          final msgJwt =
+              "Apple sign-in: idToken jwt payload (aud=$aud iss=$iss exp=$exp)";
+          logger.d(msgJwt);
+          debugPrint(msgJwt);
+        } else {
+          logger.d("Apple sign-in: could not decode idToken payload");
+          debugPrint("Apple sign-in: could not decode idToken payload");
+        }
+      }
       if (identityToken == null) {
         // Should be unreachable when the flow succeeded, but Apple has
         // shipped this nil before — fail loudly rather than passing a
@@ -163,9 +198,13 @@ class AppleAuthService {
         );
       }
 
+      // Prefer `idToken` + `rawNonce` per Firebase native docs; some FlutterFire
+      // (`firebase_auth` 5.x) stacks still expect `accessToken` here — without it
+      // you can get `invalid-credential` / Invalid OAuth response despite a valid JWT.
       final oauthCredential = OAuthProvider("apple.com").credential(
         idToken: identityToken,
         rawNonce: rawNonce,
+        accessToken: authorizationCode.isNotEmpty ? authorizationCode : null,
       );
 
       try {
@@ -202,12 +241,13 @@ class AppleAuthService {
       } on FirebaseAuthException catch (e, st) {
         // Surface more detail than the UI toast; this is the common failure
         // path for `[firebase_auth/invalid-credential] Invalid OAuth response`.
-        logger.d(
-          "Apple sign-in: FirebaseAuthException code=${e.code} "
-          "message=${e.message} "
-          "email=${e.email} "
-          "credentialProvider=${e.credential?.providerId}",
-        );
+        final msgFa =
+            "Apple sign-in: FirebaseAuthException code=${e.code} "
+            "message=${e.message} "
+            "email=${e.email} "
+            "credentialProvider=${e.credential?.providerId}";
+        logger.d(msgFa);
+        debugPrint(msgFa);
         await _record(e, st, step: "firebase_signInWithCredential");
         rethrow;
       }

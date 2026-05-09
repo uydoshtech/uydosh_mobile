@@ -1,60 +1,86 @@
 import "package:firebase_app_check/firebase_app_check.dart";
-import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
+import "package:flutter/foundation.dart" show kDebugMode, kIsWeb, kProfileMode;
 import "package:uy_dosh/base/logger/logger.dart";
 
 /// Initializes Firebase App Check.
 ///
-/// Firebase Phone Auth uses App Check to protect against abuse. In debug
-/// builds we register the **debug provider** — the native SDK generates a
-/// debug token on first run and prints it to the IDE console. That token
-/// must be registered once in Firebase Console → App Check → Apps → Manage
-/// debug tokens. The Dart-side `activate()` does NOT accept a pre-generated
-/// token (it's a native-only setting), so we just switch on debug mode here
-/// and rely on the printed token.
+/// **Debug (native):** Uses [AndroidProvider.debug] / [AppleProvider.debug].
+/// On iOS the Flutter `firebase_app_check` plugin owns the provider factory; do not
+/// mirror debug setup in `AppDelegate` (early native Firebase configure races DeviceCheck).
+/// Xcode console prints a **debug token** — register it at
+/// Firebase Console → App Check → `uydosh_ios` → ⋯ → **Manage debug tokens**.
 ///
-/// In release builds this uses:
-/// * Android → Play Integrity
-/// * iOS     → App Attest (falls back to DeviceCheck on older devices)
-/// * Web     → reCAPTCHA v3 (pass the site key via `--dart-define
-///             FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY=...` if/when needed)
+/// **Release / profile (native):** Play Integrity + DeviceCheck.
+///
+/// **Web:** reCAPTCHA v3 when `FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY` is set.
+///
+/// Pass `--dart-define=DISABLE_FIREBASE_APP_CHECK=true` to skip entirely.
 class AppCheckBootstrap {
   static const _recaptchaSiteKey =
       String.fromEnvironment("FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY");
+  static const _disableAppCheck =
+      bool.fromEnvironment("DISABLE_FIREBASE_APP_CHECK", defaultValue: false);
 
   static Future<void> activate() async {
     try {
-      // On web, App Check requires a web provider (reCAPTCHA v3).
-      // Passing `null` can crash at runtime inside FlutterFire internals.
-      // If you haven't configured a site key yet, skip activation gracefully.
-      if (kIsWeb && _recaptchaSiteKey.isEmpty) {
-        logger.d(
-          "🛡️ App Check skipped on web: missing reCAPTCHA v3 site key. "
-          "Provide it via --dart-define FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY=...",
-        );
+      final msg =
+          "🛡️ App Check bootstrap (debug=$kDebugMode profile=$kProfileMode web=$kIsWeb disable=$_disableAppCheck)";
+      logger.d(msg);
+      // ignore: avoid_print
+      print(msg);
+
+      if (_disableAppCheck) {
+        logger.d("🛡️ App Check disabled via DISABLE_FIREBASE_APP_CHECK=1");
+        // ignore: avoid_print
+        print("🛡️ App Check disabled via DISABLE_FIREBASE_APP_CHECK=1");
         return;
       }
 
+      // Web: reCAPTCHA only when configured.
+      if (kIsWeb) {
+        if (_recaptchaSiteKey.isEmpty) {
+          logger.d(
+            "🛡️ App Check skipped on web: missing reCAPTCHA v3 site key. "
+            "Provide via --dart-define FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY=...",
+          );
+          return;
+        }
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.playIntegrity,
+          appleProvider: AppleProvider.deviceCheck,
+          webProvider: ReCaptchaV3Provider(_recaptchaSiteKey),
+        );
+        FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+        logger.d("🛡️ App Check activated for web (reCAPTCHA v3)");
+        return;
+      }
+
+      // Native DEBUG: debug provider — token printed to Xcode / Flutter console.
+      if (kDebugMode) {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug,
+          appleProvider: AppleProvider.debug,
+          webProvider: null,
+        );
+        FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+        const hint =
+            "🛡️ App Check DEBUG active. Search Xcode console for the Firebase "
+            "App Check debug token, then Firebase Console → App Check → "
+            "uydosh_ios → ⋯ → Manage debug tokens → Add.";
+        logger.d(hint);
+        // ignore: avoid_print
+        print(hint);
+        return;
+      }
+
+      // Native PROFILE / RELEASE: production attestation.
       await FirebaseAppCheck.instance.activate(
-        androidProvider:
-            kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-        appleProvider: kDebugMode
-            ? AppleProvider.debug
-            : AppleProvider.appAttestWithDeviceCheckFallback,
-        webProvider: kIsWeb ? ReCaptchaV3Provider(_recaptchaSiteKey) : null,
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.deviceCheck,
+        webProvider: null,
       );
       FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-
-      if (kDebugMode) {
-        logger.d(
-          "🛡️ App Check activated in DEBUG mode. "
-          "Look for a 'Enter this debug secret into the Firebase Console' line "
-          "in the console and register it at "
-          "Firebase Console → App Check → Apps → Manage debug tokens.",
-        );
-      } else {
-        final platform = kIsWeb ? "web (reCAPTCHA v3)" : "native";
-        logger.d("🛡️ App Check activated for $platform");
-      }
+      logger.d("🛡️ App Check activated (Play Integrity / DeviceCheck)");
     } catch (e, stackTrace) {
       logger.d("⚠️ App Check activation failed: $e");
       logger.d("Stack trace: $stackTrace");

@@ -122,6 +122,15 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
 
     // YMKMapKit.setLocale("en_US") // Let it default to system language
     YMKMapKit.setApiKey("b7e30079-55fe-44d0-960c-50a03c3715e6") // Your generated API key
+
+    // Do not call `FirebaseApp.configure()` here. FlutterFire configures Firebase
+    // from Dart (`Firebase.initializeApp` → `AppCheckBootstrap.activate`). An early
+    // native configure starts Analytics/Messaging/etc. before Dart selects the App Check
+    // debug provider; `firebase_app_check`'s plugin init also replaces any native
+    // `AppCheckDebugProviderFactory` with its own factory that defaults to DeviceCheck
+    // until Dart activates — producing `exchangeDeviceCheckToken` 403 + Auth placeholder
+    // tokens during Sign in with Apple.
+
     GeneratedPluginRegistrant.register(with: self)
 
     // Register the native USDZ viewer as a real plugin (scene-safe).
