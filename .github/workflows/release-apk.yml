@@ -31,6 +31,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Parse version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF_NAME}"
+          # TAG examples:
+          # - android-v1.2.3-45
+          # - ios-v1.2.3-45
+          # (We also accept the '+' variant for backward compatibility.)
+
+          VERSION_WITH_BUILD="${TAG#android-v}"
+          VERSION_WITH_BUILD="${VERSION_WITH_BUILD#ios-v}"
+
+          if [[ "${VERSION_WITH_BUILD}" == *+* ]]; then
+            BUILD_NAME="${VERSION_WITH_BUILD%%+*}"   # 1.2.3
+            BUILD_NUMBER="${VERSION_WITH_BUILD##*+}" # 45
+          elif [[ "${VERSION_WITH_BUILD}" == *-* ]]; then
+            # Split on the LAST '-' to allow prerelease names like 1.2.3-rc.1-45
+            BUILD_NUMBER="${VERSION_WITH_BUILD##*-}"
+            BUILD_NAME="${VERSION_WITH_BUILD%-${BUILD_NUMBER}}"
+          else
+            echo "Could not parse build name/number from tag: ${TAG}"
+            exit 1
+          fi
+
+          if [[ -z "${BUILD_NAME}" || -z "${BUILD_NUMBER}" || "${BUILD_NAME}" == "${BUILD_NUMBER}" ]]; then
+            echo "Could not parse build name/number from tag: ${TAG}"
+            exit 1
+          fi
+
+          echo "BUILD_NAME=${BUILD_NAME}" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "$GITHUB_ENV"
+
+          echo "Parsed BUILD_NAME=${BUILD_NAME} BUILD_NUMBER=${BUILD_NUMBER}"
+
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
@@ -89,7 +126,7 @@ jobs:
         run: flutter pub get
 
       - name: Build release App Bundle (AAB)
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --build-name "$BUILD_NAME" --build-number "$BUILD_NUMBER"
 
       - name: Upload AAB as workflow artifact
         uses: actions/upload-artifact@v6

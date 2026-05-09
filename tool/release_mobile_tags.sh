@@ -17,10 +17,10 @@ usage() {
 Usage: tool/release_mobile_tags.sh [--bump {build|patch|minor|major}] [--commit]
 
 Creates and pushes BOTH:
-  - android-<version>
-  - ios-<version>
+  - android-v<version>
+  - ios-v<version>
 
-Where <version> comes from pubspec.yaml "version: x.y.z+build" (with '+' replaced by '-').
+Where <version> comes from pubspec.yaml "version: x.y.z+build" (converts '+' -> '-' for the git tag).
 
 Options:
   --bump <type>   Bump version first using scripts/bump_version.py (modifies files)
@@ -122,16 +122,15 @@ colored_pubspec_version() {
 colored_platform_tag() {
   local platform="$1"
   if [[ -n "${VERSION_BUILD}" ]]; then
-    printf '%b' "${platform}-${C_YELLOW}${VERSION_SEMVER}${C_RESET}-${C_GREEN}${VERSION_BUILD}${C_RESET}"
+    printf '%b' "${platform}-v${C_YELLOW}${VERSION_SEMVER}${C_RESET}-${C_GREEN}${VERSION_BUILD}${C_RESET}"
   else
-    printf '%b' "${platform}-${C_YELLOW}${VERSION_SEMVER}${C_RESET}"
+    printf '%b' "${platform}-v${C_YELLOW}${VERSION_SEMVER}${C_RESET}"
   fi
 }
 
-# Git tags: '+' is awkward in some tooling; use '-' instead (still matches workflow patterns).
 TAG_SUFFIX="${VERSION_RAW//+/-}"
-ANDROID_TAG="android-${TAG_SUFFIX}"
-IOS_TAG="ios-${TAG_SUFFIX}"
+ANDROID_TAG="android-v${TAG_SUFFIX}"
+IOS_TAG="ios-v${TAG_SUFFIX}"
 
 # Avoid local/remote tag conflicts.
 git fetch --prune origin >/dev/null

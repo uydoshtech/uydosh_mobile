@@ -31,6 +31,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Parse version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF_NAME}"
+          # TAG examples:
+          # - android-v1.2.3-45
+          # - ios-v1.2.3-45
+          # (We also accept the '+' variant for backward compatibility.)
+
+          VERSION_WITH_BUILD="${TAG#android-v}"
+          VERSION_WITH_BUILD="${VERSION_WITH_BUILD#ios-v}"
+
+          if [[ "${VERSION_WITH_BUILD}" == *+* ]]; then
+            BUILD_NAME="${VERSION_WITH_BUILD%%+*}"   # 1.2.3
+            BUILD_NUMBER="${VERSION_WITH_BUILD##*+}" # 45
+          elif [[ "${VERSION_WITH_BUILD}" == *-* ]]; then
+            # Split on the LAST '-' to allow prerelease names like 1.2.3-rc.1-45
+            BUILD_NUMBER="${VERSION_WITH_BUILD##*-}"
+            BUILD_NAME="${VERSION_WITH_BUILD%-${BUILD_NUMBER}}"
+          else
+            echo "Could not parse build name/number from tag: ${TAG}"
+            exit 1
+          fi
+
+          if [[ -z "${BUILD_NAME}" || -z "${BUILD_NUMBER}" || "${BUILD_NAME}" == "${BUILD_NUMBER}" ]]; then
+            echo "Could not parse build name/number from tag: ${TAG}"
+            exit 1
+          fi
+
+          echo "BUILD_NAME=${BUILD_NAME}" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "$GITHUB_ENV"
+
+          echo "Parsed BUILD_NAME=${BUILD_NAME} BUILD_NUMBER=${BUILD_NUMBER}"
+
       - name: Select Xcode 26.2
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -185,8 +222,8 @@ jobs:
 
       - name: Build IPA (Flutter)
         env:
-          BUILD_NAME: ${{ inputs.build_name }}
-          BUILD_NUMBER: ${{ inputs.build_number }}
+          BUILD_NAME: ${{ inputs.build_name || env.BUILD_NAME }}
+          BUILD_NUMBER: ${{ inputs.build_number || env.BUILD_NUMBER }}
           # Flutter invokes CocoaPods internally; ensure Logger is loaded for ActiveSupport/CocoaPods.
           RUBYOPT: "-rlogger"
           DEVELOPMENT_TEAM: D5THR62Q33
@@ -199,7 +236,9 @@ jobs:
           # PROFILE_NAME / PROVISIONING_PROFILE_SPECIFIER come from previous step via GITHUB_ENV
           export PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME:?PROFILE_NAME missing}"
 
-          if [[ -n "${BUILD_NAME:-}" ]]; then
+          if [[ -n "${BUILD_NAME:-}" && -n "${BUILD_NUMBER:-}" ]]; then
+            bundle exec fastlane ios build_ipa build_name:"${BUILD_NAME}" build_number:"${BUILD_NUMBER}" export_options_plist:"ios/ExportOptions-ci.plist"
+          elif [[ -n "${BUILD_NAME:-}" ]]; then
             bundle exec fastlane ios build_ipa build_name:"${BUILD_NAME}" export_options_plist:"ios/ExportOptions-ci.plist"
           elif [[ -n "${BUILD_NUMBER:-}" ]]; then
             bundle exec fastlane ios build_ipa build_number:"${BUILD_NUMBER}" export_options_plist:"ios/ExportOptions-ci.plist"
