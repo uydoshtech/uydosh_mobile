@@ -538,7 +538,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
       case "telegram":
         return L10n.get("telegram", fallback: "Telegram");
       case "employed":
-        return L10n.get("employed", fallback: "Employed");
+        return L10n.get("work", fallback: "Work");
       case "cleanliness":
         return L10n.get("cleanliness", fallback: "Cleanliness");
       case "noiseLevel":
@@ -546,13 +546,13 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
       case "sociability":
         return L10n.get("sociability", fallback: "Sociability");
       case "guestsAllowed":
-        return L10n.get("guests_allowed", fallback: "Guests allowed");
+        return L10n.get("guests", fallback: "Guests");
       case "smokingPreference":
         return L10n.get("smoking_preference", fallback: "Smoking");
       case "alcoholPreference":
         return L10n.get("alcohol_preference", fallback: "Alcohol");
       case "cookingHabits":
-        return L10n.get("cooking_habits", fallback: "Cooking habits");
+        return L10n.get("cooking_habits", fallback: "Cooking");
       case "petsPreference":
         return L10n.get("pets_preference", fallback: "Pets preference");
       case "wakeupTime":

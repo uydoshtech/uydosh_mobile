@@ -220,6 +220,7 @@ class AppStrings {
       "start_conversation_from_listing":
           "Start a conversation from a listing to begin messaging",
       "today": "Today",
+      "yesterday": "Yesterday",
       "tomorrow": "Tomorrow",
       "in_days": "In {days} days",
       "in_days_one": "In {count} day",
@@ -331,8 +332,9 @@ class AppStrings {
       "room_3d_open_error": "Could not open 3D model. Check your connection.",
       "room_3d_viewer_title": "3D",
       "room_3d_dimensions_caption": "Approximate dimensions (full scan bounds)",
-      "room_3d_dimensions_line_template":
-          "{floorLong} × {floorShort} m floor · {height} m high",
+      "room_3d_dimensions_line1_template":
+          "Dimensions: {floorLong} x {floorShort} m · Height: {height}m",
+      "room_3d_dimensions_line2_template": "Area: ~{floorArea} m²",
       "room_3d_load_error_title": "Could not load 3D model",
       "room_3d_floor_only_button": "Hide walls",
       "room_3d_full_room_button": "Full room",
@@ -672,14 +674,19 @@ class AppStrings {
       "open_in_telegram_confirmation": "Telegram will be opened.",
 
       // New profile fields
+      "work": "Work",
       "employed": "Employed",
+      "not_employed": "Not working",
       "cleanliness": "Cleanliness",
       "noise_level": "Noise Level",
       "sociability": "Sociability",
+      "guests": "Guests",
       "guests_allowed": "Guests Allowed",
+      "guests_permitted": "Allowed",
+      "guests_not_permitted": "Not allowed",
       "smoking_preference": "Smoking",
       "alcohol_preference": "Alcohol",
-      "cooking_habits": "Cooking Habits",
+      "cooking_habits": "Cooking",
       "pets_preference": "Pets Preference",
       "wakeup_time": "Wake-up Time",
       "sleep_time": "Sleep Time",
@@ -717,7 +724,7 @@ class AppStrings {
       "very_extroverted": "Very Extroverted",
       "yes": "Yes",
       "no": "No",
-      "cook": "Cook",
+      "cook": "Cook at home",
       "dont_cook": "Don't cook",
 
       "not_specified": "Not Specified",
@@ -1644,6 +1651,7 @@ class AppStrings {
       "start_conversation_from_listing":
           "Начните разговор с объявления, чтобы начать общение",
       "today": "Сегодня",
+      "yesterday": "Вчера",
       "tomorrow": "Завтра",
       "in_days": "Через {days} дней",
       "in_days_one": "Через {count} день",
@@ -1760,8 +1768,9 @@ class AppStrings {
       "room_3d_viewer_title": "3D",
       "room_3d_dimensions_caption":
           "Приблизительные размеры (границы всего скана)",
-      "room_3d_dimensions_line_template":
-          "Площадь пола: {floorLong} × {floorShort} м · высота {height} м",
+      "room_3d_dimensions_line1_template":
+          "Размеры: {floorLong} × {floorShort} м · Высота: {height} м",
+      "room_3d_dimensions_line2_template": "Площадь: ~{floorArea} м²",
       "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
       "room_3d_floor_only_button": "Скрыть стены",
       "room_3d_full_room_button": "Вся комната",
@@ -2107,14 +2116,19 @@ class AppStrings {
           "Telegram откроется в приложении или браузере.",
 
       // New profile fields
+      "work": "Работа",
       "employed": "Работаю",
+      "not_employed": "Не работаю",
       "cleanliness": "Чистоплотность",
       "noise_level": "Уровень шума",
       "sociability": "Общительность",
+      "guests": "Гости",
       "guests_allowed": "Гости разрешены",
+      "guests_permitted": "Разрешены",
+      "guests_not_permitted": "Не разрешены",
       "smoking_preference": "Курение",
       "alcohol_preference": "Алкоголь",
-      "cooking_habits": "Привычки готовки",
+      "cooking_habits": "Готовка",
       "pets_preference": "Отношение к животным",
       "wakeup_time": "Время подъема",
       "sleep_time": "Время сна",
@@ -2152,7 +2166,7 @@ class AppStrings {
       "very_extroverted": "Очень общительный",
       "yes": "Да",
       "no": "Нет",
-      "cook": "Готовлю",
+      "cook": "Готовлю еду дома",
       "dont_cook": "Не готовлю",
 
       "not_specified": "Не указано",
@@ -3096,6 +3110,7 @@ class AppStrings {
       "start_conversation_from_listing":
           "Xabar almashishni boshlash uchun e'londan suhbatni boshlang",
       "today": "Bugun",
+      "yesterday": "Kecha",
       "tomorrow": "Ertaga",
       "in_days": "{days} kundan keyin",
       "in_days_other": "{count} kundan keyin",
@@ -3217,8 +3232,9 @@ class AppStrings {
       "room_3d_viewer_title": "3D",
       "room_3d_dimensions_caption":
           "Taxminiy o'lchamlar (to'liq skan chegarasi)",
-      "room_3d_dimensions_line_template":
-          "Pol: {floorLong} × {floorShort} м · balandlik {height} м",
+      "room_3d_dimensions_line1_template":
+          "O'lchamlar: {floorLong} x {floorShort} м · Balandlik: {height} м",
+      "room_3d_dimensions_line2_template": "Maydon: ~{floorArea} м²",
       "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
       "room_3d_floor_only_button": "Devorlarni yashirish",
       "room_3d_full_room_button": "Butun xona",
@@ -3563,14 +3579,19 @@ class AppStrings {
           "Telegram ilova yoki brauzerda ochiladi.",
 
       // New profile fields
+      "work": "Ish",
       "employed": "Ishlaydi",
+      "not_employed": "Ishlamayman",
       "cleanliness": "Tozalik",
       "noise_level": "Shovqin darajasi",
       "sociability": "Ijtimoiylik",
+      "guests": "Mehmonlar",
       "guests_allowed": "Mehmonlar ruxsat etilgan",
+      "guests_permitted": "Ruxsat berilgan",
+      "guests_not_permitted": "Ruxsat berilmagan",
       "smoking_preference": "Chekish",
       "alcohol_preference": "Alkogol",
-      "cooking_habits": "Ovqat pishirish odatlari",
+      "cooking_habits": "Pishirish",
       "pets_preference": "Hayvonlarga munosabat",
       "wakeup_time": "Uyg'onish vaqti",
       "sleep_time": "Uxlash vaqti",
@@ -3608,7 +3629,7 @@ class AppStrings {
       "very_extroverted": "Juda tashqariga qarab",
       "yes": "Ha",
       "no": "Yo'q",
-      "cook": "Pishiraman",
+      "cook": "Uyda ovqat pishiraman",
       "dont_cook": "Pishirmayman",
 
       "not_specified": "Ko'rsatilmagan",

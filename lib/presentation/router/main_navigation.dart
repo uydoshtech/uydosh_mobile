@@ -43,7 +43,6 @@ import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/blinking_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -578,7 +577,7 @@ class MainNavigationState extends State<MainNavigation>
       case "telegram":
         return L10n.get("telegram", fallback: "Telegram");
       case "employed":
-        return L10n.get("employed", fallback: "Employed");
+        return L10n.get("work", fallback: "Work");
       case "cleanliness":
         return L10n.get("cleanliness", fallback: "Cleanliness");
       case "noiseLevel":
@@ -586,13 +585,13 @@ class MainNavigationState extends State<MainNavigation>
       case "sociability":
         return L10n.get("sociability", fallback: "Sociability");
       case "guestsAllowed":
-        return L10n.get("guests_allowed", fallback: "Guests allowed");
+        return L10n.get("guests", fallback: "Guests");
       case "smokingPreference":
         return L10n.get("smoking_preference", fallback: "Smoking");
       case "alcoholPreference":
         return L10n.get("alcohol_preference", fallback: "Alcohol");
       case "cookingHabits":
-        return L10n.get("cooking_habits", fallback: "Cooking habits");
+        return L10n.get("cooking_habits", fallback: "Cooking");
       case "petsPreference":
         return L10n.get("pets_preference", fallback: "Pets preference");
       case "wakeupTime":
@@ -1081,15 +1080,21 @@ class MainNavigationState extends State<MainNavigation>
                             Positioned(
                               right: -2,
                               bottom: -2,
-                              child: BlinkingDotWidget(
-                                color: AppColors.success,
-                                size: 12,
-                                duration: const Duration(milliseconds: 750),
-                                borderColor:
-                                    Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.white
-                                        : Colors.grey.shade300,
-                                borderWidth: 2,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: AppColors.success,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.grey.shade300,
+                                    width: 2,
+                                  ),
+                                ),
                               ),
                             ),
                         ],

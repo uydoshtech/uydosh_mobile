@@ -1225,7 +1225,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get could_not_make_call => 'Could not start a call';
 
   @override
+  String get work => 'Work';
+
+  @override
   String get employed => 'Employed';
+
+  @override
+  String get not_employed => 'Not working';
 
   @override
   String get cleanliness => 'Cleanliness';
@@ -1237,7 +1243,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sociability => 'Sociability';
 
   @override
+  String get guests => 'Guests';
+
+  @override
   String get guests_allowed => 'Guests Allowed';
+
+  @override
+  String get guests_permitted => 'Allowed';
+
+  @override
+  String get guests_not_permitted => 'Not allowed';
 
   @override
   String get smoking_preference => 'Smoking';
@@ -1246,7 +1261,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alcohol_preference => 'Alcohol';
 
   @override
-  String get cooking_habits => 'Cooking Habits';
+  String get cooking_habits => 'Cooking';
 
   @override
   String get pets_preference => 'Pets Preference';
@@ -1354,7 +1369,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get cook => 'Cook';
+  String get cook => 'Cook at home';
 
   @override
   String get dont_cook => 'Don\'t cook';

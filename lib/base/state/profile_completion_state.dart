@@ -3,7 +3,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 
 /// Global state to track profile completion status.
-/// Used to show the blinking green dot indicator on the profile icon in the app bar.
+/// Used to show the green completion indicator on the profile icon in the app bar.
 class ProfileCompletionState extends ChangeNotifier {
   factory ProfileCompletionState() => _instance;
   ProfileCompletionState._internal();
@@ -28,7 +28,7 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Whether essential info (name, gender, region, role, university if student) is populated
   bool get hasEssentialInfo => _hasEssentialInfo;
 
-  /// Whether the profile needs completion (show blinking dot).
+  /// Whether the profile needs completion (show indicator dot).
   /// True when not yet loaded (assume incomplete), or when profile is not 100%
   /// complete OR essential info is missing.
   bool get needsProfileCompletion =>

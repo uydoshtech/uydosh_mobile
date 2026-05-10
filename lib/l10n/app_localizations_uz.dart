@@ -1241,7 +1241,13 @@ class AppLocalizationsUz extends AppLocalizations {
   String get could_not_make_call => 'Qo\'ng\'iroqni boshlab bo\'lmadi';
 
   @override
+  String get work => 'Ish';
+
+  @override
   String get employed => 'Ishlaydi';
+
+  @override
+  String get not_employed => 'Ishlamayman';
 
   @override
   String get cleanliness => 'Tozalik';
@@ -1253,7 +1259,16 @@ class AppLocalizationsUz extends AppLocalizations {
   String get sociability => 'Ijtimoiylik';
 
   @override
+  String get guests => 'Mehmonlar';
+
+  @override
   String get guests_allowed => 'Mehmonlar ruxsat etilgan';
+
+  @override
+  String get guests_permitted => 'Ruxsat berilgan';
+
+  @override
+  String get guests_not_permitted => 'Ruxsat berilmagan';
 
   @override
   String get smoking_preference => 'Chekish';
@@ -1262,7 +1277,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get alcohol_preference => 'Alkogol';
 
   @override
-  String get cooking_habits => 'Ovqat pishirish odatlari';
+  String get cooking_habits => 'Pishirish';
 
   @override
   String get pets_preference => 'Hayvonlarga munosabat';
@@ -1370,7 +1385,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get no => 'Yo\'q';
 
   @override
-  String get cook => 'Pishiraman';
+  String get cook => 'Uyda ovqat pishiraman';
 
   @override
   String get dont_cook => 'Pishirmayman';

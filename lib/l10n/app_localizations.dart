@@ -2320,11 +2320,23 @@ abstract class AppLocalizations {
   /// **'Could not start a call'**
   String get could_not_make_call;
 
+  /// No description provided for @work.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get work;
+
   /// No description provided for @employed.
   ///
   /// In en, this message translates to:
   /// **'Employed'**
   String get employed;
+
+  /// No description provided for @not_employed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not working'**
+  String get not_employed;
 
   /// No description provided for @cleanliness.
   ///
@@ -2344,11 +2356,29 @@ abstract class AppLocalizations {
   /// **'Sociability'**
   String get sociability;
 
+  /// No description provided for @guests.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests'**
+  String get guests;
+
   /// No description provided for @guests_allowed.
   ///
   /// In en, this message translates to:
   /// **'Guests Allowed'**
   String get guests_allowed;
+
+  /// No description provided for @guests_permitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get guests_permitted;
+
+  /// No description provided for @guests_not_permitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get guests_not_permitted;
 
   /// No description provided for @smoking_preference.
   ///
@@ -2365,7 +2395,7 @@ abstract class AppLocalizations {
   /// No description provided for @cooking_habits.
   ///
   /// In en, this message translates to:
-  /// **'Cooking Habits'**
+  /// **'Cooking'**
   String get cooking_habits;
 
   /// No description provided for @pets_preference.
@@ -2581,7 +2611,7 @@ abstract class AppLocalizations {
   /// No description provided for @cook.
   ///
   /// In en, this message translates to:
-  /// **'Cook'**
+  /// **'Cook at home'**
   String get cook;
 
   /// No description provided for @dont_cook.

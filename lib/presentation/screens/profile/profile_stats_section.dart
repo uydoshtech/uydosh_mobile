@@ -257,7 +257,7 @@ class ProfileStatsSection extends StatelessWidget {
                                 _buildProfileField(
                                   context,
                                   icon: Icons.work,
-                                  label: L10n.get("employed"),
+                                  label: L10n.get("work"),
                                   value: profile.employed!
                                       ? L10n.get("yes")
                                       : L10n.get("no"),
@@ -328,7 +328,7 @@ class ProfileStatsSection extends StatelessWidget {
                                 _buildProfileField(
                                   context,
                                   icon: Icons.group_add,
-                                  label: L10n.get("guests_allowed"),
+                                  label: L10n.get("guests"),
                                   value: profile.guestsAllowed!
                                       ? L10n.get("yes")
                                       : L10n.get("no"),

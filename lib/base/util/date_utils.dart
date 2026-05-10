@@ -67,11 +67,13 @@ class AppDateUtils {
   }
 
   /// Chat / inbox date pill: localized **Today** on the current local calendar
-  /// day; otherwise `d MMMM yyyy` (locale-aware).
+  /// day; localized **Yesterday** on the previous calendar day; otherwise
+  /// `d MMMM yyyy` (locale-aware).
   static String formatDateHeader(DateTime date, BuildContext context) {
     final localDate = date.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
     final messageDay = DateTime(
       localDate.year,
       localDate.month,
@@ -79,6 +81,9 @@ class AppDateUtils {
     );
     if (messageDay == today) {
       return L10n.get("today");
+    }
+    if (messageDay == yesterday) {
+      return L10n.get("yesterday");
     }
     final localeName = Localizations.localeOf(context).toString();
     return DateFormat("d MMMM yyyy", localeName).format(localDate);

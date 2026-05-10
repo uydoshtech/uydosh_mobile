@@ -128,6 +128,7 @@ class _ListingDetailCompatibilitySectionState
         return Icons.wb_sunny;
       case "sleep_time":
         return Icons.bedtime;
+      case "work":
       case "employed":
         return Icons.work;
       case "cleanliness":
@@ -136,6 +137,7 @@ class _ListingDetailCompatibilitySectionState
         return Icons.volume_up;
       case "sociability":
         return Icons.people;
+      case "guests":
       case "guests_allowed":
         return Icons.group_add;
       case "smoking_preference":

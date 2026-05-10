@@ -1227,7 +1227,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get could_not_make_call => 'Не удалось начать звонок';
 
   @override
+  String get work => 'Работа';
+
+  @override
   String get employed => 'Работаю';
+
+  @override
+  String get not_employed => 'Не работаю';
 
   @override
   String get cleanliness => 'Чистоплотность';
@@ -1239,7 +1245,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sociability => 'Общительность';
 
   @override
+  String get guests => 'Гости';
+
+  @override
   String get guests_allowed => 'Гости разрешены';
+
+  @override
+  String get guests_permitted => 'Разрешены';
+
+  @override
+  String get guests_not_permitted => 'Не разрешены';
 
   @override
   String get smoking_preference => 'Курение';
@@ -1248,7 +1263,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get alcohol_preference => 'Алкоголь';
 
   @override
-  String get cooking_habits => 'Привычки готовки';
+  String get cooking_habits => 'Готовка';
 
   @override
   String get pets_preference => 'Отношение к животным';
@@ -1356,7 +1371,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no => 'Нет';
 
   @override
-  String get cook => 'Готовлю';
+  String get cook => 'Готовлю еду дома';
 
   @override
   String get dont_cook => 'Не готовлю';

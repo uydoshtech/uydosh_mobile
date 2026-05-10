@@ -137,7 +137,7 @@ class ListingDetailCompatibilityHelper {
     );
 
     compare<bool>(
-      labelKey: "guests_allowed",
+      labelKey: "guests",
       currentValue: currentProfile.guestsAllowed,
       ownerValue: ownerProfile.guestsAllowed,
       isMatch: (a, b) => a == b,
@@ -193,7 +193,7 @@ class ListingDetailCompatibilityHelper {
     );
 
     compare<bool>(
-      labelKey: "employed",
+      labelKey: "work",
       currentValue: currentProfile.employed,
       ownerValue: ownerProfile.employed,
       isMatch: (a, b) => a == b,

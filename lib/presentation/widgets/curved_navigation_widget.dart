@@ -333,10 +333,8 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   Color _getBackgroundColor(BuildContext context) {
     // Use ThemeState to detect current theme
     if (ThemeState().isBlueTheme) {
-      // Must match [_getCurvedColor]: the package paints the shelf with [color]
-      // but the icon bubble sits above that layer and reveals [backgroundColor].
-      // Using primary here produced a lighter “halo” around the selected icon.
-      return BlueThemeColors.navigationBackground;
+      // Blue theme - use primary blue for background
+      return BlueThemeColors.primary;
     } else if (ThemeState().isLightTheme) {
       // Light theme - use white for background
       return Colors.white;
@@ -595,44 +593,41 @@ class _CurvedNavActiveOrb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Transform.translate(
       offset: const Offset(0, _nudgeTowardCurveY),
       child: SizedBox(
         width: _diameter,
         height: _diameter,
-        child:
-            baseColor.a == 0
-                ? Center(child: child)
-                : Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: ThreeDSurfaceStyle.surfaceGradient(
-                            context,
-                            baseColor,
-                          ),
-                          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient:
-                              ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
-                                Theme.of(context).brightness,
-                              ),
-                        ),
-                      ),
-                    ),
-                    Center(child: child),
-                  ],
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    baseColor,
+                  ),
+                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
                 ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
+                    theme.brightness,
+                  ),
+                ),
+              ),
+            ),
+            Center(child: child),
+          ],
+        ),
       ),
     );
   }

@@ -29,7 +29,6 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
-import "package:uy_dosh/presentation/widgets/common/profile_toggle_control.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -60,14 +59,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late ValueNotifier<bool> _isStudent;
   late ValueNotifier<String> _selectedLanguage;
   late ValueNotifier<String> _selectedRole;
-  late ValueNotifier<bool?> _employed;
+  late ValueNotifier<String?> _employed;
   late ValueNotifier<int?> _cleanliness;
   late ValueNotifier<int?> _noiseLevel;
   late ValueNotifier<int?> _sociability;
-  late ValueNotifier<bool?> _guestsAllowed;
+  late ValueNotifier<String?> _guestsAllowed;
   late ValueNotifier<String?> _smokingPreference;
   late ValueNotifier<String?> _alcoholPreference;
-  late ValueNotifier<bool?> _cookingHabits;
+  late ValueNotifier<String?> _cookingHabits;
   late ValueNotifier<String?> _petsPreference;
   late ValueNotifier<String?> _wakeupTime;
   late ValueNotifier<String?> _sleepTime;
@@ -87,6 +86,58 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   /// Role as loaded from session (baseline for dirty check).
   String? _baselineRole;
+
+  /// Dropdown slugs for [cookingHabits] (API remains bool?).
+  static const String _cookingSlugAtHome = "cooks_at_home";
+  static const String _cookingSlugDoesNot = "does_not_cook";
+
+  bool? _cookingHabitsBoolFromSlug(String? slug) {
+    if (slug == null) return null;
+    if (slug == _cookingSlugAtHome) return true;
+    if (slug == _cookingSlugDoesNot) return false;
+    return null;
+  }
+
+  String? _cookingHabitsSlugFromBool(bool? b) {
+    if (b == null) return null;
+    return b ? _cookingSlugAtHome : _cookingSlugDoesNot;
+  }
+
+  /// API: 1 = quiet … 5 = loud. Slider: left = loud, right = quiet.
+  int _noiseLevelToDisplay(int? stored) =>
+      stored == null ? 5 : (6 - stored).clamp(1, 5);
+
+  int _displayToNoiseLevel(int display) => (6 - display).clamp(1, 5);
+
+  static const String _employedSlugYes = "employed_yes";
+  static const String _employedSlugNo = "employed_no";
+
+  bool? _employedBoolFromSlug(String? slug) {
+    if (slug == null) return null;
+    if (slug == _employedSlugYes) return true;
+    if (slug == _employedSlugNo) return false;
+    return null;
+  }
+
+  String? _employedSlugFromBool(bool? b) {
+    if (b == null) return null;
+    return b ? _employedSlugYes : _employedSlugNo;
+  }
+
+  static const String _guestsSlugYes = "guests_yes";
+  static const String _guestsSlugNo = "guests_no";
+
+  bool? _guestsBoolFromSlug(String? slug) {
+    if (slug == null) return null;
+    if (slug == _guestsSlugYes) return true;
+    if (slug == _guestsSlugNo) return false;
+    return null;
+  }
+
+  String? _guestsSlugFromBool(bool? b) {
+    if (b == null) return null;
+    return b ? _guestsSlugYes : _guestsSlugNo;
+  }
 
   late final Listenable _formListenables;
 
@@ -121,14 +172,18 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       widget.profile.preferredLanguage ?? LanguageState().currentLanguage,
     );
     _selectedRole = ValueNotifier("tenant");
-    _employed = ValueNotifier(widget.profile.employed);
+    _employed = ValueNotifier(_employedSlugFromBool(widget.profile.employed));
     _cleanliness = ValueNotifier(widget.profile.cleanliness);
     _noiseLevel = ValueNotifier(widget.profile.noiseLevel);
     _sociability = ValueNotifier(widget.profile.sociability);
-    _guestsAllowed = ValueNotifier(widget.profile.guestsAllowed);
+    _guestsAllowed = ValueNotifier(
+      _guestsSlugFromBool(widget.profile.guestsAllowed),
+    );
     _smokingPreference = ValueNotifier(widget.profile.smokingPreference);
     _alcoholPreference = ValueNotifier(widget.profile.alcoholPreference);
-    _cookingHabits = ValueNotifier(widget.profile.cookingHabits);
+    _cookingHabits = ValueNotifier(
+      _cookingHabitsSlugFromBool(widget.profile.cookingHabits),
+    );
     _petsPreference = ValueNotifier(widget.profile.petsPreference);
     _wakeupTime = ValueNotifier(widget.profile.wakeupTime);
     _sleepTime = ValueNotifier(widget.profile.sleepTime);
@@ -289,20 +344,24 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       }
     }
 
-    if (p.employed != _employed.value) addLabel("employed", fallback: "Employed");
+    if (p.employed != _employedBoolFromSlug(_employed.value)) {
+      addLabel("work", fallback: "Work");
+    }
     if (p.wakeupTime != _wakeupTime.value) addLabel("wakeup_time", fallback: "Wake-up time");
     if (p.sleepTime != _sleepTime.value) addLabel("sleep_time", fallback: "Sleep time");
     if (p.cleanliness != _cleanliness.value) addLabel("cleanliness", fallback: "Cleanliness");
     if (p.noiseLevel != _noiseLevel.value) addLabel("noise_level", fallback: "Noise level");
     if (p.sociability != _sociability.value) addLabel("sociability", fallback: "Sociability");
-    if (p.guestsAllowed != _guestsAllowed.value) addLabel("guests_allowed", fallback: "Guests");
+    if (p.guestsAllowed != _guestsBoolFromSlug(_guestsAllowed.value)) {
+      addLabel("guests", fallback: "Guests");
+    }
     if (p.smokingPreference != _smokingPreference.value) {
       addLabel("smoking_preference", fallback: "Smoking");
     }
     if (p.alcoholPreference != _alcoholPreference.value) {
       addLabel("alcohol_preference", fallback: "Alcohol");
     }
-    if (p.cookingHabits != _cookingHabits.value) {
+    if (p.cookingHabits != _cookingHabitsBoolFromSlug(_cookingHabits.value)) {
       addLabel("cooking_habits", fallback: "Cooking");
     }
     if (p.petsPreference != _petsPreference.value) {
@@ -354,14 +413,18 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       if (br != null && _selectedRole.value != br) return true;
     }
 
-    if (p.employed != _employed.value) return true;
+    if (p.employed != _employedBoolFromSlug(_employed.value)) return true;
     if (p.cleanliness != _cleanliness.value) return true;
     if (p.noiseLevel != _noiseLevel.value) return true;
     if (p.sociability != _sociability.value) return true;
-    if (p.guestsAllowed != _guestsAllowed.value) return true;
+    if (p.guestsAllowed != _guestsBoolFromSlug(_guestsAllowed.value)) {
+      return true;
+    }
     if (p.smokingPreference != _smokingPreference.value) return true;
     if (p.alcoholPreference != _alcoholPreference.value) return true;
-    if (p.cookingHabits != _cookingHabits.value) return true;
+    if (p.cookingHabits != _cookingHabitsBoolFromSlug(_cookingHabits.value)) {
+      return true;
+    }
     if (p.petsPreference != _petsPreference.value) return true;
     if (p.wakeupTime != _wakeupTime.value) return true;
     if (p.sleepTime != _sleepTime.value) return true;
@@ -521,14 +584,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         role: roleToSave,
         aboutMe: aboutMeToSend,
         telegram: telegramToSend,
-        employed: _employed.value,
+        employed: _employedBoolFromSlug(_employed.value),
         cleanliness: _cleanliness.value,
         noiseLevel: _noiseLevel.value,
         sociability: _sociability.value,
-        guestsAllowed: _guestsAllowed.value,
+        guestsAllowed: _guestsBoolFromSlug(_guestsAllowed.value),
         smokingPreference: _smokingPreference.value,
         alcoholPreference: _alcoholPreference.value,
-        cookingHabits: _cookingHabits.value,
+        cookingHabits: _cookingHabitsBoolFromSlug(_cookingHabits.value),
         petsPreference: _petsPreference.value,
         wakeupTime: _wakeupTime.value,
         sleepTime: _sleepTime.value,
@@ -542,12 +605,18 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       logger.d("  - alcoholPreference: ${_alcoholPreference.value}");
       logger.d("  - wakeupTime: ${_wakeupTime.value}");
       logger.d("  - sleepTime: ${_sleepTime.value}");
-      logger.d("  - employed: ${_employed.value}");
+      logger.d(
+        "  - employed: ${_employedBoolFromSlug(_employed.value)}",
+      );
       logger.d("  - cleanliness: ${_cleanliness.value}");
       logger.d("  - noiseLevel: ${_noiseLevel.value}");
       logger.d("  - sociability: ${_sociability.value}");
-      logger.d("  - guestsAllowed: ${_guestsAllowed.value}");
-      logger.d("  - cookingHabits: ${_cookingHabits.value}");
+      logger.d(
+        "  - guestsAllowed: ${_guestsBoolFromSlug(_guestsAllowed.value)}",
+      );
+      logger.d(
+        "  - cookingHabits: ${_cookingHabitsBoolFromSlug(_cookingHabits.value)}",
+      );
       logger.d("  - petsPreference: ${_petsPreference.value}");
 
       // Also log the JSON that will be sent
@@ -821,14 +890,31 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                   const SizedBox(height: 16),
 
-                  // Employed Toggle
-                  ValueListenableBuilder<bool?>(
+                  // Employed (dropdown; stored as bool? on API)
+                  ValueListenableBuilder<String?>(
                     valueListenable: _employed,
-                    builder: (context, employed, _) => ProfileToggleControl(
-                      label: L10n.get("employed"),
+                    builder: (context, employed, _) => ProfileDropdownControl(
+                      label: L10n.get("work"),
                       value: employed,
                       onChanged: (value) => _employed.value = value,
                       icon: Icons.work,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get("not_specified"),
+                          icon: Icons.not_interested,
+                        ),
+                        DropdownOption(
+                          value: _employedSlugYes,
+                          label: L10n.get("employed"),
+                          icon: Icons.work,
+                        ),
+                        DropdownOption(
+                          value: _employedSlugNo,
+                          label: L10n.get("not_employed"),
+                          icon: Icons.work_off_outlined,
+                        ),
+                      ],
                     ),
                   ),
 
@@ -944,24 +1030,28 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                   const SizedBox(height: 16),
 
-                  // Noise Level Slider
+                  // Noise level: loud/noisy on the left (1), quiet on the right (5).
+                  // Stored values stay 1 = quiet … 5 = loud (see [_noiseLevelToDisplay]).
                   ValueListenableBuilder<int?>(
                     valueListenable: _noiseLevel,
                     builder: (context, noiseLevel, _) => ProfileSliderControl(
                       label: L10n.get(
                         "noise_level",
                       ),
-                      value: noiseLevel,
-                      onChanged: (value) => _noiseLevel.value = value,
+                      value: _noiseLevelToDisplay(noiseLevel),
+                      onChanged: (displayValue) {
+                        if (displayValue == null) return;
+                        _noiseLevel.value = _displayToNoiseLevel(displayValue);
+                      },
                       min: 1,
                       max: 5,
                       icon: Icons.volume_up,
                       labels: [
-                        L10n.get("very_quiet"),
-                        L10n.get("quiet"),
-                        L10n.get("average"),
-                        L10n.get("loud"),
                         L10n.get("very_loud"),
+                        L10n.get("loud"),
+                        L10n.get("average"),
+                        L10n.get("quiet"),
+                        L10n.get("very_quiet"),
                       ],
                     ),
                   ),
@@ -996,17 +1086,40 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                   const SizedBox(height: 16),
 
-                  // Guests Allowed Toggle
-                  ValueListenableBuilder<bool?>(
+                  // Guests allowed (dropdown; stored as bool? on API)
+                  ValueListenableBuilder<String?>(
                     valueListenable: _guestsAllowed,
                     builder: (context, guestsAllowed, _) =>
-                        ProfileToggleControl(
+                        ProfileDropdownControl(
                       label: L10n.get(
-                        "guests_allowed",
+                        "guests",
                       ),
                       value: guestsAllowed,
                       onChanged: (value) => _guestsAllowed.value = value,
                       icon: Icons.group_add,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                          icon: Icons.not_interested,
+                        ),
+                        DropdownOption(
+                          value: _guestsSlugYes,
+                          label: L10n.get(
+                            "guests_permitted",
+                          ),
+                          icon: Icons.group_add,
+                        ),
+                        DropdownOption(
+                          value: _guestsSlugNo,
+                          label: L10n.get(
+                            "guests_not_permitted",
+                          ),
+                          icon: Icons.block,
+                        ),
+                      ],
                     ),
                   ),
 
@@ -1104,17 +1217,40 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                   const SizedBox(height: 16),
 
-                  // Cooking Habits Toggle
-                  ValueListenableBuilder<bool?>(
+                  // Cooking habits (dropdown; stored as bool on API)
+                  ValueListenableBuilder<String?>(
                     valueListenable: _cookingHabits,
                     builder: (context, cookingHabits, _) =>
-                        ProfileToggleControl(
+                        ProfileDropdownControl(
                       label: L10n.get(
                         "cooking_habits",
                       ),
                       value: cookingHabits,
                       onChanged: (value) => _cookingHabits.value = value,
                       icon: Icons.restaurant,
+                      options: [
+                        DropdownOption(
+                          value: null,
+                          label: L10n.get(
+                            "not_specified",
+                          ),
+                          icon: Icons.not_interested,
+                        ),
+                        DropdownOption(
+                          value: _cookingSlugAtHome,
+                          label: L10n.get(
+                            "cook",
+                          ),
+                          icon: Icons.restaurant,
+                        ),
+                        DropdownOption(
+                          value: _cookingSlugDoesNot,
+                          label: L10n.get(
+                            "dont_cook",
+                          ),
+                          icon: Icons.takeout_dining,
+                        ),
+                      ],
                     ),
                   ),
 

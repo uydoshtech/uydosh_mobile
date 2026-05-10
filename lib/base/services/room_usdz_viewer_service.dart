@@ -61,8 +61,10 @@ class RoomUsdzViewerService {
       "title": L10n.getForLanguage("room_3d_viewer_title", languageCode),
       "dimensionsCaption":
           L10n.getForLanguage("room_3d_dimensions_caption", languageCode),
-      "dimensionsLineTemplate":
-          L10n.getForLanguage("room_3d_dimensions_line_template", languageCode),
+      "dimensionsLine1Template":
+          L10n.getForLanguage("room_3d_dimensions_line1_template", languageCode),
+      "dimensionsLine2Template":
+          L10n.getForLanguage("room_3d_dimensions_line2_template", languageCode),
       "loadErrorTitle":
           L10n.getForLanguage("room_3d_load_error_title", languageCode),
       "alertOk": L10n.getForLanguage("ok", languageCode),

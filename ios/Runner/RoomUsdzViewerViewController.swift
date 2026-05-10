@@ -6,7 +6,8 @@ import UIKit
 struct RoomViewerStrings {
   let title: String
   let dimensionsCaption: String
-  let dimensionsLineTemplate: String
+  let dimensionsLine1Template: String
+  let dimensionsLine2Template: String
   let loadErrorTitle: String
   let alertOk: String
   let floorOnlyButtonTitle: String
@@ -27,7 +28,8 @@ struct RoomViewerStrings {
   init(
     title: String,
     dimensionsCaption: String,
-    dimensionsLineTemplate: String,
+    dimensionsLine1Template: String,
+    dimensionsLine2Template: String,
     loadErrorTitle: String,
     alertOk: String,
     floorOnlyButtonTitle: String,
@@ -46,7 +48,8 @@ struct RoomViewerStrings {
   ) {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
-    self.dimensionsLineTemplate = dimensionsLineTemplate
+    self.dimensionsLine1Template = dimensionsLine1Template
+    self.dimensionsLine2Template = dimensionsLine2Template
     self.loadErrorTitle = loadErrorTitle
     self.alertOk = alertOk
     self.floorOnlyButtonTitle = floorOnlyButtonTitle
@@ -67,14 +70,16 @@ struct RoomViewerStrings {
   init?(dict: [String: String]) {
     guard let title = dict["title"],
       let dimensionsCaption = dict["dimensionsCaption"],
-      let dimensionsLineTemplate = dict["dimensionsLineTemplate"],
+      let dimensionsLine1Template = dict["dimensionsLine1Template"],
+      let dimensionsLine2Template = dict["dimensionsLine2Template"],
       let loadErrorTitle = dict["loadErrorTitle"],
       let alertOk = dict["alertOk"]
     else { return nil }
     self.init(
       title: title,
       dimensionsCaption: dimensionsCaption,
-      dimensionsLineTemplate: dimensionsLineTemplate,
+      dimensionsLine1Template: dimensionsLine1Template,
+      dimensionsLine2Template: dimensionsLine2Template,
       loadErrorTitle: loadErrorTitle,
       alertOk: alertOk,
       floorOnlyButtonTitle: dict["floorOnlyButton"] ?? "Hide walls",
@@ -110,7 +115,9 @@ struct RoomViewerStrings {
   static let englishFallback = RoomViewerStrings(
     title: "3D",
     dimensionsCaption: "Approximate dimensions (full scan bounds)",
-    dimensionsLineTemplate: "{floorLong} × {floorShort} m floor · {height} m high",
+    dimensionsLine1Template:
+      "Dimensions: {floorLong} x {floorShort} m · Height: {height}m",
+    dimensionsLine2Template: "Area: ~{floorArea} m²",
     loadErrorTitle: "Could not load 3D model",
     alertOk: "OK",
     floorOnlyButtonTitle: "Hide walls",
@@ -138,8 +145,13 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let hintContainer = UIView()
   private let hintStack = UIStackView()
   private let dimensionsTitleLabel = UILabel()
-  private let dimensionsValueLabel = UILabel()
-  private let zoomControlsContainer = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+  private let dimensionsLineStack = UIStackView()
+  private let dimensionsLine1Icon = UIImageView()
+  private let dimensionsLine1Label = UILabel()
+  private let dimensionsLine2Icon = UIImageView()
+  private let dimensionsLine2Label = UILabel()
+  private let zoomControlsContainer = UIView()
+  private let zoomControlsPanel = UIView()
   private let zoomStack = UIStackView()
   private let zoomInButton = UIButton(type: .system)
   private let zoomOutButton = UIButton(type: .system)
@@ -169,6 +181,10 @@ final class RoomUsdzViewerViewController: UIViewController {
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
   /// Matches `zoomInTapped` / `zoomOutTapped` (FOV change per step).
   private static let zoomFovStepDegrees: CGFloat = 7.2
+  /// Pill-shaped zoom bar; large enough to read softer than the old 14pt radius.
+  private static let zoomControlsPanelCornerRadius: CGFloat = 28
+  private static let zoomButtonSize: CGFloat = 38
+  private static let zoomButtonCornerRadius: CGFloat = 19
   /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
   private static let initialZoomInSteps: Int = 2
 
@@ -227,25 +243,67 @@ final class RoomUsdzViewerViewController: UIViewController {
     dimensionsTitleLabel.text = strings.dimensionsCaption
     dimensionsTitleLabel.isHidden = true
 
-    dimensionsValueLabel.translatesAutoresizingMaskIntoConstraints = false
-    dimensionsValueLabel.textAlignment = .center
-    dimensionsValueLabel.numberOfLines = 0
-    dimensionsValueLabel.adjustsFontForContentSizeCategory = true
-    dimensionsValueLabel.textColor = UIColor.white.withAlphaComponent(0.98)
-    let subHead = UIFont.preferredFont(forTextStyle: .subheadline)
-    if let boldDesc = subHead.fontDescriptor.withSymbolicTraits(.traitBold) {
-      dimensionsValueLabel.font = UIFont(descriptor: boldDesc, size: 0)
-    } else {
-      dimensionsValueLabel.font = subHead
+    let dimSymbolConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+    func configureDimensionIcon(_ iv: UIImageView, systemName: String) {
+      iv.translatesAutoresizingMaskIntoConstraints = false
+      iv.contentMode = .scaleAspectFit
+      iv.tintColor = UIColor.white.withAlphaComponent(0.92)
+      iv.image = UIImage(systemName: systemName, withConfiguration: dimSymbolConfig)
+      iv.setContentHuggingPriority(.required, for: .horizontal)
+      NSLayoutConstraint.activate([
+        iv.widthAnchor.constraint(equalToConstant: 20),
+        iv.heightAnchor.constraint(equalToConstant: 18),
+      ])
     }
-    dimensionsValueLabel.isHidden = true
+    configureDimensionIcon(dimensionsLine1Icon, systemName: "rectangle")
+    configureDimensionIcon(dimensionsLine2Icon, systemName: "rectangle.on.rectangle")
+
+    let subHead = UIFont.preferredFont(forTextStyle: .subheadline)
+    let valueFont: UIFont = {
+      if let boldDesc = subHead.fontDescriptor.withSymbolicTraits(.traitBold) {
+        return UIFont(descriptor: boldDesc, size: 0)
+      }
+      return subHead
+    }()
+
+    func configureDimensionValueLabel(_ label: UILabel) {
+      label.translatesAutoresizingMaskIntoConstraints = false
+      label.textAlignment = .natural
+      label.numberOfLines = 0
+      label.adjustsFontForContentSizeCategory = true
+      label.textColor = UIColor.white.withAlphaComponent(0.98)
+      label.font = valueFont
+    }
+    configureDimensionValueLabel(dimensionsLine1Label)
+    configureDimensionValueLabel(dimensionsLine2Label)
+
+    let row1 = UIStackView(arrangedSubviews: [dimensionsLine1Icon, dimensionsLine1Label])
+    row1.axis = .horizontal
+    row1.spacing = 8
+    row1.alignment = .center
+    row1.distribution = .fill
+    let row2 = UIStackView(arrangedSubviews: [dimensionsLine2Icon, dimensionsLine2Label])
+    row2.axis = .horizontal
+    row2.spacing = 8
+    row2.alignment = .center
+    row2.distribution = .fill
+
+    dimensionsLineStack.translatesAutoresizingMaskIntoConstraints = false
+    dimensionsLineStack.axis = .vertical
+    dimensionsLineStack.spacing = 6
+    dimensionsLineStack.alignment = .fill
+    dimensionsLineStack.addArrangedSubview(row1)
+    dimensionsLineStack.addArrangedSubview(row2)
+    dimensionsLineStack.isHidden = true
+    dimensionsLineStack.isAccessibilityElement = true
+    dimensionsLineStack.accessibilityTraits = .staticText
 
     hintStack.translatesAutoresizingMaskIntoConstraints = false
     hintStack.axis = .vertical
     hintStack.alignment = .fill
     hintStack.spacing = 4
     hintStack.addArrangedSubview(dimensionsTitleLabel)
-    hintStack.addArrangedSubview(dimensionsValueLabel)
+    hintStack.addArrangedSubview(dimensionsLineStack)
 
     hintContainer.addSubview(hintStack)
     view.addSubview(hintContainer)
@@ -307,6 +365,11 @@ final class RoomUsdzViewerViewController: UIViewController {
     playBrandMarkEntranceAnimation()
   }
 
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    refreshZoomControlsNeumorphicShadowPaths()
+  }
+
   /// Fade + slight drop entrance for the brand mark. Mirrors the feel of
   /// the previous CAShapeLayer-based renderer so the viewer's opening
   /// beat doesn't change visually after the PNG swap.
@@ -329,35 +392,64 @@ final class RoomUsdzViewerViewController: UIViewController {
   private func setupZoomControls() {
     zoomControlsContainer.translatesAutoresizingMaskIntoConstraints = false
     zoomControlsContainer.isUserInteractionEnabled = true
-    zoomControlsContainer.contentView.isUserInteractionEnabled = true
-    zoomControlsContainer.clipsToBounds = true
-    zoomControlsContainer.layer.cornerRadius = 14
+    zoomControlsContainer.backgroundColor = .clear
+    zoomControlsContainer.clipsToBounds = false
+    zoomControlsContainer.layer.masksToBounds = false
+    zoomControlsContainer.layer.shadowColor = UIColor.black.cgColor
+    zoomControlsContainer.layer.shadowOpacity = 0.52
+    zoomControlsContainer.layer.shadowOffset = CGSize(width: 5, height: 7)
+    zoomControlsContainer.layer.shadowRadius = 14
+
+    zoomControlsPanel.translatesAutoresizingMaskIntoConstraints = false
+    zoomControlsPanel.isUserInteractionEnabled = true
+    zoomControlsPanel.backgroundColor = UIColor(red: 0.17, green: 0.17, blue: 0.19, alpha: 1)
+    zoomControlsPanel.layer.cornerRadius = Self.zoomControlsPanelCornerRadius
     if #available(iOS 13.0, *) {
-      zoomControlsContainer.layer.cornerCurve = .continuous
+      zoomControlsPanel.layer.cornerCurve = .continuous
     }
+    zoomControlsPanel.clipsToBounds = true
+    zoomControlsPanel.layer.borderWidth = 1
+    zoomControlsPanel.layer.borderColor = UIColor.white.withAlphaComponent(0.07).cgColor
+
+    zoomControlsContainer.addSubview(zoomControlsPanel)
+    NSLayoutConstraint.activate([
+      zoomControlsPanel.topAnchor.constraint(equalTo: zoomControlsContainer.topAnchor),
+      zoomControlsPanel.leadingAnchor.constraint(equalTo: zoomControlsContainer.leadingAnchor),
+      zoomControlsPanel.trailingAnchor.constraint(equalTo: zoomControlsContainer.trailingAnchor),
+      zoomControlsPanel.bottomAnchor.constraint(equalTo: zoomControlsContainer.bottomAnchor),
+    ])
+
     view.addSubview(zoomControlsContainer)
 
     zoomStack.translatesAutoresizingMaskIntoConstraints = false
     zoomStack.axis = .horizontal
-    zoomStack.alignment = .fill
-    zoomStack.spacing = 8
+    zoomStack.alignment = .center
+    zoomStack.spacing = 12
 
-    let iconConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+    let iconConfig = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
     zoomInButton.setImage(UIImage(systemName: "plus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
     zoomOutButton.setImage(UIImage(systemName: "minus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
 
+    let buttonTint = UIColor.white.withAlphaComponent(0.92)
     for b in [zoomInButton, zoomOutButton] {
       b.translatesAutoresizingMaskIntoConstraints = false
-      b.tintColor = UIColor.white.withAlphaComponent(0.95)
-      b.backgroundColor = UIColor.black.withAlphaComponent(0.18)
-      b.layer.cornerRadius = 18
+      b.tintColor = buttonTint
+      b.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
+      b.layer.cornerRadius = Self.zoomButtonCornerRadius
       if #available(iOS 13.0, *) {
         b.layer.cornerCurve = .continuous
       }
-      b.clipsToBounds = true
+      b.clipsToBounds = false
+      b.layer.masksToBounds = false
+      b.layer.shadowColor = UIColor.black.cgColor
+      b.layer.shadowOpacity = 0.4
+      b.layer.shadowOffset = CGSize(width: 2, height: 3)
+      b.layer.shadowRadius = 4
+      b.layer.borderWidth = 0.5
+      b.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
       NSLayoutConstraint.activate([
-        b.heightAnchor.constraint(equalToConstant: 36),
-        b.widthAnchor.constraint(equalToConstant: 36),
+        b.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+        b.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
       ])
     }
 
@@ -368,14 +460,29 @@ final class RoomUsdzViewerViewController: UIViewController {
 
     zoomStack.addArrangedSubview(zoomInButton)
     zoomStack.addArrangedSubview(zoomOutButton)
-    zoomControlsContainer.contentView.addSubview(zoomStack)
+    zoomControlsPanel.addSubview(zoomStack)
 
     NSLayoutConstraint.activate([
-      zoomStack.topAnchor.constraint(equalTo: zoomControlsContainer.contentView.topAnchor, constant: 10),
-      zoomStack.leadingAnchor.constraint(equalTo: zoomControlsContainer.contentView.leadingAnchor, constant: 10),
-      zoomStack.trailingAnchor.constraint(equalTo: zoomControlsContainer.contentView.trailingAnchor, constant: -10),
-      zoomStack.bottomAnchor.constraint(equalTo: zoomControlsContainer.contentView.bottomAnchor, constant: -10),
+      zoomStack.topAnchor.constraint(equalTo: zoomControlsPanel.topAnchor, constant: 12),
+      zoomStack.leadingAnchor.constraint(equalTo: zoomControlsPanel.leadingAnchor, constant: 12),
+      zoomStack.trailingAnchor.constraint(equalTo: zoomControlsPanel.trailingAnchor, constant: -12),
+      zoomStack.bottomAnchor.constraint(equalTo: zoomControlsPanel.bottomAnchor, constant: -12),
     ])
+  }
+
+  private func refreshZoomControlsNeumorphicShadowPaths() {
+    let panelR = Self.zoomControlsPanelCornerRadius
+    let outer = zoomControlsContainer.bounds
+    guard outer.width > 1, outer.height > 1 else { return }
+    zoomControlsContainer.layer.shadowPath =
+      UIBezierPath(roundedRect: outer, cornerRadius: panelR).cgPath
+
+    let br = Self.zoomButtonCornerRadius
+    for b in [zoomInButton, zoomOutButton] {
+      let bb = b.bounds
+      guard bb.width > 1, bb.height > 1 else { continue }
+      b.layer.shadowPath = UIBezierPath(roundedRect: bb, cornerRadius: br).cgPath
+    }
   }
 
   private func setZoom(fovDegrees: CGFloat, animated: Bool) {
@@ -654,9 +761,20 @@ final class RoomUsdzViewerViewController: UIViewController {
     SCNTransaction.commit()
   }
 
+  /// Roughness for stylized wall materials (PBR). Higher = more diffuse, less plastic shine.
+  private static let stylizedWallRoughness: CGFloat = 0.86
+
+  /// Applies PBR + matte roughness so stylized walls do not read as perfectly smooth plastic.
+  private func applyStylizedWallMaterial(_ material: SCNMaterial, diffuseTint: UIColor) {
+    material.lightingModel = .physicallyBased
+    material.diffuse.contents = diffuseTint
+    material.metalness.contents = NSNumber(value: 0.0)
+    material.roughness.contents = NSNumber(value: Double(Self.stylizedWallRoughness))
+  }
+
   /// Stylized palette tuned to read as a calm, lived-in room:
   /// - Floor: warm brown (slightly darker than furniture accent)
-  /// - Walls: warm cream / pale sand — brightens the scan and harmonizes with wood + teal
+  /// - Walls: warm cream / pale sand + PBR roughness (matte paint, not mirror-smooth)
   /// - Furniture: muted blue-teal accent
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
@@ -697,7 +815,7 @@ final class RoomUsdzViewerViewController: UIViewController {
       } else if isWallSurface(node) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
-          m.diffuse.contents = wallTint
+          applyStylizedWallMaterial(m, diffuseTint: wallTint)
           return m
         }
       }
@@ -855,20 +973,29 @@ final class RoomUsdzViewerViewController: UIViewController {
   }
 
   /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
+  /// Floor “area” is the axis-aligned footprint (long × short); room shapes are often non-rectangular.
   private func updateDimensionsDisplay(dx: Float, dy: Float, dz: Float) {
     let floorLong = max(dx, dz)
     let floorShort = min(dx, dz)
     let height = dy
+    let floorArea = Double(floorLong) * Double(floorShort)
     func fmt(_ v: Float) -> String {
       String(format: "%.1f", v)
     }
-    var line = strings.dimensionsLineTemplate
-    line = line.replacingOccurrences(of: "{floorLong}", with: fmt(floorLong))
-    line = line.replacingOccurrences(of: "{floorShort}", with: fmt(floorShort))
-    line = line.replacingOccurrences(of: "{height}", with: fmt(height))
-    dimensionsValueLabel.text = line
+    func fmtArea(_ v: Double) -> String {
+      String(format: "%.1f", v)
+    }
+    var line1 = strings.dimensionsLine1Template
+    line1 = line1.replacingOccurrences(of: "{floorLong}", with: fmt(floorLong))
+    line1 = line1.replacingOccurrences(of: "{floorShort}", with: fmt(floorShort))
+    line1 = line1.replacingOccurrences(of: "{height}", with: fmt(height))
+    var line2 = strings.dimensionsLine2Template
+    line2 = line2.replacingOccurrences(of: "{floorArea}", with: fmtArea(floorArea))
+    dimensionsLine1Label.text = line1
+    dimensionsLine2Label.text = line2
+    dimensionsLineStack.accessibilityLabel = "\(line1). \(line2)"
     dimensionsTitleLabel.isHidden = false
-    dimensionsValueLabel.isHidden = false
+    dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
     hintContainer.isUserInteractionEnabled = true
   }
