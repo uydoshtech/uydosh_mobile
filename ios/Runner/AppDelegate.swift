@@ -143,6 +143,10 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
       NativeLanguagePlugin.register(with: registrar)
     }
 
+    if let registrar = self.registrar(forPlugin: "RoomScanBoundsPlugin") {
+      RoomScanBoundsPlugin.register(with: registrar)
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

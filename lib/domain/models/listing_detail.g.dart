@@ -32,6 +32,12 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       moveInDate: json['move_in_date'] as String?,
       privateRoom: json['private_room'] as bool?,
       pointCloudUrl: json['point_cloud_url'] as String?,
+      roomScanFloorLongM: (json['room_scan_floor_long_m'] as num?)?.toDouble(),
+      roomScanFloorShortM:
+          (json['room_scan_floor_short_m'] as num?)?.toDouble(),
+      roomScanHeightM: (json['room_scan_height_m'] as num?)?.toDouble(),
+      roomScanFloorAreaM2:
+          (json['room_scan_floor_area_m2'] as num?)?.toDouble(),
       contactPhone: json['contact_phone'] as String?,
       contactTelegram: json['contact_telegram'] as String?,
       subwayStation: json['subway_station'] == null
@@ -78,6 +84,10 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'move_in_date': instance.moveInDate,
       'private_room': instance.privateRoom,
       'point_cloud_url': instance.pointCloudUrl,
+      'room_scan_floor_long_m': instance.roomScanFloorLongM,
+      'room_scan_floor_short_m': instance.roomScanFloorShortM,
+      'room_scan_height_m': instance.roomScanHeightM,
+      'room_scan_floor_area_m2': instance.roomScanFloorAreaM2,
       'contact_phone': instance.contactPhone,
       'contact_telegram': instance.contactTelegram,
       'subway_station': instance.subwayStation,

@@ -19,6 +19,7 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		C9584E3AECCE6D6F621F0E18 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0B811E9222AC6871206AE9B /* Pods_RunnerTests.framework */; };
 		E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */; };
+		E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomUsdzViewerViewController.swift; sourceTree = "<group>"; };
+		E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanBoundsPlugin.swift; sourceTree = "<group>"; };
 		F0B811E9222AC6871206AE9B /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5B13F883B14D6F268896A14 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -170,6 +172,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */,
+				E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -468,6 +471,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */,
+				E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

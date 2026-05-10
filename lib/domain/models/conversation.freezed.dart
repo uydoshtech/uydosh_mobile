@@ -665,12 +665,11 @@ mixin _$ConversationSummary {
   @JsonKey(name: "gig_request_title")
   String? get gigRequestTitle => throw _privateConstructorUsedError;
 
-  /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
+  /// Gig category id (`gig_categories.id`) for gig-scoped chats.
   @JsonKey(name: "gig_category_id")
   int? get gigCategoryId => throw _privateConstructorUsedError;
 
-  /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
-  /// For offers/bookings mirrors pricing type from the server when present.
+  /// Budget / pricing type from the gig surface (`open`, `hourly`, etc.).
   @JsonKey(name: "gig_budget_type")
   String? get gigBudgetType => throw _privateConstructorUsedError;
   @JsonKey(name: "last_message_at")
@@ -1379,13 +1378,12 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @JsonKey(name: "gig_request_title")
   final String? gigRequestTitle;
 
-  /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
+  /// Gig category id (`gig_categories.id`) for gig-scoped chats.
   @override
   @JsonKey(name: "gig_category_id")
   final int? gigCategoryId;
 
-  /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
-  /// For offers/bookings mirrors pricing type from the server when present.
+  /// Budget / pricing type from the gig surface (`open`, `hourly`, etc.).
   @override
   @JsonKey(name: "gig_budget_type")
   final String? gigBudgetType;
@@ -1724,13 +1722,12 @@ abstract class _ConversationSummary implements ConversationSummary {
   @JsonKey(name: "gig_request_title")
   String? get gigRequestTitle;
 
-  /// Gig request category id (`gig_categories.id`) when [contextType] is `gig_request`.
+  /// Gig category id (`gig_categories.id`) for gig-scoped chats.
   @override
   @JsonKey(name: "gig_category_id")
   int? get gigCategoryId;
 
-  /// `hourly` / `fixed` / `open` when [contextType] is `gig_request`; drives budget badge when amount is absent.
-  /// For offers/bookings mirrors pricing type from the server when present.
+  /// Budget / pricing type from the gig surface (`open`, `hourly`, etc.).
   @override
   @JsonKey(name: "gig_budget_type")
   String? get gigBudgetType;

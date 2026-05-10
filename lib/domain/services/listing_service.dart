@@ -6,6 +6,7 @@ import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:uy_dosh/domain/services/listing_crud_service.dart";
 import "package:uy_dosh/domain/services/listing_detail_service.dart";
 import "package:uy_dosh/domain/services/listing_search_service.dart";
+import "package:uy_dosh/domain/services/listing_service_common.dart";
 
 abstract class IListingService {
   Future<PageableResponse<Listing>> getListings({
@@ -142,6 +143,7 @@ abstract class IListingService {
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
+    RoomScanMetrics? roomScanMetrics,
   });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
@@ -450,10 +452,12 @@ class ListingService implements IListingService {
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
+    RoomScanMetrics? roomScanMetrics,
   }) =>
       _crudService.uploadRoomScan(
         listingId: listingId,
         usdzFilePath: usdzFilePath,
+        roomScanMetrics: roomScanMetrics,
       );
 
   @override

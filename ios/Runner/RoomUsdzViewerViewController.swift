@@ -291,7 +291,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     dimensionsLineStack.translatesAutoresizingMaskIntoConstraints = false
     dimensionsLineStack.axis = .vertical
     dimensionsLineStack.spacing = 6
-    dimensionsLineStack.alignment = .fill
+    dimensionsLineStack.alignment = .center
     dimensionsLineStack.addArrangedSubview(row1)
     dimensionsLineStack.addArrangedSubview(row2)
     dimensionsLineStack.isHidden = true
@@ -300,7 +300,7 @@ final class RoomUsdzViewerViewController: UIViewController {
 
     hintStack.translatesAutoresizingMaskIntoConstraints = false
     hintStack.axis = .vertical
-    hintStack.alignment = .fill
+    hintStack.alignment = .center
     hintStack.spacing = 4
     hintStack.addArrangedSubview(dimensionsTitleLabel)
     hintStack.addArrangedSubview(dimensionsLineStack)
@@ -368,6 +368,13 @@ final class RoomUsdzViewerViewController: UIViewController {
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     refreshZoomControlsNeumorphicShadowPaths()
+    let stackWidth = hintStack.bounds.width
+    guard stackWidth > 0 else { return }
+    // Multiline labels need a max width when the stack uses centered alignment.
+    dimensionsTitleLabel.preferredMaxLayoutWidth = stackWidth
+    let lineLabelMaxWidth = stackWidth - 20 - 8  // icon width + row spacing
+    dimensionsLine1Label.preferredMaxLayoutWidth = lineLabelMaxWidth
+    dimensionsLine2Label.preferredMaxLayoutWidth = lineLabelMaxWidth
   }
 
   /// Fade + slight drop entrance for the brand mark. Mirrors the feel of

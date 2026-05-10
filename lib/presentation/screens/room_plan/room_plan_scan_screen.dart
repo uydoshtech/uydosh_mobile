@@ -6,6 +6,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/room_scan_bounds_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -91,9 +92,11 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         }
         setState(() => _uploading = true);
         try {
+          final metrics = await RoomScanBoundsService.computeFromUsdPath(path);
           await getIt<IListingService>().uploadRoomScan(
             listingId: widget.listingId,
             usdzFilePath: path,
+            roomScanMetrics: metrics,
           );
           if (!mounted) return;
           ToastTheme.showSuccess(

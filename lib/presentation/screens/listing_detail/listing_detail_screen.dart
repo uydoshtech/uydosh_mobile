@@ -2155,6 +2155,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 
   Widget _room3dTile(ListingDetail listingDetail) {
     return _Room3dTile(
+      listingDetail: listingDetail,
       onTap: () => _openRoom3dViewer(listingDetail),
     );
   }
@@ -2661,8 +2662,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 /// Previously this controller lived on the parent screen and ran forever
 /// regardless of whether a 3D tile was visible.
 class _Room3dTile extends StatefulWidget {
-  const _Room3dTile({required this.onTap});
+  const _Room3dTile({
+    required this.listingDetail,
+    required this.onTap,
+  });
 
+  final ListingDetail listingDetail;
   final VoidCallback onTap;
 
   @override
@@ -2694,6 +2699,30 @@ class _Room3dTileState extends State<_Room3dTile>
       parent: _rotateController,
       curve: Curves.linear,
     );
+    final d = widget.listingDetail;
+    final fl = d.roomScanFloorLongM;
+    final fs = d.roomScanFloorShortM;
+    final h = d.roomScanHeightM;
+    final area = d.roomScanFloorAreaM2;
+    String? line1;
+    String? line2;
+    if (fl != null && fs != null && h != null && area != null) {
+      line1 = L10n.getWithParams(
+        "room_3d_dimensions_line1_template",
+        params: <String, String>{
+          "floorLong": fl.toStringAsFixed(1),
+          "floorShort": fs.toStringAsFixed(1),
+          "height": h.toStringAsFixed(1),
+        },
+      );
+      line2 = L10n.getWithParams(
+        "room_3d_dimensions_line2_template",
+        params: <String, String>{
+          "floorArea": area.toStringAsFixed(1),
+        },
+      );
+    }
+    final variant = Theme.of(context).colorScheme.onSurfaceVariant;
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
@@ -2703,6 +2732,7 @@ class _Room3dTileState extends State<_Room3dTile>
           child: Padding(
             padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 RotationTransition(
                   turns: rotate,
@@ -2715,14 +2745,41 @@ class _Room3dTileState extends State<_Room3dTile>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    L10n.get("view_room_3d"),
-                    style: Theme.of(context).textTheme.titleSmall,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        L10n.get("view_room_3d"),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      if (line1 != null && line2 != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          L10n.get("room_3d_dimensions_caption"),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: variant.withValues(alpha: 0.85),
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          line1,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        Text(
+                          line2,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 ThemeIcon(
                   Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: variant,
                 ),
               ],
             ),

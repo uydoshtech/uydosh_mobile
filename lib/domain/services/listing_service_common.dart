@@ -36,14 +36,41 @@ class PhotoUploadRequest implements IJsonEncodable {
       };
 }
 
-/// RoomPlan USDZ upload (stored server-side; URL saved as listing.point_cloud_url).
-class RoomScanUploadRequest implements IJsonEncodable {
-  RoomScanUploadRequest({required this.usdzData});
+/// Footprint derived from LiDAR USDZ (meters); sent with [RoomScanUploadRequest].
+class RoomScanMetrics implements IJsonEncodable {
+  RoomScanMetrics({
+    required this.floorLongM,
+    required this.floorShortM,
+    required this.heightM,
+    required this.floorAreaM2,
+  });
 
-  final String usdzData;
+  final double floorLongM;
+  final double floorShortM;
+  final double heightM;
+  final double floorAreaM2;
 
   @override
-  Map<String, dynamic> toJson() => {"usdzData": usdzData};
+  Map<String, dynamic> toJson() => {
+        "floor_long_m": floorLongM,
+        "floor_short_m": floorShortM,
+        "height_m": heightM,
+        "floor_area_m2": floorAreaM2,
+      };
+}
+
+/// RoomPlan USDZ upload (stored server-side; URL saved as listing.point_cloud_url).
+class RoomScanUploadRequest implements IJsonEncodable {
+  RoomScanUploadRequest({required this.usdzData, this.roomScanMetrics});
+
+  final String usdzData;
+  final RoomScanMetrics? roomScanMetrics;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "usdzData": usdzData,
+        if (roomScanMetrics != null) "room_scan_metrics": roomScanMetrics!.toJson(),
+      };
 }
 
 /// Reorder existing listing photos. `photoIds` are in the desired display

@@ -71,6 +71,7 @@ abstract class IListingCrudService {
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
+    RoomScanMetrics? roomScanMetrics,
   });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
@@ -513,6 +514,7 @@ class ListingCrudService implements IListingCrudService {
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
+    RoomScanMetrics? roomScanMetrics,
   }) async {
     final file = File(usdzFilePath);
     if (!file.existsSync()) {
@@ -520,7 +522,10 @@ class ListingCrudService implements IListingCrudService {
     }
     final bytes = await file.readAsBytes();
     final b64 = base64Encode(bytes);
-    final request = RoomScanUploadRequest(usdzData: b64);
+    final request = RoomScanUploadRequest(
+      usdzData: b64,
+      roomScanMetrics: roomScanMetrics,
+    );
     await _oauthApiClient.post<Map<String, dynamic>, RoomScanUploadRequest>(
       "/listings/$listingId/room-scan",
       (json) => json as Map<String, dynamic>,
