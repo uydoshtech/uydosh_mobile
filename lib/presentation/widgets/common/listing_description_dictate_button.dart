@@ -3,7 +3,6 @@ import "dart:io";
 
 import "package:flutter/material.dart";
 import "package:path_provider/path_provider.dart";
-import "package:permission_handler/permission_handler.dart";
 import "package:record/record.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -37,6 +36,7 @@ class _ListingDescriptionDictateButtonState
   final AudioRecorder _recorder = AudioRecorder();
   bool _recording = false;
   bool _uploading = false;
+  bool _toggleInProgress = false;
   Timer? _maxDurationTimer;
 
   static const Duration _maxRecordDuration = Duration(seconds: 90);
@@ -61,8 +61,16 @@ class _ListingDescriptionDictateButtonState
   }
 
   Future<void> _toggleRecording() async {
-    if (_uploading) return;
+    if (_uploading || _toggleInProgress) return;
+    _toggleInProgress = true;
+    try {
+      await _toggleRecordingImpl();
+    } finally {
+      _toggleInProgress = false;
+    }
+  }
 
+  Future<void> _toggleRecordingImpl() async {
     if (_recording) {
       HapticFeedbackUtils.lightImpact();
       await _stopRecordingAndTranscribe();
@@ -79,8 +87,13 @@ class _ListingDescriptionDictateButtonState
       return;
     }
 
-    final perm = await Permission.microphone.request();
-    if (!perm.isGranted) {
+    // Use the recorder's own permission API (AVFoundation / AudioRecord), not
+    // `permission_handler`'s microphone channel. On iOS, permission_handler
+    // can report `.denied` when the Pod preprocessor macros omit microphone
+    // while the OS and [AudioRecorder] still have real access — then this
+    // toast appeared on the *next* tap to record (often right after stop).
+    final micOk = await _recorder.hasPermission(request: true);
+    if (!micOk) {
       if (!mounted) return;
       ToastTheme.showError(
         context,
@@ -150,6 +163,10 @@ class _ListingDescriptionDictateButtonState
     if (filePath == null || filePath.isEmpty) {
       if (mounted) {
         setState(() => _uploading = false);
+        ToastTheme.showError(
+          context,
+          message: L10n.get("listing_description_dictate_failed"),
+        );
       }
       return;
     }
