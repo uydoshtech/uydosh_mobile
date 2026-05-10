@@ -69,6 +69,7 @@ class GigRequest {
     this.clientAvatarUrl,
     this.bids = const <GigBid>[],
     this.isFavorited,
+    this.createdAt,
   });
 
   factory GigRequest.fromJson(Map<String, dynamic> json) {
@@ -123,6 +124,7 @@ class GigRequest {
       clientAvatarUrl: clientAvatar,
       bids: bids,
       isFavorited: json["is_favorited"] as bool?,
+      createdAt: json["created_at"] as String?,
     );
   }
 
@@ -151,4 +153,5 @@ class GigRequest {
   final String? clientAvatarUrl;
   final List<GigBid> bids;
   final bool? isFavorited;
+  final String? createdAt;
 }

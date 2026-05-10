@@ -4793,6 +4793,12 @@ abstract class AppLocalizations {
   /// **'Sign in with Google or Apple'**
   String get sign_in_with_google_or_apple;
 
+  /// No description provided for @auth_wizard_oauth_step_header.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to UyDosh'**
+  String get auth_wizard_oauth_step_header;
+
   /// No description provided for @successfully_logged_in.
   ///
   /// In en, this message translates to:

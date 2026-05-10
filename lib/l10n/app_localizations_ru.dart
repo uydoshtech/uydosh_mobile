@@ -2542,6 +2542,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sign_in_with_google_or_apple => 'Войти через Google или Apple';
 
   @override
+  String get auth_wizard_oauth_step_header => 'Войти в UyDosh';
+
+  @override
   String get successfully_logged_in => 'Вы успешно вошли';
 
   @override

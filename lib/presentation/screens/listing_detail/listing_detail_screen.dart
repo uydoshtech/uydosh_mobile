@@ -801,6 +801,21 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
           context,
           message: L10n.get("room_3d_open_error"),
         );
+      } else {
+        // iOS resolves `presentLocalFile` when the viewer is dismissed; backfilled metrics
+        // may already be on the server — reload listing so the tile shows dimensions.
+        await Future<void>.delayed(const Duration(milliseconds: 280));
+        if (!mounted) return;
+        try {
+          final fresh =
+              await getIt<IListingService>().getListingDetail(listingDetail.id);
+          if (!mounted) return;
+          context.read<ListingDetailBloc>().add(
+                ListingDetailEvent.updateListingDetail(listingDetail: fresh),
+              );
+        } catch (e, st) {
+          logger.d("Listing refresh after 3D viewer failed: $e\n$st");
+        }
       }
     } on MissingPluginException catch (e, st) {
       logger.d("Room 3D viewer missing-plugin: $e\n$st");
@@ -2661,6 +2676,28 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
   }
 }
 
+/// Matches native 3D viewer: SF `rectangle` → [Icons.rectangle_outlined],
+/// `rectangle.on.rectangle` → [Icons.flip_to_front_outlined] (overlapping rects).
+Widget _room3dDimensionMetricRow({
+  required BuildContext context,
+  required IconData icon,
+  required String text,
+}) {
+  final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+      );
+  final iconColor =
+      style?.color ?? Theme.of(context).colorScheme.onSurface;
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Icon(icon, size: 18, color: iconColor.withValues(alpha: 0.92)),
+      const SizedBox(width: 8),
+      Expanded(child: Text(text, style: style)),
+    ],
+  );
+}
+
 /// Self-contained "View room in 3D" tile.
 ///
 /// Owns its rotating-icon controller so the controller only ticks while the
@@ -2767,17 +2804,16 @@ class _Room3dTileState extends State<_Room3dTile>
                               ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          line1,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                        _room3dDimensionMetricRow(
+                          context: context,
+                          icon: Icons.rectangle_outlined,
+                          text: line1,
                         ),
-                        Text(
-                          line2,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                        const SizedBox(height: 4),
+                        _room3dDimensionMetricRow(
+                          context: context,
+                          icon: Icons.flip_to_front_outlined,
+                          text: line2,
                         ),
                       ],
                     ],

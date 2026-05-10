@@ -1371,6 +1371,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
       "sign_in_with_google_or_apple": "Sign in with Google or Apple",
+      "auth_wizard_oauth_step_header": "Sign in to UyDosh",
       "successfully_logged_in": "You have successfully logged in",
 
       "signing_in": "Signing in...",
@@ -2827,6 +2828,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
       "sign_in_with_google_or_apple": "Войти через Google или Apple",
+      "auth_wizard_oauth_step_header": "Войти в UyDosh",
       "successfully_logged_in": "Вы успешно вошли",
 
       "signing_in": "Вход в систему...",
@@ -4286,6 +4288,7 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Google orqali kirish",
       "sign_in_with_google_or_apple": "Google yoki Apple orqali kirish",
+      "auth_wizard_oauth_step_header": "UyDosh ga kirish",
       "successfully_logged_in": "Muvaffaqiyatli tizimga kirdingiz",
 
       "signing_in": "Tizimga kirilmoqda...",

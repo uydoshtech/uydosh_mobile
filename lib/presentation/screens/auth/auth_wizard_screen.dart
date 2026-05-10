@@ -1859,21 +1859,24 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         },
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        _currentPage == 0
-                            ? L10n.get("select_language")
-                            : _currentPage == 1
-                                ? L10n.get(AuthWizardTheme.oauthStepTitleL10nKey())
-                                : _currentPage == 2
-                                    ? L10n.get("complete_profile")
-                                    : "UyDosh",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: _getOnboardingTextColor(context),
+                      Expanded(
+                        child: Text(
+                          _currentPage == 0
+                              ? L10n.get("select_language")
+                              : _currentPage == 1
+                                  ? L10n.get("auth_wizard_oauth_step_header")
+                                  : _currentPage == 2
+                                      ? L10n.get("complete_profile")
+                                      : "UyDosh",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: _getOnboardingTextColor(context),
+                          ),
                         ),
                       ),
-                      const Spacer(),
                       // Theme toggle (sun = light, moon = dark/blue)
                       Tooltip(
                         message: L10n.get("switch_theme"),

@@ -2570,6 +2570,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get sign_in_with_google_or_apple => 'Google yoki Apple orqali kirish';
 
   @override
+  String get auth_wizard_oauth_step_header => 'UyDosh ga kirish';
+
+  @override
   String get successfully_logged_in => 'Muvaffaqiyatli tizimga kirdingiz';
 
   @override

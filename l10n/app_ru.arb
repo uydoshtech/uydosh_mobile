@@ -964,6 +964,7 @@
   "publication_date": "Опубликовано:",
   "sign_in_with_google": "Войти через Google",
   "sign_in_with_google_or_apple": "Войти через Google или Apple",
+  "auth_wizard_oauth_step_header": "Войти в UyDosh",
   "successfully_logged_in": "Вы успешно вошли",
   "signing_in": "Вход в систему...",
   "google_sign_in_failed": "Ошибка входа через Google: {error}",

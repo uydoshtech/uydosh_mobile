@@ -137,6 +137,22 @@ struct RoomViewerStrings {
   )
 }
 
+/// Flutter `FlutterResult` must run at most once; duplicate replies can abort the engine connection.
+private final class OnceFlutterResult {
+  private var consumed = false
+  private let result: FlutterResult
+
+  init(_ result: @escaping FlutterResult) {
+    self.result = result
+  }
+
+  func send(_ value: Any?) {
+    guard !consumed else { return }
+    consumed = true
+    result(value)
+  }
+}
+
 /// Full-screen 3D viewer for a local USDZ (object-only, no Quick Look AR/Object toggle).
 final class RoomUsdzViewerViewController: UIViewController {
   private let fileURL: URL
@@ -144,6 +160,8 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let listingId: Int
   private let publishMetricsIfMissing: Bool
   private weak var metricsMessenger: FlutterBinaryMessenger?
+  /// Completes the Flutter `presentLocalFile` future when the viewer is dismissed (not when it opens).
+  private let dismissFlutterResult: OnceFlutterResult
   private var didPublishFlutterMetrics = false
   private let sceneView = SCNView()
   private let hintContainer = UIView()
@@ -192,18 +210,20 @@ final class RoomUsdzViewerViewController: UIViewController {
   /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
   private static let initialZoomInSteps: Int = 2
 
-  init(
+  fileprivate init(
     fileURL: URL,
     strings: RoomViewerStrings,
     listingId: Int = 0,
     publishMetricsIfMissing: Bool = false,
-    metricsMessenger: FlutterBinaryMessenger? = nil
+    metricsMessenger: FlutterBinaryMessenger? = nil,
+    dismissFlutterResult: OnceFlutterResult
   ) {
     self.fileURL = fileURL
     self.strings = strings
     self.listingId = listingId
     self.publishMetricsIfMissing = publishMetricsIfMissing
     self.metricsMessenger = metricsMessenger
+    self.dismissFlutterResult = dismissFlutterResult
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -1170,27 +1190,14 @@ final class RoomUsdzViewerViewController: UIViewController {
     updateMaterialsButtonAppearance()
     sceneView.scene = nil
     loadedScene = nil
-    dismiss(animated: true)
+    let once = dismissFlutterResult
+    dismiss(animated: true) {
+      once.send(true)
+    }
   }
 
   deinit {
     sceneView.scene = nil
-  }
-}
-
-/// Flutter `FlutterResult` must run at most once; duplicate replies can abort the engine connection.
-private final class OnceFlutterResult {
-  private var consumed = false
-  private let result: FlutterResult
-
-  init(_ result: @escaping FlutterResult) {
-    self.result = result
-  }
-
-  func send(_ value: Any?) {
-    guard !consumed else { return }
-    consumed = true
-    result(value)
   }
 }
 
@@ -1233,15 +1240,14 @@ enum RoomUsdzViewerPresenter {
       strings: resolved,
       listingId: listingId,
       publishMetricsIfMissing: publishMetricsIfMissing,
-      metricsMessenger: messenger
+      metricsMessenger: messenger,
+      dismissFlutterResult: once
     )
     let nav = UINavigationController(rootViewController: viewer)
     nav.modalPresentationStyle = .fullScreen
     nav.navigationBar.prefersLargeTitles = false
 
-    host.present(nav, animated: true) {
-      once.send(true)
-    }
+    host.present(nav, animated: true)
   }
 
   private static func topViewController() -> UIViewController? {

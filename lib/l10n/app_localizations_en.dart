@@ -2530,6 +2530,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sign_in_with_google_or_apple => 'Sign in with Google or Apple';
 
   @override
+  String get auth_wizard_oauth_step_header => 'Sign in to UyDosh';
+
+  @override
   String get successfully_logged_in => 'You have successfully logged in';
 
   @override

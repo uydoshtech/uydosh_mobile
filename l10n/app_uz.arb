@@ -972,6 +972,7 @@
   "publication_date": "Nashr sanasi:",
   "sign_in_with_google": "Google orqali kirish",
   "sign_in_with_google_or_apple": "Google yoki Apple orqali kirish",
+  "auth_wizard_oauth_step_header": "UyDosh ga kirish",
   "successfully_logged_in": "Muvaffaqiyatli tizimga kirdingiz",
   "signing_in": "Tizimga kirilmoqda...",
   "google_sign_in_failed": "Google orqali kirishda xatolik: {error}",

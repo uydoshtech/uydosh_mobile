@@ -26,6 +26,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -408,6 +409,8 @@ class _OfferDetailContentStatefulState
     final language = LanguageState().currentLanguage;
     final description = offer.localizedDescription(language) ?? "";
     final categoryName = offer.category?.localizedName(language) ?? "";
+    final publicationFormatted =
+        ListingDetailDateUtils.formatPublicationDate(context, offer.createdAt);
     final orderedPhotoUrls = offer.photos.isEmpty
         ? const <String>[]
         : _orderedGigPhotoRawUrls(offer.photos);
@@ -514,6 +517,18 @@ class _OfferDetailContentStatefulState
                         style: TextStyle(
                           color: scheme.onSurface.withValues(alpha: 0.85),
                           height: 1.4,
+                        ),
+                      ),
+                    ],
+                    if (publicationFormatted != null) ...[
+                      SizedBox(height: description.isNotEmpty ? 12 : 16),
+                      Text(
+                        "${L10n.get("publication_date")} $publicationFormatted",
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                          color: scheme.onSurface.withValues(alpha: 0.62),
                         ),
                       ),
                     ],

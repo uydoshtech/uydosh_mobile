@@ -20,6 +20,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -426,6 +427,10 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
     final language = LanguageState().currentLanguage;
     final categoryName = widget.request.category?.localizedName(language) ?? "";
     final description = _localizedDescription(language);
+    final publicationFormatted = ListingDetailDateUtils.formatPublicationDate(
+      context,
+      widget.request.createdAt,
+    );
     // Match [ListingDetailContactActionBar] structure (SafeArea + horizontal 16).
     // Extra bottom padding (24) keeps the CTA off the browser chrome when
     // safe-area inset is zero; on devices, SafeArea still adds system inset.
@@ -556,6 +561,19 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
                             ],
                           ),
                         ],
+                        if (publicationFormatted != null &&
+                            description.isEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            "${L10n.get("publication_date")} $publicationFormatted",
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.35,
+                              fontWeight: FontWeight.w500,
+                              color: scheme.onSurface.withValues(alpha: 0.62),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -584,6 +602,19 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
                               height: 1.4,
                             ),
                           ),
+                          if (publicationFormatted != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              "${L10n.get("publication_date")} $publicationFormatted",
+                              style: TextStyle(
+                                fontSize: 13,
+                                height: 1.35,
+                                fontWeight: FontWeight.w500,
+                                color:
+                                    scheme.onSurface.withValues(alpha: 0.62),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
