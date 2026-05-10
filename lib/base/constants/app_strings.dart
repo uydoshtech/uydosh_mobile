@@ -741,8 +741,8 @@ class AppStrings {
       "no_student": "No, I'm not a student",
 
       "are_you_landlord_or_renter": "Are you a landlord or renter?",
-      "select_your_primary_role": "Select your primary role",
-      "tap_to_select_primary_role": "Choose a role",
+      "select_your_primary_role": "Primary role",
+      "tap_to_select_primary_role": "Choose role",
 
       "selected": "Selected",
 
@@ -2183,7 +2183,7 @@ class AppStrings {
       "no_student": "Не студент",
 
       "are_you_landlord_or_renter": "Вы арендодатель или арендатор?",
-      "select_your_primary_role": "Выберите основную роль",
+      "select_your_primary_role": "Основная роль",
       "tap_to_select_primary_role": "Выберите роль",
 
       "selected": "Выбрано",
@@ -3647,8 +3647,8 @@ class AppStrings {
 
       "are_you_landlord_or_renter":
           "Siz ijaraga beruvchimisiz yoki ijarachimisiz?",
-      "select_your_primary_role": "Asosiy rolingizni tanlang",
-      "tap_to_select_primary_role": "Rol tanlang",
+      "select_your_primary_role": "Asosiy rol",
+      "tap_to_select_primary_role": "Rolni tanlang",
 
       "selected": "Tanlangan",
 

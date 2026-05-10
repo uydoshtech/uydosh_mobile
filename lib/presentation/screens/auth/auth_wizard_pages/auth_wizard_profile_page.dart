@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
@@ -11,7 +12,6 @@ import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
@@ -112,9 +112,16 @@ class AuthWizardProfilePage extends StatelessWidget {
   /// fall back to the color scheme's primary for themes where
   /// [AuthWizardTheme.getSelectedButtonBackgroundColor] is transparent.
   Color _getSelectedSurfaceColor(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // Light theme: primary is black — never use it as a card fill (country /
+    // city shells and pills looked like solid black blocks). Selected tiles use
+    // the same white/off-white plate vocabulary as listing chrome.
+    if (ThemeState().isLightTheme) {
+      return scheme.surfaceContainerHighest;
+    }
     final selected = AuthWizardTheme.getSelectedButtonBackgroundColor();
     if (selected == Colors.transparent) {
-      return Theme.of(context).colorScheme.primary;
+      return scheme.primary;
     }
     return selected;
   }
@@ -126,16 +133,36 @@ class AuthWizardProfilePage extends StatelessWidget {
     BuildContext context, {
     required bool isSelected,
     BorderRadius borderRadius = const BorderRadius.all(Radius.circular(12)),
+    /// Gender / student pills: crisp ring on the selected choice (white on blue
+    /// theme, dark outline on light theme — uses [AuthWizardTheme.getSelectedButtonBorderColor]).
+    bool blueThemeSelectedWhiteOutline = false,
+    /// Gender / student only: in light theme the selected pill keeps the same
+    /// raised plate as unselected; inset shadows + fill shift read as a black
+    /// blob, so selection is shown with the border only.
+    bool lightThemeBorderOnlyToggle = false,
   }) {
-    final base = isSelected
-        ? _getSelectedSurfaceColor(context)
-        : _getRaisedSurfaceColor(context);
+    final lightBorderOnly =
+        ThemeState().isLightTheme && lightThemeBorderOnlyToggle;
+    final base = lightBorderOnly
+        ? _getRaisedSurfaceColor(context)
+        : (isSelected
+              ? _getSelectedSurfaceColor(context)
+              : _getRaisedSurfaceColor(context));
+    final shadows = lightBorderOnly || !isSelected
+        ? ThreeDSurfaceStyle.elevatedShadows(context)
+        : ThreeDSurfaceStyle.insetRecessedShadows(context);
     return BoxDecoration(
       borderRadius: borderRadius,
       gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
-      boxShadow: isSelected
-          ? ThreeDSurfaceStyle.insetRecessedShadows(context)
-          : ThreeDSurfaceStyle.elevatedShadows(context),
+      boxShadow: shadows,
+      border: isSelected &&
+              blueThemeSelectedWhiteOutline &&
+              (ThemeState().isBlueTheme || ThemeState().isLightTheme)
+          ? Border.all(
+              color: AuthWizardTheme.getSelectedButtonBorderColor(),
+              width: 2,
+            )
+          : null,
     );
   }
 
@@ -167,13 +194,63 @@ class AuthWizardProfilePage extends StatelessWidget {
             const SizedBox(height: 16),
             KeyedSubtree(
               key: nameSectionKey,
-              child: ThreeDTextField(
-                controller: nameController,
-                hintText: L10n.get("full_name_hint"),
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.next,
-                onTap: HapticFeedbackUtils.impact,
+              child: WheelPickerPlateContainer(
                 showErrorBorder: nameMissing,
+                theme: Theme.of(context),
+                child: TextFormField(
+                  controller: nameController,
+                  maxLines: 1,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  onTap: () => HapticFeedbackUtils.impact(),
+                  decoration: InputDecoration(
+                    hintText: L10n.get("full_name_hint"),
+                    hintStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withOpacity(0.7)
+                              : Colors.grey[400],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                  ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeState().isLightTheme
+                        ? Colors.black
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -400,6 +477,7 @@ class AuthWizardProfilePage extends StatelessWidget {
       label: label,
       icon: icon,
       onTap: () => onGenderSelected(gender),
+      blueThemeSelectedWhiteOutline: true,
     );
   }
 
@@ -415,21 +493,26 @@ class AuthWizardProfilePage extends StatelessWidget {
       label: label,
       icon: icon,
       onTap: () => onStudentSelected(studentValue),
+      blueThemeSelectedWhiteOutline: true,
     );
   }
 
   /// Shared soft-UI pill used by the gender and student toggles. Raised
-  /// neumorphic shell when unselected; recessed + tinted when selected.
+  /// neumorphic shell when unselected; recessed + tinted when selected (except
+  /// light theme, where selection is a border on the same raised plate).
   Widget _buildToggleOption(
     BuildContext context, {
     required bool isSelected,
     required String label,
     required IconData icon,
     required VoidCallback onTap,
+    bool blueThemeSelectedWhiteOutline = false,
   }) {
-    final contentColor = isSelected
-        ? AuthWizardTheme.getSelectedButtonTextColor()
-        : _getOnboardingTextColor(context);
+    final contentColor = ThemeState().isLightTheme
+        ? _getOnboardingTextColor(context)
+        : (isSelected
+              ? AuthWizardTheme.getSelectedButtonTextColor()
+              : _getOnboardingTextColor(context));
     return PressableTransform(
       onTap: () {
         HapticFeedbackUtils.impact();
@@ -440,6 +523,8 @@ class AuthWizardProfilePage extends StatelessWidget {
         decoration: _neumorphicCardDecoration(
           context,
           isSelected: isSelected,
+          blueThemeSelectedWhiteOutline: blueThemeSelectedWhiteOutline,
+          lightThemeBorderOnlyToggle: true,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -597,7 +682,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   ThemeIcon(
-                    isSelected ? Icons.check_circle : Icons.arrow_drop_down,
+                    Icons.arrow_drop_down,
                     color: isSelected
                         ? AuthWizardTheme.getSelectedButtonTextColor()
                         : _getOnboardingTextSecondaryColor(context),
@@ -680,7 +765,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                 ),
               ),
               ThemeIcon(
-                isSelected ? Icons.check_circle : Icons.arrow_drop_down,
+                Icons.arrow_drop_down,
                 color: isSelected
                     ? selectedTextColor
                     : _getOnboardingTextSecondaryColor(context),

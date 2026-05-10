@@ -2671,13 +2671,13 @@ abstract class AppLocalizations {
   /// No description provided for @select_your_primary_role.
   ///
   /// In en, this message translates to:
-  /// **'Select your primary role'**
+  /// **'Primary role'**
   String get select_your_primary_role;
 
   /// No description provided for @tap_to_select_primary_role.
   ///
   /// In en, this message translates to:
-  /// **'Choose a role'**
+  /// **'Choose role'**
   String get tap_to_select_primary_role;
 
   /// No description provided for @selected.

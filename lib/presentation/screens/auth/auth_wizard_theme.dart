@@ -40,12 +40,15 @@ abstract final class AuthWizardTheme {
     return Colors.transparent;
   }
 
-  /// Content (label + icon) color for the *selected* state of auth-wizard
-  /// pill / card toggles. In both blue and light themes the selected surface
-  /// is filled with the primary color (deep blue / pure black respectively),
-  /// so the foreground is white in both cases — otherwise the label and icon
-  /// vanish into the dark fill.
-  static Color getSelectedButtonTextColor() => Colors.white;
+  /// Foreground for auth-wizard toggles and selectors when their tile reads as
+  /// “filled”. Blue theme uses a saturated plate — white text. Light theme uses
+  /// a white / near-white fill ([AuthWizardProfilePage] selected surface) —
+  /// dark text. Messaging/dark themes keep white on primary-tinted fills.
+  static Color getSelectedButtonTextColor() {
+    if (ThemeState().isBlueTheme) return Colors.white;
+    if (ThemeState().isLightTheme) return LightThemeColors.textPrimary;
+    return Colors.white;
+  }
 
   static Color getSelectedButtonBorderColor() {
     if (ThemeState().isBlueTheme) {
