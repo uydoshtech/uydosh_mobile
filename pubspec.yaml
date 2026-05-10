@@ -130,6 +130,7 @@ dependencies:
   # (v12 references NSProcessInfo.isiOSAppOnVision which is not available on all runners.)
   device_info_plus: ^11.3.0
   package_info_plus: ^9.0.1
+  record: ^6.2.0
 
 dev_dependencies:
   flutter_test:

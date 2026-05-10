@@ -117,6 +117,8 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_dimensions_caption", languageCode),
       "dimensionsLine1Template":
           L10n.getForLanguage("room_3d_dimensions_line1_template", languageCode),
+      "dimensionsHeightTemplate":
+          L10n.getForLanguage("room_3d_dimensions_height_template", languageCode),
       "dimensionsLine2Template":
           L10n.getForLanguage("room_3d_dimensions_line2_template", languageCode),
       "loadErrorTitle":

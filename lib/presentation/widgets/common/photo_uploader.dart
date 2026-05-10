@@ -13,6 +13,7 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/listing_photo_import.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/domain/models/photo_network_display.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -587,7 +588,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       } else {
                         PhotoPreviewDialog.showNetwork(
                           context,
-                          _buildPhotoUrl(photo.photoUrl),
+                          _buildPhotoUrl(photo.networkDisplayPhotoUrl),
                         );
                       }
                     },
@@ -596,7 +597,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ? BlueThemeColors.surface
                     : Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: CachedNetworkImage(
-                  imageUrl: _buildPhotoUrl(photo.photoUrl),
+                  imageUrl: _buildPhotoUrl(photo.networkDisplayPhotoUrl),
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 
 /// Layout style for [DescriptionCounterToolbar].
@@ -17,7 +18,7 @@ enum DescriptionCounterToolbarLayout {
 /// Shared toolbar rendered via [TextField.buildCounter] under the listing
 /// description field. Exposes:
 ///
-/// * The AI-enhance and template suggestion buttons on the left.
+/// * The AI-enhance, template suggestion, and dictate actions on the left.
 /// * A `currentLength / maxLength` counter that turns red at 90% usage.
 /// * An expand/collapse chevron with haptic feedback.
 ///
@@ -36,6 +37,7 @@ class DescriptionCounterToolbar extends StatelessWidget {
     this.counterColor,
     this.stackCounterRightOffset = -18,
     this.counterVisibleAtFraction = 0.0,
+    this.maxDescriptionLength = 1000,
   });
 
   final TextEditingController controller;
@@ -63,6 +65,9 @@ class DescriptionCounterToolbar extends StatelessWidget {
   /// `700` characters.
   final double counterVisibleAtFraction;
 
+  /// Same cap as the description field — dictation trims to this length.
+  final int maxDescriptionLength;
+
   bool get _showCounterText {
     if (counterVisibleAtFraction <= 0.0) return true;
     if (maxLength <= 0) return true;
@@ -80,7 +85,9 @@ class DescriptionCounterToolbar extends StatelessWidget {
         : Colors.black;
   }
 
-  Widget _buildButtonRow() {
+  static const double _actionSpacing = 12;
+
+  Widget _buildActionsRow() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -89,11 +96,18 @@ class DescriptionCounterToolbar extends StatelessWidget {
           controller: controller,
           inlineWithCounter: true,
         ),
+        const SizedBox(width: _actionSpacing),
         ListingDescriptionTemplateButton(
           controller: controller,
           listingTypeId: listingTypeId,
           gender: gender,
           inlineWithCounter: true,
+        ),
+        const SizedBox(width: _actionSpacing),
+        ListingDescriptionDictateButton(
+          controller: controller,
+          inlineWithCounter: true,
+          maxDescriptionLength: maxDescriptionLength,
         ),
       ],
     );
@@ -159,7 +173,7 @@ class DescriptionCounterToolbar extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.centerLeft,
             children: [
-              _buildButtonRow(),
+              _buildActionsRow(),
               Positioned(
                 right: stackCounterRightOffset,
                 top: 0,
@@ -177,16 +191,7 @@ class DescriptionCounterToolbar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ListingDescriptionAiEnhanceButton(
-            controller: controller,
-            inlineWithCounter: true,
-          ),
-          ListingDescriptionTemplateButton(
-            controller: controller,
-            listingTypeId: listingTypeId,
-            gender: gender,
-            inlineWithCounter: true,
-          ),
+          _buildActionsRow(),
           const Spacer(),
           _buildCounterColumn(color),
         ],

@@ -47,12 +47,13 @@ post_install do |installer|
 
       # permission_handler: opt in to the permission types we actually use.
       # The pod ships every permission's Swift code, gated behind these
-      # preprocessor macros. Without them, Permission.camera.status etc. just
-      # return .denied and our pre-permission rationale screens are useless.
+      # preprocessor macros. Without them, Permission.camera / .microphone etc.
+      # return .denied with no system prompt — same for dictation as for camera.
       # See: https://pub.dev/packages/permission_handler#ios
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] += [
         'PERMISSION_CAMERA=1',
+        'PERMISSION_MICROPHONE=1',
         'PERMISSION_NOTIFICATIONS=1',
       ]
     end

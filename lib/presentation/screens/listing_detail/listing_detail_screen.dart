@@ -38,6 +38,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/domain/models/photo_network_display.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -876,7 +877,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
           // Use ordered photos for the fullscreen viewer
           final orderedPhotos = _getOrderedPhotos(photos);
           final photoUrls = orderedPhotos
-              .map((photo) => photo.photoUrl)
+              .map((photo) => (photo as Photo).networkDisplayPhotoUrl)
               .toList()
               .cast<String>();
 
@@ -2677,7 +2678,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
 }
 
 /// Matches native 3D viewer: SF `rectangle` → [Icons.rectangle_outlined],
-/// `rectangle.on.rectangle` → [Icons.flip_to_front_outlined] (overlapping rects).
+/// `arrow.up.and.down` → [Icons.height], `rectangle.on.rectangle` →
+/// [Icons.flip_to_front_outlined] (overlapping rects).
 Widget _room3dDimensionMetricRow({
   required BuildContext context,
   required IconData icon,
@@ -2748,6 +2750,7 @@ class _Room3dTileState extends State<_Room3dTile>
     final h = d.roomScanHeightM;
     final area = d.roomScanFloorAreaM2;
     String? line1;
+    String? lineHeight;
     String? line2;
     if (fl != null && fs != null && h != null && area != null) {
       line1 = L10n.getWithParams(
@@ -2755,6 +2758,11 @@ class _Room3dTileState extends State<_Room3dTile>
         params: <String, String>{
           "floorLong": fl.toStringAsFixed(1),
           "floorShort": fs.toStringAsFixed(1),
+        },
+      );
+      lineHeight = L10n.getWithParams(
+        "room_3d_dimensions_height_template",
+        params: <String, String>{
           "height": h.toStringAsFixed(1),
         },
       );
@@ -2777,25 +2785,34 @@ class _Room3dTileState extends State<_Room3dTile>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                RotationTransition(
-                  turns: rotate,
-                  child: ThemeIcon(
-                    Icons.view_in_ar,
-                    color: ThemeState().isBlueTheme
-                        ? BlueThemeColors.textPrimary
-                        : Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        L10n.get("view_room_3d"),
-                        style: Theme.of(context).textTheme.titleSmall,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          RotationTransition(
+                            turns: rotate,
+                            child: ThemeIcon(
+                              Icons.view_in_ar,
+                              color: ThemeState().isBlueTheme
+                                  ? BlueThemeColors.textPrimary
+                                  : Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              L10n.get("view_room_3d"),
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ),
+                        ],
                       ),
-                      if (line1 != null && line2 != null) ...[
+                      if (line1 != null &&
+                          lineHeight != null &&
+                          line2 != null) ...[
                         const SizedBox(height: 6),
                         Text(
                           L10n.get("room_3d_dimensions_caption"),
@@ -2812,6 +2829,12 @@ class _Room3dTileState extends State<_Room3dTile>
                         const SizedBox(height: 4),
                         _room3dDimensionMetricRow(
                           context: context,
+                          icon: Icons.height,
+                          text: lineHeight,
+                        ),
+                        const SizedBox(height: 4),
+                        _room3dDimensionMetricRow(
+                          context: context,
                           icon: Icons.flip_to_front_outlined,
                           text: line2,
                         ),
@@ -2819,6 +2842,7 @@ class _Room3dTileState extends State<_Room3dTile>
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 ThemeIcon(
                   Icons.chevron_right,
                   color: variant,

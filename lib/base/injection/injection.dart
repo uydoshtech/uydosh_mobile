@@ -7,6 +7,7 @@ import "package:uy_dosh/base/api/oauth_dio_configurator.dart";
 import "package:uy_dosh/base/api/public_dio_configurator.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
+import "package:uy_dosh/base/services/description_dictation_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
@@ -62,6 +63,10 @@ Future<void> configureDependencies() async {
       publicApiClient: getIt<IPublicApiClient>(),
       oauthApiClient: getIt<IOAuthApiClient>(),
     ),
+  );
+
+  getIt.registerLazySingleton<DescriptionDictationService>(
+    () => DescriptionDictationService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<ILocationService>(

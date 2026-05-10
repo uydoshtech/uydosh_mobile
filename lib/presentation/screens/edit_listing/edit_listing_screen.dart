@@ -1647,7 +1647,7 @@ class _EditListingScreenState extends State<EditListingScreen>
               if (id != null) orderedIds.add(id);
             }
           }
-          if (orderedIds.length > 1) {
+          if (orderedIds.isNotEmpty) {
             await listingService.reorderPhotos(
               listingId: widget.listingDetail.id,
               photoIds: orderedIds,

@@ -7,6 +7,7 @@ struct RoomViewerStrings {
   let title: String
   let dimensionsCaption: String
   let dimensionsLine1Template: String
+  let dimensionsHeightTemplate: String
   let dimensionsLine2Template: String
   let loadErrorTitle: String
   let alertOk: String
@@ -29,6 +30,7 @@ struct RoomViewerStrings {
     title: String,
     dimensionsCaption: String,
     dimensionsLine1Template: String,
+    dimensionsHeightTemplate: String,
     dimensionsLine2Template: String,
     loadErrorTitle: String,
     alertOk: String,
@@ -49,6 +51,7 @@ struct RoomViewerStrings {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
     self.dimensionsLine1Template = dimensionsLine1Template
+    self.dimensionsHeightTemplate = dimensionsHeightTemplate
     self.dimensionsLine2Template = dimensionsLine2Template
     self.loadErrorTitle = loadErrorTitle
     self.alertOk = alertOk
@@ -71,6 +74,7 @@ struct RoomViewerStrings {
     guard let title = dict["title"],
       let dimensionsCaption = dict["dimensionsCaption"],
       let dimensionsLine1Template = dict["dimensionsLine1Template"],
+      let dimensionsHeightTemplate = dict["dimensionsHeightTemplate"],
       let dimensionsLine2Template = dict["dimensionsLine2Template"],
       let loadErrorTitle = dict["loadErrorTitle"],
       let alertOk = dict["alertOk"]
@@ -79,6 +83,7 @@ struct RoomViewerStrings {
       title: title,
       dimensionsCaption: dimensionsCaption,
       dimensionsLine1Template: dimensionsLine1Template,
+      dimensionsHeightTemplate: dimensionsHeightTemplate,
       dimensionsLine2Template: dimensionsLine2Template,
       loadErrorTitle: loadErrorTitle,
       alertOk: alertOk,
@@ -114,9 +119,10 @@ struct RoomViewerStrings {
 
   static let englishFallback = RoomViewerStrings(
     title: "3D",
-    dimensionsCaption: "Approximate dimensions (full scan bounds)",
+    dimensionsCaption: "Approximate dimensions",
     dimensionsLine1Template:
-      "Dimensions: {floorLong} x {floorShort} m · Height: {height}m",
+      "Dimensions: {floorLong} × {floorShort} m",
+    dimensionsHeightTemplate: "Height: {height} m",
     dimensionsLine2Template: "Area: ~{floorArea} m²",
     loadErrorTitle: "Could not load 3D model",
     alertOk: "OK",
@@ -170,6 +176,8 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let dimensionsLineStack = UIStackView()
   private let dimensionsLine1Icon = UIImageView()
   private let dimensionsLine1Label = UILabel()
+  private let dimensionsHeightIcon = UIImageView()
+  private let dimensionsHeightLabel = UILabel()
   private let dimensionsLine2Icon = UIImageView()
   private let dimensionsLine2Label = UILabel()
   private let zoomControlsContainer = UIView()
@@ -289,6 +297,7 @@ final class RoomUsdzViewerViewController: UIViewController {
       ])
     }
     configureDimensionIcon(dimensionsLine1Icon, systemName: "rectangle")
+    configureDimensionIcon(dimensionsHeightIcon, systemName: "arrow.up.and.down")
     configureDimensionIcon(dimensionsLine2Icon, systemName: "rectangle.on.rectangle")
 
     let subHead = UIFont.preferredFont(forTextStyle: .subheadline)
@@ -308,6 +317,7 @@ final class RoomUsdzViewerViewController: UIViewController {
       label.font = valueFont
     }
     configureDimensionValueLabel(dimensionsLine1Label)
+    configureDimensionValueLabel(dimensionsHeightLabel)
     configureDimensionValueLabel(dimensionsLine2Label)
 
     let row1 = UIStackView(arrangedSubviews: [dimensionsLine1Icon, dimensionsLine1Label])
@@ -315,6 +325,11 @@ final class RoomUsdzViewerViewController: UIViewController {
     row1.spacing = 8
     row1.alignment = .center
     row1.distribution = .fill
+    let rowHeight = UIStackView(arrangedSubviews: [dimensionsHeightIcon, dimensionsHeightLabel])
+    rowHeight.axis = .horizontal
+    rowHeight.spacing = 8
+    rowHeight.alignment = .center
+    rowHeight.distribution = .fill
     let row2 = UIStackView(arrangedSubviews: [dimensionsLine2Icon, dimensionsLine2Label])
     row2.axis = .horizontal
     row2.spacing = 8
@@ -326,6 +341,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     dimensionsLineStack.spacing = 6
     dimensionsLineStack.alignment = .center
     dimensionsLineStack.addArrangedSubview(row1)
+    dimensionsLineStack.addArrangedSubview(rowHeight)
     dimensionsLineStack.addArrangedSubview(row2)
     dimensionsLineStack.isHidden = true
     dimensionsLineStack.isAccessibilityElement = true
@@ -407,6 +423,7 @@ final class RoomUsdzViewerViewController: UIViewController {
     dimensionsTitleLabel.preferredMaxLayoutWidth = stackWidth
     let lineLabelMaxWidth = stackWidth - 20 - 8  // icon width + row spacing
     dimensionsLine1Label.preferredMaxLayoutWidth = lineLabelMaxWidth
+    dimensionsHeightLabel.preferredMaxLayoutWidth = lineLabelMaxWidth
     dimensionsLine2Label.preferredMaxLayoutWidth = lineLabelMaxWidth
   }
 
@@ -1028,12 +1045,14 @@ final class RoomUsdzViewerViewController: UIViewController {
     var line1 = strings.dimensionsLine1Template
     line1 = line1.replacingOccurrences(of: "{floorLong}", with: fmt(floorLong))
     line1 = line1.replacingOccurrences(of: "{floorShort}", with: fmt(floorShort))
-    line1 = line1.replacingOccurrences(of: "{height}", with: fmt(height))
+    var lineH = strings.dimensionsHeightTemplate
+    lineH = lineH.replacingOccurrences(of: "{height}", with: fmt(height))
     var line2 = strings.dimensionsLine2Template
     line2 = line2.replacingOccurrences(of: "{floorArea}", with: fmtArea(floorArea))
     dimensionsLine1Label.text = line1
+    dimensionsHeightLabel.text = lineH
     dimensionsLine2Label.text = line2
-    dimensionsLineStack.accessibilityLabel = "\(line1). \(line2)"
+    dimensionsLineStack.accessibilityLabel = "\(line1). \(lineH). \(line2)"
     dimensionsTitleLabel.isHidden = false
     dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)

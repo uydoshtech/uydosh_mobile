@@ -331,9 +331,10 @@ class AppStrings {
       "view_room_3d": "View 3D room",
       "room_3d_open_error": "Could not open 3D model. Check your connection.",
       "room_3d_viewer_title": "3D",
-      "room_3d_dimensions_caption": "Approximate dimensions (full scan bounds)",
+      "room_3d_dimensions_caption": "Approximate dimensions",
       "room_3d_dimensions_line1_template":
-          "Dimensions: {floorLong} x {floorShort} m · Height: {height}m",
+          "Dimensions: {floorLong} × {floorShort} m",
+      "room_3d_dimensions_height_template": "Height: {height} m",
       "room_3d_dimensions_line2_template": "Area: ~{floorArea} m²",
       "room_3d_load_error_title": "Could not load 3D model",
       "room_3d_floor_only_button": "Hide walls",
@@ -511,6 +512,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
+      "listing_description_dictate": "Dictate",
+      "listing_description_dictate_mic_denied":
+          "Microphone access is needed to dictate.",
+      "listing_description_dictate_failed":
+          "Couldn’t transcribe speech. Try again.",
+      "listing_description_dictate_not_configured":
+          "Speech transcription isn’t available yet. Try again later.",
       "ai_allowance_banner_title": "AI assistant usage",
       "ai_allowance_meter_translate":
           "Listing translations left (UTC month): {count}",
@@ -1767,10 +1775,10 @@ class AppStrings {
       "room_3d_open_error":
           "Не удалось открыть 3D-модель. Проверьте подключение.",
       "room_3d_viewer_title": "3D",
-      "room_3d_dimensions_caption":
-          "Приблизительные размеры (границы всего скана)",
+      "room_3d_dimensions_caption": "Приблизительные размеры",
       "room_3d_dimensions_line1_template":
-          "Размеры: {floorLong} × {floorShort} м · Высота: {height} м",
+          "Размеры: {floorLong} × {floorShort} м",
+      "room_3d_dimensions_height_template": "Высота: {height} м",
       "room_3d_dimensions_line2_template": "Площадь: ~{floorArea} м²",
       "room_3d_load_error_title": "Не удалось загрузить 3D-модель",
       "room_3d_floor_only_button": "Скрыть стены",
@@ -1953,6 +1961,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
+      "listing_description_dictate": "Диктовка",
+      "listing_description_dictate_mic_denied":
+          "Для диктовки нужен доступ к микрофону.",
+      "listing_description_dictate_failed":
+          "Не удалось распознать речь. Попробуйте снова.",
+      "listing_description_dictate_not_configured":
+          "Распознавание речи пока недоступно. Попробуйте позже.",
       "ai_allowance_banner_title": "Использование AI-помощника",
       "ai_allowance_meter_translate":
           "Осталось переводов объявлений (UTC-месяц): {count}",
@@ -3232,10 +3247,10 @@ class AppStrings {
       "view_room_3d": "3D xonani ko'rish",
       "room_3d_open_error": "3D modelni ochib bo'lmadi. Internetni tekshiring.",
       "room_3d_viewer_title": "3D",
-      "room_3d_dimensions_caption":
-          "Taxminiy o'lchamlar (to'liq skan chegarasi)",
+      "room_3d_dimensions_caption": "Taxminiy o'lchamlar",
       "room_3d_dimensions_line1_template":
-          "O'lchamlar: {floorLong} x {floorShort} м · Balandlik: {height} м",
+          "O'lchamlar: {floorLong} x {floorShort} м",
+      "room_3d_dimensions_height_template": "Balandlik: {height} м",
       "room_3d_dimensions_line2_template": "Maydon: ~{floorArea} м²",
       "room_3d_load_error_title": "3D modelni yuklab bo'lmadi",
       "room_3d_floor_only_button": "Devorlarni yashirish",
@@ -3415,6 +3430,13 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
+      "listing_description_dictate": "Diktat",
+      "listing_description_dictate_mic_denied":
+          "Dictaphone uchun mikrofonga ruxsat kerak.",
+      "listing_description_dictate_failed":
+          "Nutqni taniy olmadik. Qayta urinib ko‘ring.",
+      "listing_description_dictate_not_configured":
+          "Nutqni tanish hozircha ishlamayapti. Keyinroq urinib ko‘ring.",
       "ai_allowance_banner_title": "AI yordamchisi",
       "ai_allowance_meter_translate":
           "Qolgan e'lon tarjimalari (UTC oy): {count}",

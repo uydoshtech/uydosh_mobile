@@ -12,7 +12,10 @@
     
     <!-- Notification permission for Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    
+
+    <!-- Dictation (listing description) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:label="UyDosh"
         android:name=".MainApplication"

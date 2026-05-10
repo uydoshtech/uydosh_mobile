@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/domain/models/photo.dart";
+import "package:uy_dosh/domain/models/photo_network_display.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 
 /// Photo carousel section for listing detail screen — uses the shared
@@ -25,7 +26,7 @@ class ListingDetailPhotoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return DetailHostedPhotoGallery(
       orderedRawPhotoUrls:
-          orderedPhotos.map((photo) => photo.photoUrl).toList(),
+          orderedPhotos.map((photo) => photo.networkDisplayPhotoUrl).toList(),
       pageController: pageController,
       buildPhotoUrl: buildPhotoUrl,
       onPhotoTapCarouselIndex: (carouselIndex) {

@@ -260,16 +260,13 @@ class _ListingDescriptionAiEnhanceButtonState
             : null;
 
         if (widget.inlineWithCounter) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: hint == null
-                ? button
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [button, hint],
-                  ),
-          );
+          return hint == null
+              ? button
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [button, hint],
+                );
         }
         final columnChildren = <Widget>[button];
         if (hint != null) {

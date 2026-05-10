@@ -103,6 +103,9 @@
 		</dict>
 	</array>
 	
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone when you dictate listing descriptions.</string>
+
 	<!-- Camera and Photo Library Usage Descriptions -->
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera for listing photos and, on supported devices, for 3D room scans.</string>
