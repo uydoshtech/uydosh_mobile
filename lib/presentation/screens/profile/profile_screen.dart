@@ -630,6 +630,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     CommonConfirmationDialogs.showDeleteAccountConfirmation(
       context: context,
       onConfirm: () async {
+        final rootNav = Navigator.of(context, rootNavigator: true);
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          useRootNavigator: true,
+          builder: (_) => const PopScope(
+            canPop: false,
+            child: Center(child: HouseLoadingIndicator()),
+          ),
+        );
         try {
           await LogoutService().performDeleteAccount(context);
         } on AccountBlockedException {
@@ -644,6 +654,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             context,
             message: L10n.get("delete_account_error"),
           );
+        } finally {
+          if (rootNav.mounted && rootNav.canPop()) {
+            rootNav.pop();
+          }
         }
       },
     );

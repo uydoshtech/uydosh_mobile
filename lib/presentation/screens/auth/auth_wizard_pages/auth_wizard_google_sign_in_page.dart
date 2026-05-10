@@ -100,7 +100,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                         // After successful sign-in, bump the title size by
                         // +2px so the success copy reads as a confirmation
                         // headline rather than the prompt it replaces.
-                        fontSize: widget.isGoogleSignedIn ? 17 : 15,
+                        fontSize: widget.isGoogleSignedIn ? 20 : 18,
                         height: 1.25,
                         fontWeight: FontWeight.w500,
                         color: _getOnboardingTextSecondaryColor(context),

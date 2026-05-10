@@ -85,7 +85,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   // Form controllers
   final TextEditingController _nameController = TextEditingController();
   int? _selectedGender;
-  bool? _isStudent = false; // Initialize to false instead of null
+  bool? _isStudent;
   String? _selectedRole; // tenant | landlord | service_requester | service_provider
   // Initialized in initState from LanguageState (saved/device locale).
   String _selectedLanguage = "uz";
@@ -2623,14 +2623,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         }
         return _nextPage;
       case 2:
-        // Profile setup - require gender, region, student status, and university if student
-        if (_nameController.text.trim().isEmpty ||
-            _selectedGender == null ||
-            _selectedRegionId == null ||
-            _isStudent == null) {
-          return null;
-        }
-        if ((_isStudent ?? false) && _selectedUniversity == null) return null;
+        // Profile setup — keep the button enabled; [_completeProfile] runs
+        // validation, toggles [_showValidationErrors] for red borders, scrolls
+        // to the first invalid control, and only submits when everything is
+        // filled (matches [_completeProfile] rules, including region only for
+        // Uzbekistan and university only when student).
         return _completeProfile;
       default:
         return null;
