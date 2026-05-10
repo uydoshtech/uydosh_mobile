@@ -36,6 +36,18 @@ class PhotoUploadRequest implements IJsonEncodable {
       };
 }
 
+/// PATCH `/listings/:id/room-scan-metrics` body wrapper.
+class RoomScanMetricsPatchRequest implements IJsonEncodable {
+  RoomScanMetricsPatchRequest({required this.metrics});
+
+  final RoomScanMetrics metrics;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "room_scan_metrics": metrics.toJson(),
+      };
+}
+
 /// Footprint derived from LiDAR USDZ (meters); sent with [RoomScanUploadRequest].
 class RoomScanMetrics implements IJsonEncodable {
   RoomScanMetrics({

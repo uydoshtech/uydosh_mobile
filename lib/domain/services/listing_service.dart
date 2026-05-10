@@ -145,6 +145,10 @@ abstract class IListingService {
     required String usdzFilePath,
     RoomScanMetrics? roomScanMetrics,
   });
+  Future<void> patchRoomScanMetricsIfMissing({
+    required int listingId,
+    required RoomScanMetrics metrics,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
   Future<void> recordListingView(int listingId);
@@ -458,6 +462,16 @@ class ListingService implements IListingService {
         listingId: listingId,
         usdzFilePath: usdzFilePath,
         roomScanMetrics: roomScanMetrics,
+      );
+
+  @override
+  Future<void> patchRoomScanMetricsIfMissing({
+    required int listingId,
+    required RoomScanMetrics metrics,
+  }) =>
+      _crudService.patchRoomScanMetricsIfMissing(
+        listingId: listingId,
+        metrics: metrics,
       );
 
   @override

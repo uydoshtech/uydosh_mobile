@@ -73,6 +73,12 @@ abstract class IListingCrudService {
     required String usdzFilePath,
     RoomScanMetrics? roomScanMetrics,
   });
+
+  /// Backfills DB metrics for an existing USDZ when all four columns are still null.
+  Future<void> patchRoomScanMetricsIfMissing({
+    required int listingId,
+    required RoomScanMetrics metrics,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
 }
@@ -535,6 +541,19 @@ class ListingCrudService implements IListingCrudService {
         sendTimeout: const Duration(minutes: 6),
         receiveTimeout: const Duration(minutes: 6),
       ),
+    );
+  }
+
+  @override
+  Future<void> patchRoomScanMetricsIfMissing({
+    required int listingId,
+    required RoomScanMetrics metrics,
+  }) async {
+    await _oauthApiClient.patch<dynamic, RoomScanMetricsPatchRequest>(
+      "/listings/$listingId/room-scan-metrics",
+      (json) => json,
+      basePath: EnvironmentUtil.basePath,
+      data: RoomScanMetricsPatchRequest(metrics: metrics),
     );
   }
 

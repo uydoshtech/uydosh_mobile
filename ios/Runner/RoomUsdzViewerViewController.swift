@@ -141,6 +141,10 @@ struct RoomViewerStrings {
 final class RoomUsdzViewerViewController: UIViewController {
   private let fileURL: URL
   private let strings: RoomViewerStrings
+  private let listingId: Int
+  private let publishMetricsIfMissing: Bool
+  private weak var metricsMessenger: FlutterBinaryMessenger?
+  private var didPublishFlutterMetrics = false
   private let sceneView = SCNView()
   private let hintContainer = UIView()
   private let hintStack = UIStackView()
@@ -188,9 +192,18 @@ final class RoomUsdzViewerViewController: UIViewController {
   /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
   private static let initialZoomInSteps: Int = 2
 
-  init(fileURL: URL, strings: RoomViewerStrings) {
+  init(
+    fileURL: URL,
+    strings: RoomViewerStrings,
+    listingId: Int = 0,
+    publishMetricsIfMissing: Bool = false,
+    metricsMessenger: FlutterBinaryMessenger? = nil
+  ) {
     self.fileURL = fileURL
     self.strings = strings
+    self.listingId = listingId
+    self.publishMetricsIfMissing = publishMetricsIfMissing
+    self.metricsMessenger = metricsMessenger
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -1005,6 +1018,34 @@ final class RoomUsdzViewerViewController: UIViewController {
     dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
     hintContainer.isUserInteractionEnabled = true
+    publishMetricsToFlutterIfNeeded(dx: dx, dy: dy, dz: dz)
+  }
+
+  /// Owner backfill: push bounds to Flutter once so the API can persist metrics for legacy scans.
+  private func publishMetricsToFlutterIfNeeded(dx: Float, dy: Float, dz: Float) {
+    guard publishMetricsIfMissing, listingId > 0, !didPublishFlutterMetrics,
+      let messenger = metricsMessenger
+    else { return }
+    didPublishFlutterMetrics = true
+    let floorLong = Double(max(dx, dz))
+    let floorShort = Double(min(dx, dz))
+    let height = Double(dy)
+    let floorArea = floorLong * floorShort
+    let channel = FlutterMethodChannel(
+      name: "uydosh/room_scan_metrics_sink",
+      binaryMessenger: messenger
+    )
+    channel.invokeMethod(
+      "onComputedMetrics",
+      arguments: [
+        "listingId": listingId,
+        "floor_long_m": floorLong,
+        "floor_short_m": floorShort,
+        "height_m": height,
+        "floor_area_m2": floorArea,
+      ],
+      result: { _ in }
+    )
   }
 
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
@@ -1154,7 +1195,14 @@ private final class OnceFlutterResult {
 }
 
 enum RoomUsdzViewerPresenter {
-  static func present(filePath: String, strings: [String: String], result: @escaping FlutterResult) {
+  static func present(
+    filePath: String,
+    strings: [String: String],
+    messenger: FlutterBinaryMessenger?,
+    listingId: Int,
+    publishMetricsIfMissing: Bool,
+    result: @escaping FlutterResult
+  ) {
     let once = OnceFlutterResult(result)
 
     guard FileManager.default.fileExists(atPath: filePath) else {
@@ -1180,7 +1228,13 @@ enum RoomUsdzViewerPresenter {
     }
 
     let resolved = RoomViewerStrings(dict: strings) ?? RoomViewerStrings.englishFallback
-    let viewer = RoomUsdzViewerViewController(fileURL: url, strings: resolved)
+    let viewer = RoomUsdzViewerViewController(
+      fileURL: url,
+      strings: resolved,
+      listingId: listingId,
+      publishMetricsIfMissing: publishMetricsIfMissing,
+      metricsMessenger: messenger
+    )
     let nav = UINavigationController(rootViewController: viewer)
     nav.modalPresentationStyle = .fullScreen
     nav.navigationBar.prefersLargeTitles = false

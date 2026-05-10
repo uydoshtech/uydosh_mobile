@@ -22,7 +22,11 @@ func uydoshAppleLanguagesList(for code: String) -> [String] {
 /// Registers the `uydosh/room_usdz_viewer` method channel.
 /// Kept in this file to ensure it is compiled into the Runner target.
 final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
+  /// Retained for invoking Flutter from the native viewer (room-scan metrics backfill).
+  fileprivate static var binaryMessenger: FlutterBinaryMessenger?
+
   static func register(with registrar: FlutterPluginRegistrar) {
+    Self.binaryMessenger = registrar.messenger()
     let channel = FlutterMethodChannel(
       name: "uydosh/room_usdz_viewer",
       binaryMessenger: registrar.messenger()
@@ -50,8 +54,21 @@ final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
       )
       return
     }
+    let listingId = (args["listingId"] as? NSNumber)?.intValue ?? 0
+    let publishMetricsIfMissing: Bool = {
+      if let b = args["publishMetricsIfMissing"] as? Bool { return b }
+      if let n = args["publishMetricsIfMissing"] as? NSNumber { return n.boolValue }
+      return false
+    }()
     DispatchQueue.main.async {
-      RoomUsdzViewerPresenter.present(filePath: path, strings: strings, result: result)
+      RoomUsdzViewerPresenter.present(
+        filePath: path,
+        strings: strings,
+        messenger: Self.binaryMessenger,
+        listingId: listingId,
+        publishMetricsIfMissing: publishMetricsIfMissing,
+        result: result
+      )
     }
   }
 }

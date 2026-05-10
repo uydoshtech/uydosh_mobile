@@ -784,10 +784,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatP
         await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
         return;
       }
+      final isOwner = UserListingState().isOwner(listingDetail.user.id);
+      final metricsMissing = listingDetail.roomScanFloorLongM == null ||
+          listingDetail.roomScanFloorShortM == null ||
+          listingDetail.roomScanHeightM == null ||
+          listingDetail.roomScanFloorAreaM2 == null;
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
         listingId: listingDetail.id,
         languageCode: LanguageState().currentLanguage,
+        publishMetricsIfMissing: isOwner && metricsMissing,
       );
       if (!mounted) return;
       if (!ok) {
