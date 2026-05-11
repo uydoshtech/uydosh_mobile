@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "626930983094-1fueiq66e29huaibm5nfjsmvjt035fco.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uydosh.app",
+            "certificate_hash": "26c082328b40339668a698d7c92342d42ad51184"
+          }
+        },
+        {
           "client_id": "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com",
           "client_type": 3
         }
