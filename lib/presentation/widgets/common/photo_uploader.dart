@@ -436,16 +436,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
                             HapticFeedbackUtils.impact();
                             _showImageSourceDialog();
                           },
-                          child: SizedBox.expand(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                L10n.get("listing_photos_label"),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
-                                ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              L10n.get("listing_photos_label"),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
                           ),

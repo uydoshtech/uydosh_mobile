@@ -3,6 +3,8 @@ import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -28,6 +30,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     this.height = 56,
     this.chipSize = 36,
     this.endPadding = 0,
+    this.alwaysShowPriceRange = false,
   });
 
   final VoidCallback onPressed;
@@ -49,10 +52,12 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   /// sits next to trailing actions (e.g. close/camera/lock) so the last chip
   /// never scrolls underneath those buttons.
   final double endPadding;
+  /// When true, show the price pill even for the full default range (0–1000).
+  final bool alwaysShowPriceRange;
 
   bool get _hasCustomPriceRange {
     if (minPrice == null && maxPrice == null) return false;
-    const defaultMin = 10.0;
+    const defaultMin = 0.0;
     const defaultMax = 1000.0;
     final minV = minPrice ?? defaultMin;
     final maxV = maxPrice ?? defaultMax;
@@ -209,43 +214,49 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       out.add(gap);
     }
 
-    if (_hasCustomPriceRange) {
-      final minS = (minPrice ?? 10.0).round().toString();
-      final maxS = (maxPrice ?? 1000.0).round().toString();
-      final rangeLabel = "$minS–$maxS";
+    if (alwaysShowPriceRange || _hasCustomPriceRange) {
+      final minV = minPrice ?? 0.0;
+      final maxV = maxPrice ?? 1000.0;
       out.add(
-        Tooltip(
-          message: rangeLabel,
-          child: Container(
-            height: chipSize,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: neumorphicChipDecoration(
-              radius: BorderRadius.circular(999),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.payments,
-                  size: 16,
-                  color: AppColors.success,
+        ListenableBuilder(
+          listenable: PriceDisplaySettingsState(),
+          builder: (context, _) {
+            final rangeLabel =
+                PriceRangeHelper.formatSearchFilterPriceChipLabel(minV, maxV);
+            return Tooltip(
+              message: rangeLabel,
+              child: Container(
+                height: chipSize,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: neumorphicChipDecoration(
+                  radius: BorderRadius.circular(999),
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  rangeLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: onSurface,
-                    height: 1.0,
-                  ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.payments,
+                      size: 16,
+                      color: AppColors.success,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      rangeLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: onSurface,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       );
       out.add(gap);

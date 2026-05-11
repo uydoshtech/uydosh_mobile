@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/country.dart";
@@ -362,6 +363,38 @@ class AuthWizardProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 32),
+            ListenableBuilder(
+              listenable: PriceDisplaySettingsState(),
+              builder: (context, _) {
+                final currency = PriceDisplaySettingsState().currencySlug;
+                return ProfileDropdownControl(
+                  label: L10n.get("price_display_currency"),
+                  value: currency,
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    await PriceDisplaySettingsState().setCurrency(
+                      value == "usd"
+                          ? PriceDisplayCurrency.usd
+                          : PriceDisplayCurrency.national,
+                    );
+                  },
+                  icon: Icons.payments,
+                  options: [
+                    DropdownOption(
+                      value: "national",
+                      label: L10n.get("price_display_currency_national"),
+                      icon: Icons.flag,
+                    ),
+                    DropdownOption(
+                      value: "usd",
+                      label: L10n.get("price_display_currency_usd"),
+                      icon: Icons.attach_money,
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 32),
             L10n.text(

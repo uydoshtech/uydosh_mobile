@@ -126,7 +126,13 @@ class SearchFiltersState extends ChangeNotifier {
         await _applyServerFiltersToStateAndPrefs(Map<String, dynamic>.from(raw));
         _profileDefaultsApplied = true;
       } else {
-        await clearAllFilters(persistRemote: false);
+        // No server snapshot yet (or explicitly null). Keep filters from
+        // [initialize] / device prefs — do not wipe them. Clearing here
+        // made every cold start drop local filters whenever the backend row
+        // was still empty (e.g. before the debounced remote persist landed).
+        logger.d(
+          "SearchFiltersState: hydrate skipped apply (no server map); keeping local filters",
+        );
       }
     } catch (e) {
       logger.d("SearchFiltersState: hydrate failed: $e");

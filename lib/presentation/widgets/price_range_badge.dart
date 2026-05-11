@@ -228,6 +228,38 @@ class PriceRangeHelper {
     return formatPriceRange(minNat, maxNat);
   }
 
+  /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`
+  /// (millions). Shared with [PriceRangePicker] and filter chips.
+  static String formatUzsCompact(int uzs) {
+    final snapped = ((uzs + 5000) ~/ 10000) * 10000;
+    if (snapped >= 1000000) {
+      final whole = snapped ~/ 1000000;
+      final tenths = (snapped % 1000000) ~/ 100000;
+      if (tenths == 0) return "${whole}M";
+      return "$whole,${tenths}M";
+    }
+    return "${snapped ~/ 1000}K";
+  }
+
+  /// Search filters store bounds on listing USD-index scale (same as
+  /// [SearchFiltersState] / [PriceRangePicker] storage).
+  static String formatSearchFilterPriceChipLabel(
+    double minUsdScale,
+    double maxUsdScale,
+  ) {
+    final pref = PriceDisplaySettingsState().currency;
+    final minI = minUsdScale.round();
+    final maxI = maxUsdScale.round();
+    if (pref == PriceDisplayCurrency.usd) {
+      final minUsd = listingPriceToWholeUsdForDisplay(minI);
+      final maxUsd = listingPriceToWholeUsdForDisplay(maxI);
+      return formatPriceRange(minUsd, maxUsd);
+    }
+    final minNat = listingPriceToUzsForDisplay(minI);
+    final maxNat = listingPriceToUzsForDisplay(maxI);
+    return "${formatUzsCompact(minNat)}–${formatUzsCompact(maxNat)}";
+  }
+
   /// Format price range with thousand separators
   static String formatPriceRangeWithSeparators(int minPrice, int maxPrice) {
     final minPriceString = _formatPriceWithSeparators(minPrice);

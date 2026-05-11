@@ -446,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return _searchFiltersState.selectedLocationIndex > 0 ||
         _searchFiltersState.selectedSubwayLine > 0 ||
         _searchFiltersState.selectedStationId > 0 ||
-        _searchFiltersState.minPrice != 10.0 ||
+        _searchFiltersState.minPrice != 0.0 ||
         _searchFiltersState.maxPrice != 1000.0 ||
         _searchFiltersState.privateRoom ||
         _searchFiltersState.withPhoto;
@@ -818,7 +818,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         fromExplicit ? widget.gender : _searchFiltersState.selectedGender;
 
     final minPrice = fromExplicit
-        ? (includeSafeFallbacks ? (widget.minPrice ?? 10.0) : widget.minPrice)
+        ? (includeSafeFallbacks ? (widget.minPrice ?? 0.0) : widget.minPrice)
         : _searchFiltersState.minPrice;
     final maxPrice = fromExplicit
         ? (includeSafeFallbacks ? (widget.maxPrice ?? 1000.0) : widget.maxPrice)
@@ -1318,6 +1318,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       total: null,
       showLabel: false,
       alignRight: false,
+      alwaysShowPriceRange: true,
       height: _inlineSearchRibbonHeight,
       // Reserve space so the last chip never scrolls under the trailing close button.
       // (44px tap target + a little breathing room for chip shadows)
@@ -1514,7 +1515,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         subwayStationId: filters.subwayStationId,
         subwayLineId: filters.subwayLineId,
         gender: filters.gender,
-        minPrice: filters.minPrice ?? 10.0,
+        minPrice: filters.minPrice ?? 0.0,
         maxPrice: filters.maxPrice ?? 1000.0,
         privateRoomOnly: filters.privateRoom ?? false,
         withPhotoOnly: filters.withPhoto ?? false,
@@ -1699,7 +1700,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final subwayStationId = normalizeId(filters.subwayStationId);
     final subwayLineId = normalizeId(filters.subwayLineId);
     final gender = normalizeGender(filters.gender);
-    final minPrice = filters.minPrice ?? 10.0;
+    final minPrice = filters.minPrice ?? 0.0;
     final maxPrice = filters.maxPrice ?? 1000.0;
     final privateRoomOnly = normalizeBool(filters.privateRoom);
     final withPhotoOnly = normalizeBool(filters.withPhoto);

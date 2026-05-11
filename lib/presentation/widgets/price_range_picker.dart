@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({
@@ -47,6 +48,27 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   /// UZS-display tick. 10.000 keeps the slider feeling native to UZS users
   /// without producing a wall of zeroes — labels render as `K`/`M` further down.
   static const double _stepUzs = 10000.0;
+
+  /// Nearest step to [v], then nudged into [[rangeMin], [rangeMax]] so we never
+  /// round *outside* the track (e.g. 12.600 → nearest 10k is 10.000 < min 12.600).
+  static double _snapToStepInRange(
+    double v,
+    double rangeMin,
+    double rangeMax,
+    double step,
+  ) {
+    if (step <= 0 || rangeMax < rangeMin) {
+      return v.clamp(rangeMin, rangeMax);
+    }
+    var snapped = (v / step).round() * step;
+    if (snapped < rangeMin) {
+      snapped = (rangeMin / step).ceil() * step;
+    }
+    if (snapped > rangeMax) {
+      snapped = (rangeMax / step).floor() * step;
+    }
+    return snapped.clamp(rangeMin, rangeMax);
+  }
 
   Widget _unitIcon(Color color) {
     return Icon(Icons.payments_outlined, size: 14, color: color);
@@ -90,20 +112,6 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         }
       });
     }
-  }
-
-  /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`
-  /// (millions). UZS amounts are inherently coarse so users never need
-  /// finer-than-`10K` precision in a chip-sized label.
-  static String _formatUzsCompact(int uzs) {
-    final snapped = ((uzs + 5000) ~/ 10000) * 10000;
-    if (snapped >= 1000000) {
-      final whole = snapped ~/ 1000000;
-      final tenths = (snapped % 1000000) ~/ 100000;
-      if (tenths == 0) return "${whole}M";
-      return "$whole,${tenths}M";
-    }
-    return "${snapped ~/ 1000}K";
   }
 
   @override
@@ -151,17 +159,28 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         final scaledRangeMax = widget.maxPrice * scale;
         final divisions = ((scaledRangeMax - scaledRangeMin) / step).round();
 
-        double snapToStep(double v) => (v / step).round() * step;
-
-        final scaledMin = snapToStep(
+        var scaledMin = _snapToStepInRange(
           (_minPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
+          scaledRangeMin,
+          scaledRangeMax,
+          step,
         );
-        final scaledMax = snapToStep(
+        var scaledMax = _snapToStepInRange(
           (_maxPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
+          scaledRangeMin,
+          scaledRangeMax,
+          step,
         );
+        if (scaledMin > scaledMax) {
+          final t = scaledMin;
+          scaledMin = scaledMax;
+          scaledMax = t;
+        }
 
         String formatLabel(double scaled) {
-          if (isUzsDisplay) return _formatUzsCompact(scaled.round());
+          if (isUzsDisplay) {
+            return PriceRangeHelper.formatUzsCompact(scaled.round());
+          }
           return "${scaled.round()}";
         }
 
@@ -239,7 +258,12 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                           inactiveColor: getInactiveTrackColor(),
                           label: formatLabel(scaledMin),
                           onChanged: (value) {
-                            final newScaled = snapToStep(value);
+                            final newScaled = _snapToStepInRange(
+                              value,
+                              scaledRangeMin,
+                              scaledRangeMax,
+                              step,
+                            );
                             final newUsd = emitFromScaled(newScaled);
                             if ((newScaled / step).round() !=
                                 (scaledMin / step).round()) {
@@ -267,8 +291,18 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                               formatLabel(scaledMax),
                             ),
                             onChanged: (values) {
-                              final newScaledMin = snapToStep(values.start);
-                              final newScaledMax = snapToStep(values.end);
+                              final newScaledMin = _snapToStepInRange(
+                                values.start,
+                                scaledRangeMin,
+                                scaledRangeMax,
+                                step,
+                              );
+                              final newScaledMax = _snapToStepInRange(
+                                values.end,
+                                scaledRangeMin,
+                                scaledRangeMax,
+                                step,
+                              );
                               final newUsdMin = emitFromScaled(newScaledMin);
                               final newUsdMax = emitFromScaled(newScaledMax);
                               if ((newScaledMin / step).round() !=
