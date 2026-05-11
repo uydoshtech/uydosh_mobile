@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
@@ -130,8 +131,7 @@ class _GigOfferTileState extends State<GigOfferTile>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
-    final categoryName =
-        widget.offer.category?.localizedName(language) ?? "";
+    final categoryName = widget.offer.category?.localizedName(language) ?? "";
     final photo = widget.offer.primaryPhotoUrl();
     final thumbPx =
         (84 * MediaQuery.devicePixelRatioOf(context)).round().clamp(1, 4096);
@@ -160,8 +160,7 @@ class _GigOfferTileState extends State<GigOfferTile>
                       height: 84,
                       child: photo != null
                           ? CachedNetworkImage(
-                              imageUrl:
-                                  EnvironmentUtil.hostedImageUrl(photo),
+                              imageUrl: EnvironmentUtil.hostedImageUrl(photo),
                               memCacheWidth: thumbPx,
                               memCacheHeight: thumbPx,
                               fit: BoxFit.cover,
@@ -169,8 +168,8 @@ class _GigOfferTileState extends State<GigOfferTile>
                                 color: scheme.surfaceContainerHighest,
                                 child: Icon(
                                   Icons.image_not_supported_rounded,
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.4),
+                                  color:
+                                      scheme.onSurface.withValues(alpha: 0.4),
                                 ),
                               ),
                             )
@@ -178,8 +177,7 @@ class _GigOfferTileState extends State<GigOfferTile>
                               color: scheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.handyman_outlined,
-                                color: scheme.onSurface
-                                    .withValues(alpha: 0.4),
+                                color: scheme.onSurface.withValues(alpha: 0.4),
                               ),
                             ),
                     ),
@@ -235,8 +233,12 @@ class _GigOfferTileState extends State<GigOfferTile>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          ListingPaymentsOutlineBadge(
-                            label: _formatGigOfferTilePrice(widget.offer),
+                          ListenableBuilder(
+                            listenable: PriceDisplaySettingsState(),
+                            builder: (context, _) =>
+                                ListingPaymentsOutlineBadge(
+                              label: _formatGigOfferTilePrice(widget.offer),
+                            ),
                           ),
                           const SizedBox(height: 6),
                           _GigOfferTileSocialProofRow(
@@ -268,8 +270,7 @@ class _GigOfferTileState extends State<GigOfferTile>
                             return IgnorePointer(
                               child: GigParticipantAvatarBadge(
                                 avatarUrl: widget.offer.providerAvatarUrl,
-                                displayName:
-                                    widget.offer.providerDisplayName,
+                                displayName: widget.offer.providerDisplayName,
                                 ringColor: scheme.surface,
                               ),
                             );
@@ -336,13 +337,12 @@ class _GigOfferTileState extends State<GigOfferTile>
                                                 : ThemeIcon(
                                                     isFavorite
                                                         ? Icons.favorite
-                                                        : Icons
-                                                              .favorite_border,
+                                                        : Icons.favorite_border,
                                                     color: isFavorite
                                                         ? AppColors
-                                                              .favoriteActive
+                                                            .favoriteActive
                                                         : AppColors
-                                                              .favoriteInactive,
+                                                            .favoriteInactive,
                                                     size: 22,
                                                   ),
                                           ),
@@ -356,8 +356,7 @@ class _GigOfferTileState extends State<GigOfferTile>
                               IgnorePointer(
                                 child: GigParticipantAvatarBadge(
                                   avatarUrl: widget.offer.providerAvatarUrl,
-                                  displayName:
-                                      widget.offer.providerDisplayName,
+                                  displayName: widget.offer.providerDisplayName,
                                   ringColor: scheme.surface,
                                 ),
                               ),
@@ -382,9 +381,13 @@ class _GigOfferTileState extends State<GigOfferTile>
 }
 
 String _formatGigOfferTilePrice(GigOffer o) {
+  final display = CurrencyDisplayUtils.gigAmountForDisplay(
+    amount: o.price,
+    currencyCode: o.currencyCode,
+  );
   final params = {
-    "amount": IntFormatUtils.withDotThousands(o.price),
-    "currency": CurrencyDisplayUtils.isoCodeForBadge(o.currencyCode),
+    "amount": IntFormatUtils.withDotThousands(display.amount),
+    "currency": CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode),
   };
   final String key;
   switch (o.pricingType) {
@@ -433,8 +436,7 @@ class _GigOfferTileSocialProofRow extends StatelessWidget {
     final rating = offer.providerRatingAvg;
     final reviewLabelCount =
         reviews > 0 ? reviews : _kGigOfferTilePlaceholderReviewCount;
-    final placeholderStarColor =
-        scheme.onSurface.withValues(alpha: 0.38);
+    final placeholderStarColor = scheme.onSurface.withValues(alpha: 0.38);
 
     final mutedStyle = TextStyle(
       fontSize: 12,

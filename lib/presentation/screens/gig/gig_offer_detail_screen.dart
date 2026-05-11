@@ -10,6 +10,7 @@ import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -100,7 +101,8 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
     }
   }
 
-  Future<void> _toggleOfferFavorite(BuildContext context, GigOffer offer) async {
+  Future<void> _toggleOfferFavorite(
+      BuildContext context, GigOffer offer) async {
     if (_offerFavoriteBusy) return;
     final gigFav = GigFavoritesState();
     final screenFav = FavoritesState();
@@ -165,83 +167,85 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
               }
             },
             builder: (context, state) {
-            final offerForMenu =
-                state is GigOfferDetailLoaded ? state.offer : null;
-            final showOwnerActions = offerForMenu != null &&
-                UserListingState().isOwner(offerForMenu.providerUserId);
-            final canFavoriteOffer = offerForMenu != null &&
-                AuthenticationState().isAuthenticated &&
-                !UserListingState().isOwner(offerForMenu.providerUserId);
-            return Scaffold(
-              appBar: AppBar(
-                leading: ThreeDAppBarIconButton.backLeading(context),
-                title: Text(L10n.get("gigs_offer_detail_title")),
-                actions: [
-                  if (canFavoriteOffer)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ListenableBuilder(
-                        listenable: GigFavoritesState()
-                            .listenableForOffer(offerForMenu.id),
-                        builder: (context, _) {
-                          final fav = GigFavoritesState()
-                              .isOfferFavorite(offerForMenu.id);
-                          _offerFavPulse.setFavoriteOutlineState(isFavorite: fav);
-                          return IconButton(
-                            onPressed: _offerFavoriteBusy
-                                ? null
-                                : () => unawaited(
-                                      _toggleOfferFavorite(
-                                        context,
-                                        offerForMenu,
+              final offerForMenu =
+                  state is GigOfferDetailLoaded ? state.offer : null;
+              final showOwnerActions = offerForMenu != null &&
+                  UserListingState().isOwner(offerForMenu.providerUserId);
+              final canFavoriteOffer = offerForMenu != null &&
+                  AuthenticationState().isAuthenticated &&
+                  !UserListingState().isOwner(offerForMenu.providerUserId);
+              return Scaffold(
+                appBar: AppBar(
+                  leading: ThreeDAppBarIconButton.backLeading(context),
+                  title: Text(L10n.get("gigs_offer_detail_title")),
+                  actions: [
+                    if (canFavoriteOffer)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ListenableBuilder(
+                          listenable: GigFavoritesState()
+                              .listenableForOffer(offerForMenu.id),
+                          builder: (context, _) {
+                            final fav = GigFavoritesState()
+                                .isOfferFavorite(offerForMenu.id);
+                            _offerFavPulse.setFavoriteOutlineState(
+                                isFavorite: fav);
+                            return IconButton(
+                              onPressed: _offerFavoriteBusy
+                                  ? null
+                                  : () => unawaited(
+                                        _toggleOfferFavorite(
+                                          context,
+                                          offerForMenu,
+                                        ),
                                       ),
-                                    ),
-                            icon: AnimatedBuilder(
-                              animation: _offerFavPulse.listenable,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scale: _offerFavPulse.scale,
-                                  child: child,
-                                );
-                              },
-                              child: Icon(
-                                fav ? Icons.favorite : Icons.favorite_border,
-                                color: fav
-                                    ? AppColors.favoriteActive
-                                    : AppColors.favoriteInactive,
+                              icon: AnimatedBuilder(
+                                animation: _offerFavPulse.listenable,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _offerFavPulse.scale,
+                                    child: child,
+                                  );
+                                },
+                                child: Icon(
+                                  fav ? Icons.favorite : Icons.favorite_border,
+                                  color: fav
+                                      ? AppColors.favoriteActive
+                                      : AppColors.favoriteInactive,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  if (showOwnerActions)
-                    ActionDropdownMenu(
-                      padding: const EdgeInsets.only(right: 12),
-                      items: [
-                        ActionMenuItem(
-                          value: "edit_offer",
-                          icon: Icons.edit_outlined,
-                          textKey: "gigs_offer_edit_cta",
-                          onPressed: () => unawaited(_editOffer(offerForMenu)),
-                        ),
-                        ActionMenuItem(
-                          value: "delete_offer",
-                          icon: Icons.delete_outline_rounded,
-                          textKey: "gigs_offer_delete_menu",
-                          onPressed: () =>
-                              unawaited(_deleteOffer(offerForMenu)),
-                          iconColor: Colors.red,
-                          textColor: Colors.red,
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-              body: _buildBody(context, state),
-            );
-          },
-        ),
+                    if (showOwnerActions)
+                      ActionDropdownMenu(
+                        padding: const EdgeInsets.only(right: 12),
+                        items: [
+                          ActionMenuItem(
+                            value: "edit_offer",
+                            icon: Icons.edit_outlined,
+                            textKey: "gigs_offer_edit_cta",
+                            onPressed: () =>
+                                unawaited(_editOffer(offerForMenu)),
+                          ),
+                          ActionMenuItem(
+                            value: "delete_offer",
+                            icon: Icons.delete_outline_rounded,
+                            textKey: "gigs_offer_delete_menu",
+                            onPressed: () =>
+                                unawaited(_deleteOffer(offerForMenu)),
+                            iconColor: Colors.red,
+                            textColor: Colors.red,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                body: _buildBody(context, state),
+              );
+            },
+          ),
         );
       },
     );
@@ -330,7 +334,8 @@ class _OfferDetailContentStatefulState
     return L10n.get("gigs_offer_provider_fallback");
   }
 
-  Future<void> _openActiveBookingChat(GigBooking booking, GigOffer offer) async {
+  Future<void> _openActiveBookingChat(
+      GigBooking booking, GigOffer offer) async {
     if (_bookingChatInFlight) return;
     if (!AuthenticationState().isAuthenticated) {
       context.pushAuthWizard();
@@ -415,8 +420,7 @@ class _OfferDetailContentStatefulState
         ? const <String>[]
         : _orderedGigPhotoRawUrls(offer.photos);
 
-    final topPad =
-        8.0 + ThemeState().mainShellGlassExtraTopInset(context);
+    final topPad = 8.0 + ThemeState().mainShellGlassExtraTopInset(context);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Stack(
@@ -424,17 +428,16 @@ class _OfferDetailContentStatefulState
         ListView(
           padding: EdgeInsets.fromLTRB(16, topPad, 16, 160 + bottomInset),
           children: [
-            if (offer.photos.isNotEmpty &&
-                _photoPageController != null) ...[
+            if (offer.photos.isNotEmpty && _photoPageController != null) ...[
               Theme(
                 data: Theme.of(context).copyWith(
                   cardTheme: Theme.of(context).cardTheme.copyWith(
-                    // Listing detail tiles use ListingDetailTileShell + card
-                    // margin 8 horizontally; gig body tiles are full-width inside
-                    // the list (no shell margin). Drop left/right inset so the
-                    // carousel matches ThreeDElevatedSurface width.
-                    margin: const EdgeInsets.only(bottom: 8),
-                  ),
+                        // Listing detail tiles use ListingDetailTileShell + card
+                        // margin 8 horizontally; gig body tiles are full-width inside
+                        // the list (no shell margin). Drop left/right inset so the
+                        // carousel matches ThreeDElevatedSurface width.
+                        margin: const EdgeInsets.only(bottom: 8),
+                      ),
                 ),
                 child: DetailHostedPhotoGallery(
                   orderedRawPhotoUrls: orderedPhotoUrls,
@@ -505,8 +508,11 @@ class _OfferDetailContentStatefulState
                           ),
                         ),
                         const SizedBox(width: 10),
-                        ListingPaymentsOutlineBadge(
-                          label: _priceLine(offer),
+                        ListenableBuilder(
+                          listenable: PriceDisplaySettingsState(),
+                          builder: (context, _) => ListingPaymentsOutlineBadge(
+                            label: _priceLine(offer),
+                          ),
                         ),
                       ],
                     ),
@@ -554,8 +560,7 @@ class _OfferDetailContentStatefulState
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               child: UserListingState().isOwner(offer.providerUserId)
                   ? PrimaryButtonFactory.iconText(
-                      onPressed: () =>
-                          unawaited(widget.onEditOffer(offer)),
+                      onPressed: () => unawaited(widget.onEditOffer(offer)),
                       icon: Icons.edit_outlined,
                       text: L10n.get("gigs_offer_edit_cta"),
                       height: 54,
@@ -617,9 +622,13 @@ class _OfferDetailContentStatefulState
   }
 
   String _priceLine(GigOffer o) {
+    final display = CurrencyDisplayUtils.gigAmountForDisplay(
+      amount: o.price,
+      currencyCode: o.currencyCode,
+    );
     final params = {
-      "amount": IntFormatUtils.withDotThousands(o.price),
-      "currency": CurrencyDisplayUtils.isoCodeForBadge(o.currencyCode),
+      "amount": IntFormatUtils.withDotThousands(display.amount),
+      "currency": CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode),
     };
     final String key;
     switch (o.pricingType) {
@@ -640,7 +649,8 @@ class _OfferDetailContentStatefulState
 const double _kGigOfferDetailProviderPlaceholderRatingOutOfFive = 4.0;
 const int _kGigOfferDetailProviderPlaceholderReviewCount = 16;
 
-IconData _gigOfferDetailProviderStarIcon(double? averageOutOfFive, int starIndex) {
+IconData _gigOfferDetailProviderStarIcon(
+    double? averageOutOfFive, int starIndex) {
   if (averageOutOfFive == null) {
     return Icons.star_border_rounded;
   }
@@ -659,8 +669,7 @@ Widget _gigOfferDetailProviderRatingReviewsRow({
   final reviews = offer.providerRatingCount ?? 0;
   final reviewLabelCount =
       reviews > 0 ? reviews : _kGigOfferDetailProviderPlaceholderReviewCount;
-  final placeholderStarColor =
-      scheme.onSurface.withValues(alpha: 0.38);
+  final placeholderStarColor = scheme.onSurface.withValues(alpha: 0.38);
 
   final mutedStyle = TextStyle(
     fontSize: 13,

@@ -9,6 +9,7 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -511,17 +512,24 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        if (widget.request.budgetAmount != null)
-                          ListingPaymentsOutlineBadge(label: _budgetLine())
-                        else
-                          Text(
-                            _budgetLine(),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: scheme.onSurface,
-                            ),
-                          ),
+                        ListenableBuilder(
+                          listenable: PriceDisplaySettingsState(),
+                          builder: (context, _) {
+                            if (widget.request.budgetAmount != null) {
+                              return ListingPaymentsOutlineBadge(
+                                label: _budgetLine(),
+                              );
+                            }
+                            return Text(
+                              _budgetLine(),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                            );
+                          },
+                        ),
                         if (widget.request.addressText != null &&
                             widget.request.addressText!.isNotEmpty) ...[
                           const SizedBox(height: 10),
@@ -616,8 +624,7 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
                                 fontSize: 13,
                                 height: 1.35,
                                 fontWeight: FontWeight.w500,
-                                color:
-                                    scheme.onSurface.withValues(alpha: 0.62),
+                                color: scheme.onSurface.withValues(alpha: 0.62),
                               ),
                             ),
                           ],
@@ -694,12 +701,18 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
   String _budgetLine() {
     final r = widget.request;
     if (r.budgetAmount != null) {
+      final display = CurrencyDisplayUtils.gigAmountForDisplay(
+        amount: r.budgetAmount!,
+        currencyCode: r.currencyCode,
+      );
       return CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
         L10n.getWithParams(
           "gigs_request_budget_fixed",
           params: {
-            "amount": IntFormatUtils.withDotThousands(r.budgetAmount!),
-            "currency": CurrencyDisplayUtils.isoCodeForBadge(r.currencyCode),
+            "amount": IntFormatUtils.withDotThousands(display.amount),
+            "currency": CurrencyDisplayUtils.isoCodeForBadge(
+              display.currencyCode,
+            ),
           },
         ),
       );

@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -103,11 +104,11 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
 
   Future<void> _onPullRefresh() async {
     context.read<GigBookingsBloc>().add(
-      FetchMyGigBookings(
-        role: _role.apiValue,
-        silentRefresh: true,
-      ),
-    );
+          FetchMyGigBookings(
+            role: _role.apiValue,
+            silentRefresh: true,
+          ),
+        );
     await PendingGigBookingsState().refresh();
   }
 
@@ -237,10 +238,9 @@ class _BookingTile extends StatelessWidget {
   final int? sessionUserId;
 
   String _counterpartyDisplayName(int me) {
-    final raw =
-        booking.isProvider(me)
-            ? booking.clientDisplayName
-            : booking.providerDisplayName;
+    final raw = booking.isProvider(me)
+        ? booking.clientDisplayName
+        : booking.providerDisplayName;
     final trimmed = raw?.trim();
     if (trimmed != null && trimmed.isNotEmpty) return trimmed;
     return L10n.get("gigs_booking_chat_peer_fallback");
@@ -356,10 +356,9 @@ class _BookingTile extends StatelessWidget {
         children: [
           _BookingPeerAvatar(
             displayName: peerLabel,
-            avatarUrl:
-                booking.isProvider(me)
-                    ? booking.clientAvatarUrl
-                    : booking.providerAvatarUrl,
+            avatarUrl: booking.isProvider(me)
+                ? booking.clientAvatarUrl
+                : booking.providerAvatarUrl,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -395,10 +394,19 @@ class _BookingTile extends StatelessWidget {
           children: [
             topHeader,
             const SizedBox(height: 8),
-            ListingPaymentsOutlineBadge(
-              label: CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
-                "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCodeForBadge(booking.currencyCode)}",
-              ),
+            ListenableBuilder(
+              listenable: PriceDisplaySettingsState(),
+              builder: (context, _) {
+                final display = CurrencyDisplayUtils.gigAmountForDisplay(
+                  amount: booking.agreedAmount,
+                  currencyCode: booking.currencyCode,
+                );
+                return ListingPaymentsOutlineBadge(
+                  label: CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+                    "${IntFormatUtils.withDotThousands(display.amount)} ${CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode)}",
+                  ),
+                );
+              },
             ),
             if (_hasActionButtons) ...[
               const SizedBox(height: 12),
@@ -440,8 +448,7 @@ class _BookingActions extends StatefulWidget {
 }
 
 class _BookingActionsState extends State<_BookingActions> {
-  static const BorderRadius _pill =
-      BorderRadius.all(Radius.circular(18));
+  static const BorderRadius _pill = BorderRadius.all(Radius.circular(18));
   static const EdgeInsets _padRow =
       EdgeInsets.symmetric(horizontal: 8, vertical: 10);
   static const Color _colorAccept = Color(0xFF2E7D32);
@@ -465,11 +472,11 @@ class _BookingActionsState extends State<_BookingActions> {
     );
     if (!mounted || confirmed != true) return;
     context.read<GigBookingsBloc>().add(
-      TransitionGigBooking(
-        bookingId: booking.id,
-        toStatus: GigBookingStatus.cancelled,
-      ),
-    );
+          TransitionGigBooking(
+            bookingId: booking.id,
+            toStatus: GigBookingStatus.cancelled,
+          ),
+        );
   }
 
   Future<void> _openChat(BuildContext context) async {
@@ -486,23 +493,22 @@ class _BookingActionsState extends State<_BookingActions> {
         gigBookingId: booking.id,
       );
       if (!mounted) return;
-      final otherId =
-          booking.isProvider(me) ? booking.clientUserId : booking.providerUserId;
+      final otherId = booking.isProvider(me)
+          ? booking.clientUserId
+          : booking.providerUserId;
       final rawName = booking.isProvider(me)
           ? booking.clientDisplayName
           : booking.providerDisplayName;
       final trimmed = rawName?.trim();
-      final otherName =
-          trimmed != null && trimmed.isNotEmpty
-              ? trimmed
-              : L10n.get("gigs_booking_chat_peer_fallback");
+      final otherName = trimmed != null && trimmed.isNotEmpty
+          ? trimmed
+          : L10n.get("gigs_booking_chat_peer_fallback");
       final otherAvatar = booking.isProvider(me)
           ? booking.clientAvatarUrl
           : booking.providerAvatarUrl;
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
-          settings:
-              RouteSettings(name: ChatScreen.routeName(conversation.id)),
+          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
           builder: (_) => ChatScreen(
             conversationId: conversation.id,
             conversationContextType: "gig_booking",
@@ -674,21 +680,20 @@ class _BookingPeerAvatar extends StatelessWidget {
       return CircleAvatar(
         radius: _size / 2,
         backgroundColor: scheme.surfaceContainerHighest,
-        child:
-            initials.isNotEmpty
-                ? Text(
-                  initials,
-                  style: TextStyle(
-                    color: scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                )
-                : Icon(
-                  Icons.person_outline_rounded,
+        child: initials.isNotEmpty
+            ? Text(
+                initials,
+                style: TextStyle(
                   color: scheme.onSurfaceVariant,
-                  size: 24,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
                 ),
+              )
+            : Icon(
+                Icons.person_outline_rounded,
+                color: scheme.onSurfaceVariant,
+                size: 24,
+              ),
       );
     }
 

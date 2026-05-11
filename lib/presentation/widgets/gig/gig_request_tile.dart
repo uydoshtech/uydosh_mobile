@@ -7,6 +7,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
@@ -99,8 +100,8 @@ class _GigRequestTileState extends State<GigRequestTile>
   Future<void> _handleFavoriteTap(BuildContext context) async {
     final gigFav = GigFavoritesState();
     final favScreen = FavoritesState();
-    final wasFavorite = widget.forceFavorite ??
-        gigFav.isRequestFavorite(widget.request.id);
+    final wasFavorite =
+        widget.forceFavorite ?? gigFav.isRequestFavorite(widget.request.id);
     gigFav.toggleRequestLocal(widget.request.id);
     if (!wasFavorite) {
       unawaited(_favoritePulse?.playTapPulse());
@@ -133,24 +134,7 @@ class _GigRequestTileState extends State<GigRequestTile>
     final scheme = Theme.of(context).colorScheme;
     final language = LanguageState().currentLanguage;
     final categoryName = widget.request.category?.localizedName(language) ?? "";
-    final budgetLine = widget.request.budgetAmount != null
-        ? CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
-            L10n.getWithParams(
-              "gigs_request_budget_fixed",
-              params: {
-                "amount": IntFormatUtils.withDotThousands(
-                  widget.request.budgetAmount!,
-                ),
-                "currency": CurrencyDisplayUtils.isoCodeForBadge(
-                  widget.request.currencyCode,
-                ),
-              },
-            ),
-          )
-        : L10n.get("gigs_request_budget_open");
-
-    final rightPad =
-        widget.showFavoriteIndicator ? 100.0 : 64.0;
+    final rightPad = widget.showFavoriteIndicator ? 100.0 : 64.0;
 
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
@@ -181,8 +165,8 @@ class _GigRequestTileState extends State<GigRequestTile>
                               icon: widget.request.category!.icon,
                               iconColor:
                                   scheme.onSurface.withValues(alpha: 0.72),
-                              badgeBackgroundColor: scheme.onSurface
-                                  .withValues(alpha: 0.12),
+                              badgeBackgroundColor:
+                                  scheme.onSurface.withValues(alpha: 0.12),
                             ),
                             const SizedBox(width: 8),
                           ],
@@ -194,8 +178,7 @@ class _GigRequestTileState extends State<GigRequestTile>
                               style: TextStyle(
                                 fontSize: 11,
                                 letterSpacing: 0.5,
-                                color:
-                                    scheme.onSurface.withValues(alpha: 0.72),
+                                color: scheme.onSurface.withValues(alpha: 0.72),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -212,10 +195,13 @@ class _GigRequestTileState extends State<GigRequestTile>
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      budgetLine,
-                      style: TextStyle(
-                        color: scheme.onSurface.withValues(alpha: 0.75),
+                    ListenableBuilder(
+                      listenable: PriceDisplaySettingsState(),
+                      builder: (context, _) => Text(
+                        _formatGigRequestTileBudget(widget.request),
+                        style: TextStyle(
+                          color: scheme.onSurface.withValues(alpha: 0.75),
+                        ),
                       ),
                     ),
                   ],
@@ -321,4 +307,22 @@ class _GigRequestTileState extends State<GigRequestTile>
       ),
     );
   }
+}
+
+String _formatGigRequestTileBudget(GigRequest request) {
+  final amount = request.budgetAmount;
+  if (amount == null) return L10n.get("gigs_request_budget_open");
+  final display = CurrencyDisplayUtils.gigAmountForDisplay(
+    amount: amount,
+    currencyCode: request.currencyCode,
+  );
+  return CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+    L10n.getWithParams(
+      "gigs_request_budget_fixed",
+      params: {
+        "amount": IntFormatUtils.withDotThousands(display.amount),
+        "currency": CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode),
+      },
+    ),
+  );
 }

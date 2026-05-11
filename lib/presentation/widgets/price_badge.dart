@@ -65,13 +65,6 @@ class PriceBadge extends StatelessWidget {
                 : PriceHelper.formatPrice(resolvedPrice);
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
-
         return Container(
           padding:
               padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -91,17 +84,6 @@ class PriceBadge extends StatelessWidget {
                   size: fontSize != null ? fontSize! + 2 : 14,
                 ),
                 if (showCurrency) const SizedBox(width: 2),
-              ],
-              if (showLeadingCurrency) ...[
-                Text(
-                  resolvedCurrency,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: fontSize ?? 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 1),
               ],
               Text(
                 formattedPrice,
@@ -213,17 +195,8 @@ class PriceText extends StatelessWidget {
                 ? PriceHelper.formatPriceWithYue(resolvedPrice)
                 : PriceHelper.formatPrice(resolvedPrice);
 
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
-
         return Text(
-          showLeadingCurrency
-              ? "$resolvedCurrency $formattedPrice"
-              : formattedPrice,
+          formattedPrice,
           style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
         );
       },
@@ -284,13 +257,6 @@ class CompactPriceBadge extends StatelessWidget {
                 : PriceHelper.formatPrice(resolvedPrice);
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
-
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
@@ -299,9 +265,7 @@ class CompactPriceBadge extends StatelessWidget {
             border: Border.all(color: color, width: 0.5),
           ),
           child: Text(
-            showLeadingCurrency
-                ? "$resolvedCurrency$formattedPrice"
-                : formattedPrice,
+            formattedPrice,
             style: TextStyle(
               color: color,
               fontSize: fontSize ?? 10,

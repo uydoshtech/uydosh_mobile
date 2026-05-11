@@ -37,6 +37,16 @@ class UydoshSlider extends StatelessWidget {
     final currentTheme = ThemeState().currentTheme;
     final isLightTheme = currentTheme == AppTheme.lightTheme;
     final isBlueTheme = currentTheme == AppTheme.blueTheme;
+    final selectedValueText =
+        labels != null &&
+                value >= min &&
+                value <= max &&
+                (value - min) < labels!.length
+            ? labels![value - min]
+            : value.toString();
+    final selectedValueBorderColor = isBlueTheme
+        ? Colors.white
+        : (isLightTheme ? Colors.black : theme.colorScheme.onSurface);
 
     return Padding(
       padding: contentPadding ?? const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -72,16 +82,26 @@ class UydoshSlider extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
-                labels != null &&
-                        value >= min &&
-                        value <= max &&
-                        (value - min) < labels!.length
-                    ? labels![value - min]
-                    : value.toString(),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isBlueTheme ? Colors.white : theme.colorScheme.primary,
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: selectedValueBorderColor,
+                    width: 1.2,
+                  ),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  child: Text(
+                    selectedValueText,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isBlueTheme
+                          ? Colors.white
+                          : theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -119,13 +139,7 @@ class UydoshSlider extends StatelessWidget {
                 min: min.toDouble(),
                 max: max.toDouble(),
                 divisions: divisions ?? (max - min),
-                label:
-                    labels != null &&
-                            value >= min &&
-                            value <= max &&
-                            (value - min) < labels!.length
-                        ? labels![value - min]
-                        : value.toString(),
+                label: selectedValueText,
                 onChanged: (newValue) {
                   onChanged(newValue.round());
                 },

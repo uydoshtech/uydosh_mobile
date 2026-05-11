@@ -95,13 +95,6 @@ class PriceRangeBadge extends StatelessWidget {
                   )
                 : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
 
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
-
         final backgroundColor =
             badgeBackgroundColor ??
                 (useTintBackground
@@ -127,17 +120,6 @@ class PriceRangeBadge extends StatelessWidget {
                   size: iconSize ?? (fontSize != null ? fontSize! + 2 : 14),
                 ),
                 if (showCurrency) const SizedBox(width: 2),
-              ],
-              if (showLeadingCurrency) ...[
-                Text(
-                  resolvedCurrency,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: fontSize ?? 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 1),
               ],
               Text(
                 formattedPriceRange,
@@ -214,14 +196,13 @@ class PriceRangeHelper {
     return stored;
   }
 
-  /// National mode: digits only (dot grouping); no `UZS` suffix — amounts are
-  /// obvious in-context. USD mode: trailing ` USD`.
+  /// Digits only (dot grouping). Currency codes are intentionally not shown.
   static String formatListingPriceRangeWithCurrency(int minUzs, int maxUzs) {
     final pref = PriceDisplaySettingsState().currency;
     if (pref == PriceDisplayCurrency.usd) {
       final minUsd = listingPriceToWholeUsdForDisplay(minUzs);
       final maxUsd = listingPriceToWholeUsdForDisplay(maxUzs);
-      return "${formatPriceRange(minUsd, maxUsd)} USD";
+      return formatPriceRange(minUsd, maxUsd);
     }
     final minNat = listingPriceToUzsForDisplay(minUzs);
     final maxNat = listingPriceToUzsForDisplay(maxUzs);
@@ -361,17 +342,8 @@ class PriceRangeText extends StatelessWidget {
                   )
                 : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
 
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
-
         return Text(
-          showLeadingCurrency
-              ? "$resolvedCurrency $formattedPriceRange"
-              : formattedPriceRange,
+          formattedPriceRange,
           style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
         );
       },
@@ -440,13 +412,6 @@ class CompactPriceRangeBadge extends StatelessWidget {
                     resolvedMax,
                   )
                 : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
-
-        final showLeadingCurrency =
-            showCurrency &&
-            resolvedCurrency != "UZS" &&
-            ((listingNominalUzs &&
-                    display == PriceDisplayCurrency.usd) ||
-                (!listingNominalUzs && resolvedCurrency != "y.e."));
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
         return Container(
@@ -457,9 +422,7 @@ class CompactPriceRangeBadge extends StatelessWidget {
             border: Border.all(color: color, width: 0.5),
           ),
           child: Text(
-            showLeadingCurrency
-                ? "$resolvedCurrency$formattedPriceRange"
-                : formattedPriceRange,
+            formattedPriceRange,
             style: TextStyle(
               color: color,
               fontSize: fontSize ?? 10,

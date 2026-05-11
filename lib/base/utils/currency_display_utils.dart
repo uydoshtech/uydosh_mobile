@@ -1,3 +1,6 @@
+import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
+
 /// Shared currency affordances for amount fields (gig flows).
 class CurrencyDisplayUtils {
   CurrencyDisplayUtils._();
@@ -57,8 +60,7 @@ class CurrencyDisplayUtils {
 
   /// ISO code with regional flag for read-only lines (`{currency}` in L10n).
   static String codeWithFlag(String currencyCode) {
-    final code =
-        currencyCode.trim().isEmpty ? "UZS" : currencyCode.trim();
+    final code = currencyCode.trim().isEmpty ? "UZS" : currencyCode.trim();
     return "${flagEmoji(code)} $code";
   }
 
@@ -79,5 +81,35 @@ class CurrencyDisplayUtils {
     return label
         .replaceAll(RegExp(r"\s+(?=/)"), "")
         .replaceAll(RegExp(r"\s+$"), "");
+  }
+
+  static int _uzsToUsdRounded(int uzs) {
+    final rate = AppConfig.uzsPerUsd;
+    if (rate <= 0) return uzs;
+    return (uzs / rate).round();
+  }
+
+  static int _usdToUzsRounded(int usd) {
+    final rate = AppConfig.uzsPerUsd;
+    if (rate <= 0) return usd;
+    return usd * rate;
+  }
+
+  /// Converts a stored gig amount between UZS and USD for the user's display
+  /// preference. Unknown currencies are left in their original unit.
+  static ({int amount, String currencyCode}) gigAmountForDisplay({
+    required int amount,
+    required String currencyCode,
+  }) {
+    final source = isoCode(currencyCode);
+    final target = PriceDisplaySettingsState().currency;
+
+    if (source == "UZS" && target == PriceDisplayCurrency.usd) {
+      return (amount: _uzsToUsdRounded(amount), currencyCode: "USD");
+    }
+    if (source == "USD" && target == PriceDisplayCurrency.national) {
+      return (amount: _usdToUzsRounded(amount), currencyCode: "UZS");
+    }
+    return (amount: amount, currencyCode: source);
   }
 }
