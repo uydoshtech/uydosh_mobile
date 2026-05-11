@@ -238,7 +238,7 @@ class PriceRangeHelper {
     }
     final minNat = listingPriceToUzsForDisplay(minI);
     final maxNat = listingPriceToUzsForDisplay(maxI);
-    return "${formatUzsCompact(minNat)}–${formatUzsCompact(maxNat)}";
+    return "${formatUzsCompact(minNat)} - ${formatUzsCompact(maxNat)}";
   }
 
   /// Format price range with thousand separators

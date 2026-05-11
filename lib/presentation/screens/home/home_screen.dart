@@ -570,7 +570,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // time). Skipping this rebuild when the ribbon isn't shown avoids
     // pointless work while the user is scrolling wheels in the search
     // sheet, which fires a setter on every wheel index update.
-    if (_inlineSearchActive || _inlineSearchClosing) {
+    //
+    // Important: do NOT rebuild while the ribbon is animating out
+    // (`_inlineSearchClosing`). AnimatedSwitcher keeps the outgoing ribbon
+    // widget alive; rebuilding during that window would re-read the singleton
+    // filters and can cause visible "chip flips" mid-animation (e.g. gender).
+    if (_inlineSearchActive) {
       setState(() {});
     }
 
@@ -1134,7 +1139,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Duration _homeRibbonAnimationDuration(BuildContext context) =>
       _homeRibbonAnimationsEnabled(context)
-          ? const Duration(milliseconds: 750)
+          ? const Duration(milliseconds: 1000)
           : Duration.zero;
 
   double _feedBaseTopPadding() {
@@ -1171,35 +1176,35 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersRibbonAnimated() {
-    // Don't render the ribbon (or its AnimatedSwitcher) at all when the user
-    // is not authenticated. AnimatedSwitcher would otherwise play a 750ms
-    // slide-out on logout — and the outgoing child is a cached snapshot of
-    // the previous user's filter chips, so the chips stay visible on screen
-    // while sliding away. Removing the switcher entirely makes Flutter
-    // dispose that subtree in the same frame the auth state notifies.
-    if (!AuthenticationState().isAuthenticated) {
-      return const SizedBox.shrink();
-    }
+    // Previously we hid the ribbon for guests to avoid showing cached chips
+    // during logout animations. The logout flow now clears inline-search state
+    // deterministically, so it's safe to render this for unauthenticated users.
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
       builder: (context, _) {
         final enabled = _homeRibbonAnimationsEnabled(context);
+        final d = _homeRibbonAnimationDuration(context);
         return AnimatedSwitcher(
-          duration: enabled ? const Duration(milliseconds: 750) : Duration.zero,
-          reverseDuration:
-              enabled ? const Duration(milliseconds: 750) : Duration.zero,
+          duration: enabled ? d : Duration.zero,
+          reverseDuration: enabled ? d : Duration.zero,
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeInCubic,
           transitionBuilder: (child, animation) {
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
             // Use a larger travel distance so the slide is clearly visible.
             final slide = Tween<Offset>(
               begin: const Offset(-1.0, 0),
               end: Offset.zero,
-            ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            ).animate(curved);
+            final fade = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOut,
+              reverseCurve: Curves.easeIn,
             );
-            final fade =
-                CurvedAnimation(parent: animation, curve: Curves.easeOut);
             // Avoid clipping while sliding out: ClipRect can "cut" the trailing
             // circular close button mid-transition, briefly making it look oval.
             return SlideTransition(
@@ -1319,7 +1324,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 ),
                 onPressed: () {
                   HapticFeedbackUtils.impact();
-                  unawaited(_dismissInlineSearchClearingPersistedFilters());
+                  _exitInlineSearch();
                 },
                 tooltip: L10n.get("close"),
               ),
@@ -1984,12 +1989,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Resets filters to defaults (local + server when logged in) so a later
   /// cold start does not restore the previous search, then closes inline mode.
   /// The Settings toggle "Restore filters on app start" is unchanged.
-  Future<void> _dismissInlineSearchClearingPersistedFilters() async {
-    // Close the ribbon first so filter resets can't briefly "flip" chips while
-    // the ribbon is still visible.
-    _exitInlineSearch();
-    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
-  }
+  // NOTE: Closing the ribbon should NOT reset filters — users expect the bottom
+  // sheet to keep their current selections. Filter reset is handled explicitly
+  // via "clear" actions (e.g. empty state CTA).
 
   void _exitInlineSearch({bool animated = true}) {
     final refreshToken = ++_inlineSearchExitRefreshToken;
@@ -2014,7 +2016,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final animationsEnabled = animated && _homeRibbonAnimationsEnabled(context);
     unawaited(() async {
       if (animationsEnabled) {
-        await Future.delayed(const Duration(milliseconds: 750));
+        await Future.delayed(_homeRibbonAnimationDuration(context));
       }
       if (!mounted) return;
       if (_inlineSearchActive) return;
@@ -2138,9 +2140,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           : ThreeDAppBarIconButton.leadingSlot(
               child: ThreeDAppBarIconButton(
                 iconData: Icons.close,
-                onPressed: () => unawaited(
-                  _dismissInlineSearchClearingPersistedFilters(),
-                ),
+                onPressed: _exitInlineSearch,
                 semanticsLabel: L10n.get("close"),
               ),
             ),
