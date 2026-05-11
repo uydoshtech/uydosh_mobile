@@ -3,6 +3,7 @@ import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
+import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
@@ -41,6 +42,8 @@ class _AdminContentModerationScreenState
   bool _isSavingLidar = false;
   bool _customCameraEnabled = true;
   bool _isSavingCustomCamera = false;
+  bool _dictationMeterEnabled = true;
+  bool _isSavingDictationMeter = false;
   bool _listingContactsVisible = false;
   bool _isSavingListingContacts = false;
   bool _isSavingPriceInsights = false;
@@ -66,6 +69,8 @@ class _AdminContentModerationScreenState
       final lidarRes =
           await _settingsService.getLidarRoomScanDisabledSetting();
       final cameraRes = await _settingsService.getCustomCameraDisabledSetting();
+      final dictationMeterRes =
+          await _settingsService.getListingDescriptionDictationMeterDisabledSetting();
       final contactsRes =
           await _settingsService.getListingContactsVisibleSetting();
       setStateIfMounted(() {
@@ -74,12 +79,16 @@ class _AdminContentModerationScreenState
         _geminiListingUiEnabled = !geminiRes.hidden;
         _lidarRoomScanEnabled = !lidarRes.disabled;
         _customCameraEnabled = !cameraRes.disabled;
+        _dictationMeterEnabled = !dictationMeterRes.disabled;
         _listingContactsVisible = contactsRes.visible;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
       ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
       ClientCustomCameraConfig.applyDisabled(disabled: !_customCameraEnabled);
+      ClientListingDictationMeterConfig.applyDisabled(
+        disabled: !_dictationMeterEnabled,
+      );
       ClientListingContactsConfig.applyVisible(
         visible: _listingContactsVisible,
       );
@@ -132,6 +141,30 @@ class _AdminContentModerationScreenState
       ClientCustomCameraConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
       setStateIfMounted(() => _isSavingCustomCamera = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDictationMeterEnabledChanged(bool value) async {
+    if (_isSavingDictationMeter) return;
+    setState(() => _isSavingDictationMeter = true);
+    try {
+      final res = await _settingsService.setListingDescriptionDictationMeterDisabled(
+        disabled: !value,
+      );
+      setStateIfMounted(() {
+        _dictationMeterEnabled = !res.disabled;
+        _isSavingDictationMeter = false;
+      });
+      ClientListingDictationMeterConfig.applyDisabled(disabled: res.disabled);
+    } catch (e) {
+      setStateIfMounted(() => _isSavingDictationMeter = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -506,6 +539,31 @@ class _AdminContentModerationScreenState
               value: _customCameraEnabled,
               enabled: !_isSavingCustomCamera,
               onChanged: _onCustomCameraEnabledChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingDictationMeter
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.graphic_eq),
+            title: Text(L10n.get("admin_client_config_show_listing_dictation_meter")),
+            subtitle: Text(
+              L10n.get("admin_client_config_show_listing_dictation_meter_description"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _dictationMeterEnabled,
+              enabled: !_isSavingDictationMeter,
+              onChanged: _onDictationMeterEnabledChanged,
             ),
           ),
         ),

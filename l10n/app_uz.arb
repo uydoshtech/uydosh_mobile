@@ -653,6 +653,8 @@
   "admin_client_config_disable_lidar_room_scan_description": "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
   "admin_client_config_disable_custom_camera": "Maxsus kameradan foydalanish",
   "admin_client_config_disable_custom_camera_description": "Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+  "admin_client_config_show_listing_dictation_meter": "Diktat darajasi va taymer",
+  "admin_client_config_show_listing_dictation_meter_description": "Yoqilganda, eʼlon yaratish/tahrirlashda tavsif pastki qismida diktovqa paytida toʻlqin va yozib olish vaqti koʻrsatiladi. O‘chirilganda, faqat mikrofon/stop tugmasi holatini aks ettiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
   "admin_content_moderation_blur_enabled": "Nojo'ya fotolarni aniqla va xira qil",
   "admin_content_moderation_loading": "Moderatsiya sozlamalari yuklanmoqda...",
   "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",

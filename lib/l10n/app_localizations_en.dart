@@ -1559,6 +1559,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).';
 
   @override
+  String get admin_client_config_show_listing_dictation_meter =>
+      'Dictation level meter & timer';
+
+  @override
+  String get admin_client_config_show_listing_dictation_meter_description =>
+      'When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).';
+
+  @override
   String get admin_content_moderation_blur_enabled =>
       'Detect and blur offensive photos';
 

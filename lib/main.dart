@@ -13,6 +13,7 @@ import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
+import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/firebase/app_check_bootstrap.dart";
@@ -203,6 +204,7 @@ void main() async {
     unawaited(ClientLidarRoomScanConfig.load());
     unawaited(ClientCustomCameraConfig.load());
     unawaited(ClientListingContactsConfig.load());
+    unawaited(ClientListingDictationMeterConfig.load());
     // Local SharedPreferences reads — cheap, but still off the critical path.
     unawaited(TutorialState().initialize());
     unawaited(TooltipsState().initialize());

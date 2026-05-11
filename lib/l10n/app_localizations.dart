@@ -2962,6 +2962,18 @@ abstract class AppLocalizations {
   /// **'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).'**
   String get admin_client_config_disable_custom_camera_description;
 
+  /// No description provided for @admin_client_config_show_listing_dictation_meter.
+  ///
+  /// In en, this message translates to:
+  /// **'Dictation level meter & timer'**
+  String get admin_client_config_show_listing_dictation_meter;
+
+  /// No description provided for @admin_client_config_show_listing_dictation_meter_description.
+  ///
+  /// In en, this message translates to:
+  /// **'When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).'**
+  String get admin_client_config_show_listing_dictation_meter_description;
+
   /// No description provided for @admin_content_moderation_blur_enabled.
   ///
   /// In en, this message translates to:

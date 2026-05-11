@@ -10,6 +10,8 @@ abstract class IPublicAppSettingsService {
   Future<bool> getCustomCameraDisabled();
 
   Future<bool> getListingContactsVisible();
+
+  Future<bool> getListingDescriptionDictationMeterDisabled();
 }
 
 class PublicAppSettingsService implements IPublicAppSettingsService {
@@ -89,6 +91,25 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
       return false;
     } catch (e) {
       logger.d("PublicAppSettingsService.getListingContactsVisible: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> getListingDescriptionDictationMeterDisabled() async {
+    try {
+      final response = await _apiClient.get<dynamic>(
+        "/app/settings/listing-description-dictation-meter-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      if (response is Map) {
+        final map = Map<String, dynamic>.from(response);
+        return map["disabled"] as bool? ?? false;
+      }
+      return false;
+    } catch (e) {
+      logger.d("PublicAppSettingsService.getListingDescriptionDictationMeterDisabled: $e");
       rethrow;
     }
   }

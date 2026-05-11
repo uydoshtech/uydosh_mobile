@@ -653,6 +653,8 @@
   "admin_client_config_disable_lidar_room_scan_description": "Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).",
   "admin_client_config_disable_custom_camera": "Use in-app custom camera",
   "admin_client_config_disable_custom_camera_description": "When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device's native camera. Applies to all users and devices (stored on the server).",
+  "admin_client_config_show_listing_dictation_meter": "Dictation level meter & timer",
+  "admin_client_config_show_listing_dictation_meter_description": "When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).",
   "admin_content_moderation_blur_enabled": "Detect and blur offensive photos",
   "admin_content_moderation_loading": "Loading moderation settings...",
   "admin_content_moderation_error": "Could not load moderation settings",

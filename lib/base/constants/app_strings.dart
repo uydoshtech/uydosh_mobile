@@ -953,6 +953,10 @@ class AppStrings {
       "admin_client_config_disable_custom_camera": "Use in-app custom camera",
       "admin_client_config_disable_custom_camera_description":
           "When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device's native camera. Applies to all users and devices (stored on the server).",
+      "admin_client_config_show_listing_dictation_meter":
+          "Dictation level meter & timer",
+      "admin_client_config_show_listing_dictation_meter_description":
+          "When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).",
       "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
           "Enables the add-scan flow after creating a listing, the add-scan button when editing, and allows scan uploads. Applies to all users and devices (stored on the server).",
@@ -2410,6 +2414,10 @@ class AppStrings {
           "Использовать кастомную камеру",
       "admin_client_config_disable_custom_camera_description":
           "Когда включено, съёмка фото открывает кастомную камеру приложения с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).",
+      "admin_client_config_show_listing_dictation_meter":
+          "Индикатор уровня и таймер диктовки",
+      "admin_client_config_show_listing_dictation_meter_description":
+          "Когда включено, при создании и редактировании объявления в подвале описания показываются волна и время записи во время диктовки. Когда выключено — только кнопка микрофона/стоп отражает запись. Действует для всех пользователей и устройств (хранится на сервере).",
       "admin_client_config_disable_lidar_room_scan":
           "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
@@ -3880,6 +3888,10 @@ class AppStrings {
           "Maxsus kameradan foydalanish",
       "admin_client_config_disable_custom_camera_description":
           "Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+      "admin_client_config_show_listing_dictation_meter":
+          "Diktat darajasi va taymer",
+      "admin_client_config_show_listing_dictation_meter_description":
+          "Yoqilganda, eʼlon yaratish/tahrirlashda tavsif pastki qismida diktovqa paytida toʻlqin va yozib olish vaqti koʻrsatiladi. O‘chirilganda, faqat mikrofon/stop tugmasi holatini aks ettiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
       "admin_client_config_disable_lidar_room_scan":
           "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":

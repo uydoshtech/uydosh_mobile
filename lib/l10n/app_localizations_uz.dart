@@ -1578,6 +1578,14 @@ class AppLocalizationsUz extends AppLocalizations {
       'Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O\'chirilganda, klientlar qurilmaning standart kamerasiga o\'tadi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
 
   @override
+  String get admin_client_config_show_listing_dictation_meter =>
+      'Diktat darajasi va taymer';
+
+  @override
+  String get admin_client_config_show_listing_dictation_meter_description =>
+      'Yoqilganda, eʼlon yaratish/tahrirlashda tavsif pastki qismida diktovqa paytida toʻlqin va yozib olish vaqti koʻrsatiladi. O‘chirilganda, faqat mikrofon/stop tugmasi holatini aks ettiradi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+
+  @override
   String get admin_content_moderation_blur_enabled =>
       'Nojo\'ya fotolarni aniqla va xira qil';
 

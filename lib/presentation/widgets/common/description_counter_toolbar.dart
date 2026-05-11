@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_template_button.dart";
 
 /// Layout style for [DescriptionCounterToolbar].
@@ -23,7 +25,7 @@ enum DescriptionCounterToolbarLayout {
 /// * An expand/collapse chevron with haptic feedback.
 ///
 /// Two visual layouts are supported — see [DescriptionCounterToolbarLayout].
-class DescriptionCounterToolbar extends StatelessWidget {
+class DescriptionCounterToolbar extends StatefulWidget {
   const DescriptionCounterToolbar({
     required this.controller,
     required this.listingTypeId,
@@ -68,16 +70,49 @@ class DescriptionCounterToolbar extends StatelessWidget {
   /// Same cap as the description field — dictation trims to this length.
   final int maxDescriptionLength;
 
+  @override
+  State<DescriptionCounterToolbar> createState() =>
+      _DescriptionCounterToolbarState();
+}
+
+class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
+  late final DictationMeterController _dictationMeter = DictationMeterController();
+
+  void _onDictationMeterServerDisabled() {
+    if (ClientListingDictationMeterConfig.dictationMeterDisabled.value) {
+      _dictationMeter.end();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ClientListingDictationMeterConfig.dictationMeterDisabled.addListener(
+      _onDictationMeterServerDisabled,
+    );
+  }
+
+  @override
+  void dispose() {
+    ClientListingDictationMeterConfig.dictationMeterDisabled.removeListener(
+      _onDictationMeterServerDisabled,
+    );
+    _dictationMeter.dispose();
+    super.dispose();
+  }
+
   bool get _showCounterText {
-    if (counterVisibleAtFraction <= 0.0) return true;
-    if (maxLength <= 0) return true;
-    return (currentLength / maxLength) >= counterVisibleAtFraction;
+    if (widget.counterVisibleAtFraction <= 0.0) return true;
+    if (widget.maxLength <= 0) return true;
+    return (widget.currentLength / widget.maxLength) >=
+        widget.counterVisibleAtFraction;
   }
 
   Color _resolveCounterColor(BuildContext context) {
-    final override = counterColor;
+    final override = widget.counterColor;
     if (override != null) return override;
-    final isNearLimit = maxLength > 0 && (currentLength / maxLength) >= 0.9;
+    final isNearLimit =
+        widget.maxLength > 0 && (widget.currentLength / widget.maxLength) >= 0.9;
     if (isNearLimit) return Colors.red;
     final theme = Theme.of(context);
     return theme.brightness == Brightness.dark
@@ -87,27 +122,28 @@ class DescriptionCounterToolbar extends StatelessWidget {
 
   static const double _actionSpacing = 12;
 
-  Widget _buildActionsRow() {
+  Widget _buildActionsRow(DictationMeterController? dictationMeter) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         ListingDescriptionAiEnhanceButton(
-          controller: controller,
+          controller: widget.controller,
           inlineWithCounter: true,
         ),
         const SizedBox(width: _actionSpacing),
         ListingDescriptionTemplateButton(
-          controller: controller,
-          listingTypeId: listingTypeId,
-          gender: gender,
+          controller: widget.controller,
+          listingTypeId: widget.listingTypeId,
+          gender: widget.gender,
           inlineWithCounter: true,
         ),
         const SizedBox(width: _actionSpacing),
         ListingDescriptionDictateButton(
-          controller: controller,
+          controller: widget.controller,
           inlineWithCounter: true,
-          maxDescriptionLength: maxDescriptionLength,
+          maxDescriptionLength: widget.maxDescriptionLength,
+          dictationMeter: dictationMeter,
         ),
       ],
     );
@@ -120,7 +156,7 @@ class DescriptionCounterToolbar extends StatelessWidget {
       children: [
         if (_showCounterText) ...[
           Text(
-            "$currentLength/$maxLength",
+            "${widget.currentLength}/${widget.maxLength}",
             style: TextStyle(
               color: color,
               fontSize: 12,
@@ -131,19 +167,19 @@ class DescriptionCounterToolbar extends StatelessWidget {
         ],
         Semantics(
           button: true,
-          label: isExpanded ? "Collapse description" : "Expand description",
+          label: widget.isExpanded ? "Collapse description" : "Expand description",
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
               HapticFeedbackUtils.lightImpact();
-              onToggleExpanded();
+              widget.onToggleExpanded();
             },
             child: SizedBox(
               width: 44,
               height: 44,
               child: Center(
                 child: AnimatedRotation(
-                  turns: isExpanded ? 0.5 : 0.0,
+                  turns: widget.isExpanded ? 0.5 : 0.0,
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOut,
                   child: const Icon(
@@ -160,11 +196,8 @@ class DescriptionCounterToolbar extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final color = _resolveCounterColor(context);
-
-    if (layout == DescriptionCounterToolbarLayout.stack) {
+  Widget _buildInner(Color color, DictationMeterController? dictateMeterSlot) {
+    if (widget.layout == DescriptionCounterToolbarLayout.stack) {
       return Padding(
         padding: const EdgeInsets.only(top: 4, bottom: 8),
         child: SizedBox(
@@ -173,9 +206,9 @@ class DescriptionCounterToolbar extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.centerLeft,
             children: [
-              _buildActionsRow(),
+              _buildActionsRow(dictateMeterSlot),
               Positioned(
-                right: stackCounterRightOffset,
+                right: widget.stackCounterRightOffset,
                 top: 0,
                 bottom: 0,
                 child: _buildCounterColumn(color),
@@ -191,11 +224,48 @@ class DescriptionCounterToolbar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildActionsRow(),
+          _buildActionsRow(dictateMeterSlot),
           const Spacer(),
           _buildCounterColumn(color),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _resolveCounterColor(context);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientListingDictationMeterConfig.dictationMeterDisabled,
+      builder: (context, meterDisabled, _) {
+        final showMeterUi = !meterDisabled;
+        final slot = showMeterUi ? _dictationMeter : null;
+        final inner = _buildInner(color, slot);
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showMeterUi)
+              ListenableBuilder(
+                listenable: _dictationMeter,
+                builder: (context, _) {
+                  if (!_dictationMeter.active) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 4, right: 4, top: 2),
+                    child: ListingDescriptionDictationMeterRow(
+                      controller: _dictationMeter,
+                    ),
+                  );
+                },
+              ),
+            inner,
+          ],
+        );
+      },
     );
   }
 }

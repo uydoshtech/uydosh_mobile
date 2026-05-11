@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/description_dictation_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -20,11 +21,15 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     super.key,
     this.inlineWithCounter = false,
     this.maxDescriptionLength = 1000,
+    this.dictationMeter,
   });
 
   final TextEditingController controller;
   final bool inlineWithCounter;
   final int maxDescriptionLength;
+
+  /// When set (e.g. by [DescriptionCounterToolbar]), level + timer UI can update.
+  final DictationMeterController? dictationMeter;
 
   @override
   State<ListingDescriptionDictateButton> createState() =>
@@ -38,21 +43,80 @@ class _ListingDescriptionDictateButtonState
   bool _uploading = false;
   bool _toggleInProgress = false;
   Timer? _maxDurationTimer;
+  Timer? _meterElapsedTimer;
+  StreamSubscription<Amplitude>? _amplitudeSub;
+  final Stopwatch _recordStopwatch = Stopwatch();
 
   static const Duration _maxRecordDuration = Duration(seconds: 90);
+
+  static double _normalizeDbToLevel(double db) {
+    const minDb = -52.0;
+    const maxDb = -8.0;
+    if (db <= minDb) {
+      return 0.04;
+    }
+    if (db >= maxDb) {
+      return 1.0;
+    }
+    return (db - minDb) / (maxDb - minDb);
+  }
 
   Color _accentColor(BuildContext context) {
     return Theme.of(context).colorScheme.onSurface;
   }
 
   @override
+  void didUpdateWidget(ListingDescriptionDictateButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dictationMeter != null && widget.dictationMeter == null) {
+      _meterElapsedTimer?.cancel();
+      _meterElapsedTimer = null;
+      unawaited(_amplitudeSub?.cancel());
+      _amplitudeSub = null;
+      _recordStopwatch.stop();
+      _recordStopwatch.reset();
+    }
+  }
+
+  @override
   void dispose() {
     _maxDurationTimer?.cancel();
+    _stopMeterUpdates();
     if (_recording) {
       unawaited(_recorder.cancel());
     }
     unawaited(_recorder.dispose());
     super.dispose();
+  }
+
+  void _stopMeterUpdates() {
+    _meterElapsedTimer?.cancel();
+    _meterElapsedTimer = null;
+    unawaited(_amplitudeSub?.cancel());
+    _amplitudeSub = null;
+    _recordStopwatch.stop();
+    _recordStopwatch.reset();
+    widget.dictationMeter?.end();
+  }
+
+  void _startMeterUpdates() {
+    final meter = widget.dictationMeter;
+    if (meter == null) return;
+    meter.begin();
+    _recordStopwatch.reset();
+    _recordStopwatch.start();
+    _meterElapsedTimer?.cancel();
+    _meterElapsedTimer = Timer.periodic(const Duration(milliseconds: 120), (_) {
+      if (!_recording || !mounted) return;
+      meter.setElapsed(_recordStopwatch.elapsed);
+    });
+    unawaited(_amplitudeSub?.cancel());
+    _amplitudeSub = _recorder
+        .onAmplitudeChanged(const Duration(milliseconds: 72))
+        .listen((amp) {
+          if (!_recording || !mounted) return;
+          meter.pushLevel(_normalizeDbToLevel(amp.current));
+        });
   }
 
   Future<void> _stopDueToMaxDuration() async {
@@ -140,6 +204,7 @@ class _ListingDescriptionDictateButtonState
     setState(() {
       _recording = true;
     });
+    _startMeterUpdates();
   }
 
   Future<void> _stopRecordingAndTranscribe() async {
@@ -147,6 +212,8 @@ class _ListingDescriptionDictateButtonState
     _maxDurationTimer = null;
 
     if (!_recording) return;
+
+    _stopMeterUpdates();
 
     setState(() {
       _recording = false;

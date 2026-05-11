@@ -115,6 +115,30 @@ class _PatchListingContactsVisibleRequest implements IJsonEncodable {
   dynamic toJson() => {"visible": visible};
 }
 
+class ListingDescriptionDictationMeterDisabledResponse {
+  ListingDescriptionDictationMeterDisabledResponse({required this.disabled});
+
+  factory ListingDescriptionDictationMeterDisabledResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ListingDescriptionDictationMeterDisabledResponse(
+      disabled: json["disabled"] as bool? ?? false,
+    );
+  }
+
+  final bool disabled;
+}
+
+class _PatchListingDescriptionDictationMeterDisabledRequest
+    implements IJsonEncodable {
+  _PatchListingDescriptionDictationMeterDisabledRequest({required this.disabled});
+
+  final bool disabled;
+
+  @override
+  dynamic toJson() => {"disabled": disabled};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -145,6 +169,12 @@ abstract class IAdminContentModerationSettingsService {
   Future<ListingContactsVisibleResponse> setListingContactsVisible({
     required bool visible,
   });
+
+  Future<ListingDescriptionDictationMeterDisabledResponse>
+      getListingDescriptionDictationMeterDisabledSetting();
+
+  Future<ListingDescriptionDictationMeterDisabledResponse>
+      setListingDescriptionDictationMeterDisabled({required bool disabled});
 }
 
 class AdminContentModerationSettingsService
@@ -365,6 +395,53 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating listing contacts visible setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingDescriptionDictationMeterDisabledResponse>
+      getListingDescriptionDictationMeterDisabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/listing-description-dictation-meter-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return ListingDescriptionDictationMeterDisabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from dictation meter settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading dictation meter disabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingDescriptionDictationMeterDisabledResponse>
+      setListingDescriptionDictationMeterDisabled({
+    required bool disabled,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/listing-description-dictation-meter-disabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchListingDescriptionDictationMeterDisabledRequest(
+          disabled: disabled,
+        ),
+      );
+      return ListingDescriptionDictationMeterDisabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from dictation meter settings",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating dictation meter disabled setting: $e");
       rethrow;
     }
   }

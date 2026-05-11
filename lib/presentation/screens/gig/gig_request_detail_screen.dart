@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -227,8 +228,13 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    // `PopScope(canPop: false)` routes Android (and similar) system back through
+    // [_popDetailToCaller] so we return [_editedWhileOpen]. That disables iOS
+    // interactive pop (edge swipe); allow pop on iOS only.
+    final allowInteractivePop =
+        defaultTargetPlatform == TargetPlatform.iOS && !kIsWeb;
     return PopScope(
-      canPop: false,
+      canPop: allowInteractivePop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop || !mounted) return;
         _popDetailToCaller();
