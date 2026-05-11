@@ -23,11 +23,41 @@ import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 /// Space between the last chip run and the favorite control.
 const double _kMetaBadgesFavoriteGap = 8;
 
+Widget _metaBadgesChipWrap({
+  required Widget child,
+  VoidCallback? onBackgroundTap,
+}) {
+  if (onBackgroundTap == null) return child;
+  return Stack(
+    alignment: Alignment.centerLeft,
+    clipBehavior: Clip.none,
+    children: [
+      Positioned.fill(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onBackgroundTap,
+          child: const ColoredBox(color: Color(0x00000000)),
+        ),
+      ),
+      child,
+    ],
+  );
+}
+
 /// Listing type, gender, and price chips (shown in a dedicated tile on listing detail).
 class ListingDetailMetaBadges extends StatelessWidget {
-  const ListingDetailMetaBadges({required this.listingDetail, super.key});
+  const ListingDetailMetaBadges({
+    required this.listingDetail,
+    super.key,
+    this.onBackgroundTap,
+  });
 
   final ListingDetail listingDetail;
+
+  /// When set, taps on the chip [Wrap] area (including empty space around chips)
+  /// invoke this. The favorite heart column is outside this region so it keeps
+  /// its own tap target.
+  final VoidCallback? onBackgroundTap;
 
   String _genderLabel(int gender) {
     switch (gender) {
@@ -80,19 +110,21 @@ class ListingDetailMetaBadges extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    ListingTypeBadge(
-                      listingTypeCode: listingDetail.listingType.code,
-                      fontSize: 12,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                child: _metaBadgesChipWrap(
+                  onBackgroundTap: onBackgroundTap,
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ListingTypeBadge(
+                        listingTypeCode: listingDetail.listingType.code,
+                        fontSize: 12,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                       ),
-                    ),
                     if (listingDetail.gender != null)
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -136,20 +168,22 @@ class ListingDetailMetaBadges extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ListingPaymentsOutlineBadge(
-                      label: PriceRangeHelper.formatListingPriceRangeWithCurrency(
-                        listingDetail.price,
-                        listingDetail.price,
+                      ListingPaymentsOutlineBadge(
+                        label:
+                            PriceRangeHelper.formatListingPriceRangeWithCurrency(
+                          listingDetail.price,
+                          listingDetail.price,
+                        ),
+                        foregroundColor: priceColor,
+                        fontSize: 12,
+                        iconSize: 16,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
                       ),
-                      foregroundColor: priceColor,
-                      fontSize: 12,
-                      iconSize: 16,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 4,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               if (showFavorite) ...[

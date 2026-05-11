@@ -2364,6 +2364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get price_required => 'Please set a price';
 
   @override
+  String get listing_price_minimum => 'Price must be at least 1 USD per month';
+
+  @override
   String get auth_required_title => 'Authentication required';
 
   @override

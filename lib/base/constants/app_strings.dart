@@ -1306,6 +1306,7 @@ class AppStrings {
       "description_too_long": "Text must be 500 characters or less",
       "location_required": "Please select a location",
       "price_required": "Please set a price",
+      "listing_price_minimum": "Price must be at least 1 USD per month",
 
       "auth_required_title": "Authentication required",
       "authentication_required":
@@ -2776,6 +2777,7 @@ class AppStrings {
       "description_too_long": "Текст должен быть не более 500 символов",
       "location_required": "Пожалуйста, выберите район",
       "price_required": "Пожалуйста, укажите цену",
+      "listing_price_minimum": "Цена должна быть не менее 1 USD в месяц",
 
       "auth_required_title": "Требуется аутентификация",
       "authentication_required":
@@ -4250,6 +4252,7 @@ class AppStrings {
       "description_too_long": "Matn 500 belgidan ko'p bo'p bo'lmasligi kerak",
       "location_required": "Iltimos, tuman tanlang",
       "price_required": "Iltimos, narxni belgilang",
+      "listing_price_minimum": "Oyiga kamida 1 USD bo'lishi kerak",
 
       "auth_required_title": "Autentifikatsiya talab qilinadi",
       "authentication_required":

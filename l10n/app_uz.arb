@@ -915,6 +915,7 @@
   "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
   "location_required": "Iltimos, tuman tanlang",
   "price_required": "Iltimos, narxni belgilang",
+  "listing_price_minimum": "Oyiga kamida 1 USD bo'lishi kerak",
   "auth_required_title": "Autentifikatsiya talab qilinadi",
   "authentication_required": "Autentifikatsiya talab qilinadi. Iltimos, e'lon yaratish uchun tizimga kiring.",
   "unauthenticated_listing_prompt": "E'lon yaratish va joylashtirish uchun hisobingizga kirishingiz kerak.",

@@ -79,16 +79,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _selectedGender = 1;
   int _defaultGenderFromProfile = 1; // Profile-based default for reset
   /// Roommate listing (type 2): single rent amount.
-  double _roommatePrice = 0.0;
+  double _roommatePrice = 1.0;
 
   /// Room-needed listing (type 1): budget range (API still stores one `price`).
-  double _roomBudgetMin = 0.0;
-  double _roomBudgetMax = 0.0;
+  double _roomBudgetMin = 1.0;
+  double _roomBudgetMax = 50.0;
 
   /// Whether the user has interacted with the price slider at least once.
   bool _priceTouched = false;
 
-  static const double _priceSliderMin = 0.0;
+  static const double _priceSliderMin = 1.0;
   static const double _priceSliderMax = 1000.0;
 
   bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
@@ -1296,6 +1296,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       });
     }
 
+    if (_priceForCreateRequest() < 1) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("listing_price_minimum"),
+      );
+      setState(() {
+        _showPriceError = true;
+      });
+      return;
+    }
+
     // Metro line and station are now optional - no validation required
 
     // Set loading state
@@ -1417,9 +1428,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       setState(() {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;
-        _roommatePrice = 0.0;
-        _roomBudgetMin = 0.0;
-        _roomBudgetMax = 0.0;
+        _roommatePrice = 1.0;
+        _roomBudgetMin = 1.0;
+        _roomBudgetMax = 50.0;
         _priceTouched = false;
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;

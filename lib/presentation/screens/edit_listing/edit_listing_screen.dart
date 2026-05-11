@@ -1544,6 +1544,14 @@ class _EditListingScreenState extends State<EditListingScreen>
       });
     }
 
+    if (_price.round() < 1) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("listing_price_minimum"),
+      );
+      return;
+    }
+
     // Metro line and station are now optional - no validation required
 
     // Set loading state

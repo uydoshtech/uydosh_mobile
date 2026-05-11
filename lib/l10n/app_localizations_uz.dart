@@ -2403,6 +2403,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get price_required => 'Iltimos, narxni belgilang';
 
   @override
+  String get listing_price_minimum => 'Oyiga kamida 1 USD bo\'lishi kerak';
+
+  @override
   String get auth_required_title => 'Autentifikatsiya talab qilinadi';
 
   @override

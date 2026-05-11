@@ -2375,6 +2375,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get price_required => 'Пожалуйста, укажите цену';
 
   @override
+  String get listing_price_minimum => 'Цена должна быть не менее 1 USD в месяц';
+
+  @override
   String get auth_required_title => 'Требуется аутентификация';
 
   @override

@@ -24,7 +24,6 @@ import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -64,13 +63,12 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compa
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_and_price_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_listing_owner_messages_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -2141,38 +2139,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Widget _metaBadgesTile(ListingDetail listingDetail) {
-    AdminFeatureFlagsState().ensureLoaded();
-    return SizedBox(
-      width: double.infinity,
-      child: ListingDetailTileShell(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListingDetailMetaBadges(listingDetail: listingDetail),
-              if (listingDetail.listingType.code != "room_needed" &&
-                  listingDetail.price > 0)
-                ListenableBuilder(
-                  listenable: AdminFeatureFlagsState(),
-                  builder: (context, _) {
-                    if (!AdminFeatureFlagsState().showPriceInsights) {
-                      return const SizedBox.shrink();
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: ListingDetailAreaPriceStats(
-                        listingDetail: listingDetail,
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return ListingDetailMetaAndPriceTile(listingDetail: listingDetail);
   }
 
   Widget _room3dTile(ListingDetail listingDetail) {

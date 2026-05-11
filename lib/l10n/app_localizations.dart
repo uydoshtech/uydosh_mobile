@@ -4486,6 +4486,12 @@ abstract class AppLocalizations {
   /// **'Please set a price'**
   String get price_required;
 
+  /// No description provided for @listing_price_minimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Price must be at least 1 USD per month'**
+  String get listing_price_minimum;
+
   /// No description provided for @auth_required_title.
   ///
   /// In en, this message translates to:

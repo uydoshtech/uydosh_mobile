@@ -1,4 +1,5 @@
 import Flutter
+import QuartzCore
 import SceneKit
 import UIKit
 
@@ -231,6 +232,18 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private static let zoomButtonCornerRadius: CGFloat = 19
   /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
   private static let initialZoomInSteps: Int = 2
+  /// Manual orbit: translation (points) → angle delta, per `changed` callback.
+  private static let orbitPanSensitivity: Float = 0.012
+  /// `velocity` (points/s) → angular velocity (rad/s); tuned for natural coast-down vs [orbitPanSensitivity].
+  private static let orbitVelocityScale: Float = 0.00011
+  /// Exponential damping of angular velocity (higher = stops sooner).
+  private static let orbitDecelDampingPerSec: Float = 3.8
+  private static let orbitDecelStopThreshold: Float = 0.001
+
+  private var orbitDecelDisplayLink: CADisplayLink?
+  private var orbitDecelLastTimestamp: CFTimeInterval = 0
+  private var orbitYawVel: Float = 0
+  private var orbitPitchVel: Float = 0
 
   fileprivate init(
     fileURL: URL,
@@ -1279,9 +1292,81 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     camNode.look(at: T, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
   }
 
+  private func stopOrbitDeceleration() {
+    orbitDecelDisplayLink?.invalidate()
+    orbitDecelDisplayLink = nil
+    orbitDecelLastTimestamp = 0
+    orbitYawVel = 0
+    orbitPitchVel = 0
+  }
+
+  private func beginOrbitDecelerationIfWorthwhile(panVelocity v: CGPoint) {
+    let vx = Float(v.x)
+    let vy = Float(v.y)
+    let scale = Self.orbitVelocityScale
+    let yawV = -vx * scale
+    let pitchV = vy * scale
+    let speed = hypotf(yawV, pitchV)
+    guard speed > Self.orbitDecelStopThreshold * 2.5 else { return }
+    orbitDecelDisplayLink?.invalidate()
+    orbitYawVel = yawV
+    orbitPitchVel = pitchV
+    orbitDecelLastTimestamp = 0
+    let link = CADisplayLink(target: self, selector: #selector(tickOrbitDeceleration(_:)))
+    if #available(iOS 15.0, *) {
+      link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 120, preferred: 60)
+    }
+    link.add(to: .main, forMode: .common)
+    orbitDecelDisplayLink = link
+  }
+
+  @objc private func tickOrbitDeceleration(_ link: CADisplayLink) {
+    guard framingCameraNode != nil else {
+      stopOrbitDeceleration()
+      return
+    }
+    let now = link.targetTimestamp
+    let dt: Float
+    if orbitDecelLastTimestamp > 0 {
+      dt = Float(now - orbitDecelLastTimestamp)
+    } else {
+      dt = Float(max(link.duration, 1.0 / 120.0))
+    }
+    orbitDecelLastTimestamp = now
+    guard dt > 0, dt < 0.25 else { return }
+
+    orbitYaw += orbitYawVel * dt
+    orbitPitch += orbitPitchVel * dt
+
+    let maxPitch = Float.pi / 2 - 0.12
+    let minPitch = -Float.pi / 2 + 0.12
+    if orbitPitch <= minPitch {
+      orbitPitch = minPitch
+      orbitPitchVel = min(0, orbitPitchVel)
+    } else if orbitPitch >= maxPitch {
+      orbitPitch = maxPitch
+      orbitPitchVel = max(0, orbitPitchVel)
+    }
+
+    let decay = exp(-Self.orbitDecelDampingPerSec * dt)
+    orbitYawVel *= decay
+    orbitPitchVel *= decay
+
+    updateCameraFromOrbit()
+
+    if hypotf(orbitYawVel, orbitPitchVel) < Self.orbitDecelStopThreshold {
+      stopOrbitDeceleration()
+    }
+  }
+
   @objc private func orbitPan(_ gr: UIPanGestureRecognizer) {
     switch gr.state {
-    case .began, .changed, .ended:
+    case .began:
+      stopOrbitDeceleration()
+    case .cancelled, .failed:
+      stopOrbitDeceleration()
+      return
+    case .changed, .ended:
       break
     default:
       return
@@ -1292,16 +1377,20 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       updateCameraFromOrbit()
     }
     guard framingCameraNode != nil else { return }
+
     let t = gr.translation(in: sceneView)
     gr.setTranslation(.zero, in: sceneView)
-    // Signs chosen so horizontal/vertical drags match typical “orbit the model” (inverted vs raw deltas).
-    let sens: Float = 0.012
+    let sens = Self.orbitPanSensitivity
     orbitYaw -= Float(t.x) * sens
     orbitPitch += Float(t.y) * sens
     let maxPitch = Float.pi / 2 - 0.12
     let minPitch = -Float.pi / 2 + 0.12
     orbitPitch = min(max(orbitPitch, minPitch), maxPitch)
     updateCameraFromOrbit()
+
+    if gr.state == .ended {
+      beginOrbitDecelerationIfWorthwhile(panVelocity: gr.velocity(in: sceneView))
+    }
   }
 
   @objc private func orbitPinch(_ gr: UIPinchGestureRecognizer) {
@@ -1309,6 +1398,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       removeAutoRotateAnimation()
       isAutoRotating = false
       updateCameraFromOrbit()
+    }
+    if gr.state == .began {
+      stopOrbitDeceleration()
     }
     guard let cam = framingCameraNode?.camera else { return }
     switch gr.state {
@@ -1355,6 +1447,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private func dismissViewer() {
+    stopOrbitDeceleration()
     removeAutoRotateAnimation()
     removeManualOrbitGestures()
     framingCameraNode = nil

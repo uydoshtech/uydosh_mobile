@@ -8,9 +8,16 @@ import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Mean/median rent among similar active listings at the same station and/or district.
 class ListingDetailAreaPriceStats extends StatelessWidget {
-  const ListingDetailAreaPriceStats({required this.listingDetail, super.key});
+  const ListingDetailAreaPriceStats({
+    required this.listingDetail,
+    required this.expanded,
+    required this.onToggle,
+    super.key,
+  });
 
   final ListingDetail listingDetail;
+  final bool expanded;
+  final VoidCallback onToggle;
 
   /// 1 = cheap vs median, 2 = medium, 3 = expensive; 0 = unknown (no median).
   int _priceIndicatorLevel(AreaPriceBenchmark benchmark) {
@@ -147,33 +154,39 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
               medianUzs,
             );
 
+        final body = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (station != null) ...[
+              _benchmarkRow(
+                context,
+                benchmark: station,
+                text: l10n.listing_area_price_station_line(
+                  stationName,
+                  medianLabel(station.median),
+                ),
+              ),
+              if (district != null) const SizedBox(height: 4),
+            ],
+            if (district != null)
+              _benchmarkRow(
+                context,
+                benchmark: district,
+                text: l10n.listing_area_price_location_line(
+                  _districtPlaceName() ??
+                      l10n.listing_area_price_unknown_district,
+                  medianLabel(district.median),
+                ),
+              ),
+          ],
+        );
+
         return _section(
           context,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (station != null) ...[
-                _benchmarkRow(
-                  context,
-                  benchmark: station,
-                  text: l10n.listing_area_price_station_line(
-                    stationName,
-                    medianLabel(station.median),
-                  ),
-                ),
-                if (district != null) const SizedBox(height: 4),
-              ],
-              if (district != null)
-                _benchmarkRow(
-                  context,
-                  benchmark: district,
-                  text: l10n.listing_area_price_location_line(
-                    _districtPlaceName() ??
-                        l10n.listing_area_price_unknown_district,
-                    medianLabel(district.median),
-                  ),
-                ),
-            ],
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: onToggle,
+            child: body,
           ),
         );
       },
@@ -182,43 +195,70 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
 
   Widget _section(BuildContext context, {required Widget body}) {
     final theme = Theme.of(context);
-    return Theme(
-      data: theme.copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        initiallyExpanded: false,
-        dense: true,
-        visualDensity: const VisualDensity(horizontal: -4, vertical: 0),
-        tilePadding: const EdgeInsets.only(top: 4, bottom: 4),
-        childrenPadding: const EdgeInsets.only(top: 8, bottom: 2),
-        minTileHeight: 0,
-        iconColor: theme.colorScheme.onSurfaceVariant,
-        collapsedIconColor: theme.colorScheme.onSurfaceVariant,
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: _indicatorColumnWidth,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ThemeIcon(
-                  Icons.insights_outlined,
-                  size: 18,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+    final iconColor = theme.colorScheme.onSurfaceVariant;
+    const headerPadding = EdgeInsets.only(top: 4, bottom: 4);
+    const childrenTopPadding = EdgeInsets.only(top: 8, bottom: 2);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onToggle,
+            child: Padding(
+              padding: headerPadding,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: _indicatorColumnWidth,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ThemeIcon(
+                        Icons.insights_outlined,
+                        size: 18,
+                        color: iconColor,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      context.l10n.listing_area_price_heading,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: Icon(
+                      Icons.expand_more,
+                      size: 24,
+                      color: iconColor,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Expanded(
-              child: Text(
-                context.l10n.listing_area_price_heading,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        children: [body],
-      ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.hardEdge,
+          child: expanded
+              ? Padding(
+                  padding: childrenTopPadding,
+                  child: body,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }
