@@ -653,7 +653,7 @@ class MainNavigationState extends State<MainNavigation>
   );
 
   List<Widget> _getScreens() {
-    return [
+    final screens = <Widget>[
       // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
       // the shell AppBar count and the feed stay on the same bloc instance.
       HomeScreen(isHomeTabActive: _currentIndex == 0),
@@ -664,6 +664,13 @@ class MainNavigationState extends State<MainNavigation>
       ),
       _createListingTab,
     ];
+    // IndexedStack keeps off-screen tabs mounted. Wrap each tab in TickerMode
+    // so repeating animations/controllers do not burn CPU/GPU when hidden.
+    return List<Widget>.generate(
+      screens.length,
+      (i) => TickerMode(enabled: _currentIndex == i, child: screens[i]),
+      growable: false,
+    );
   }
 
   /// Open the chooser sheet for the bottom-bar "+" button. Lets the user

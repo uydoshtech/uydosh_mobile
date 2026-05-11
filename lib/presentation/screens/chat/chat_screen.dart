@@ -42,6 +42,7 @@ import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
@@ -1822,7 +1823,7 @@ class _ChatScreenState extends State<ChatScreen> {
         context,
         message: L10n.get("admin_delete_conversation_success"),
       );
-      context.read<MessagingBloc>().add(RefreshConversations());
+      context.read<ConversationsBloc>().add(const ConversationsRefresh());
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;

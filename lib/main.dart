@@ -54,6 +54,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/firebase_options.dart";
 import "package:uy_dosh/l10n/app_localizations.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
@@ -465,6 +466,9 @@ class _MyAppState extends State<MyApp> {
             getIt<IGamificationService>(),
           ),
         ),
+        BlocProvider<ConversationsBloc>(
+          create: (_) => ConversationsBloc(getIt<IMessagingService>()),
+        ),
         BlocProvider<CurrentUserProfileBloc>(
           create: (_) =>
               CurrentUserProfileBloc(getIt<IUserProfileService>()),
@@ -586,7 +590,7 @@ class _BlocAuthListenerState extends State<_BlocAuthListener> {
       context.read<CurrentUserProfileBloc>().add(
             const CurrentUserProfileEvent.reset(),
           );
-      context.read<MessagingBloc>().add(ClearConversations());
+      context.read<ConversationsBloc>().add(const ConversationsClear());
     }
     _wasAuthenticated = isAuthenticated;
   }

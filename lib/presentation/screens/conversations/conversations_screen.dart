@@ -9,7 +9,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -33,7 +33,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<MessagingBloc>().add(FetchConversations());
+        context.read<ConversationsBloc>().add(const ConversationsFetch());
       }
     });
     SessionManager.getUserId().then((id) {
@@ -51,39 +51,29 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             _buildCustomHeader(),
             // Content
             Expanded(
-              child: BlocBuilder<MessagingBloc, MessagingState>(
-                  buildWhen: (_, current) {
-                    // Prevent chat-only state transitions (messagesLoaded, messageSent, etc.)
-                    // from rebuilding the conversations list screen.
-                    return current.maybeWhen(
-                      initial: () => true,
-                      loading: () => true,
-                      conversationsLoaded: (_, __, ___) => true,
-                      conversationsCleared: () => true,
-                      error: (_) => true,
-                      orElse: () => false,
+              child: BlocBuilder<ConversationsBloc, ConversationsState>(
+                builder: (context, state) {
+                  if (state is ConversationsInitial ||
+                      state is ConversationsLoading) {
+                    return _buildLoadingState();
+                  }
+                  if (state is ConversationsLoaded) {
+                    return _buildConversationsList(
+                      state.conversations,
+                      state.hasMore,
+                      state.currentPage,
                     );
-                  },
-                  builder: (context, state) {
-                    return state.when(
-                      initial: _buildLoadingState,
-                      loading: _buildLoadingState,
-                      conversationsLoaded:
-                          _buildConversationsList,
-                      conversationsCleared: _buildEmptyState,
-                      messagesLoaded:
-                          (messages, hasMore, currentPage, conversationId) =>
-                              _buildLoadingState(), // This shouldn't happen in conversations screen
-                      conversationCreated:
-                          (conversation) => _buildLoadingState(),
-                      messageSent: (message) => _buildLoadingState(),
-                      messagesMarkedAsRead:
-                          (conversationId, markedCount) => _buildLoadingState(),
-                      error: _buildErrorState,
-                    );
-                  },
-                ),
+                  }
+                  if (state is ConversationsCleared) {
+                    return _buildEmptyState();
+                  }
+                  if (state is ConversationsError) {
+                    return _buildErrorState(state.message);
+                  }
+                  return _buildLoadingState();
+                },
               ),
+            ),
           ],
         ),
       ),
@@ -132,7 +122,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               child: IconButton(
                 onPressed: () {
                   HapticFeedbackUtils.impact();
-                  context.read<MessagingBloc>().add(RefreshConversations());
+                  context.read<ConversationsBloc>().add(
+                    const ConversationsRefresh(),
+                  );
                 },
                 icon: ThemeIcon(
                   Icons.refresh,
@@ -157,7 +149,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     return UydoshErrorRetryColumn(
       message: message,
       onRetry: () {
-        context.read<MessagingBloc>().add(RefreshConversations());
+        context.read<ConversationsBloc>().add(const ConversationsRefresh());
       },
     );
   }
@@ -185,7 +177,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       },
       showRefreshIndicator: true,
       onRefresh: () async {
-        context.read<MessagingBloc>().add(RefreshConversations());
+        context.read<ConversationsBloc>().add(const ConversationsRefresh());
       },
       showLoadMoreIndicator: hasMore,
       hasMore: hasMore,
@@ -209,9 +201,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           onPressed: () {
             HapticFeedbackUtils.impact();
             // Load more conversations
-            context.read<MessagingBloc>().add(
-              FetchConversations(page: 2),
-            ); // This should be dynamic
+            context.read<ConversationsBloc>().add(
+              const ConversationsFetch(page: 2),
+            ); // TODO: make page dynamic
           },
           child: Text(
             L10n.get("load_more"),
@@ -229,13 +221,11 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     }
     // Find the conversation to get the listing ID
     ConversationSummary? conversation;
-    context.read<MessagingBloc>().state.maybeWhen(
-      conversationsLoaded: (conversations, hasMore, currentPage) {
-        final match = conversations.where((c) => c.id == conversationId);
-        conversation = match.isEmpty ? null : match.first;
-      },
-      orElse: () {},
-    );
+    final state = context.read<ConversationsBloc>().state;
+    if (state is ConversationsLoaded) {
+      final match = state.conversations.where((c) => c.id == conversationId);
+      conversation = match.isEmpty ? null : match.first;
+    }
 
     final conv = conversation;
     final otherUserId =

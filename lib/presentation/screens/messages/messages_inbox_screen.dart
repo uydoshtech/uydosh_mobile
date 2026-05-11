@@ -28,6 +28,7 @@ import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/main.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
@@ -222,7 +223,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         logger.d(
           "🔍 [MessagesInboxScreen] User logged out, clearing conversations...",
         );
-        context.read<MessagingBloc>().add(ClearConversations());
+        context.read<ConversationsBloc>().add(const ConversationsClear());
         if (_hasArchivedChats) {
           setState(() => _hasArchivedChats = false);
         }
@@ -278,7 +279,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   void _loadConversations() {
     logger.d("🔍 [MessagesInboxScreen] Loading conversations...");
     if (mounted) {
-      context.read<MessagingBloc>().add(RefreshConversations());
+      context.read<ConversationsBloc>().add(const ConversationsRefresh());
     }
   }
 
@@ -595,21 +596,32 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   }
 
   Widget _buildContent() {
-    return BlocListener<MessagingBloc, MessagingState>(
-        listener: (context, state) {
-          // Handle unread count updates outside of build method
-          state.when(
-            initial: () {},
-            loading: () {},
-            conversationsLoaded: (conversations, hasMore, currentPage) {
-              final visible = _visibleInboxConversations(
-                conversations.cast<ConversationSummary>(),
-              );
+    return MultiBlocListener(
+      listeners: [
+        // Chat-only side effects that still come from the shared MessagingBloc.
+        BlocListener<MessagingBloc, MessagingState>(
+          listener: (context, state) {
+            state.whenOrNull(
+              messagesMarkedAsRead: (conversationId, markedCount) {
+                _loadConversations();
+              },
+              error: (message) {
+                if (message == archiveHasUnreadErrorCode && mounted) {
+                  _showArchiveWarning(L10n.get("archive_failed_has_unread"));
+                }
+              },
+            );
+          },
+        ),
+        // Inbox caching + unread badge updates are driven by ConversationsBloc only.
+        BlocListener<ConversationsBloc, ConversationsState>(
+          listener: (context, state) {
+            if (state is ConversationsLoaded) {
+              final visible = _visibleInboxConversations(state.conversations);
               logger.d(
-                "🔍 [MessagesInboxScreen] Conversations loaded: ${conversations.length} conversations (${visible.length} with messages)",
+                "🔍 [MessagesInboxScreen] Conversations loaded: ${state.conversations.length} conversations (${visible.length} with messages)",
               );
 
-              // Cache for smooth refresh (no blink when returning to screen)
               if (mounted) {
                 setState(() {
                   _lastDisplayedConversations = List<ConversationSummary>.from(
@@ -618,78 +630,39 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 });
               }
 
-              // First load after sign-in: auto-pick the tab that has unread
-              // messages so the user lands on the conversation that needs
-              // their attention. If both tabs have unreads (or neither does),
-              // keep the default left tab.
               _maybeApplyInitialTabRule(visible);
 
-              // Full inbox only: task-filtered route must not overwrite the
-              // shell unread badge (those threads are a subset).
               if (widget.filterGigRequestId == null) {
                 final totalUnreadCount = _calculateTotalUnreadCount(visible);
                 UnreadMessagesState().updateUnreadCount(totalUnreadCount);
               }
-            },
-            conversationsCleared: () {
+            } else if (state is ConversationsCleared) {
               if (mounted) {
                 setState(() => _lastDisplayedConversations = null);
               }
-              // Clear unread count when conversations are cleared
               UnreadMessagesState().clearUnreadCount();
-            },
-            messagesLoaded: (messages, hasMore, currentPage, conversationId) {},
-            conversationCreated: (conversation) {},
-            messageSent: (message) {},
-            messagesMarkedAsRead: (conversationId, markedCount) {
-              // Refresh conversations to get updated unread counts
-              _loadConversations();
-            },
-            error: (message) {
-              // Archive-specific error: surface a localized toast rather
-              // than the generic error screen. Other errors fall through
-              // to the BlocBuilder's error state.
-              if (message == archiveHasUnreadErrorCode && mounted) {
-                _showArchiveWarning(L10n.get("archive_failed_has_unread"));
-              }
-            },
-          );
-        },
-        child: BlocBuilder<MessagingBloc, MessagingState>(
-          buildWhen: (_, current) {
-            // Keep the inbox stable when the shared MessagingBloc emits chat-only
-            // states (messageSent, messagesLoaded, etc.) triggered by other routes.
-            return current.maybeWhen(
-              initial: () => true,
-              loading: () => true,
-              conversationsLoaded: (_, __, ___) => true,
-              conversationsCleared: () => true,
-              error: (_) => true,
-              orElse: () => false,
-            );
-          },
-          builder: (context, state) {
-            return state.when(
-              initial: _buildLoadingState,
-              loading: _showCachedOrLoading,
-              conversationsLoaded: (conversations, hasMore, currentPage) {
-                final visible = _visibleInboxConversations(
-                  conversations.cast<ConversationSummary>(),
-                );
-                return _buildTabbedConversationsList(visible);
-              },
-              conversationsCleared: _buildEmptyState,
-              messagesLoaded:
-                  (messages, hasMore, currentPage, conversationId) =>
-                      _showCachedOrLoading(),
-              conversationCreated: (conversation) => _showCachedOrLoading(),
-              messageSent: (message) => _showCachedOrLoading(),
-              messagesMarkedAsRead:
-                  (conversationId, markedCount) => _showCachedOrLoading(),
-              error: _buildErrorState,
-            );
+            }
           },
         ),
+      ],
+      child: BlocBuilder<ConversationsBloc, ConversationsState>(
+        builder: (context, state) {
+          if (state is ConversationsInitial || state is ConversationsLoading) {
+            return _showCachedOrLoading();
+          }
+          if (state is ConversationsCleared) {
+            return _buildEmptyState();
+          }
+          if (state is ConversationsError) {
+            return _buildErrorState(state.message);
+          }
+          if (state is ConversationsLoaded) {
+            final visible = _visibleInboxConversations(state.conversations);
+            return _buildTabbedConversationsList(visible);
+          }
+          return _showCachedOrLoading();
+        },
+      ),
     );
   }
 
@@ -1447,6 +1420,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       if (resolved) return;
       resolved = true;
       bloc.add(ArchiveConversation(conversationId: id));
+      // Keep the conversations-only bloc in sync with the archive result.
+      context.read<ConversationsBloc>().add(const ConversationsRefresh());
       // Drop the id on the next microtask so the bloc's optimistic removal
       // has already taken effect before this filter stops masking it —
       // avoids a one-frame flash where the chat pops back in.
