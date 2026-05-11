@@ -32,12 +32,16 @@ class PhotoReviewScreen extends StatelessWidget {
 
   final String path;
 
+  static const double _kReviewBottomBarExtraReserve = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        top: false,
+        // Unlike the live camera view, the post-capture review should respect
+        // the notch / Dynamic Island so the photo isn't clipped at the top.
+        top: true,
         bottom: false,
         child: PhotoReviewBody(
           path: path,
@@ -69,16 +73,17 @@ class PhotoReviewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    // Reserve enough room for the bottom action bar (top padding 16 +
-    // ~48 button height + 56 bottom padding ≈ 120) plus the home-bar
-    // safe area, so the photo (and its bottom-right logo overlay)
-    // finish well above the Retake / Use-photo buttons instead of
-    // sitting behind them and getting clipped.
-    final bottomBarReserve = bottomInset + 132;
+    // Reserve room for the bottom action bar + home indicator safe-area, but
+    // keep it tight to avoid a huge black band below the photo.
+    final bottomBarReserve =
+        bottomInset + PhotoReviewScreen._kReviewBottomBarExtraReserve;
     return Stack(
       fit: StackFit.expand,
       children: [
         Padding(
+          // Top safe-area is already handled by [SafeArea(top: true)] in
+          // [PhotoReviewScreen]. Don't add it again here (it shrinks the
+          // photo and makes the bottom gap look much worse).
           padding: EdgeInsets.only(bottom: bottomBarReserve),
           child: PhotoReviewWithLogo(path: path),
         ),
@@ -235,7 +240,9 @@ class _PhotoReviewBottomBar extends StatelessWidget {
           top: 16,
           // Lifted from `bottomPadding + 20` so the buttons no longer
           // overlap the bottom-right brand logo baked into the photo.
-          bottom: bottomPadding + 56,
+          //
+          // Reduced by 20 so the buttons sit closer to the bottom edge.
+          bottom: bottomPadding + 16,
           left: 24,
           right: 24,
         ),

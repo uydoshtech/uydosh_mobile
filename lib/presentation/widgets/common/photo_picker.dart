@@ -56,7 +56,9 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
   Future<Uint8List> _loadWatermarkBytes() async {
     if (_cachedWatermarkBytes != null) return _cachedWatermarkBytes!;
-    final data = await rootBundle.load("assets/icon/app_logo.png");
+    final data = await rootBundle.load(
+      "assets/icon/components/brand_logo_transparent.png",
+    );
     _cachedWatermarkBytes = Uint8List.fromList(
       data.buffer.asUint8List().toList(),
     );

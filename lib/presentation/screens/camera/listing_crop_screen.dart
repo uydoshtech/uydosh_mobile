@@ -73,8 +73,11 @@ class ListingCropScreen extends StatefulWidget {
 enum _AspectChoice {
   free,
   ratio1x1,
+  ratio3x4,
   ratio4x3,
+  ratio9x16,
   ratio16x9,
+  ratio2x3,
   ratio3x2,
 }
 
@@ -86,10 +89,16 @@ extension on _AspectChoice {
         return null;
       case _AspectChoice.ratio1x1:
         return 1.0;
+      case _AspectChoice.ratio3x4:
+        return 3 / 4;
       case _AspectChoice.ratio4x3:
         return 4 / 3;
+      case _AspectChoice.ratio9x16:
+        return 9 / 16;
       case _AspectChoice.ratio16x9:
         return 16 / 9;
+      case _AspectChoice.ratio2x3:
+        return 2 / 3;
       case _AspectChoice.ratio3x2:
         return 3 / 2;
     }
@@ -101,12 +110,35 @@ extension on _AspectChoice {
         return L10n.get("crop_aspect_free");
       case _AspectChoice.ratio1x1:
         return "1:1";
+      case _AspectChoice.ratio3x4:
+        return "3:4";
       case _AspectChoice.ratio4x3:
         return "4:3";
+      case _AspectChoice.ratio9x16:
+        return "9:16";
       case _AspectChoice.ratio16x9:
         return "16:9";
+      case _AspectChoice.ratio2x3:
+        return "2:3";
       case _AspectChoice.ratio3x2:
         return "3:2";
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case _AspectChoice.free:
+        return Icons.crop_free;
+      case _AspectChoice.ratio1x1:
+        return Icons.crop_square;
+      case _AspectChoice.ratio3x4:
+      case _AspectChoice.ratio9x16:
+      case _AspectChoice.ratio2x3:
+        return Icons.stay_current_portrait;
+      case _AspectChoice.ratio4x3:
+      case _AspectChoice.ratio16x9:
+      case _AspectChoice.ratio3x2:
+        return Icons.stay_current_landscape;
     }
   }
 }
@@ -311,6 +343,10 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
                             dense: true,
                             onTap: () =>
                                 Navigator.of(sheetContext).pop(choice),
+                            leading: Icon(
+                              choice.icon,
+                              color: isSelected ? accent : Colors.white,
+                            ),
                             title: Text(
                               choice.label,
                               style: TextStyle(
@@ -466,13 +502,16 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Padding(
-      // Reserve room for the chrome (title bar ~64, bottom bar ~120) so the
-      // crop rect doesn't sit under the buttons.
+      // Reserve room for the chrome so the crop rect doesn't sit under the
+      // title bar / bottom controls. Keep this tight so the photo viewport
+      // is as large as possible (the overlays already use gradients).
       padding: EdgeInsets.fromLTRB(
         16,
-        topInset + 56,
+        // Top bar is roughly: 12 (top pad) + ~20 (text) + 12 (bottom pad).
+        topInset + 44,
         16,
-        bottomInset + 120,
+        // Bottom bar is roughly: 12 (top pad) + 56 (pill/button height) + 16 (bottom pad).
+        bottomInset + 92,
       ),
       child: Crop(
         image: bytes,
@@ -521,11 +560,31 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
           if (!widget.showBrandMark) {
             return const SizedBox.shrink();
           }
-          const minLogoSize = 24.0;
+          // Previously the logo size was derived purely from the crop rect.
+          // As the user tightens the crop, the rect shrinks → the logo shrinks
+          // and eventually gets hidden (felt like the watermark "disappears").
+          //
+          // In reality the baked watermark is sized against the *final output*
+          // image dimensions (after we re-encode / resize), so we keep the UI
+          // preview readable by clamping to a minimum size, only hiding if the
+          // crop rect is genuinely too small to fit it.
+          const minLogoSize = 28.0;
+          const minMargin = 8.0;
+
           final shorter = math.min(rect.width, rect.height);
-          final logoSize = shorter * WatermarkPlacement.sizeFraction;
-          final margin = shorter * WatermarkPlacement.marginFraction;
-          if (logoSize < minLogoSize) {
+          final desiredLogo = shorter * WatermarkPlacement.sizeFraction;
+          final desiredMargin = shorter * WatermarkPlacement.marginFraction;
+          final margin = math.max(minMargin, desiredMargin);
+          final available = shorter - 2 * margin;
+          if (available <= 0) {
+            return const SizedBox.shrink();
+          }
+          final logoSize = math.min(
+            available,
+            math.max(minLogoSize, desiredLogo),
+          );
+          // Still hide only if the crop rect can't reasonably contain the mark.
+          if (logoSize < minLogoSize * 0.75) {
             return const SizedBox.shrink();
           }
           // The package wraps this widget in `Positioned.fromRect(rect:

@@ -3,6 +3,14 @@ import "package:intl/intl.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
 class AppDateUtils {
+  /// Convert an absolute timestamp to Uzbekistan local time (Asia/Tashkent).
+  ///
+  /// Uzbekistan is UTC+5 and does not observe DST. We convert via UTC to avoid
+  /// device-local timezone affecting the result.
+  static DateTime toUzbekistanTime(DateTime dateTime) {
+    return dateTime.toUtc().add(const Duration(hours: 5));
+  }
+
   /// Format date with month name in the format: "hh:mm • dd MMMM YYYY"
   static String formatDateWithMonth(BuildContext context, DateTime dateTime) {
     final monthKeys = [

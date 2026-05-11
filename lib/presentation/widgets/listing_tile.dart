@@ -260,7 +260,7 @@ class _ListingTileState extends State<ListingTile>
   }
 
   /// Abbreviates the "district" suffix so long names fit on one tile row.
-  /// ru: "Алмазарский район" → "Алмазарский р-н"
+  /// ru: "Алмазарский район" → "Алмазарский р."
   /// uz: "Olmazor tumani"    → "Olmazor t."
   /// en: "Almazar district"  → "Almazar dist."
   ///
@@ -268,8 +268,8 @@ class _ListingTileState extends State<ListingTile>
   /// `\w` class excludes Cyrillic characters — so `\bрайон\b` never matches.
   String _shortenDistrictSuffix(String name) {
     const replacements = <String, String>{
-      " район": " р-н",
-      " Район": " р-н",
+      " район": " р.",
+      " Район": " р.",
       " tumani": " t.",
       " Tumani": " t.",
       " district": " dist.",

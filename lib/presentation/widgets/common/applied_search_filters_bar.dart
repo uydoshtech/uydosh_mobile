@@ -230,6 +230,8 @@ class AppliedSearchFiltersBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: neumorphicChipDecoration(
                   radius: BorderRadius.circular(999),
+                ).copyWith(
+                  border: Border.all(color: AppColors.success, width: 1),
                 ),
                 alignment: Alignment.center,
                 child: Row(
@@ -248,7 +250,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: onSurface,
+                        color: AppColors.success,
                         height: 1.0,
                       ),
                     ),

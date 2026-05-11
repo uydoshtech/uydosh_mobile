@@ -997,6 +997,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           minPrice: min,
           maxPrice: max,
           currencySymbol: "y.e.",
+          showCurrency: false,
           showIcon: true,
           iconSize: 18,
           fontSize: 13,

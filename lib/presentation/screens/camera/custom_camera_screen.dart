@@ -106,6 +106,8 @@ String? _cropJpegToAspect(_CropJob job) {
 class CustomCameraScreen extends StatefulWidget {
   const CustomCameraScreen({super.key});
 
+  static const double _kReviewBottomBarExtraReserve = 0;
+
   @override
   State<CustomCameraScreen> createState() => _CustomCameraScreenState();
 }
@@ -555,9 +557,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
       // logo finishes above the Retake / Use-photo buttons instead of
       // sitting behind them. Must stay in sync with the review-stage
       // bottom padding in [_buildBottomBar].
+      final topInset = MediaQuery.paddingOf(context).top;
       final bottomInset = MediaQuery.paddingOf(context).bottom;
       return Padding(
-        padding: EdgeInsets.only(bottom: bottomInset + 132),
+        padding: EdgeInsets.only(
+          top: topInset,
+          bottom: bottomInset + CustomCameraScreen._kReviewBottomBarExtraReserve,
+        ),
         child: PhotoReviewWithLogo(path: _captured!.path),
       );
     }
@@ -677,7 +683,8 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
           // into the captured photo (kept in sync with the photo
           // reserve in [_buildPreviewLayer]). The live stage keeps the
           // tighter spacing under the shutter button.
-          bottom: bottomPadding + (isReview ? 56 : 20),
+          // Reduced by 20 so the buttons sit closer to the bottom edge.
+          bottom: bottomPadding + (isReview ? 16 : 20),
           left: 24,
           right: 24,
         ),

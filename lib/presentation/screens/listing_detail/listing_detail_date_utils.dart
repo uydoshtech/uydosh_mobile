@@ -51,6 +51,7 @@ class ListingDetailDateUtils {
   static String? formatPublicationDate(BuildContext context, String? createdAt) {
     final date = parseCreatedAt(createdAt);
     if (date == null) return null;
-    return app_date_utils.AppDateUtils.formatDateWithShortMonth(context, date);
+    final uzDate = app_date_utils.AppDateUtils.toUzbekistanTime(date);
+    return app_date_utils.AppDateUtils.formatDateWithShortMonth(context, uzDate);
   }
 }
