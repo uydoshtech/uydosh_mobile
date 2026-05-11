@@ -160,7 +160,7 @@ private final class OnceFlutterResult {
 }
 
 /// Full-screen 3D viewer for a local USDZ (object-only, no Quick Look AR/Object toggle).
-final class RoomUsdzViewerViewController: UIViewController {
+final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerDelegate {
   private let fileURL: URL
   private let strings: RoomViewerStrings
   private let listingId: Int
@@ -170,6 +170,20 @@ final class RoomUsdzViewerViewController: UIViewController {
   private let dismissFlutterResult: OnceFlutterResult
   private var didPublishFlutterMetrics = false
   private let sceneView = SCNView()
+  private static let autoRotateActionKey = "uydosh.autoRotateModel"
+  /// Wraps all USDZ geometry so we can spin the room without rotating the camera (a sibling under `rootNode`).
+  private static let modelOrbitNodeName = "UydoshModelOrbit"
+  private var isAutoRotating = true
+  /// Orbit state (manual mode); camera stays a direct child of `rootNode`, not inside the model wrapper.
+  private weak var framingCameraNode: SCNNode?
+  private var orbitTarget = SCNVector3Zero
+  private var orbitYaw: Float = 0
+  private var orbitPitch: Float = 0
+  private var orbitRadius: Float = 1
+  private var orbitPanGesture: UIPanGestureRecognizer?
+  private var orbitPinchGesture: UIPinchGestureRecognizer?
+  private var introTapGesture: UITapGestureRecognizer?
+  private var pinchBaseFov: CGFloat = 60
   private let hintContainer = UIView()
   private let hintStack = UIStackView()
   private let dimensionsTitleLabel = UILabel()
@@ -258,10 +272,16 @@ final class RoomUsdzViewerViewController: UIViewController {
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
-    sceneView.allowsCameraControl = true
+    // Start in "presentation" mode: auto-rotate until the user taps to take control.
+    sceneView.allowsCameraControl = false
     sceneView.antialiasingMode = .multisampling4X
     sceneView.autoenablesDefaultLighting = true
     view.addSubview(sceneView)
+
+    let tap = UITapGestureRecognizer(target: self, action: #selector(sceneTapped))
+    tap.cancelsTouchesInView = false
+    sceneView.addGestureRecognizer(tap)
+    introTapGesture = tap
 
     setupZoomControls()
 
@@ -409,6 +429,13 @@ final class RoomUsdzViewerViewController: UIViewController {
       zoomControlsContainer.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
       zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
     ])
+
+    // Pan / pinch from launch so a drag or pinch ends intro auto-rotation (tap-only was too limiting).
+    installManualOrbitGestures()
+    sceneView.isMultipleTouchEnabled = true
+    if let tap = introTapGesture, let pan = orbitPanGesture {
+      tap.require(toFail: pan)
+    }
 
     loadScene()
     playBrandMarkEntranceAnimation()
@@ -783,23 +810,6 @@ final class RoomUsdzViewerViewController: UIViewController {
     didCacheOriginalMaterials = true
   }
 
-  private func darkerColor(from color: UIColor, factor: CGFloat) -> UIColor {
-    // factor < 1 => darker
-    var r: CGFloat = 0
-    var g: CGFloat = 0
-    var b: CGFloat = 0
-    var a: CGFloat = 0
-    if color.getRed(&r, green: &g, blue: &b, alpha: &a) {
-      return UIColor(
-        red: max(0, min(1, r * factor)),
-        green: max(0, min(1, g * factor)),
-        blue: max(0, min(1, b * factor)),
-        alpha: a
-      )
-    }
-    return color
-  }
-
   private func restoreOriginalMaterials() {
     guard let root = loadedScene?.rootNode else { return }
     cacheOriginalMaterialsIfNeeded()
@@ -829,19 +839,16 @@ final class RoomUsdzViewerViewController: UIViewController {
     material.roughness.contents = NSNumber(value: Double(Self.stylizedWallRoughness))
   }
 
-  /// Stylized palette tuned to read as a calm, lived-in room:
-  /// - Floor: warm brown (slightly darker than furniture accent)
-  /// - Walls: warm cream / pale sand + PBR roughness (matte paint, not mirror-smooth)
-  /// - Furniture: muted blue-teal accent
+  /// Stylized palette (fixed tints for USDZ room scans):
+  /// - Walls: Soft Sand `#E8DFCF`
+  /// - Floor: Walnut Wood `#7A5C4F`
+  /// - Furniture: Muted Teal `#4F7D8A`
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
-    let floorTint = darkerColor(from: strings.onFloorObjectTint, factor: 0.78)
-    // Muted blue-teal that plays well with warm wood + cream walls. (RGB: 0x2F6F7A)
-    let furnitureTint = UIColor(red: 47 / 255, green: 111 / 255, blue: 122 / 255, alpha: 1)
-    // Warm cream / pale sand — reads as a freshly painted wall, complements brown floor + teal accents.
-    // (RGB: 0xE6DCC4)
-    let wallTint = UIColor(red: 230 / 255, green: 220 / 255, blue: 196 / 255, alpha: 1)
+    let floorTint = UIColor(red: 122 / 255, green: 92 / 255, blue: 79 / 255, alpha: 1) // #7A5C4F
+    let furnitureTint = UIColor(red: 79 / 255, green: 125 / 255, blue: 138 / 255, alpha: 1) // #4F7D8A
+    let wallTint = UIColor(red: 232 / 255, green: 223 / 255, blue: 207 / 255, alpha: 1) // #E8DFCF
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -1161,6 +1168,18 @@ final class RoomUsdzViewerViewController: UIViewController {
 
     view.defaultCameraController.target = centerWorld
 
+    framingCameraNode = cameraNode
+    orbitTarget = centerWorld
+    let wp = cameraNode.worldPosition
+    let cdx = wp.x - centerWorld.x
+    let cdy = wp.y - centerWorld.y
+    let cdz = wp.z - centerWorld.z
+    orbitRadius = sqrt(cdx * cdx + cdy * cdy + cdz * cdz)
+    if orbitRadius > 1e-4 {
+      orbitPitch = asin(min(1, max(-1, cdy / orbitRadius)))
+      orbitYaw = atan2(cdx, cdz)
+    }
+
     cacheOriginalMaterialsIfNeeded()
     applyMaterialsStyle()
   }
@@ -1177,10 +1196,146 @@ final class RoomUsdzViewerViewController: UIViewController {
         self.frameCamera(for: scene, in: self.sceneView)
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
+        self.startIntroAutoRotationIfNeeded()
       } catch {
         self.presentLoadError(error)
       }
     }
+  }
+
+  /// Reparents every child of `rootNode` except the framing camera under a wrapper so spin actions do not rotate the camera.
+  private func ensureModelOrbitWrapper() -> SCNNode? {
+    guard let scene = loadedScene else { return nil }
+    let root = scene.rootNode
+    if let existing = root.childNode(withName: Self.modelOrbitNodeName, recursively: false) {
+      return existing
+    }
+    let wrap = SCNNode()
+    wrap.name = Self.modelOrbitNodeName
+    let toReparent = root.childNodes.filter { $0.name != "UydoshFramingCamera" }
+    guard !toReparent.isEmpty else { return nil }
+    for child in toReparent {
+      child.removeFromParentNode()
+      wrap.addChildNode(child)
+    }
+    root.addChildNode(wrap)
+    return wrap
+  }
+
+  private func removeAutoRotateAnimation() {
+    guard let scene = loadedScene else { return }
+    scene.rootNode.childNode(withName: Self.modelOrbitNodeName, recursively: false)?
+      .removeAction(forKey: Self.autoRotateActionKey)
+    scene.rootNode.removeAction(forKey: Self.autoRotateActionKey)
+  }
+
+  private func startIntroAutoRotationIfNeeded() {
+    guard isAutoRotating, let orbitNode = ensureModelOrbitWrapper() else { return }
+    // Y-up rooms: spin around **world Y** (turntable in the floor plane). Negative angle ≈ clockwise from above.
+    let secondsPerTurn: TimeInterval = 8.0
+    let spin = SCNAction.rotate(
+      by: -CGFloat.pi * 2,
+      around: SCNVector3(0, 1, 0),
+      duration: secondsPerTurn
+    )
+    let action = SCNAction.repeatForever(spin)
+    orbitNode.runAction(action, forKey: Self.autoRotateActionKey)
+  }
+
+  private func installManualOrbitGestures() {
+    guard orbitPanGesture == nil else { return }
+    let pan = UIPanGestureRecognizer(target: self, action: #selector(orbitPan(_:)))
+    pan.maximumNumberOfTouches = 1
+    pan.delegate = self
+    sceneView.addGestureRecognizer(pan)
+    orbitPanGesture = pan
+
+    let pinch = UIPinchGestureRecognizer(target: self, action: #selector(orbitPinch(_:)))
+    pinch.delegate = self
+    sceneView.addGestureRecognizer(pinch)
+    orbitPinchGesture = pinch
+  }
+
+  private func removeManualOrbitGestures() {
+    if let g = orbitPanGesture {
+      sceneView.removeGestureRecognizer(g)
+      orbitPanGesture = nil
+    }
+    if let g = orbitPinchGesture {
+      sceneView.removeGestureRecognizer(g)
+      orbitPinchGesture = nil
+    }
+  }
+
+  private func updateCameraFromOrbit() {
+    guard let camNode = framingCameraNode else { return }
+    let T = orbitTarget
+    let r = orbitRadius
+    let horizontal = r * cos(orbitPitch)
+    let x = T.x + horizontal * sin(orbitYaw)
+    let y = T.y + r * sin(orbitPitch)
+    let z = T.z + horizontal * cos(orbitYaw)
+    camNode.worldPosition = SCNVector3(x, y, z)
+    camNode.look(at: T, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+  }
+
+  @objc private func orbitPan(_ gr: UIPanGestureRecognizer) {
+    switch gr.state {
+    case .began, .changed, .ended:
+      break
+    default:
+      return
+    }
+    if isAutoRotating {
+      removeAutoRotateAnimation()
+      isAutoRotating = false
+      updateCameraFromOrbit()
+    }
+    guard framingCameraNode != nil else { return }
+    let t = gr.translation(in: sceneView)
+    gr.setTranslation(.zero, in: sceneView)
+    // Signs chosen so horizontal/vertical drags match typical “orbit the model” (inverted vs raw deltas).
+    let sens: Float = 0.012
+    orbitYaw -= Float(t.x) * sens
+    orbitPitch += Float(t.y) * sens
+    let maxPitch = Float.pi / 2 - 0.12
+    let minPitch = -Float.pi / 2 + 0.12
+    orbitPitch = min(max(orbitPitch, minPitch), maxPitch)
+    updateCameraFromOrbit()
+  }
+
+  @objc private func orbitPinch(_ gr: UIPinchGestureRecognizer) {
+    if isAutoRotating {
+      removeAutoRotateAnimation()
+      isAutoRotating = false
+      updateCameraFromOrbit()
+    }
+    guard let cam = framingCameraNode?.camera else { return }
+    switch gr.state {
+    case .began:
+      pinchBaseFov = cam.fieldOfView
+    case .changed:
+      let next = pinchBaseFov / CGFloat(gr.scale)
+      setZoom(fovDegrees: next, animated: false)
+    case .ended, .cancelled, .failed:
+      pinchBaseFov = cam.fieldOfView
+    default:
+      break
+    }
+  }
+
+  func gestureRecognizer(
+    _: UIGestureRecognizer,
+    shouldRecognizeSimultaneouslyWith _: UIGestureRecognizer
+  ) -> Bool {
+    true
+  }
+
+  @objc private func sceneTapped() {
+    guard isAutoRotating else { return }
+    removeAutoRotateAnimation()
+    isAutoRotating = false
+    updateCameraFromOrbit()
   }
 
   private func presentLoadError(_ error: Error) {
@@ -1200,6 +1355,9 @@ final class RoomUsdzViewerViewController: UIViewController {
   }
 
   private func dismissViewer() {
+    removeAutoRotateAnimation()
+    removeManualOrbitGestures()
+    framingCameraNode = nil
     didCacheOriginalMaterials = false
     originalMaterialsByGeometry.removeAll(keepingCapacity: false)
     sceneWorldBounds = nil
