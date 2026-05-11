@@ -74,8 +74,10 @@ mixin _$MessagingState {
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -87,8 +89,9 @@ mixin _$MessagingState {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -100,8 +103,8 @@ mixin _$MessagingState {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -250,8 +253,10 @@ class _$MessagingInitialImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -266,8 +271,9 @@ class _$MessagingInitialImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -282,8 +288,8 @@ class _$MessagingInitialImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -419,8 +425,10 @@ class _$MessagingLoadingImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -435,8 +443,9 @@ class _$MessagingLoadingImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -451,8 +460,8 @@ class _$MessagingLoadingImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -472,21 +481,24 @@ abstract class MessagingLoading implements MessagingState {
 }
 
 /// @nodoc
-abstract class _$$ConversationsLoadedImplCopyWith<$Res> {
-  factory _$$ConversationsLoadedImplCopyWith(_$ConversationsLoadedImpl value,
-          $Res Function(_$ConversationsLoadedImpl) then) =
-      __$$ConversationsLoadedImplCopyWithImpl<$Res>;
+abstract class _$$MessagingConversationsLoadedImplCopyWith<$Res> {
+  factory _$$MessagingConversationsLoadedImplCopyWith(
+          _$MessagingConversationsLoadedImpl value,
+          $Res Function(_$MessagingConversationsLoadedImpl) then) =
+      __$$MessagingConversationsLoadedImplCopyWithImpl<$Res>;
   @useResult
   $Res call(
       {List<ConversationSummary> conversations, bool hasMore, int currentPage});
 }
 
 /// @nodoc
-class __$$ConversationsLoadedImplCopyWithImpl<$Res>
-    extends _$MessagingStateCopyWithImpl<$Res, _$ConversationsLoadedImpl>
-    implements _$$ConversationsLoadedImplCopyWith<$Res> {
-  __$$ConversationsLoadedImplCopyWithImpl(_$ConversationsLoadedImpl _value,
-      $Res Function(_$ConversationsLoadedImpl) _then)
+class __$$MessagingConversationsLoadedImplCopyWithImpl<$Res>
+    extends _$MessagingStateCopyWithImpl<$Res,
+        _$MessagingConversationsLoadedImpl>
+    implements _$$MessagingConversationsLoadedImplCopyWith<$Res> {
+  __$$MessagingConversationsLoadedImplCopyWithImpl(
+      _$MessagingConversationsLoadedImpl _value,
+      $Res Function(_$MessagingConversationsLoadedImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of MessagingState
@@ -498,7 +510,7 @@ class __$$ConversationsLoadedImplCopyWithImpl<$Res>
     Object? hasMore = null,
     Object? currentPage = null,
   }) {
-    return _then(_$ConversationsLoadedImpl(
+    return _then(_$MessagingConversationsLoadedImpl(
       conversations: null == conversations
           ? _value._conversations
           : conversations // ignore: cast_nullable_to_non_nullable
@@ -517,10 +529,10 @@ class __$$ConversationsLoadedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ConversationsLoadedImpl
+class _$MessagingConversationsLoadedImpl
     with DiagnosticableTreeMixin
-    implements ConversationsLoaded {
-  const _$ConversationsLoadedImpl(
+    implements MessagingConversationsLoaded {
+  const _$MessagingConversationsLoadedImpl(
       {required final List<ConversationSummary> conversations,
       required this.hasMore,
       required this.currentPage})
@@ -558,7 +570,7 @@ class _$ConversationsLoadedImpl
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ConversationsLoadedImpl &&
+            other is _$MessagingConversationsLoadedImpl &&
             const DeepCollectionEquality()
                 .equals(other._conversations, _conversations) &&
             (identical(other.hasMore, hasMore) || other.hasMore == hasMore) &&
@@ -578,9 +590,10 @@ class _$ConversationsLoadedImpl
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ConversationsLoadedImplCopyWith<_$ConversationsLoadedImpl> get copyWith =>
-      __$$ConversationsLoadedImplCopyWithImpl<_$ConversationsLoadedImpl>(
-          this, _$identity);
+  _$$MessagingConversationsLoadedImplCopyWith<
+          _$MessagingConversationsLoadedImpl>
+      get copyWith => __$$MessagingConversationsLoadedImplCopyWithImpl<
+          _$MessagingConversationsLoadedImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -653,8 +666,10 @@ class _$ConversationsLoadedImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -669,8 +684,9 @@ class _$ConversationsLoadedImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -685,8 +701,8 @@ class _$ConversationsLoadedImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -701,11 +717,11 @@ class _$ConversationsLoadedImpl
   }
 }
 
-abstract class ConversationsLoaded implements MessagingState {
-  const factory ConversationsLoaded(
+abstract class MessagingConversationsLoaded implements MessagingState {
+  const factory MessagingConversationsLoaded(
       {required final List<ConversationSummary> conversations,
       required final bool hasMore,
-      required final int currentPage}) = _$ConversationsLoadedImpl;
+      required final int currentPage}) = _$MessagingConversationsLoadedImpl;
 
   List<ConversationSummary> get conversations;
   bool get hasMore;
@@ -714,23 +730,27 @@ abstract class ConversationsLoaded implements MessagingState {
   /// Create a copy of MessagingState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ConversationsLoadedImplCopyWith<_$ConversationsLoadedImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$MessagingConversationsLoadedImplCopyWith<
+          _$MessagingConversationsLoadedImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$ConversationsClearedImplCopyWith<$Res> {
-  factory _$$ConversationsClearedImplCopyWith(_$ConversationsClearedImpl value,
-          $Res Function(_$ConversationsClearedImpl) then) =
-      __$$ConversationsClearedImplCopyWithImpl<$Res>;
+abstract class _$$MessagingConversationsClearedImplCopyWith<$Res> {
+  factory _$$MessagingConversationsClearedImplCopyWith(
+          _$MessagingConversationsClearedImpl value,
+          $Res Function(_$MessagingConversationsClearedImpl) then) =
+      __$$MessagingConversationsClearedImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$ConversationsClearedImplCopyWithImpl<$Res>
-    extends _$MessagingStateCopyWithImpl<$Res, _$ConversationsClearedImpl>
-    implements _$$ConversationsClearedImplCopyWith<$Res> {
-  __$$ConversationsClearedImplCopyWithImpl(_$ConversationsClearedImpl _value,
-      $Res Function(_$ConversationsClearedImpl) _then)
+class __$$MessagingConversationsClearedImplCopyWithImpl<$Res>
+    extends _$MessagingStateCopyWithImpl<$Res,
+        _$MessagingConversationsClearedImpl>
+    implements _$$MessagingConversationsClearedImplCopyWith<$Res> {
+  __$$MessagingConversationsClearedImplCopyWithImpl(
+      _$MessagingConversationsClearedImpl _value,
+      $Res Function(_$MessagingConversationsClearedImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of MessagingState
@@ -739,10 +759,10 @@ class __$$ConversationsClearedImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ConversationsClearedImpl
+class _$MessagingConversationsClearedImpl
     with DiagnosticableTreeMixin
-    implements ConversationsCleared {
-  const _$ConversationsClearedImpl();
+    implements MessagingConversationsCleared {
+  const _$MessagingConversationsClearedImpl();
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
@@ -760,7 +780,7 @@ class _$ConversationsClearedImpl
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ConversationsClearedImpl);
+            other is _$MessagingConversationsClearedImpl);
   }
 
   @override
@@ -837,8 +857,10 @@ class _$ConversationsClearedImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -853,8 +875,9 @@ class _$ConversationsClearedImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -869,8 +892,8 @@ class _$ConversationsClearedImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -885,8 +908,9 @@ class _$ConversationsClearedImpl
   }
 }
 
-abstract class ConversationsCleared implements MessagingState {
-  const factory ConversationsCleared() = _$ConversationsClearedImpl;
+abstract class MessagingConversationsCleared implements MessagingState {
+  const factory MessagingConversationsCleared() =
+      _$MessagingConversationsClearedImpl;
 }
 
 /// @nodoc
@@ -1085,8 +1109,10 @@ class _$MessagesLoadedImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -1101,8 +1127,9 @@ class _$MessagesLoadedImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -1117,8 +1144,8 @@ class _$MessagesLoadedImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -1312,8 +1339,10 @@ class _$ConversationCreatedImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -1328,8 +1357,9 @@ class _$ConversationCreatedImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -1344,8 +1374,8 @@ class _$ConversationCreatedImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -1529,8 +1559,10 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -1545,8 +1577,9 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -1561,8 +1594,8 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -1750,8 +1783,10 @@ class _$MessagesMarkedAsReadImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -1766,8 +1801,9 @@ class _$MessagesMarkedAsReadImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -1782,8 +1818,8 @@ class _$MessagesMarkedAsReadImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
@@ -1960,8 +1996,10 @@ class _$MessagingErrorImpl
   TResult map<TResult extends Object?>({
     required TResult Function(MessagingInitial value) initial,
     required TResult Function(MessagingLoading value) loading,
-    required TResult Function(ConversationsLoaded value) conversationsLoaded,
-    required TResult Function(ConversationsCleared value) conversationsCleared,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
@@ -1976,8 +2014,9 @@ class _$MessagingErrorImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MessagingInitial value)? initial,
     TResult? Function(MessagingLoading value)? loading,
-    TResult? Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult? Function(ConversationsCleared value)? conversationsCleared,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
@@ -1992,8 +2031,8 @@ class _$MessagingErrorImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MessagingInitial value)? initial,
     TResult Function(MessagingLoading value)? loading,
-    TResult Function(ConversationsLoaded value)? conversationsLoaded,
-    TResult Function(ConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,

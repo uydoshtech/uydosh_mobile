@@ -101,8 +101,9 @@ class MessagingState with _$MessagingState {
     required List<ConversationSummary> conversations,
     required bool hasMore,
     required int currentPage,
-  }) = ConversationsLoaded;
-  const factory MessagingState.conversationsCleared() = ConversationsCleared;
+  }) = MessagingConversationsLoaded;
+  const factory MessagingState.conversationsCleared() =
+      MessagingConversationsCleared;
   const factory MessagingState.messagesLoaded({
     required List<Message> messages,
     required bool hasMore,
@@ -167,7 +168,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       }
 
       emit(
-        ConversationsLoaded(
+        MessagingConversationsLoaded(
           conversations: response.data,
           hasMore: response.hasMore,
           currentPage: event.page,
@@ -210,7 +211,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       );
 
       emit(
-        ConversationsLoaded(
+        MessagingConversationsLoaded(
           conversations: response.data,
           hasMore: response.hasMore,
           currentPage: event.page,
@@ -374,7 +375,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     // If we have cached conversations, emit them immediately for better UX
     if (_cachedConversations.isNotEmpty) {
       emit(
-        ConversationsLoaded(
+        MessagingConversationsLoaded(
           conversations: _cachedConversations,
           hasMore: false, // We don't know if there are more pages
           currentPage: 1,
@@ -448,7 +449,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         // immediately restore the previous list so the user doesn't get
         // stuck on the error screen. Listeners fire on each emit.
         emit(const MessagingError(message: archiveHasUnreadErrorCode));
-        if (prevState is ConversationsLoaded) {
+        if (prevState is MessagingConversationsLoaded) {
           emit(prevState);
         } else {
           add(FetchConversations(page: 1));
@@ -489,11 +490,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   /// current state wouldn't benefit from an in-place patch (e.g. an error
   /// screen or a messages view).
   MessagingState? _withoutConversation(MessagingState state, int conversationId) {
-    if (state is ConversationsLoaded) {
+    if (state is MessagingConversationsLoaded) {
       final filtered = state.conversations
           .where((c) => c.id != conversationId)
           .toList();
-      return ConversationsLoaded(
+      return MessagingConversationsLoaded(
         conversations: filtered,
         hasMore: state.hasMore,
         currentPage: state.currentPage,

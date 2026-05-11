@@ -2812,33 +2812,43 @@ class _Room3dTileState extends State<_Room3dTile>
                       ),
                       if (line1 != null &&
                           lineHeight != null &&
-                          line2 != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          L10n.get("room_3d_dimensions_caption"),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: variant.withValues(alpha: 0.85),
+                          line2 != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 6),
+                              Text(
+                                L10n.get("room_3d_dimensions_caption"),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: variant.withValues(alpha: 0.85),
+                                    ),
                               ),
+                              const SizedBox(height: 4),
+                              _room3dDimensionMetricRow(
+                                context: context,
+                                icon: Icons.rectangle_outlined,
+                                text: line1,
+                              ),
+                              const SizedBox(height: 4),
+                              _room3dDimensionMetricRow(
+                                context: context,
+                                icon: Icons.height,
+                                text: lineHeight,
+                              ),
+                              const SizedBox(height: 4),
+                              _room3dDimensionMetricRow(
+                                context: context,
+                                icon: Icons.flip_to_front_outlined,
+                                text: line2,
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        _room3dDimensionMetricRow(
-                          context: context,
-                          icon: Icons.rectangle_outlined,
-                          text: line1,
-                        ),
-                        const SizedBox(height: 4),
-                        _room3dDimensionMetricRow(
-                          context: context,
-                          icon: Icons.height,
-                          text: lineHeight,
-                        ),
-                        const SizedBox(height: 4),
-                        _room3dDimensionMetricRow(
-                          context: context,
-                          icon: Icons.flip_to_front_outlined,
-                          text: line2,
-                        ),
-                      ],
                     ],
                   ),
                 ),

@@ -961,25 +961,6 @@ class MainNavigationState extends State<MainNavigation>
         ),
         actions: [
           ListenableBuilder(
-            listenable: AuthenticationState(),
-            builder: (context, _) {
-              if (_currentIndex != 1 ||
-                  !AuthenticationState().isAuthenticated) {
-                return const SizedBox.shrink();
-              }
-              return Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: _threeDAppBarIconButton(
-                  borderRadius:
-                      const BorderRadius.all(Radius.circular(999)),
-                  iconData: Icons.dynamic_feed_rounded,
-                  onPressed: () => context.pushMyPublishedGigs(),
-                  semanticsLabel: L10n.get("gigs_my_published_title"),
-                ),
-              );
-            },
-          ),
-          ListenableBuilder(
             listenable: Listenable.merge([
               AuthenticationState(),
               ActiveSearchAlertsState(),
@@ -987,8 +968,6 @@ class MainNavigationState extends State<MainNavigation>
             builder: (context, _) {
               final signedIn = AuthenticationState().isAuthenticated;
               if (!signedIn) return const SizedBox.shrink();
-              // Services hub uses the header for "my published" + profile; skip alerts here.
-              if (_currentIndex == 1) return const SizedBox.shrink();
 
               final activeAlerts =
                   ActiveSearchAlertsState().hasActiveEnabledAlerts;

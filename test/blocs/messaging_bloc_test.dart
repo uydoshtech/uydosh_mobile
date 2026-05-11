@@ -59,7 +59,7 @@ void main() {
         bloc.stream,
         emitsInOrder([
           isA<MessagingLoading>(),
-          isA<ConversationsLoaded>(),
+          isA<MessagingConversationsLoaded>(),
         ]),
       );
 
@@ -166,7 +166,7 @@ void main() {
 
       await expectLater(
         bloc.stream,
-        emits(isA<ConversationsCleared>()),
+        emits(isA<MessagingConversationsCleared>()),
       );
 
       bloc.close();

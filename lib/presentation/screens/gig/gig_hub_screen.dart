@@ -9,6 +9,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -16,14 +17,13 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
-import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
-    show GigPublishMode;
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -274,9 +274,8 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
       listenable: AuthenticationState(),
       builder: (context, _) {
         final signedIn = AuthenticationState().isAuthenticated;
-        // Stacked (+) publish + "My bookings" pill when signed in; (+) mode
-        // follows the active feed (service vs task).
-        final bottomClearance = signedIn ? 152.0 : 16.0;
+        // Single "My bookings" control (label + circular button) when signed in.
+        final bottomClearance = signedIn ? 104.0 : 16.0;
 
         final scrollable = UydoshRefreshIndicator.mainShell(
           onRefresh: _onRefresh,
@@ -303,7 +302,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                   ),
                 ),
                 ..._buildFeedSlivers(context, bottomClearance),
-                // Bottom padding clears the stacked FABs when both are shown.
+                // Bottom padding clears the floating bookings control when shown.
                 SliverPadding(
                   padding: EdgeInsets.only(bottom: bottomClearance),
                 ),
@@ -322,15 +321,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
               Positioned(
                 right: 16,
                 bottom: 16,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _HubPublishFab(feed: _feed),
-                    const SizedBox(height: 12),
-                    _MyBookingsFab(),
-                  ],
-                ),
+                child: _MyBookingsFab(),
               ),
           ],
         );
@@ -346,15 +337,24 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
         title: Text(L10n.get("gigs_hub_title")),
         actions: [
           ListenableBuilder(
-            listenable: AuthenticationState(),
+            listenable: Listenable.merge([
+              AuthenticationState(),
+              ActiveSearchAlertsState(),
+            ]),
             builder: (context, _) {
-              if (!AuthenticationState().isAuthenticated) {
-                return const SizedBox.shrink();
-              }
+              final signedIn = AuthenticationState().isAuthenticated;
+              if (!signedIn) return const SizedBox.shrink();
+
+              final activeAlerts =
+                  ActiveSearchAlertsState().hasActiveEnabledAlerts;
               return IconButton(
-                tooltip: L10n.get("gigs_my_published_title"),
-                icon: const Icon(Icons.dynamic_feed_rounded),
-                onPressed: () => context.pushMyPublishedGigs(),
+                tooltip: L10n.get("menu_notifications"),
+                icon: Icon(
+                  activeAlerts
+                      ? Icons.notifications_active
+                      : Icons.notifications_none_outlined,
+                ),
+                onPressed: () => context.pushNotifications(),
               );
             },
           ),
@@ -398,8 +398,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                 bottomPadding: bottomClearanceForFab,
               );
             }
-            final itemCount =
-                state.offers.length + (state.hasMore ? 1 : 0);
+            final itemCount = state.offers.length + (state.hasMore ? 1 : 0);
             return SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               sliver: SliverList.separated(
@@ -461,9 +460,8 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           if (state is GigRequestsError) {
             return _ErrorSliver(
               message: state.message,
-              onRetry: () => context
-                  .read<GigRequestsBloc>()
-                  .add(const FetchGigRequests()),
+              onRetry: () =>
+                  context.read<GigRequestsBloc>().add(const FetchGigRequests()),
             );
           }
           if (state is GigRequestsLoaded) {
@@ -474,8 +472,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                 bottomPadding: bottomClearanceForFab,
               );
             }
-            final itemCount =
-                state.requests.length + (state.hasMore ? 1 : 0);
+            final itemCount = state.requests.length + (state.hasMore ? 1 : 0);
             return SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               sliver: SliverList.separated(
@@ -581,10 +578,7 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   static const double _ribbonBottomGap = 12;
 
   double get _height =>
-      topPadding +
-      _toggleSectionHeight +
-      _ribbonHeight +
-      _ribbonBottomGap;
+      topPadding + _toggleSectionHeight + _ribbonHeight + _ribbonBottomGap;
 
   @override
   double get minExtent => _height;
@@ -623,15 +617,13 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
                     SegmentedSwitchEntry(
                       value: GigHubFeed.services,
                       label: L10n.get("gigs_hub_feed_services"),
-                      subtitle:
-                          L10n.get("gigs_publish_mode_service_subtitle"),
+                      subtitle: L10n.get("gigs_publish_mode_service_subtitle"),
                       icon: Icons.handyman_outlined,
                     ),
                     SegmentedSwitchEntry(
                       value: GigHubFeed.tasks,
                       label: L10n.get("gigs_hub_feed_tasks"),
-                      subtitle:
-                          L10n.get("gigs_publish_mode_task_subtitle"),
+                      subtitle: L10n.get("gigs_publish_mode_task_subtitle"),
                       icon: Icons.assignment_outlined,
                     ),
                   ],
@@ -761,9 +753,8 @@ class _CategoryRibbonState extends State<_CategoryRibbon> {
     Scrollable.ensureVisible(
       ctx,
       alignment: 0.5,
-      duration: disableMotion
-          ? Duration.zero
-          : const Duration(milliseconds: 300),
+      duration:
+          disableMotion ? Duration.zero : const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
     );
   }
@@ -864,16 +855,12 @@ class _CategoryChip extends StatelessWidget {
                 : Colors.black;
         final inactiveFg = themeState.unselectedTabTextColor;
         final radius = const BorderRadius.all(Radius.circular(22));
-        final iconColor = isSelected
-            ? activeFg
-            : inactiveFg.withValues(alpha: 0.85);
+        final iconColor =
+            isSelected ? activeFg : inactiveFg.withValues(alpha: 0.85);
         final labelStyle = TextStyle(
           fontSize: 13,
-          fontWeight:
-              isSelected ? FontWeight.w700 : FontWeight.w600,
-          color: isSelected
-              ? activeFg
-              : inactiveFg.withValues(alpha: 0.9),
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+          color: isSelected ? activeFg : inactiveFg.withValues(alpha: 0.9),
         );
 
         return GestureDetector(
@@ -885,8 +872,7 @@ class _CategoryChip extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: radius,
               gradient: ThreeDSurfaceStyle.surfaceGradient(
@@ -919,140 +905,35 @@ class _CategoryChip extends StatelessWidget {
   }
 }
 
-/// Circular + FAB above [_MyBookingsFab]. Matches whichever feed segment is
-/// active: publish a **service** on [GigHubFeed.services], **post a task** on
-/// [GigHubFeed.tasks].
-class _HubPublishFab extends StatefulWidget {
-  const _HubPublishFab({required this.feed});
-
-  final GigHubFeed feed;
-
-  static const double _size = 56;
-
-  @override
-  State<_HubPublishFab> createState() => _HubPublishFabState();
-}
-
-class _HubPublishFabState extends State<_HubPublishFab> {
-  bool _pressed = false;
-
-  void _setPressed(bool v) {
-    if (_pressed != v) setState(() => _pressed = v);
-  }
-
-  GigPublishMode get _publishMode =>
-      widget.feed == GigHubFeed.tasks
-          ? GigPublishMode.task
-          : GigPublishMode.service;
-
-  String get _semanticLabel =>
-      widget.feed == GigHubFeed.tasks
-          ? L10n.get("gigs_hub_post_title")
-          : L10n.get("gigs_hub_publish_offer_title");
-
-  void _onTap() {
-    HapticFeedbackUtils.lightImpact();
-    context.pushPublishGig(initialMode: _publishMode);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final fg = themeState.isBlueTheme ? Colors.white : Colors.black;
-    final base = Theme.of(context).colorScheme.surface;
-    final radius =
-        BorderRadius.circular(_HubPublishFab._size / 2);
-    final label = _semanticLabel;
-
-    final content = Icon(Icons.add_rounded, color: fg, size: 28);
-
-    final liquidBody = SizedBox(
-      width: _HubPublishFab._size,
-      height: _HubPublishFab._size,
-      child: LiquidGlassPlate(
-        height: _HubPublishFab._size,
-        borderRadius: radius,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (_) => _setPressed(true),
-          onTapUp: (_) => _setPressed(false),
-          onTapCancel: () => _setPressed(false),
-          onTap: _onTap,
-          child: Center(child: content),
-        ),
-      ),
-    );
-
-    final shadows = _pressed
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : ThreeDSurfaceStyle.elevatedShadows(context);
-
-    final legacyBody = Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: radius,
-        splashFactory: NoSplash.splashFactory,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        onTap: _onTap,
-        onHighlightChanged: _setPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          width: _HubPublishFab._size,
-          height: _HubPublishFab._size,
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: shadows,
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
-            ),
-            child: Center(child: content),
-          ),
-        ),
-      ),
-    );
-
-    return Tooltip(
-      message: label,
-      child: Semantics(
-        button: true,
-        label: label,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-          child: useLiquidGlass ? liquidBody : legacyBody,
-        ),
-      ),
-    );
-  }
-}
-
-/// Extended pill FAB styled to match [SearchFloatingActionButton]: liquid-glass
-/// plate on blue/light themes, neumorphic [ThreeDSurfaceStyle] elsewhere.
+/// Label chip + circular control (browser-style), opening "My bookings".
 class _MyBookingsFab extends StatefulWidget {
   @override
   State<_MyBookingsFab> createState() => _MyBookingsFabState();
 }
 
 class _MyBookingsFabState extends State<_MyBookingsFab> {
-  static const double _height = 56.0;
+  static const double _fabSize = 46.0;
+  static const double _pillRadiusValue = 16.0;
 
-  bool _pressed = false;
+  bool _ordersPressed = false;
+  bool _publishedPressed = false;
 
-  void _setPressed(bool v) {
-    if (_pressed != v) setState(() => _pressed = v);
+  void _setOrdersPressed(bool v) {
+    if (_ordersPressed != v) setState(() => _ordersPressed = v);
   }
 
-  void _onTap() {
+  void _setPublishedPressed(bool v) {
+    if (_publishedPressed != v) setState(() => _publishedPressed = v);
+  }
+
+  void _openOrders() {
     HapticFeedbackUtils.lightImpact();
     context.pushMyGigBookings();
+  }
+
+  void _openPublished() {
+    HapticFeedbackUtils.lightImpact();
+    context.pushMyPublishedGigs();
   }
 
   @override
@@ -1062,120 +943,152 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
     final fg = themeState.isBlueTheme ? Colors.white : Colors.black;
     final base = theme.colorScheme.surface;
-    final radius = const BorderRadius.all(Radius.circular(999));
+    final circleRadius = BorderRadius.circular(_fabSize / 2);
+    final pillRadius = BorderRadius.circular(_pillRadiusValue);
     final label = L10n.get("gigs_hub_my_bookings_title");
+    final publishedLabel = L10n.get("gigs_my_published_title");
 
-    final content = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.event_note_rounded, color: fg, size: 22),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: fg,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+    final labelText = Text(
+      label,
+      style: theme.textTheme.titleSmall?.copyWith(
+        color: fg,
+        fontWeight: FontWeight.w600,
       ),
     );
 
-    final liquidBody = SizedBox(
-      height: _height,
-      child: LiquidGlassPlate(
-        height: _height,
-        borderRadius: radius,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (_) => _setPressed(true),
-          onTapUp: (_) => _setPressed(false),
-          onTapCancel: () => _setPressed(false),
-          onTap: _onTap,
-          child: Center(child: content),
+    final labelChip = LiquidGlassPlate(
+      height: _fabSize,
+      borderRadius: pillRadius,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.event_note_rounded, color: fg, size: 20),
+            const SizedBox(width: 8),
+            labelText,
+          ],
         ),
       ),
     );
 
-    final shadows = _pressed
+    final shadows = _publishedPressed
         ? ThreeDSurfaceStyle.pressedShadows(context)
         : ThreeDSurfaceStyle.elevatedShadows(context);
 
-    final legacyBody = Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: radius,
-        splashFactory: NoSplash.splashFactory,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        onTap: _onTap,
-        onHighlightChanged: _setPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          height: _height,
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            boxShadow: shadows,
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
-            ),
-            child: Center(child: content),
-          ),
-        ),
+    final circleIcon = Icon(Icons.layers_rounded, color: fg, size: 24);
+
+    final circleLiquid = SizedBox(
+      width: _fabSize,
+      height: _fabSize,
+      child: LiquidGlassPlate(
+        height: _fabSize,
+        borderRadius: circleRadius,
+        child: Center(child: circleIcon),
       ),
     );
 
-    final pillBody = useLiquidGlass ? liquidBody : legacyBody;
+    final circleLegacy = AnimatedContainer(
+      duration: const Duration(milliseconds: 90),
+      width: _fabSize,
+      height: _fabSize,
+      decoration: BoxDecoration(
+        borderRadius: circleRadius,
+        boxShadow: shadows,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: circleRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+        ),
+        child: Center(child: circleIcon),
+      ),
+    );
+
+    final circleFab = useLiquidGlass ? circleLiquid : circleLegacy;
     final unreadColor = themeState.unreadIndicatorColor;
 
-    return Tooltip(
-      message: label,
-      child: ListenableBuilder(
-        listenable: PendingGigBookingsState(),
-        builder: (context, _) {
-          final pendingState = PendingGigBookingsState();
-          final showDot = pendingState.hasPendingBookings;
-          final semanticLabel = showDot
-              ? "$label (${L10n.get("gigs_status_pending")})"
-              : label;
-          return Semantics(
-            button: true,
-            label: semanticLabel,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 90),
-              transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  pillBody,
-                  if (showDot)
-                    Positioned(
-                      right: 6,
-                      top: 10,
-                      child: PulseThenBlinkDotWidget(
-                        trigger: pendingState.dotTrigger,
-                        color: unreadColor,
-                        size: 11,
-                        blinkDuration: const Duration(milliseconds: 750),
-                        borderColor: Colors.white,
-                        borderWidth: 2,
-                      ),
-                    ),
-                ],
+    return ListenableBuilder(
+      listenable: PendingGigBookingsState(),
+      builder: (context, _) {
+        final pendingState = PendingGigBookingsState();
+        final showDot = pendingState.hasPendingBookings;
+        final ordersSemanticLabel =
+            showDot ? "$label (${L10n.get("gigs_status_pending")})" : label;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Tooltip(
+              message: publishedLabel,
+              child: Semantics(
+                button: true,
+                label: publishedLabel,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 90),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _publishedPressed ? 2 : 0,
+                    0,
+                  ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (_) => _setPublishedPressed(true),
+                    onTapUp: (_) => _setPublishedPressed(false),
+                    onTapCancel: () => _setPublishedPressed(false),
+                    onTap: _openPublished,
+                    child: circleFab,
+                  ),
+                ),
               ),
             ),
-          );
-        },
-      ),
+            const SizedBox(width: 10),
+            Tooltip(
+              message: label,
+              child: Semantics(
+                button: true,
+                label: ordersSemanticLabel,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 90),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _ordersPressed ? 2 : 0,
+                    0,
+                  ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (_) => _setOrdersPressed(true),
+                    onTapUp: (_) => _setOrdersPressed(false),
+                    onTapCancel: () => _setOrdersPressed(false),
+                    onTap: _openOrders,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        labelChip,
+                        if (showDot)
+                          Positioned(
+                            right: 6,
+                            top: 4,
+                            child: PulseThenBlinkDotWidget(
+                              trigger: pendingState.dotTrigger,
+                              color: unreadColor,
+                              size: 11,
+                              blinkDuration: const Duration(milliseconds: 750),
+                              borderColor: Colors.white,
+                              borderWidth: 2,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -1222,7 +1135,7 @@ class _EmptySliver extends StatelessWidget {
     // Fill the rest of the viewport so the column's `Center` can vertically
     // center it between the category ribbon and the bottom of the screen,
     // rather than parking it just below the ribbon. Bottom padding keeps the
-    // text from sitting under the floating "My bookings" pill when signed in.
+    // text from sitting under the floating bookings control when signed in.
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Padding(

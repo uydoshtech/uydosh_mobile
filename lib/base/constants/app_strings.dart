@@ -783,7 +783,7 @@ class AppStrings {
       "gigs_hub_browse_subtitle": "Find people who can help with tasks",
       "gigs_hub_post_title": "Post a task",
       "gigs_hub_post_subtitle": "Describe what you need; let people bid",
-      "gigs_hub_my_bookings_title": "My bookings",
+      "gigs_hub_my_bookings_title": "My tasks",
       "gigs_hub_my_bookings_subtitle": "Tasks you booked or accepted",
       "gigs_hub_open_requests_title": "Open requests",
       "gigs_hub_open_requests_subtitle": "Tasks people are looking to get done",
