@@ -656,6 +656,18 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           );
         },
         child: BlocBuilder<MessagingBloc, MessagingState>(
+          buildWhen: (_, current) {
+            // Keep the inbox stable when the shared MessagingBloc emits chat-only
+            // states (messageSent, messagesLoaded, etc.) triggered by other routes.
+            return current.maybeWhen(
+              initial: () => true,
+              loading: () => true,
+              conversationsLoaded: (_, __, ___) => true,
+              conversationsCleared: () => true,
+              error: (_) => true,
+              orElse: () => false,
+            );
+          },
           builder: (context, state) {
             return state.when(
               initial: _buildLoadingState,

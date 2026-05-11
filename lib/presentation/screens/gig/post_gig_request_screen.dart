@@ -354,7 +354,6 @@ class _CategoryPlate extends StatelessWidget {
                   const SizedBox(height: 6),
                   Flexible(
                     child: ListView.separated(
-                      shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: categories.length,
                       separatorBuilder: (_, __) => Divider(

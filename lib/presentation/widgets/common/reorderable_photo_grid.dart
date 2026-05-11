@@ -59,19 +59,35 @@ class _ReorderablePhotoGridState extends State<ReorderablePhotoGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: widget.crossAxisCount,
-        crossAxisSpacing: widget.crossAxisSpacing,
-        mainAxisSpacing: widget.mainAxisSpacing,
-        childAspectRatio: widget.childAspectRatio,
-      ),
-      itemCount: widget.itemCount,
-      itemBuilder: (context, index) {
-        return _buildTile(context, index);
+    // Avoid `shrinkWrap: true` (expensive layout pass) by giving the grid a
+    // deterministic height based on the available width and the number of rows.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = widget.crossAxisCount.clamp(1, 1000);
+        final rows = (widget.itemCount / columns).ceil();
+
+        final totalCrossSpacing = widget.crossAxisSpacing * (columns - 1);
+        final tileWidth = (width - totalCrossSpacing) / columns;
+        final tileHeight = tileWidth / widget.childAspectRatio;
+        final totalMainSpacing = widget.mainAxisSpacing * (rows - 1);
+        final gridHeight = (rows * tileHeight) + totalMainSpacing;
+
+        return SizedBox(
+          height: gridHeight.isFinite ? gridHeight : null,
+          child: GridView.builder(
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: widget.crossAxisCount,
+              crossAxisSpacing: widget.crossAxisSpacing,
+              mainAxisSpacing: widget.mainAxisSpacing,
+              childAspectRatio: widget.childAspectRatio,
+            ),
+            itemCount: widget.itemCount,
+            itemBuilder: (context, index) => _buildTile(context, index),
+          ),
+        );
       },
     );
   }

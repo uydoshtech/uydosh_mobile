@@ -1584,38 +1584,40 @@ class _CurrencyAmountField extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: supportedCurrencies.length,
-                    separatorBuilder: (_, __) => Divider(
-                      height: 1,
-                      color: scheme.onSurface.withValues(alpha: 0.08),
-                    ),
-                    itemBuilder: (_, i) {
-                      final code = supportedCurrencies[i];
-                      final isSelected = code == currency;
-                      return ListTile(
-                        leading: Text(
-                          CurrencyDisplayUtils.flagEmoji(code),
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                        title: Text(
-                          code,
-                          style: TextStyle(
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                  Flexible(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: supportedCurrencies.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        color: scheme.onSurface.withValues(alpha: 0.08),
+                      ),
+                      itemBuilder: (_, i) {
+                        final code = supportedCurrencies[i];
+                        final isSelected = code == currency;
+                        return ListTile(
+                          leading: Text(
+                            CurrencyDisplayUtils.flagEmoji(code),
+                            style: const TextStyle(fontSize: 24),
                           ),
-                        ),
-                        trailing: isSelected
-                            ? Icon(Icons.check_rounded,
-                                color: scheme.secondary)
-                            : null,
-                        onTap: () => Navigator.of(sheetCtx).pop(code),
-                      );
-                    },
+                          title: Text(
+                            code,
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? Icon(
+                                  Icons.check_rounded,
+                                  color: scheme.secondary,
+                                )
+                              : null,
+                          onTap: () => Navigator.of(sheetCtx).pop(code),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -1739,7 +1741,6 @@ class _CategoryPlate extends StatelessWidget {
                   const SizedBox(height: 6),
                   Flexible(
                     child: ListView.separated(
-                      shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: categories.length,
                       separatorBuilder: (_, __) => Divider(

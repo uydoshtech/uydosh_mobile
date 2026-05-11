@@ -52,6 +52,18 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             // Content
             Expanded(
               child: BlocBuilder<MessagingBloc, MessagingState>(
+                  buildWhen: (_, current) {
+                    // Prevent chat-only state transitions (messagesLoaded, messageSent, etc.)
+                    // from rebuilding the conversations list screen.
+                    return current.maybeWhen(
+                      initial: () => true,
+                      loading: () => true,
+                      conversationsLoaded: (_, __, ___) => true,
+                      conversationsCleared: () => true,
+                      error: (_) => true,
+                      orElse: () => false,
+                    );
+                  },
                   builder: (context, state) {
                     return state.when(
                       initial: _buildLoadingState,

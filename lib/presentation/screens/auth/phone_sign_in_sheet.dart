@@ -702,7 +702,6 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                     const SizedBox(height: 12),
                     Flexible(
                       child: ListView.separated(
-                        shrinkWrap: true,
                         itemCount: filtered.length,
                         separatorBuilder: (_, __) => Divider(
                           height: 1,

@@ -671,7 +671,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   Flexible(
                     fit: FlexFit.loose,
                     child: CustomScrollView(
-                      shrinkWrap: true,
                       slivers: [
                         SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),

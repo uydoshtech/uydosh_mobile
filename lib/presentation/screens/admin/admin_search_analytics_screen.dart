@@ -171,7 +171,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                     sliver: _buildLocationsSliver(context),
                   ),
                   const SliverToBoxAdapter(
-                    child: SizedBox(height: 32),
+                    child: const SizedBox(height: 32),
                   ),
                 ],
               ],

@@ -353,30 +353,42 @@ class _LanguageAwareDatePickerDialogState
             const SizedBox(height: 8),
 
             // Calendar grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                childAspectRatio: 1,
-              ),
-              itemCount: daysInMonth.length,
-              itemBuilder: (context, index) {
-                final date = daysInMonth[index];
-                final isCurrentMonth = date.month == currentMonth.month;
-                final isSelected =
-                    date.year == selectedDate.year &&
-                    date.month == selectedDate.month &&
-                    date.day == selectedDate.day;
-                final isToday =
-                    date.year == DateTime.now().year &&
-                    date.month == DateTime.now().month &&
-                    date.day == DateTime.now().day;
-                final isSelectable =
-                    date.isAfter(
-                      widget.firstDate.subtract(const Duration(days: 1)),
-                    ) &&
-                    date.isBefore(widget.lastDate.add(const Duration(days: 1)));
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                const cols = 7;
+                final rows = (daysInMonth.length / cols).ceil();
+                final cell = width / cols;
+                final gridHeight = cell * rows;
+
+                return SizedBox(
+                  height: gridHeight,
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: cols,
+                          childAspectRatio: 1,
+                        ),
+                    itemCount: daysInMonth.length,
+                    itemBuilder: (context, index) {
+                      final date = daysInMonth[index];
+                      final isCurrentMonth = date.month == currentMonth.month;
+                      final isSelected =
+                          date.year == selectedDate.year &&
+                          date.month == selectedDate.month &&
+                          date.day == selectedDate.day;
+                      final isToday =
+                          date.year == DateTime.now().year &&
+                          date.month == DateTime.now().month &&
+                          date.day == DateTime.now().day;
+                      final isSelectable =
+                          date.isAfter(
+                            widget.firstDate.subtract(const Duration(days: 1)),
+                          ) &&
+                          date.isBefore(
+                            widget.lastDate.add(const Duration(days: 1)),
+                          );
 
                 Widget buildDayCell({required bool selected, double pulse = 0.0}) {
                   final t = pulse.clamp(0.0, 1.0);
@@ -439,21 +451,24 @@ class _LanguageAwareDatePickerDialogState
                   );
                 }
 
-                return GestureDetector(
-                  onTap: isSelectable ? () => _selectDate(date) : null,
-                  child: isSelected
-                      ? TweenAnimationBuilder<double>(
-                          key: ValueKey<String>(
-                            "${date.year}-${date.month}-${date.day}-$_selectionPulseTick",
-                          ),
-                          tween: Tween<double>(begin: 0.0, end: 1.0),
-                          duration: const Duration(milliseconds: 650),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, t, child) {
-                            return buildDayCell(selected: true, pulse: t);
-                          },
-                        )
-                      : buildDayCell(selected: false),
+                      return GestureDetector(
+                        onTap: isSelectable ? () => _selectDate(date) : null,
+                        child: isSelected
+                            ? TweenAnimationBuilder<double>(
+                                key: ValueKey<String>(
+                                  "${date.year}-${date.month}-${date.day}-$_selectionPulseTick",
+                                ),
+                                tween: Tween<double>(begin: 0.0, end: 1.0),
+                                duration: const Duration(milliseconds: 650),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, t, child) {
+                                  return buildDayCell(selected: true, pulse: t);
+                                },
+                              )
+                            : buildDayCell(selected: false),
+                      );
+                    },
+                  ),
                 );
               },
             ),
