@@ -160,11 +160,15 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     const gap = SizedBox(width: 8);
     final chipBase = scheme.surface;
 
-    BoxDecoration neumorphicChipDecoration({BorderRadius? radius}) {
+    BoxDecoration neumorphicChipDecoration({
+      BorderRadius? radius,
+      BoxBorder? border,
+    }) {
       return BoxDecoration(
         borderRadius: radius ?? BorderRadius.circular(chipSize / 2),
         gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
         boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        border: border,
       );
     }
 
@@ -223,6 +227,13 @@ class AppliedSearchFiltersBar extends StatelessWidget {
           builder: (context, _) {
             final rangeLabel =
                 PriceRangeHelper.formatSearchFilterPriceChipLabel(minV, maxV);
+            // This chip sits inside the inline filter ribbon where the green
+            // success color can read like an outline. Force a neutral outline
+            // here only (other chips keep the shared decoration).
+            final neutralOutline = Border.all(
+              color: scheme.onSurface.withValues(alpha: 0.10),
+              width: 1,
+            );
             return Tooltip(
               message: rangeLabel,
               child: Container(
@@ -230,6 +241,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: neumorphicChipDecoration(
                   radius: BorderRadius.circular(999),
+                  border: neutralOutline,
                 ),
                 alignment: Alignment.center,
                 child: Row(
