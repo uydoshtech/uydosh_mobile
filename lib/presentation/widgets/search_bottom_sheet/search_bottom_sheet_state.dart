@@ -13,6 +13,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
+  double? _cachedSheetHeight;
 
   @override
   void initState() {
@@ -583,10 +584,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final mq = MediaQuery.of(context);
-    // "Available" height for the sheet content, accounting for the keyboard.
-    // The sheet will shrink-wrap its content up to this cap.
-    final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
     final radius = const BorderRadius.only(
       topLeft: Radius.circular(20),
       topRight: Radius.circular(20),
@@ -601,12 +598,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           error: (_) {},
         );
       },
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+      child: SizedBox(
+        height: _cachedSheetHeight ??=
+            MediaQuery.of(context).size.height * 0.7 + 30,
         child: GlassBottomSheetSurface(
           borderRadius: radius,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
                   // Handle bar
                   Container(

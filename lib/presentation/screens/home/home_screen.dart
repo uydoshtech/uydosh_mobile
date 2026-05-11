@@ -24,6 +24,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -50,6 +51,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
@@ -156,6 +158,44 @@ class _ResolvedSearchFilters {
   final double? maxPrice;
   final bool? privateRoom;
   final bool? withPhoto;
+}
+
+/// One row in the home feed: either a calendar-day header or a listing tile.
+class _HomeFeedEntry {
+  const _HomeFeedEntry.dateHeader(this.day, {required this.isFirstDateHeader})
+      : listing = null;
+  const _HomeFeedEntry.listing(this.listing) : day = null, isFirstDateHeader = null;
+
+  final Listing? listing;
+  final DateTime? day;
+  final bool? isFirstDateHeader;
+}
+
+List<_HomeFeedEntry> _homeFeedEntriesWithDateHeaders(List<Listing> listings) {
+  final out = <_HomeFeedEntry>[];
+  DateTime? lastCalendarDay;
+  var isFirstDateHeader = true;
+  for (final listing in listings) {
+    DateTime created;
+    try {
+      created = DateTime.parse(listing.createdAt).toLocal();
+    } catch (_) {
+      created = DateTime.now();
+    }
+    final day = DateTime(created.year, created.month, created.day);
+    if (lastCalendarDay == null ||
+        lastCalendarDay.year != day.year ||
+        lastCalendarDay.month != day.month ||
+        lastCalendarDay.day != day.day) {
+      out.add(
+        _HomeFeedEntry.dateHeader(day, isFirstDateHeader: isFirstDateHeader),
+      );
+      isFirstDateHeader = false;
+      lastCalendarDay = day;
+    }
+    out.add(_HomeFeedEntry.listing(listing));
+  }
+  return out;
 }
 
 class HomeScreen extends StatefulWidget {
@@ -1751,30 +1791,52 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadedState(List<Listing> listings, bool hasMore) {
+    // Slightly tighter than the default 16 so date headers sit closer to cards;
+    // must match [trailingSpacing] on the feed top spacer (see [_buildAnimatedFeedTopSpacer]).
+    const feedItemSpacing = 12.0;
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
         baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
+    final feedEntries = _homeFeedEntriesWithDateHeaders(listings);
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: edgeOffset,
       child: PullToRefreshStretchHaptics(
         child: CommonListView(
-          itemCount: listings.length + 1,
+          itemSpacing: feedItemSpacing,
+          itemCount: feedEntries.length + 1,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
           itemBuilder: (context, index) {
             if (index == 0)
-              return _buildAnimatedFeedTopSpacer(trailingSpacing: 16.0);
-            final listing = listings[index - 1];
-            return ListingTile(
-              key: ValueKey(listing.id),
-              listing: listing,
-              forceFavorite:
-                  false, // Home screen listings don't force favorite state
-              showHeartIcon: false, // Don't show heart icon on home screen
-              showFavoriteIndicator:
-                  true, // Show small heart when listing is in user favorites
-              onFavoriteRemoved: null, // No callback needed for home screen
+              return _buildAnimatedFeedTopSpacer(
+                trailingSpacing: feedItemSpacing,
+              );
+            final entry = feedEntries[index - 1];
+            final listing = entry.listing;
+            if (listing != null) {
+              return ListingTile(
+                key: ValueKey(listing.id),
+                listing: listing,
+                forceFavorite:
+                    false, // Home screen listings don't force favorite state
+                showHeartIcon: false, // Don't show heart icon on home screen
+                showFavoriteIndicator:
+                    true, // Show small heart when listing is in user favorites
+                onFavoriteRemoved: null, // No callback needed for home screen
+              );
+            }
+            final day = entry.day!;
+            final isFirst = entry.isFirstDateHeader!;
+            return DateHeaderWidget(
+              key: ValueKey(
+                "home-feed-day-${day.year}-${day.month}-${day.day}",
+              ),
+              dateString: AppDateUtils.formatDateHeader(day, context),
+              date: day,
+              padding: isFirst
+                  ? const EdgeInsets.only(top: 0, bottom: 2)
+                  : const EdgeInsets.only(top: 4, bottom: 2),
             );
           },
           controller: _scrollController,

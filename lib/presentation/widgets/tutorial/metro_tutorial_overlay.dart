@@ -301,8 +301,11 @@ class _TwoRectanglesMaskPainter extends CustomPainter {
 
     if (combinedRect == null) return;
 
-    const topPadding = 4.0;
-    const bottomPadding = 30.0;
+    // Pad slightly beyond the line/station keys so the full Cupertino wheel
+    // (three visible rows) isn’t clipped; keep bottom modest so the price
+    // slider below the metro row stays dimmed (see git history: 30px was too much).
+    const topPadding = 8.0;
+    const bottomPadding = 8.0;
     final endRect = Rect.fromLTRB(
       combinedRect.left,
       combinedRect.top - topPadding,
