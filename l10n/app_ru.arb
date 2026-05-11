@@ -396,14 +396,14 @@
   "listing_description_hint": "Введите описание объявления",
   "listing_price_label": "Цена",
   "listing_area_price_heading": "Ориентир по цене",
-  "listing_area_price_station_line": "У станции «{place}»: медиана {median} у.е.",
+  "listing_area_price_station_line": "У станции «{place}»: медиана {median}",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "В районе «{place}»: медиана {median} у.е.",
+  "listing_area_price_location_line": "В районе «{place}»: медиана {median}",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },

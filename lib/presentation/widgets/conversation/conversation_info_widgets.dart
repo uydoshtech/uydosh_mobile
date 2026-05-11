@@ -2,12 +2,14 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Shared widgets for displaying conversation/listing info in the messages inbox.
 /// Used by ConversationTile, OutgoingConversationTile, and GroupedConversationsList.
@@ -407,33 +409,41 @@ class ConversationPriceDisplay extends StatelessWidget {
   static String _formatPriceRange(ConversationSummary conversation) {
     final price = conversation.listingPrice;
     if (price != null && price > 0) {
-      final formatted = IntFormatUtils.withDotThousands(price);
       final cc = conversation.priceCurrencyCode?.trim();
       if (cc != null && cc.isNotEmpty) {
+        final formatted = IntFormatUtils.withDotThousands(price);
         return "$formatted $cc";
       }
-      return "$formatted y.e.";
+      return PriceRangeHelper.formatListingPriceRangeWithCurrency(
+        price,
+        price,
+      );
     }
     return "";
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const ThemeIcon(Icons.payments, color: Colors.green, size: 16),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            _formatPriceRange(conversation),
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        return Row(
+          children: [
+            const ThemeIcon(Icons.payments, color: Colors.green, size: 16),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                _formatPriceRange(conversation),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

@@ -663,6 +663,9 @@ class AppStrings {
       "language_name_russian": "Russian",
       "language_name_uzbek": "Uzbek",
       "language_changed_to": "Language changed to {language}",
+      "price_display_currency": "Price currency",
+      "price_display_currency_national": "🇺🇿 Uzbek Sum",
+      "price_display_currency_usd": "🇺🇸 US dollars (USD)",
 
       // ===== PROFILE & USER INFO =====
       "gender": "Gender",
@@ -2116,6 +2119,9 @@ class AppStrings {
       "language_name_russian": "Русский",
       "language_name_uzbek": "Узбекский",
       "language_changed_to": "Язык изменен на {language}",
+      "price_display_currency": "Валюта цен",
+      "price_display_currency_national": "🇺🇿 Узбекский сум",
+      "price_display_currency_usd": "🇺🇸 Доллары США (USD)",
 
       // ===== PROFILE & USER INFO =====
       "gender": "Пол",
@@ -3591,6 +3597,9 @@ class AppStrings {
       "language_name_russian": "Rus tili",
       "language_name_uzbek": "O'zbek tili",
       "language_changed_to": "Til o'zgartirildi: {language}",
+      "price_display_currency": "Narx valyutasi",
+      "price_display_currency_national": "🇺🇿 O'zbek so'mi",
+      "price_display_currency_usd": "🇺🇸 AQSh dollari (USD)",
 
       // ===== PROFILE & USER INFO =====
       "gender": "Jinsi",

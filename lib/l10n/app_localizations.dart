@@ -1759,13 +1759,13 @@ abstract class AppLocalizations {
   /// No description provided for @listing_area_price_station_line.
   ///
   /// In en, this message translates to:
-  /// **'At {place}: median {median} y.e.'**
+  /// **'At {place}: median {median}'**
   String listing_area_price_station_line(String place, String median);
 
   /// No description provided for @listing_area_price_location_line.
   ///
   /// In en, this message translates to:
-  /// **'In {place}: median {median} y.e.'**
+  /// **'In {place}: median {median}'**
   String listing_area_price_location_line(String place, String median);
 
   /// No description provided for @listing_area_price_insufficient_data.

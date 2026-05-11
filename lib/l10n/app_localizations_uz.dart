@@ -934,12 +934,12 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(String place, String median) {
-    return '«$place» bekati: median $median b.y.';
+    return '«$place» bekati: median $median';
   }
 
   @override
   String listing_area_price_location_line(String place, String median) {
-    return '«$place» tumanida: median $median b.y.';
+    return '«$place» tumanida: median $median';
   }
 
   @override

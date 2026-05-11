@@ -1,10 +1,12 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// A reusable component for displaying price information
 /// Handles both badge display and utility functions for price formatting
@@ -34,60 +36,77 @@ class PriceBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ThemeState();
-    final color =
-        isActive
-            ? (activeColor ?? themeState.priceBadgeActiveColor)
-            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final color =
+            isActive
+                ? (activeColor ?? themeState.priceBadgeActiveColor)
+                : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
-    final formattedPrice =
-        currencySymbol == "y.e."
-            ? PriceHelper.formatPriceWithYue(price)
-            : PriceHelper.formatPrice(price);
-    final currency = currencySymbol ?? "\$";
-    final backgroundColor = themeState.priceBadgeBackgroundColor;
+        final listingNominalUzs =
+            currencySymbol == null || currencySymbol == "y.e.";
+        final display = PriceDisplaySettingsState().currency;
+        final resolvedCurrency =
+            listingNominalUzs
+                ? (display == PriceDisplayCurrency.usd ? "\$" : "UZS")
+                : (currencySymbol ?? "\$");
+        final resolvedPrice =
+            listingNominalUzs && display == PriceDisplayCurrency.usd
+                ? PriceRangeHelper.uzsToUsdRounded(price)
+                : price;
 
-    return Container(
-      padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1.0),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (showIcon) ...[
-            ThemeIcon(
-              Icons.payments,
-              color: color,
-              size: fontSize != null ? fontSize! + 2 : 14,
-            ),
-            if (showCurrency) const SizedBox(width: 2),
-          ],
-          if (showCurrency && currency != "y.e.") ...[
-            Text(
-              currency,
-              style: TextStyle(
-                color: color,
-                fontSize: fontSize ?? 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 1),
-          ],
-          Text(
-            formattedPrice,
-            style: TextStyle(
-              color: color,
-              fontSize: fontSize ?? 12,
-              fontWeight: FontWeight.w600,
-            ),
+        final formattedPrice =
+            !listingNominalUzs && resolvedCurrency == "y.e."
+                ? PriceHelper.formatPriceWithYue(resolvedPrice)
+                : PriceHelper.formatPrice(resolvedPrice);
+        final backgroundColor = themeState.priceBadgeBackgroundColor;
+
+        return Container(
+          padding:
+              padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color, width: 1.0),
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (showIcon) ...[
+                ThemeIcon(
+                  Icons.payments,
+                  color: color,
+                  size: fontSize != null ? fontSize! + 2 : 14,
+                ),
+                if (showCurrency) const SizedBox(width: 2),
+              ],
+              if (showCurrency &&
+                  (listingNominalUzs || resolvedCurrency != "y.e.")) ...[
+                Text(
+                  resolvedCurrency,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: fontSize ?? 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 1),
+              ],
+              Text(
+                formattedPrice,
+                style: TextStyle(
+                  color: color,
+                  fontSize: fontSize ?? 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -158,23 +177,40 @@ class PriceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ThemeState();
-    final color =
-        isActive
-            ? (activeColor ?? themeState.priceBadgeActiveColor)
-            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final color =
+            isActive
+                ? (activeColor ?? themeState.priceBadgeActiveColor)
+                : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
-    final formattedPrice =
-        currencySymbol == "y.e."
-            ? PriceHelper.formatPriceWithYue(price)
-            : PriceHelper.formatPrice(price);
-    final currency = currencySymbol ?? "\$";
+        final listingNominalUzs =
+            currencySymbol == null || currencySymbol == "y.e.";
+        final display = PriceDisplaySettingsState().currency;
+        final resolvedCurrency =
+            listingNominalUzs
+                ? (display == PriceDisplayCurrency.usd ? "\$" : "UZS")
+                : (currencySymbol ?? "\$");
+        final resolvedPrice =
+            listingNominalUzs && display == PriceDisplayCurrency.usd
+                ? PriceRangeHelper.uzsToUsdRounded(price)
+                : price;
 
-    return Text(
-      (showCurrency && currency != "y.e.")
-          ? "$currency $formattedPrice"
-          : formattedPrice,
-      style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
+        final formattedPrice =
+            !listingNominalUzs && resolvedCurrency == "y.e."
+                ? PriceHelper.formatPriceWithYue(resolvedPrice)
+                : PriceHelper.formatPrice(resolvedPrice);
+
+        return Text(
+          (showCurrency &&
+                  (listingNominalUzs || resolvedCurrency != "y.e."))
+              ? "$resolvedCurrency $formattedPrice"
+              : formattedPrice,
+          style: style ?? TextStyle(color: color, fontWeight: FontWeight.w600),
+        );
+      },
     );
   }
 }
@@ -203,36 +239,53 @@ class CompactPriceBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ThemeState();
-    final color =
-        isActive
-            ? (activeColor ?? themeState.priceBadgeActiveColor)
-            : (inactiveColor ?? themeState.priceBadgeInactiveColor);
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final color =
+            isActive
+                ? (activeColor ?? themeState.priceBadgeActiveColor)
+                : (inactiveColor ?? themeState.priceBadgeInactiveColor);
 
-    final formattedPrice =
-        currencySymbol == "y.e."
-            ? PriceHelper.formatPriceWithYue(price)
-            : PriceHelper.formatPrice(price);
-    final currency = currencySymbol ?? "\$";
-    final backgroundColor = themeState.priceBadgeBackgroundColor;
+        final listingNominalUzs =
+            currencySymbol == null || currencySymbol == "y.e.";
+        final display = PriceDisplaySettingsState().currency;
+        final resolvedCurrency =
+            listingNominalUzs
+                ? (display == PriceDisplayCurrency.usd ? "\$" : "UZS")
+                : (currencySymbol ?? "\$");
+        final resolvedPrice =
+            listingNominalUzs && display == PriceDisplayCurrency.usd
+                ? PriceRangeHelper.uzsToUsdRounded(price)
+                : price;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color, width: 0.5),
-      ),
-      child: Text(
-        (showCurrency && currency != "y.e.")
-            ? "$currency$formattedPrice"
-            : formattedPrice,
-        style: TextStyle(
-          color: color,
-          fontSize: fontSize ?? 10,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+        final formattedPrice =
+            !listingNominalUzs && resolvedCurrency == "y.e."
+                ? PriceHelper.formatPriceWithYue(resolvedPrice)
+                : PriceHelper.formatPrice(resolvedPrice);
+        final backgroundColor = themeState.priceBadgeBackgroundColor;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: color, width: 0.5),
+          ),
+          child: Text(
+            (showCurrency &&
+                    (listingNominalUzs || resolvedCurrency != "y.e."))
+                ? "$resolvedCurrency$formattedPrice"
+                : formattedPrice,
+            style: TextStyle(
+              color: color,
+              fontSize: fontSize ?? 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      },
     );
   }
 }

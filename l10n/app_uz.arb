@@ -404,14 +404,14 @@
   "listing_description_hint": "E'lon tavsifini kiriting",
   "listing_price_label": "Narxi",
   "listing_area_price_heading": "Atrofdagi bozor narxi",
-  "listing_area_price_station_line": "«{place}» bekati: median {median} b.y.",
+  "listing_area_price_station_line": "«{place}» bekati: median {median}",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "«{place}» tumanida: median {median} b.y.",
+  "listing_area_price_location_line": "«{place}» tumanida: median {median}",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },

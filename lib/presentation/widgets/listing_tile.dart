@@ -9,6 +9,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
@@ -30,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/photo_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -466,8 +468,16 @@ class _ListingTileState extends State<ListingTile>
                                 ],
                                 // Price (inline with top icons)
                                 if (widget.listing.price > 0) ...[
-                                  ListingPaymentsOutlineBadge(
-                                    label: "${widget.listing.price}",
+                                  ListenableBuilder(
+                                    listenable: PriceDisplaySettingsState(),
+                                    builder: (context, _) =>
+                                        ListingPaymentsOutlineBadge(
+                                      label: PriceRangeHelper
+                                          .formatListingPriceRangeWithCurrency(
+                                        widget.listing.price,
+                                        widget.listing.price,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
                                 ],

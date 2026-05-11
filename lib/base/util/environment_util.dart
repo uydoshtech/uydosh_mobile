@@ -183,6 +183,10 @@ abstract class EnvironmentUtil {
   static int get maxPhotosPerGigOffer =>
       RemoteConfigService.maxPhotosPerGigOffer;
 
+  /// UZS per 1 USD exchange-rate used for client-side display conversions.
+  /// Resolved at runtime from Firebase Remote Config (key: `uzs_per_usd`).
+  static int get uzsPerUsd => RemoteConfigService.uzsPerUsd;
+
   /// Convenience that returns `<API_BASE_PATH>/<api>` only when
   /// `API_BASE_PATH` was provided via `--dart-define` at build time,
   /// otherwise `null`. Intentionally uses the compile-time override (not

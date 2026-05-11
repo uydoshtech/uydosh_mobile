@@ -919,12 +919,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(String place, String median) {
-    return 'У станции «$place»: медиана $median у.е.';
+    return 'У станции «$place»: медиана $median';
   }
 
   @override
   String listing_area_price_location_line(String place, String median) {
-    return 'В районе «$place»: медиана $median у.е.';
+    return 'В районе «$place»: медиана $median';
   }
 
   @override

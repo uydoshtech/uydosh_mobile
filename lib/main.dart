@@ -37,6 +37,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
@@ -212,6 +213,7 @@ void main() async {
     unawaited(HapticFeedbackState().initialize());
     unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());
+    unawaited(PriceDisplaySettingsState().initialize());
     unawaited(_bootstrapSearchFiltersColdStart());
 
     if (kDebugMode) {

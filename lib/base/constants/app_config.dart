@@ -43,4 +43,8 @@ class AppConfig {
   /// separately from property listings.
   static int get maxPhotosPerGigOffer =>
       EnvironmentUtil.maxPhotosPerGigOffer;
+
+  /// UZS per 1 USD exchange-rate used for client-side display conversions.
+  /// Resolved at runtime from Firebase Remote Config (key: `uzs_per_usd`).
+  static int get uzsPerUsd => EnvironmentUtil.uzsPerUsd;
 }

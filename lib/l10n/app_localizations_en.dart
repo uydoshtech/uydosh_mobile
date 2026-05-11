@@ -920,12 +920,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String listing_area_price_station_line(String place, String median) {
-    return 'At $place: median $median y.e.';
+    return 'At $place: median $median';
   }
 
   @override
   String listing_area_price_location_line(String place, String median) {
-    return 'In $place: median $median y.e.';
+    return 'In $place: median $median';
   }
 
   @override

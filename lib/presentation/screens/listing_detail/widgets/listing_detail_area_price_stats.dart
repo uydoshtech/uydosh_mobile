@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Mean/median rent among similar active listings at the same station and/or district.
 class ListingDetailAreaPriceStats extends StatelessWidget {
@@ -136,33 +138,45 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
     final l10n = context.l10n;
     final stationName =
         _stationPlaceName(context) ?? l10n.listing_area_price_unknown_station;
-    return _section(
-      context,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (station != null) ...[
-            _benchmarkRow(
-              context,
-              benchmark: station,
-              text: l10n.listing_area_price_station_line(
-                stationName,
-                "${station.median}",
-              ),
-            ),
-            if (district != null) const SizedBox(height: 4),
-          ],
-          if (district != null)
-            _benchmarkRow(
-              context,
-              benchmark: district,
-              text: l10n.listing_area_price_location_line(
-                _districtPlaceName() ?? l10n.listing_area_price_unknown_district,
-                "${district.median}",
-              ),
-            ),
-        ],
-      ),
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        String medianLabel(int medianUzs) =>
+            PriceRangeHelper.formatListingPriceRangeWithCurrency(
+              medianUzs,
+              medianUzs,
+            );
+
+        return _section(
+          context,
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (station != null) ...[
+                _benchmarkRow(
+                  context,
+                  benchmark: station,
+                  text: l10n.listing_area_price_station_line(
+                    stationName,
+                    medianLabel(station.median),
+                  ),
+                ),
+                if (district != null) const SizedBox(height: 4),
+              ],
+              if (district != null)
+                _benchmarkRow(
+                  context,
+                  benchmark: district,
+                  text: l10n.listing_area_price_location_line(
+                    _districtPlaceName() ??
+                        l10n.listing_area_price_unknown_district,
+                    medianLabel(district.median),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

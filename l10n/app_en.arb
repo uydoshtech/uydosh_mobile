@@ -404,14 +404,14 @@
   "listing_description_hint": "Enter listing description",
   "listing_price_label": "Price",
   "listing_area_price_heading": "Typical rent nearby",
-  "listing_area_price_station_line": "At {place}: median {median} y.e.",
+  "listing_area_price_station_line": "At {place}: median {median}",
   "@listing_area_price_station_line": {
     "placeholders": {
       "place": { "type": "String" },
       "median": { "type": "String" }
     }
   },
-  "listing_area_price_location_line": "In {place}: median {median} y.e.",
+  "listing_area_price_location_line": "In {place}: median {median}",
   "@listing_area_price_location_line": {
     "placeholders": {
       "place": { "type": "String" },

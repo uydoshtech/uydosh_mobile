@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -17,6 +18,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Space between the last chip run and the favorite control.
 const double _kMetaBadgesFavoriteGap = 8;
@@ -66,6 +68,7 @@ class ListingDetailMetaBadges extends StatelessWidget {
       listenable: Listenable.merge([
         AuthenticationState(),
         UserListingState(),
+        PriceDisplaySettingsState(),
       ]),
       builder: (context, _) {
         final showFavorite =
@@ -134,7 +137,10 @@ class ListingDetailMetaBadges extends StatelessWidget {
                         ),
                       ),
                     ListingPaymentsOutlineBadge(
-                      label: "${listingDetail.price} y.e.",
+                      label: PriceRangeHelper.formatListingPriceRangeWithCurrency(
+                        listingDetail.price,
+                        listingDetail.price,
+                      ),
                       foregroundColor: priceColor,
                       fontSize: 12,
                       iconSize: 16,

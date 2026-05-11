@@ -50,6 +50,8 @@ abstract class RemoteConfigService {
   static const _kYandexMapsApiKey = "yandex_maps_api_key";
   static const _kGeminiApiKey = "gemini_api_key";
   static const _kGeminiApiKey2 = "gemini_api_key_2";
+  static const _kUzsPerUsd = "uzs_per_usd";
+  static const _kDefaultUzsPerUsd = "12600";
 
   /// Max number of photos a user may attach to a single listing. Stored as
   /// the stringified int (Remote Config doesn't have a native int type that
@@ -97,6 +99,7 @@ abstract class RemoteConfigService {
     _kYandexMapsApiKey: EnvironmentUtil.compileTimeYandexMapsApiKey,
     _kGeminiApiKey: EnvironmentUtil.compileTimeGeminiApiKey,
     _kGeminiApiKey2: EnvironmentUtil.compileTimeGeminiApiKey2,
+    _kUzsPerUsd: _kDefaultUzsPerUsd,
     _kShowListingFormFieldLabels: _kDefaultShowListingFormFieldLabels,
     _kMaxPhotosPerListing: _kDefaultMaxPhotosPerListing,
     _kMaxPhotosPerGigOffer: _kDefaultMaxPhotosPerGigOffer,
@@ -140,6 +143,20 @@ abstract class RemoteConfigService {
   /// Secondary Google Gemini API key (fallback for transient/key errors).
   /// Same caveats as [geminiApiKey].
   static String get geminiApiKey2 => _values[_kGeminiApiKey2]!;
+
+  /// UZS per 1 USD exchange-rate used for client-side display conversions.
+  /// Tunable from Firebase Console key: `uzs_per_usd`.
+  ///
+  /// Stored as a stringified number; parsed defensively and falls back to
+  /// [_kDefaultUzsPerUsd] on invalid / non-positive values.
+  static int get uzsPerUsd {
+    final raw = _values[_kUzsPerUsd];
+    final parsed = int.tryParse(raw?.trim() ?? "");
+    if (parsed == null || parsed <= 0) {
+      return int.parse(_kDefaultUzsPerUsd);
+    }
+    return parsed;
+  }
 
   /// Max number of photos per listing. Tunable from the Firebase Console
   /// under the `max_photos_per_listing` key. Falls back to the compile-time

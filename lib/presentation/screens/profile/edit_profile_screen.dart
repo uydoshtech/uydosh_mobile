@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
@@ -11,6 +13,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -86,6 +89,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   /// Role as loaded from session (baseline for dirty check).
   String? _baselineRole;
+
+  /// Price display preference baseline for dirty check (local prefs, not profile API).
+  PriceDisplayCurrency? _baselinePriceDisplay;
 
   /// Dropdown slugs for [cookingHabits] (API remains bool?).
   static const String _cookingSlugAtHome = "cooks_at_home";
@@ -214,7 +220,13 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       _wakeupTime,
       _sleepTime,
       _isRoleLoaded,
+      PriceDisplaySettingsState(),
     ]);
+
+    if (PriceDisplaySettingsState().isInitialized) {
+      _baselinePriceDisplay = PriceDisplaySettingsState().currency;
+    }
+    unawaited(_ensurePriceDisplayBaseline());
 
     _savePulseController = AnimationController(
       vsync: this,
@@ -295,6 +307,19 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   String _normText(String? s) => (s ?? "").trim();
 
+  Future<void> _ensurePriceDisplayBaseline() async {
+    await PriceDisplaySettingsState().initialize();
+    if (!mounted) return;
+    _baselinePriceDisplay ??= PriceDisplaySettingsState().currency;
+    setStateIfMounted(() {});
+  }
+
+  bool _isPriceDisplayDirty() {
+    final b = _baselinePriceDisplay;
+    if (b == null) return false;
+    return PriceDisplaySettingsState().currency != b;
+  }
+
   List<String> _computeChangedFieldLabels() {
     final p = widget.profile;
     final changed = <String>[];
@@ -368,6 +393,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       addLabel("pets_preference", fallback: "Pets");
     }
 
+    if (_isPriceDisplayDirty()) {
+      addLabel("price_display_currency", fallback: "Price currency");
+    }
+
     return changed;
   }
 
@@ -428,6 +457,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (p.petsPreference != _petsPreference.value) return true;
     if (p.wakeupTime != _wakeupTime.value) return true;
     if (p.sleepTime != _sleepTime.value) return true;
+
+    if (_isPriceDisplayDirty()) return true;
 
     return false;
   }
@@ -813,6 +844,43 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                         DropdownOption(value: "en", label: "🇺🇸 English"),
                       ],
                     ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Price display currency (UZS or USD)
+                  ListenableBuilder(
+                    listenable: PriceDisplaySettingsState(),
+                    builder: (context, _) {
+                      final currency = PriceDisplaySettingsState().currencySlug;
+                      return ProfileDropdownControl(
+                        label: L10n.get("price_display_currency"),
+                        value: currency,
+                        onChanged: (value) async {
+                          if (value == null) return;
+                          _baselinePriceDisplay ??=
+                              PriceDisplaySettingsState().currency;
+                          await PriceDisplaySettingsState().setCurrency(
+                            value == "usd"
+                                ? PriceDisplayCurrency.usd
+                                : PriceDisplayCurrency.national,
+                          );
+                        },
+                        icon: Icons.payments,
+                        options: [
+                          DropdownOption(
+                            value: "national",
+                            label: L10n.get("price_display_currency_national"),
+                            icon: Icons.flag,
+                          ),
+                          DropdownOption(
+                            value: "usd",
+                            label: L10n.get("price_display_currency_usd"),
+                            icon: Icons.attach_money,
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),
