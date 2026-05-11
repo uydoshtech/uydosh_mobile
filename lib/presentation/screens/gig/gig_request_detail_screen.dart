@@ -694,12 +694,14 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
   String _budgetLine() {
     final r = widget.request;
     if (r.budgetAmount != null) {
-      return L10n.getWithParams(
-        "gigs_request_budget_fixed",
-        params: {
-          "amount": IntFormatUtils.withDotThousands(r.budgetAmount!),
-          "currency": CurrencyDisplayUtils.isoCode(r.currencyCode),
-        },
+      return CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+        L10n.getWithParams(
+          "gigs_request_budget_fixed",
+          params: {
+            "amount": IntFormatUtils.withDotThousands(r.budgetAmount!),
+            "currency": CurrencyDisplayUtils.isoCodeForBadge(r.currencyCode),
+          },
+        ),
       );
     }
     return L10n.get("gigs_request_budget_open");

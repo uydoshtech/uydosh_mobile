@@ -384,16 +384,20 @@ class _GigOfferTileState extends State<GigOfferTile>
 String _formatGigOfferTilePrice(GigOffer o) {
   final params = {
     "amount": IntFormatUtils.withDotThousands(o.price),
-    "currency": CurrencyDisplayUtils.isoCode(o.currencyCode),
+    "currency": CurrencyDisplayUtils.isoCodeForBadge(o.currencyCode),
   };
+  final String key;
   switch (o.pricingType) {
     case GigPricingType.hourly:
-      return L10n.getWithParams("gigs_price_per_hour", params: params);
+      key = "gigs_price_per_hour";
     case GigPricingType.perUnit:
-      return L10n.getWithParams("gigs_price_per_unit", params: params);
+      key = "gigs_price_per_unit";
     case GigPricingType.fixed:
-      return L10n.getWithParams("gigs_price_fixed", params: params);
+      key = "gigs_price_fixed";
   }
+  return CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+    L10n.getWithParams(key, params: params),
+  );
 }
 
 /// Default tile visualization when the feed has no `rating_avg` yet.

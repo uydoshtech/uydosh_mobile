@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Publishes the Android sideload APK to the static site repo via GitHub Releases.
+# Optional: duplicate the sideload APK to the static site repository via GitHub Releases.
+# Primary rolling release is created in uydosh_client by CI (GITHUB_TOKEN) — see release-apk.yml.
 #
 # Tag "android-latest", asset basename must be app-release.apk
 # (matches https://github.com/uydoshtech/uydoshtech.github.io/releases/latest/download/app-release.apk).
-# The landing page also reads build metadata from releases/tags/android-latest.
+# The landing page may read build metadata from releases/tags/android-latest on that repo.
 #
 # iOS builds go to TestFlight / App Store only — not published here.
 #
 # Env:
-#   UYDOSH_WEBSITE_RELEASE_TOKEN (or GH_TOKEN) — PAT with contents + releases on the website repo
+#   UYDOSH_WEBSITE_RELEASE_TOKEN — PAT with contents + releases on the website repo (preferred)
+#   SITE_REPO_TOKEN — legacy name (same permissions); used if UYDOSH_WEBSITE_RELEASE_TOKEN is unset
+#   GH_TOKEN — fallback when neither of the above is set
 #   UYDOSH_WEBSITE_REPO — optional, default uydoshtech/uydoshtech.github.io
 #   GITHUB_REPOSITORY, GITHUB_SHA — for release notes (set automatically in Actions)
 #   BUILD_NAME, BUILD_NUMBER — shown in release title
@@ -22,9 +25,9 @@ SRC_ASSET="${1:?usage: publish_mobile_to_website.sh <apk-path>}"
 REPO="${UYDOSH_WEBSITE_REPO:-uydoshtech/uydoshtech.github.io}"
 TAG="android-latest"
 
-TOKEN="${UYDOSH_WEBSITE_RELEASE_TOKEN:-${GH_TOKEN:-}}"
+TOKEN="${UYDOSH_WEBSITE_RELEASE_TOKEN:-${SITE_REPO_TOKEN:-${GH_TOKEN:-}}}"
 if [[ -z "${TOKEN}" ]]; then
-  echo "::warning::No UYDOSH_WEBSITE_RELEASE_TOKEN (or GH_TOKEN); skipping website publish."
+  echo "::warning::No UYDOSH_WEBSITE_RELEASE_TOKEN, SITE_REPO_TOKEN, or GH_TOKEN; skipping website publish."
   exit 0
 fi
 export GH_TOKEN="${TOKEN}"

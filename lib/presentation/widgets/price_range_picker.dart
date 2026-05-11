@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -11,9 +13,9 @@ class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({
     required this.onPriceRangeChanged,
     super.key,
-    this.minPrice = 50.0,
+    this.minPrice = 0.0,
     this.maxPrice = 1000.0,
-    this.initialMinPrice = 50.0,
+    this.initialMinPrice = 0.0,
     this.initialMaxPrice = 500.0,
     this.useSinglePrice = false,
     this.showErrorBorder = false,
@@ -39,17 +41,15 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   late double _minPrice;
   late double _maxPrice;
 
-  static const double _step = 10.0;
+  /// USD-scale tick (matches how listings store the small "USD-index" amounts).
+  static const double _stepUsd = 10.0;
+
+  /// UZS-display tick. 10.000 keeps the slider feeling native to UZS users
+  /// without producing a wall of zeroes — labels render as `K`/`M` further down.
+  static const double _stepUzs = 10000.0;
 
   Widget _unitIcon(Color color) {
     return Icon(Icons.payments_outlined, size: 14, color: color);
-  }
-
-  int? _divisions() {
-    final range = (widget.maxPrice - widget.minPrice).abs();
-    final steps = (range / _step).round();
-    if (steps <= 0) return null;
-    return steps;
   }
 
   @override
@@ -92,206 +92,255 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
     }
   }
 
+  /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`
+  /// (millions). UZS amounts are inherently coarse so users never need
+  /// finer-than-`10K` precision in a chip-sized label.
+  static String _formatUzsCompact(int uzs) {
+    final snapped = ((uzs + 5000) ~/ 10000) * 10000;
+    if (snapped >= 1000000) {
+      final whole = snapped ~/ 1000000;
+      final tenths = (snapped % 1000000) ~/ 100000;
+      if (tenths == 0) return "${whole}M";
+      return "$whole,${tenths}M";
+    }
+    return "${snapped ~/ 1000}K";
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final themeState = ThemeState();
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final theme = Theme.of(context);
+        final themeState = ThemeState();
 
-    // Get the appropriate color for the blue theme to match the search button
-    Color getSliderColor() {
-      if (themeState.isBlueTheme) {
-        return BlueThemeColors.buttonPrimary; // Same color as search button
-      }
-      return theme.colorScheme.primary; // Default theme color
-    }
+        Color getSliderColor() {
+          if (themeState.isBlueTheme) {
+            return BlueThemeColors.buttonPrimary;
+          }
+          return theme.colorScheme.primary;
+        }
 
-    // Get the appropriate text color
-    Color getTextColor() {
-      if (themeState.isBlueTheme) {
-        return Colors.white; // White text for blue theme
-      }
-      return Colors.black; // Black text for default theme
-    }
+        Color getTextColor() {
+          if (themeState.isBlueTheme) {
+            return Colors.white;
+          }
+          return Colors.black;
+        }
 
-    final sliderColor = getSliderColor();
-    final textColor = getTextColor();
+        final sliderColor = getSliderColor();
+        final textColor = getTextColor();
 
-    // Inactive track: use lighter color in blue theme for visibility on dark background
-    Color getInactiveTrackColor() {
-      if (themeState.isBlueTheme) {
-        return Colors.white.withValues(alpha: 0.35);
-      }
-      return sliderColor.withValues(alpha: 0.2);
-    }
+        Color getInactiveTrackColor() {
+          if (themeState.isBlueTheme) {
+            return Colors.white.withValues(alpha: 0.35);
+          }
+          return sliderColor.withValues(alpha: 0.2);
+        }
 
-    final content = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          if (!widget.useSinglePrice)
-            // Min price label on the left (range mode only)
-            Container(
-              width: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-              alignment: Alignment.center,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _unitIcon(textColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${_minPrice.round()}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: textColor),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        final isUzsDisplay = PriceDisplaySettingsState().currency ==
+            PriceDisplayCurrency.national;
+        final rate = AppConfig.uzsPerUsd.toDouble();
+        // Slider operates in either USD-scale or UZS-scale depending on pref.
+        // Storage stays USD-scale via [_emitFromScaled] so listings/filters
+        // don't need to know about the display swap.
+        final scale = isUzsDisplay && rate > 0 ? rate : 1.0;
+        final step = isUzsDisplay && rate > 0 ? _stepUzs : _stepUsd;
 
-          // Slider in the center
-          Expanded(
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 2.0,
-                thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 8.0,
-                ),
-                rangeThumbShape: const RoundRangeSliderThumbShape(
-                  enabledThumbRadius: 8.0,
-                ),
-                overlayShape: const RoundSliderOverlayShape(
-                  overlayRadius: 16.0,
-                ),
-                activeTrackColor: sliderColor,
-                inactiveTrackColor: getInactiveTrackColor(),
-                thumbColor: sliderColor,
-                overlayColor: sliderColor.withValues(alpha: 0.1),
-                showValueIndicator: ShowValueIndicator.always,
-                valueIndicatorColor: sliderColor,
-                valueIndicatorShape: const PaddedSliderValueIndicatorShape(
-                  labelPadding: 16.0,
-                ),
-                rangeValueIndicatorShape:
-                    const PaddleRangeSliderValueIndicatorShape(),
-                valueIndicatorTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  height: 1.0,
-                ),
-              ),
-              child: widget.useSinglePrice
-                  ? Slider(
-                      value: _minPrice,
-                      min: widget.minPrice,
-                      max: widget.maxPrice,
-                      divisions: _divisions(),
-                      activeColor: sliderColor,
-                      inactiveColor: getInactiveTrackColor(),
-                      label: "${_minPrice.round()}",
-                      onChanged: (value) {
-                        final newPrice = (value / _step).round() * _step;
-                        if ((newPrice ~/ 10) != (_minPrice ~/ 10)) {
-                          HapticFeedbackUtils.impact();
-                          SendSoundUtils.playSelectionSound();
-                        }
-                        setState(() {
-                          _minPrice = newPrice;
-                          _maxPrice = newPrice;
-                        });
-                        widget.onPriceRangeChanged(
-                          _minPrice.roundToDouble(),
-                          _maxPrice.roundToDouble(),
-                        );
-                      },
-                    )
-                  : Transform.translate(
-                      offset: const Offset(0.0, 0.0),
-                      child: RangeSlider(
-                        values: RangeValues(_minPrice, _maxPrice),
-                        min: widget.minPrice,
-                        max: widget.maxPrice,
-                        divisions: _divisions(),
-                        activeColor: sliderColor,
-                        inactiveColor: getInactiveTrackColor(),
-                        labels: RangeLabels(
-                          "${_minPrice.round()}",
-                          "${_maxPrice.round()}",
-                        ),
-                        onChanged: (values) {
-                          final newMin = (values.start / _step).round() * _step;
-                          final newMax = (values.end / _step).round() * _step;
-                          if ((newMin ~/ 10) != (_minPrice ~/ 10) ||
-                              (newMax ~/ 10) != (_maxPrice ~/ 10)) {
-                            HapticFeedbackUtils.impact();
-                            SendSoundUtils.playSelectionSound();
-                          }
-                          setState(() {
-                            _minPrice = newMin;
-                            _maxPrice = newMax;
-                          });
-                          widget.onPriceRangeChanged(
-                            _minPrice.roundToDouble(),
-                            _maxPrice.roundToDouble(),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ),
+        final scaledRangeMin = widget.minPrice * scale;
+        final scaledRangeMax = widget.maxPrice * scale;
+        final divisions = ((scaledRangeMax - scaledRangeMin) / step).round();
 
-          // Price label on the right
-          Container(
-            width: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-            alignment: Alignment.center,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${(widget.useSinglePrice ? _minPrice : _maxPrice).round()}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: textColor),
-                  ),
-                  const SizedBox(width: 4),
-                  _unitIcon(textColor),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        double snapToStep(double v) => (v / step).round() * step;
 
-    if (widget.useGlassPlate) {
-      Widget plate = LiquidGlassPlate(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        child: content,
-      );
-      if (widget.showErrorBorder) {
-        plate = DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-            border: Border.all(color: theme.colorScheme.error, width: 1.5),
-          ),
-          child: plate,
+        final scaledMin = snapToStep(
+          (_minPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
         );
-      }
-      return Container(margin: const EdgeInsets.all(5), child: plate);
-    }
+        final scaledMax = snapToStep(
+          (_maxPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
+        );
 
-    return Container(
-      margin: const EdgeInsets.all(5),
-      child: WheelPickerPlateContainer(
-        theme: theme,
-        showErrorBorder: widget.showErrorBorder,
-        child: content,
-      ),
+        String formatLabel(double scaled) {
+          if (isUzsDisplay) return _formatUzsCompact(scaled.round());
+          return "${scaled.round()}";
+        }
+
+        double emitFromScaled(double scaled) {
+          if (!isUzsDisplay || rate <= 0) return scaled;
+          // Round to whole USD-scale units so downstream `int price` consumers
+          // (listing model, backend filters) get clean integers.
+          return (scaled / rate).round().toDouble();
+        }
+
+        final content = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              if (!widget.useSinglePrice)
+                Container(
+                  width: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                  alignment: Alignment.center,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _unitIcon(textColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          formatLabel(scaledMin),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13, color: textColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              Expanded(
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 2.0,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 8.0,
+                    ),
+                    rangeThumbShape: const RoundRangeSliderThumbShape(
+                      enabledThumbRadius: 8.0,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 16.0,
+                    ),
+                    activeTrackColor: sliderColor,
+                    inactiveTrackColor: getInactiveTrackColor(),
+                    thumbColor: sliderColor,
+                    overlayColor: sliderColor.withValues(alpha: 0.1),
+                    showValueIndicator: ShowValueIndicator.always,
+                    valueIndicatorColor: sliderColor,
+                    valueIndicatorShape: const PaddedSliderValueIndicatorShape(
+                      labelPadding: 16.0,
+                    ),
+                    rangeValueIndicatorShape:
+                        const PaddleRangeSliderValueIndicatorShape(),
+                    valueIndicatorTextStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.0,
+                    ),
+                  ),
+                  child: widget.useSinglePrice
+                      ? Slider(
+                          value: scaledMin,
+                          min: scaledRangeMin,
+                          max: scaledRangeMax,
+                          divisions: divisions > 0 ? divisions : null,
+                          activeColor: sliderColor,
+                          inactiveColor: getInactiveTrackColor(),
+                          label: formatLabel(scaledMin),
+                          onChanged: (value) {
+                            final newScaled = snapToStep(value);
+                            final newUsd = emitFromScaled(newScaled);
+                            if ((newScaled / step).round() !=
+                                (scaledMin / step).round()) {
+                              HapticFeedbackUtils.impact();
+                              SendSoundUtils.playSelectionSound();
+                            }
+                            setState(() {
+                              _minPrice = newUsd;
+                              _maxPrice = newUsd;
+                            });
+                            widget.onPriceRangeChanged(newUsd, newUsd);
+                          },
+                        )
+                      : Transform.translate(
+                          offset: const Offset(0.0, 0.0),
+                          child: RangeSlider(
+                            values: RangeValues(scaledMin, scaledMax),
+                            min: scaledRangeMin,
+                            max: scaledRangeMax,
+                            divisions: divisions > 0 ? divisions : null,
+                            activeColor: sliderColor,
+                            inactiveColor: getInactiveTrackColor(),
+                            labels: RangeLabels(
+                              formatLabel(scaledMin),
+                              formatLabel(scaledMax),
+                            ),
+                            onChanged: (values) {
+                              final newScaledMin = snapToStep(values.start);
+                              final newScaledMax = snapToStep(values.end);
+                              final newUsdMin = emitFromScaled(newScaledMin);
+                              final newUsdMax = emitFromScaled(newScaledMax);
+                              if ((newScaledMin / step).round() !=
+                                      (scaledMin / step).round() ||
+                                  (newScaledMax / step).round() !=
+                                      (scaledMax / step).round()) {
+                                HapticFeedbackUtils.impact();
+                                SendSoundUtils.playSelectionSound();
+                              }
+                              setState(() {
+                                _minPrice = newUsdMin;
+                                _maxPrice = newUsdMax;
+                              });
+                              widget.onPriceRangeChanged(newUsdMin, newUsdMax);
+                            },
+                          ),
+                        ),
+                ),
+              ),
+
+              Container(
+                width: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formatLabel(
+                          widget.useSinglePrice ? scaledMin : scaledMax,
+                        ),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: textColor),
+                      ),
+                      const SizedBox(width: 4),
+                      _unitIcon(textColor),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (widget.useGlassPlate) {
+          Widget plate = LiquidGlassPlate(
+            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+            child: content,
+          );
+          if (widget.showErrorBorder) {
+            plate = DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                border: Border.all(color: theme.colorScheme.error, width: 1.5),
+              ),
+              child: plate,
+            );
+          }
+          return Container(margin: const EdgeInsets.all(5), child: plate);
+        }
+
+        return Container(
+          margin: const EdgeInsets.all(5),
+          child: WheelPickerPlateContainer(
+            theme: theme,
+            showErrorBorder: widget.showErrorBorder,
+            child: content,
+          ),
+        );
+      },
     );
   }
 }

@@ -100,15 +100,6 @@ class PricePicker extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "y.e.",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
                           color: _getPriceIconColor(),
                         ),
                       ),

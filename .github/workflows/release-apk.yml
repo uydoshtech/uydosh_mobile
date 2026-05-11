@@ -19,8 +19,9 @@ concurrency:
   group: release-aab
   cancel-in-progress: true
 
+# contents:write — rolling android-latest release in this repo (GITHUB_TOKEN).
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -68,6 +69,24 @@ jobs:
           echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "$GITHUB_ENV"
 
           echo "Parsed BUILD_NAME=${BUILD_NAME} BUILD_NUMBER=${BUILD_NUMBER}"
+
+      # workflow_dispatch uses branch ref — no tag; take version from pubspec like local release scripts.
+      - name: Resolve version from pubspec (non-tag runs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_RAW="$(grep -m1 -E '^version:[[:space:]]+' pubspec.yaml | sed -E 's/^version:[[:space:]]+//; s/[[:space:]]*#.*//; s/[[:space:]]+$//')"
+          if [[ "${VERSION_RAW}" == *+* ]]; then
+            BUILD_NAME="${VERSION_RAW%%+*}"
+            BUILD_NUMBER="${VERSION_RAW#*+}"
+          else
+            echo "pubspec version must be like 1.2.3+45, got: ${VERSION_RAW}"
+            exit 1
+          fi
+          echo "BUILD_NAME=${BUILD_NAME}" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "$GITHUB_ENV"
+          echo "From pubspec: BUILD_NAME=${BUILD_NAME} BUILD_NUMBER=${BUILD_NUMBER}"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -150,13 +169,43 @@ jobs:
             release_status:"${PLAY_RELEASE_STATUS}" \
             changelog:"Automated upload from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7} (${GITHUB_REF_NAME})."
 
-      # Marketing site (uydoshtech.github.io): APK + metadata from rolling release android-latest.
-      - name: Build release APK (website sideload)
+      # Sideload APK: rolling release in *this* repo (no PAT). Link for site / email:
+      #   ${{ github.server_url }}/${{ github.repository }}/releases/tag/android-latest
+      - name: Build release APK (sideload)
         run: flutter build apk --release --build-name "$BUILD_NAME" --build-number "$BUILD_NUMBER"
 
-      - name: Publish APK to marketing site (GitHub Release)
+      - name: Publish android-latest (this repository)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="android-latest"
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          NOTES="Automated build from ${GITHUB_REPOSITORY}@${SHORT_SHA} on $(date -u +'%Y-%m-%dT%H:%M:%SZ').
+
+          APK: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${TAG}/app-release.apk"
+
+          TITLE="UyDosh Android APK (latest)"
+          if [[ -n "${BUILD_NAME:-}" && -n "${BUILD_NUMBER:-}" ]]; then
+            TITLE="Android ${BUILD_NAME}+${BUILD_NUMBER}"
+          fi
+
+          gh release delete "${TAG}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag 2>/dev/null || true
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG}" 2>/dev/null || true
+
+          gh release create "${TAG}" "${APK_PATH}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${TITLE}" \
+            --notes "${NOTES}" \
+            --target "${GITHUB_SHA}" \
+            --latest
+
+      # Optional: duplicate rolling release on uydoshtech.github.io if SITE_REPO_TOKEN / UYDOSH_WEBSITE_RELEASE_TOKEN is set.
+      - name: Publish APK to marketing site repo (optional)
         env:
           UYDOSH_WEBSITE_RELEASE_TOKEN: ${{ secrets.UYDOSH_WEBSITE_RELEASE_TOKEN }}
+          SITE_REPO_TOKEN: ${{ secrets.SITE_REPO_TOKEN }}
           BUILD_NAME: ${{ env.BUILD_NAME }}
           BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
         run: |
@@ -183,6 +232,9 @@ jobs:
             Branch:   ${{ github.ref_name }}
             Message:  ${{ github.event.head_commit.message }}
             Run:      ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Sideload APK (android-latest in this repo):
+              ${{ github.server_url }}/${{ github.repository }}/releases/tag/android-latest
 
       - name: Notify by email on failure
         if: failure()

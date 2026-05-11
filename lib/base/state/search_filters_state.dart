@@ -24,7 +24,7 @@ class SearchFiltersState extends ChangeNotifier {
   int _selectedStationId =
       0; // Store the actual station ID instead of just index
   int _selectedGender = 1; // 1 = male, 2 = female
-  double _minPrice = 10.0; // Default min price
+  double _minPrice = 0.0; // Default min price
   double _maxPrice = 1000.0; // Default max price
   bool _privateRoom = false; // Default to false (show all)
   bool _withPhoto = false;
@@ -163,7 +163,7 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationIndex = readInt("station_index", 0, min: 0, max: 9999);
     _selectedStationId = readInt("station_id", 0, min: 0, max: 999999);
     _selectedGender = readInt("gender", 1, min: 1, max: 2);
-    _minPrice = readDouble("min_price", 10.0);
+    _minPrice = readDouble("min_price", 0.0);
     _maxPrice = readDouble("max_price", 1000.0);
     if (_minPrice > _maxPrice) {
       final t = _minPrice;
@@ -291,7 +291,7 @@ class SearchFiltersState extends ChangeNotifier {
       _selectedGender = savedGender ?? 1;
 
       // Load price range
-      _minPrice = prefs.getDouble("search_min_price") ?? 10.0;
+      _minPrice = prefs.getDouble("search_min_price") ?? 0.0;
       _maxPrice = prefs.getDouble("search_max_price") ?? 1000.0;
 
       // Load private room preference
@@ -608,7 +608,7 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationId = 0;
     _selectedGender = 1;
     _profileDefaultsApplied = false; // Allow profile defaults to re-apply
-    _minPrice = 10.0;
+    _minPrice = 0.0;
     _maxPrice = 1000.0;
     _privateRoom = false;
     _withPhoto = false;

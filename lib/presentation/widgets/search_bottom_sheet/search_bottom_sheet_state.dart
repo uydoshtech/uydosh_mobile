@@ -13,7 +13,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
-  double? _cachedSheetHeight;
 
   @override
   void initState() {
@@ -584,6 +583,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final mq = MediaQuery.of(context);
+    // Cap the glass sheet while letting it shrink to the actual filter content.
+    final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
     final radius = const BorderRadius.only(
       topLeft: Radius.circular(20),
       topRight: Radius.circular(20),
@@ -598,210 +600,193 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           error: (_) {},
         );
       },
-      child: SizedBox(
-        height: _cachedSheetHeight ??=
-            MediaQuery.of(context).size.height * 0.7 + 30,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
         child: GlassBottomSheetSurface(
           borderRadius: radius,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-                  // Handle bar
-                  Container(
-                    margin: const EdgeInsets.only(top: 6),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-
-                  // Search header
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    child: Row(
-                      children: [
-                        ThemeIcon(
-                          Icons.search,
-                          color: theme.colorScheme.onSurfaceVariant,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            L10n.get(
-                              "search_listings",
-                            ),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                        Opacity(
-                          opacity: _isCreatingSearchAlert ? 0.55 : 1,
-                          child: NotifySearchAlertAppBarButton(
-                            tooltip: L10n.get("search_alert_notify_me"),
-                            enabled: !_isCreatingSearchAlert,
-                            celebrationTick: _searchAlertCelebrationTick,
-                            onPressed: () {
-                              if (_isCreatingSearchAlert) return;
-                              unawaited(_addAlertFromCurrentSearch());
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        ThreeDAppBarIconButton(
-                          iconData: Icons.close,
-                          onPressed: () => Navigator.pop(context),
-                          semanticsLabel: MaterialLocalizations.of(context)
-                              .closeButtonTooltip,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(999)),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Search filters
-                  Flexible(
-                    fit: FlexFit.loose,
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Listing Type and Gender Selection
-                                SearchBottomSheetPrimaryFilters(
-                                  searchFiltersState: _searchFiltersState,
-                                  onListingTypeChanged: (listingTypeId) {
-                                    _searchFiltersState.setListingTypeId(
-                                      listingTypeId,
-                                    );
-                                    setState(() {});
-                                  },
-                                  onGenderChanged: (gender) {
-                                    _searchFiltersState.setGender(gender);
-                                    setState(() {});
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-
-                                if (!widget.metroOnly) ...[
-                                  // Location filter - Wheel Picker
-                                  SearchBottomSheetLocationSection(
-                                    searchFiltersState: _searchFiltersState,
-                                    locationScrollController:
-                                        _locationScrollController,
-                                    getLocationIndexFromId:
-                                        _getLocationIndexFromId,
-                                    onLocationChanged: (locationId) {
-                                      setState(() {
-                                        if (locationId == null) {
-                                          _searchFiltersState
-                                              .setLocationIndex(0);
-                                        } else {
-                                          _searchFiltersState.setLocationIndex(
-                                            locationId,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    onMetroReset: _resetMetroPickersIfNeeded,
-                                  ),
-                                  const SizedBox(height: 8),
-                                ],
-
-                                // Metro Line and Station Selection - Side by Side Wheel Pickers
-                                SearchBottomSheetMetroSection(
-                                  searchFiltersState: _searchFiltersState,
-                                  currentStations: _currentStations,
-                                  metroLineScrollController:
-                                      _metroLineScrollController,
-                                  stationPickerController:
-                                      _stationPickerController,
-                                  metroLineTutorialKey: _metroLineTutorialKey,
-                                  metroStationTutorialKey:
-                                      _metroStationTutorialKey,
-                                  getLocalizedName: _getLocalizedName,
-                                  onSubwayLineChanged: (index) {
-                                    _metroLineChangedInThisSession = true;
-                                    setState(() {
-                                      _searchFiltersState.setSubwayLine(index);
-                                      if (index > 0) {
-                                        if (!widget.metroOnly) {
-                                          _resetLocationPicker();
-                                        }
-                                      }
-                                    });
-                                    if (index > 0) {
-                                      _loadStationsForLine(index);
-                                    } else {
-                                      setState(() {
-                                        _currentStations = [];
-                                        _searchFiltersState.setStationIndex(0);
-                                        _searchFiltersState.setStationId(0);
-                                      });
-                                    }
-                                  },
-                                  onStationChanged: (index) {
-                                    setState(() {
-                                      if (index == 0) {
-                                        _searchFiltersState.setStationIndex(0);
-                                        _searchFiltersState.setStationId(0);
-                                      } else {
-                                        final stationIndex = index - 1;
-                                        if (stationIndex <
-                                            _currentStations.length) {
-                                          final selectedStationId =
-                                              _currentStations[stationIndex].id;
-                                          _searchFiltersState
-                                              .setStationIndex(stationIndex);
-                                          _searchFiltersState
-                                              .setStationId(selectedStationId);
-                                        }
-                                      }
-                                    });
-                                  },
-                                ),
-
-                                const SizedBox(height: 12),
-
-                                // Price, Private Room, Search button
-                                SearchBottomSheetSecondaryFilters(
-                                  searchFiltersState: _searchFiltersState,
-                                  onPriceRangeChanged: (minPrice, maxPrice) {
-                                    _searchFiltersState.setPriceRange(
-                                      minPrice,
-                                      maxPrice,
-                                    );
-                                    setState(() {});
-                                  },
-                                  onPrivateRoomChanged: (value) {
-                                    _searchFiltersState.setPrivateRoom(value);
-                                    setState(() {});
-                                  },
-                                  onWithPhotoChanged: (value) {
-                                    _searchFiltersState.setWithPhoto(value);
-                                    setState(() {});
-                                  },
-                                  onPrimaryPressed: _performSearch,
-                                  primaryLabelKey: widget.primaryLabelKey,
-                                  primaryIcon: widget.primaryIcon,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 6),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
+
+              // Search header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    ThemeIcon(
+                      Icons.search,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        L10n.get(
+                          "search_listings",
+                        ),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    Opacity(
+                      opacity: _isCreatingSearchAlert ? 0.55 : 1,
+                      child: NotifySearchAlertAppBarButton(
+                        tooltip: L10n.get("search_alert_notify_me"),
+                        enabled: !_isCreatingSearchAlert,
+                        celebrationTick: _searchAlertCelebrationTick,
+                        onPressed: () {
+                          if (_isCreatingSearchAlert) return;
+                          unawaited(_addAlertFromCurrentSearch());
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    ThreeDAppBarIconButton(
+                      iconData: Icons.close,
+                      onPressed: () => Navigator.pop(context),
+                      semanticsLabel:
+                          MaterialLocalizations.of(context).closeButtonTooltip,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(999)),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Search filters
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Listing Type and Gender Selection
+                    SearchBottomSheetPrimaryFilters(
+                      searchFiltersState: _searchFiltersState,
+                      onListingTypeChanged: (listingTypeId) {
+                        _searchFiltersState.setListingTypeId(
+                          listingTypeId,
+                        );
+                        setState(() {});
+                      },
+                      onGenderChanged: (gender) {
+                        _searchFiltersState.setGender(gender);
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    if (!widget.metroOnly) ...[
+                      // Location filter - Wheel Picker
+                      SearchBottomSheetLocationSection(
+                        searchFiltersState: _searchFiltersState,
+                        locationScrollController: _locationScrollController,
+                        getLocationIndexFromId: _getLocationIndexFromId,
+                        onLocationChanged: (locationId) {
+                          setState(() {
+                            if (locationId == null) {
+                              _searchFiltersState.setLocationIndex(0);
+                            } else {
+                              _searchFiltersState.setLocationIndex(
+                                locationId,
+                              );
+                            }
+                          });
+                        },
+                        onMetroReset: _resetMetroPickersIfNeeded,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
+                    // Metro Line and Station Selection - Side by Side Wheel Pickers
+                    SearchBottomSheetMetroSection(
+                      searchFiltersState: _searchFiltersState,
+                      currentStations: _currentStations,
+                      metroLineScrollController: _metroLineScrollController,
+                      stationPickerController: _stationPickerController,
+                      metroLineTutorialKey: _metroLineTutorialKey,
+                      metroStationTutorialKey: _metroStationTutorialKey,
+                      getLocalizedName: _getLocalizedName,
+                      onSubwayLineChanged: (index) {
+                        _metroLineChangedInThisSession = true;
+                        setState(() {
+                          _searchFiltersState.setSubwayLine(index);
+                          if (index > 0) {
+                            if (!widget.metroOnly) {
+                              _resetLocationPicker();
+                            }
+                          }
+                        });
+                        if (index > 0) {
+                          _loadStationsForLine(index);
+                        } else {
+                          setState(() {
+                            _currentStations = [];
+                            _searchFiltersState.setStationIndex(0);
+                            _searchFiltersState.setStationId(0);
+                          });
+                        }
+                      },
+                      onStationChanged: (index) {
+                        setState(() {
+                          if (index == 0) {
+                            _searchFiltersState.setStationIndex(0);
+                            _searchFiltersState.setStationId(0);
+                          } else {
+                            final stationIndex = index - 1;
+                            if (stationIndex < _currentStations.length) {
+                              final selectedStationId =
+                                  _currentStations[stationIndex].id;
+                              _searchFiltersState.setStationIndex(stationIndex);
+                              _searchFiltersState
+                                  .setStationId(selectedStationId);
+                            }
+                          }
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Price, Private Room, Search button
+                    SearchBottomSheetSecondaryFilters(
+                      searchFiltersState: _searchFiltersState,
+                      onPriceRangeChanged: (minPrice, maxPrice) {
+                        _searchFiltersState.setPriceRange(
+                          minPrice,
+                          maxPrice,
+                        );
+                        setState(() {});
+                      },
+                      onPrivateRoomChanged: (value) {
+                        _searchFiltersState.setPrivateRoom(value);
+                        setState(() {});
+                      },
+                      onWithPhotoChanged: (value) {
+                        _searchFiltersState.setWithPhoto(value);
+                        setState(() {});
+                      },
+                      onPrimaryPressed: _performSearch,
+                      primaryLabelKey: widget.primaryLabelKey,
+                      primaryIcon: widget.primaryIcon,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -901,7 +886,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       );
     }
   }
-
 }
 
 /// Returns a 4x5 color matrix that scales the saturation of a source image

@@ -67,6 +67,7 @@ class PriceBadge extends StatelessWidget {
 
         final showLeadingCurrency =
             showCurrency &&
+            resolvedCurrency != "UZS" &&
             ((listingNominalUzs &&
                     display == PriceDisplayCurrency.usd) ||
                 (!listingNominalUzs && resolvedCurrency != "y.e."));
@@ -214,6 +215,7 @@ class PriceText extends StatelessWidget {
 
         final showLeadingCurrency =
             showCurrency &&
+            resolvedCurrency != "UZS" &&
             ((listingNominalUzs &&
                     display == PriceDisplayCurrency.usd) ||
                 (!listingNominalUzs && resolvedCurrency != "y.e."));
@@ -284,6 +286,7 @@ class CompactPriceBadge extends StatelessWidget {
 
         final showLeadingCurrency =
             showCurrency &&
+            resolvedCurrency != "UZS" &&
             ((listingNominalUzs &&
                     display == PriceDisplayCurrency.usd) ||
                 (!listingNominalUzs && resolvedCurrency != "y.e."));

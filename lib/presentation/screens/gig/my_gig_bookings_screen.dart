@@ -396,8 +396,9 @@ class _BookingTile extends StatelessWidget {
             topHeader,
             const SizedBox(height: 8),
             ListingPaymentsOutlineBadge(
-              label:
-                  "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCode(booking.currencyCode)}",
+              label: CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+                "${IntFormatUtils.withDotThousands(booking.agreedAmount)} ${CurrencyDisplayUtils.isoCodeForBadge(booking.currencyCode)}",
+              ),
             ),
             if (_hasActionButtons) ...[
               const SizedBox(height: 12),

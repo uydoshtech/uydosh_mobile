@@ -410,6 +410,9 @@ class _PhotoUploaderState extends State<PhotoUploader>
 
     final orderedItems = widget.orderedItems ?? _legacyOrderedItems();
     final canReorder = widget.orderedItems != null && widget.onReorderItems != null;
+    final canAddMorePhotos = _totalNewPhotoSlotsUsed < _effectiveMaxPhotos;
+    final wholeHeaderOpensPicker =
+        orderedItems.isEmpty && canAddMorePhotos;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -426,16 +429,40 @@ class _PhotoUploaderState extends State<PhotoUploader>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    L10n.get("listing_photos_label"),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
+                  child: wholeHeaderOpensPicker
+                      ? GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            HapticFeedbackUtils.impact();
+                            _showImageSourceDialog();
+                          },
+                          child: SizedBox.expand(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                L10n.get("listing_photos_label"),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            L10n.get("listing_photos_label"),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
                 ),
-                if (_totalNewPhotoSlotsUsed < _effectiveMaxPhotos)
+                if (canAddMorePhotos)
                   Builder(
                     builder: (context) {
                       final isLightTheme = ThemeState().isLightTheme;

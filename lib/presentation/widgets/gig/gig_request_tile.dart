@@ -134,14 +134,18 @@ class _GigRequestTileState extends State<GigRequestTile>
     final language = LanguageState().currentLanguage;
     final categoryName = widget.request.category?.localizedName(language) ?? "";
     final budgetLine = widget.request.budgetAmount != null
-        ? L10n.getWithParams(
-            "gigs_request_budget_fixed",
-            params: {
-              "amount":
-                  IntFormatUtils.withDotThousands(widget.request.budgetAmount!),
-              "currency":
-                  CurrencyDisplayUtils.isoCode(widget.request.currencyCode),
-            },
+        ? CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
+            L10n.getWithParams(
+              "gigs_request_budget_fixed",
+              params: {
+                "amount": IntFormatUtils.withDotThousands(
+                  widget.request.budgetAmount!,
+                ),
+                "currency": CurrencyDisplayUtils.isoCodeForBadge(
+                  widget.request.currencyCode,
+                ),
+              },
+            ),
           )
         : L10n.get("gigs_request_budget_open");
 
