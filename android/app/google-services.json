@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "626930983094-stbr3b3433ngu7a2j9rdsvm0tlcfgapc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uydosh.app",
+            "certificate_hash": "54cc6520c4e0d7043d5d46953f1c4ce4ba3c4dfd"
+          }
+        },
+        {
           "client_id": "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com",
           "client_type": 3
         }

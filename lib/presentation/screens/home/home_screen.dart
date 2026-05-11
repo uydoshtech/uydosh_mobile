@@ -850,7 +850,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final listContent = BlocListener<ListingsBloc, ListingsState>(
+    Widget listContent = BlocListener<ListingsBloc, ListingsState>(
       listener: (context, state) {
         // Reset loading flag when state changes
         state.map(
@@ -924,6 +924,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       ),
     );
 
+    // In dedicated search results (isSearchMode), show the applied filters bar
+    // pinned under the AppBar and push the list content down by its height.
+    const searchRibbonHeight = 56.0;
+    if (widget.isSearchMode) {
+      listContent = Padding(
+        padding: const EdgeInsets.only(top: searchRibbonHeight),
+        child: listContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: ThemeState().backgroundColor,
       appBar: widget.isSearchMode ? _buildSearchAppBar() : null,
@@ -931,6 +941,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         clipBehavior: Clip.none,
         children: [
           listContent,
+          if (widget.isSearchMode)
+            Positioned(
+              left: 12,
+              right: 12,
+              top: 0,
+              height: searchRibbonHeight,
+              child: _buildSearchModeFiltersRibbon(),
+            ),
           if (!widget.isSearchMode)
             Positioned(
               left: 12,
@@ -1067,6 +1085,47 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  Widget _buildSearchModeFiltersRibbon() {
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: false,
+      explicitNullFallsBackToState: true,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: LiquidGlassPlate(
+        height: 48,
+        borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: AppliedSearchFiltersBar(
+          onPressed: _openSearchModeFiltersSheet,
+          listingTypeId: filters.listingTypeId ??
+              _searchFiltersState.selectedListingTypeId,
+          gender: filters.gender,
+          locationId: (filters.locationId != null && filters.locationId! > 0)
+              ? filters.locationId
+              : null,
+          subwayStationId:
+              (filters.subwayStationId != null && filters.subwayStationId! > 0)
+                  ? filters.subwayStationId
+                  : null,
+          subwayLineId:
+              (filters.subwayLineId != null && filters.subwayLineId! > 0)
+                  ? filters.subwayLineId
+                  : null,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          privateRoom: filters.privateRoom,
+          withPhoto: filters.withPhoto,
+          total: null,
+          showLabel: true,
+          alignRight: false,
+          height: 48,
+          chipSize: 34,
+        ),
+      ),
+    );
+  }
+
   bool _homeRibbonAnimationsEnabled(BuildContext context) {
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
@@ -1141,11 +1200,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             );
             final fade =
                 CurvedAnimation(parent: animation, curve: Curves.easeOut);
-            return ClipRect(
-              child: SlideTransition(
-                position: slide,
-                child: FadeTransition(opacity: fade, child: child),
-              ),
+            // Avoid clipping while sliding out: ClipRect can "cut" the trailing
+            // circular close button mid-transition, briefly making it look oval.
+            return SlideTransition(
+              position: slide,
+              child: FadeTransition(opacity: fade, child: child),
             );
           },
           child: _inlineSearchActive
@@ -1926,9 +1985,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// cold start does not restore the previous search, then closes inline mode.
   /// The Settings toggle "Restore filters on app start" is unchanged.
   Future<void> _dismissInlineSearchClearingPersistedFilters() async {
-    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
-    if (!mounted) return;
+    // Close the ribbon first so filter resets can't briefly "flip" chips while
+    // the ribbon is still visible.
     _exitInlineSearch();
+    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
   }
 
   void _exitInlineSearch({bool animated = true}) {
@@ -2113,6 +2173,57 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ),
       ],
     );
+  }
+
+  void _openSearchModeFiltersSheet() {
+    SearchBottomSheetWidget.show(
+      context,
+      replaceCurrentRoute: true,
+      openedFromHomeScreen: false,
+      currentListingTypeId: _searchFiltersState.selectedListingTypeId,
+      currentLocationId: _searchFiltersState.selectedLocationIndex,
+      currentSubwayStationId: _searchFiltersState.selectedStationId,
+      currentSubwayLineId: _searchFiltersState.selectedSubwayLine,
+      currentGender: _searchFiltersState.selectedGender,
+      currentMinPrice: _searchFiltersState.minPrice,
+      currentMaxPrice: _searchFiltersState.maxPrice,
+      currentPrivateRoom: _searchFiltersState.privateRoom,
+      currentWithPhoto: _searchFiltersState.withPhoto,
+      onApply: (result) async {
+        await _applySearchModeResult(result);
+      },
+    );
+  }
+
+  Future<void> _applySearchModeResult(SearchBottomSheetResult result) async {
+    await _searchFiltersState.setListingTypeId(result.listingTypeId);
+    await _searchFiltersState.setGender(result.gender ?? 0);
+    await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
+    await _searchFiltersState.setPrivateRoom(result.privateRoom);
+    await _searchFiltersState.setWithPhoto(result.withPhoto);
+
+    if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
+      await _searchFiltersState.setLocationIndex(0);
+      await _searchFiltersState.setSubwayLine(result.subwayLineId!);
+    } else {
+      await _searchFiltersState.setSubwayLine(0);
+    }
+
+    if (result.subwayStationId != null && (result.subwayStationId ?? 0) > 0) {
+      await _searchFiltersState.setStationId(result.subwayStationId!);
+    } else {
+      await _searchFiltersState.setStationId(0);
+    }
+
+    if (result.locationId != null && (result.locationId ?? 0) > 0) {
+      await _searchFiltersState.setLocationIndex(result.locationId!);
+      await _searchFiltersState.setSubwayLine(0);
+      await _searchFiltersState.setStationId(0);
+    }
+
+    if (!mounted) return;
+    setState(() {});
+    _performSearch();
   }
 
   /// Perform search using current filters
