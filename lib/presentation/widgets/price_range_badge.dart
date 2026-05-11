@@ -119,7 +119,7 @@ class PriceRangeBadge extends StatelessWidget {
                   color: color,
                   size: iconSize ?? (fontSize != null ? fontSize! + 2 : 14),
                 ),
-                if (showCurrency) const SizedBox(width: 2),
+                SizedBox(width: showCurrency ? 4 : 6),
               ],
               Text(
                 formattedPriceRange,
@@ -149,7 +149,7 @@ class PriceRangeHelper {
     if (minPrice == maxPrice) {
       return minStr;
     }
-    return "$minStr-$maxStr";
+    return "$minStr - $maxStr";
   }
 
   /// Format price range with "y.e." suffix
@@ -245,7 +245,7 @@ class PriceRangeHelper {
   static String formatPriceRangeWithSeparators(int minPrice, int maxPrice) {
     final minPriceString = _formatPriceWithSeparators(minPrice);
     final maxPriceString = _formatPriceWithSeparators(maxPrice);
-    return "$minPriceString-$maxPriceString";
+    return "$minPriceString - $maxPriceString";
   }
 
   /// Format price range with currency symbol
@@ -254,7 +254,7 @@ class PriceRangeHelper {
     int maxPrice, {
     String currencySymbol = "\$",
   }) {
-    return "$currencySymbol$minPrice-$currencySymbol$maxPrice";
+    return "$currencySymbol$minPrice - $currencySymbol$maxPrice";
   }
 
   /// Format price range with thousand separators and currency
@@ -265,7 +265,7 @@ class PriceRangeHelper {
   }) {
     final minPriceString = _formatPriceWithSeparators(minPrice);
     final maxPriceString = _formatPriceWithSeparators(maxPrice);
-    return "$currencySymbol$minPriceString-$currencySymbol$maxPriceString";
+    return "$currencySymbol$minPriceString - $currencySymbol$maxPriceString";
   }
 
   /// Helper method to format a single price with thousand separators
