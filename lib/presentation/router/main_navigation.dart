@@ -1165,6 +1165,8 @@ class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
 
             return Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 L10n.text("nav_housing", style: widget.titleStyle),
                 if (showCount) ...[

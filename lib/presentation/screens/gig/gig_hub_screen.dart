@@ -680,7 +680,7 @@ class _CategoryRibbonState extends State<_CategoryRibbon> {
   /// plus 8 px of vertical breathing room above and below so shadows from
   /// the active chip don't get clipped by the host viewport.
   static const double _ribbonHeight = 50;
-  static const double _chipPadV = 8;
+  static const double _chipPadV = 3;
 
   List<GlobalKey> _newItemKeys(int count) =>
       List<GlobalKey>.generate(count, (_) => GlobalKey());
