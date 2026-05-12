@@ -21,11 +21,15 @@ class ProfileSettingsSection extends StatelessWidget {
   const ProfileSettingsSection({
     required this.onLogout,
     required this.onDeleteAccount,
+    this.canDeleteAccount = true,
+    this.onDeleteAccountDisabledTap,
     super.key,
   });
 
   final VoidCallback onLogout;
   final VoidCallback onDeleteAccount;
+  final bool canDeleteAccount;
+  final VoidCallback? onDeleteAccountDisabledTap;
 
   Widget _threeDProfileTile(BuildContext context, {required Widget child}) {
     final theme = Theme.of(context);
@@ -130,14 +134,19 @@ class ProfileSettingsSection extends StatelessWidget {
 
   Widget _buildDeleteAccountButton(BuildContext context) {
     final errorColor = Theme.of(context).colorScheme.error;
+    final isDisabled = !canDeleteAccount;
+    final effectiveColor =
+        isDisabled ? errorColor.withOpacity(0.35) : errorColor;
     return _threeDProfileTileWithErrorBorder(
       context,
-      borderColor: errorColor,
+      borderColor: effectiveColor,
       child: InkWell(
-        onTap: () {
-          HapticFeedbackUtils.impact();
-          onDeleteAccount();
-        },
+        onTap: isDisabled
+            ? onDeleteAccountDisabledTap
+            : () {
+                HapticFeedbackUtils.impact();
+                onDeleteAccount();
+              },
         borderRadius: BorderRadius.circular(12),
         child: Container(
           width: double.infinity,
@@ -146,7 +155,7 @@ class ProfileSettingsSection extends StatelessWidget {
             children: [
               ThemeIcon(
                 Icons.delete_forever,
-                color: errorColor,
+                color: effectiveColor,
                 size: 24,
               ),
               const SizedBox(width: 16),
@@ -156,13 +165,13 @@ class ProfileSettingsSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: errorColor,
+                    color: effectiveColor,
                   ),
                 ),
               ),
               ThemeIcon(
                 Icons.arrow_forward_ios,
-                color: errorColor,
+                color: effectiveColor,
                 size: 16,
               ),
             ],

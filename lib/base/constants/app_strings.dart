@@ -1248,6 +1248,8 @@ class AppStrings {
       "delete_account_error": "Error deleting account",
       "delete_account_blocked":
           "Your account has been restricted. You cannot delete your account while it is blocked. Please contact support.",
+      "delete_account_not_allowed":
+          "This account cannot be deleted from the app. Please contact support if you need help.",
 
       // ===== FAVORITES =====
       "favorites_title": "Favorites",
@@ -2718,6 +2720,8 @@ class AppStrings {
       "delete_account_error": "Ошибка удаления аккаунта",
       "delete_account_blocked":
           "Ваш аккаунт ограничен. Вы не можете удалить аккаунт, пока он заблокирован. Обратитесь в службу поддержки.",
+      "delete_account_not_allowed":
+          "Этот аккаунт нельзя удалить из приложения. Если нужна помощь — обратитесь в поддержку.",
 
       // ===== FAVORITES =====
       "favorites_title": "Избранное",
@@ -4192,6 +4196,8 @@ class AppStrings {
       "delete_account_error": "Hisobni o'chirishda xatolik",
       "delete_account_blocked":
           "Hisobingiz cheklangan. Bloklangan paytda hisobni o'chirish mumkin emas. Qo'llab-quvvatlash xizmatiga murojaat qiling.",
+      "delete_account_not_allowed":
+          "Bu hisobni ilova orqali o'chirib bo'lmaydi. Yordam kerak bo'lsa, qo'llab-quvvatlash xizmatiga yozing.",
 
       // ===== FAVORITES =====
       "favorites_title": "Sevimlilar",

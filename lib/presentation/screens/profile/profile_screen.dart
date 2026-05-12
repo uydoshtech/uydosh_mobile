@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
@@ -84,6 +85,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  static const String _kProtectedDeleteAccountEmail = "uydoshtech@gmail.com";
+
   bool _redirectedToProfileSetup = false;
   String? _userRole;
   int?
@@ -94,6 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _cachedUserProfile;
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
+  String? _cachedUserEmail;
   bool _achievementCheckScheduled = false;
   DateTime? _lastAchievementCheckTime;
   // AI allowance profile tile (hidden; restore with imports + _refreshListingAiQuota)
@@ -142,6 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       SessionManager.getCachedUserProfile(),
       SessionManager.getIsUserBlocked(),
       SessionManager.getUserRole(),
+      SessionManager.getUserEmail(),
     ]);
 
     final cachedRole = results[4] as String?;
@@ -153,6 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userBlocked = results[3]! as bool;
       _userRole = cachedRole;
       _userRoleLoaded = true;
+      _cachedUserEmail = results[5] as String?;
     });
 
     // unawaited(_refreshListingAiQuota());
@@ -506,9 +512,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               //       );
               //     },
               //   ),
-              ProfileSettingsSection(
-                onLogout: () => _showLogoutDialog(context),
-                onDeleteAccount: () => _showDeleteAccountDialog(context),
+              Builder(
+                builder: (context) {
+                  final firebaseEmail =
+                      FirebaseAuth.instance.currentUser?.email;
+                  final currentEmail =
+                      (firebaseEmail ?? _cachedUserEmail)?.trim().toLowerCase();
+                  final deleteProtected =
+                      currentEmail == _kProtectedDeleteAccountEmail;
+
+                  return ProfileSettingsSection(
+                    onLogout: () => _showLogoutDialog(context),
+                    canDeleteAccount: !deleteProtected,
+                    onDeleteAccount: () => _showDeleteAccountDialog(context),
+                    onDeleteAccountDisabledTap: () {
+                      ToastTheme.showInfo(
+                        context,
+                        message: L10n.get("delete_account_not_allowed"),
+                      );
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 32),
             ],

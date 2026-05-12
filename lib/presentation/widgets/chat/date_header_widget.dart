@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 
 class DateHeaderWidget extends StatelessWidget {
 
@@ -23,7 +23,6 @@ class DateHeaderWidget extends StatelessWidget {
       builder: (context, child) {
         final themeState = ThemeState();
         final textColor = _getThemeAwareTextColor(themeState, context);
-        final chromeBaseColor = _getChromeBaseColor(themeState, context);
         final dividerColor = _getThemeAwareDividerColor(themeState);
 
         final effectivePadding =
@@ -35,29 +34,17 @@ class DateHeaderWidget extends StatelessWidget {
             children: [
               Expanded(child: Container(height: 1, color: dividerColor)),
               const SizedBox(width: 10),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(999),
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                    context,
-                    chromeBaseColor,
-                  ),
-                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                  border: Border.all(
-                    color: _getThemeAwareBorderColor(themeState),
-                    width: 1,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                  child: Text(
-                    dateString,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                    ),
+              LiquidGlassPlate(
+                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                sigma: 12,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                child: Text(
+                  dateString,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
                   ),
                 ),
               ),
@@ -80,18 +67,6 @@ class DateHeaderWidget extends StatelessWidget {
     return Theme.of(context).colorScheme.onSurface;
   }
 
-  Color _getChromeBaseColor(ThemeState themeState, BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    if (themeState.isLightTheme) {
-      // Not pure white, so the pill remains visible on white backgrounds.
-      return Color.lerp(scheme.surface, scheme.onSurface, 0.04)!;
-    } else if (themeState.isBlueTheme) {
-      // Slightly lifted from the blue background so it reads as a pill.
-      return Color.lerp(BlueThemeColors.background, Colors.white, 0.18)!;
-    }
-    return scheme.surface;
-  }
-
   /// Get theme-aware divider color
   Color _getThemeAwareDividerColor(ThemeState themeState) {
     if (themeState.isLightTheme) {
@@ -103,13 +78,4 @@ class DateHeaderWidget extends StatelessWidget {
     return Colors.grey[300]!;
   }
 
-  /// Get theme-aware border color
-  Color _getThemeAwareBorderColor(ThemeState themeState) {
-    if (themeState.isLightTheme) {
-      return Colors.black.withValues(alpha: 0.08);
-    } else if (themeState.isBlueTheme) {
-      return Colors.white.withValues(alpha: 0.16);
-    }
-    return Colors.black.withValues(alpha: 0.08);
-  }
 }
