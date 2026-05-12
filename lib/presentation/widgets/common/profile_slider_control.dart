@@ -19,6 +19,7 @@ class ProfileSliderControl extends StatelessWidget {
     this.labels,
     this.scaleStartLabel,
     this.scaleEndLabel,
+    this.invertTrack = false,
   });
 
   final String label;
@@ -31,6 +32,7 @@ class ProfileSliderControl extends StatelessWidget {
   final List<String>? labels;
   final String? scaleStartLabel;
   final String? scaleEndLabel;
+  final bool invertTrack;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +59,7 @@ class ProfileSliderControl extends StatelessWidget {
         labels: labels,
         contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
         forceLtrScale: true,
+        invertTrack: invertTrack,
         scaleStartLabel: scaleStartLabel,
         scaleEndLabel: scaleEndLabel,
       ),

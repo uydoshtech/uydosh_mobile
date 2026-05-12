@@ -273,11 +273,22 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       fetchUserListings: (e) => e.isRefresh,
     );
 
+    final keepStaleWhileRefreshing = event.map(
+      fetchListings: (_) => false,
+      loadMore: (_) => false,
+      fetchListingsBySubwayStation: (e) => e.keepStaleWhileRefreshing,
+      fetchListingsByLocation: (_) => false,
+      searchListings: (_) => false,
+      fetchUserListings: (_) => false,
+    );
+
     if (isRefresh) {
       _currentPage = 1;
       _hasMore = true;
-      _currentListings = [];
-      _totalResults = null;
+      if (!keepStaleWhileRefreshing) {
+        _currentListings = [];
+        _totalResults = null;
+      }
     }
 
     _stationOnlyMode = true;
@@ -306,7 +317,9 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
     }
 
-    emit(const ListingsState.loading());
+    if (!(isRefresh && keepStaleWhileRefreshing)) {
+      emit(const ListingsState.loading());
+    }
 
     try {
       final subwayStationId = event.map(
@@ -468,11 +481,22 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       fetchUserListings: (e) => e.isRefresh,
     );
 
+    final keepStaleWhileRefreshing = event.map(
+      fetchListings: (_) => false,
+      loadMore: (_) => false,
+      fetchListingsBySubwayStation: (_) => false,
+      fetchListingsByLocation: (_) => false,
+      searchListings: (e) => e.keepStaleWhileRefreshing,
+      fetchUserListings: (_) => false,
+    );
+
     if (isRefresh) {
       _currentPage = 1;
       _hasMore = true;
-      _currentListings = [];
-      _totalResults = null;
+      if (!keepStaleWhileRefreshing) {
+        _currentListings = [];
+        _totalResults = null;
+      }
     }
 
     // Store search parameters for load more operations
@@ -521,7 +545,9 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
     }
 
-    emit(const ListingsState.loading());
+    if (!(isRefresh && keepStaleWhileRefreshing)) {
+      emit(const ListingsState.loading());
+    }
 
     try {
       final searchParams = event.map(

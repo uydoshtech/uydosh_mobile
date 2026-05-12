@@ -21,6 +21,7 @@ class UydoshSlider extends StatelessWidget {
     this.labels,
     this.contentPadding,
     this.forceLtrScale = false,
+    this.invertTrack = false,
     this.scaleStartLabel,
     this.scaleEndLabel,
   });
@@ -39,6 +40,10 @@ class UydoshSlider extends StatelessWidget {
   /// [min] stays on the physical left (e.g. messy → clean reads left → right).
   final bool forceLtrScale;
 
+  /// When true, the thumb maps so physical **left** = [max] and **right** = [min]
+  /// while [value] / [onChanged] still use the normal [min]…[max] semantics.
+  final bool invertTrack;
+
   /// Optional captions at the physical start/end of the track (shown when both
   /// are non-null).
   final String? scaleStartLabel;
@@ -50,16 +55,19 @@ class UydoshSlider extends StatelessWidget {
     final currentTheme = ThemeState().currentTheme;
     final isLightTheme = currentTheme == AppTheme.lightTheme;
     final isBlueTheme = currentTheme == AppTheme.blueTheme;
+    final clamped = value.clamp(min, max);
     final selectedValueText =
         labels != null &&
-                value >= min &&
-                value <= max &&
-                (value - min) < labels!.length
-            ? labels![value - min]
-            : value.toString();
+                clamped >= min &&
+                clamped <= max &&
+                (clamped - min) < labels!.length
+            ? labels![clamped - min]
+            : clamped.toString();
     final selectedValueBorderColor = isBlueTheme
         ? Colors.white
         : (isLightTheme ? Colors.black : theme.colorScheme.onSurface);
+    final trackValue =
+        invertTrack ? (max + min - clamped) : clamped;
 
     return Padding(
       padding: contentPadding ?? const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -159,14 +167,17 @@ class UydoshSlider extends StatelessWidget {
                       ),
                     ),
                     child: Slider(
-                      value: value.toDouble(),
+                      value: trackValue.toDouble(),
                       min: min.toDouble(),
                       max: max.toDouble(),
                       divisions: divisions ?? (max - min),
                       label: selectedValueText,
                       onChanged: (newValue) {
                         UiFeedbackUtils.sliderTick();
-                        onChanged(newValue.round());
+                        final rounded = newValue.round();
+                        final api =
+                            invertTrack ? (max + min - rounded) : rounded;
+                        onChanged(api);
                       },
                     ),
                   ),
@@ -212,7 +223,10 @@ class UydoshSlider extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(max - min + 1, (i) => min + i)
+                      children: List.generate(max - min + 1, (i) {
+                            final n = invertTrack ? (max - i) : (min + i);
+                            return n;
+                          })
                           .map((n) {
                         return Text(
                           n.toString(),

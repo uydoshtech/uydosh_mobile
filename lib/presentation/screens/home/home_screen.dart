@@ -473,12 +473,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   /// Flips the home into inline-search mode, animates the ribbon in, and
-  /// dispatches the filtered search after the slide animation completes.
+  /// starts the filtered search immediately so results can load in parallel
+  /// with the slide. [ListingsEvent.keepStaleWhileRefreshing] keeps the feed
+  /// on `loaded` (no skeleton) so the animation is not interrupted.
   /// When [persistActiveFlag] is true, also writes the prefs flag so the
   /// ribbon survives the next cold start (the prefs path normally already
   /// has it set, hence the parameter).
   void _activateInlineSearch({required bool persistActiveFlag}) {
-    final token = ++_inlineSearchEnterSearchToken;
     setState(() {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
@@ -493,16 +494,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         } catch (_) {}
       }());
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(() async {
-        await Future.delayed(_homeRibbonAnimationDuration(context));
-        if (!mounted) return;
-        if (!_inlineSearchActive) return;
-        if (token != _inlineSearchEnterSearchToken) return;
-        _performSearch();
-      }());
-    });
+    if (mounted) {
+      _performSearch(keepStaleWhileRibbonAnimates: true);
+    }
   }
 
   void _onOnboardingStateChanged() {
@@ -755,12 +749,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  void _dispatchFeedRefresh() {
+  void _dispatchFeedRefresh({bool keepStaleWhileRibbonAnimates = false}) {
     if (widget.isSearchMode || _inlineSearchActive) {
-      _dispatchSearch(isRefresh: true);
+      _dispatchSearch(
+        isRefresh: true,
+        keepStaleWhileRibbonAnimates: keepStaleWhileRibbonAnimates,
+      );
     } else {
       context.read<ListingsBloc>().add(
-            const ListingsEvent.searchListings(isRefresh: true),
+            ListingsEvent.searchListings(
+              isRefresh: true,
+              keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
+            ),
           );
     }
   }
@@ -1979,14 +1979,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final p = await SharedPreferences.getInstance();
     await p.setBool(HomeInlineSearchState.activePrefsKey, true);
     if (!mounted) return;
-    // Let the ribbon slide in and the list animate downward before we trigger
-    // the search fetch; otherwise the loading-state rebuild interrupts the
-    // motion and feels like a jump.
-    await Future.delayed(_homeRibbonAnimationDuration(context));
-    if (!mounted) return;
     if (!_inlineSearchActive) return;
     if (token != _inlineSearchEnterSearchToken) return;
-    _performSearch();
+    _performSearch(keepStaleWhileRibbonAnimates: true);
   }
 
   /// Resets filters to defaults (local + server when logged in) so a later
@@ -2014,8 +2009,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     SharedPreferences.getInstance().then((p) async {
       await p.setBool(HomeInlineSearchState.activePrefsKey, false);
     });
-    // Avoid triggering a fetch+rebuild while the ribbon is animating out.
-    // If the user quickly re-enters inline search, skip this refresh.
+    final keepStaleDuringRibbonOut =
+        animated && _homeRibbonAnimationsEnabled(context);
+    _dispatchFeedRefresh(keepStaleWhileRibbonAnimates: keepStaleDuringRibbonOut);
     final animationsEnabled = animated && _homeRibbonAnimationsEnabled(context);
     unawaited(() async {
       if (animationsEnabled) {
@@ -2025,7 +2021,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       if (_inlineSearchActive) return;
       if (refreshToken != _inlineSearchExitRefreshToken) return;
       setState(() => _inlineSearchClosing = false);
-      _dispatchFeedRefresh();
     }());
   }
 
@@ -2230,11 +2225,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   /// Perform search using current filters
-  void _performSearch() {
-    _dispatchSearch(isRefresh: true);
+  void _performSearch({bool keepStaleWhileRibbonAnimates = false}) {
+    _dispatchSearch(
+      isRefresh: true,
+      keepStaleWhileRibbonAnimates: keepStaleWhileRibbonAnimates,
+    );
   }
 
-  void _dispatchSearch({required bool isRefresh}) {
+  void _dispatchSearch({
+    required bool isRefresh,
+    bool keepStaleWhileRibbonAnimates = false,
+  }) {
     final listingsBloc = context.read<ListingsBloc>();
 
     // Hide the old count immediately so it can't flash from a previous `loaded`
@@ -2260,6 +2261,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ListingsEvent.fetchListingsBySubwayStation(
           subwayStationId: widget.subwayStationId!,
           isRefresh: isRefresh,
+          keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
         ),
       );
       return;
@@ -2292,6 +2294,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         privateRoom: filters.privateRoom,
         withPhoto: filters.withPhoto,
         isRefresh: isRefresh,
+        keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
       ),
     );
   }

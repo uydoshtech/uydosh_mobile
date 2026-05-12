@@ -24,7 +24,7 @@ mixin _$ListingsEvent {
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -42,7 +42,8 @@ mixin _$ListingsEvent {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -54,7 +55,7 @@ mixin _$ListingsEvent {
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -72,7 +73,8 @@ mixin _$ListingsEvent {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) =>
@@ -83,7 +85,7 @@ mixin _$ListingsEvent {
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -101,7 +103,8 @@ mixin _$ListingsEvent {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
@@ -298,7 +301,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -316,7 +319,8 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -331,7 +335,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -349,7 +353,8 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
@@ -363,7 +368,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -381,7 +386,8 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
@@ -549,7 +555,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -567,7 +573,8 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -582,7 +589,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -600,7 +607,8 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
@@ -614,7 +622,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -632,7 +640,8 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
@@ -723,7 +732,8 @@ abstract class _$$$FetchListingsBySubwayStationImplImplCopyWith<$Res>
       int page,
       int limit,
       bool isActive,
-      bool isRefresh});
+      bool isRefresh,
+      bool keepStaleWhileRefreshing});
 }
 
 /// @nodoc
@@ -746,6 +756,7 @@ class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
     Object? limit = null,
     Object? isActive = null,
     Object? isRefresh = null,
+    Object? keepStaleWhileRefreshing = null,
   }) {
     return _then(_$$FetchListingsBySubwayStationImplImpl(
       subwayStationId: null == subwayStationId
@@ -768,6 +779,10 @@ class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
           ? _value.isRefresh
           : isRefresh // ignore: cast_nullable_to_non_nullable
               as bool,
+      keepStaleWhileRefreshing: null == keepStaleWhileRefreshing
+          ? _value.keepStaleWhileRefreshing
+          : keepStaleWhileRefreshing // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -781,7 +796,8 @@ class _$$FetchListingsBySubwayStationImplImpl
       this.page = 1,
       this.limit = 10,
       this.isActive = true,
-      this.isRefresh = true});
+      this.isRefresh = true,
+      this.keepStaleWhileRefreshing = false});
 
   @override
   final int subwayStationId;
@@ -798,9 +814,16 @@ class _$$FetchListingsBySubwayStationImplImpl
   @JsonKey()
   final bool isRefresh;
 
+  /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
+  /// [ListingsState.loading]) until the request completes — for UI that
+  /// animates in parallel (e.g. home filter ribbon).
+  @override
+  @JsonKey()
+  final bool keepStaleWhileRefreshing;
+
   @override
   String toString() {
-    return 'ListingsEvent.fetchListingsBySubwayStation(subwayStationId: $subwayStationId, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
+    return 'ListingsEvent.fetchListingsBySubwayStation(subwayStationId: $subwayStationId, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
   }
 
   @override
@@ -815,12 +838,15 @@ class _$$FetchListingsBySubwayStationImplImpl
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh));
+                other.isRefresh == isRefresh) &&
+            (identical(
+                    other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) ||
+                other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, subwayStationId, page, limit, isActive, isRefresh);
+  int get hashCode => Object.hash(runtimeType, subwayStationId, page, limit,
+      isActive, isRefresh, keepStaleWhileRefreshing);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -840,7 +866,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -858,13 +884,14 @@ class _$$FetchListingsBySubwayStationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
   }) {
-    return fetchListingsBySubwayStation(
-        subwayStationId, page, limit, isActive, isRefresh);
+    return fetchListingsBySubwayStation(subwayStationId, page, limit, isActive,
+        isRefresh, keepStaleWhileRefreshing);
   }
 
   @override
@@ -874,7 +901,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -892,12 +919,13 @@ class _$$FetchListingsBySubwayStationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
-    return fetchListingsBySubwayStation?.call(
-        subwayStationId, page, limit, isActive, isRefresh);
+    return fetchListingsBySubwayStation?.call(subwayStationId, page, limit,
+        isActive, isRefresh, keepStaleWhileRefreshing);
   }
 
   @override
@@ -907,7 +935,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -925,14 +953,15 @@ class _$$FetchListingsBySubwayStationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
   }) {
     if (fetchListingsBySubwayStation != null) {
-      return fetchListingsBySubwayStation(
-          subwayStationId, page, limit, isActive, isRefresh);
+      return fetchListingsBySubwayStation(subwayStationId, page, limit,
+          isActive, isRefresh, keepStaleWhileRefreshing);
     }
     return orElse();
   }
@@ -989,11 +1018,13 @@ class _$$FetchListingsBySubwayStationImplImpl
 
 abstract class _$FetchListingsBySubwayStationImpl implements ListingsEvent {
   const factory _$FetchListingsBySubwayStationImpl(
-      {required final int subwayStationId,
-      final int page,
-      final int limit,
-      final bool isActive,
-      final bool isRefresh}) = _$$FetchListingsBySubwayStationImplImpl;
+          {required final int subwayStationId,
+          final int page,
+          final int limit,
+          final bool isActive,
+          final bool isRefresh,
+          final bool keepStaleWhileRefreshing}) =
+      _$$FetchListingsBySubwayStationImplImpl;
 
   int get subwayStationId;
   int get page;
@@ -1001,6 +1032,11 @@ abstract class _$FetchListingsBySubwayStationImpl implements ListingsEvent {
   int get limit;
   bool get isActive;
   bool get isRefresh;
+
+  /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
+  /// [ListingsState.loading]) until the request completes — for UI that
+  /// animates in parallel (e.g. home filter ribbon).
+  bool get keepStaleWhileRefreshing;
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1138,7 +1174,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -1156,7 +1192,8 @@ class _$$FetchListingsByLocationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -1172,7 +1209,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1190,7 +1227,8 @@ class _$$FetchListingsByLocationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
@@ -1205,7 +1243,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1223,7 +1261,8 @@ class _$$FetchListingsByLocationImplImpl
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
@@ -1330,7 +1369,8 @@ abstract class _$$$SearchListingsImplImplCopyWith<$Res>
       int page,
       int limit,
       bool isActive,
-      bool isRefresh});
+      bool isRefresh,
+      bool keepStaleWhileRefreshing});
 }
 
 /// @nodoc
@@ -1359,6 +1399,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     Object? limit = null,
     Object? isActive = null,
     Object? isRefresh = null,
+    Object? keepStaleWhileRefreshing = null,
   }) {
     return _then(_$$SearchListingsImplImpl(
       listingTypeId: freezed == listingTypeId
@@ -1413,6 +1454,10 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
           ? _value.isRefresh
           : isRefresh // ignore: cast_nullable_to_non_nullable
               as bool,
+      keepStaleWhileRefreshing: null == keepStaleWhileRefreshing
+          ? _value.keepStaleWhileRefreshing
+          : keepStaleWhileRefreshing // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -1433,7 +1478,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       this.page = 1,
       this.limit = 10,
       this.isActive = true,
-      this.isRefresh = true});
+      this.isRefresh = true,
+      this.keepStaleWhileRefreshing = false});
 
   @override
   final int? listingTypeId;
@@ -1466,9 +1512,15 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   @JsonKey()
   final bool isRefresh;
 
+  /// When true with [isRefresh], keeps current listings on screen until the
+  /// new page returns (skips loading/skeleton state).
+  @override
+  @JsonKey()
+  final bool keepStaleWhileRefreshing;
+
   @override
   String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
+    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
   }
 
   @override
@@ -1498,7 +1550,10 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh));
+                other.isRefresh == isRefresh) &&
+            (identical(
+                    other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) ||
+                other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
   }
 
   @override
@@ -1516,7 +1571,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       page,
       limit,
       isActive,
-      isRefresh);
+      isRefresh,
+      keepStaleWhileRefreshing);
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1535,7 +1591,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -1553,7 +1609,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -1571,7 +1628,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         page,
         limit,
         isActive,
-        isRefresh);
+        isRefresh,
+        keepStaleWhileRefreshing);
   }
 
   @override
@@ -1581,7 +1639,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1599,7 +1657,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
@@ -1616,7 +1675,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         page,
         limit,
         isActive,
-        isRefresh);
+        isRefresh,
+        keepStaleWhileRefreshing);
   }
 
   @override
@@ -1626,7 +1686,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1644,7 +1704,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),
@@ -1663,7 +1724,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
           page,
           limit,
           isActive,
-          isRefresh);
+          isRefresh,
+          keepStaleWhileRefreshing);
     }
     return orElse();
   }
@@ -1732,7 +1794,8 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
       final int page,
       final int limit,
       final bool isActive,
-      final bool isRefresh}) = _$$SearchListingsImplImpl;
+      final bool isRefresh,
+      final bool keepStaleWhileRefreshing}) = _$$SearchListingsImplImpl;
 
   int? get listingTypeId;
   int? get locationId;
@@ -1748,6 +1811,10 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
   int get limit;
   bool get isActive;
   bool get isRefresh;
+
+  /// When true with [isRefresh], keeps current listings on screen until the
+  /// new page returns (skips loading/skeleton state).
+  bool get keepStaleWhileRefreshing;
 
   /// Create a copy of ListingsEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1856,7 +1923,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
     required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh)
+            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
         fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
@@ -1874,7 +1941,8 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)
         searchListings,
     required TResult Function(int page, int limit, bool isRefresh)
         fetchUserListings,
@@ -1889,7 +1957,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
     TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1907,7 +1975,8 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
   }) {
@@ -1921,7 +1990,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
     TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh)?
+            bool isRefresh, bool keepStaleWhileRefreshing)?
         fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
@@ -1939,7 +2008,8 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             int page,
             int limit,
             bool isActive,
-            bool isRefresh)?
+            bool isRefresh,
+            bool keepStaleWhileRefreshing)?
         searchListings,
     TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
     required TResult orElse(),

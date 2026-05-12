@@ -843,7 +843,7 @@ class _CategoryChip extends StatelessWidget {
                       ? activeFg.withValues(alpha: 0.16)
                       : inactiveFg.withValues(alpha: 0.12),
                   dimension: 28.6,
-                  iconSize: 16.5,
+                  iconSize: 17.5,
                 ),
                 const SizedBox(width: 8),
                 Text(label, style: labelStyle),
@@ -972,30 +972,6 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Tooltip(
-              message: publishedLabel,
-              child: Semantics(
-                button: true,
-                label: publishedLabel,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 90),
-                  transform: Matrix4.translationValues(
-                    0,
-                    _publishedPressed ? 2 : 0,
-                    0,
-                  ),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapDown: (_) => _setPublishedPressed(true),
-                    onTapUp: (_) => _setPublishedPressed(false),
-                    onTapCancel: () => _setPublishedPressed(false),
-                    onTap: _openPublished,
-                    child: circleFab,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Tooltip(
               message: label,
               child: Semantics(
                 button: true,
@@ -1033,6 +1009,30 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
                           ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Tooltip(
+              message: publishedLabel,
+              child: Semantics(
+                button: true,
+                label: publishedLabel,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 90),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _publishedPressed ? 2 : 0,
+                    0,
+                  ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (_) => _setPublishedPressed(true),
+                    onTapUp: (_) => _setPublishedPressed(false),
+                    onTapCancel: () => _setPublishedPressed(false),
+                    onTap: _openPublished,
+                    child: circleFab,
                   ),
                 ),
               ),

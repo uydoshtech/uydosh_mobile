@@ -1139,7 +1139,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                     const SizedBox(height: 16),
 
-                    // Noise level: same 1–5 scale as API (1 = quiet … 5 = loud).
+                    // Noise: inverted track (loud/noisy on the left); API still
+                    // 1 = quiet … 5 = loud.
                     ValueListenableBuilder<int?>(
                       valueListenable: _noiseLevel,
                       builder: (context, noiseLevel, _) =>
@@ -1159,8 +1160,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           L10n.get("loud"),
                           L10n.get("very_loud"),
                         ],
-                        scaleStartLabel: L10n.get("very_quiet"),
-                        scaleEndLabel: L10n.get("very_loud"),
+                        scaleStartLabel: L10n.get("very_loud"),
+                        scaleEndLabel: L10n.get("very_quiet"),
+                        invertTrack: true,
                       ),
                     ),
 

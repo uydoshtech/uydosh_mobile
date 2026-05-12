@@ -22,6 +22,10 @@ class ListingsEvent with _$ListingsEvent {
     @Default(10) int limit,
     @Default(true) bool isActive,
     @Default(true) bool isRefresh,
+    /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
+    /// [ListingsState.loading]) until the request completes — for UI that
+    /// animates in parallel (e.g. home filter ribbon).
+    @Default(false) bool keepStaleWhileRefreshing,
   }) = _$FetchListingsBySubwayStationImpl;
 
   const factory ListingsEvent.fetchListingsByLocation({
@@ -46,6 +50,9 @@ class ListingsEvent with _$ListingsEvent {
     @Default(10) int limit,
     @Default(true) bool isActive,
     @Default(true) bool isRefresh,
+    /// When true with [isRefresh], keeps current listings on screen until the
+    /// new page returns (skips loading/skeleton state).
+    @Default(false) bool keepStaleWhileRefreshing,
   }) = _$SearchListingsImpl;
 
   const factory ListingsEvent.fetchUserListings({

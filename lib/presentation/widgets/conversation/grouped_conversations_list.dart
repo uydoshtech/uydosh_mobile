@@ -586,166 +586,155 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                         12,
                         10,
                       ),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ConversationListingTitleWithCategoryIcon(
-                                    conversation: firstConversation,
-                                    textStyle: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: textColor,
-                                    ),
-                                    iconColor: iconColor,
-                                    titleMaxLines: 2,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    L10n.plural(
-                                      "conversations_count",
-                                      conversations.length,
-                                    ),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                  if (!conversationSummaryIsListingMarketplaceChat(
-                                        firstConversation,
-                                      ) &&
-                                      (firstConversation.gigOwnerName != null &&
-                                          firstConversation.gigOwnerName!
-                                              .trim()
-                                              .isNotEmpty)) ...[
-                                    const SizedBox(height: 8),
-                                    ConversationGigOwnerRow(
-                                      conversation: firstConversation,
-                                      textColor: textColor,
-                                      mutedColor: secondaryTextColor,
-                                      avatarColor: avatarColor,
-                                      avatarIconColor: avatarIconColor,
-                                    ),
-                                  ],
-                                  if (hasLocation ||
-                                      hasSubwayStation ||
-                                      hasBudgetBadge) ...[
-                                    const SizedBox(height: 8),
-                                    ConversationLocationInfo(
-                                      conversation: firstConversation,
-                                      textColor: secondaryTextColor,
-                                      showPrice: true,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Right rail: a [Spacer] pushes everything to
-                            // the bottom-right corner, where the unread
-                            // count badge sits beside the expand chevron —
-                            // mirrors the original [ListTile.trailing]
-                            // layout (badge to the left of the chevron).
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                      // Avoid [IntrinsicHeight] / trailing [Spacer]: unbounded
+                      // height under vertical scroll (e.g. web) throws.
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Spacer(),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    if (groupUnreadCount > 0) ...[
-                                      Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Color.lerp(
-                                                    unreadColor,
-                                                    Colors.white,
-                                                    0.32,
-                                                  ) ??
-                                                  unreadColor,
-                                              Color.lerp(
-                                                    unreadColor,
-                                                    Colors.black,
-                                                    0.22,
-                                                  ) ??
-                                                  unreadColor,
-                                            ],
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.24,
-                                              ),
-                                              blurRadius: 6,
-                                              offset: const Offset(-2, -2),
-                                            ),
-                                            BoxShadow(
-                                              color: Colors.black.withValues(
-                                                alpha: 0.22,
-                                              ),
-                                              blurRadius: 6,
-                                              offset: const Offset(2, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "$groupUnreadCount",
-                                            style: TextStyle(
-                                              color: unreadTextColor,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    if (canToggleExpansion)
-                                      listingId == _groupCoachActiveListingId
-                                          ? CompositedTransformTarget(
-                                              link: _groupCoachLayerLink,
-                                              child: AnimatedRotation(
-                                                turns: isExpanded ? 0.0 : 0.5,
-                                                duration: const Duration(
-                                                  milliseconds: 300,
-                                                ),
-                                                curve: Curves.easeInOut,
-                                                child: ThemeIcon(
-                                                  Icons.expand_less,
-                                                  color: iconColor,
-                                                ),
-                                              ),
-                                            )
-                                          : AnimatedRotation(
-                                              turns: isExpanded ? 0.0 : 0.5,
-                                              duration: const Duration(
-                                                milliseconds: 300,
-                                              ),
-                                              curve: Curves.easeInOut,
-                                              child: ThemeIcon(
-                                                Icons.expand_less,
-                                                color: iconColor,
-                                              ),
-                                            ),
-                                  ],
+                                ConversationListingTitleWithCategoryIcon(
+                                  conversation: firstConversation,
+                                  textStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: textColor,
+                                  ),
+                                  iconColor: iconColor,
+                                  titleMaxLines: 2,
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  L10n.plural(
+                                    "conversations_count",
+                                    conversations.length,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                                if (!conversationSummaryIsListingMarketplaceChat(
+                                      firstConversation,
+                                    ) &&
+                                    (firstConversation.gigOwnerName != null &&
+                                        firstConversation.gigOwnerName!
+                                            .trim()
+                                            .isNotEmpty)) ...[
+                                  const SizedBox(height: 8),
+                                  ConversationGigOwnerRow(
+                                    conversation: firstConversation,
+                                    textColor: textColor,
+                                    mutedColor: secondaryTextColor,
+                                    avatarColor: avatarColor,
+                                    avatarIconColor: avatarIconColor,
+                                  ),
+                                ],
+                                if (hasLocation ||
+                                    hasSubwayStation ||
+                                    hasBudgetBadge) ...[
+                                  const SizedBox(height: 8),
+                                  ConversationLocationInfo(
+                                    conversation: firstConversation,
+                                    textColor: secondaryTextColor,
+                                    showPrice: true,
+                                  ),
+                                ],
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              if (groupUnreadCount > 0) ...[
+                                Container(
+                                  width: 18,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.lerp(
+                                              unreadColor,
+                                              Colors.white,
+                                              0.32,
+                                            ) ??
+                                            unreadColor,
+                                        Color.lerp(
+                                              unreadColor,
+                                              Colors.black,
+                                              0.22,
+                                            ) ??
+                                            unreadColor,
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.24,
+                                        ),
+                                        blurRadius: 6,
+                                        offset: const Offset(-2, -2),
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.22,
+                                        ),
+                                        blurRadius: 6,
+                                        offset: const Offset(2, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "$groupUnreadCount",
+                                      style: TextStyle(
+                                        color: unreadTextColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              if (canToggleExpansion)
+                                listingId == _groupCoachActiveListingId
+                                    ? CompositedTransformTarget(
+                                        link: _groupCoachLayerLink,
+                                        child: AnimatedRotation(
+                                          turns: isExpanded ? 0.0 : 0.5,
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          curve: Curves.easeInOut,
+                                          child: ThemeIcon(
+                                            Icons.expand_less,
+                                            color: iconColor,
+                                          ),
+                                        ),
+                                      )
+                                    : AnimatedRotation(
+                                        turns: isExpanded ? 0.0 : 0.5,
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        curve: Curves.easeInOut,
+                                        child: ThemeIcon(
+                                          Icons.expand_less,
+                                          color: iconColor,
+                                        ),
+                                      ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
