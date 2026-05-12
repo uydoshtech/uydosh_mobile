@@ -436,6 +436,18 @@ abstract class AppLocalizations {
   /// **'Loading regions...'**
   String get loading_regions;
 
+  /// No description provided for @loading_map.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading map...'**
+  String get loading_map;
+
+  /// No description provided for @map_web_preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Web preview'**
+  String get map_web_preview;
+
   /// No description provided for @error.
   ///
   /// In en, this message translates to:

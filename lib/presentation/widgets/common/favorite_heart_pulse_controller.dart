@@ -33,13 +33,22 @@ class FavoriteHeartPulseController {
     _tapCtrl.addListener(_onAnimTick);
     _idleCtrl.addListener(_onAnimTick);
 
+    _busyCtrl = AnimationController(
+      vsync: vsync,
+      duration: const Duration(milliseconds: 520),
+    );
+    _busyScale = Tween<double>(begin: 1.0, end: 1.12).animate(
+      CurvedAnimation(parent: _busyCtrl, curve: Curves.easeInOut),
+    );
+    _busyCtrl.addListener(_onAnimTick);
+
     _settings = AnimationSettingsState();
     _settingsListener = () {
       SchedulerBinding.instance.addPostFrameCallback((_) => _syncIdlePulse());
     };
     _settings.addListener(_settingsListener);
 
-    listenable = Listenable.merge([_tapCtrl, _idleCtrl]);
+    listenable = Listenable.merge([_tapCtrl, _idleCtrl, _busyCtrl]);
   }
 
   final VoidCallback? _repaint;
@@ -47,18 +56,23 @@ class FavoriteHeartPulseController {
   late final Animation<double> _tapScale;
   late final AnimationController _idleCtrl;
   late final Animation<double> _idleScale;
+  late final AnimationController _busyCtrl;
+  late final Animation<double> _busyScale;
   late final AnimationSettingsState _settings;
   late final VoidCallback _settingsListener;
 
   late final Listenable listenable;
 
   bool _isFavorite = true;
+  bool _networkBusy = false;
   bool _disposed = false;
 
   void _onAnimTick() => _repaint?.call();
 
-  /// Current scale = idle breathing × tap pop.
-  double get scale => _tapScale.value * _idleScale.value;
+  /// Current scale = tap pop × (network "heartbeat" or idle breathing).
+  double get scale =>
+      _tapScale.value *
+      (_networkBusy ? _busyScale.value : _idleScale.value);
 
   Future<void> playTapPulse() async {
     _tapCtrl
@@ -80,7 +94,31 @@ class FavoriteHeartPulseController {
     });
   }
 
+  /// While the favorites API round-trip is in flight, drives a gentle repeating
+  /// scale pulse on the heart (instead of a progress indicator).
+  void setNetworkBusy(bool busy) {
+    if (_networkBusy == busy) return;
+    _networkBusy = busy;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_disposed) return;
+      if (_networkBusy) {
+        if (_idleCtrl.isAnimating) {
+          _idleCtrl.stop();
+        }
+        _idleCtrl.value = 0;
+        _busyCtrl.repeat(reverse: true);
+      } else {
+        if (_busyCtrl.isAnimating) {
+          _busyCtrl.stop();
+        }
+        _busyCtrl.value = 0;
+        _syncIdlePulse();
+      }
+    });
+  }
+
   void _syncIdlePulse() {
+    if (_networkBusy) return;
     final enableIdle = !_isFavorite && _settings.uiAnimationsEnabled;
     if (enableIdle) {
       if (!_idleCtrl.isAnimating) {
@@ -100,5 +138,6 @@ class FavoriteHeartPulseController {
     _settings.removeListener(_settingsListener);
     _tapCtrl.dispose();
     _idleCtrl.dispose();
+    _busyCtrl.dispose();
   }
 }

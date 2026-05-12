@@ -5,11 +5,12 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
-import "package:yandex_mapkit/yandex_mapkit.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:yandex_mapkit/yandex_mapkit.dart";
 
 class MapPatternPainter extends CustomPainter {
   @override
@@ -170,15 +171,17 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         child: Stack(
           children: [
             // Show loading state while map is initializing
-            if (!_isMapReady && !kIsWeb) _buildMapLoadingState(centerPoint),
+            if (!_isMapReady && !kIsWeb)
+              _buildMapLoadingState(context, centerPoint),
             // Show actual map when ready
             if (_isMapReady || kIsWeb)
               kIsWeb
                   ? _buildWebFallback(
+                    context,
                     centerPoint["latitude"]!,
                     centerPoint["longitude"]!,
                   )
-                  : _buildMobileMap(centerPoint, mapObjects),
+                  : _buildMobileMap(context, centerPoint, mapObjects),
             // Zoom controls (only when map is ready)
             if (!kIsWeb && _isMapReady) _buildZoomControls(),
           ],
@@ -187,7 +190,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     );
   }
 
-  Widget _buildMapLoadingState(Map<String, double> centerPoint) {
+  Widget _buildMapLoadingState(
+    BuildContext context,
+    Map<String, double> centerPoint,
+  ) {
     logger.d("⏳ Building map loading state...");
     return Container(
       width: double.infinity,
@@ -219,7 +225,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 const ThemeIcon(Icons.location_on, color: Colors.red, size: 48),
                 const SizedBox(height: 8),
                 Text(
-                  widget.title ?? "Loading Map...",
+                  widget.title ?? context.l10n.loading_map,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -241,7 +247,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                       _retryMapInitialization();
                     },
                     icon: const ThemeIcon(Icons.refresh, size: 16),
-                    label: const Text("Retry"),
+                    label: Text(context.l10n.retry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -259,7 +265,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     );
   }
 
-  Widget _buildWebFallback(double latitude, double longitude) {
+  Widget _buildWebFallback(
+    BuildContext context,
+    double latitude,
+    double longitude,
+  ) {
     logger.d("🌐 Building web fallback map at $latitude, $longitude");
     return Container(
       width: double.infinity,
@@ -280,7 +290,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 const ThemeIcon(Icons.location_on, color: Colors.red, size: 48),
                 const SizedBox(height: 8),
                 Text(
-                  widget.title ?? "Location",
+                  widget.title ?? context.l10n.location,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -306,9 +316,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
-                "Web Preview",
-                style: TextStyle(
+              child: Text(
+                context.l10n.map_web_preview,
+                style: const TextStyle(
                   fontSize: 10,
                   color: Colors.black54,
                   fontWeight: FontWeight.w500,
@@ -322,6 +332,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Widget _buildMobileMap(
+    BuildContext context,
     Map<String, double> centerPoint,
     List<MapObject> mapObjects,
   ) {
@@ -386,7 +397,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
 
       // Show loading state while retrying
-      return _buildMapLoadingState(centerPoint);
+      return _buildMapLoadingState(context, centerPoint);
     }
   }
 

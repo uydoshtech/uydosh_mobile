@@ -188,6 +188,7 @@ class _ListingTileState extends State<ListingTile>
   /// network round-trip. If the API call fails, the state is rolled back
   /// and an error toast is shown.
   Future<void> _handleFavoriteTap(BuildContext context) async {
+    if (_isTogglingFavorite) return;
     HapticFeedbackUtils.impact();
     SoundService().playLike();
     final favoritesState = FavoritesState();
@@ -210,6 +211,8 @@ class _ListingTileState extends State<ListingTile>
       widget.onFavoriteRemoved!();
     }
 
+    setState(() => _isTogglingFavorite = true);
+    _favoritePulse?.setNetworkBusy(true);
     try {
       final favoriteService = getIt<IFavoriteService>();
       final success = await favoriteService.toggleFavorite(widget.listing.id);
@@ -239,6 +242,11 @@ class _ListingTileState extends State<ListingTile>
           context,
           message: L10n.get("favorite_toggle_network_error"),
         );
+      }
+    } finally {
+      _favoritePulse?.setNetworkBusy(false);
+      if (mounted) {
+        setState(() => _isTogglingFavorite = false);
       }
     }
   }
@@ -533,69 +541,48 @@ class _ListingTileState extends State<ListingTile>
                                 _favoritePulse?.setFavoriteOutlineState(
                                   isFavorite: isFavorite,
                                 );
-                                // Keep the layout slot at the icon's 20x20
-                                // footprint, but expand the tap target to be
-                                // easier to hit without shifting the row.
+                                // 20×20 layout slot; centered 48×48 hit target
+                                // (Stack + IgnorePointer keeps taps aligned with the icon).
                                 return SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: OverflowBox(
-                                    maxWidth: 44,
-                                    maxHeight: 44,
-                                    child: GestureDetector(
-                                      onTap: _isTogglingFavorite
-                                          ? null
-                                          : () => _handleFavoriteTap(context),
-                                      behavior: HitTestBehavior.opaque,
-                                      child: SizedBox(
-                                        width: 44,
-                                        height: 44,
-                                        child: Center(
-                                          child: Opacity(
-                                            opacity:
-                                                _isTogglingFavorite ? 0.6 : 1.0,
-                                            child: AnimatedBuilder(
-                                              animation: _favoritePulse!.listenable,
-                                              builder: (context, child) {
-                                                return Transform.scale(
-                                                  scale: _favoritePulse!.scale,
-                                                  child: _isTogglingFavorite
-                                                      ? SizedBox(
-                                                          width: 20,
-                                                          height: 20,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                    Color>(
-                                                              isFavorite
-                                                                  ? AppColors
-                                                                      .favoriteActive
-                                                                  : AppColors
-                                                                      .favoriteInactive,
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : ThemeIcon(
-                                                          isFavorite
-                                                              ? Icons.favorite
-                                                              : Icons
-                                                                    .favorite_border,
-                                                          color: isFavorite
-                                                              ? AppColors
-                                                                    .favoriteActive
-                                                              : AppColors
-                                                                    .favoriteInactive,
-                                                          size: 20,
-                                                        ),
-                                                );
-                                              },
-                                            ),
-                                          ),
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    alignment: Alignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: _isTogglingFavorite
+                                            ? null
+                                            : () =>
+                                                  _handleFavoriteTap(context),
+                                        child: const SizedBox(
+                                          width: 48,
+                                          height: 48,
                                         ),
                                       ),
-                                    ),
+                                      IgnorePointer(
+                                        child: AnimatedBuilder(
+                                          animation:
+                                              _favoritePulse!.listenable,
+                                          builder: (context, child) {
+                                            return Transform.scale(
+                                              scale: _favoritePulse!.scale,
+                                              child: ThemeIcon(
+                                                isFavorite
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: isFavorite
+                                                    ? AppColors.favoriteActive
+                                                    : AppColors
+                                                          .favoriteInactive,
+                                                size: 20,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
@@ -629,69 +616,70 @@ class _ListingTileState extends State<ListingTile>
                                 _favoritePulse?.setFavoriteOutlineState(
                                   isFavorite: isFavorite,
                                 );
-                                return AnimatedBuilder(
-                                  animation: _favoritePulse!.listenable,
-                                  builder: (context, child) {
-                                    return Transform.scale(
-                                      scale: _favoritePulse!.scale,
-                                      child: child,
-                                    );
-                                  },
-                                  child: AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 300),
-                                    reverseDuration:
-                                        const Duration(milliseconds: 180),
-                                    switchInCurve: Curves.elasticOut,
-                                    switchOutCurve: Curves.easeInBack,
-                                    transitionBuilder: (child, animation) =>
-                                        ScaleTransition(
-                                      scale: animation,
-                                      child: child,
-                                    ),
-                                    // Layout slot stays at the icon's 20x20
-                                    // footprint; OverflowBox expands the
-                                    // GestureDetector's hit area to 44x44
-                                    // (standard touch target) without
-                                    // affecting surrounding layout.
-                                    child: SizedBox(
-                                      key: ValueKey(
-                                        isFavorite ? "fav-on" : "fav-off",
+                                return SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    alignment: Alignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: _isTogglingFavorite
+                                            ? null
+                                            : () =>
+                                                  _handleFavoriteTap(context),
+                                        child: const SizedBox(
+                                          width: 48,
+                                          height: 48,
+                                        ),
                                       ),
-                                      width: 20,
-                                      height: 20,
-                                      child: OverflowBox(
-                                        maxWidth: 44,
-                                        maxHeight: 44,
-                                        child: GestureDetector(
-                                          onTap: _isTogglingFavorite
-                                              ? null
-                                              : () =>
-                                                    _handleFavoriteTap(context),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: SizedBox(
-                                            width: 44,
-                                            height: 44,
-                                            child: Center(
-                                              child: Opacity(
-                                                opacity: _isTogglingFavorite
-                                                    ? 0.6
-                                                    : 1.0,
-                                                child: ThemeIcon(
-                                                  isFavorite
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_border,
-                                                  color: isFavorite
-                                                      ? AppColors.favoriteActive
-                                                      : AppColors
-                                                            .favoriteInactive,
-                                                  size: 20,
-                                                ),
+                                      IgnorePointer(
+                                        child: AnimatedBuilder(
+                                          animation:
+                                              _favoritePulse!.listenable,
+                                          builder: (context, child) {
+                                            return Transform.scale(
+                                              scale: _favoritePulse!.scale,
+                                              child: child,
+                                            );
+                                          },
+                                          child: AnimatedSwitcher(
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            reverseDuration: const Duration(
+                                              milliseconds: 180,
+                                            ),
+                                            switchInCurve: Curves.elasticOut,
+                                            switchOutCurve: Curves.easeInBack,
+                                            transitionBuilder:
+                                                (child, animation) =>
+                                                    ScaleTransition(
+                                              scale: animation,
+                                              child: child,
+                                            ),
+                                            child: SizedBox(
+                                              key: ValueKey(
+                                                isFavorite ? "fav-on" : "fav-off",
+                                              ),
+                                              width: 20,
+                                              height: 20,
+                                              child: ThemeIcon(
+                                                isFavorite
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: isFavorite
+                                                    ? AppColors.favoriteActive
+                                                    : AppColors
+                                                        .favoriteInactive,
+                                                size: 20,
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 );
                               },

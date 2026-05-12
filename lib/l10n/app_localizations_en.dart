@@ -185,6 +185,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading_regions => 'Loading regions...';
 
   @override
+  String get loading_map => 'Loading map...';
+
+  @override
+  String get map_web_preview => 'Web preview';
+
+  @override
   String get error => 'Error';
 
   @override

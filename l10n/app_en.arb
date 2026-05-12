@@ -72,6 +72,8 @@
   "loading_listing_details": "Loading listing details...",
   "loading_universities": "Loading universities...",
   "loading_regions": "Loading regions...",
+  "loading_map": "Loading map...",
+  "map_web_preview": "Web preview",
   "error": "Error",
   "error_loading_listing_details": "Error loading listing details",
   "error_listing_not_loaded": "Listing not loaded yet",

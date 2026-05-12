@@ -549,7 +549,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             );
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -1014,8 +1014,9 @@ class _FavoritesTabRibbon extends StatelessWidget {
   final String tasksLabel;
 
   /// Tall enough for the 36-px chip plus vertical breathing room for shadows.
-  static const double _ribbonHeight = 50;
-  static const double _chipPadV = 8;
+  static const double _ribbonHeight = 44;
+  static const double _chipPadTop = 8;
+  static const double _chipPadBottom = 4;
 
   @override
   Widget build(BuildContext context) {
@@ -1030,7 +1031,12 @@ class _FavoritesTabRibbon extends StatelessWidget {
     return SizedBox(
       height: _ribbonHeight,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, _chipPadV, 16, _chipPadV),
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          _chipPadTop,
+          16,
+          _chipPadBottom,
+        ),
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(

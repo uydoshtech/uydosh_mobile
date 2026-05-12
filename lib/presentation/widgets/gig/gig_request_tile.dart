@@ -98,6 +98,7 @@ class _GigRequestTileState extends State<GigRequestTile>
   }
 
   Future<void> _handleFavoriteTap(BuildContext context) async {
+    if (_isTogglingFavorite) return;
     final gigFav = GigFavoritesState();
     final favScreen = FavoritesState();
     final wasFavorite =
@@ -108,6 +109,7 @@ class _GigRequestTileState extends State<GigRequestTile>
       favScreen.markDirty();
     }
     setState(() => _isTogglingFavorite = true);
+    _favoritePulse?.setNetworkBusy(true);
     try {
       await getIt<IGigService>().toggleFavoriteRequest(widget.request.id);
       if (wasFavorite && widget.onFavoriteRemoved != null) {
@@ -123,6 +125,7 @@ class _GigRequestTileState extends State<GigRequestTile>
         );
       }
     } finally {
+      _favoritePulse?.setNetworkBusy(false);
       if (mounted) {
         setState(() => _isTogglingFavorite = false);
       }
@@ -254,43 +257,25 @@ class _GigRequestTileState extends State<GigRequestTile>
                           child: Padding(
                             padding: const EdgeInsets.all(6),
                             child: SizedBox(
-                              width: 28,
-                              height: 28,
+                              width: 32,
+                              height: 32,
                               child: Center(
-                                child: Opacity(
-                                  opacity: _isTogglingFavorite ? 0.6 : 1,
-                                  child: AnimatedBuilder(
-                                    animation: _favoritePulse!.listenable,
-                                    builder: (context, child) {
-                                      return Transform.scale(
-                                        scale: _favoritePulse!.scale,
-                                        child: child,
-                                      );
-                                    },
-                                    child: _isTogglingFavorite
-                                        ? SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                isFavorite
-                                                    ? AppColors.favoriteActive
-                                                    : AppColors
-                                                        .favoriteInactive,
-                                              ),
-                                            ),
-                                          )
-                                        : ThemeIcon(
-                                            isFavorite
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                            color: isFavorite
-                                                ? AppColors.favoriteActive
-                                                : AppColors.favoriteInactive,
-                                            size: 22,
-                                          ),
+                                child: AnimatedBuilder(
+                                  animation: _favoritePulse!.listenable,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _favoritePulse!.scale,
+                                      child: child,
+                                    );
+                                  },
+                                  child: ThemeIcon(
+                                    isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: isFavorite
+                                        ? AppColors.favoriteActive
+                                        : AppColors.favoriteInactive,
+                                    size: 22,
                                   ),
                                 ),
                               ),

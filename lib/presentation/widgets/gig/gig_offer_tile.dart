@@ -94,6 +94,7 @@ class _GigOfferTileState extends State<GigOfferTile>
   }
 
   Future<void> _handleFavoriteTap(BuildContext context) async {
+    if (_isTogglingFavorite) return;
     final gigFav = GigFavoritesState();
     final favScreen = FavoritesState();
     final wasFavorite =
@@ -104,6 +105,7 @@ class _GigOfferTileState extends State<GigOfferTile>
       favScreen.markDirty();
     }
     setState(() => _isTogglingFavorite = true);
+    _favoritePulse?.setNetworkBusy(true);
     try {
       // Response `isFavorited` is the new state after toggle (false when removing),
       // not a success flag. Presence of 200 + parsed body means success.
@@ -121,6 +123,7 @@ class _GigOfferTileState extends State<GigOfferTile>
         );
       }
     } finally {
+      _favoritePulse?.setNetworkBusy(false);
       if (mounted) {
         setState(() => _isTogglingFavorite = false);
       }
@@ -293,58 +296,28 @@ class _GigOfferTileState extends State<GigOfferTile>
                                       : () => _handleFavoriteTap(context),
                                   borderRadius: BorderRadius.circular(22),
                                   child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      6,
-                                      0,
-                                      6,
-                                      6,
-                                    ),
+                                    padding: const EdgeInsets.all(6),
                                     child: SizedBox(
-                                      width: 28,
-                                      height: 28,
-                                      child: Align(
-                                        alignment: Alignment.topCenter,
-                                        child: Opacity(
-                                          opacity:
-                                              _isTogglingFavorite ? 0.6 : 1,
-                                          child: AnimatedBuilder(
-                                            animation:
-                                                _favoritePulse!.listenable,
-                                            builder: (context, child) {
-                                              return Transform.scale(
-                                                scale: _favoritePulse!.scale,
-                                                child: child,
-                                              );
-                                            },
-                                            child: _isTogglingFavorite
-                                                ? SizedBox(
-                                                    width: 20,
-                                                    height: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        isFavorite
-                                                            ? AppColors
-                                                                .favoriteActive
-                                                            : AppColors
-                                                                .favoriteInactive,
-                                                      ),
-                                                    ),
-                                                  )
-                                                : ThemeIcon(
-                                                    isFavorite
-                                                        ? Icons.favorite
-                                                        : Icons.favorite_border,
-                                                    color: isFavorite
-                                                        ? AppColors
-                                                            .favoriteActive
-                                                        : AppColors
-                                                            .favoriteInactive,
-                                                    size: 22,
-                                                  ),
+                                      width: 32,
+                                      height: 32,
+                                      child: Center(
+                                        child: AnimatedBuilder(
+                                          animation:
+                                              _favoritePulse!.listenable,
+                                          builder: (context, child) {
+                                            return Transform.scale(
+                                              scale: _favoritePulse!.scale,
+                                              child: child,
+                                            );
+                                          },
+                                          child: ThemeIcon(
+                                            isFavorite
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isFavorite
+                                                ? AppColors.favoriteActive
+                                                : AppColors.favoriteInactive,
+                                            size: 22,
                                           ),
                                         ),
                                       ),

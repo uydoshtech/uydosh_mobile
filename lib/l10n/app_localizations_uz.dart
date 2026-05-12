@@ -186,6 +186,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get loading_regions => 'Tumanlar yuklanmoqda...';
 
   @override
+  String get loading_map => 'Xarita yuklanmoqda...';
+
+  @override
+  String get map_web_preview => 'Veb koʻrinish';
+
+  @override
   String get error => 'Xatolik';
 
   @override

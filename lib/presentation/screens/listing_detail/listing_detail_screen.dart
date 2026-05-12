@@ -2206,7 +2206,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       child: ListingDetailTileShell(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => _openSimilarResults(listingDetail),
+          onTap: () {
+            HapticFeedbackUtils.impact();
+            _openSimilarResults(listingDetail);
+          },
           child: Padding(
             padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
             child: Row(

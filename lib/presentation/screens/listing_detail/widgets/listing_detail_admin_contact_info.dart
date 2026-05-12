@@ -46,10 +46,7 @@ class ListingDetailAdminContactInfo extends StatelessWidget {
         _AdminContactRow(
           icon: Icons.telegram,
           label: telegram.startsWith("@") ? telegram : "@$telegram",
-          onTap: () {
-            HapticFeedbackUtils.impact();
-            onTelegram(telegram);
-          },
+          onTap: () => onTelegram(telegram),
         ),
       );
     }
@@ -61,10 +58,7 @@ class ListingDetailAdminContactInfo extends StatelessWidget {
         _AdminContactRow(
           icon: Icons.phone,
           label: phone,
-          onTap: () {
-            HapticFeedbackUtils.impact();
-            onPhone(phone);
-          },
+          onTap: () => onPhone(phone),
         ),
       );
     }
@@ -118,7 +112,10 @@ class _AdminContactRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        onTap();
+      },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
         child: Row(

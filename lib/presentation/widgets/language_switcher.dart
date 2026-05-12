@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/base/services/mapkit_locale_sync_service.dart";
 import "package:uy_dosh/base/services/native_language_service.dart";
 
 // Utility class for language display names
@@ -135,6 +136,7 @@ class LanguageState extends ChangeNotifier {
     // Best-effort: set iOS preferred language on startup so native UI (RoomPlan)
     // is created under the same locale as the app.
     await NativeLanguageService.setPreferredLanguage(_currentLanguage);
+    await MapKitLocaleSyncService.sync(_currentLanguage);
 
     _isInitialized = true;
     notifyListeners();
@@ -174,6 +176,7 @@ class LanguageState extends ChangeNotifier {
 
       // Best-effort: keep iOS native UI (e.g. RoomPlan) in sync with the in-app language.
       await NativeLanguageService.setPreferredLanguage(language);
+      await MapKitLocaleSyncService.sync(language);
 
       // Sync to user profile so other users can see what language they speak
       if (persistToServer) {

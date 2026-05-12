@@ -254,6 +254,7 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
     }
 
     setState(() => _busy = true);
+    _pulse.setNetworkBusy(true);
     try {
       final ok = await getIt<IFavoriteService>().toggleFavorite(
         widget.listingId,
@@ -276,6 +277,7 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
         );
       }
     } finally {
+      _pulse.setNetworkBusy(false);
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -325,14 +327,11 @@ class _FavoriteHeartChipState extends State<_FavoriteHeartChip>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
-                  child: Opacity(
-                    opacity: _busy ? 0.6 : 1.0,
-                    child: ThemeIconFactory.detail(
-                      icon:
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: activeColor,
-                      size: 20,
-                    ),
+                  child: ThemeIconFactory.detail(
+                    icon:
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: activeColor,
+                    size: 20,
                   ),
                 ),
               ),

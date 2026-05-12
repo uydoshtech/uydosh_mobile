@@ -19,6 +19,17 @@ func uydoshAppleLanguagesList(for code: String) -> [String] {
   }
 }
 
+/// Maps an in-app language code (`en`, `ru`, `uz`) to a Yandex MapKit locale tag.
+func uydoshYandexMapKitLocaleTag(for code: String) -> String {
+  switch code.lowercased() {
+  case "ru": return "ru_RU"
+  case "uz": return "uz_UZ"
+  case "en": return "en_US"
+  default:
+    return Locale.current.identifier.replacingOccurrences(of: "-", with: "_")
+  }
+}
+
 /// Registers the `uydosh/room_usdz_viewer` method channel.
 /// Kept in this file to ensure it is compiled into the Runner target.
 final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
@@ -117,6 +128,42 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
   }
 }
 
+/// Syncs Yandex MapKit locale with the in-app language (via Flutter MethodChannel).
+final class MapKitLocalePlugin: NSObject, FlutterPlugin {
+  static func register(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(
+      name: "uydosh/mapkit_locale",
+      binaryMessenger: registrar.messenger()
+    )
+    let instance = MapKitLocalePlugin()
+    registrar.addMethodCallDelegate(instance, channel: channel)
+  }
+
+  func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard call.method == "setLocale" else {
+      result(FlutterMethodNotImplemented)
+      return
+    }
+    guard
+      let args = call.arguments as? [String: Any],
+      let code = args["languageCode"] as? String,
+      !code.isEmpty
+    else {
+      result(
+        FlutterError(
+          code: "bad_args",
+          message: "Expected {languageCode: String}",
+          details: call.arguments
+        )
+      )
+      return
+    }
+
+    YMKMapKit.setLocale(uydoshYandexMapKitLocaleTag(for: code))
+    result(true)
+  }
+}
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
@@ -132,12 +179,21 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
     // shows in whatever language was cached at process start rather than the
     // currently-selected in-app language.
     let defaults = UserDefaults.standard
+    var persistedLang: String?
     if let persisted = defaults.string(forKey: "flutter.selected_language"), !persisted.isEmpty {
+      persistedLang = persisted
       defaults.set(uydoshAppleLanguagesList(for: persisted), forKey: "AppleLanguages")
       defaults.set(persisted, forKey: "AppleLocale")
     }
 
-    // YMKMapKit.setLocale("en_US") // Let it default to system language
+    let mapLangCode =
+      persistedLang
+      ?? Locale.preferredLanguages.first.flatMap { lang -> String? in
+        lang.split(separator: "-").first.map(String.init)
+      }
+      ?? "en"
+
+    YMKMapKit.setLocale(uydoshYandexMapKitLocaleTag(for: mapLangCode))
     YMKMapKit.setApiKey("b7e30079-55fe-44d0-960c-50a03c3715e6") // Your generated API key
 
     // Do not call `FirebaseApp.configure()` here. FlutterFire configures Firebase
@@ -158,6 +214,10 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
     // Register native language sync for native UI.
     if let registrar = self.registrar(forPlugin: "NativeLanguagePlugin") {
       NativeLanguagePlugin.register(with: registrar)
+    }
+
+    if let registrar = self.registrar(forPlugin: "MapKitLocalePlugin") {
+      MapKitLocalePlugin.register(with: registrar)
     }
 
     if let registrar = self.registrar(forPlugin: "RoomScanBoundsPlugin") {

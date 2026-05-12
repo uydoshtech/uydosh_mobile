@@ -54,6 +54,8 @@ import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.d
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
+import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
+import "package:uy_dosh/presentation/screens/home/notify_search_alert_ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
@@ -66,6 +68,7 @@ const double _kEmptySearchCtaButtonHeight = 58;
 /// "create alert" FAB should be visible (i.e. a search has run in the
 /// current context) and whether that search returned zero results — used
 /// to surface the [NeumorphicHintBubble] above the bell.
+@immutable
 class _SearchAlertFabState {
   const _SearchAlertFabState({required this.showFab, required this.isEmpty});
 
@@ -84,6 +87,7 @@ class _SearchAlertFabState {
 }
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
+@immutable
 class _HomeScreenData {
   const _HomeScreenData({
     required this.isLoading,
@@ -136,6 +140,7 @@ class _HomeScreenData {
   }
 }
 
+@immutable
 class _ResolvedSearchFilters {
   const _ResolvedSearchFilters({
     required this.listingTypeId,
@@ -158,44 +163,6 @@ class _ResolvedSearchFilters {
   final double? maxPrice;
   final bool? privateRoom;
   final bool? withPhoto;
-}
-
-/// One row in the home feed: either a calendar-day header or a listing tile.
-class _HomeFeedEntry {
-  const _HomeFeedEntry.dateHeader(this.day, {required this.isFirstDateHeader})
-      : listing = null;
-  const _HomeFeedEntry.listing(this.listing) : day = null, isFirstDateHeader = null;
-
-  final Listing? listing;
-  final DateTime? day;
-  final bool? isFirstDateHeader;
-}
-
-List<_HomeFeedEntry> _homeFeedEntriesWithDateHeaders(List<Listing> listings) {
-  final out = <_HomeFeedEntry>[];
-  DateTime? lastCalendarDay;
-  var isFirstDateHeader = true;
-  for (final listing in listings) {
-    DateTime created;
-    try {
-      created = DateTime.parse(listing.createdAt).toLocal();
-    } catch (_) {
-      created = DateTime.now();
-    }
-    final day = DateTime(created.year, created.month, created.day);
-    if (lastCalendarDay == null ||
-        lastCalendarDay.year != day.year ||
-        lastCalendarDay.month != day.month ||
-        lastCalendarDay.day != day.day) {
-      out.add(
-        _HomeFeedEntry.dateHeader(day, isFirstDateHeader: isFirstDateHeader),
-      );
-      isFirstDateHeader = false;
-      lastCalendarDay = day;
-    }
-    out.add(_HomeFeedEntry.listing(listing));
-  }
-  return out;
 }
 
 class HomeScreen extends StatefulWidget {
@@ -1469,7 +1436,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           neumorphicSoftUi: true,
                         ),
                         const SizedBox(height: 12),
-                        _NotifySearchAlertGhostButton(
+                        NotifySearchAlertGhostButton(
                           height: _kEmptySearchCtaButtonHeight,
                           label: L10n.get("search_alert_notify_me"),
                           onPressed: _isCreatingSearchAlert
@@ -1865,7 +1832,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
         baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
-    final feedEntries = _homeFeedEntriesWithDateHeaders(listings);
+    final feedEntries = homeFeedEntriesWithDateHeaders(listings);
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: edgeOffset,
@@ -2295,222 +2262,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         withPhoto: filters.withPhoto,
         isRefresh: isRefresh,
         keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
-      ),
-    );
-  }
-}
-
-/// Notify-me control: expanding ring + bell wiggle on tap.
-class _NotifySearchAlertGhostButton extends StatefulWidget {
-  const _NotifySearchAlertGhostButton({
-    required this.height,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final double height;
-  final String label;
-  final VoidCallback? onPressed;
-
-  @override
-  State<_NotifySearchAlertGhostButton> createState() =>
-      _NotifySearchAlertGhostButtonState();
-}
-
-class _NotifySearchAlertGhostButtonState
-    extends State<_NotifySearchAlertGhostButton> with TickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _bellTurns;
-  late final Animation<double> _ringScale;
-  late final Animation<double> _ringOpacity;
-  late final AnimationController _idleController;
-  late final Animation<double> _idleBellTurns;
-  late final AnimationSettingsState _animationSettings;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationSettings = AnimationSettingsState();
-    _idleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 960),
-    );
-    _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
-      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
-    );
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 624),
-    );
-    _bellTurns = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0, end: 0.1).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
-        weight: 22,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.1, end: -0.09).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
-        weight: 24,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: -0.09, end: 0.055).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
-        weight: 24,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.055, end: 0).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
-        weight: 30,
-      ),
-    ]).animate(_controller);
-    _ringScale = Tween<double>(begin: 1, end: 2.15).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.72, curve: Curves.easeOut),
-      ),
-    );
-    _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.88, curve: Curves.easeOut),
-      ),
-    );
-
-    _animationSettings.addListener(_syncFromSettings);
-    _syncFromSettings();
-  }
-
-  void _syncFromSettings() {
-    if (!mounted) return;
-    final idleEnabled = _animationSettings.bellIdleEnabled;
-    if (idleEnabled) {
-      if (!_idleController.isAnimating) {
-        _idleController.repeat(reverse: true);
-      }
-    } else {
-      _idleController.stop();
-      // 0 maps to tween begin (slightly rotated). Keep midpoint as "rest" angle.
-      _idleController.value = 0.5;
-    }
-
-    final tapEnabled = _animationSettings.bellTapEnabled;
-    if (!tapEnabled) {
-      _controller.stop();
-      _controller.value = 0;
-    }
-
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _animationSettings.removeListener(_syncFromSettings);
-    _controller.dispose();
-    _idleController.dispose();
-    super.dispose();
-  }
-
-  void _handlePressed() {
-    if (widget.onPressed == null) return;
-    if (_animationSettings.bellTapEnabled) {
-      _controller.forward(from: 0);
-    }
-    widget.onPressed!();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final ringColor = theme.colorScheme.primary;
-    final idleEnabled = _animationSettings.bellIdleEnabled;
-    final tapEnabled = _animationSettings.bellTapEnabled;
-
-    final label = theme.textTheme.labelLarge;
-    final baseSize = label?.fontSize ?? 14;
-    final textStyle = label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-        TextStyle(
-          fontSize: baseSize * 1.2,
-          height: 1.0,
-          fontWeight: FontWeight.w500,
-        );
-
-    return PrimaryButton(
-      onPressed: widget.onPressed == null ? null : _handlePressed,
-      height: widget.height,
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      width: double.infinity,
-      borderRadius: BorderRadius.circular(20),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 30,
-            height: 30,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                if (tapEnabled)
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return IgnorePointer(
-                        child: Opacity(
-                          opacity: _ringOpacity.value.clamp(0.0, 1.0),
-                          child: Transform.scale(
-                            scale: _ringScale.value,
-                            child: Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: ringColor.withValues(alpha: 0.85),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                AnimatedBuilder(
-                  animation: Listenable.merge([_idleController, _controller]),
-                  builder: (context, child) {
-                    final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
-                        (tapEnabled ? _bellTurns.value : 0.0);
-                    return Transform.rotate(
-                      angle: turns * 2 * math.pi,
-                      alignment: Alignment.topCenter,
-                      child: child,
-                    );
-                  },
-                  child: const ThemeIcon(
-                    Icons.notifications_active,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-              style: textStyle,
-            ),
-          ),
-        ],
       ),
     );
   }

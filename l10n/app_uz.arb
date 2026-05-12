@@ -72,6 +72,8 @@
   "loading_listing_details": "E'lon tafsilotlari yuklanmoqda...",
   "loading_universities": "Universitetlar yuklanmoqda...",
   "loading_regions": "Tumanlar yuklanmoqda...",
+  "loading_map": "Xarita yuklanmoqda...",
+  "map_web_preview": "Veb koʻrinish",
   "error": "Xatolik",
   "error_loading_listing_details": "E'lon tafsilotlarini yuklashda xatolik",
   "error_listing_not_loaded": "E'lon hali yuklanmagan",

@@ -186,6 +186,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get loading_regions => 'Загрузка районов...';
 
   @override
+  String get loading_map => 'Загрузка карты...';
+
+  @override
+  String get map_web_preview => 'Веб-предпросмотр';
+
+  @override
   String get error => 'Ошибка';
 
   @override
