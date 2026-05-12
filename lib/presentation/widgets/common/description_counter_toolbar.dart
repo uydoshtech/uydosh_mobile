@@ -108,6 +108,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   bool get _showCounterText {
+    if (widget.debugShowTapBounds) return true;
     if (widget.counterVisibleAtFraction <= 0.0) return true;
     if (widget.maxLength <= 0) return true;
     return (widget.currentLength / widget.maxLength) >=
@@ -126,7 +127,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
         : Colors.black;
   }
 
-  static const double _actionSpacing = 12;
+  static const double _actionSpacing = 6;
   static const double _footerHeight = 22;
 
   Widget _wrapAction(Widget child) {
