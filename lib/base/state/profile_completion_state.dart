@@ -118,7 +118,7 @@ class ProfileCompletionState extends ChangeNotifier {
   static bool _checkHasEssentialInfo(UserProfile profile) {
     if (!_hasText(profile.name)) return false;
     if (profile.gender == null) return false;
-    if (profile.region == null && profile.regionId == null) return false;
+    if (!_hasOriginCountryOrRegion(profile)) return false;
     if (profile.employed == null) return false;
     return true;
   }
@@ -142,7 +142,11 @@ class ProfileCompletionState extends ChangeNotifier {
     // Either the joined `region` object or the raw `regionId` counts as
     // "region filled". Some API responses (e.g. PUT /profiles/:id) return
     // only the id without the joined object, so checking one is not enough.
-    if (profile.region != null || profile.regionId != null) completedFields++;
+    if (profile.region != null || profile.regionId != null) {
+      completedFields++;
+    } else if (_hasText(profile.originCountryIso2)) {
+      completedFields++;
+    }
     if (profile.university != null || profile.universityId != null) {
       completedFields++;
     }
@@ -167,6 +171,13 @@ class ProfileCompletionState extends ChangeNotifier {
     return value != null && value.trim().isNotEmpty;
   }
 
+  /// "Я из:" satisfied by [UserProfile.regionId] / joined [UserProfile.region]
+  /// or persisted [UserProfile.originCountryIso2] when no region is selectable.
+  static bool _hasOriginCountryOrRegion(UserProfile profile) {
+    if (profile.region != null || profile.regionId != null) return true;
+    return _hasText(profile.originCountryIso2);
+  }
+
   /// Returns list of field names that are not populated (for debug).
   /// Aligned with _countCompletedProfileFields. University is intentionally
   /// omitted — it's optional for non-students and always present for students
@@ -175,7 +186,7 @@ class ProfileCompletionState extends ChangeNotifier {
     final missing = <String>[];
     if (!_hasText(profile.name)) missing.add("name");
     if (profile.gender == null) missing.add("gender");
-    if (profile.region == null && profile.regionId == null) missing.add("region");
+    if (!_hasOriginCountryOrRegion(profile)) missing.add("region");
     if (profile.employed == null) missing.add("employed");
     if (!_hasText(profile.aboutMe)) missing.add("aboutMe");
     if (!_hasText(profile.telegram)) missing.add("telegram");

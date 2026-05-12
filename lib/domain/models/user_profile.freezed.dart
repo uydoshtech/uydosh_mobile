@@ -64,6 +64,8 @@ mixin _$UserProfile {
   String? get sleepTime => throw _privateConstructorUsedError;
   @JsonKey(name: "preferred_language")
   String? get preferredLanguage => throw _privateConstructorUsedError;
+  @JsonKey(name: "origin_country_iso2")
+  String? get originCountryIso2 => throw _privateConstructorUsedError;
   @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: "updated_at")
@@ -118,6 +120,7 @@ abstract class $UserProfileCopyWith<$Res> {
       @JsonKey(name: "wakeup_time") String? wakeupTime,
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
+      @JsonKey(name: "origin_country_iso2") String? originCountryIso2,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt,
       UserProfileRegion? region,
@@ -165,6 +168,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? wakeupTime = freezed,
     Object? sleepTime = freezed,
     Object? preferredLanguage = freezed,
+    Object? originCountryIso2 = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? region = freezed,
@@ -263,6 +267,10 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
           ? _value.preferredLanguage
           : preferredLanguage // ignore: cast_nullable_to_non_nullable
               as String?,
+      originCountryIso2: freezed == originCountryIso2
+          ? _value.originCountryIso2
+          : originCountryIso2 // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -350,6 +358,7 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       @JsonKey(name: "wakeup_time") String? wakeupTime,
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
+      @JsonKey(name: "origin_country_iso2") String? originCountryIso2,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt,
       UserProfileRegion? region,
@@ -397,6 +406,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? wakeupTime = freezed,
     Object? sleepTime = freezed,
     Object? preferredLanguage = freezed,
+    Object? originCountryIso2 = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? region = freezed,
@@ -495,6 +505,10 @@ class __$$UserProfileImplCopyWithImpl<$Res>
           ? _value.preferredLanguage
           : preferredLanguage // ignore: cast_nullable_to_non_nullable
               as String?,
+      originCountryIso2: freezed == originCountryIso2
+          ? _value.originCountryIso2
+          : originCountryIso2 // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -549,6 +563,7 @@ class _$UserProfileImpl implements _UserProfile {
       @JsonKey(name: "wakeup_time") this.wakeupTime,
       @JsonKey(name: "sleep_time") this.sleepTime,
       @JsonKey(name: "preferred_language") this.preferredLanguage,
+      @JsonKey(name: "origin_country_iso2") this.originCountryIso2,
       @JsonKey(name: "created_at") this.createdAt,
       @JsonKey(name: "updated_at") this.updatedAt,
       this.region,
@@ -625,6 +640,9 @@ class _$UserProfileImpl implements _UserProfile {
   @JsonKey(name: "preferred_language")
   final String? preferredLanguage;
   @override
+  @JsonKey(name: "origin_country_iso2")
+  final String? originCountryIso2;
+  @override
   @JsonKey(name: "created_at")
   final String? createdAt;
   @override
@@ -637,7 +655,7 @@ class _$UserProfileImpl implements _UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
+    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, originCountryIso2: $originCountryIso2, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
   }
 
   @override
@@ -685,6 +703,8 @@ class _$UserProfileImpl implements _UserProfile {
                 other.sleepTime == sleepTime) &&
             (identical(other.preferredLanguage, preferredLanguage) ||
                 other.preferredLanguage == preferredLanguage) &&
+            (identical(other.originCountryIso2, originCountryIso2) ||
+                other.originCountryIso2 == originCountryIso2) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -721,6 +741,7 @@ class _$UserProfileImpl implements _UserProfile {
         wakeupTime,
         sleepTime,
         preferredLanguage,
+        originCountryIso2,
         createdAt,
         updatedAt,
         region,
@@ -775,6 +796,7 @@ abstract class _UserProfile implements UserProfile {
       @JsonKey(name: "wakeup_time") final String? wakeupTime,
       @JsonKey(name: "sleep_time") final String? sleepTime,
       @JsonKey(name: "preferred_language") final String? preferredLanguage,
+      @JsonKey(name: "origin_country_iso2") final String? originCountryIso2,
       @JsonKey(name: "created_at") final String? createdAt,
       @JsonKey(name: "updated_at") final String? updatedAt,
       final UserProfileRegion? region,
@@ -850,6 +872,9 @@ abstract class _UserProfile implements UserProfile {
   @override
   @JsonKey(name: "preferred_language")
   String? get preferredLanguage;
+  @override
+  @JsonKey(name: "origin_country_iso2")
+  String? get originCountryIso2;
   @override
   @JsonKey(name: "created_at")
   String? get createdAt;

@@ -1014,7 +1014,7 @@ class _FavoritesTabRibbon extends StatelessWidget {
   final String tasksLabel;
 
   /// Tall enough for the 36-px chip plus vertical breathing room for shadows.
-  static const double _ribbonHeight = 56;
+  static const double _ribbonHeight = 50;
   static const double _chipPadV = 8;
 
   @override

@@ -186,10 +186,19 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                     currentTheme == AppTheme.lightTheme
                                         ? "assets/images/ios_dark_rd_ctn.svg"
                                         : "assets/images/ios_neutral_rd_ctn.svg";
-                                return SvgPicture.asset(
-                                  svgAsset,
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
+                                // The shipped Google asset is 199×44 while [buttonWidth]
+                                // matches SIWA (up to 320px). Uniform scaling can't fill
+                                // both width and height: [BoxFit.contain] undershoots
+                                // width; [BoxFit.fitWidth] grows height with aspect ratio.
+                                // [BoxFit.fill] maps the vector to this slot (mild stretch
+                                // on X only) so height stays 44 and width matches Apple.
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(22),
+                                  child: SvgPicture.asset(
+                                    svgAsset,
+                                    fit: BoxFit.fill,
+                                    alignment: Alignment.center,
+                                  ),
                                 );
                               },
                             ),

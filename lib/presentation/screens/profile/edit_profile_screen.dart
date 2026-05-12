@@ -111,11 +111,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return b ? _cookingSlugAtHome : _cookingSlugDoesNot;
   }
 
-  /// API: 1 = quiet … 5 = loud. Slider: left = loud, right = quiet.
-  int _noiseLevelToDisplay(int? stored) =>
-      stored == null ? 5 : (6 - stored).clamp(1, 5);
-
-  int _displayToNoiseLevel(int display) => (6 - display).clamp(1, 5);
+  /// API [noise_level]: 1 = quiet … 5 = loud; slider uses the same mapping
+  /// (left → right, see labels).
+  int _committedNoiseApiValue() =>
+      _noiseLevel.value ?? widget.profile.noiseLevel ?? 1;
 
   static const String _employedSlugYes = "employed_yes";
   static const String _employedSlugNo = "employed_no";
@@ -169,10 +168,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     _selectedGender = ValueNotifier(widget.profile.gender ?? 1);
     _selectedRegionId = ValueNotifier(widget.profile.regionId);
-    // Country is derived from region (regions.country_id FK). Until we can
-    // resolve the server numeric country id → ISO2, default to Uzbekistan —
-    // the only seeded country whose regions we actually render today.
-    _selectedCountryIso2 = ValueNotifier(CountryCache.defaultIso2);
+    final persistedIso = widget.profile.originCountryIso2?.trim().toUpperCase();
+    final hasPersistedIso = persistedIso != null && persistedIso.isNotEmpty;
+    final initialCountryIso = widget.profile.regionId != null
+        ? CountryCache.defaultIso2
+        : (hasPersistedIso ? persistedIso : CountryCache.defaultIso2);
+    _selectedCountryIso2 = ValueNotifier(initialCountryIso);
     _countryService = getIt<ICountryService>();
     _selectedUniversityId = ValueNotifier(widget.profile.universityId);
     _isStudent = ValueNotifier(widget.profile.universityId != null);
@@ -205,6 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       _aboutMeController,
       _telegramController,
       _selectedGender,
+      _selectedCountryIso2,
       _selectedRegionId,
       _selectedUniversityId,
       _isStudent,
@@ -345,7 +347,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (_selectedGender.value != (p.gender ?? 1)) {
       addLabel("gender", fallback: "Gender");
     }
-    if (_selectedRegionId.value != _resolvedRegionIdFromProfile()) {
+    if (_isOriginDirty(p)) {
       addLabel("im_from", fallback: "Region");
     }
 
@@ -380,7 +382,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       addLabel("sleep_time", fallback: "Sleep time");
     if (p.cleanliness != _cleanliness.value)
       addLabel("cleanliness", fallback: "Cleanliness");
-    if (p.noiseLevel != _noiseLevel.value)
+    if (p.noiseLevel != _committedNoiseApiValue())
       addLabel("noise_level", fallback: "Noise level");
     if (p.sociability != _sociability.value)
       addLabel("sociability", fallback: "Sociability");
@@ -421,6 +423,27 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return _universities.any((u) => u.id == id) ? id : null;
   }
 
+  String _savedOriginCountryIso2(UserProfile p) {
+    if (p.regionId != null || p.region != null) {
+      return CountryCache.defaultIso2;
+    }
+    final raw = p.originCountryIso2;
+    if (raw != null && raw.trim().isNotEmpty) {
+      return raw.trim().toUpperCase();
+    }
+    return CountryCache.defaultIso2;
+  }
+
+  String _resolvedOriginIso2ForForm() {
+    if (_selectedRegionId.value != null) return CountryCache.defaultIso2;
+    return _selectedCountryIso2.value.trim().toUpperCase();
+  }
+
+  bool _isOriginDirty(UserProfile p) {
+    return _selectedRegionId.value != _resolvedRegionIdFromProfile() ||
+        _resolvedOriginIso2ForForm() != _savedOriginCountryIso2(p);
+  }
+
   bool _isFormDirty() {
     final p = widget.profile;
     if (_nameController.text.trim() != (p.name ?? "").trim()) return true;
@@ -431,9 +454,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       return true;
     }
     if (_selectedGender.value != (p.gender ?? 1)) return true;
-    if (_selectedRegionId.value != _resolvedRegionIdFromProfile()) {
-      return true;
-    }
+    if (_isOriginDirty(p)) return true;
 
     final baselineStudent = p.universityId != null;
     if (_isStudent.value != baselineStudent) return true;
@@ -451,7 +472,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     if (p.employed != _employedBoolFromSlug(_employed.value)) return true;
     if (p.cleanliness != _cleanliness.value) return true;
-    if (p.noiseLevel != _noiseLevel.value) return true;
+    if (p.noiseLevel != _committedNoiseApiValue()) return true;
     if (p.sociability != _sociability.value) return true;
     if (p.guestsAllowed != _guestsBoolFromSlug(_guestsAllowed.value)) {
       return true;
@@ -534,6 +555,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           (region) => region.id == widget.profile.regionId,
         );
         _selectedRegionId.value = regionExists ? widget.profile.regionId : null;
+        if (_selectedRegionId.value != null) {
+          _selectedCountryIso2.value = CountryCache.defaultIso2;
+        }
       } else {
         _selectedRegionId.value = null;
       }
@@ -624,7 +648,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         telegram: telegramToSend,
         employed: _employedBoolFromSlug(_employed.value),
         cleanliness: _cleanliness.value,
-        noiseLevel: _noiseLevel.value,
+        noiseLevel: _committedNoiseApiValue(),
         sociability: _sociability.value,
         guestsAllowed: _guestsBoolFromSlug(_guestsAllowed.value),
         smokingPreference: _smokingPreference.value,
@@ -634,6 +658,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         wakeupTime: _wakeupTime.value,
         sleepTime: _sleepTime.value,
         preferredLanguage: _selectedLanguage.value,
+        originCountryIso2: _resolvedOriginIso2ForForm(),
       );
 
       // Debug logging to see what values are being sent
@@ -647,7 +672,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         "  - employed: ${_employedBoolFromSlug(_employed.value)}",
       );
       logger.d("  - cleanliness: ${_cleanliness.value}");
-      logger.d("  - noiseLevel: ${_noiseLevel.value}");
+      logger.d("  - noiseLevel: ${_committedNoiseApiValue()}");
       logger.d("  - sociability: ${_sociability.value}");
       logger.d(
         "  - guestsAllowed: ${_guestsBoolFromSlug(_guestsAllowed.value)}",
@@ -1112,29 +1137,25 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                     const SizedBox(height: 16),
 
-                    // Noise level: loud/noisy on the left (1), quiet on the right (5).
-                    // Stored values stay 1 = quiet … 5 = loud (see [_noiseLevelToDisplay]).
+                    // Noise level: same 1–5 scale as API (1 = quiet … 5 = loud).
                     ValueListenableBuilder<int?>(
                       valueListenable: _noiseLevel,
-                      builder: (context, noiseLevel, _) => ProfileSliderControl(
+                      builder: (context, noiseLevel, _) =>
+                          ProfileSliderControl(
                         label: L10n.get(
                           "noise_level",
                         ),
-                        value: _noiseLevelToDisplay(noiseLevel),
-                        onChanged: (displayValue) {
-                          if (displayValue == null) return;
-                          _noiseLevel.value =
-                              _displayToNoiseLevel(displayValue);
-                        },
+                        value: noiseLevel,
+                        onChanged: (value) => _noiseLevel.value = value,
                         min: 1,
                         max: 5,
                         icon: Icons.volume_up,
                         labels: [
-                          L10n.get("very_loud"),
-                          L10n.get("loud"),
-                          L10n.get("average"),
-                          L10n.get("quiet"),
                           L10n.get("very_quiet"),
+                          L10n.get("quiet"),
+                          L10n.get("average"),
+                          L10n.get("loud"),
+                          L10n.get("very_loud"),
                         ],
                       ),
                     ),
@@ -2262,6 +2283,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           },
           onConfirm: () {
             _selectedRegionId.value = pendingRegionId;
+            if (pendingRegionId != null) {
+              _selectedCountryIso2.value = CountryCache.defaultIso2;
+            }
             Navigator.of(sheetContext).pop();
           },
         );

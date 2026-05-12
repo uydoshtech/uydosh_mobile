@@ -136,7 +136,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                               child: InteractiveViewer(
                                 minScale: 0.5,
                                 maxScale: 3.0,
-                                child: Center(
+                                child: SizedBox.expand(
                                   child: CachedNetworkImage(
                                     imageUrl: _buildPhotoUrl(
                                       widget.photoUrls[index],

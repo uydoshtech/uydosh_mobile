@@ -10,6 +10,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
@@ -165,8 +166,9 @@ class _ListingDescriptionTranslationState
   }
 
   Widget _buildDescriptionWithTelegramLinks(String content) {
+    final text = StringUtils.collapseExcessiveNewlines(content);
     if (ClientListingContactUiConfig.hidePublicContactDetails) {
-      final redacted = ListingContactRedaction.stripForPublicDisplay(content);
+      final redacted = ListingContactRedaction.stripForPublicDisplay(text);
       return SelectableText(redacted, style: widget.textStyle);
     }
     _disposeTelegramRecognizers();
@@ -179,11 +181,11 @@ class _ListingDescriptionTranslationState
       decorationColor: linkColor,
     );
     final spans = <InlineSpan>[];
-    final matches = ListingContactRedaction.mergedContactMatches(content);
+    final matches = ListingContactRedaction.mergedContactMatches(text);
     var cursor = 0;
     for (final m in matches) {
       if (m.start > cursor) {
-        spans.add(TextSpan(text: content.substring(cursor, m.start)));
+        spans.add(TextSpan(text: text.substring(cursor, m.start)));
       }
       if (m.kind == "tg") {
         final r = TapGestureRecognizer()
@@ -225,8 +227,8 @@ class _ListingDescriptionTranslationState
       }
       cursor = m.end;
     }
-    if (cursor < content.length) {
-      spans.add(TextSpan(text: content.substring(cursor)));
+    if (cursor < text.length) {
+      spans.add(TextSpan(text: text.substring(cursor)));
     }
     return SelectableText.rich(
       TextSpan(style: widget.textStyle, children: spans),
@@ -609,7 +611,9 @@ class _ListingDescriptionTranslationState
                     ? ListingContactRedaction.stripForPublicDisplay(
                         widget.originalText,
                       )
-                    : widget.originalText,
+                    : StringUtils.collapseExcessiveNewlines(
+                        widget.originalText,
+                      ),
           )
         else
           _buildDescriptionWithTelegramLinks(

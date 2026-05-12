@@ -561,18 +561,19 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Color backgroundColor;
 
   /// Tall enough for title + subtitle (same Task/Service phrasing as Publish).
-  static const double _switchHeight = 60;
+  /// Scaled from ~145→135 vs design reference while keeping prior 60 logical baseline.
+  static const double _switchHeight = 135 * 60 / 145;
 
   /// Vertical padding around the primary toggle (matches messages inbox).
   static const double _togglePadTop = 8;
-  static const double _togglePadBottom = 12;
+  static const double _togglePadBottom = 8;
 
   /// Total height of the toggle row including inbox-style vertical margins.
   static const double _toggleSectionHeight =
       _togglePadTop + _switchHeight + _togglePadBottom;
 
   /// Height of the category ribbon (mirrors [_CategoryRibbon._ribbonHeight]).
-  static const double _ribbonHeight = 56;
+  static const double _ribbonHeight = 50;
 
   /// Spacing below the ribbon, before the first feed item.
   static const double _ribbonBottomGap = 12;
@@ -728,7 +729,7 @@ class _CategoryRibbonState extends State<_CategoryRibbon> {
   /// Tall enough to seat a 36-px chip (`vertical: 8` × 2 + ~20 line height)
   /// plus 8 px of vertical breathing room above and below so shadows from
   /// the active chip don't get clipped by the host viewport.
-  static const double _ribbonHeight = 56;
+  static const double _ribbonHeight = 50;
   static const double _chipPadV = 8;
 
   List<GlobalKey> _newItemKeys(int count) =>

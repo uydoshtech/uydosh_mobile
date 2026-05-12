@@ -2,6 +2,13 @@
 class StringUtils {
   StringUtils._();
 
+  /// Normalizes CRLF and collapses runs of **three or more** newlines to a
+  /// single paragraph break (two newlines). Pairs of newlines are kept so
+  /// intentional blank lines between paragraphs stay readable.
+  static String collapseExcessiveNewlines(String s) {
+    return s.replaceAll("\r\n", "\n").replaceAll(RegExp(r"\n{3,}"), "\n\n");
+  }
+
   /// Extract initials from a person's name.
   /// Returns 2 letters for names with spaces (first and last name)
   /// Returns first 2 letters for single names

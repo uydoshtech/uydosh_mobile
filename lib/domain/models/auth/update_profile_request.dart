@@ -28,6 +28,7 @@ class UpdateProfileRequest implements IJsonEncodable {
     this.wakeupTime,
     this.sleepTime,
     this.preferredLanguage,
+    this.originCountryIso2,
   });
 
   factory UpdateProfileRequest.fromJson(Map<String, dynamic> json) =>
@@ -71,6 +72,8 @@ class UpdateProfileRequest implements IJsonEncodable {
   final String? sleepTime;
   @JsonKey(name: "preferred_language")
   final String? preferredLanguage;
+  @JsonKey(name: "origin_country_iso2")
+  final String? originCountryIso2;
 
   @override
   Map<String, dynamic> toJson() {

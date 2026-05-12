@@ -1258,7 +1258,7 @@ class _PublishModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeumorphicSegmentedSwitch<GigPublishMode>(
       value: value,
-      height: 60,
+      height: 135 * 60 / 145,
       onChanged: onChanged,
       entries: [
         SegmentedSwitchEntry(

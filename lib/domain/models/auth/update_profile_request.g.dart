@@ -30,6 +30,7 @@ UpdateProfileRequest _$UpdateProfileRequestFromJson(
       wakeupTime: json['wakeup_time'] as String?,
       sleepTime: json['sleep_time'] as String?,
       preferredLanguage: json['preferred_language'] as String?,
+      originCountryIso2: json['origin_country_iso2'] as String?,
     );
 
 Map<String, dynamic> _$UpdateProfileRequestToJson(
@@ -57,4 +58,5 @@ Map<String, dynamic> _$UpdateProfileRequestToJson(
       'wakeup_time': instance.wakeupTime,
       'sleep_time': instance.sleepTime,
       'preferred_language': instance.preferredLanguage,
+      'origin_country_iso2': instance.originCountryIso2,
     };

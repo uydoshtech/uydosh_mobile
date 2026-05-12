@@ -412,7 +412,10 @@ class _OfferDetailContentStatefulState
     final offer = widget.state.offer;
     final existingBooking = widget.state.activeClientBookingForOffer;
     final language = LanguageState().currentLanguage;
-    final description = offer.localizedDescription(language) ?? "";
+    final rawDescription = offer.localizedDescription(language);
+    final description = rawDescription == null || rawDescription.isEmpty
+        ? ""
+        : StringUtils.collapseExcessiveNewlines(rawDescription.trim());
     final categoryName = offer.category?.localizedName(language) ?? "";
     final publicationFormatted =
         ListingDetailDateUtils.formatPublicationDate(context, offer.createdAt);

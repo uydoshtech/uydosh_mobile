@@ -106,7 +106,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                                 ColoredBox(
                                   color: Colors.black.withValues(alpha: 0.12),
                                 ),
-                                Center(
+                                Positioned.fill(
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(rawUrl),
                                     fit: BoxFit.contain,

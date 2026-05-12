@@ -684,18 +684,12 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
 
   String _localizedDescription(String language) {
     final r = widget.request;
-    switch (language) {
-      case "uz":
-        return (r.descriptionUz ?? r.descriptionRu ?? r.descriptionEn ?? "")
-            .trim();
-      case "en":
-        return (r.descriptionEn ?? r.descriptionRu ?? r.descriptionUz ?? "")
-            .trim();
-      case "ru":
-      default:
-        return (r.descriptionRu ?? r.descriptionEn ?? r.descriptionUz ?? "")
-            .trim();
-    }
+    final raw = switch (language) {
+      "uz" => (r.descriptionUz ?? r.descriptionRu ?? r.descriptionEn ?? "").trim(),
+      "en" => (r.descriptionEn ?? r.descriptionRu ?? r.descriptionUz ?? "").trim(),
+      _ => (r.descriptionRu ?? r.descriptionEn ?? r.descriptionUz ?? "").trim(),
+    };
+    return StringUtils.collapseExcessiveNewlines(raw);
   }
 
   String _budgetLine() {

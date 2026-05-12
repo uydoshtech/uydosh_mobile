@@ -1,4 +1,5 @@
 import "package:uy_dosh/base/config/client_listing_contact_ui_config.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 
 /// Strips contact channels from listing copy shown in feed/detail when
 /// [ClientListingContactUiConfig.hidePublicContactDetails] is true.
@@ -93,7 +94,7 @@ abstract final class ListingContactRedaction {
   }
 
   static String _stripContactHintLines(String s) {
-    return s
+    final stripped = s
         .replaceAll(
           RegExp(
             r"^\s*☎\s*номер\s+телефона.*$",
@@ -111,15 +112,14 @@ abstract final class ListingContactRedaction {
             dotAll: true,
           ),
           "",
-        )
-        .replaceAll(RegExp(r"\n{3,}"), "\n\n")
-        .trim();
+        );
+    return StringUtils.collapseExcessiveNewlines(stripped).trim();
   }
 
   /// Removes @handles, phone numbers, t.me URLs, and common “phone below” label lines.
   static String stripForPublicDisplay(String content) {
     if (!ClientListingContactUiConfig.hidePublicContactDetails) {
-      return content;
+      return StringUtils.collapseExcessiveNewlines(content);
     }
     final intervals = <({int start, int end})>[];
     for (final m in mergedContactMatches(content)) {
