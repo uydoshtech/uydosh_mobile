@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
+import "package:firebase_auth/firebase_auth.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -32,6 +34,8 @@ class AdminUserDetailScreen extends StatefulWidget {
 }
 
 class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
+  static const String _kProtectedDeleteAccountEmail = "uydoshtech@gmail.com";
+
   String? _selectedRole;
   String? _currentRole;
   bool _saving = false;
@@ -39,6 +43,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   bool _blocking = false;
   String? _avatarUrl;
   String? _profileName;
+  String? _viewerEmail;
 
   List<AdminUserDevice>? _devices;
   bool _devicesLoading = false;
@@ -53,6 +58,15 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     _currentRole = widget.user.role;
     _loadProfile();
     _loadDevices();
+    _loadViewerEmail();
+  }
+
+  Future<void> _loadViewerEmail() async {
+    final sessionEmail = await SessionManager.getUserEmail();
+    final firebaseEmail = FirebaseAuth.instance.currentUser?.email;
+    setStateIfMounted(() {
+      _viewerEmail = (firebaseEmail ?? sessionEmail)?.trim();
+    });
   }
 
   Future<void> _loadDevices() async {
@@ -101,6 +115,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final canSave = _selectedRole != null && _selectedRole != _currentRole;
+    final viewerEmailLower = _viewerEmail?.trim().toLowerCase();
+    final targetEmailLower = _currentUser.email?.trim().toLowerCase();
+    final isSelf = viewerEmailLower != null &&
+        viewerEmailLower.isNotEmpty &&
+        viewerEmailLower == targetEmailLower;
+    final isProtected = targetEmailLower == _kProtectedDeleteAccountEmail;
+    final disableModerationActions = isSelf || isProtected;
     return Scaffold(
       appBar: UydoshAppBar(
         title: Text(
@@ -119,9 +140,16 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           const SizedBox(height: 12),
           _buildDevicesCard(context),
           const SizedBox(height: 12),
-          _buildBlockCard(context),
+          _buildBlockCard(
+            context,
+            disableActions: disableModerationActions,
+          ),
           const SizedBox(height: 12),
-          _buildRoleCard(context, canSave: canSave),
+          _buildRoleCard(
+            context,
+            canSave: canSave,
+            disableActions: disableModerationActions,
+          ),
           const SizedBox(height: 12),
           _buildActionsCard(context),
         ],
@@ -424,8 +452,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     );
   }
 
-  Widget _buildBlockCard(BuildContext context) {
+  Widget _buildBlockCard(
+    BuildContext context, {
+    required bool disableActions,
+  }) {
     final blocked = _currentUser.isCurrentlyBlocked;
+    final isDisabled = disableActions;
     return _NeumorphicTile(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -475,7 +507,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _blocking
+                  onPressed: (_blocking || isDisabled)
                       ? null
                       : () {
                           HapticFeedbackUtils.impact();
@@ -497,7 +529,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _blocking
+                  onPressed: (_blocking || isDisabled)
                       ? null
                       : () {
                           HapticFeedbackUtils.impact();
@@ -521,6 +553,16 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                     side:
                         BorderSide(color: Theme.of(context).colorScheme.error),
                   ),
+                ),
+              ),
+            ],
+            if (isDisabled) ...[
+              const SizedBox(height: 10),
+              Text(
+                L10n.get("admin_user_detail_self_moderation_not_allowed"),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -661,7 +703,11 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     }
   }
 
-  Widget _buildRoleCard(BuildContext context, {required bool canSave}) {
+  Widget _buildRoleCard(
+    BuildContext context, {
+    required bool canSave,
+    required bool disableActions,
+  }) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
     final roleFieldFillColor = isBlueTheme
@@ -691,7 +737,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                     ),
                   )
                   .toList(),
-              onChanged: _saving
+              onChanged: (_saving || disableActions)
                   ? null
                   : (value) => setState(() => _selectedRole = value),
               style: isBlueTheme
@@ -714,7 +760,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: !_saving && canSave
+                onPressed: (!_saving && canSave && !disableActions)
                     ? () {
                         HapticFeedbackUtils.impact();
                         _updateRole();
@@ -731,6 +777,16 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       ),
               ),
             ),
+            if (disableActions) ...[
+              const SizedBox(height: 10),
+              Text(
+                L10n.get("admin_user_detail_self_moderation_not_allowed"),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ),
       ),

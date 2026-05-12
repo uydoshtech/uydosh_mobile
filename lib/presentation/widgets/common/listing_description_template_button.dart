@@ -67,13 +67,11 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: accent,
         padding: inlineWithCounter
-            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 8)
+            ? const EdgeInsets.symmetric(horizontal: 8, vertical: 0)
             : const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        minimumSize: inlineWithCounter ? const Size(44, 44) : Size.zero,
-        tapTargetSize: inlineWithCounter
-            ? MaterialTapTargetSize.padded
-            : MaterialTapTargetSize.shrinkWrap,
-        visualDensity: inlineWithCounter ? VisualDensity.standard : VisualDensity.compact,
+        minimumSize: inlineWithCounter ? const Size(0, 44) : Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
         alignment: Alignment.centerLeft,
       ),
       child: child,

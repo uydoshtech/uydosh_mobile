@@ -1136,6 +1136,8 @@ class AppStrings {
       "admin_user_detail_block_confirm": "Block",
       "admin_user_detail_blocked_success": "User blocked",
       "admin_user_detail_unblocked_success": "User unblocked",
+      "admin_user_detail_self_moderation_not_allowed":
+          "You can’t block/unblock or change the role for your own admin account.",
       "admin_user_detail_devices_title": "Devices",
       "admin_user_detail_devices_empty": "No registered devices",
       "admin_user_detail_devices_last_seen": "Last seen",
@@ -2609,6 +2611,8 @@ class AppStrings {
       "admin_user_detail_block_confirm": "Заблокировать",
       "admin_user_detail_blocked_success": "Пользователь заблокирован",
       "admin_user_detail_unblocked_success": "Пользователь разблокирован",
+      "admin_user_detail_self_moderation_not_allowed":
+          "Нельзя блокировать/разблокировать или менять роль у своего админ-аккаунта.",
       "admin_user_detail_devices_title": "Устройства",
       "admin_user_detail_devices_empty": "Нет зарегистрированных устройств",
       "admin_user_detail_devices_last_seen": "Последняя активность",
@@ -4084,6 +4088,8 @@ class AppStrings {
       "admin_user_detail_block_confirm": "Bloklash",
       "admin_user_detail_blocked_success": "Foydalanuvchi bloklandi",
       "admin_user_detail_unblocked_success": "Foydalanuvchi blokdan chiqarildi",
+      "admin_user_detail_self_moderation_not_allowed":
+          "O'zingizning admin hisobingizni bloklab/ochib bo'lmaydi yoki rolini o'zgartirib bo'lmaydi.",
       "admin_user_detail_devices_title": "Qurilmalar",
       "admin_user_detail_devices_empty": "Ro'yxatdan o'tgan qurilmalar yo'q",
       "admin_user_detail_devices_last_seen": "Oxirgi faollik",
