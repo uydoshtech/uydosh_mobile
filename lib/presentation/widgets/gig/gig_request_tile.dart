@@ -7,6 +7,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
@@ -99,6 +100,8 @@ class _GigRequestTileState extends State<GigRequestTile>
 
   Future<void> _handleFavoriteTap(BuildContext context) async {
     if (_isTogglingFavorite) return;
+    HapticFeedbackUtils.impact();
+    SoundService().playLike();
     final gigFav = GigFavoritesState();
     final favScreen = FavoritesState();
     final wasFavorite =
