@@ -1142,6 +1142,10 @@ class _HomeListingsAppBarTitle extends StatefulWidget {
 class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
   bool _countReady = false;
 
+  /// Fine vertical tuning for inline [WidgetSpan]s (logical px; +Y is down).
+  static const double _bulletDiscDy = 1.5;
+  static const double _countTallyDy = 2;
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -1169,13 +1173,13 @@ class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
                 final showCount =
                     inlineActive && _countReady && total != null && total > 0;
 
-                // “•” keeps title line height; digits are 2px smaller for hierarchy.
+                // “•” uses title size; digits are smaller for hierarchy.
                 final titleFs = widget.titleStyle.fontSize ?? 20;
                 final countStyle = widget.titleStyle.copyWith(
                   fontWeight: FontWeight.w600,
                   color: widget.titleStyle.color?.withValues(alpha: 0.72),
                 );
-                final countNumberStyle = countStyle.copyWith(fontSize: titleFs - 2);
+                final countNumberStyle = countStyle.copyWith(fontSize: titleFs - 5);
 
                 return Text.rich(
                   TextSpan(
@@ -1185,8 +1189,26 @@ class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
                         style: widget.titleStyle,
                       ),
                       if (showCount) ...[
-                        TextSpan(text: " \u2022 ", style: countStyle),
-                        TextSpan(text: "$total", style: countNumberStyle),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Transform.translate(
+                            offset: const Offset(0, _bulletDiscDy),
+                            child: Text(
+                              " \u2022 ",
+                              style: countStyle,
+                            ),
+                          ),
+                        ),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Transform.translate(
+                            offset: const Offset(0, _countTallyDy),
+                            child: Text(
+                              "$total",
+                              style: countNumberStyle,
+                            ),
+                          ),
+                        ),
                       ],
                     ],
                   ),
