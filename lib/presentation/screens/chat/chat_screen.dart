@@ -25,6 +25,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -1552,7 +1553,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _navigateToGigRequestDetail() {
     final id = widget.gigRequestId;
     if (id == null) return;
-    HapticFeedbackUtils.selection();
+    UiFeedbackUtils.selection();
     if (widget.gigRequestDetailRouteBelow) {
       Navigator.of(context).pop();
       return;
@@ -1564,7 +1565,7 @@ class _ChatScreenState extends State<ChatScreen> {
     // Prefer widget.otherUserId, fall back to deriving from messages
     final otherUserId = widget.otherUserId ?? _getOtherUserIdFromMessages();
     if (otherUserId != null) {
-      HapticFeedbackUtils.selection();
+      UiFeedbackUtils.selection();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => BlocProvider(

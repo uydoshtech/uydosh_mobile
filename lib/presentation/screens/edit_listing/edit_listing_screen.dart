@@ -1033,7 +1033,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   const Duration(milliseconds: 320),
                               curve: Curves.easeInOut,
                               alignment: Alignment.topCenter,
-                              clipBehavior: Clip.hardEdge,
+                              clipBehavior: Clip.none,
                               child: TextFormField(
                                 controller: _descriptionController,
                                 onChanged: (value) {

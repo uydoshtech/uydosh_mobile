@@ -1132,6 +1132,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           L10n.get("clean"),
                           L10n.get("very_clean"),
                         ],
+                        scaleStartLabel: L10n.get("very_messy"),
+                        scaleEndLabel: L10n.get("very_clean"),
                       ),
                     ),
 
@@ -1157,6 +1159,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           L10n.get("loud"),
                           L10n.get("very_loud"),
                         ],
+                        scaleStartLabel: L10n.get("very_quiet"),
+                        scaleEndLabel: L10n.get("very_loud"),
                       ),
                     ),
 
@@ -1186,6 +1190,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                             "very_extroverted",
                           ),
                         ],
+                        scaleStartLabel: L10n.get("very_introverted"),
+                        scaleEndLabel: L10n.get("very_extroverted"),
                       ),
                     ),
 

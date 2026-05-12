@@ -4,7 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
@@ -97,7 +97,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
                 value: searchFiltersState.privateRoom,
                 emphasized: searchFiltersState.privateRoom,
                 onChanged: (value) {
-                  HapticFeedbackUtils.impact();
+                  UiFeedbackUtils.tap();
                   onPrivateRoomChanged(value);
                 },
               ),
@@ -110,7 +110,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
                 value: searchFiltersState.withPhoto,
                 emphasized: searchFiltersState.withPhoto,
                 onChanged: (value) {
-                  HapticFeedbackUtils.impact();
+                  UiFeedbackUtils.tap();
                   onWithPhotoChanged(value);
                 },
               ),

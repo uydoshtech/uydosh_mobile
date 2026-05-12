@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
@@ -760,6 +761,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                             ? null
                             : (v) {
                                 if (v == null) return;
+                                UiFeedbackUtils.tap();
                                 setState(() {
                                   _selectedChannel = v;
                                   if (v != _kCustomChannelSentinel) {
@@ -905,8 +907,10 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                           ],
                           onChanged: _running
                               ? null
-                              : (v) =>
-                                  setState(() => _selectedImportUserId = v),
+                              : (v) {
+                                  UiFeedbackUtils.tap();
+                                  setState(() => _selectedImportUserId = v);
+                                },
                           decoration: _fieldDecoration(
                             context,
                             labelText: L10n.get(

@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
@@ -209,7 +209,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                     maxLines: 1,
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
-                    onTap: () => HapticFeedbackUtils.impact(),
+                    onTap: () => UiFeedbackUtils.tap(),
                     decoration: InputDecoration(
                       hintText: L10n.get("full_name_hint"),
                       hintStyle: TextStyle(
@@ -553,10 +553,8 @@ class AuthWizardProfilePage extends StatelessWidget {
             ? AuthWizardTheme.getSelectedButtonTextColor()
             : _getOnboardingTextColor(context));
     return PressableTransform(
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        onTap();
-      },
+      feedback: PressableFeedback.selection,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: DecoratedBox(
         decoration: _neumorphicCardDecoration(
@@ -671,10 +669,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     required String value,
   }) {
     return PressableTransform(
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        onTap();
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: DecoratedBox(
         decoration: _neumorphicCardDecoration(
@@ -740,10 +735,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     final isSelected = selectedUniversity != null;
     final selectedTextColor = AuthWizardTheme.getSelectedButtonTextColor();
     return PressableTransform(
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        onShowUniversityPicker();
-      },
+      onTap: onShowUniversityPicker,
       borderRadius: BorderRadius.circular(12),
       child: DecoratedBox(
         decoration: _neumorphicCardDecoration(

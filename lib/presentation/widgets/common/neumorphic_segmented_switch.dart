@@ -3,7 +3,8 @@ import "dart:math" as math;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// One option inside a [NeumorphicSegmentedSwitch].
@@ -38,6 +39,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
     this.intrinsicWidthFirstSegment = false,
     this.firstSegmentWidthScale = 1,
     this.firstSegmentMinFractionOfBar,
+    this.liquidGlass = false,
     super.key,
   });
 
@@ -45,6 +47,10 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
   final List<SegmentedSwitchEntry<T>> entries;
   final ValueChanged<T> onChanged;
   final double height;
+
+  /// When true, uses [LiquidGlassPlate] for the outer pill and a translucent
+  /// primary thumb — matches liquid-glass theme controls (e.g. hub FAB chips).
+  final bool liquidGlass;
 
   /// When true, the first segment is only as wide as its icon + label (with a
   /// sensible minimum tap target); remaining segments split the rest equally.
@@ -158,6 +164,116 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
               totalInner,
             );
 
+            final theme = Theme.of(context);
+            final isDark = theme.brightness == Brightness.dark;
+
+            final thumbDecoration = liquidGlass
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(_innerRadius()),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        primaryColor.withValues(alpha: isDark ? 0.38 : 0.44),
+                        primaryColor.withValues(alpha: isDark ? 0.58 : 0.64),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: isDark ? 0.20 : 0.12,
+                      ),
+                      width: 0.6,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.28 : 0.10,
+                        ),
+                        blurRadius: isDark ? 12 : 10,
+                        spreadRadius: isDark ? 0.4 : 0.2,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  )
+                : BoxDecoration(
+                    borderRadius: BorderRadius.circular(_innerRadius()),
+                    gradient: ThreeDSurfaceStyle.surfaceGradient(
+                      context,
+                      primaryColor,
+                    ),
+                    boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                  );
+
+            final stack = Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  left: _thumbInset +
+                      segmentWidths
+                          .take(activeIndex)
+                          .fold<double>(0, (a, w) => a + w),
+                  top: _thumbInset,
+                  bottom: _thumbInset,
+                  width: segmentWidths[activeIndex],
+                  child: DecoratedBox(
+                    decoration: thumbDecoration,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _thumbInset,
+                  ),
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < entries.length; i++)
+                        intrinsicWidthFirstSegment &&
+                                i == 0 &&
+                                entries.length > 1
+                            ? SizedBox(
+                                width: segmentWidths[i],
+                                child: _SegmentedSwitchTab<T>(
+                                  entry: entries[i],
+                                  isSelected: i == activeIndex,
+                                  height: height,
+                                  selectedTextColor: selectedTextColor,
+                                  unselectedTextColor: unselectedTextColor,
+                                  onTap: () {
+                                    if (i == activeIndex) return;
+                                    UiFeedbackUtils.selection();
+                                    onChanged(entries[i].value);
+                                  },
+                                ),
+                              )
+                            : Expanded(
+                                child: _SegmentedSwitchTab<T>(
+                                  entry: entries[i],
+                                  isSelected: i == activeIndex,
+                                  height: height,
+                                  selectedTextColor: selectedTextColor,
+                                  unselectedTextColor: unselectedTextColor,
+                                  onTap: () {
+                                    if (i == activeIndex) return;
+                                    UiFeedbackUtils.selection();
+                                    onChanged(entries[i].value);
+                                  },
+                                ),
+                              ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+
+            if (liquidGlass) {
+              return LiquidGlassPlate(
+                height: height,
+                borderRadius: BorderRadius.circular(_outerRadius()),
+                padding: EdgeInsets.zero,
+                child: stack,
+              );
+            }
+
             return Container(
               height: height,
               decoration: BoxDecoration(
@@ -168,74 +284,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                 ),
                 boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
               ),
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    left: _thumbInset +
-                        segmentWidths
-                            .take(activeIndex)
-                            .fold<double>(0, (a, w) => a + w),
-                    top: _thumbInset,
-                    bottom: _thumbInset,
-                    width: segmentWidths[activeIndex],
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(_innerRadius()),
-                        gradient: ThreeDSurfaceStyle.surfaceGradient(
-                          context,
-                          primaryColor,
-                        ),
-                        boxShadow:
-                            ThreeDSurfaceStyle.elevatedShadows(context),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _thumbInset,
-                    ),
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < entries.length; i++)
-                          intrinsicWidthFirstSegment &&
-                                  i == 0 &&
-                                  entries.length > 1
-                              ? SizedBox(
-                                  width: segmentWidths[i],
-                                  child: _SegmentedSwitchTab<T>(
-                                    entry: entries[i],
-                                    isSelected: i == activeIndex,
-                                    height: height,
-                                    selectedTextColor: selectedTextColor,
-                                    unselectedTextColor: unselectedTextColor,
-                                    onTap: () {
-                                      if (i == activeIndex) return;
-                                      HapticFeedbackUtils.selection();
-                                      onChanged(entries[i].value);
-                                    },
-                                  ),
-                                )
-                              : Expanded(
-                                  child: _SegmentedSwitchTab<T>(
-                                    entry: entries[i],
-                                    isSelected: i == activeIndex,
-                                    height: height,
-                                    selectedTextColor: selectedTextColor,
-                                    unselectedTextColor: unselectedTextColor,
-                                    onTap: () {
-                                      if (i == activeIndex) return;
-                                      HapticFeedbackUtils.selection();
-                                      onChanged(entries[i].value);
-                                    },
-                                  ),
-                                ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              child: stack,
             );
           },
         );

@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -92,7 +92,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
             borderRadius: radius,
             onTap: _enabled
                 ? () {
-                    HapticFeedbackUtils.impact();
+                    UiFeedbackUtils.tap();
                     widget.onPressed?.call();
                   }
                 : null,

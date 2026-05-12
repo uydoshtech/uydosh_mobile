@@ -4,7 +4,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
@@ -209,7 +209,7 @@ class _NotifySearchAlertAppBarButtonState
     if (widget.celebrationTick != oldWidget.celebrationTick &&
         widget.celebrationTick > 0 &&
         _animationSettings.bellTapEnabled) {
-      HapticFeedbackUtils.selection();
+      UiFeedbackUtils.selection();
       _savedController.forward(from: 0);
     }
   }
@@ -251,7 +251,6 @@ class _NotifySearchAlertAppBarButtonState
 
   void _handlePressed() {
     if (!widget.enabled) return;
-    HapticFeedbackUtils.impact();
     if (_animationSettings.bellTapEnabled) {
       _tapController.forward(from: 0);
     }

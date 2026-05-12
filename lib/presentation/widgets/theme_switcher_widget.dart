@@ -3,7 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Widget for switching between different app themes
@@ -88,7 +88,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
                       side: BorderSide(color: Colors.grey.shade400, width: 1),
                     ),
                     onPressed: () async {
-                      HapticFeedbackUtils.impact();
+                      UiFeedbackUtils.tap();
                       // Apply theme globally and persist it
                       await _themeState.changeTheme(_selectedTheme);
 
@@ -108,7 +108,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
                       side: BorderSide(color: Colors.grey.shade400, width: 1),
                     ),
                     onPressed: () {
-                      HapticFeedbackUtils.impact();
+                      UiFeedbackUtils.tap();
                       Navigator.of(context).pop();
                     },
                     child: Text(
@@ -172,6 +172,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
         groupValue: _selectedTheme,
         onChanged: (value) {
           if (value != null) {
+            UiFeedbackUtils.selection();
             setState(() {
               _selectedTheme = value;
             });
@@ -239,7 +240,7 @@ class ThemeSwitcherButton extends StatelessWidget {
         return IconButton(
           icon: const ThemeIcon(Icons.palette),
           onPressed: () {
-            HapticFeedbackUtils.impact();
+            UiFeedbackUtils.tap();
             _showThemeDialog(context, actualCurrentTheme);
           },
           tooltip: AppStrings.get("theme", _getCurrentLanguage(context)),

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -200,7 +201,10 @@ class ListingTypeDropdown extends StatelessWidget {
 
     return DropdownButtonFormField<String>(
       value: selectedValue.isEmpty ? null : selectedValue,
-      onChanged: onChanged,
+      onChanged: (v) {
+        UiFeedbackUtils.tap();
+        onChanged(v);
+      },
       elevation: AppTheme.menuPanelElevation,
       decoration: InputDecoration(
         hintText: hintText,

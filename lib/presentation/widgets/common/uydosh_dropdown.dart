@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable dropdown option for [UydoshDropdown].
@@ -140,7 +141,10 @@ class UydoshDropdown extends StatelessWidget {
                         ),
                       );
                     }).toList(),
-                onChanged: onChanged,
+                onChanged: (v) {
+                  UiFeedbackUtils.tap();
+                  onChanged(v);
+                },
               ),
             ),
           ),

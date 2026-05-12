@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -75,12 +75,12 @@ class _TheDotDropMenuButtonState<T> extends State<TheDotDropMenuButton<T>> {
           initialValue: widget.initialValue,
           offset: widget.offset ?? Offset.zero,
           borderRadius: pillRadius,
-          onOpened: HapticFeedbackUtils.impact,
+          onOpened: UiFeedbackUtils.tap,
           onSelected:
               widget.onSelected == null
                   ? null
                   : (value) {
-                    HapticFeedbackUtils.impact();
+                    UiFeedbackUtils.tap();
                     widget.onSelected!(value);
                   },
           color: Theme.of(context).popupMenuTheme.color,

@@ -8,7 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
@@ -251,7 +251,11 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
                         );
 
               return PopupMenuButton<String>(
-                onSelected: _changeLanguage,
+                onOpened: UiFeedbackUtils.tap,
+                onSelected: (code) {
+                  UiFeedbackUtils.tap();
+                  _changeLanguage(code);
+                },
                 popUpAnimationStyle: style,
                 itemBuilder:
                     (context) => [
@@ -401,8 +405,8 @@ class _LanguagePickerOption extends StatelessWidget {
     const borderRadius = BorderRadius.all(Radius.circular(14));
 
     return PressableTransform(
+      feedback: PressableFeedback.selection,
       onTap: () {
-        HapticFeedbackUtils.impact();
         Navigator.pop(context);
         LanguageState().setLanguage(code);
         ToastTheme.showSuccess(

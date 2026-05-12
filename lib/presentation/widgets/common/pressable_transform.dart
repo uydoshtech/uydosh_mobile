@@ -1,4 +1,17 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+
+/// Haptic + optional click sound when [PressableTransform] is tapped.
+enum PressableFeedback {
+  /// Caller supplies feedback (or none).
+  none,
+
+  /// [UiFeedbackUtils.tap] — default.
+  tap,
+
+  /// [UiFeedbackUtils.selection] — picking among a small set of options.
+  selection,
+}
 
 /// Adds the app's standard "pressed" transform (y-translation) to arbitrary UI.
 class PressableTransform extends StatefulWidget {
@@ -8,6 +21,7 @@ class PressableTransform extends StatefulWidget {
     required this.borderRadius,
     super.key,
     this.enabled = true,
+    this.feedback = PressableFeedback.tap,
     this.pressedOffset = 2.0,
     this.duration = const Duration(milliseconds: 90),
     this.disabledOpacity = 0.55,
@@ -17,6 +31,10 @@ class PressableTransform extends StatefulWidget {
   final Widget child;
   final BorderRadius borderRadius;
   final bool enabled;
+
+  /// Haptic + UI sound pairing for taps. Use [PressableFeedback.none] if the
+  /// callback already calls [UiFeedbackUtils] or another feedback helper.
+  final PressableFeedback feedback;
   final double pressedOffset;
   final Duration duration;
   final double disabledOpacity;
@@ -43,7 +61,18 @@ class _PressableTransformState extends State<PressableTransform> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: widget.borderRadius,
-          onTap: _enabled ? widget.onTap : null,
+          onTap:
+              _enabled
+                  ? () {
+                    final f = widget.feedback;
+                    if (f == PressableFeedback.tap) {
+                      UiFeedbackUtils.tap();
+                    } else if (f == PressableFeedback.selection) {
+                      UiFeedbackUtils.selection();
+                    }
+                    widget.onTap!();
+                  }
+                  : null,
           onHighlightChanged:
               _enabled ? (v) => setState(() => _pressed = v) : null,
           child: Opacity(

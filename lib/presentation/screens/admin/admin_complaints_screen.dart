@@ -7,6 +7,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/complaint.dart";
 import "package:uy_dosh/domain/models/complaint_category.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
@@ -265,7 +266,10 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         ? Colors.white
         : (isBlueTheme ? BlueThemeColors.textPrimary : Colors.grey[700]!);
     return InkWell(
-      onTap: () => _onStatusFilterChanged(status),
+      onTap: () {
+        UiFeedbackUtils.selection();
+        _onStatusFilterChanged(status);
+      },
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

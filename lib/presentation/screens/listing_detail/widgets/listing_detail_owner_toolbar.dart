@@ -1,7 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_screen.dart";
@@ -35,7 +34,6 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
           if ((isLoadingViewCount && viewCount == null) || viewCount != null)
             ThreeDPillButton(
               onPressed: () {
-                HapticFeedbackUtils.impact();
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => ListingViewsStatsScreen(

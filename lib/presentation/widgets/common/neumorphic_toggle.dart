@@ -1,9 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 
 /// Soft raised track + thumb (neumorphic-style).
 ///
@@ -173,9 +172,7 @@ class NeumorphicThemeAwareToggle extends StatelessWidget {
           inactiveThumbColor: p.inactiveThumbColor,
           inactiveTrackColor: p.inactiveTrackColor,
           onChanged: (newValue) {
-            if (HapticFeedbackState().isEnabled) {
-              HapticFeedbackUtils.impact();
-            }
+            UiFeedbackUtils.tap();
             onChanged(newValue);
           },
         );

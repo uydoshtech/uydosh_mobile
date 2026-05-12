@@ -9,6 +9,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/models/admin_user_device.dart";
@@ -746,7 +747,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   .toList(),
               onChanged: (_saving || disableActions)
                   ? null
-                  : (value) => setState(() => _selectedRole = value),
+                  : (value) {
+                      UiFeedbackUtils.tap();
+                      setState(() => _selectedRole = value);
+                    },
               style: isBlueTheme
                   ? theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface,

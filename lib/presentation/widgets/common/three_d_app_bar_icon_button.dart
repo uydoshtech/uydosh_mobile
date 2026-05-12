@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
@@ -76,10 +75,7 @@ class ThreeDAppBarIconButton extends StatelessWidget {
       padding: padding,
       borderRadius: radius,
       neumorphicSoftUi: neumorphicSoftUi,
-      onPressed: () {
-        HapticFeedbackUtils.impact();
-        onPressed();
-      },
+      onPressed: onPressed,
       child: Semantics(
         label: semanticsLabel,
         button: true,

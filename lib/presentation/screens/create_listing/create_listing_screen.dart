@@ -788,7 +788,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 reverseDuration: const Duration(milliseconds: 320),
                 curve: Curves.easeInOut,
                 alignment: Alignment.topCenter,
-                clipBehavior: Clip.hardEdge,
+                // [AnimatedSize] defaults clip while lerping; footer + transcript
+                // growth would hide text until animation finished / refocus.
+                clipBehavior: Clip.none,
                 child: TextFormField(
                   controller: _descriptionController,
                   onChanged: (value) {

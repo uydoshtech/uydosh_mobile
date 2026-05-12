@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A segmented control with pill-shaped buttons, matching the Period selector style.
@@ -58,8 +57,7 @@ class RotationSpinner<T> extends StatelessWidget {
       final isSelected = _isSelected(opt.value);
       return GestureDetector(
         onTap: () {
-          HapticFeedbackUtils.impact();
-          SendSoundUtils.playSelectionSound();
+          UiFeedbackUtils.tap();
           onChanged(opt.value);
         },
         child: AnimatedContainer(

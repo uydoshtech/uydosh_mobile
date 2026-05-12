@@ -4,7 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/utils/animation_utils.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -54,7 +54,7 @@ class _AmenityToggleState extends State<AmenityToggle>
   }
 
   void _handleTap() {
-    HapticFeedbackUtils.impact();
+    UiFeedbackUtils.tap();
     _controller.forward().then((_) {
       _controller.reverse();
     });

@@ -3,8 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -267,8 +266,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                             final newUsd = emitFromScaled(newScaled);
                             if ((newScaled / step).round() !=
                                 (scaledMin / step).round()) {
-                              HapticFeedbackUtils.impact();
-                              SendSoundUtils.playSelectionSound();
+                              UiFeedbackUtils.tap();
                             }
                             setState(() {
                               _minPrice = newUsd;
@@ -309,8 +307,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                                       (scaledMin / step).round() ||
                                   (newScaledMax / step).round() !=
                                       (scaledMax / step).round()) {
-                                HapticFeedbackUtils.impact();
-                                SendSoundUtils.playSelectionSound();
+                                UiFeedbackUtils.tap();
                               }
                               setState(() {
                                 _minPrice = newUsdMin;

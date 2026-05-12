@@ -47,24 +47,28 @@ class ConversationTile extends StatelessWidget {
         final unreadColor = themeState.unreadIndicatorColor;
         final unreadTextColor = themeState.unreadIndicatorTextColor;
 
-        // Show the avatar of whoever sent the most recent message: the current
-        // user when they were the last sender, otherwise the conversation
-        // partner. This matches the inbox preview reading "you said X" with a
-        // matching face.
+        // Non–listing chats: show whoever sent the last message (mirrors the
+        // preview line). Listing marketplace: the title is always the
+        // counterparty — same avatar as [ChatHeader], not your face when you
+        // replied last.
+        final isListingMarketplace =
+            conversationSummaryIsListingMarketplaceChat(conversation);
         final lastSenderIsCurrentUser = currentUserId != null &&
             conversation.lastMessageSenderId == currentUserId;
         final profileState = ProfileCompletionState();
-        final rawAvatar = lastSenderIsCurrentUser
-            ? profileState.cachedAvatarUrl
-            : conversation.otherUserAvatar;
-        final initialsName = lastSenderIsCurrentUser
-            ? profileState.cachedName
-            : null;
+        // Listing chats title the row with the counterparty (same as [ChatHeader]).
+        // Showing the last sender's avatar there looked like the peer's face —
+        // e.g. "UyDosh" + current user's initials when you replied last.
+        final rawAvatar = isListingMarketplace
+            ? conversation.otherUserAvatar
+            : (lastSenderIsCurrentUser
+                ? profileState.cachedAvatarUrl
+                : conversation.otherUserAvatar);
+        final initialsName = isListingMarketplace
+            ? null
+            : (lastSenderIsCurrentUser ? profileState.cachedName : null);
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
-
-        final isListingMarketplace =
-            conversationSummaryIsListingMarketplaceChat(conversation);
         final unreadBoldName =
             conversation.unreadCount != null &&
                 conversation.unreadCount! > 0 &&

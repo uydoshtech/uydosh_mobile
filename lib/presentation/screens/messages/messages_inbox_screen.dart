@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -1112,7 +1113,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedbackUtils.selection();
+                        UiFeedbackUtils.selection();
                         setState(() {
                           _selectedTabIndex = 0;
                           _userPickedTab = true;
@@ -1136,7 +1137,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedbackUtils.selection();
+                        UiFeedbackUtils.selection();
                         setState(() {
                           _selectedTabIndex = 1;
                           _userPickedTab = true;
@@ -1731,7 +1732,7 @@ class _ArchivedChatsFab extends StatelessWidget {
                 child: InkWell(
                   borderRadius: radius,
                   onTap: () {
-                    HapticFeedbackUtils.selection();
+                    UiFeedbackUtils.selection();
                     onPressed();
                   },
                   child: DecoratedBox(

@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -77,10 +76,8 @@ class AuthWizardLanguagePage extends StatelessWidget {
     const borderRadius = BorderRadius.all(Radius.circular(16));
 
     return PressableTransform(
-      onTap: () {
-        HapticFeedbackUtils.selection();
-        onLanguageSelected(languageCode);
-      },
+      feedback: PressableFeedback.selection,
+      onTap: () => onLanguageSelected(languageCode),
       borderRadius: borderRadius,
       child: Container(
         width: double.infinity,

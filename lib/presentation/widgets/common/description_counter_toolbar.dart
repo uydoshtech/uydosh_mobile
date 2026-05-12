@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/debug_tap_bounds.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
@@ -23,7 +23,7 @@ enum DescriptionCounterToolbarLayout {
 ///
 /// * The AI-enhance, template suggestion, and dictate actions on the left.
 /// * A `currentLength / maxLength` counter that turns red at 90% usage.
-/// * An expand/collapse chevron with haptic feedback.
+/// * An expand/collapse chevron with haptic + UI sound feedback.
 ///
 /// Two visual layouts are supported — see [DescriptionCounterToolbarLayout].
 class DescriptionCounterToolbar extends StatefulWidget {
@@ -201,7 +201,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              HapticFeedbackUtils.lightImpact();
+              UiFeedbackUtils.tap();
               widget.onToggleExpanded();
             },
             child: SizedBox(

@@ -17,6 +17,8 @@ class ProfileSliderControl extends StatelessWidget {
     this.icon,
     this.divisions,
     this.labels,
+    this.scaleStartLabel,
+    this.scaleEndLabel,
   });
 
   final String label;
@@ -27,6 +29,8 @@ class ProfileSliderControl extends StatelessWidget {
   final IconData? icon;
   final int? divisions;
   final List<String>? labels;
+  final String? scaleStartLabel;
+  final String? scaleEndLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +49,16 @@ class ProfileSliderControl extends StatelessWidget {
       child: UydoshSlider(
         label: label,
         value: currentValue,
-        onChanged: onChanged,
+        onChanged: (v) => onChanged(v),
         min: min,
         max: max,
         icon: icon,
         divisions: divisions,
         labels: labels,
         contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+        forceLtrScale: true,
+        scaleStartLabel: scaleStartLabel,
+        scaleEndLabel: scaleEndLabel,
       ),
     );
   }

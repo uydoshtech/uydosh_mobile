@@ -9,6 +9,7 @@ import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
@@ -1493,7 +1494,7 @@ class _MinDurationMinuteSpinner extends StatelessWidget {
           IconButton(
             onPressed: canDecrease
                 ? () {
-                    HapticFeedbackUtils.selection();
+                    UiFeedbackUtils.selection();
                     onChanged(
                       (minutes - _gigMinDurationStepMinutes).clamp(
                         _gigMinDurationFloorMinutes,
@@ -1514,7 +1515,7 @@ class _MinDurationMinuteSpinner extends StatelessWidget {
           IconButton(
             onPressed: canIncrease
                 ? () {
-                    HapticFeedbackUtils.selection();
+                    UiFeedbackUtils.selection();
                     onChanged(
                       (minutes + _gigMinDurationStepMinutes).clamp(
                         _gigMinDurationFloorMinutes,
@@ -1558,7 +1559,7 @@ class _CurrencyAmountField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
 
   Future<void> _pickCurrency(BuildContext context) async {
-    HapticFeedbackUtils.selection();
+    UiFeedbackUtils.selection();
     final picked = await showAppBottomSheet<String>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.06),
@@ -2105,7 +2106,7 @@ class _GigDescriptionToolbar extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
               onTap: () {
-                HapticFeedbackUtils.lightImpact();
+                UiFeedbackUtils.tap();
                 onToggleExpanded();
               },
               child: SizedBox(

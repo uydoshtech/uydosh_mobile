@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -52,7 +53,11 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
                         );
 
               return PopupMenuButton<String>(
-                onSelected: _changeTheme,
+                onOpened: UiFeedbackUtils.tap,
+                onSelected: (themeName) {
+                  UiFeedbackUtils.tap();
+                  _changeTheme(themeName);
+                },
                 popUpAnimationStyle: style,
                 itemBuilder:
                     (context) => [

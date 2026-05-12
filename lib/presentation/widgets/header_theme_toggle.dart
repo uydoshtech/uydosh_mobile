@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A compact theme toggle for the app header with sun/moon icons.
@@ -26,7 +26,7 @@ class HeaderThemeToggle extends StatelessWidget {
 
         return GestureDetector(
           onTap: () async {
-            HapticFeedbackUtils.impact();
+            UiFeedbackUtils.tap();
             await themeState.toggleTheme();
           },
           behavior: HitTestBehavior.opaque,

@@ -1,14 +1,11 @@
 import "dart:async";
-import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
@@ -16,8 +13,8 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -202,7 +199,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
   void _onCategorySelected(int? categoryId) {
     if (categoryId == _selectedCategoryId) return;
     setState(() => _selectedCategoryId = categoryId);
-    HapticFeedbackUtils.selection();
+    UiFeedbackUtils.selection();
     if (_scrollController.hasClients) {
       _scrollController.jumpTo(0);
     }
@@ -610,7 +607,9 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
               listenable: ThemeState(),
               builder: (context, _) {
                 final themeState = ThemeState();
-                final switchWidget = NeumorphicSegmentedSwitch<GigHubFeed>(
+                return NeumorphicSegmentedSwitch<GigHubFeed>(
+                  liquidGlass:
+                      themeState.isBlueTheme || themeState.isLightTheme,
                   height: _switchHeight,
                   value: feed,
                   onChanged: onFeedChanged,
@@ -627,55 +626,6 @@ class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
                       subtitle: L10n.get("gigs_publish_mode_task_subtitle"),
                       icon: Icons.assignment_outlined,
                     ),
-                  ],
-                );
-
-                if (!(themeState.isBlueTheme || themeState.isLightTheme)) {
-                  return switchWidget;
-                }
-
-                const radius = BorderRadius.all(Radius.circular(20));
-                final isDark = Theme.of(context).brightness == Brightness.dark;
-                final scheme = Theme.of(context).colorScheme;
-                final baseTint =
-                    isDark ? BlueThemeColors.background : scheme.surface;
-                final disableAnimations =
-                    MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-                final enableGlass =
-                    AnimationSettingsState().uiAnimationsEnabled &&
-                        !disableAnimations;
-
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: radius,
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(
-                                  sigmaX: enableGlass ? 18 : 0,
-                                  sigmaY: enableGlass ? 18 : 0,
-                                ),
-                                child: const SizedBox.expand(),
-                              ),
-                            ),
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                borderRadius: radius,
-                                color: baseTint.withValues(
-                                  alpha: isDark ? 0.10 : 0.12,
-                                ),
-                              ),
-                              child: const SizedBox.expand(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    switchWidget,
                   ],
                 );
               },
@@ -867,7 +817,7 @@ class _CategoryChip extends StatelessWidget {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            HapticFeedbackUtils.selection();
+            UiFeedbackUtils.selection();
             onTap();
           },
           child: AnimatedContainer(
@@ -928,12 +878,12 @@ class _MyBookingsFabState extends State<_MyBookingsFab> {
   }
 
   void _openOrders() {
-    HapticFeedbackUtils.lightImpact();
+    UiFeedbackUtils.tap();
     context.pushMyGigBookings();
   }
 
   void _openPublished() {
-    HapticFeedbackUtils.lightImpact();
+    UiFeedbackUtils.tap();
     context.pushMyPublishedGigs();
   }
 

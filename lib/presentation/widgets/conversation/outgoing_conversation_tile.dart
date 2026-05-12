@@ -59,18 +59,19 @@ class OutgoingConversationTile extends StatelessWidget {
         final isListingMarketplace =
             conversationSummaryIsListingMarketplaceChat(conversation);
 
-        // Show the avatar of whoever sent the most recent message: the current
-        // user when they were the last sender, otherwise the conversation
-        // partner.
+        // Same rule as [ConversationTile]: for listing chats the row is framed
+        // around the counterparty; keep their avatar even when you sent last.
         final lastSenderIsCurrentUser = currentUserId != null &&
             conversation.lastMessageSenderId == currentUserId;
         final profileState = ProfileCompletionState();
-        final rawAvatar = lastSenderIsCurrentUser
-            ? profileState.cachedAvatarUrl
-            : conversation.otherUserAvatar;
-        final initialsName = lastSenderIsCurrentUser
-            ? profileState.cachedName
-            : null;
+        final rawAvatar = isListingMarketplace
+            ? conversation.otherUserAvatar
+            : (lastSenderIsCurrentUser
+                ? profileState.cachedAvatarUrl
+                : conversation.otherUserAvatar);
+        final initialsName = isListingMarketplace
+            ? null
+            : (lastSenderIsCurrentUser ? profileState.cachedName : null);
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
 

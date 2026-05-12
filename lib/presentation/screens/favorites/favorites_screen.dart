@@ -12,7 +12,7 @@ import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
@@ -1106,7 +1106,7 @@ class _FavoritesPillTabChip extends StatelessWidget {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            HapticFeedbackUtils.selection();
+            UiFeedbackUtils.selection();
             onTap();
           },
           child: AnimatedContainer(

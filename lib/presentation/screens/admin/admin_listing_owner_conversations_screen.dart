@@ -4,7 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -75,7 +75,7 @@ class _AdminListingOwnerConversationsScreenState
   }
 
   void _openChat(ConversationSummary c, int listingOwnerId) {
-    HapticFeedbackUtils.selection();
+    UiFeedbackUtils.selection();
     final otherId =
         c.initiatorId == listingOwnerId ? c.participantId : c.initiatorId;
 

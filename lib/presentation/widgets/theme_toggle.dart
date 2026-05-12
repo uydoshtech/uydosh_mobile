@@ -2,9 +2,8 @@ import "package:flutter/gestures.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
-import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 
 /// A theme-aware toggle switch component that automatically adapts its colors
 /// based on the current app theme
@@ -92,10 +91,7 @@ class ThemeToggle extends StatelessWidget {
         return Switch(
           value: value,
           onChanged: (newValue) {
-            // Add haptic feedback when toggle changes (if enabled)
-            if (HapticFeedbackState().isEnabled) {
-              HapticFeedbackUtils.impact();
-            }
+            UiFeedbackUtils.tap();
             onChanged(newValue);
           },
           activeThumbColor: activeColor ?? themeColors.activeColor,
