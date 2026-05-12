@@ -108,7 +108,6 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   bool get _showCounterText {
-    if (widget.debugShowTapBounds) return true;
     if (widget.counterVisibleAtFraction <= 0.0) return true;
     if (widget.maxLength <= 0) return true;
     return (widget.currentLength / widget.maxLength) >=
@@ -134,30 +133,6 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
     if (!widget.debugShowTapBounds) return child;
     return DebugTapBounds(
       enabled: true,
-      child: child,
-    );
-  }
-
-  Widget _wrapFooter(Widget child) {
-    if (!widget.debugShowTapBounds) return child;
-    return DebugTapBounds(
-      enabled: true,
-      color: Colors.yellow,
-      borderWidth: 2,
-      borderRadius: 10,
-      fillOpacity: 0.04,
-      child: child,
-    );
-  }
-
-  Widget _wrapOuter(Widget child) {
-    if (!widget.debugShowTapBounds) return child;
-    return DebugTapBounds(
-      enabled: true,
-      color: Colors.greenAccent,
-      borderWidth: 2,
-      borderRadius: 12,
-      fillOpacity: 0.03,
       child: child,
     );
   }
@@ -327,8 +302,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
           ],
         );
 
-        // Yellow + green share the exact same bounds now.
-        return _wrapFooter(_wrapOuter(content));
+        return content;
       },
     );
   }

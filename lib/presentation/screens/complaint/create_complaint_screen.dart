@@ -14,6 +14,7 @@ import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -22,7 +23,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_radio_tile.dart";
 
 class CreateComplaintScreen extends StatefulWidget {
-
   const CreateComplaintScreen({required this.listingId, super.key});
   final int listingId;
 
@@ -46,8 +46,8 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "create_complaint");
     context.read<ComplaintBloc>().add(
-      const ComplaintEvent.fetchComplaintCategories(),
-    );
+          const ComplaintEvent.fetchComplaintCategories(),
+        );
   }
 
   @override
@@ -145,34 +145,33 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
               complaintsLoaded: (_) => const SizedBox.shrink(),
               complaintUpdated: (_) => const SizedBox.shrink(),
               complaintDeleted: (_) => const SizedBox.shrink(),
-              error:
-                  (state) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const ThemeIcon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppColors.error,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.message,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        const SizedBox(height: 16),
-                        GhostButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            L10n.get("back_to_listing"),
-                          ),
-                        ),
-                      ],
+              error: (state) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const ThemeIcon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: AppColors.error,
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    GhostButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        L10n.get("back_to_listing"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
@@ -182,108 +181,107 @@ class _CreateComplaintScreenState extends State<CreateComplaintScreen> {
 
   Widget _buildContent(List<ComplaintCategory> categories) {
     final textBaseSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 4),
-          Expanded(
-            child: CommonListView(
-              padding: EdgeInsets.zero,
-              itemSpacing: 0,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
+    return KeyboardDismissScope(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Expanded(
+              child: CommonListView(
+                padding: EdgeInsets.zero,
+                itemSpacing: 0,
+                keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
 
-                return UydoshRadioTile<ComplaintCategory>(
-                  value: category,
-                  groupValue: _selectedCategory,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                  title: Text(_getLocalizedCategoryName(context, category)),
-                );
-              },
+                  return UydoshRadioTile<ComplaintCategory>(
+                    value: category,
+                    groupValue: _selectedCategory,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    },
+                    title: Text(_getLocalizedCategoryName(context, category)),
+                  );
+                },
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            constraints: const BoxConstraints(minHeight: 96),
-            child: WheelPickerPlateContainer(
-              theme: Theme.of(context),
-              child: TextFormField(
-                controller: _descriptionController,
-                minLines: 3,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: L10n.get("complaint_description_hint"),
-                  hintStyle: TextStyle(
-                    fontSize: textBaseSize + 2,
-                    color:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(
+            const SizedBox(height: 16),
+            Container(
+              constraints: const BoxConstraints(minHeight: 96),
+              child: WheelPickerPlateContainer(
+                theme: Theme.of(context),
+                child: TextFormField(
+                  controller: _descriptionController,
+                  minLines: 3,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: L10n.get("complaint_description_hint"),
+                    hintStyle: TextStyle(
+                      fontSize: textBaseSize + 2,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                            : Colors.grey[400],
+                          : Colors.grey[400],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    alignLabelWithHint: true,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
+                  style: TextStyle(
+                    fontSize: textBaseSize + 2,
+                    color: ThemeState().isLightTheme
+                        ? Colors.black
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  alignLabelWithHint: true,
-                ),
-                style: TextStyle(
-                  fontSize: textBaseSize + 2,
-                  color:
-                      ThemeState().isLightTheme
-                          ? Colors.black
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed:
-                  _selectedCategory != null && !_isSubmitting
-                      ? () {
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _selectedCategory != null && !_isSubmitting
+                    ? () {
                         HapticFeedbackUtils.impact();
                         _submitComplaint();
                       }
-                      : null,
-              child:
-                  _isSubmitting
-                      ? const SizedBox(
+                    : null,
+                child: _isSubmitting
+                    ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                      : Text(
-L10n.get("submit_complaint"),
+                    : Text(
+                        L10n.get("submit_complaint"),
                       ),
+              ),
             ),
-          ),
-          const SizedBox(height: 25),
-        ],
+            const SizedBox(height: 25),
+          ],
+        ),
       ),
     );
   }

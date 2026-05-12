@@ -15,6 +15,7 @@ import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -52,9 +53,21 @@ const Map<String, String> _allowedPhoneDialCodes = <String, String>{
 /// default for our market), USA last, ex-Soviet block in the middle ordered
 /// by familiarity rather than alphabetically.
 const List<String> _allowedPhoneIsoOrder = <String>[
-  "UZ", "RU", "KZ", "KG", "TJ", "TM",
-  "AZ", "AM", "GE", "BY", "UA", "MD",
-  "EE", "LV", "LT",
+  "UZ",
+  "RU",
+  "KZ",
+  "KG",
+  "TJ",
+  "TM",
+  "AZ",
+  "AM",
+  "GE",
+  "BY",
+  "UA",
+  "MD",
+  "EE",
+  "LV",
+  "LT",
   "US",
 ];
 
@@ -146,7 +159,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     super.dispose();
   }
 
-  String _normalizeNationalNumber(String raw) => raw.replaceAll(RegExp(r"[^\d]"), "");
+  String _normalizeNationalNumber(String raw) =>
+      raw.replaceAll(RegExp(r"[^\d]"), "");
 
   String _buildE164() {
     final national = _normalizeNationalNumber(_phoneController.text);
@@ -166,7 +180,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     // Match Firebase test number default: +1 0000000000
     _selectedDialCode = "1";
     _selectedFlagEmoji = "🇺🇸";
-    _phoneController.text = _kFirebaseTestPhoneNumber.replaceFirst(RegExp(r"^\+\d+\s*"), "");
+    _phoneController.text =
+        _kFirebaseTestPhoneNumber.replaceFirst(RegExp(r"^\+\d+\s*"), "");
     _phoneController.selection = TextSelection.fromPosition(
       TextPosition(offset: _phoneController.text.length),
     );
@@ -352,50 +367,58 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
-      child: GlassBottomSheetSurface(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AuthWizardTheme.getBottomSheetHandleColor(context),
-                  borderRadius: BorderRadius.circular(2),
+      child: KeyboardDismissScope(
+        // Done bar disabled inside modal sheets: the sheet itself shifts up by
+        // viewInsets.bottom (see Padding above) so its bottom edge sits flush
+        // with the keyboard top — a floating Done bar would overlap the
+        // sheet's CTA area. Tap-outside-to-dismiss still works inside the
+        // sheet's chrome area (handle, title, hint text gaps).
+        showDoneBar: false,
+        child: GlassBottomSheetSurface(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AuthWizardTheme.getBottomSheetHandleColor(context),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _step == _Step.enterPhone
-                  ? L10n.get("sign_in_with_phone")
-                  : L10n.get("phone_code_entry_title"),
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: textColor,
+              const SizedBox(height: 16),
+              Text(
+                _step == _Step.enterPhone
+                    ? L10n.get("sign_in_with_phone")
+                    : L10n.get("phone_code_entry_title"),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _step == _Step.enterPhone
-                  ? L10n.get("sign_in_with_phone_description")
-                  : L10n.get("phone_code_entry_description")
-                      .replaceAll("{phone}", _lastPhoneE164 ?? ""),
-              style: TextStyle(
-                fontSize: 14,
-                color: textColor.withValues(alpha: 0.7),
+              const SizedBox(height: 8),
+              Text(
+                _step == _Step.enterPhone
+                    ? L10n.get("sign_in_with_phone_description")
+                    : L10n.get("phone_code_entry_description")
+                        .replaceAll("{phone}", _lastPhoneE164 ?? ""),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            if (_step == _Step.enterPhone) _buildPhoneStep(textColor),
-            if (_step == _Step.enterCode) _buildCodeStep(textColor),
-          ],
+              const SizedBox(height: 20),
+              if (_step == _Step.enterPhone) _buildPhoneStep(textColor),
+              if (_step == _Step.enterCode) _buildCodeStep(textColor),
+            ],
+          ),
         ),
       ),
     );
@@ -429,7 +452,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                   LengthLimitingTextInputFormatter(20),
                 ],
                 decoration: InputDecoration(
-                  hintText: _stripE164PrefixForHint(L10n.get("phone_number_example")),
+                  hintText:
+                      _stripE164PrefixForHint(L10n.get("phone_number_example")),
                   hintStyle: TextStyle(color: textColor.withValues(alpha: 0.4)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -559,8 +583,9 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     final bg = textColor.withValues(alpha: 0.04);
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide ??
-          BorderSide(color: textColor.withValues(alpha: 0.15)),
+      borderSide:
+          Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide ??
+              BorderSide(color: textColor.withValues(alpha: 0.15)),
     );
 
     // IMPORTANT: InputDecorator can't be laid out with unbounded width.
@@ -581,7 +606,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
             ),
             filled: true,
             fillColor: bg,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -591,7 +617,8 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
               return Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  Text(_selectedFlagEmoji, style: const TextStyle(fontSize: 20)),
+                  Text(_selectedFlagEmoji,
+                      style: const TextStyle(fontSize: 20)),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -632,8 +659,7 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
     // shipped a 250-country catalog when we only ever expose 16.
     final allowedCountries = _allowedPhoneCountries();
 
-    String displayName(Country c) =>
-        c.getLocalizedName(L10n.currentLanguage);
+    String displayName(Country c) => c.getLocalizedName(L10n.currentLanguage);
 
     String dialCode(Country c) => _allowedPhoneDialCodes[c.iso2] ?? "";
 
@@ -717,8 +743,9 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                               name,
                               style: TextStyle(
                                 color: themeTextColor,
-                                fontWeight:
-                                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
                               ),
                             ),
                             trailing: Text(

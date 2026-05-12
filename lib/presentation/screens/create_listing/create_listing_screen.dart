@@ -33,6 +33,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
@@ -154,8 +155,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final gender = await genderFuture;
 
     if (!mounted) return;
-    final tenantLikeRole =
-        role == "tenant" || role == "service_requester";
+    final tenantLikeRole = role == "tenant" || role == "service_requester";
     final defaultType = tenantLikeRole ? 1 : 2;
     final defaultGender = (gender == 1 || gender == 2) ? gender! : 1;
     setState(() {
@@ -433,8 +433,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _updateTitle() {
     final generatedTitle = _generateTitle();
     final current = _titleController.text;
-    final shouldOverwrite =
-        current.isEmpty || current == _lastGeneratedTitle;
+    final shouldOverwrite = current.isEmpty || current == _lastGeneratedTitle;
     if (shouldOverwrite) {
       _titleController.text = generatedTitle;
     }
@@ -543,23 +542,25 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               },
               child: SafeArea(
                 top: !embeddedInGlassShell,
-                child: UydoshFormScrollBody(
-                  topPadding: scrollTopPad,
-                  children: [
-                    ListenableBuilder(
-                      listenable: AuthenticationState(),
-                      builder: (context, child) {
-                        final isAuthenticated =
-                            AuthenticationState().isAuthenticated;
+                child: KeyboardDismissScope(
+                  child: UydoshFormScrollBody(
+                    topPadding: scrollTopPad,
+                    children: [
+                      ListenableBuilder(
+                        listenable: AuthenticationState(),
+                        builder: (context, child) {
+                          final isAuthenticated =
+                              AuthenticationState().isAuthenticated;
 
-                        if (isAuthenticated) {
-                          return _buildAuthenticatedForm();
-                        } else {
-                          return _buildUnauthenticatedPrompt();
-                        }
-                      },
-                    ),
-                  ],
+                          if (isAuthenticated) {
+                            return _buildAuthenticatedForm();
+                          } else {
+                            return _buildUnauthenticatedPrompt();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -733,28 +734,28 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           ).colorScheme.onSurfaceVariant.withOpacity(0.7)
                         : Colors.grey[400],
                   ),
-                border: OutlineInputBorder(
-                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                  borderSide: BorderSide.none,
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                  borderSide: BorderSide.none,
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.transparent,
+                  border: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 14,
@@ -783,96 +784,96 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               showErrorBorder: _showDescriptionError,
               theme: Theme.of(context),
               child: AnimatedSize(
-              duration: const Duration(milliseconds: 320),
-              reverseDuration: const Duration(milliseconds: 320),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              clipBehavior: Clip.hardEdge,
-              child: TextFormField(
-                controller: _descriptionController,
-                onChanged: (value) {
-                  if (_showDescriptionError && value.trim().isNotEmpty) {
-                    setState(() {
-                      _showDescriptionError = false;
-                    });
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: hintText,
-                  hintStyle: TextStyle(
+                duration: const Duration(milliseconds: 320),
+                reverseDuration: const Duration(milliseconds: 320),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                clipBehavior: Clip.hardEdge,
+                child: TextFormField(
+                  controller: _descriptionController,
+                  onChanged: (value) {
+                    if (_showDescriptionError && value.trim().isNotEmpty) {
+                      setState(() {
+                        _showDescriptionError = false;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    hintStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                          : Colors.grey[400],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                        : Colors.grey[400],
+                    color: ThemeState().isLightTheme
+                        ? Colors.black
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
+                  minLines: _descriptionBaseLines +
+                      (_isDescriptionExpanded
+                          ? _descriptionExpandedExtraLines
+                          : 0),
+                  maxLines: _descriptionBaseLines +
+                      (_isDescriptionExpanded
+                          ? _descriptionExpandedExtraLines
+                          : 0),
+                  maxLength: 1000,
+                  buildCounter: (
+                    context, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) {
+                    return DescriptionCounterToolbar(
+                      controller: _descriptionController,
+                      listingTypeId: _selectedListingTypeId,
+                      gender: _selectedGender,
+                      currentLength: currentLength,
+                      maxLength: maxLength ?? 0,
+                      isExpanded: _isDescriptionExpanded,
+                      onToggleExpanded: () => setState(() {
+                        _isDescriptionExpanded = !_isDescriptionExpanded;
+                      }),
+                      layout: DescriptionCounterToolbarLayout.stack,
+                      counterVisibleAtFraction: 0.7,
+                    debugShowTapBounds: false,
+                    );
+                  },
                 ),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ThemeState().isLightTheme
-                      ? Colors.black
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                minLines: _descriptionBaseLines +
-                    (_isDescriptionExpanded
-                        ? _descriptionExpandedExtraLines
-                        : 0),
-                maxLines: _descriptionBaseLines +
-                    (_isDescriptionExpanded
-                        ? _descriptionExpandedExtraLines
-                        : 0),
-                maxLength: 1000,
-                buildCounter: (
-                  context, {
-                  required currentLength,
-                  required isFocused,
-                  maxLength,
-                }) {
-                  return DescriptionCounterToolbar(
-                    controller: _descriptionController,
-                    listingTypeId: _selectedListingTypeId,
-                    gender: _selectedGender,
-                    currentLength: currentLength,
-                    maxLength: maxLength ?? 0,
-                    isExpanded: _isDescriptionExpanded,
-                    onToggleExpanded: () => setState(() {
-                      _isDescriptionExpanded = !_isDescriptionExpanded;
-                    }),
-                    layout: DescriptionCounterToolbarLayout.stack,
-                    counterVisibleAtFraction: 0.7,
-                    debugShowTapBounds: kDebugMode,
-                  );
-                },
-              ),
               ),
             ),
           ),
@@ -1146,8 +1147,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   for (final item in newOrder)
                     if (item is NewPhotoItem) item.path,
                 ];
-                _primaryPhotoIndex =
-                    _selectedPhotos.isEmpty ? null : 0;
+                _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
               });
             },
             isRequired: false,

@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
@@ -46,9 +47,10 @@ int _snapGigMinDurationMinutes(int? rawMinutes) {
   if (rawMinutes == null || rawMinutes <= 0) {
     return _gigMinDurationFallbackMinutes;
   }
-  final stepped =
-      (rawMinutes / _gigMinDurationStepMinutes).round() * _gigMinDurationStepMinutes;
-  return stepped.clamp(_gigMinDurationFloorMinutes, _gigMinDurationCeilingMinutes);
+  final stepped = (rawMinutes / _gigMinDurationStepMinutes).round() *
+      _gigMinDurationStepMinutes;
+  return stepped.clamp(
+      _gigMinDurationFloorMinutes, _gigMinDurationCeilingMinutes);
 }
 
 bool _shouldRebuildGigPostRequestUI(
@@ -251,7 +253,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _descriptionController.text = offer.descriptionRu ?? "";
       _pricingType = offer.pricingType;
       _priceController.text = IntFormatUtils.withDotThousands(offer.price);
-      _minDurationMinutes = _snapGigMinDurationMinutes(offer.minDurationMinutes);
+      _minDurationMinutes =
+          _snapGigMinDurationMinutes(offer.minDurationMinutes);
       _isRemote = offer.isRemote;
       _currency = offer.currencyCode;
       _existingOfferPhotos = [
@@ -259,8 +262,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       ];
       _rebuildOfferOrderedPhotos();
     } else if (editingReq != null) {
-      _selectedCategory =
-          editingReq.category ?? GigCategoryCache.getById(editingReq.categoryId);
+      _selectedCategory = editingReq.category ??
+          GigCategoryCache.getById(editingReq.categoryId);
       _titleController.text = editingReq.title;
       _descriptionController.text = editingReq.descriptionRu ?? "";
       _budgetType = editingReq.budgetType;
@@ -520,7 +523,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         : _descriptionController.text.trim();
 
     if (_mode == GigPublishMode.task) {
-      final budget = IntFormatUtils.parseAmountInput(_budgetController.text.trim());
+      final budget =
+          IntFormatUtils.parseAmountInput(_budgetController.text.trim());
       final addr = _addressController.text.trim().isEmpty
           ? null
           : _addressController.text.trim();
@@ -554,7 +558,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             );
       }
     } else {
-      final price = IntFormatUtils.parseAmountInput(_priceController.text.trim());
+      final price =
+          IntFormatUtils.parseAmountInput(_priceController.text.trim());
       if (price == null) return;
       final editing = widget.editingOffer;
       if (editing != null) {
@@ -657,13 +662,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               // semantics diverge per-flavor (e.g. service-only categories).
               final List<GigCategory> categories;
               if (_mode == GigPublishMode.task) {
-                final idle = requestState is GigPostRequestIdle
-                    ? requestState
-                    : null;
+                final idle =
+                    requestState is GigPostRequestIdle ? requestState : null;
                 categories = idle?.categories ?? const <GigCategory>[];
               } else {
-                final idle =
-                    offerState is GigPostOfferIdle ? offerState : null;
+                final idle = offerState is GigPostOfferIdle ? offerState : null;
                 categories = idle?.categories ?? const <GigCategory>[];
               }
 
@@ -718,216 +721,222 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                   ],
                 ),
                 // Two listeners — one per bloc — handle the success/error toasts.
-                body: MultiBlocListener(
-                  listeners: [
-                    BlocListener<GigPostRequestBloc, GigPostRequestState>(
-                      listener: (context, state) {
-                        if (state is GigPostRequestSuccess) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message: L10n.get(
-                              "gigs_post_request_success_toast",
-                            ),
-                          );
-                          _allowPopWithoutConfirm = true;
-                          Navigator.of(context).pop();
-                        } else if (state is GigRequestEditSuccess) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message: L10n.get(
-                              "gigs_edit_request_success_toast",
-                            ),
-                          );
-                          _allowPopWithoutConfirm = true;
-                          Navigator.of(context).pop<GigRequest>(state.updated);
-                        } else if (state is GigPostRequestError) {
-                          ToastTheme.showError(
-                            context,
-                            message: state.message,
-                          );
-                        }
-                      },
-                    ),
-                    BlocListener<GigPostOfferBloc, GigPostOfferState>(
-                      listener: (context, state) {
-                        if (state is GigPostOfferSuccess) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message:
-                                L10n.get("gigs_post_offer_success_toast"),
-                          );
-                          _allowPopWithoutConfirm = true;
-                          Navigator.of(context).pop();
-                        } else if (state is GigOfferEditSuccess) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message:
-                                L10n.get("gigs_edit_offer_success_toast"),
-                          );
-                          _allowPopWithoutConfirm = true;
-                          Navigator.of(context).pop<GigOffer>(state.updated);
-                        } else if (state is GigPostOfferError) {
-                          ToastTheme.showError(
-                            context,
-                            message: state.message,
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                      children: [
-                        if (!_isEditingOffer && !_isEditingRequest) ...[
-                          _PublishModeToggle(
-                            value: _mode,
-                            onChanged: _setMode,
-                          ),
-                          const SizedBox(height: 22),
-                        ],
-                        _FieldLabel(
-                          L10n.get("gigs_post_request_field_category"),
-                        ),
-                        _CategoryPlate(
-                          categories: categories,
-                          selected: _selectedCategory,
-                          language: language,
-                          showError: _showCategoryError,
-                          dirtyOutlineColor: dirtyOutline(
-                            _selectedCategory?.id != _baselineCategoryId,
-                          ),
-                          onChanged: (c) {
-                            _mutateForm(() {
-                              _selectedCategory = c;
-                              if (c != null) _showCategoryError = false;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        _FieldLabel(
-                          L10n.get("gigs_post_request_field_title"),
-                        ),
-                        _PlateField(
-                          showErrorBorder: _showTitleError,
-                          dirtyOutlineColor: dirtyOutline(
-                            _titleController.text != _baselineTitle,
-                          ),
-                          child: TextFormField(
-                            controller: _titleController,
-                            textInputAction: TextInputAction.next,
-                            maxLength: _titleMaxLength,
-                            maxLines: 1,
-                            style: _fieldTextStyle(context),
-                            decoration: _plateInputDecoration(
+                body: KeyboardDismissScope(
+                  child: MultiBlocListener(
+                    listeners: [
+                      BlocListener<GigPostRequestBloc, GigPostRequestState>(
+                        listener: (context, state) {
+                          if (state is GigPostRequestSuccess) {
+                            ToastTheme.showSuccess(
                               context,
-                              hint: L10n.get("gigs_post_request_field_title"),
-                            ),
-                            onChanged: (_) {
-                              if (_showTitleError) {
-                                _mutateForm(() => _showTitleError = false);
-                              }
-                            },
-                            buildCounter: (
-                              context, {
-                              required currentLength,
-                              required isFocused,
-                              maxLength,
-                            }) =>
-                                _buildSubtleCounter(
-                              context,
-                              currentLength: currentLength,
-                              maxLength: maxLength ?? _titleMaxLength,
-                              visibleAt: _titleCounterVisibleAt,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _FieldLabel(
-                          L10n.get("gigs_post_request_field_description"),
-                        ),
-                        _PlateField(
-                          dirtyOutlineColor: dirtyOutline(
-                            _descriptionController.text != _baselineDescription,
-                          ),
-                          child: AnimatedSize(
-                            duration: const Duration(milliseconds: 320),
-                            reverseDuration:
-                                const Duration(milliseconds: 320),
-                            curve: Curves.easeInOut,
-                            alignment: Alignment.topCenter,
-                            clipBehavior: Clip.hardEdge,
-                            child: TextFormField(
-                              controller: _descriptionController,
-                              minLines: _descriptionBaseLines +
-                                  (_isDescriptionExpanded
-                                      ? _descriptionExpandedExtraLines
-                                      : 0),
-                              maxLines: _descriptionBaseLines +
-                                  (_isDescriptionExpanded
-                                      ? _descriptionExpandedExtraLines
-                                      : 0),
-                              maxLength: _descriptionMaxLength,
-                              style: _descriptionTextStyle(context),
-                              decoration: _descriptionInputDecoration(
-                                context,
-                                hint: L10n.get(
-                                  "gigs_post_request_field_description",
-                                ),
+                              message: L10n.get(
+                                "gigs_post_request_success_toast",
                               ),
+                            );
+                            _allowPopWithoutConfirm = true;
+                            Navigator.of(context).pop();
+                          } else if (state is GigRequestEditSuccess) {
+                            ToastTheme.showSuccess(
+                              context,
+                              message: L10n.get(
+                                "gigs_edit_request_success_toast",
+                              ),
+                            );
+                            _allowPopWithoutConfirm = true;
+                            Navigator.of(context)
+                                .pop<GigRequest>(state.updated);
+                          } else if (state is GigPostRequestError) {
+                            ToastTheme.showError(
+                              context,
+                              message: state.message,
+                            );
+                          }
+                        },
+                      ),
+                      BlocListener<GigPostOfferBloc, GigPostOfferState>(
+                        listener: (context, state) {
+                          if (state is GigPostOfferSuccess) {
+                            ToastTheme.showSuccess(
+                              context,
+                              message:
+                                  L10n.get("gigs_post_offer_success_toast"),
+                            );
+                            _allowPopWithoutConfirm = true;
+                            Navigator.of(context).pop();
+                          } else if (state is GigOfferEditSuccess) {
+                            ToastTheme.showSuccess(
+                              context,
+                              message:
+                                  L10n.get("gigs_edit_offer_success_toast"),
+                            );
+                            _allowPopWithoutConfirm = true;
+                            Navigator.of(context).pop<GigOffer>(state.updated);
+                          } else if (state is GigPostOfferError) {
+                            ToastTheme.showError(
+                              context,
+                              message: state.message,
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                        keyboardDismissBehavior:
+                            KeyboardDismissScope.scrollBehavior,
+                        children: [
+                          if (!_isEditingOffer && !_isEditingRequest) ...[
+                            _PublishModeToggle(
+                              value: _mode,
+                              onChanged: _setMode,
+                            ),
+                            const SizedBox(height: 22),
+                          ],
+                          _FieldLabel(
+                            L10n.get("gigs_post_request_field_category"),
+                          ),
+                          _CategoryPlate(
+                            categories: categories,
+                            selected: _selectedCategory,
+                            language: language,
+                            showError: _showCategoryError,
+                            dirtyOutlineColor: dirtyOutline(
+                              _selectedCategory?.id != _baselineCategoryId,
+                            ),
+                            onChanged: (c) {
+                              _mutateForm(() {
+                                _selectedCategory = c;
+                                if (c != null) _showCategoryError = false;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          _FieldLabel(
+                            L10n.get("gigs_post_request_field_title"),
+                          ),
+                          _PlateField(
+                            showErrorBorder: _showTitleError,
+                            dirtyOutlineColor: dirtyOutline(
+                              _titleController.text != _baselineTitle,
+                            ),
+                            child: TextFormField(
+                              controller: _titleController,
+                              textInputAction: TextInputAction.next,
+                              maxLength: _titleMaxLength,
+                              maxLines: 1,
+                              style: _fieldTextStyle(context),
+                              decoration: _plateInputDecoration(
+                                context,
+                                hint: L10n.get("gigs_post_request_field_title"),
+                              ),
+                              onChanged: (_) {
+                                if (_showTitleError) {
+                                  _mutateForm(() => _showTitleError = false);
+                                }
+                              },
                               buildCounter: (
                                 context, {
                                 required currentLength,
                                 required isFocused,
                                 maxLength,
-                              }) {
-                                return _GigDescriptionToolbar(
-                                  controller: _descriptionController,
-                                  isOffer: _mode == GigPublishMode.service,
-                                  currentLength: currentLength,
-                                  maxLength:
-                                      maxLength ?? _descriptionMaxLength,
-                                  visibleAt: _descriptionCounterVisibleAt,
-                                  isExpanded: _isDescriptionExpanded,
-                                  onToggleExpanded: () => _mutateForm(() {
-                                    _isDescriptionExpanded =
-                                        !_isDescriptionExpanded;
-                                  }),
-                                );
-                              },
+                              }) =>
+                                  _buildSubtleCounter(
+                                context,
+                                currentLength: currentLength,
+                                maxLength: maxLength ?? _titleMaxLength,
+                                visibleAt: _titleCounterVisibleAt,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 22),
-                        if (_mode == GigPublishMode.task)
-                          ..._buildTaskFields(dirtyOutline)
-                        else
-                          ..._buildServiceFields(dirtyOutline),
-                        const SizedBox(height: 24),
-                        if (_isEditingOffer || _isEditingRequest)
-                          PrimaryButtonFactory.iconTextCentered(
-                            onPressed: submitting ? null : _submit,
-                            isLoading: submitting,
-                            height: 54,
-                            width: double.infinity,
-                            borderRadius: BorderRadius.circular(16),
-                            icon: Icons.save_outlined,
-                            text: submitLabel,
-                            textStyle: submitTextStyle,
-                          )
-                        else
-                          PrimaryButtonFactory.iconTextCentered(
-                            onPressed: submitting ? null : _submit,
-                            isLoading: submitting,
-                            height: 54,
-                            width: double.infinity,
-                            borderRadius: BorderRadius.circular(16),
-                            icon: Icons.add_rounded,
-                            text: submitLabel,
-                            textStyle: submitTextStyle,
+                          const SizedBox(height: 14),
+                          _FieldLabel(
+                            L10n.get("gigs_post_request_field_description"),
                           ),
-                      ],
+                          _PlateField(
+                            dirtyOutlineColor: dirtyOutline(
+                              _descriptionController.text !=
+                                  _baselineDescription,
+                            ),
+                            child: AnimatedSize(
+                              duration: const Duration(milliseconds: 320),
+                              reverseDuration:
+                                  const Duration(milliseconds: 320),
+                              curve: Curves.easeInOut,
+                              alignment: Alignment.topCenter,
+                              clipBehavior: Clip.hardEdge,
+                              child: TextFormField(
+                                controller: _descriptionController,
+                                minLines: _descriptionBaseLines +
+                                    (_isDescriptionExpanded
+                                        ? _descriptionExpandedExtraLines
+                                        : 0),
+                                maxLines: _descriptionBaseLines +
+                                    (_isDescriptionExpanded
+                                        ? _descriptionExpandedExtraLines
+                                        : 0),
+                                maxLength: _descriptionMaxLength,
+                                style: _descriptionTextStyle(context),
+                                decoration: _descriptionInputDecoration(
+                                  context,
+                                  hint: L10n.get(
+                                    "gigs_post_request_field_description",
+                                  ),
+                                ),
+                                buildCounter: (
+                                  context, {
+                                  required currentLength,
+                                  required isFocused,
+                                  maxLength,
+                                }) {
+                                  return _GigDescriptionToolbar(
+                                    controller: _descriptionController,
+                                    isOffer: _mode == GigPublishMode.service,
+                                    currentLength: currentLength,
+                                    maxLength:
+                                        maxLength ?? _descriptionMaxLength,
+                                    visibleAt: _descriptionCounterVisibleAt,
+                                    isExpanded: _isDescriptionExpanded,
+                                    onToggleExpanded: () => _mutateForm(() {
+                                      _isDescriptionExpanded =
+                                          !_isDescriptionExpanded;
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          if (_mode == GigPublishMode.task)
+                            ..._buildTaskFields(dirtyOutline)
+                          else
+                            ..._buildServiceFields(dirtyOutline),
+                          const SizedBox(height: 24),
+                          if (_isEditingOffer || _isEditingRequest)
+                            PrimaryButtonFactory.iconTextCentered(
+                              onPressed: submitting ? null : _submit,
+                              isLoading: submitting,
+                              height: 54,
+                              width: double.infinity,
+                              borderRadius: BorderRadius.circular(16),
+                              icon: Icons.save_outlined,
+                              text: submitLabel,
+                              textStyle: submitTextStyle,
+                            )
+                          else
+                            PrimaryButtonFactory.iconTextCentered(
+                              onPressed: submitting ? null : _submit,
+                              isLoading: submitting,
+                              height: 54,
+                              width: double.infinity,
+                              borderRadius: BorderRadius.circular(16),
+                              icon: Icons.add_rounded,
+                              text: submitLabel,
+                              textStyle: submitTextStyle,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1010,63 +1019,60 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
     final photosChrome = dirtyOutline(servicePhotosChanged);
     final photoUploader = PhotoUploader(
-          selectedPhotos: _selectedPhotos,
-          onPhotosChanged: (photos) {
-            _mutateForm(() {
-              _selectedPhotos = photos;
-              if (photos.isNotEmpty && _primaryPhotoIndex == null) {
-                _primaryPhotoIndex = 0;
-              } else if (photos.isEmpty) {
-                _primaryPhotoIndex = null;
-              }
-              if (_isEditingOffer) {
-                _rebuildOfferOrderedPhotos();
+      selectedPhotos: _selectedPhotos,
+      onPhotosChanged: (photos) {
+        _mutateForm(() {
+          _selectedPhotos = photos;
+          if (photos.isNotEmpty && _primaryPhotoIndex == null) {
+            _primaryPhotoIndex = 0;
+          } else if (photos.isEmpty) {
+            _primaryPhotoIndex = null;
+          }
+          if (_isEditingOffer) {
+            _rebuildOfferOrderedPhotos();
+            _photoOrderDirty = true;
+          }
+        });
+      },
+      existingPhotos: _isEditingOffer ? _existingOfferPhotos : const <Photo>[],
+      onDeleteExistingPhoto:
+          _isEditingOffer ? _deleteExistingOfferPhoto : (_) {},
+      onMakePhotoPrimary: (_) {},
+      onMakeNewPhotoPrimary: _isEditingOffer
+          ? null
+          : (i) => _mutateForm(() => _primaryPhotoIndex = i),
+      deletingPhotoIds:
+          _isEditingOffer ? _deletingOfferPhotoIds : const <int>{},
+      makingPhotoPrimaryIds:
+          _isEditingOffer ? _makingOfferPhotoPrimaryIds : const <int>{},
+      maxPhotos: AppConfig.maxPhotosPerGigOffer,
+      orderedItems: _isEditingOffer
+          ? _orderedOfferPhotos
+          : [
+              for (final path in _selectedPhotos) NewPhotoItem(path),
+            ],
+      onReorderItems: _isEditingOffer
+          ? (newOrder) {
+              _mutateForm(() {
+                _orderedOfferPhotos = newOrder;
+                _selectedPhotos = [
+                  for (final item in newOrder)
+                    if (item is NewPhotoItem) item.path,
+                ];
+                _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
                 _photoOrderDirty = true;
-              }
-            });
-          },
-          existingPhotos:
-              _isEditingOffer ? _existingOfferPhotos : const <Photo>[],
-          onDeleteExistingPhoto:
-              _isEditingOffer ? _deleteExistingOfferPhoto : (_) {},
-          onMakePhotoPrimary: (_) {},
-          onMakeNewPhotoPrimary: _isEditingOffer
-              ? null
-              : (i) => _mutateForm(() => _primaryPhotoIndex = i),
-          deletingPhotoIds:
-              _isEditingOffer ? _deletingOfferPhotoIds : const <int>{},
-          makingPhotoPrimaryIds:
-              _isEditingOffer ? _makingOfferPhotoPrimaryIds : const <int>{},
-          maxPhotos: AppConfig.maxPhotosPerGigOffer,
-          orderedItems: _isEditingOffer
-              ? _orderedOfferPhotos
-              : [
-                  for (final path in _selectedPhotos) NewPhotoItem(path),
-                ],
-          onReorderItems: _isEditingOffer
-              ? (newOrder) {
-                  _mutateForm(() {
-                    _orderedOfferPhotos = newOrder;
-                    _selectedPhotos = [
-                      for (final item in newOrder)
-                        if (item is NewPhotoItem) item.path,
-                    ];
-                    _primaryPhotoIndex =
-                        _selectedPhotos.isEmpty ? null : 0;
-                    _photoOrderDirty = true;
-                  });
-                }
-              : (newOrder) {
-                  _mutateForm(() {
-                    _selectedPhotos = [
-                      for (final item in newOrder)
-                        if (item is NewPhotoItem) item.path,
-                    ];
-                    _primaryPhotoIndex =
-                        _selectedPhotos.isEmpty ? null : 0;
-                  });
-                },
-        );
+              });
+            }
+          : (newOrder) {
+              _mutateForm(() {
+                _selectedPhotos = [
+                  for (final item in newOrder)
+                    if (item is NewPhotoItem) item.path,
+                ];
+                _primaryPhotoIndex = _selectedPhotos.isEmpty ? null : 0;
+              });
+            },
+    );
 
     return [
       _FieldLabel(L10n.get("gigs_post_offer_field_pricing_type")),
@@ -1382,8 +1388,7 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   final hintColor = Theme.of(context).brightness == Brightness.dark
       ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
       : Colors.grey[500];
-  final cleanedHint =
-      hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
+  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
   return InputDecoration(
     hintText: cleanedHint,
     hintStyle: TextStyle(
@@ -1402,8 +1407,7 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
     // plate (see `_PlateField.showErrorBorder`); collapse the inline error
     // text so no red copy ever appears beneath the field.
     errorStyle: const TextStyle(height: 0, fontSize: 0),
-    contentPadding:
-        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     isDense: true,
   );
 }
@@ -1411,7 +1415,7 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
 /// Tighter horizontal padding for the gig price / budget amount digits so
 /// long UZS values (with thousand separators) fit without growing the row.
 InputDecoration _currencyAmountInputDecoration(
-    BuildContext context, {
+  BuildContext context, {
   String? hint,
 }) {
   return _plateInputDecoration(context, hint: hint).copyWith(
@@ -1433,10 +1437,8 @@ class _FieldLabel extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.3,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurface
-              .withValues(alpha: 0.65),
+          color:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
         ),
       ),
     );
@@ -1633,9 +1635,8 @@ class _CurrencyAmountField extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final dividerColor = scheme.onSurface.withValues(alpha: 0.18);
-    final chipColor = ThemeState().isLightTheme
-        ? Colors.black
-        : scheme.onSurface;
+    final chipColor =
+        ThemeState().isLightTheme ? Colors.black : scheme.onSurface;
 
     return _PlateField(
       showErrorBorder: showError,
@@ -1750,12 +1751,11 @@ class _CategoryPlate extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color:
-                                  scheme.secondary.withValues(alpha: 0.18),
+                              color: scheme.secondary.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(c.icon,
-                                color: scheme.secondary, size: 20),
+                            child:
+                                Icon(c.icon, color: scheme.secondary, size: 20),
                           ),
                           title: Text(
                             c.localizedName(language),
@@ -2101,8 +2101,7 @@ class _GigDescriptionToolbar extends StatelessWidget {
           ],
           Semantics(
             button: true,
-            label:
-                isExpanded ? "Collapse description" : "Expand description",
+            label: isExpanded ? "Collapse description" : "Expand description",
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
               onTap: () {
@@ -2172,8 +2171,7 @@ class _PulsingSaveButtonState extends State<_PulsingSaveButton>
 
   void _syncRepeatPulse() {
     if (!mounted) return;
-    final disableAnim =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final disableAnim = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final allow = _animSettings.uiAnimationsEnabled && !disableAnim;
     if (allow) {
       if (!_controller.isAnimating) {

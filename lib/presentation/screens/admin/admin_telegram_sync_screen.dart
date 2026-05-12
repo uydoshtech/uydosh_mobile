@@ -13,6 +13,7 @@ import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_inset_container.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -27,7 +28,8 @@ class AdminTelegramSyncScreen extends StatefulWidget {
   const AdminTelegramSyncScreen({super.key});
 
   @override
-  State<AdminTelegramSyncScreen> createState() => _AdminTelegramSyncScreenState();
+  State<AdminTelegramSyncScreen> createState() =>
+      _AdminTelegramSyncScreenState();
 }
 
 class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
@@ -97,10 +99,42 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// Preset sync sizes (matches admin UX: small counts, then round hundreds,
   /// then +1000 steps up to 20000 for large backfills).
   static const List<int> _kMessageLimitChoices = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    20, 30, 50, 100, 200, 500, 1000,
-    2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
-    11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    20,
+    30,
+    50,
+    100,
+    200,
+    500,
+    1000,
+    2000,
+    3000,
+    4000,
+    5000,
+    6000,
+    7000,
+    8000,
+    9000,
+    10000,
+    11000,
+    12000,
+    13000,
+    14000,
+    15000,
+    16000,
+    17000,
+    18000,
+    19000,
+    20000,
   ];
 
   static const BorderRadius _kFieldBorderRadius =
@@ -421,7 +455,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
             child: Container(
               width: discSize,
               height: discSize,
-              decoration: BoxDecoration(color: bulletColor, shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: bulletColor, shape: BoxShape.circle),
             ),
           ),
           const SizedBox(width: 10),
@@ -448,7 +483,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           style: sectionTitleStyle,
         ),
         const SizedBox(height: 8),
-        _bulletLine("${L10n.get("admin_telegram_sync_log_scanned")}: ${r.sync.scanned}"),
+        _bulletLine(
+            "${L10n.get("admin_telegram_sync_log_scanned")}: ${r.sync.scanned}"),
         _bulletLine("${L10n.get("admin_telegram_sync_log_created")}: $created"),
         _bulletLine(
           "${L10n.get("admin_telegram_sync_log_skipped_no_peer")}: ${r.sync.skippedNoPeer}",
@@ -648,510 +684,543 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          if (_errorText != null) ...[
-            SelectableText(
-              _errorText!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-          ],
-          _neumorphicTile(
-            context: context,
-            // Don't clip: TextField floating labels can extend upward slightly.
-            clipBehavior: Clip.none,
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                expansionTileTheme: const ExpansionTileThemeData(
-                  backgroundColor: Colors.transparent,
-                  collapsedBackgroundColor: Colors.transparent,
-                ),
+      body: KeyboardDismissScope(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+          children: [
+            if (_errorText != null) ...[
+              SelectableText(
+                _errorText!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
-              child: ExpansionTile(
-                maintainState: true,
-                initiallyExpanded: true,
-                onExpansionChanged: (expanded) {
-                  if (expanded) HapticFeedbackUtils.impact();
-                },
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                collapsedShape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                // Extra top padding prevents any label overlap in tight layouts.
-                childrenPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                title: _expansionSectionTitle(
-                  context,
-                  title: L10n.get("admin_telegram_sync_title"),
-                  icon: Icons.sync,
-                ),
-                children: [
-                  NeumorphicInsetContainer(
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    backgroundColor: isBlue ? BlueThemeColors.surface : null,
-                    child: DropdownButtonFormField<String>(
-                      // Controlled selection; `value` is required (the newer
-                      // `initialValue` resets on rebuild and would drop the
-                      // admin's choice every setState).
-                      // ignore: deprecated_member_use
-                      value: _selectedChannel,
-                      items: [
-                        for (final handle in _kKnownChannels)
-                          DropdownMenuItem<String>(
-                            value: handle,
-                            child: Text(
-                              handle,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        DropdownMenuItem<String>(
-                          value: _kCustomChannelSentinel,
-                          child: Text(
-                            L10n.get("admin_telegram_sync_channel_custom"),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                      onChanged: _running
-                          ? null
-                          : (v) {
-                              if (v == null) return;
-                              setState(() {
-                                _selectedChannel = v;
-                                if (v != _kCustomChannelSentinel) {
-                                  // Keep controller in sync so _run() reads the
-                                  // handle straight from it, same as before.
-                                  _chatController.text = v;
-                                  _chatController.selection =
-                                      TextSelection.fromPosition(
-                                    TextPosition(offset: v.length),
-                                  );
-                                } else {
-                                  _chatController.clear();
-                                }
-                              });
-                            },
-                      decoration: _fieldDecoration(
-                        context,
-                        labelText: L10n.get("admin_telegram_sync_chat_label"),
-                      ),
-                      style: fieldStyle,
-                      isExpanded: true,
-                      dropdownColor: isBlue ? BlueThemeColors.surface : null,
-                      iconEnabledColor:
-                          isBlue ? BlueThemeColors.textPrimary : null,
-                    ),
+              const SizedBox(height: 16),
+            ],
+            _neumorphicTile(
+              context: context,
+              // Don't clip: TextField floating labels can extend upward slightly.
+              clipBehavior: Clip.none,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent,
+                  expansionTileTheme: const ExpansionTileThemeData(
+                    backgroundColor: Colors.transparent,
+                    collapsedBackgroundColor: Colors.transparent,
                   ),
-                  if (_selectedChannel == _kCustomChannelSentinel) ...[
-                    const SizedBox(height: 12),
-                    NeumorphicInsetContainer(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(12)),
-                      backgroundColor:
-                          isBlue ? BlueThemeColors.surface : null,
-                      child: TextField(
-                        controller: _chatController,
-                        style: fieldStyle,
-                        decoration: _fieldDecoration(
-                          context,
-                          labelText: L10n.get(
-                              "admin_telegram_sync_chat_custom_label"),
-                        ),
-                        autocorrect: false,
-                        enabled: !_running,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  if (_loadingAdmins)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              L10n.get("admin_telegram_sync_admins_loading"),
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else if (_adminsError != null) ...[
-                    Text(
-                      L10n.get("admin_telegram_sync_admins_error"),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    SelectableText(
-                      _adminsError!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 12,
-                      ),
-                    ),
-                    PrimaryButtonFactory.iconTextCentered(
-                      onPressed: _loadAdmins,
-                      icon: Icons.refresh,
-                      text: L10n.get("admin_telegram_sync_admins_retry"),
-                      width: double.infinity,
-                      height: 48,
-                      padding: primaryButtonPadding,
-                      surfaceGradientBase: primaryButtonBase,
-                      textColor: primaryButtonText,
-                    ),
-                  ] else ...[
-                    if (_adminUsers.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          L10n.get("admin_telegram_sync_admins_empty"),
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ),
+                ),
+                child: ExpansionTile(
+                  maintainState: true,
+                  initiallyExpanded: true,
+                  onExpansionChanged: (expanded) {
+                    if (expanded) HapticFeedbackUtils.impact();
+                  },
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  collapsedShape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  tilePadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  // Extra top padding prevents any label overlap in tight layouts.
+                  childrenPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  title: _expansionSectionTitle(
+                    context,
+                    title: L10n.get("admin_telegram_sync_title"),
+                    icon: Icons.sync,
+                  ),
+                  children: [
                     NeumorphicInsetContainer(
                       borderRadius: const BorderRadius.all(Radius.circular(12)),
                       backgroundColor: isBlue ? BlueThemeColors.surface : null,
-                      child: DropdownButtonFormField<int?>(
-                        // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
+                      child: DropdownButtonFormField<String>(
+                        // Controlled selection; `value` is required (the newer
+                        // `initialValue` resets on rebuild and would drop the
+                        // admin's choice every setState).
                         // ignore: deprecated_member_use
-                        value: _selectedImportUserId,
+                        value: _selectedChannel,
                         items: [
-                          DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text(
-                              L10n.get("admin_telegram_sync_import_user_sync_only"),
-                            ),
-                          ),
-                          ..._adminUsers.map(
-                            (u) => DropdownMenuItem<int?>(
-                              value: u.id,
+                          for (final handle in _kKnownChannels)
+                            DropdownMenuItem<String>(
+                              value: handle,
                               child: Text(
-                                _adminDropdownLabel(u),
+                                handle,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                            ),
+                          DropdownMenuItem<String>(
+                            value: _kCustomChannelSentinel,
+                            child: Text(
+                              L10n.get("admin_telegram_sync_channel_custom"),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                         onChanged: _running
                             ? null
-                            : (v) => setState(() => _selectedImportUserId = v),
+                            : (v) {
+                                if (v == null) return;
+                                setState(() {
+                                  _selectedChannel = v;
+                                  if (v != _kCustomChannelSentinel) {
+                                    // Keep controller in sync so _run() reads the
+                                    // handle straight from it, same as before.
+                                    _chatController.text = v;
+                                    _chatController.selection =
+                                        TextSelection.fromPosition(
+                                      TextPosition(offset: v.length),
+                                    );
+                                  } else {
+                                    _chatController.clear();
+                                  }
+                                });
+                              },
                         decoration: _fieldDecoration(
                           context,
-                          labelText: L10n.get("admin_telegram_sync_import_user_label"),
+                          labelText: L10n.get("admin_telegram_sync_chat_label"),
                         ),
                         style: fieldStyle,
                         isExpanded: true,
                         dropdownColor: isBlue ? BlueThemeColors.surface : null,
-                        iconEnabledColor: isBlue ? BlueThemeColors.textPrimary : null,
+                        iconEnabledColor:
+                            isBlue ? BlueThemeColors.textPrimary : null,
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 8),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(L10n.get("admin_telegram_sync_newest_first")),
-                    trailing: NeumorphicThemeAwareToggle(
-                      value: _newestFirst,
-                      enabled: !_running,
-                      onChanged: (v) => setState(() => _newestFirst = v),
-                    ),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(L10n.get("admin_telegram_sync_skip_listing_import")),
-                    trailing: NeumorphicThemeAwareToggle(
-                      value: _skipListingImport,
-                      enabled: !_running,
-                      onChanged: (v) => setState(() => _skipListingImport = v),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      L10n.get("admin_telegram_sync_limit_label"),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isBlue
-                            ? BlueThemeColors.textSecondary
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  IgnorePointer(
-                    ignoring: _running,
-                    child: Opacity(
-                      opacity: _running ? 0.5 : 1,
-                      child: Container(
-                        decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                          context,
-                          theme: Theme.of(context),
-                        ),
-                        height: 80,
-                        child: CupertinoPicker(
-                          backgroundColor: Colors.transparent,
-                          changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
-                          itemExtent: 40,
-                          scrollController: _messageLimitScrollController,
-                          onSelectedItemChanged: (index) {
-                            SendSoundUtils.playCupertinoWheelSound();
-                            setState(() {
-                              _selectedMessageLimit = _kMessageLimitChoices[index];
-                            });
-                          },
-                          children: _kMessageLimitChoices
-                              .map(
-                                (n) => Center(
-                                  child: Text(
-                                    "$n",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: isBlue
-                                          ? BlueThemeColors.textPrimary
-                                          : (ThemeState().isLightTheme
-                                              ? Colors.black
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurfaceVariant),
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PrimaryButton(
-                    onPressed: _running ? null : _run,
-                    width: double.infinity,
-                    height: 48,
-                    padding: primaryButtonPadding,
-                    surfaceGradientBase: primaryButtonBase,
-                    textColor: primaryButtonText,
-                    isLoading: _running,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const ThemeIcon(Icons.sync),
-                        const SizedBox(width: 8),
-                        Text(
-                          _running
-                              ? L10n.get("admin_telegram_sync_running")
-                              : L10n.get("admin_telegram_sync_run"),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_lastResult != null) ...[
-                    const SizedBox(height: 20),
-                    _resultView(_lastResult!),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _neumorphicTile(
-            context: context,
-            clipBehavior: Clip.antiAlias,
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                expansionTileTheme: const ExpansionTileThemeData(
-                  backgroundColor: Colors.transparent,
-                  collapsedBackgroundColor: Colors.transparent,
-                ),
-              ),
-              child: ExpansionTile(
-                initiallyExpanded: false,
-                onExpansionChanged: (expanded) {
-                  if (expanded) HapticFeedbackUtils.impact();
-                },
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                collapsedShape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                title: _expansionSectionTitle(
-                  context,
-                  title: L10n.get("admin_area_price_cache_section_title"),
-                  icon: Icons.analytics_outlined,
-                ),
-                children: [
-                  Text(
-                    L10n.get("admin_area_price_cache_screen_body"),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PrimaryButton(
-                    onPressed: _refreshingAreaPriceCache ? null : _refreshAreaPriceCache,
-                    width: double.infinity,
-                    height: 48,
-                    padding: primaryButtonPadding,
-                    surfaceGradientBase: primaryButtonBase,
-                    textColor: primaryButtonText,
-                    isLoading: _refreshingAreaPriceCache,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const ThemeIcon(Icons.analytics_outlined),
-                        const SizedBox(width: 8),
-                        Text(
-                          _refreshingAreaPriceCache
-                              ? L10n.get("admin_area_price_cache_running")
-                              : L10n.get("admin_area_price_cache_run"),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_areaPriceCacheErrorText != null) ...[
-                    const SizedBox(height: 16),
-                    SelectableText(
-                      _areaPriceCacheErrorText!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  ],
-                  if (_areaPriceCacheResult != null) ...[
-                    const SizedBox(height: 16),
-                    SelectableText(
-                      L10n.get("admin_telegram_sync_result_header"),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                    if (_selectedChannel == _kCustomChannelSentinel) ...[
+                      const SizedBox(height: 12),
+                      NeumorphicInsetContainer(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        backgroundColor:
+                            isBlue ? BlueThemeColors.surface : null,
+                        child: TextField(
+                          controller: _chatController,
+                          style: fieldStyle,
+                          decoration: _fieldDecoration(
+                            context,
+                            labelText: L10n.get(
+                                "admin_telegram_sync_chat_custom_label"),
                           ),
+                          autocorrect: false,
+                          enabled: !_running,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    if (_loadingAdmins)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                L10n.get("admin_telegram_sync_admins_loading"),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (_adminsError != null) ...[
+                      Text(
+                        L10n.get("admin_telegram_sync_admins_error"),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        _adminsError!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                      ),
+                      PrimaryButtonFactory.iconTextCentered(
+                        onPressed: _loadAdmins,
+                        icon: Icons.refresh,
+                        text: L10n.get("admin_telegram_sync_admins_retry"),
+                        width: double.infinity,
+                        height: 48,
+                        padding: primaryButtonPadding,
+                        surfaceGradientBase: primaryButtonBase,
+                        textColor: primaryButtonText,
+                      ),
+                    ] else ...[
+                      if (_adminUsers.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            L10n.get("admin_telegram_sync_admins_empty"),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                      NeumorphicInsetContainer(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        backgroundColor:
+                            isBlue ? BlueThemeColors.surface : null,
+                        child: DropdownButtonFormField<int?>(
+                          // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
+                          // ignore: deprecated_member_use
+                          value: _selectedImportUserId,
+                          items: [
+                            DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text(
+                                L10n.get(
+                                    "admin_telegram_sync_import_user_sync_only"),
+                              ),
+                            ),
+                            ..._adminUsers.map(
+                              (u) => DropdownMenuItem<int?>(
+                                value: u.id,
+                                child: Text(
+                                  _adminDropdownLabel(u),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                          onChanged: _running
+                              ? null
+                              : (v) =>
+                                  setState(() => _selectedImportUserId = v),
+                          decoration: _fieldDecoration(
+                            context,
+                            labelText: L10n.get(
+                                "admin_telegram_sync_import_user_label"),
+                          ),
+                          style: fieldStyle,
+                          isExpanded: true,
+                          dropdownColor:
+                              isBlue ? BlueThemeColors.surface : null,
+                          iconEnabledColor:
+                              isBlue ? BlueThemeColors.textPrimary : null,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(L10n.get("admin_telegram_sync_newest_first")),
+                      trailing: NeumorphicThemeAwareToggle(
+                        value: _newestFirst,
+                        enabled: !_running,
+                        onChanged: (v) => setState(() => _newestFirst = v),
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                          L10n.get("admin_telegram_sync_skip_listing_import")),
+                      trailing: NeumorphicThemeAwareToggle(
+                        value: _skipListingImport,
+                        enabled: !_running,
+                        onChanged: (v) =>
+                            setState(() => _skipListingImport = v),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        L10n.get("admin_telegram_sync_limit_label"),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isBlue
+                                  ? BlueThemeColors.textSecondary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                            ),
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    _bulletLine(
-                      "• Duration: ${_areaPriceCacheResult!.durationMs} ms",
-                      padding: const EdgeInsets.only(bottom: 4),
+                    IgnorePointer(
+                      ignoring: _running,
+                      child: Opacity(
+                        opacity: _running ? 0.5 : 1,
+                        child: Container(
+                          decoration:
+                              ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                            context,
+                            theme: Theme.of(context),
+                          ),
+                          height: 80,
+                          child: CupertinoPicker(
+                            backgroundColor: Colors.transparent,
+                            changeReportingBehavior:
+                                ChangeReportingBehavior.onScrollEnd,
+                            itemExtent: 40,
+                            scrollController: _messageLimitScrollController,
+                            onSelectedItemChanged: (index) {
+                              SendSoundUtils.playCupertinoWheelSound();
+                              setState(() {
+                                _selectedMessageLimit =
+                                    _kMessageLimitChoices[index];
+                              });
+                            },
+                            children: _kMessageLimitChoices
+                                .map(
+                                  (n) => Center(
+                                    child: Text(
+                                      "$n",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: isBlue
+                                            ? BlueThemeColors.textPrimary
+                                            : (ThemeState().isLightTheme
+                                                ? Colors.black
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurfaceVariant),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ),
                     ),
-                    _bulletLine(
-                      "• Cache rows: ${_areaPriceCacheResult!.rowCount}",
-                      padding: const EdgeInsets.only(bottom: 4),
+                    const SizedBox(height: 16),
+                    PrimaryButton(
+                      onPressed: _running ? null : _run,
+                      width: double.infinity,
+                      height: 48,
+                      padding: primaryButtonPadding,
+                      surfaceGradientBase: primaryButtonBase,
+                      textColor: primaryButtonText,
+                      isLoading: _running,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ThemeIcon(Icons.sync),
+                          const SizedBox(width: 8),
+                          Text(
+                            _running
+                                ? L10n.get("admin_telegram_sync_running")
+                                : L10n.get("admin_telegram_sync_run"),
+                          ),
+                        ],
+                      ),
                     ),
-                    _bulletLine(
-                      "• Source listings: ${_areaPriceCacheResult!.listingCount}",
-                      padding: EdgeInsets.zero,
+                    if (_lastResult != null) ...[
+                      const SizedBox(height: 20),
+                      _resultView(_lastResult!),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _neumorphicTile(
+              context: context,
+              clipBehavior: Clip.antiAlias,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent,
+                  expansionTileTheme: const ExpansionTileThemeData(
+                    backgroundColor: Colors.transparent,
+                    collapsedBackgroundColor: Colors.transparent,
+                  ),
+                ),
+                child: ExpansionTile(
+                  initiallyExpanded: false,
+                  onExpansionChanged: (expanded) {
+                    if (expanded) HapticFeedbackUtils.impact();
+                  },
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  collapsedShape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  tilePadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  title: _expansionSectionTitle(
+                    context,
+                    title: L10n.get("admin_area_price_cache_section_title"),
+                    icon: Icons.analytics_outlined,
+                  ),
+                  children: [
+                    Text(
+                      L10n.get("admin_area_price_cache_screen_body"),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    PrimaryButton(
+                      onPressed: _refreshingAreaPriceCache
+                          ? null
+                          : _refreshAreaPriceCache,
+                      width: double.infinity,
+                      height: 48,
+                      padding: primaryButtonPadding,
+                      surfaceGradientBase: primaryButtonBase,
+                      textColor: primaryButtonText,
+                      isLoading: _refreshingAreaPriceCache,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ThemeIcon(Icons.analytics_outlined),
+                          const SizedBox(width: 8),
+                          Text(
+                            _refreshingAreaPriceCache
+                                ? L10n.get("admin_area_price_cache_running")
+                                : L10n.get("admin_area_price_cache_run"),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_areaPriceCacheErrorText != null) ...[
+                      const SizedBox(height: 16),
+                      SelectableText(
+                        _areaPriceCacheErrorText!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error),
+                      ),
+                    ],
+                    if (_areaPriceCacheResult != null) ...[
+                      const SizedBox(height: 16),
+                      SelectableText(
+                        L10n.get("admin_telegram_sync_result_header"),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      _bulletLine(
+                        "• Duration: ${_areaPriceCacheResult!.durationMs} ms",
+                        padding: const EdgeInsets.only(bottom: 4),
+                      ),
+                      _bulletLine(
+                        "• Cache rows: ${_areaPriceCacheResult!.rowCount}",
+                        padding: const EdgeInsets.only(bottom: 4),
+                      ),
+                      _bulletLine(
+                        "• Source listings: ${_areaPriceCacheResult!.listingCount}",
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _neumorphicTile(
+              context: context,
+              clipBehavior: Clip.antiAlias,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent,
+                  expansionTileTheme: const ExpansionTileThemeData(
+                    backgroundColor: Colors.transparent,
+                    collapsedBackgroundColor: Colors.transparent,
+                  ),
+                ),
+                child: ExpansionTile(
+                  initiallyExpanded: false,
+                  onExpansionChanged: (expanded) {
+                    if (expanded) HapticFeedbackUtils.impact();
+                  },
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  collapsedShape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  tilePadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  title: _expansionSectionTitle(
+                    context,
+                    title: L10n.get("admin_telegram_export_section_title"),
+                    icon: Icons.download_outlined,
+                  ),
+                  children: [
+                    Text(
+                      L10n.get("admin_telegram_export_intro"),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    NeumorphicInsetContainer(
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      backgroundColor: isBlue ? BlueThemeColors.surface : null,
+                      child: TextField(
+                        controller: _exportMaxRowsController,
+                        style: fieldStyle,
+                        decoration: _fieldDecoration(
+                          context,
+                          labelText:
+                              L10n.get("admin_telegram_export_max_rows_label"),
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        enabled: !_exporting,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    PrimaryButton(
+                      onPressed:
+                          (_running || _exporting) ? null : _downloadExport,
+                      width: double.infinity,
+                      height: 48,
+                      padding: primaryButtonPadding,
+                      surfaceGradientBase: primaryButtonBase,
+                      textColor: primaryButtonText,
+                      isLoading: _exporting,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ThemeIcon(Icons.download_outlined),
+                          const SizedBox(width: 8),
+                          Text(
+                            _exporting
+                                ? L10n.get("admin_telegram_export_running")
+                                : L10n.get("admin_telegram_export_download"),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _neumorphicTile(
-            context: context,
-            clipBehavior: Clip.antiAlias,
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                dividerColor: Colors.transparent,
-                expansionTileTheme: const ExpansionTileThemeData(
-                  backgroundColor: Colors.transparent,
-                  collapsedBackgroundColor: Colors.transparent,
-                ),
-              ),
-              child: ExpansionTile(
-                initiallyExpanded: false,
-                onExpansionChanged: (expanded) {
-                  if (expanded) HapticFeedbackUtils.impact();
-                },
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                collapsedShape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                title: _expansionSectionTitle(
-                  context,
-                  title: L10n.get("admin_telegram_export_section_title"),
-                  icon: Icons.download_outlined,
-                ),
-                children: [
-                  Text(
-                    L10n.get("admin_telegram_export_intro"),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  NeumorphicInsetContainer(
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    backgroundColor: isBlue ? BlueThemeColors.surface : null,
-                    child: TextField(
-                      controller: _exportMaxRowsController,
-                      style: fieldStyle,
-                      decoration: _fieldDecoration(
-                        context,
-                        labelText: L10n.get("admin_telegram_export_max_rows_label"),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      enabled: !_exporting,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  PrimaryButton(
-                    onPressed: (_running || _exporting) ? null : _downloadExport,
-                    width: double.infinity,
-                    height: 48,
-                    padding: primaryButtonPadding,
-                    surfaceGradientBase: primaryButtonBase,
-                    textColor: primaryButtonText,
-                    isLoading: _exporting,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const ThemeIcon(Icons.download_outlined),
-                        const SizedBox(width: 8),
-                        Text(
-                          _exporting
-                              ? L10n.get("admin_telegram_export_running")
-                              : L10n.get("admin_telegram_export_download"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildDangerZone(context, isBlue: isBlue),
-        ],
+            const SizedBox(height: 16),
+            _buildDangerZone(context, isBlue: isBlue),
+          ],
+        ),
       ),
     );
   }
@@ -1159,7 +1228,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   Widget _buildDangerZone(BuildContext context, {required bool isBlue}) {
     final theme = Theme.of(context);
     final errorColor = theme.colorScheme.error;
-    final busy = _running || _exporting || _clearingListings || _clearingIngested;
+    final busy =
+        _running || _exporting || _clearingListings || _clearingIngested;
     final pad = const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
 
     return _neumorphicTile(

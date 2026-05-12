@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -84,7 +85,8 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
       listener: (context, state) {
         if (state is GigPostRequestSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(L10n.get("gigs_post_request_success_toast"))),
+            SnackBar(
+                content: Text(L10n.get("gigs_post_request_success_toast"))),
           );
           Navigator.of(context).pop();
         } else if (state is GigPostRequestError) {
@@ -103,115 +105,118 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: Text(L10n.get("gigs_post_request_title")),
           ),
-          body: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              children: [
-                _FieldLabel(L10n.get("gigs_post_request_field_category")),
-                _CategoryPlate(
-                  categories: categories,
-                  selected: _selectedCategory,
-                  language: language,
-                  showError: _showCategoryError,
-                  onChanged: (c) {
-                    setState(() {
-                      _selectedCategory = c;
-                      if (c != null) _showCategoryError = false;
-                    });
-                  },
-                ),
-                const SizedBox(height: 14),
-                _FieldLabel(L10n.get("gigs_post_request_field_title")),
-                _PlateField(
-                  showErrorBorder: _showTitleError,
-                  child: TextFormField(
-                    controller: _titleController,
-                    textInputAction: TextInputAction.next,
-                    style: _fieldTextStyle(context),
-                    decoration: _plateInputDecoration(
-                      context,
-                      hint: L10n.get("gigs_post_request_field_title"),
-                    ),
-                    onChanged: (_) {
-                      if (_showTitleError) {
-                        setState(() => _showTitleError = false);
-                      }
+          body: KeyboardDismissScope(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+                children: [
+                  _FieldLabel(L10n.get("gigs_post_request_field_category")),
+                  _CategoryPlate(
+                    categories: categories,
+                    selected: _selectedCategory,
+                    language: language,
+                    showError: _showCategoryError,
+                    onChanged: (c) {
+                      setState(() {
+                        _selectedCategory = c;
+                        if (c != null) _showCategoryError = false;
+                      });
                     },
                   ),
-                ),
-                const SizedBox(height: 14),
-                _FieldLabel(L10n.get("gigs_post_request_field_description")),
-                _PlateField(
-                  child: TextFormField(
-                    controller: _descriptionController,
-                    maxLines: 5,
-                    minLines: 4,
-                    style: _fieldTextStyle(context),
-                    decoration: _plateInputDecoration(
-                      context,
-                      hint: L10n.get("gigs_post_request_field_description"),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
-                _BudgetTypePlate(
-                  value: _budgetType,
-                  onChanged: (v) => setState(() => _budgetType = v),
-                ),
-                if (_budgetType != GigRequestBudgetType.open) ...[
                   const SizedBox(height: 14),
-                  _FieldLabel(L10n.get("gigs_post_request_field_amount")),
+                  _FieldLabel(L10n.get("gigs_post_request_field_title")),
                   _PlateField(
+                    showErrorBorder: _showTitleError,
                     child: TextFormField(
-                      controller: _budgetController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+                      controller: _titleController,
+                      textInputAction: TextInputAction.next,
                       style: _fieldTextStyle(context),
                       decoration: _plateInputDecoration(
                         context,
-                        hint: "UZS",
+                        hint: L10n.get("gigs_post_request_field_title"),
+                      ),
+                      onChanged: (_) {
+                        if (_showTitleError) {
+                          setState(() => _showTitleError = false);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _FieldLabel(L10n.get("gigs_post_request_field_description")),
+                  _PlateField(
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 5,
+                      minLines: 4,
+                      style: _fieldTextStyle(context),
+                      decoration: _plateInputDecoration(
+                        context,
+                        hint: L10n.get("gigs_post_request_field_description"),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
+                  _BudgetTypePlate(
+                    value: _budgetType,
+                    onChanged: (v) => setState(() => _budgetType = v),
+                  ),
+                  if (_budgetType != GigRequestBudgetType.open) ...[
+                    const SizedBox(height: 14),
+                    _FieldLabel(L10n.get("gigs_post_request_field_amount")),
+                    _PlateField(
+                      child: TextFormField(
+                        controller: _budgetController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        style: _fieldTextStyle(context),
+                        decoration: _plateInputDecoration(
+                          context,
+                          hint: "UZS",
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  _FieldLabel(L10n.get("gigs_post_request_field_address")),
+                  _PlateField(
+                    child: TextFormField(
+                      controller: _addressController,
+                      style: _fieldTextStyle(context),
+                      decoration: _plateInputDecoration(
+                        context,
+                        hint: L10n.get("gigs_post_request_field_address"),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _RemoteTogglePlate(
+                    value: _isRemote,
+                    label: L10n.get("gigs_post_request_field_remote"),
+                    onChanged: (v) => setState(() => _isRemote = v),
+                  ),
+                  const SizedBox(height: 24),
+                  PrimaryButton(
+                    onPressed: submitting ? null : _submit,
+                    isLoading: submitting,
+                    height: 54,
+                    width: double.infinity,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Text(
+                      L10n.get("gigs_post_request_submit"),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
                       ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                _FieldLabel(L10n.get("gigs_post_request_field_address")),
-                _PlateField(
-                  child: TextFormField(
-                    controller: _addressController,
-                    style: _fieldTextStyle(context),
-                    decoration: _plateInputDecoration(
-                      context,
-                      hint: L10n.get("gigs_post_request_field_address"),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _RemoteTogglePlate(
-                  value: _isRemote,
-                  label: L10n.get("gigs_post_request_field_remote"),
-                  onChanged: (v) => setState(() => _isRemote = v),
-                ),
-                const SizedBox(height: 24),
-                PrimaryButton(
-                  onPressed: submitting ? null : _submit,
-                  isLoading: submitting,
-                  height: 54,
-                  width: double.infinity,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Text(
-                    L10n.get("gigs_post_request_submit"),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
@@ -238,8 +243,7 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   final hintColor = Theme.of(context).brightness == Brightness.dark
       ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
       : Colors.grey[500];
-  final cleanedHint =
-      hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
+  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
   return InputDecoration(
     hintText: cleanedHint,
     hintStyle: TextStyle(
@@ -259,8 +263,7 @@ InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
     // plate (see `_PlateField.showErrorBorder`); collapse the inline error
     // text so no red copy ever appears beneath the field.
     errorStyle: const TextStyle(height: 0, fontSize: 0),
-    contentPadding:
-        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     isDense: true,
   );
 }
@@ -279,10 +282,8 @@ class _FieldLabel extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.3,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurface
-              .withValues(alpha: 0.65),
+          color:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
         ),
       ),
     );
@@ -366,8 +367,7 @@ class _CategoryPlate extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color:
-                                  scheme.secondary.withValues(alpha: 0.18),
+                              color: scheme.secondary.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
@@ -547,9 +547,8 @@ class _BudgetSegmentButton extends StatelessWidget {
           gradient: selected
               ? ThreeDSurfaceStyle.surfaceGradient(context, chipBase)
               : null,
-          boxShadow: selected
-              ? ThreeDSurfaceStyle.elevatedShadows(context)
-              : null,
+          boxShadow:
+              selected ? ThreeDSurfaceStyle.elevatedShadows(context) : null,
         ),
         alignment: Alignment.center,
         child: Text(

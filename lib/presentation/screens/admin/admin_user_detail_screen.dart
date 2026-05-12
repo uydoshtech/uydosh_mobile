@@ -17,6 +17,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -168,8 +169,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
-            onTap: () =>
-                setState(() => _devicesExpanded = !_devicesExpanded),
+            onTap: () => setState(() => _devicesExpanded = !_devicesExpanded),
             borderRadius: _devicesExpanded
                 ? const BorderRadius.vertical(top: Radius.circular(16))
                 : const BorderRadius.all(Radius.circular(16)),
@@ -583,55 +583,63 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           title: Text(
             L10n.get("admin_user_detail_block"),
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: reasonController,
-                  decoration: InputDecoration(
-                    labelText: L10n.get("admin_user_detail_block_reason"),
+          content: KeyboardDismissScope(
+            // Done bar disabled inside dialogs to avoid overlapping the
+            // dialog's action buttons. Tap-outside still dismisses the
+            // keyboard within the dialog content area.
+            showDoneBar: false,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: reasonController,
+                    decoration: InputDecoration(
+                      labelText: L10n.get("admin_user_detail_block_reason"),
+                    ),
+                    maxLines: 2,
                   ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  title: Text(
-                    L10n.get("admin_user_detail_block_until"),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: Text(
+                      L10n.get("admin_user_detail_block_until"),
+                    ),
+                    subtitle: Text(
+                      blockedUntil != null
+                          ? blockedUntil!.toIso8601String().split("T")[0]
+                          : L10n.get("admin_user_detail_block_permanent"),
+                    ),
+                    trailing: IconButton(
+                      icon: const ThemeIcon(Icons.calendar_today),
+                      onPressed: () async {
+                        HapticFeedbackUtils.impact();
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate:
+                              DateTime.now().add(const Duration(days: 7)),
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setDialogState(() => blockedUntil = date);
+                        }
+                      },
+                    ),
                   ),
-                  subtitle: Text(
-                    blockedUntil != null
-                        ? blockedUntil!.toIso8601String().split("T")[0]
-                        : L10n.get("admin_user_detail_block_permanent"),
-                  ),
-                  trailing: IconButton(
-                    icon: const ThemeIcon(Icons.calendar_today),
-                    onPressed: () async {
+                  TextButton(
+                    onPressed: () {
                       HapticFeedbackUtils.impact();
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate:
-                            DateTime.now().add(const Duration(days: 7)),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null) {
-                        setDialogState(() => blockedUntil = date);
-                      }
+                      setDialogState(() => blockedUntil = null);
                     },
+                    child: Text(
+                      L10n.get("admin_user_detail_block_permanent"),
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    HapticFeedbackUtils.impact();
-                    setDialogState(() => blockedUntil = null);
-                  },
-                  child: Text(
-                    L10n.get("admin_user_detail_block_permanent"),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
@@ -710,9 +718,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
   }) {
     final theme = Theme.of(context);
     final isBlueTheme = ThemeState().isBlueTheme;
-    final roleFieldFillColor = isBlueTheme
-        ? theme.colorScheme.surface.withValues(alpha: 0.22)
-        : null;
+    final roleFieldFillColor =
+        isBlueTheme ? theme.colorScheme.surface.withValues(alpha: 0.22) : null;
 
     return _NeumorphicTile(
       child: Padding(
@@ -742,8 +749,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                   : (value) => setState(() => _selectedRole = value),
               style: isBlueTheme
                   ? theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface,
-                      )
+                      color: theme.colorScheme.onSurface,
+                    )
                   : null,
               dropdownColor: isBlueTheme
                   ? Colors.blue.shade600.withValues(

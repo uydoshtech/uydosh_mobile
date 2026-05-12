@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
@@ -194,7 +195,8 @@ class _EditListingScreenState extends State<EditListingScreen>
     HapticFeedbackUtils.impact();
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => RoomPlanScanScreen(listingId: widget.listingDetail.id),
+        builder: (context) =>
+            RoomPlanScanScreen(listingId: widget.listingDetail.id),
       ),
     );
     if (!mounted) return;
@@ -797,13 +799,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                   Navigator.of(context).maybePop();
                 },
               ),
-            actions: [
-              if (_isSubmitting || _isFormDirty())
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: _buildAppBarTrailingAction(theme),
-                ),
-            ],
+              actions: [
+                if (_isSubmitting || _isFormDirty())
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: _buildAppBarTrailingAction(theme),
+                  ),
+              ],
             ),
             body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
               listener: (context, state) {
@@ -827,646 +829,656 @@ class _EditListingScreenState extends State<EditListingScreen>
                 },
                 child: Form(
                   key: _formKey,
-                  child: UydoshFormScrollBody(
-                    topPadding: bodyTopPad,
-                    children: [
-                      // Listing Type and Gender Selection - Side by Side
-                      Container(
-                        child: Row(
-                          children: [
-                            // Listing Type Selection (50% width)
-                            Expanded(
-                              child: LabeledFieldOverlay(
-                                label: L10n.get("listing_type_label"),
-                                child: ListingTypePicker(
-                                  selectedListingTypeId: _selectedListingTypeId,
-                                  scrollController:
-                                      _listingTypeScrollController,
-                                  onListingTypeChanged: (listingTypeId) {
-                                    setState(() {
-                                      _selectedListingTypeId = listingTypeId;
-                                    });
-                                  },
-                                  useThemeColors: true,
-                                  showArrows: false,
+                  child: KeyboardDismissScope(
+                    child: UydoshFormScrollBody(
+                      topPadding: bodyTopPad,
+                      children: [
+                        // Listing Type and Gender Selection - Side by Side
+                        Container(
+                          child: Row(
+                            children: [
+                              // Listing Type Selection (50% width)
+                              Expanded(
+                                child: LabeledFieldOverlay(
+                                  label: L10n.get("listing_type_label"),
+                                  child: ListingTypePicker(
+                                    selectedListingTypeId:
+                                        _selectedListingTypeId,
+                                    scrollController:
+                                        _listingTypeScrollController,
+                                    onListingTypeChanged: (listingTypeId) {
+                                      setState(() {
+                                        _selectedListingTypeId = listingTypeId;
+                                      });
+                                    },
+                                    useThemeColors: true,
+                                    showArrows: false,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Gender Selection (50% width)
-                            Expanded(
-                              child: LabeledFieldOverlay(
-                                label: L10n.get("gender"),
-                                child: GenderPicker(
-                                  selectedGender: _selectedGender,
-                                  scrollController: _genderScrollController,
-                                  onGenderChanged: (gender) {
-                                    setState(() {
-                                      _selectedGender = gender;
-                                    });
-                                  },
-                                  useThemeColors: true,
-                                  showArrows: false,
+                              const SizedBox(width: 12),
+                              // Gender Selection (50% width)
+                              Expanded(
+                                child: LabeledFieldOverlay(
+                                  label: L10n.get("gender"),
+                                  child: GenderPicker(
+                                    selectedGender: _selectedGender,
+                                    scrollController: _genderScrollController,
+                                    onGenderChanged: (gender) {
+                                      setState(() {
+                                        _selectedGender = gender;
+                                      });
+                                    },
+                                    useThemeColors: true,
+                                    showArrows: false,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 10),
 
-                      // Metro Line and Station Selection (Third Row)
-                      ListingFormMetroSection(
-                        selectedSubwayLine: _selectedSubwayLine,
-                        selectedStationIndex: _selectedStationIndex,
-                        currentStations: _currentStations,
-                        isLoadingStations: _isLoadingStations,
-                        metroLineScrollController: _metroLineScrollController,
-                        metroStationScrollController:
-                            _metroStationScrollController,
-                        onLineChanged: (index) {
-                          setState(() {
-                            _selectedSubwayLine = index;
-                            if (index > 0) {
-                              _loadStationsForLine(index);
-                            } else {
-                              _currentStations = [];
-                              _selectedStationIndex = 0;
-                            }
-                          });
-                        },
-                        onStationChanged: (index) {
-                          setState(() {
-                            _selectedStationIndex = index;
-                            _syncLocationWithStation();
-                          });
-                        },
-                        onDismissKeyboard: _dismissKeyboard,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ), // Space between metro fields and location
-                      // Location Field - Full Row
-                      LocationPicker(
-                        locations: _currentLocations,
-                        selectedLocationIndex: _selectedLocationIndex,
-                        scrollController: _locationScrollController,
-                        onLocationChanged: (locationIndex) {
-                          setState(() {
-                            _selectedLocationIndex = locationIndex;
-                            // Clear location error when user selects a location
-                            if (_showLocationError && locationIndex >= 0) {
-                              _showLocationError = false;
-                            }
-                          });
-                        },
-                        isLoading: _isLoadingLocations,
-                        useThemeColors: true,
-                        useColoredIcons: true,
-                        showError: _showLocationError,
-                        showArrows: false,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ), // Space between location and price range
-                      // Price Field - Single handle, stored as both min and max
-                      LabeledFieldOverlay(
-                        label: L10n.get("listing_price_label"),
-                        child: PriceRangePicker(
-                          minPrice: 10.0,
-                          maxPrice: 1000.0,
-                          initialMinPrice: _price,
-                          initialMaxPrice: _price,
-                          useSinglePrice: true,
-                          onPriceRangeChanged: (minPrice, maxPrice) {
-                            _dismissKeyboard();
+                        // Metro Line and Station Selection (Third Row)
+                        ListingFormMetroSection(
+                          selectedSubwayLine: _selectedSubwayLine,
+                          selectedStationIndex: _selectedStationIndex,
+                          currentStations: _currentStations,
+                          isLoadingStations: _isLoadingStations,
+                          metroLineScrollController: _metroLineScrollController,
+                          metroStationScrollController:
+                              _metroStationScrollController,
+                          onLineChanged: (index) {
                             setState(() {
-                              _price =
-                                  minPrice; // Same value for both in single mode
+                              _selectedSubwayLine = index;
+                              if (index > 0) {
+                                _loadStationsForLine(index);
+                              } else {
+                                _currentStations = [];
+                                _selectedStationIndex = 0;
+                              }
                             });
                           },
+                          onStationChanged: (index) {
+                            setState(() {
+                              _selectedStationIndex = index;
+                              _syncLocationWithStation();
+                            });
+                          },
+                          onDismissKeyboard: _dismissKeyboard,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ), // Space between price range and title
-
-                      // Title Field — editable. Pre-populated with the
-                      // listing's existing title in [_initializeForm].
-                      LabeledFieldOverlay(
-                        label: L10n.get("listing_title_label"),
-                        child: WheelPickerPlateContainer(
-                          theme: theme,
-                          child: TextFormField(
-                          controller: _titleController,
-                          maxLength: _titleMaxLength,
-                          maxLines: 1,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            hintText: L10n.get("listing_title_hint"),
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? theme.colorScheme.onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.grey[400],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                          ),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: ThemeState().isLightTheme
-                                ? Colors.black
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          buildCounter: _buildTitleCounter,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ), // Space between title and description
-
-                      // Description Field
-                      LabeledFieldOverlay(
-                        label: L10n.get("listing_description_label"),
-                        child: WheelPickerPlateContainer(
-                          showErrorBorder: _showDescriptionError,
-                          theme: theme,
-                          child: AnimatedSize(
-                          duration: const Duration(milliseconds: 320),
-                          reverseDuration: const Duration(milliseconds: 320),
-                          curve: Curves.easeInOut,
-                          alignment: Alignment.topCenter,
-                          clipBehavior: Clip.hardEdge,
-                          child: TextFormField(
-                            controller: _descriptionController,
-                            onChanged: (value) {
-                              // Clear error when user types
-                              if (_showDescriptionError &&
-                                  value.trim().isNotEmpty) {
-                                setState(() {
-                                  _showDescriptionError = false;
-                                });
+                        const SizedBox(
+                          height: 10,
+                        ), // Space between metro fields and location
+                        // Location Field - Full Row
+                        LocationPicker(
+                          locations: _currentLocations,
+                          selectedLocationIndex: _selectedLocationIndex,
+                          scrollController: _locationScrollController,
+                          onLocationChanged: (locationIndex) {
+                            setState(() {
+                              _selectedLocationIndex = locationIndex;
+                              // Clear location error when user selects a location
+                              if (_showLocationError && locationIndex >= 0) {
+                                _showLocationError = false;
                               }
+                            });
+                          },
+                          isLoading: _isLoadingLocations,
+                          useThemeColors: true,
+                          useColoredIcons: true,
+                          showError: _showLocationError,
+                          showArrows: false,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ), // Space between location and price range
+                        // Price Field - Single handle, stored as both min and max
+                        LabeledFieldOverlay(
+                          label: L10n.get("listing_price_label"),
+                          child: PriceRangePicker(
+                            minPrice: 10.0,
+                            maxPrice: 1000.0,
+                            initialMinPrice: _price,
+                            initialMaxPrice: _price,
+                            useSinglePrice: true,
+                            onPriceRangeChanged: (minPrice, maxPrice) {
+                              _dismissKeyboard();
+                              setState(() {
+                                _price =
+                                    minPrice; // Same value for both in single mode
+                              });
                             },
-                            decoration: InputDecoration(
-                              hintText: L10n.get("listing_description_hint"),
-                              hintStyle: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? theme.colorScheme.onSurfaceVariant
-                                        .withOpacity(0.7)
-                                    : Colors.grey[400],
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius:
-                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius:
-                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius:
-                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius:
-                                    ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                            ),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: ThemeState().isLightTheme
-                                ? Colors.black
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          minLines: _descriptionBaseLines +
-                                (_isDescriptionExpanded
-                                    ? _descriptionExpandedExtraLines
-                                    : 0),
-                            maxLines: _descriptionBaseLines +
-                                (_isDescriptionExpanded
-                                    ? _descriptionExpandedExtraLines
-                                    : 0),
-                            maxLength: 1000,
-                            buildCounter: (
-                              context, {
-                              required currentLength,
-                              required isFocused,
-                              maxLength,
-                            }) {
-                              return DescriptionCounterToolbar(
-                                controller: _descriptionController,
-                                listingTypeId: _selectedListingTypeId,
-                                gender: _selectedGender,
-                                currentLength: currentLength,
-                                maxLength: maxLength ?? 0,
-                                isExpanded: _isDescriptionExpanded,
-                                onToggleExpanded: () => setState(() {
-                                  _isDescriptionExpanded =
-                                      !_isDescriptionExpanded;
-                                }),
-                                counterVisibleAtFraction: 0.7,
-                              );
-                            },
-                          ),
                           ),
                         ),
-                      ),
+                        const SizedBox(
+                          height: 10,
+                        ), // Space between price range and title
 
-                      const SizedBox(height: 10),
+                        // Title Field — editable. Pre-populated with the
+                        // listing's existing title in [_initializeForm].
+                        LabeledFieldOverlay(
+                          label: L10n.get("listing_title_label"),
+                          child: WheelPickerPlateContainer(
+                            theme: theme,
+                            child: TextFormField(
+                              controller: _titleController,
+                              maxLength: _titleMaxLength,
+                              maxLines: 1,
+                              textInputAction: TextInputAction.next,
+                              decoration: InputDecoration(
+                                hintText: L10n.get("listing_title_hint"),
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? theme.colorScheme.onSurfaceVariant
+                                          .withOpacity(0.7)
+                                      : Colors.grey[400],
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: ThemeState().isLightTheme
+                                    ? Colors.black
+                                    : theme.colorScheme.onSurfaceVariant,
+                              ),
+                              buildCounter: _buildTitleCounter,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ), // Space between title and description
 
-                      // Move-in Date and Private Room Row
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Move-in Date Field (50% width)
-                            Expanded(
-                              child: L10n.inputField(
-                                "quick_question_move_in_date",
-                                builder: (hintText) => Container(
+                        // Description Field
+                        LabeledFieldOverlay(
+                          label: L10n.get("listing_description_label"),
+                          child: WheelPickerPlateContainer(
+                            showErrorBorder: _showDescriptionError,
+                            theme: theme,
+                            child: AnimatedSize(
+                              duration: const Duration(milliseconds: 320),
+                              reverseDuration:
+                                  const Duration(milliseconds: 320),
+                              curve: Curves.easeInOut,
+                              alignment: Alignment.topCenter,
+                              clipBehavior: Clip.hardEdge,
+                              child: TextFormField(
+                                controller: _descriptionController,
+                                onChanged: (value) {
+                                  // Clear error when user types
+                                  if (_showDescriptionError &&
+                                      value.trim().isNotEmpty) {
+                                    setState(() {
+                                      _showDescriptionError = false;
+                                    });
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  hintText:
+                                      L10n.get("listing_description_hint"),
+                                  hintStyle: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? theme.colorScheme.onSurfaceVariant
+                                            .withOpacity(0.7)
+                                        : Colors.grey[400],
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateRadius,
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateRadius,
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateRadius,
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateRadius,
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: ThreeDSurfaceStyle
+                                        .wheelPickerPlateRadius,
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.transparent,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: ThemeState().isLightTheme
+                                      ? Colors.black
+                                      : theme.colorScheme.onSurfaceVariant,
+                                ),
+                                minLines: _descriptionBaseLines +
+                                    (_isDescriptionExpanded
+                                        ? _descriptionExpandedExtraLines
+                                        : 0),
+                                maxLines: _descriptionBaseLines +
+                                    (_isDescriptionExpanded
+                                        ? _descriptionExpandedExtraLines
+                                        : 0),
+                                maxLength: 1000,
+                                buildCounter: (
+                                  context, {
+                                  required currentLength,
+                                  required isFocused,
+                                  maxLength,
+                                }) {
+                                  return DescriptionCounterToolbar(
+                                    controller: _descriptionController,
+                                    listingTypeId: _selectedListingTypeId,
+                                    gender: _selectedGender,
+                                    currentLength: currentLength,
+                                    maxLength: maxLength ?? 0,
+                                    isExpanded: _isDescriptionExpanded,
+                                    onToggleExpanded: () => setState(() {
+                                      _isDescriptionExpanded =
+                                          !_isDescriptionExpanded;
+                                    }),
+                                    counterVisibleAtFraction: 0.7,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Move-in Date and Private Room Row
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Move-in Date Field (50% width)
+                              Expanded(
+                                child: L10n.inputField(
+                                  "quick_question_move_in_date",
+                                  builder: (hintText) => Container(
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: ThreeDSurfaceStyle
+                                        .wheelPickerPlateDecoration(
+                                      context,
+                                      theme: theme,
+                                    ),
+                                    child: ValueListenableBuilder<
+                                        TextEditingValue>(
+                                      valueListenable: _moveInDateController,
+                                      builder: (context, value, child) {
+                                        final isEmpty = value.text.isEmpty;
+                                        final moveInDateLabel =
+                                            L10n.get("move_in_date_label");
+                                        final anyDateText = L10n.get("any_date")
+                                            .replaceAll("\n", " ");
+                                        final displayValue =
+                                            isEmpty ? anyDateText : value.text;
+                                        final displayText =
+                                            "$moveInDateLabel\n$displayValue";
+                                        final displayStyle = TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: ThemeState().isLightTheme
+                                              ? Colors.black
+                                              : theme
+                                                  .colorScheme.onSurfaceVariant,
+                                        );
+                                        final hintStyle = TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: ThemeState().isLightTheme
+                                              ? Colors.black
+                                              : theme
+                                                  .colorScheme.onSurfaceVariant,
+                                        );
+                                        return GestureDetector(
+                                          onTap: () async {
+                                            final firstDate = DateTime.now();
+                                            final lastDate = DateTime.now().add(
+                                              const Duration(days: 365),
+                                            );
+                                            final existingDate =
+                                                _moveInDateValue.isNotEmpty
+                                                    ? DateTime.tryParse(
+                                                        _moveInDateValue,
+                                                      )
+                                                    : null;
+                                            final initialDate =
+                                                existingDate != null &&
+                                                        !existingDate.isBefore(
+                                                          firstDate,
+                                                        ) &&
+                                                        !existingDate.isAfter(
+                                                          lastDate,
+                                                        )
+                                                    ? existingDate
+                                                    : firstDate;
+                                            final picked =
+                                                await LanguageAwareDatePicker
+                                                    .showDatePicker(
+                                              context: context,
+                                              initialDate: initialDate,
+                                              firstDate: firstDate,
+                                              lastDate: lastDate,
+                                              helpText: L10n.get("select_date"),
+                                              cancelText: L10n.get("cancel"),
+                                              confirmText: L10n.get("ok"),
+                                            );
+                                            if (picked != null) {
+                                              _moveInDateValue =
+                                                  "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                              _moveInDateController.text =
+                                                  _formatMoveInDateDisplay(
+                                                picked,
+                                              );
+                                            }
+                                          },
+                                          child: InputDecorator(
+                                            decoration: InputDecoration(
+                                              hintText: hintText,
+                                              hintStyle: hintStyle,
+                                              hintMaxLines: 2,
+                                              border: OutlineInputBorder(
+                                                borderRadius: ThreeDSurfaceStyle
+                                                    .wheelPickerPlateRadius,
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: ThreeDSurfaceStyle
+                                                    .wheelPickerPlateRadius,
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: ThreeDSurfaceStyle
+                                                    .wheelPickerPlateRadius,
+                                                borderSide: BorderSide(
+                                                  color: _getBorderColor(),
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              filled: true,
+                                              fillColor: Colors.transparent,
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 16,
+                                              ),
+                                              prefixIcon: ThemeIcon(
+                                                CupertinoIcons.calendar,
+                                                size: 22,
+                                                color: Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                    : Colors.grey[600],
+                                              ),
+                                            ),
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                displayText,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: isEmpty
+                                                    ? hintStyle
+                                                    : displayStyle,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Private Room Toggle (50% width)
+                              Expanded(
+                                child: Container(
                                   clipBehavior: Clip.antiAlias,
                                   decoration: ThreeDSurfaceStyle
                                       .wheelPickerPlateDecoration(
                                     context,
                                     theme: theme,
                                   ),
-                                  child:
-                                      ValueListenableBuilder<TextEditingValue>(
-                                    valueListenable: _moveInDateController,
-                                    builder: (context, value, child) {
-                                      final isEmpty = value.text.isEmpty;
-                                      final moveInDateLabel =
-                                          L10n.get("move_in_date_label");
-                                      final anyDateText = L10n.get("any_date")
-                                          .replaceAll("\n", " ");
-                                      final displayValue =
-                                          isEmpty ? anyDateText : value.text;
-                                      final displayText =
-                                          "$moveInDateLabel\n$displayValue";
-                                      final displayStyle = TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: ThemeState().isLightTheme
-                                            ? Colors.black
-                                            : theme
-                                                .colorScheme.onSurfaceVariant,
-                                      );
-                                      final hintStyle = TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: ThemeState().isLightTheme
-                                            ? Colors.black
-                                            : theme
-                                                .colorScheme.onSurfaceVariant,
-                                      );
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          final firstDate = DateTime.now();
-                                          final lastDate = DateTime.now().add(
-                                            const Duration(days: 365),
-                                          );
-                                          final existingDate =
-                                              _moveInDateValue.isNotEmpty
-                                                  ? DateTime.tryParse(
-                                                      _moveInDateValue,
-                                                    )
-                                                  : null;
-                                          final initialDate =
-                                              existingDate != null &&
-                                                      !existingDate.isBefore(
-                                                        firstDate,
-                                                      ) &&
-                                                      !existingDate.isAfter(
-                                                        lastDate,
-                                                      )
-                                                  ? existingDate
-                                                  : firstDate;
-                                          final picked =
-                                              await LanguageAwareDatePicker
-                                                  .showDatePicker(
-                                            context: context,
-                                            initialDate: initialDate,
-                                            firstDate: firstDate,
-                                            lastDate: lastDate,
-                                            helpText: L10n.get("select_date"),
-                                            cancelText: L10n.get("cancel"),
-                                            confirmText: L10n.get("ok"),
-                                          );
-                                          if (picked != null) {
-                                            _moveInDateValue =
-                                                "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                            _moveInDateController.text =
-                                                _formatMoveInDateDisplay(
-                                              picked,
-                                            );
-                                          }
-                                        },
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            hintText: hintText,
-                                            hintStyle: hintStyle,
-                                            hintMaxLines: 2,
-                                            border: OutlineInputBorder(
-                                              borderRadius: ThreeDSurfaceStyle
-                                                  .wheelPickerPlateRadius,
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: ThreeDSurfaceStyle
-                                                  .wheelPickerPlateRadius,
-                                              borderSide: BorderSide.none,
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: ThreeDSurfaceStyle
-                                                  .wheelPickerPlateRadius,
-                                              borderSide: BorderSide(
-                                                color: _getBorderColor(),
-                                                width: 2,
-                                              ),
-                                            ),
-                                            filled: true,
-                                            fillColor: Colors.transparent,
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 16,
-                                            ),
-                                            prefixIcon: ThemeIcon(
-                                              CupertinoIcons.calendar,
-                                              size: 22,
-                                              color: Theme.of(
-                                                        context,
-                                                      ).brightness ==
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0,
+                                      vertical: 16.0,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ThemeIcon(
+                                          Icons.lock_outline,
+                                          color: _isPrivateRoom
+                                              ? _getBorderColor()
+                                              : (Theme.of(context).brightness ==
                                                       Brightness.dark
                                                   ? theme.colorScheme
                                                       .onSurfaceVariant
-                                                  : Colors.grey[600],
-                                            ),
-                                          ),
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              displayText,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: isEmpty
-                                                  ? hintStyle
-                                                  : displayStyle,
-                                            ),
-                                          ),
+                                                      .withOpacity(0.7)
+                                                  : Colors.grey[600]),
+                                          size: 22,
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Private Room Toggle (50% width)
-                            Expanded(
-                              child: Container(
-                                clipBehavior: Clip.antiAlias,
-                                decoration: ThreeDSurfaceStyle
-                                    .wheelPickerPlateDecoration(
-                                  context,
-                                  theme: theme,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0,
-                                    vertical: 16.0,
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      ThemeIcon(
-                                        Icons.lock_outline,
-                                        color: _isPrivateRoom
-                                            ? _getBorderColor()
-                                            : (Theme.of(context).brightness ==
-                                                    Brightness.dark
-                                                ? theme.colorScheme
-                                                    .onSurfaceVariant
-                                                    .withOpacity(0.7)
-                                                : Colors.grey[600]),
-                                        size: 22,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              L10n.get("private_room")
-                                                  .replaceFirst(" ", "\n"),
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
-                                                color: ThemeState().isLightTheme
-                                                    ? Colors.black
-                                                    : theme.colorScheme
-                                                        .onSurfaceVariant,
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                L10n.get("private_room")
+                                                    .replaceFirst(" ", "\n"),
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color:
+                                                      ThemeState().isLightTheme
+                                                          ? Colors.black
+                                                          : theme.colorScheme
+                                                              .onSurfaceVariant,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      NeumorphicToggle(
-                                        value: _isPrivateRoom,
-                                        activeAccentColor: _getBorderColor(),
-                                        activeTrackColor: _getBorderColor()
-                                            .withValues(alpha: 0.3),
-                                        inactiveThumbColor: Theme.of(context)
-                                                    .brightness ==
-                                                Brightness.dark
-                                            ? theme.colorScheme.onSurfaceVariant
-                                                .withOpacity(0.7)
-                                            : Colors.grey.shade600,
-                                        inactiveTrackColor: Theme.of(context)
-                                                    .brightness ==
-                                                Brightness.dark
-                                            ? theme.colorScheme.onSurfaceVariant
-                                                .withOpacity(0.3)
-                                            : Colors.grey.shade300,
-                                        onChanged: (value) {
-                                          HapticFeedbackUtils.impact();
-                                          setState(() {
-                                            _isPrivateRoom = value;
-                                          });
-                                        },
-                                      ),
-                                    ],
+                                        NeumorphicToggle(
+                                          value: _isPrivateRoom,
+                                          activeAccentColor: _getBorderColor(),
+                                          activeTrackColor: _getBorderColor()
+                                              .withValues(alpha: 0.3),
+                                          inactiveThumbColor:
+                                              Theme.of(context).brightness ==
+                                                      Brightness.dark
+                                                  ? theme.colorScheme
+                                                      .onSurfaceVariant
+                                                      .withOpacity(0.7)
+                                                  : Colors.grey.shade600,
+                                          inactiveTrackColor:
+                                              Theme.of(context).brightness ==
+                                                      Brightness.dark
+                                                  ? theme.colorScheme
+                                                      .onSurfaceVariant
+                                                      .withOpacity(0.3)
+                                                  : Colors.grey.shade300,
+                                          onChanged: (value) {
+                                            HapticFeedbackUtils.impact();
+                                            setState(() {
+                                              _isPrivateRoom = value;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Photos Section
-                      PhotoUploader(
-                        selectedPhotos: _selectedPhotos,
-                        onPhotosChanged: (photos) {
-                          logger.d("=== PHOTO SELECTION CHANGED ===");
-                          logger
-                              .d("Previous selected photos: $_selectedPhotos");
-                          logger.d("New selected photos: $photos");
-                          setState(() {
-                            _selectedPhotos = photos;
-                            _rebuildOrderedPhotos();
-                          });
-                          logger.d("Updated _selectedPhotos: $_selectedPhotos");
-                        },
-                        existingPhotos: _existingPhotos,
-                        onDeleteExistingPhoto: _deleteExistingPhoto,
-                        onMakePhotoPrimary: _makePhotoPrimary,
-                        onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
-                        deletingPhotoIds: _deletingPhotoIds,
-                        makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
-                        orderedItems: _orderedPhotos,
-                        onReorderItems: (newOrder) {
-                          setState(() {
-                            _orderedPhotos = newOrder;
-                            _photoOrderDirty = true;
-                          });
-                        },
-                        isRequired: false,
-                      ),
-
-                      ValueListenableBuilder<bool>(
-                        valueListenable:
-                            ClientLidarRoomScanConfig.lidarRoomScanDisabled,
-                        builder: (context, lidarDisabled, _) {
-                          // For testing: show this on Chrome/Web and iOS.
-                          // On web, the scan screen still won't start scanning,
-                          // but the UI flow can be exercised end-to-end.
-                          final canShowOnThisDevice = isIOSDevice || kIsWeb;
-                          if (!canShowOnThisDevice ||
-                              (lidarDisabled && !kIsWeb) ||
-                              _selectedListingTypeId == 1) {
-                            return const SizedBox.shrink();
-                          }
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                width: double.infinity,
-                                child: _buildNeumorphicRoomScanButton(),
                               ),
                             ],
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
 
-                      const SizedBox(height: 20),
-
-                      // Amenities Section
-                      LabeledFieldOverlay(
-                        label: L10n.get("amenities"),
-                        child: ListingFormAmenitiesSection(
-                          selectedAmenityIds: _selectedAmenityIds,
-                          onAmenityToggled: (amenityId) {
+                        // Photos Section
+                        PhotoUploader(
+                          selectedPhotos: _selectedPhotos,
+                          onPhotosChanged: (photos) {
+                            logger.d("=== PHOTO SELECTION CHANGED ===");
+                            logger.d(
+                                "Previous selected photos: $_selectedPhotos");
+                            logger.d("New selected photos: $photos");
                             setState(() {
-                              if (_selectedAmenityIds.contains(amenityId)) {
-                                _selectedAmenityIds.remove(amenityId);
-                              } else {
-                                _selectedAmenityIds.add(amenityId);
-                              }
+                              _selectedPhotos = photos;
+                              _rebuildOrderedPhotos();
+                            });
+                            logger
+                                .d("Updated _selectedPhotos: $_selectedPhotos");
+                          },
+                          existingPhotos: _existingPhotos,
+                          onDeleteExistingPhoto: _deleteExistingPhoto,
+                          onMakePhotoPrimary: _makePhotoPrimary,
+                          onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
+                          deletingPhotoIds: _deletingPhotoIds,
+                          makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
+                          orderedItems: _orderedPhotos,
+                          onReorderItems: (newOrder) {
+                            setState(() {
+                              _orderedPhotos = newOrder;
+                              _photoOrderDirty = true;
                             });
                           },
-                          onDismissKeyboard: _dismissKeyboard,
+                          isRequired: false,
                         ),
-                      ),
 
-                      const SizedBox(height: 26),
+                        ValueListenableBuilder<bool>(
+                          valueListenable:
+                              ClientLidarRoomScanConfig.lidarRoomScanDisabled,
+                          builder: (context, lidarDisabled, _) {
+                            // For testing: show this on Chrome/Web and iOS.
+                            // On web, the scan screen still won't start scanning,
+                            // but the UI flow can be exercised end-to-end.
+                            final canShowOnThisDevice = isIOSDevice || kIsWeb;
+                            if (!canShowOnThisDevice ||
+                                (lidarDisabled && !kIsWeb) ||
+                                _selectedListingTypeId == 1) {
+                              return const SizedBox.shrink();
+                            }
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: _buildNeumorphicRoomScanButton(),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
 
-                      Builder(
-                        builder: (context) {
-                          final label = Theme.of(context).textTheme.labelLarge;
-                          final baseSize = label?.fontSize ?? 14;
-                          final textStyle = label?.copyWith(
-                                  fontSize: baseSize * 1.2, height: 1.0) ??
-                              TextStyle(
-                                fontSize: baseSize * 1.2,
-                                height: 1.0,
-                                fontWeight: FontWeight.w500,
-                              );
-                          return PrimaryButtonFactory.iconText(
-                            onPressed: _isSubmitting ? null : _submitForm,
-                            icon: Icons.save,
-                            text: L10n.get(
-                              _isSubmitting
-                                  ? "updating_listing"
-                                  : "update_listing_button",
-                            ),
-                            width: double.infinity,
-                            borderRadius: BorderRadius.circular(20),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            textStyle: textStyle,
-                            isLoading: _isSubmitting,
-                          );
-                        },
-                      ),
+                        const SizedBox(height: 20),
 
-                      const SizedBox(height: 20),
-                    ],
+                        // Amenities Section
+                        LabeledFieldOverlay(
+                          label: L10n.get("amenities"),
+                          child: ListingFormAmenitiesSection(
+                            selectedAmenityIds: _selectedAmenityIds,
+                            onAmenityToggled: (amenityId) {
+                              setState(() {
+                                if (_selectedAmenityIds.contains(amenityId)) {
+                                  _selectedAmenityIds.remove(amenityId);
+                                } else {
+                                  _selectedAmenityIds.add(amenityId);
+                                }
+                              });
+                            },
+                            onDismissKeyboard: _dismissKeyboard,
+                          ),
+                        ),
+
+                        const SizedBox(height: 26),
+
+                        Builder(
+                          builder: (context) {
+                            final label =
+                                Theme.of(context).textTheme.labelLarge;
+                            final baseSize = label?.fontSize ?? 14;
+                            final textStyle = label?.copyWith(
+                                    fontSize: baseSize * 1.2, height: 1.0) ??
+                                TextStyle(
+                                  fontSize: baseSize * 1.2,
+                                  height: 1.0,
+                                  fontWeight: FontWeight.w500,
+                                );
+                            return PrimaryButtonFactory.iconText(
+                              onPressed: _isSubmitting ? null : _submitForm,
+                              icon: Icons.save,
+                              text: L10n.get(
+                                _isSubmitting
+                                    ? "updating_listing"
+                                    : "update_listing_button",
+                              ),
+                              width: double.infinity,
+                              borderRadius: BorderRadius.circular(20),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: textStyle,
+                              isLoading: _isSubmitting,
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1608,7 +1620,8 @@ class _EditListingScreenState extends State<EditListingScreen>
           // isPrimary on upload doesn't matter when we follow up with a
           // reorder call — the reorder makes `is_primary` match index 0 of
           // the final order. Pass `false` to avoid unnecessary toggling.
-          final isPrimaryFlags = List<bool>.filled(_selectedPhotos.length, false);
+          final isPrimaryFlags =
+              List<bool>.filled(_selectedPhotos.length, false);
 
           final ids = await listingService.uploadListingPhotos(
             listingId: widget.listingDetail.id,
