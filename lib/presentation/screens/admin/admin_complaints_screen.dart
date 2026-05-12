@@ -18,6 +18,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -679,9 +680,12 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   }
 
   void _showStatusMenu(Complaint complaint) {
-    showModalBottomSheet<void>(
+    final theme = Theme.of(context);
+    showAppBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      cardColor: theme.bottomSheetTheme.modalBackgroundColor ??
+          theme.colorScheme.surfaceContainerLow,
       builder: (context) {
         return SafeArea(
           child: Column(

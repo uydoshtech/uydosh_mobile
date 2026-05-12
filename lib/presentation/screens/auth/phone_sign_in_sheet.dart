@@ -15,6 +15,7 @@ import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/services/phone_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -80,10 +81,9 @@ class PhoneSignInSheet extends StatefulWidget {
   const PhoneSignInSheet({super.key});
 
   static Future<User?> show(BuildContext context) {
-    return showModalBottomSheet<User?>(
+    return showAppBottomSheet<User?>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: false,
       builder: (_) => const PhoneSignInSheet(),
     );
   }
@@ -667,15 +667,10 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
       return allowedCountries.where(matches).toList();
     }
 
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      // Default is `useSafeArea: false`, which wraps the sheet in
-      // MediaQuery.removePadding(removeTop: true), so descendant SafeArea
-      // treats the status bar/notch inset as zero. Enable safe area here so the
-      // list stays below Dynamic Island — same flag as other app bottom sheets.
-      isScrollControlled: true,
-      useSafeArea: true,
+      // Enable safe area so the list stays below Dynamic Island — same flag
+      // as other app bottom sheets.
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {

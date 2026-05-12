@@ -47,7 +47,7 @@ class _ListingDescriptionDictateButtonState
   StreamSubscription<Amplitude>? _amplitudeSub;
   final Stopwatch _recordStopwatch = Stopwatch();
 
-  static const Duration _maxRecordDuration = Duration(seconds: 90);
+  static const Duration _maxRecordDuration = Duration(minutes: 1);
 
   static double _normalizeDbToLevel(double db) {
     const minDb = -52.0;

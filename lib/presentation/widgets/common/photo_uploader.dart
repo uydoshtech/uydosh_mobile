@@ -17,6 +17,7 @@ import "package:uy_dosh/domain/models/photo_network_display.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_preview_dialog.dart";
@@ -215,11 +216,8 @@ class _PhotoUploaderState extends State<PhotoUploader>
   }
 
   void _showImageSourceDialog() {
-    showModalBottomSheet(
+    showAppBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) {
         final theme = Theme.of(context);

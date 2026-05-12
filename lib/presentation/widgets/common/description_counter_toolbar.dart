@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/debug_tap_bounds.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
@@ -40,6 +41,7 @@ class DescriptionCounterToolbar extends StatefulWidget {
     this.stackCounterRightOffset = -18,
     this.counterVisibleAtFraction = 0.0,
     this.maxDescriptionLength = 1000,
+    this.debugShowTapBounds = false,
   });
 
   final TextEditingController controller;
@@ -69,6 +71,10 @@ class DescriptionCounterToolbar extends StatefulWidget {
 
   /// Same cap as the description field — dictation trims to this length.
   final int maxDescriptionLength;
+
+  /// When true, draws a visible outline around the action buttons so tap bounds
+  /// are obvious while tuning hit targets.
+  final bool debugShowTapBounds;
 
   @override
   State<DescriptionCounterToolbar> createState() =>
@@ -122,28 +128,42 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
 
   static const double _actionSpacing = 12;
 
+  Widget _wrapAction(Widget child) {
+    if (!widget.debugShowTapBounds) return child;
+    return DebugTapBounds(
+      enabled: true,
+      child: child,
+    );
+  }
+
   Widget _buildActionsRow(DictationMeterController? dictationMeter) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ListingDescriptionAiEnhanceButton(
-          controller: widget.controller,
-          inlineWithCounter: true,
+        _wrapAction(
+          ListingDescriptionAiEnhanceButton(
+            controller: widget.controller,
+            inlineWithCounter: true,
+          ),
         ),
         const SizedBox(width: _actionSpacing),
-        ListingDescriptionTemplateButton(
-          controller: widget.controller,
-          listingTypeId: widget.listingTypeId,
-          gender: widget.gender,
-          inlineWithCounter: true,
+        _wrapAction(
+          ListingDescriptionTemplateButton(
+            controller: widget.controller,
+            listingTypeId: widget.listingTypeId,
+            gender: widget.gender,
+            inlineWithCounter: true,
+          ),
         ),
         const SizedBox(width: _actionSpacing),
-        ListingDescriptionDictateButton(
-          controller: widget.controller,
-          inlineWithCounter: true,
-          maxDescriptionLength: widget.maxDescriptionLength,
-          dictationMeter: dictationMeter,
+        _wrapAction(
+          ListingDescriptionDictateButton(
+            controller: widget.controller,
+            inlineWithCounter: true,
+            maxDescriptionLength: widget.maxDescriptionLength,
+            dictationMeter: dictationMeter,
+          ),
         ),
       ],
     );

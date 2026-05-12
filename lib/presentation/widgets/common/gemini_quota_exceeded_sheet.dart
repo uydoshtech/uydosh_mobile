@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 
 /// Strong upsell when server returns `gemini_quota_exceeded`.
 class GeminiQuotaExceededSheet {
@@ -8,9 +9,12 @@ class GeminiQuotaExceededSheet {
 
   static Future<void> show(BuildContext context) async {
     final navigator = Navigator.of(context);
-    await showModalBottomSheet<void>(
+    final theme = Theme.of(context);
+    await showAppBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      cardColor: theme.bottomSheetTheme.modalBackgroundColor ??
+          theme.colorScheme.surfaceContainerLow,
       builder: (sheetContext) {
         final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
         return Padding(

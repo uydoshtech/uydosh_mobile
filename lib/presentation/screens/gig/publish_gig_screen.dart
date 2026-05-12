@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
@@ -1556,12 +1557,9 @@ class _CurrencyAmountField extends StatelessWidget {
 
   Future<void> _pickCurrency(BuildContext context) async {
     HapticFeedbackUtils.selection();
-    final picked = await showModalBottomSheet<String>(
+    final picked = await showAppBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (sheetCtx) {
         final scheme = Theme.of(sheetCtx).colorScheme;
         const radius = BorderRadius.vertical(top: Radius.circular(20));
@@ -1711,12 +1709,9 @@ class _CategoryPlate extends StatelessWidget {
 
   Future<void> _pick(BuildContext context) async {
     if (categories.isEmpty) return;
-    final picked = await showModalBottomSheet<GigCategory>(
+    final picked = await showAppBottomSheet<GigCategory>(
       context: context,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (sheetCtx) {
         final scheme = Theme.of(sheetCtx).colorScheme;
         const radius = BorderRadius.vertical(top: Radius.circular(20));

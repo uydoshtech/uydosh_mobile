@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class SuspiciousMessageBottomSheet {
@@ -16,12 +17,8 @@ class SuspiciousMessageBottomSheet {
     final dedupedReasons =
         reasons.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
 
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
-      isScrollControlled: false,
-      showDragHandle: false,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         final scheme = Theme.of(sheetContext).colorScheme;

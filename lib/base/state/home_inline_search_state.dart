@@ -12,7 +12,8 @@ class HomeInlineSearchState extends ChangeNotifier {
   static final HomeInlineSearchState _instance =
       HomeInlineSearchState._internal();
 
-  /// Persisted by [HomeScreen] so inline mode survives restarts while logged in.
+  /// Persisted by [HomeScreen] so inline mode survives restarts (including
+  /// guests without a backend session; logout clears the pref).
   static const String activePrefsKey = "home_inline_search_active";
 
   bool _isActive = false;

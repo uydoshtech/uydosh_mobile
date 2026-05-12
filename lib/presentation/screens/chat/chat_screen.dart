@@ -62,6 +62,7 @@ import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_shee
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -660,10 +661,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// dismissed the sheet without picking. We treat empty-string and null
   /// distinctly so dismiss is a no-op while explicit Auto clears the override.
   Future<void> _openTranslateLanguagePicker() async {
-    final picked = await showModalBottomSheet<String?>(
+    final picked = await showAppBottomSheet<String?>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      cardColor: Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(

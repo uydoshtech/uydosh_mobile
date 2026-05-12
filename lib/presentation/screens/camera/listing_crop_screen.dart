@@ -14,6 +14,7 @@ import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
@@ -276,11 +277,10 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
   Future<void> _showAspectPicker() async {
     if (_busy || _imageBytes == null) return;
     HapticFeedbackUtils.impact();
-    final selected = await showModalBottomSheet<_AspectChoice>(
+    final selected = await showAppBottomSheet<_AspectChoice>(
       context: context,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.35),
-      isScrollControlled: true,
+      useSafeArea: false,
       builder: (sheetContext) {
         // The crop screen forces a black scaffold regardless of system theme,
         // so we override the picker's theme to dark. That way

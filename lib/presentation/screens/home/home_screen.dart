@@ -455,10 +455,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Returns true when the persisted prefs flag was set and we activated the
   /// ribbon; false otherwise. Splitting this out lets the post-login path
   /// decide whether to fall back to a filter-driven heuristic.
+  ///
+  /// Does not require [SessionManager.isAuthenticated]: guests can run a
+  /// filtered inline search and we persist [HomeInlineSearchState.activePrefsKey]
+  /// from [_applyInlineSearchResult]; that mode should survive restarts the
+  /// same as for signed-in users. Logout clears the pref via
+  /// [HomeInlineSearchState.clearPersistedActiveForLogout].
   Future<bool> _restoreInlineSearchModeFromPrefs() async {
     if (widget.isSearchMode)
       return false; // dedicated results screen manages itself
-    if (!await SessionManager.isAuthenticated()) return false;
     final prefs = await SharedPreferences.getInstance();
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return false;
@@ -1657,11 +1662,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       explicitNullFallsBackToState: true,
     );
 
-    await showModalBottomSheet<void>(
+    await showAppBottomSheet<void>(
       context: context,
-      useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: Colors.transparent,
       builder: (context) {
         final theme = Theme.of(context);
 

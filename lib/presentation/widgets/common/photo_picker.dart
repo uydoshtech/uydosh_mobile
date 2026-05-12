@@ -15,6 +15,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/camera/custom_camera_screen.dart";
 import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -274,10 +275,10 @@ class _PhotoPickerState extends State<PhotoPicker> {
   void _showImageSourceDialog() {
     if (_isProcessingImage) return; // Don"t show dialog if processing
 
-    showModalBottomSheet(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.06),
+      useSafeArea: false,
       builder: (context) {
         final theme = Theme.of(context);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));

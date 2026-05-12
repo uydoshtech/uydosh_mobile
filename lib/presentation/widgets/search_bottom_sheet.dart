@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -143,12 +144,9 @@ class SearchBottomSheetWidget {
     }
 
     try {
-      await showModalBottomSheet<void>(
+      await showAppBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
+      useSafeArea: false,
       // Apple-style glass: only the faintest hint of dimming so the feed
       // reads cleanly through the BackdropFilter.
       barrierColor: Colors.black.withValues(alpha: 0.06),

@@ -42,6 +42,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/auth/phone_sign_in_sheet.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
@@ -2172,9 +2173,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       });
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      useSafeArea: false,
       builder: (ctx) => _buildCountryPicker(ctx, countries, initialIndex),
     );
   }
@@ -2320,9 +2321,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      useSafeArea: false,
       builder: _buildRegionPicker,
     );
   }
@@ -2441,9 +2442,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
     }
 
-    showModalBottomSheet(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      useSafeArea: false,
       builder: _buildUniversityPicker,
     );
   }

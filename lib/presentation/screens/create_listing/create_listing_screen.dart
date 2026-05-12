@@ -1,6 +1,7 @@
 import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
@@ -868,6 +869,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     }),
                     layout: DescriptionCounterToolbarLayout.stack,
                     counterVisibleAtFraction: 0.7,
+                    debugShowTapBounds: kDebugMode,
                   );
                 },
               ),

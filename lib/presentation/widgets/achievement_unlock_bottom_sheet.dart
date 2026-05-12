@@ -240,8 +240,12 @@ class _AchievementUnlockBottomSheetState
           ),
           Positioned.fill(
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
               behavior: HitTestBehavior.opaque,
+              onTap: () => Navigator.of(context).pop(),
+              // Any pan in any direction dismisses on the first move so users
+              // can flick the celebration away just like on iOS notification
+              // banners — matches the dismiss UX of every other app sheet.
+              onPanStart: (_) => Navigator.of(context).pop(),
             ),
           ),
           Positioned(

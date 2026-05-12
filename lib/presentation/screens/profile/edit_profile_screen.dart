@@ -29,6 +29,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
@@ -2137,10 +2138,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     final controller =
         FixedExtentScrollController(initialItem: initialIndex);
     var pendingIso2 = countries[initialIndex].iso2;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      useSafeArea: false,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
@@ -2220,10 +2220,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     // Track a pending selection so dismissing the sheet without confirming
     // keeps the previous value (prevents accidental overwrites).
     var pendingRegionId = _selectedRegionId.value;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      useSafeArea: false,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
@@ -2268,10 +2267,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     final controller =
         FixedExtentScrollController(initialItem: initialItem);
     var pendingUniversityId = _selectedUniversityId.value;
-    showModalBottomSheet<void>(
+    showAppBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      useSafeArea: false,
       barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(

@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
@@ -134,9 +135,11 @@ class AuthWizardProfilePage extends StatelessWidget {
     BuildContext context, {
     required bool isSelected,
     BorderRadius borderRadius = const BorderRadius.all(Radius.circular(12)),
+
     /// Gender / student pills: crisp ring on the selected choice (white on blue
     /// theme, dark outline on light theme — uses [AuthWizardTheme.getSelectedButtonBorderColor]).
     bool blueThemeSelectedWhiteOutline = false,
+
     /// Gender / student only: in light theme the selected pill keeps the same
     /// raised plate as unselected; inset shadows + fill shift read as a black
     /// blob, so selection is shown with the border only.
@@ -147,8 +150,8 @@ class AuthWizardProfilePage extends StatelessWidget {
     final base = lightBorderOnly
         ? _getRaisedSurfaceColor(context)
         : (isSelected
-              ? _getSelectedSurfaceColor(context)
-              : _getRaisedSurfaceColor(context));
+            ? _getSelectedSurfaceColor(context)
+            : _getRaisedSurfaceColor(context));
     final shadows = lightBorderOnly || !isSelected
         ? ThreeDSurfaceStyle.elevatedShadows(context)
         : ThreeDSurfaceStyle.insetRecessedShadows(context);
@@ -169,296 +172,299 @@ class AuthWizardProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      controller: profileScrollController,
-      child: Container(
-        padding: const EdgeInsets.only(left: 36, right: 36, top: 16, bottom: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            L10n.text(
-              "complete_profile_subheader",
-              style: TextStyle(
-                fontSize: 16,
-                color: _getOnboardingTextSecondaryColor(context),
+    return KeyboardDismissScope(
+      child: SingleChildScrollView(
+        controller: profileScrollController,
+        keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+        child: Container(
+          padding:
+              const EdgeInsets.only(left: 36, right: 36, top: 16, bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              L10n.text(
+                "complete_profile_subheader",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: _getOnboardingTextSecondaryColor(context),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            L10n.text(
-              "full_name",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
+              const SizedBox(height: 16),
+              L10n.text(
+                "full_name",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: _getOnboardingTextColor(context),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            KeyedSubtree(
-              key: nameSectionKey,
-              child: WheelPickerPlateContainer(
-                showErrorBorder: nameMissing,
-                theme: Theme.of(context),
-                child: TextFormField(
-                  controller: nameController,
-                  maxLines: 1,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  onTap: () => HapticFeedbackUtils.impact(),
-                  decoration: InputDecoration(
-                    hintText: L10n.get("full_name_hint"),
-                    hintStyle: TextStyle(
+              const SizedBox(height: 16),
+              KeyedSubtree(
+                key: nameSectionKey,
+                child: WheelPickerPlateContainer(
+                  showErrorBorder: nameMissing,
+                  theme: Theme.of(context),
+                  child: TextFormField(
+                    controller: nameController,
+                    maxLines: 1,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    onTap: () => HapticFeedbackUtils.impact(),
+                    decoration: InputDecoration(
+                      hintText: L10n.get("full_name_hint"),
+                      hintStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withOpacity(0.7)
+                            : Colors.grey[400],
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                    ),
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant
-                                  .withOpacity(0.7)
-                              : Colors.grey[400],
+                      color: ThemeState().isLightTheme
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.transparent,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 14,
-                    ),
-                  ),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: ThemeState().isLightTheme
-                        ? Colors.black
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            KeyedSubtree(
-              key: genderSectionKey,
-              child: Row(
-                children: [
-                  Flexible(
-                    child: ErrorBorderPulse(
-                      showError: genderMissing,
-                      child: _buildGenderOption(
-                        context,
-                        1,
-                        L10n.get("male"),
-                        Icons.male,
+              const SizedBox(height: 16),
+              KeyedSubtree(
+                key: genderSectionKey,
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: genderMissing,
+                        child: _buildGenderOption(
+                          context,
+                          1,
+                          L10n.get("male"),
+                          Icons.male,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 20),
-                  Flexible(
-                    child: ErrorBorderPulse(
-                      showError: genderMissing,
-                      child: _buildGenderOption(
-                        context,
-                        2,
-                        L10n.get("female"),
-                        Icons.female,
+                    const SizedBox(width: 20),
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: genderMissing,
+                        child: _buildGenderOption(
+                          context,
+                          2,
+                          L10n.get("female"),
+                          Icons.female,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                L10n.text(
-                  "select_region_profile_creation_title",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: _getOnboardingTextColor(context),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                L10n.text(
-                  "select_region_profile_creation_description",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: _getOnboardingTextColor(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            KeyedSubtree(
-              key: regionSectionKey,
-              child: Row(
+              const SizedBox(height: 32),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildCountrySelector(context)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ErrorBorderPulse(
-                      showError: regionMissing,
-                      child: _buildCitySelectorColumn(context),
+                  L10n.text(
+                    "select_region_profile_creation_title",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: _getOnboardingTextColor(context),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  L10n.text(
+                    "select_region_profile_creation_description",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: _getOnboardingTextColor(context),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 32),
-            KeyedSubtree(
-              key: roleSectionKey,
-              child: ErrorBorderPulse(
-                showError: roleMissing,
-                child: ProfileDropdownControl(
-                  label: L10n.get("select_your_primary_role"),
-                  value: selectedRole,
-                  icon: Icons.badge,
-                  onChanged: onRoleSelected,
-                  options: [
-                    DropdownOption(
-                      value: null,
-                      label: L10n.get("tap_to_select_primary_role"),
-                    ),
-                    DropdownOption(
-                      value: "landlord",
-                      label: L10n.get("role_landlord"),
-                      icon: Icons.home_work,
-                    ),
-                    DropdownOption(
-                      value: "tenant",
-                      label: L10n.get("role_tenant"),
-                      icon: Icons.key,
-                    ),
-                    DropdownOption(
-                      value: "service_requester",
-                      label: L10n.get("role_service_requester"),
-                      icon: Icons.assignment_ind,
-                    ),
-                    DropdownOption(
-                      value: "service_provider",
-                      label: L10n.get("role_service_provider"),
-                      icon: Icons.home_repair_service,
+              const SizedBox(height: 16),
+              KeyedSubtree(
+                key: regionSectionKey,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildCountrySelector(context)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ErrorBorderPulse(
+                        showError: regionMissing,
+                        child: _buildCitySelectorColumn(context),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-            ListenableBuilder(
-              listenable: PriceDisplaySettingsState(),
-              builder: (context, _) {
-                final currency = PriceDisplaySettingsState().currencySlug;
-                return ProfileDropdownControl(
-                  label: L10n.get("price_display_currency"),
-                  value: currency,
-                  onChanged: (value) async {
-                    if (value == null) return;
-                    await PriceDisplaySettingsState().setCurrency(
-                      value == "usd"
-                          ? PriceDisplayCurrency.usd
-                          : PriceDisplayCurrency.national,
-                    );
-                  },
-                  icon: Icons.payments,
-                  options: [
-                    DropdownOption(
-                      value: "national",
-                      label: L10n.get("price_display_currency_national"),
-                      icon: Icons.flag,
-                    ),
-                    DropdownOption(
-                      value: "usd",
-                      label: L10n.get("price_display_currency_usd"),
-                      icon: Icons.attach_money,
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-            L10n.text(
-              "are_you_student",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: _getOnboardingTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 16),
-            KeyedSubtree(
-              key: studentSectionKey,
-              child: Row(
-                children: [
-                  Flexible(
-                    child: ErrorBorderPulse(
-                      showError: studentMissing,
-                      child: _buildStudentOption(
-                        context,
-                        true,
-                        L10n.get("yes_student"),
-                        Icons.school,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Flexible(
-                    child: ErrorBorderPulse(
-                      showError: studentMissing,
-                      child: _buildStudentOption(
-                        context,
-                        false,
-                        L10n.get("no_student"),
-                        Icons.work,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isStudent ?? false) ...[
               const SizedBox(height: 32),
-              if (isLoadingUniversities)
-                _buildLoadingCard(
-                  context,
-                  L10n.get("loading_universities"),
-                )
-              else if (universities.isNotEmpty)
-                KeyedSubtree(
-                  key: universitySectionKey,
-                  child: ErrorBorderPulse(
-                    showError: universityMissing,
-                    child: _buildUniversitySelector(context),
+              KeyedSubtree(
+                key: roleSectionKey,
+                child: ErrorBorderPulse(
+                  showError: roleMissing,
+                  child: ProfileDropdownControl(
+                    label: L10n.get("select_your_primary_role"),
+                    value: selectedRole,
+                    icon: Icons.badge,
+                    onChanged: onRoleSelected,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get("tap_to_select_primary_role"),
+                      ),
+                      DropdownOption(
+                        value: "landlord",
+                        label: L10n.get("role_landlord"),
+                        icon: Icons.home_work,
+                      ),
+                      DropdownOption(
+                        value: "tenant",
+                        label: L10n.get("role_tenant"),
+                        icon: Icons.key,
+                      ),
+                      DropdownOption(
+                        value: "service_requester",
+                        label: L10n.get("role_service_requester"),
+                        icon: Icons.assignment_ind,
+                      ),
+                      DropdownOption(
+                        value: "service_provider",
+                        label: L10n.get("role_service_provider"),
+                        icon: Icons.home_repair_service,
+                      ),
+                    ],
                   ),
-                )
-              else if (!isLoadingUniversities)
-                _buildEmptyCard(
-                  context,
-                  L10n.get("no_universities_available"),
                 ),
-              const SizedBox(height: 100),
+              ),
+              const SizedBox(height: 32),
+              ListenableBuilder(
+                listenable: PriceDisplaySettingsState(),
+                builder: (context, _) {
+                  final currency = PriceDisplaySettingsState().currencySlug;
+                  return ProfileDropdownControl(
+                    label: L10n.get("price_display_currency"),
+                    value: currency,
+                    onChanged: (value) async {
+                      if (value == null) return;
+                      await PriceDisplaySettingsState().setCurrency(
+                        value == "usd"
+                            ? PriceDisplayCurrency.usd
+                            : PriceDisplayCurrency.national,
+                      );
+                    },
+                    icon: Icons.payments,
+                    options: [
+                      DropdownOption(
+                        value: "national",
+                        label: L10n.get("price_display_currency_national"),
+                        icon: Icons.flag,
+                      ),
+                      DropdownOption(
+                        value: "usd",
+                        label: L10n.get("price_display_currency_usd"),
+                        icon: Icons.attach_money,
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              L10n.text(
+                "are_you_student",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: _getOnboardingTextColor(context),
+                ),
+              ),
+              const SizedBox(height: 16),
+              KeyedSubtree(
+                key: studentSectionKey,
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: studentMissing,
+                        child: _buildStudentOption(
+                          context,
+                          true,
+                          L10n.get("yes_student"),
+                          Icons.school,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Flexible(
+                      child: ErrorBorderPulse(
+                        showError: studentMissing,
+                        child: _buildStudentOption(
+                          context,
+                          false,
+                          L10n.get("no_student"),
+                          Icons.work,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isStudent ?? false) ...[
+                const SizedBox(height: 32),
+                if (isLoadingUniversities)
+                  _buildLoadingCard(
+                    context,
+                    L10n.get("loading_universities"),
+                  )
+                else if (universities.isNotEmpty)
+                  KeyedSubtree(
+                    key: universitySectionKey,
+                    child: ErrorBorderPulse(
+                      showError: universityMissing,
+                      child: _buildUniversitySelector(context),
+                    ),
+                  )
+                else if (!isLoadingUniversities)
+                  _buildEmptyCard(
+                    context,
+                    L10n.get("no_universities_available"),
+                  ),
+                const SizedBox(height: 100),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -544,8 +550,8 @@ class AuthWizardProfilePage extends StatelessWidget {
     final contentColor = ThemeState().isLightTheme
         ? _getOnboardingTextColor(context)
         : (isSelected
-              ? AuthWizardTheme.getSelectedButtonTextColor()
-              : _getOnboardingTextColor(context));
+            ? AuthWizardTheme.getSelectedButtonTextColor()
+            : _getOnboardingTextColor(context));
     return PressableTransform(
       onTap: () {
         HapticFeedbackUtils.impact();
@@ -686,7 +692,7 @@ class AuthWizardProfilePage extends StatelessWidget {
                 style: TextStyle(
                   color: isSelected
                       ? AuthWizardTheme.getSelectedButtonTextColor()
-                            .withOpacity(0.8)
+                          .withOpacity(0.8)
                       : _getOnboardingTextSecondaryColor(context),
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
