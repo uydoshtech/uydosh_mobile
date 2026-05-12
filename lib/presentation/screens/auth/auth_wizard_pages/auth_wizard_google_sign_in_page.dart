@@ -20,6 +20,10 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
+/// Logical size of `assets/images/ios_*_rd_ctn.svg` (`width`/`height` in the SVG).
+const double _kGoogleSignInSvgWidth = 199;
+const double _kGoogleSignInSvgHeight = 44;
+
 class AuthWizardGoogleSignInPage extends StatefulWidget {
   const AuthWizardGoogleSignInPage({
     required this.isAuthenticating,
@@ -186,18 +190,27 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                     currentTheme == AppTheme.lightTheme
                                         ? "assets/images/ios_dark_rd_ctn.svg"
                                         : "assets/images/ios_neutral_rd_ctn.svg";
-                                // The shipped Google asset is 199×44 while [buttonWidth]
-                                // matches SIWA (up to 320px). Uniform scaling can't fill
-                                // both width and height: [BoxFit.contain] undershoots
-                                // width; [BoxFit.fitWidth] grows height with aspect ratio.
-                                // [BoxFit.fill] maps the vector to this slot (mild stretch
-                                // on X only) so height stays 44 and width matches Apple.
+                                // Match SIWA slot (`buttonWidth`×44). The SVG is 199×44;
+                                // scaling uniformly to full width would make height ~71.
+                                // Pin intrinsic layout to the SVG logical size, then let
+                                // [FittedBox] stretch only horizontally into this slot.
                                 return ClipRRect(
                                   borderRadius: BorderRadius.circular(22),
-                                  child: SvgPicture.asset(
-                                    svgAsset,
-                                    fit: BoxFit.fill,
-                                    alignment: Alignment.center,
+                                  clipBehavior: Clip.hardEdge,
+                                  child: SizedBox(
+                                    width: buttonWidth,
+                                    height: _kGoogleSignInSvgHeight,
+                                    child: FittedBox(
+                                      fit: BoxFit.fill,
+                                      clipBehavior: Clip.hardEdge,
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                        svgAsset,
+                                        width: _kGoogleSignInSvgWidth,
+                                        height: _kGoogleSignInSvgHeight,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
                                   ),
                                 );
                               },

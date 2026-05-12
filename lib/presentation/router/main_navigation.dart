@@ -50,6 +50,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart" show LanguageState;
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
@@ -1148,39 +1149,55 @@ class _HomeListingsAppBarTitleState extends State<_HomeListingsAppBarTitle> {
       builder: (context, _) {
         final inlineActive = HomeInlineSearchState().isActive;
 
-        return BlocConsumer<ListingsBloc, ListingsState>(
-          listener: (context, state) {
-            final isInlineActive = HomeInlineSearchState().isActive;
-            final nextReady = state.maybeMap(
-              loaded: (_) => isInlineActive,
-              orElse: () => false,
-            );
-            if (nextReady != _countReady && mounted) {
-              setState(() => _countReady = nextReady);
-            }
-          },
-          builder: (context, state) {
-            final total = state.maybeMap(loaded: (s) => s.total, orElse: () => null);
-            final showCount = inlineActive && _countReady && total != null && total > 0;
+        return ListenableBuilder(
+          listenable: LanguageState(),
+          builder: (context, _) {
+            return BlocConsumer<ListingsBloc, ListingsState>(
+              listener: (context, state) {
+                final isInlineActive = HomeInlineSearchState().isActive;
+                final nextReady = state.maybeMap(
+                  loaded: (_) => isInlineActive,
+                  orElse: () => false,
+                );
+                if (nextReady != _countReady && mounted) {
+                  setState(() => _countReady = nextReady);
+                }
+              },
+              builder: (context, state) {
+                final total =
+                    state.maybeMap(loaded: (s) => s.total, orElse: () => null);
+                final showCount =
+                    inlineActive && _countReady && total != null && total > 0;
 
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                L10n.text("nav_housing", style: widget.titleStyle),
-                if (showCount) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    "($total)",
-                    style: widget.titleStyle.copyWith(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: widget.titleStyle.color?.withValues(alpha: 0.72),
-                    ),
+                // “•” keeps title line height; digits are 2px smaller for hierarchy.
+                final titleFs = widget.titleStyle.fontSize ?? 20;
+                final countStyle = widget.titleStyle.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: widget.titleStyle.color?.withValues(alpha: 0.72),
+                );
+                final countNumberStyle = countStyle.copyWith(fontSize: titleFs - 2);
+
+                return Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: L10n.get("nav_housing"),
+                        style: widget.titleStyle,
+                      ),
+                      if (showCount) ...[
+                        TextSpan(text: " \u2022 ", style: countStyle),
+                        TextSpan(text: "$total", style: countNumberStyle),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                  strutStyle: StrutStyle.fromTextStyle(
+                    widget.titleStyle,
+                    forceStrutHeight: true,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
             );
           },
         );
