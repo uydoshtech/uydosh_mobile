@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -71,6 +73,8 @@ class _MessageBubbleState extends State<MessageBubble>
   late AnimationController _fadeAnimationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  Timer? _startupFadeTimer;
+  Timer? _startupCompleteTimer;
 
   @override
   void initState() {
@@ -110,13 +114,13 @@ class _MessageBubbleState extends State<MessageBubble>
       _scaleAnimationController.forward();
 
       // Start fade animation with a slight delay (100ms) to create overlap
-      Future.delayed(const Duration(milliseconds: 100), () {
+      _startupFadeTimer = Timer(const Duration(milliseconds: 100), () {
         if (!mounted) return;
         _fadeAnimationController.forward();
       });
 
       // Wait for both animations to complete (scale takes 500ms, fade starts at 100ms and takes 500ms, so total is 600ms)
-      Future.delayed(const Duration(milliseconds: 600), () {
+      _startupCompleteTimer = Timer(const Duration(milliseconds: 600), () {
         if (!mounted) return;
         widget.onAnimationComplete?.call();
       });
@@ -129,6 +133,8 @@ class _MessageBubbleState extends State<MessageBubble>
 
   @override
   void dispose() {
+    _startupFadeTimer?.cancel();
+    _startupCompleteTimer?.cancel();
     _scaleAnimationController.dispose();
     _fadeAnimationController.dispose();
     super.dispose();

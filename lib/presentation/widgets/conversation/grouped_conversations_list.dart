@@ -896,6 +896,7 @@ class _ConversationParticipantStackState
     extends State<_ConversationParticipantStack>
     with SingleTickerProviderStateMixin {
   late final AnimationController _fadeController;
+  late final CurvedAnimation _singleSlotFadeOpacity;
 
   int _fadeDurationMsForSlots(int slotCount) {
     if (slotCount <= 1) {
@@ -930,6 +931,11 @@ class _ConversationParticipantStackState
       duration: Duration(milliseconds: _fadeDurationMsForSlots(slotCount)),
     );
 
+    _singleSlotFadeOpacity = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+
     if (widget.isExpanded) {
       _fadeController.value = 0;
     } else if (slotCount > 1) {
@@ -950,6 +956,7 @@ class _ConversationParticipantStackState
 
   @override
   void dispose() {
+    _singleSlotFadeOpacity.dispose();
     _fadeController.dispose();
     super.dispose();
   }
@@ -978,15 +985,18 @@ class _ConversationParticipantStackState
         t;
     final end = endRaw.clamp(start + 0.02, 1.0);
 
-    return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _fadeController,
-        curve: Interval(
-          start.clamp(0.0, 1.0),
-          end,
-          curve: Curves.easeOut,
-        ),
-      ),
+    final intervalCurve = Interval(
+      start.clamp(0.0, 1.0),
+      end,
+      curve: Curves.easeOut,
+    );
+    return AnimatedBuilder(
+      animation: _fadeController,
+      builder: (context, child) {
+        final o =
+            intervalCurve.transform(_fadeController.value).clamp(0.0, 1.0);
+        return Opacity(opacity: o, child: child);
+      },
       child: child,
     );
   }
@@ -1053,10 +1063,7 @@ class _ConversationParticipantStackState
       return stack;
     }
     return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _fadeController,
-        curve: Curves.easeInOut,
-      ),
+      opacity: _singleSlotFadeOpacity,
       child: stack,
     );
   }

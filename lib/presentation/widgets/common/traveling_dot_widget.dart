@@ -47,10 +47,12 @@ class TravelingDotWidget extends StatefulWidget {
 
 class _TravelingDotWidgetState extends State<TravelingDotWidget>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: widget.duration,
-  );
+  late final AnimationController _controller;
+
+  late final CurvedAnimation _travel;
+  late final CurvedAnimation _fadeIn;
+  late final CurvedAnimation _fadeOut;
+  late final CurvedAnimation _landPop;
 
   int _lastTrigger = 0;
   DateTime? _lastPlayedAt;
@@ -61,6 +63,23 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    _travel = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+    _fadeIn = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.12, curve: Curves.easeOut),
+    );
+    _fadeOut = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.70, 1.0, curve: Curves.easeIn),
+    );
+    _landPop = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.78, 1.0, curve: Curves.easeOutBack),
+    );
     _lastTrigger = widget.trigger;
     // Don't autoplay on mount; only when trigger changes.
   }
@@ -68,6 +87,9 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
   @override
   void didUpdateWidget(covariant TravelingDotWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.duration != widget.duration) {
+      _controller.duration = widget.duration;
+    }
     if (widget.trigger == _lastTrigger) return;
     _lastTrigger = widget.trigger;
     _maybePlay();
@@ -122,6 +144,10 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
 
   @override
   void dispose() {
+    _travel.dispose();
+    _fadeIn.dispose();
+    _fadeOut.dispose();
+    _landPop.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -135,20 +161,6 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
       return const SizedBox.expand();
     }
 
-    final travel = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-    final fadeIn = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.12, curve: Curves.easeOut),
-    );
-    final fadeOut = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.70, 1.0, curve: Curves.easeIn),
-    );
-    final landPop = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.78, 1.0, curve: Curves.easeOutBack),
-    );
-
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _controller,
@@ -160,7 +172,7 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
                   : _computeEnd(overlayBox);
           final endStable = endNow ?? end;
 
-          final t = travel.value;
+          final t = _travel.value;
           final p = _quadraticBezier(
             start,
             _controlPoint(start, endStable, _lift),
@@ -168,8 +180,8 @@ class _TravelingDotWidgetState extends State<TravelingDotWidget>
             t,
           );
 
-          final opacity = (fadeIn.value * (1.0 - fadeOut.value)).clamp(0.0, 1.0);
-          final scale = 1.0 + 0.25 * landPop.value;
+          final opacity = (_fadeIn.value * (1.0 - _fadeOut.value)).clamp(0.0, 1.0);
+          final scale = 1.0 + 0.25 * _landPop.value;
 
           return Stack(
             children: [

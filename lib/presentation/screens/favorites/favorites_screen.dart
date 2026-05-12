@@ -11,8 +11,6 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
@@ -30,14 +28,13 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/screens/favorites/favorites_tab_ribbon.dart";
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -56,6 +53,20 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
   final Map<int, ({Listing listing, int index})> _optimisticallyRemoved =
       {}; // Rollback buffer for optimistic removals
+  final Map<int, Timer> _listingRemovalCommitTimers =
+      {}; // Deferred list removal — must cancel on rollback/dispose
+
+  void _cancelListingRemovalCommitTimer(int listingId) {
+    _listingRemovalCommitTimers.remove(listingId)?.cancel();
+  }
+
+  void _cancelAllListingRemovalCommitTimers() {
+    for (final t in _listingRemovalCommitTimers.values) {
+      t.cancel();
+    }
+    _listingRemovalCommitTimers.clear();
+  }
+
   bool _needsSyncFromDirty = false;
   bool _isLoading = false;
   bool _isLoadingMore = false;
@@ -105,6 +116,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       _lastAuthenticated = isAuth;
       _resetInitialization();
       if (!isAuth) {
+        _cancelAllListingRemovalCommitTimers();
         // Logged out: clear the list so the signed-out empty state shows.
         _favoriteListings = [];
         _favoriteOffers = [];
@@ -181,6 +193,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
   @override
   void dispose() {
+    _cancelAllListingRemovalCommitTimers();
     // Remove the authentication state listener
     _tabController.dispose();
     AuthenticationState().removeListener(_authListener);
@@ -242,10 +255,13 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     }
 
     if (isRefresh) {
+      _cancelAllListingRemovalCommitTimers();
       setState(() {
         _currentPage = 1;
         _hasMoreData = true;
         _favoriteListings.clear();
+        _itemsBeingRemoved.clear();
+        _optimisticallyRemoved.clear();
       });
     }
 
@@ -539,7 +555,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             return AnimatedBuilder(
               animation: _tabController,
               builder: (context, _) {
-                return _FavoritesTabRibbon(
+                return FavoritesTabRibbon(
                   tabController: _tabController,
                   listingsLabel: L10n.get("favorites_tab_listings"),
                   servicesLabel: L10n.get("favorites_tab_services"),
@@ -600,17 +616,20 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   _itemsBeingRemoved.add(listing.id);
                 });
 
-                Future.delayed(duration, () {
+                final id = listing.id;
+                _cancelListingRemovalCommitTimer(id);
+                _listingRemovalCommitTimers[id] = Timer(duration, () {
+                  _listingRemovalCommitTimers.remove(id);
                   setStateIfMounted(() {
-                    _itemsBeingRemoved.remove(listing.id);
-                    _favoriteListings.removeWhere(
-                      (l) => l.id == listing.id,
-                    );
+                    _itemsBeingRemoved.remove(id);
+                    _favoriteListings.removeWhere((l) => l.id == id);
+                    _optimisticallyRemoved.remove(id);
                   });
                 });
               },
               onFavoriteRemovalFailed: () {
                 if (!mounted) return;
+                _cancelListingRemovalCommitTimer(listing.id);
                 final backup = _optimisticallyRemoved.remove(listing.id);
                 if (backup == null) return;
 
@@ -996,158 +1015,4 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   // NOTE: backend removal is handled by `ListingTile` via `toggleFavorite()`.
-}
-
-/// Horizontal pill-chip ribbon matching [_CategoryRibbon] / [_CategoryChip] on
-/// [GigHubScreen] (icon + label, elevated 3D surface, active = primary fill).
-class _FavoritesTabRibbon extends StatelessWidget {
-  const _FavoritesTabRibbon({
-    required this.tabController,
-    required this.listingsLabel,
-    required this.servicesLabel,
-    required this.tasksLabel,
-  });
-
-  final TabController tabController;
-  final String listingsLabel;
-  final String servicesLabel;
-  final String tasksLabel;
-
-  /// Tall enough for the 36-px chip plus vertical breathing room for shadows.
-  static const double _ribbonHeight = 44;
-  static const double _chipPadTop = 8;
-  static const double _chipPadBottom = 4;
-
-  @override
-  Widget build(BuildContext context) {
-    final idx = tabController.index.clamp(0, 2);
-    const icons = <IconData>[
-      Icons.home_rounded,
-      Icons.handyman_outlined,
-      Icons.assignment_outlined,
-    ];
-    final labels = [listingsLabel, servicesLabel, tasksLabel];
-
-    return SizedBox(
-      height: _ribbonHeight,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          16,
-          _chipPadTop,
-          16,
-          _chipPadBottom,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (var i = 0; i < 3; i++) ...[
-                      if (i > 0) const SizedBox(width: 8),
-                      _FavoritesPillTabChip(
-                        icon: icons[i],
-                        label: labels[i],
-                        isSelected: idx == i,
-                        onTap: () {
-                          if (tabController.index != i) {
-                            tabController.animateTo(i);
-                          }
-                        },
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _FavoritesPillTabChip extends StatelessWidget {
-  const _FavoritesPillTabChip({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, _) {
-        final themeState = ThemeState();
-        final activeBg = themeState.primaryColor;
-        final inactiveBg = themeState.cardColor;
-        final activeFg =
-            ThemeData.estimateBrightnessForColor(activeBg) == Brightness.dark
-                ? Colors.white
-                : Colors.black;
-        final inactiveFg = themeState.unselectedTabTextColor;
-        final radius = const BorderRadius.all(Radius.circular(22));
-        final iconColor = isSelected
-            ? activeFg
-            : inactiveFg.withValues(alpha: 0.85);
-        final labelStyle = TextStyle(
-          fontSize: 13,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-          color: isSelected
-              ? activeFg
-              : inactiveFg.withValues(alpha: 0.9),
-        );
-
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            UiFeedbackUtils.selection();
-            onTap();
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: ThreeDSurfaceStyle.surfaceGradient(
-                context,
-                isSelected ? activeBg : inactiveBg,
-              ),
-              boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GigCategoryIconBadge(
-                  icon: icon,
-                  iconColor: iconColor,
-                  badgeBackgroundColor: isSelected
-                      ? activeFg.withValues(alpha: 0.16)
-                      : inactiveFg.withValues(alpha: 0.12),
-                  dimension: 28.6,
-                  iconSize: 16.5,
-                ),
-                const SizedBox(width: 8),
-                Text(label, style: labelStyle),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

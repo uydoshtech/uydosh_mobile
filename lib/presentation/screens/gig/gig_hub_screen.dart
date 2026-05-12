@@ -12,7 +12,6 @@ import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
@@ -21,24 +20,16 @@ import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
-import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
-import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_feed.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_feed_slivers.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_my_bookings_fab.dart";
+import "package:uy_dosh/presentation/screens/gig/gig_hub_pinned_header_delegate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
-import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-
-/// Which inline feed the Services hub is showing.
-enum GigHubFeed { services, tasks }
 
 /// Entry point into the gig economy module: a segmented switch flips between
 /// a feed of all posted services ([GigOffer]s) and a feed of open tasks
@@ -127,6 +118,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
     AuthenticationState().removeListener(_onAuthForPendingBookings);
     WidgetsBinding.instance.removeObserver(this);
     getIt<GigHubFeedsRefreshNotifier>().removeListener(_onPublishFlowClosed);
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -150,8 +142,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (!mounted) return;
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
       switch (_feed) {
         case GigHubFeed.services:
           context.read<GigOffersBloc>().add(const LoadMoreGigOffers());
@@ -288,7 +282,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                 // category without scrolling back to the top first.
                 SliverPersistentHeader(
                   pinned: true,
-                  delegate: _GigHubPinnedHeaderDelegate(
+                  delegate: GigHubPinnedHeaderDelegate(
                     topPadding: topPad,
                     feed: _feed,
                     onFeedChanged: _onFeedChanged,
@@ -315,10 +309,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           children: [
             Positioned.fill(child: scrollable),
             if (signedIn)
-              Positioned(
+              const Positioned(
                 right: 16,
                 bottom: 16,
-                child: _MyBookingsFab(),
+                child: GigHubMyBookingsFab(),
               ),
           ],
         );
@@ -378,10 +372,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
       BlocBuilder<GigOffersBloc, GigOffersState>(
         builder: (context, state) {
           if (state is GigOffersLoading || state is GigOffersInitial) {
-            return const _LoadingSliver();
+            return const GigHubLoadingSliver();
           }
           if (state is GigOffersError) {
-            return _ErrorSliver(
+            return GigHubErrorSliver(
               message: state.message,
               onRetry: () =>
                   context.read<GigOffersBloc>().add(const FetchGigOffers()),
@@ -389,7 +383,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           }
           if (state is GigOffersLoaded) {
             if (state.offers.isEmpty) {
-              return _EmptySliver(
+              return GigHubEmptySliver(
                 icon: _emptyStateIcon(allFeedIcon: Icons.handyman_outlined),
                 message: L10n.get("gigs_browse_empty"),
                 bottomPadding: bottomClearanceForFab,
@@ -403,7 +397,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                 separatorBuilder: (_, __) => const SizedBox(height: 14),
                 itemBuilder: (_, i) {
                   if (i >= state.offers.length) {
-                    return const _LoadingMoreFooter();
+                    return const GigHubLoadingMoreFooter();
                   }
                   final offer = state.offers[i];
                   return ListenableBuilder(
@@ -452,10 +446,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
       BlocBuilder<GigRequestsBloc, GigRequestsState>(
         builder: (context, state) {
           if (state is GigRequestsLoading || state is GigRequestsInitial) {
-            return const _LoadingSliver();
+            return const GigHubLoadingSliver();
           }
           if (state is GigRequestsError) {
-            return _ErrorSliver(
+            return GigHubErrorSliver(
               message: state.message,
               onRetry: () =>
                   context.read<GigRequestsBloc>().add(const FetchGigRequests()),
@@ -463,7 +457,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           }
           if (state is GigRequestsLoaded) {
             if (state.requests.isEmpty) {
-              return _EmptySliver(
+              return GigHubEmptySliver(
                 icon: _emptyStateIcon(allFeedIcon: Icons.assignment_outlined),
                 message: L10n.get("gigs_requests_empty"),
                 bottomPadding: bottomClearanceForFab,
@@ -477,7 +471,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                 separatorBuilder: (_, __) => const SizedBox(height: 14),
                 itemBuilder: (_, i) {
                   if (i >= state.requests.length) {
-                    return const _LoadingMoreFooter();
+                    return const GigHubLoadingMoreFooter();
                   }
                   final request = state.requests[i];
                   return ListenableBuilder(
@@ -531,601 +525,5 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
         },
       ),
     ];
-  }
-}
-
-/// Pinned header at the top of [GigHubScreen]: stacks the feed segmented
-/// switch (Services / Tasks) above the horizontally scrollable category
-/// ribbon. Painted on top of the scaffold background so feed items
-/// scrolling underneath don't bleed through.
-class _GigHubPinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _GigHubPinnedHeaderDelegate({
-    required this.topPadding,
-    required this.feed,
-    required this.onFeedChanged,
-    required this.categories,
-    required this.selectedCategoryId,
-    required this.onCategorySelected,
-    required this.backgroundColor,
-  });
-
-  final double topPadding;
-  final GigHubFeed feed;
-  final ValueChanged<GigHubFeed> onFeedChanged;
-  final List<GigCategory> categories;
-  final int? selectedCategoryId;
-  final ValueChanged<int?> onCategorySelected;
-  final Color backgroundColor;
-
-  /// Tall enough for title + subtitle (same Task/Service phrasing as Publish).
-  /// Scaled from ~145→135 vs design reference while keeping prior 60 logical baseline.
-  static const double _switchHeight = 135 * 60 / 145;
-
-  /// Vertical padding around the primary toggle (matches messages inbox).
-  static const double _togglePadTop = 8;
-  static const double _togglePadBottom = 8;
-
-  /// Total height of the toggle row including inbox-style vertical margins.
-  static const double _toggleSectionHeight =
-      _togglePadTop + _switchHeight + _togglePadBottom;
-
-  /// Height of the category ribbon (mirrors [_CategoryRibbon._ribbonHeight]).
-  static const double _ribbonHeight = 50;
-
-  /// Spacing below the ribbon, before the first feed item.
-  static const double _ribbonBottomGap = 12;
-
-  double get _height =>
-      topPadding + _toggleSectionHeight + _ribbonHeight + _ribbonBottomGap;
-
-  @override
-  double get minExtent => _height;
-
-  @override
-  double get maxExtent => _height;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      color: backgroundColor,
-      padding: EdgeInsets.only(top: topPadding, bottom: _ribbonBottomGap),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              _togglePadTop,
-              16,
-              _togglePadBottom,
-            ),
-            child: ListenableBuilder(
-              listenable: ThemeState(),
-              builder: (context, _) {
-                final themeState = ThemeState();
-                return NeumorphicSegmentedSwitch<GigHubFeed>(
-                  liquidGlass:
-                      themeState.isBlueTheme || themeState.isLightTheme,
-                  height: _switchHeight,
-                  value: feed,
-                  onChanged: onFeedChanged,
-                  entries: [
-                    SegmentedSwitchEntry(
-                      value: GigHubFeed.services,
-                      label: L10n.get("gigs_hub_feed_services"),
-                      subtitle: L10n.get("gigs_publish_mode_service_subtitle"),
-                      icon: Icons.handyman_outlined,
-                    ),
-                    SegmentedSwitchEntry(
-                      value: GigHubFeed.tasks,
-                      label: L10n.get("gigs_hub_feed_tasks"),
-                      subtitle: L10n.get("gigs_publish_mode_task_subtitle"),
-                      icon: Icons.assignment_outlined,
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          _CategoryRibbon(
-            categories: categories,
-            selectedCategoryId: selectedCategoryId,
-            onSelected: onCategorySelected,
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_GigHubPinnedHeaderDelegate oldDelegate) {
-    return topPadding != oldDelegate.topPadding ||
-        feed != oldDelegate.feed ||
-        selectedCategoryId != oldDelegate.selectedCategoryId ||
-        backgroundColor != oldDelegate.backgroundColor ||
-        !identical(categories, oldDelegate.categories);
-  }
-}
-
-/// Horizontally scrollable ribbon of category filter chips. The first chip
-/// is "All" (no filter); subsequent chips show each [GigCategory] with its
-/// glyph from [gigCategoryIcon].
-///
-/// Categories come from [GigCategoryCache] (a static, admin-ordered list
-/// baked into the app), so the ribbon renders synchronously on the first
-/// frame with no loading state.
-class _CategoryRibbon extends StatefulWidget {
-  const _CategoryRibbon({
-    required this.categories,
-    required this.selectedCategoryId,
-    required this.onSelected,
-  });
-
-  final List<GigCategory> categories;
-  final int? selectedCategoryId;
-  final ValueChanged<int?> onSelected;
-
-  @override
-  State<_CategoryRibbon> createState() => _CategoryRibbonState();
-}
-
-class _CategoryRibbonState extends State<_CategoryRibbon> {
-  late List<GlobalKey> _itemKeys;
-
-  /// Tall enough to seat a 36-px chip (`vertical: 8` × 2 + ~20 line height)
-  /// plus 8 px of vertical breathing room above and below so shadows from
-  /// the active chip don't get clipped by the host viewport.
-  static const double _ribbonHeight = 50;
-  static const double _chipPadV = 3;
-
-  List<GlobalKey> _newItemKeys(int count) =>
-      List<GlobalKey>.generate(count, (_) => GlobalKey());
-
-  int _selectedIndex() {
-    final id = widget.selectedCategoryId;
-    if (id == null) return 0;
-    final i = widget.categories.indexWhere((c) => c.id == id);
-    if (i < 0) return 0;
-    return i + 1;
-  }
-
-  void _scrollSelectionToCenter() {
-    if (!mounted) return;
-    final index = _selectedIndex();
-    if (index < 0 || index >= _itemKeys.length) return;
-    final ctx = _itemKeys[index].currentContext;
-    if (ctx == null) return;
-    final disableMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    Scrollable.ensureVisible(
-      ctx,
-      alignment: 0.5,
-      duration:
-          disableMotion ? Duration.zero : const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _itemKeys = _newItemKeys(widget.categories.length + 1);
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _scrollSelectionToCenter());
-  }
-
-  @override
-  void didUpdateWidget(covariant _CategoryRibbon oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final newCount = widget.categories.length + 1;
-    final categoriesLengthChanged =
-        widget.categories.length != oldWidget.categories.length;
-    if (newCount != _itemKeys.length) {
-      _itemKeys = _newItemKeys(newCount);
-    }
-    if (widget.selectedCategoryId != oldWidget.selectedCategoryId ||
-        categoriesLengthChanged) {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _scrollSelectionToCenter());
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final language = LanguageState().currentLanguage;
-    return SizedBox(
-      height: _ribbonHeight,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        // Default `Clip.hardEdge` slices the active chip's drop shadow
-        // (and even the anti-aliased edge of the rounded corners) at
-        // the viewport bounds. The ribbon is only as tall as the chip
-        // plus a few px of vertical padding, so we let children draw
-        // outside the listview bounds and rely on the host scroll
-        // view to clip at a safer outer boundary.
-        clipBehavior: Clip.none,
-        padding: const EdgeInsets.fromLTRB(16, _chipPadV, 16, _chipPadV),
-        itemCount: widget.categories.length + 1,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          if (i == 0) {
-            return _CategoryChip(
-              key: _itemKeys[0],
-              icon: Icons.apps_rounded,
-              label: L10n.get("all"),
-              isSelected: widget.selectedCategoryId == null,
-              onTap: () => widget.onSelected(null),
-            );
-          }
-          final c = widget.categories[i - 1];
-          return _CategoryChip(
-            key: _itemKeys[i],
-            icon: gigCategoryIcon(c.code),
-            label: c.localizedName(language),
-            isSelected: widget.selectedCategoryId == c.id,
-            onTap: () => widget.onSelected(c.id),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, _) {
-        final themeState = ThemeState();
-        // Match [NeumorphicSegmentedSwitch] colors so chip selection reads as
-        // the same affordance: `primaryColor` thumb on `cardColor` ground,
-        // with text color picked by background brightness.
-        final activeBg = themeState.primaryColor;
-        final inactiveBg = themeState.cardColor;
-        final activeFg =
-            ThemeData.estimateBrightnessForColor(activeBg) == Brightness.dark
-                ? Colors.white
-                : Colors.black;
-        final inactiveFg = themeState.unselectedTabTextColor;
-        final radius = const BorderRadius.all(Radius.circular(22));
-        final iconColor =
-            isSelected ? activeFg : inactiveFg.withValues(alpha: 0.85);
-        final labelStyle = TextStyle(
-          fontSize: 13,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-          color: isSelected ? activeFg : inactiveFg.withValues(alpha: 0.9),
-        );
-
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            UiFeedbackUtils.selection();
-            onTap();
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: ThreeDSurfaceStyle.surfaceGradient(
-                context,
-                isSelected ? activeBg : inactiveBg,
-              ),
-              boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GigCategoryIconBadge(
-                  icon: icon,
-                  iconColor: iconColor,
-                  badgeBackgroundColor: isSelected
-                      ? activeFg.withValues(alpha: 0.16)
-                      : inactiveFg.withValues(alpha: 0.12),
-                  dimension: 28.6,
-                  iconSize: 17.5,
-                ),
-                const SizedBox(width: 8),
-                Text(label, style: labelStyle),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// Label chip + circular control (browser-style), opening "My bookings".
-class _MyBookingsFab extends StatefulWidget {
-  @override
-  State<_MyBookingsFab> createState() => _MyBookingsFabState();
-}
-
-class _MyBookingsFabState extends State<_MyBookingsFab> {
-  static const double _fabSize = 46.0;
-  static const double _pillRadiusValue = 16.0;
-
-  bool _ordersPressed = false;
-  bool _publishedPressed = false;
-
-  void _setOrdersPressed(bool v) {
-    if (_ordersPressed != v) setState(() => _ordersPressed = v);
-  }
-
-  void _setPublishedPressed(bool v) {
-    if (_publishedPressed != v) setState(() => _publishedPressed = v);
-  }
-
-  void _openOrders() {
-    UiFeedbackUtils.tap();
-    context.pushMyGigBookings();
-  }
-
-  void _openPublished() {
-    UiFeedbackUtils.tap();
-    context.pushMyPublishedGigs();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final fg = themeState.isBlueTheme ? Colors.white : Colors.black;
-    final base = theme.colorScheme.surface;
-    final circleRadius = BorderRadius.circular(_fabSize / 2);
-    final pillRadius = BorderRadius.circular(_pillRadiusValue);
-    final label = L10n.get("gigs_hub_my_bookings_title");
-    final publishedLabel = L10n.get("gigs_my_published_title");
-
-    final labelText = Text(
-      label,
-      style: theme.textTheme.titleSmall?.copyWith(
-        color: fg,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-
-    final labelChip = LiquidGlassPlate(
-      height: _fabSize,
-      borderRadius: pillRadius,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(Icons.event_note_rounded, color: fg, size: 20),
-            const SizedBox(width: 8),
-            labelText,
-          ],
-        ),
-      ),
-    );
-
-    final shadows = _publishedPressed
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : ThreeDSurfaceStyle.elevatedShadows(context);
-
-    final circleIcon = Icon(Icons.layers_rounded, color: fg, size: 24);
-
-    final circleLiquid = SizedBox(
-      width: _fabSize,
-      height: _fabSize,
-      child: LiquidGlassPlate(
-        height: _fabSize,
-        borderRadius: circleRadius,
-        child: Center(child: circleIcon),
-      ),
-    );
-
-    final circleLegacy = AnimatedContainer(
-      duration: const Duration(milliseconds: 90),
-      width: _fabSize,
-      height: _fabSize,
-      decoration: BoxDecoration(
-        borderRadius: circleRadius,
-        boxShadow: shadows,
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: circleRadius,
-          gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
-        ),
-        child: Center(child: circleIcon),
-      ),
-    );
-
-    final circleFab = useLiquidGlass ? circleLiquid : circleLegacy;
-    final unreadColor = themeState.unreadIndicatorColor;
-
-    return ListenableBuilder(
-      listenable: PendingGigBookingsState(),
-      builder: (context, _) {
-        final pendingState = PendingGigBookingsState();
-        final showDot = pendingState.hasPendingBookings;
-        final ordersSemanticLabel =
-            showDot ? "$label (${L10n.get("gigs_status_pending")})" : label;
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Tooltip(
-              message: label,
-              child: Semantics(
-                button: true,
-                label: ordersSemanticLabel,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 90),
-                  transform: Matrix4.translationValues(
-                    0,
-                    _ordersPressed ? 2 : 0,
-                    0,
-                  ),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapDown: (_) => _setOrdersPressed(true),
-                    onTapUp: (_) => _setOrdersPressed(false),
-                    onTapCancel: () => _setOrdersPressed(false),
-                    onTap: _openOrders,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.center,
-                      children: [
-                        labelChip,
-                        if (showDot)
-                          Positioned(
-                            right: 6,
-                            top: 4,
-                            child: PulseThenBlinkDotWidget(
-                              trigger: pendingState.dotTrigger,
-                              color: unreadColor,
-                              size: 11,
-                              blinkDuration: const Duration(milliseconds: 750),
-                              borderColor: Colors.white,
-                              borderWidth: 2,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Tooltip(
-              message: publishedLabel,
-              child: Semantics(
-                button: true,
-                label: publishedLabel,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 90),
-                  transform: Matrix4.translationValues(
-                    0,
-                    _publishedPressed ? 2 : 0,
-                    0,
-                  ),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapDown: (_) => _setPublishedPressed(true),
-                    onTapUp: (_) => _setPublishedPressed(false),
-                    onTapCancel: () => _setPublishedPressed(false),
-                    onTap: _openPublished,
-                    child: circleFab,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _LoadingSliver extends StatelessWidget {
-  const _LoadingSliver();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SliverToBoxAdapter(
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 48),
-        child: Center(child: HouseLoadingIndicator()),
-      ),
-    );
-  }
-}
-
-class _LoadingMoreFooter extends StatelessWidget {
-  const _LoadingMoreFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(16),
-      child: Center(child: HouseLoadingIndicator()),
-    );
-  }
-}
-
-class _EmptySliver extends StatelessWidget {
-  const _EmptySliver({
-    required this.icon,
-    required this.message,
-    required this.bottomPadding,
-  });
-
-  final IconData icon;
-  final String message;
-  final double bottomPadding;
-
-  @override
-  Widget build(BuildContext context) {
-    // Fill the rest of the viewport so the column's `Center` can vertically
-    // center it between the category ribbon and the bottom of the screen,
-    // rather than parking it just below the ribbon. Bottom padding keeps the
-    // text from sitting under the floating bookings control when signed in.
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottomPadding),
-        child: UydoshEmptyColumn(icon: icon, title: message),
-      ),
-    );
-  }
-}
-
-class _ErrorSliver extends StatelessWidget {
-  const _ErrorSliver({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.redAccent,
-            ),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            PrimaryButtonFactory.text(
-              onPressed: onRetry,
-              text: L10n.get("gigs_retry"),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

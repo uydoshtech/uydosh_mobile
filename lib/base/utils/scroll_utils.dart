@@ -110,8 +110,15 @@ class ScrollUtils {
     resetCallback();
   }
 
-  /// Disposes of scroll controller and cleans up resources
-  static void disposeScrollController(ScrollController controller) {
+  /// Disposes [controller]. When a listener was registered with
+  /// [ScrollController.addListener], pass it here so it is removed before dispose.
+  static void disposeScrollController(
+    ScrollController controller, [
+    VoidCallback? listener,
+  ]) {
+    if (listener != null) {
+      controller.removeListener(listener);
+    }
     controller.dispose();
   }
 }

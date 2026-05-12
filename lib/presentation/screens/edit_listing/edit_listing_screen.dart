@@ -2038,12 +2038,8 @@ class _RoomScanIconRotatorState extends State<_RoomScanIconRotator>
 
   @override
   Widget build(BuildContext context) {
-    final rotate = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.linear,
-    );
     return RotationTransition(
-      turns: rotate,
+      turns: _controller,
       child: widget.child,
     );
   }

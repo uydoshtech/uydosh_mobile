@@ -127,6 +127,8 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
   void dispose() {
     getIt<GigHubFeedsRefreshNotifier>()
         .removeListener(_onHubFeedsRefreshSignal);
+    _servicesScroll.removeListener(_onServicesScroll);
+    _tasksScroll.removeListener(_onTasksScroll);
     _servicesScroll.dispose();
     _tasksScroll.dispose();
     super.dispose();

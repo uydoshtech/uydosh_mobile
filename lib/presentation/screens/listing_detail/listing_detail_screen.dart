@@ -71,15 +71,16 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/room_3d_tile.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_loading_placeholder.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_error_placeholder.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_view_similar_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -177,7 +178,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   // actually a complaint to warn about — see that widget for the controller.
   //
   // The 3D-room rotate controller used to live here too and ran forever even
-  // for listings without a `pointCloudUrl`. It now lives inside [_Room3dTile]
+  // for listings without a `pointCloudUrl`. It now lives inside [ListingRoom3dTile]
   // which is only mounted when there's a 3D scan to rotate the icon for.
   late PageController _pageController;
   late ScrollController _scrollController;
@@ -2070,18 +2071,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Widget _buildInitialState() {
-    return CenteredHouseLoadingIndicator(
-      text: L10n.get(
-        "loading_listing_details",
-      ),
-    );
+    return const ListingDetailLoadingBody();
   }
 
   Widget _buildLoadingState() {
-    return CenteredHouseLoadingIndicator(
-      text: L10n.get(
-        "loading_listing_details",
-      ),
+    return ListingDetailLoadingBody(
       textStyle: TextStyle(
         color: _getLoadingTextColor(),
         fontSize: 16,
@@ -2143,7 +2137,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Widget _room3dTile(ListingDetail listingDetail) {
-    return _Room3dTile(
+    return ListingRoom3dTile(
       listingDetail: listingDetail,
       onTap: () => _openRoom3dViewer(listingDetail),
     );
@@ -2201,41 +2195,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Widget _viewSimilarTile(ListingDetail listingDetail) {
-    return SizedBox(
-      width: double.infinity,
-      child: ListingDetailTileShell(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () {
-            HapticFeedbackUtils.impact();
-            _openSimilarResults(listingDetail);
-          },
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
-            child: Row(
-              children: [
-                ThemeIcon(
-                  Icons.auto_awesome_mosaic_outlined,
-                  color: ThemeState().isBlueTheme
-                      ? BlueThemeColors.textPrimary
-                      : Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    L10n.get("view_similar_results"),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                ThemeIcon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return ListingDetailViewSimilarTile(
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        _openSimilarResults(listingDetail);
+      },
     );
   }
 
@@ -2463,60 +2427,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Widget _buildErrorState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // WiFi error icon with gradient colors
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.warning, AppColors.favoriteActive],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: ThemeIconFactory.display(
-              icon: Icons.wifi_off_rounded,
-              size: 49,
-              color: AppColors.textLight,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            L10n.get(
-              "error_loading_listing_details",
-            ),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textLight,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            L10n.get(
-              "error_internet_connection",
-            ),
-            style: const TextStyle(fontSize: 14, color: AppColors.textLight70),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          GhostButtonFactory.iconText(
-            onPressed: () {
-              context.read<ListingDetailBloc>().add(
-                    ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-                  );
-            },
-            icon: Icons.refresh_rounded,
-            text: L10n.get("retry"),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-        ],
-      ),
+    return ListingDetailFetchErrorBody(
+      onRetry: () {
+        context.read<ListingDetailBloc>().add(
+              ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+            );
+      },
     );
   }
 
@@ -2647,191 +2563,3 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 }
 
-/// Matches native 3D viewer: SF `rectangle` → [Icons.rectangle_outlined],
-/// `arrow.up.and.down` → [Icons.height], `rectangle.on.rectangle` →
-/// [Icons.flip_to_front_outlined] (overlapping rects).
-Widget _room3dDimensionMetricRow({
-  required BuildContext context,
-  required IconData icon,
-  required String text,
-}) {
-  final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-      );
-  final iconColor =
-      style?.color ?? Theme.of(context).colorScheme.onSurface;
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Icon(icon, size: 18, color: iconColor.withValues(alpha: 0.92)),
-      const SizedBox(width: 8),
-      Expanded(child: Text(text, style: style)),
-    ],
-  );
-}
-
-/// Self-contained "View room in 3D" tile.
-///
-/// Owns its rotating-icon controller so the controller only ticks while the
-/// tile is actually mounted (i.e. only when the listing has a 3D scan).
-/// Previously this controller lived on the parent screen and ran forever
-/// regardless of whether a 3D tile was visible.
-class _Room3dTile extends StatefulWidget {
-  const _Room3dTile({
-    required this.listingDetail,
-    required this.onTap,
-  });
-
-  final ListingDetail listingDetail;
-  final VoidCallback onTap;
-
-  @override
-  State<_Room3dTile> createState() => _Room3dTileState();
-}
-
-class _Room3dTileState extends State<_Room3dTile>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _rotateController;
-
-  @override
-  void initState() {
-    super.initState();
-    _rotateController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _rotateController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final rotate = CurvedAnimation(
-      parent: _rotateController,
-      curve: Curves.linear,
-    );
-    final d = widget.listingDetail;
-    final fl = d.roomScanFloorLongM;
-    final fs = d.roomScanFloorShortM;
-    final h = d.roomScanHeightM;
-    final area = d.roomScanFloorAreaM2;
-    String? line1;
-    String? lineHeight;
-    String? line2;
-    if (fl != null && fs != null && h != null && area != null) {
-      line1 = L10n.getWithParams(
-        "room_3d_dimensions_line1_template",
-        params: <String, String>{
-          "floorLong": fl.toStringAsFixed(1),
-          "floorShort": fs.toStringAsFixed(1),
-        },
-      );
-      lineHeight = L10n.getWithParams(
-        "room_3d_dimensions_height_template",
-        params: <String, String>{
-          "height": h.toStringAsFixed(1),
-        },
-      );
-      line2 = L10n.getWithParams(
-        "room_3d_dimensions_line2_template",
-        params: <String, String>{
-          "floorArea": area.toStringAsFixed(1),
-        },
-      );
-    }
-    final variant = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SizedBox(
-      width: double.infinity,
-      child: ListingDetailTileShell(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: widget.onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          RotationTransition(
-                            turns: rotate,
-                            child: ThemeIcon(
-                              Icons.view_in_ar,
-                              color: ThemeState().isBlueTheme
-                                  ? BlueThemeColors.textPrimary
-                                  : Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              L10n.get("view_room_3d"),
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (line1 != null &&
-                          lineHeight != null &&
-                          line2 != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 6),
-                              Text(
-                                L10n.get("room_3d_dimensions_caption"),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: variant.withValues(alpha: 0.85),
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.rectangle_outlined,
-                                text: line1,
-                              ),
-                              const SizedBox(height: 4),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.height,
-                                text: lineHeight,
-                              ),
-                              const SizedBox(height: 4),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.flip_to_front_outlined,
-                                text: line2,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ThemeIcon(
-                  Icons.chevron_right,
-                  color: variant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

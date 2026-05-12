@@ -161,6 +161,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Firebase Auth
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  StreamSubscription<User?>? _firebaseAuthStateSub;
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId:
@@ -227,16 +228,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     // Listen to Firebase auth state changes
-    _auth.authStateChanges().listen((user) {
-      if (mounted) {
-        setState(() {
-          _currentUser = user;
-          _isGoogleSignedIn = user != null;
-          if (user == null) {
-            _oauthSummaryAvatarUrl = null;
-          }
-        });
-      }
+    _firebaseAuthStateSub =
+        _auth.authStateChanges().listen((user) {
+      if (!mounted) return;
+      setState(() {
+        _currentUser = user;
+        _isGoogleSignedIn = user != null;
+        if (user == null) {
+          _oauthSummaryAvatarUrl = null;
+        }
+      });
     });
 
     unawaited(_hydrateOAuthSummaryAvatarFromCache());
@@ -280,6 +281,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   @override
   void dispose() {
+    unawaited(_firebaseAuthStateSub?.cancel());
+    _firebaseAuthStateSub = null;
     _nameDebounceTimer?.cancel();
     _nameController.removeListener(_onNameChanged);
     _pageController.dispose();

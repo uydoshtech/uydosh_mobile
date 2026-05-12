@@ -48,6 +48,7 @@ class _AdminUserListingsScreenState extends State<AdminUserListingsScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }

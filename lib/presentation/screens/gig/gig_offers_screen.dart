@@ -33,11 +33,14 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
+    if (!mounted) return;
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       context.read<GigOffersBloc>().add(const LoadMoreGigOffers());

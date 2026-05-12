@@ -108,7 +108,11 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
 
   @override
   void dispose() {
-    ScrollUtils.disposeScrollController(_scrollController);
+    _resetScrollLoadingState();
+    ScrollUtils.disposeScrollController(
+      _scrollController,
+      _throttledScrollListener,
+    );
     super.dispose();
   }
 

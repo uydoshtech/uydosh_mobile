@@ -54,6 +54,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }

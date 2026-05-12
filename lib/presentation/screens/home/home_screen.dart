@@ -38,8 +38,6 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -47,7 +45,6 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
@@ -55,7 +52,7 @@ import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
-import "package:uy_dosh/presentation/screens/home/notify_search_alert_ghost_button.dart";
+import "package:uy_dosh/presentation/screens/home/home_feed_placeholder_widgets.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
@@ -659,7 +656,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     _searchFiltersState.removeListener(_onSearchFiltersStateChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
     TooltipsState().removeListener(_onTooltipsStateChanged);
-    ScrollUtils.disposeScrollController(_scrollController);
+    _resetScrollLoadingState();
+    ScrollUtils.disposeScrollController(
+      _scrollController,
+      _throttledScrollListener,
+    );
     super.dispose();
   }
 
@@ -1114,12 +1115,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ? const Duration(milliseconds: 1000)
           : Duration.zero;
 
+  /// Base top padding for home list content when embedded under the main shell
+  /// glass header (body draws behind the toolbar). Search mode uses a route
+  /// with a normal [AppBar], so the body is already below the status bar —
+  /// return 0. The list keeps this stable base and animates spacer item 0 for
+  /// the inline ribbon to avoid scroll-metric jumps.
   double _feedBaseTopPadding() {
     if (widget.isSearchMode) return 0;
-    final base = ThemeState().mainShellGlassExtraTopInset(context);
-    // Keep a small breathing room when no ribbon is shown, but avoid creating a
-    // noticeable empty band under the shell header.
-    return base;
+    return ThemeState().mainShellGlassExtraTopInset(context);
   }
 
   double _feedRibbonSpacerHeight() {
@@ -1200,29 +1203,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         );
       },
     );
-  }
-
-  /// Extra top inset when the home feed sits under the main shell glass header.
-  /// Search mode pushes a route with a normal [AppBar], so the body is already
-  /// below the status bar — do not add status-bar padding again.
-  double _feedListGlassTopInset() {
-    // In main navigation (glass header), body renders behind the header.
-    // We pad list content down so it doesn't sit under the header/ribbon.
-    if (widget.isSearchMode) return 0;
-    final base = ThemeState().mainShellGlassExtraTopInset(context);
-    // This inset is used only for layout math outside the list content.
-    // The list itself keeps a stable base padding and animates a spacer item
-    // to avoid scroll-metric jumps when ribbon space changes.
-    return base;
-  }
-
-  /// When the inline filter ribbon is on, skip the extra 16px so the gap under
-  /// the ribbon matches the 8px used above it (`mainShellGlassExtraTopInset`).
-  double _feedListTopPadding() {
-    // Kept for callers that still use this helper; list views use
-    // [_feedBaseTopPadding] + an animated spacer instead.
-    final base = _feedListGlassTopInset();
-    return 8.0 + base;
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
@@ -1364,34 +1344,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildInitialState() {
     return _buildPullToRefreshAroundFillChild(
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemeIcon(Icons.home, size: 64, color: _getHomeIconColor()),
-          const SizedBox(height: 16),
-          L10n.text(
-            "welcome_title",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: _getWelcomeTitleColor(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          L10n.text(
-            "welcome_subtitle",
-            style: TextStyle(fontSize: 16, color: _getWelcomeSubtitleColor()),
-          ),
-          const SizedBox(height: 24),
-          GhostButtonFactory.iconText(
-            onPressed: _dispatchFeedRefresh,
-            icon: Icons.refresh,
-            text: L10n.get("refresh"),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            textStyle: const TextStyle(fontSize: 16),
-            neumorphicSoftUi: true,
-          ),
-        ],
+      HomeWelcomePlaceholder(
+        homeIconColor: _getHomeIconColor(),
+        titleColor: _getWelcomeTitleColor(),
+        subtitleColor: _getWelcomeSubtitleColor(),
+        onRefresh: _dispatchFeedRefresh,
       ),
     );
   }
@@ -1399,64 +1356,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildEmptySearchState() {
     _maybeShowNoResultsAlertBellTutorial();
     return _buildPullToRefreshAroundFillChild(
-      Column(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ThemeIcon(
-                  Icons.search_off,
-                  size: 64,
-                  color: _getHomeIconColor(),
-                ),
-                const SizedBox(height: 16),
-                L10n.text(
-                  "no_search_results",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: _getWelcomeTitleColor(),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        GhostButtonFactory.iconText(
-                          onPressed: _handleClearFiltersFromEmptyState,
-                          icon: Icons.filter_alt_off,
-                          text: L10n.get("search_clear_filters"),
-                          height: _kEmptySearchCtaButtonHeight,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          neumorphicSoftUi: true,
-                        ),
-                        const SizedBox(height: 12),
-                        NotifySearchAlertGhostButton(
-                          height: _kEmptySearchCtaButtonHeight,
-                          label: L10n.get("search_alert_notify_me"),
-                          onPressed: _isCreatingSearchAlert
-                              ? null
-                              : _subscribeToSearchAlerts,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Reserve space below the CTAs for the bell FAB stack and the
-                // hint bubble that floats above it (`bottom: 124` + bubble
-                // height + breathing room) so the bubble can never overlap
-                // the "notify me" button when the empty-state column is
-                // centered vertically.
-                const SizedBox(height: 240),
-              ],
-            ),
-          ),
-        ],
+      HomeEmptySearchPlaceholder(
+        homeIconColor: _getHomeIconColor(),
+        titleColor: _getWelcomeTitleColor(),
+        onClearFilters: _handleClearFiltersFromEmptyState,
+        onNotifyMe:
+            _isCreatingSearchAlert ? null : () => unawaited(_subscribeToSearchAlerts()),
+        emptySearchCtaHeight: _kEmptySearchCtaButtonHeight,
       ),
     );
   }
@@ -2019,31 +1925,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildLoadMoreIndicator() {
-    return CenteredHouseLoadingIndicator(
-      text: L10n.get("loading_listings"),
-    );
+    return const HomeFeedLoadMoreFooter();
   }
 
   Widget _buildErrorState(String message) {
-    return CommonStateBuilder(
-      isLoading: false,
-      hasError: true,
-      isEmpty: false,
-      errorMessage: message,
-      errorAction: ThreeDPillButton(
-        onPressed: _dispatchFeedRefresh,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const ThemeIcon(Icons.refresh, size: 18),
-            const SizedBox(width: 8),
-            Text(L10n.get("retry"),
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-      child: Container(), // This won"t be shown when there"s an error
+    return HomeFeedErrorPanel(
+      message: message,
+      onRetry: _dispatchFeedRefresh,
     );
   }
 
