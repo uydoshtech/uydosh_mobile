@@ -327,19 +327,20 @@ class _ListingDescriptionDictateButtonState
       ],
     );
 
-    return TextButton(
+    final button = TextButton(
       onPressed: _uploading ? null : _toggleRecording,
       style: TextButton.styleFrom(
         foregroundColor: accent,
         padding: widget.inlineWithCounter
             ? const EdgeInsets.symmetric(horizontal: 8, vertical: 0)
             : const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        minimumSize: widget.inlineWithCounter ? const Size(0, 44) : Size.zero,
+        minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
         alignment: Alignment.centerLeft,
       ),
       child: child,
     );
+    return button;
   }
 }

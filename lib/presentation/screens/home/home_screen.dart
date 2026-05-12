@@ -1903,8 +1903,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               dateString: AppDateUtils.formatDateHeader(day, context),
               date: day,
               padding: isFirst
-                  ? const EdgeInsets.only(top: 0, bottom: 2)
-                  : const EdgeInsets.only(top: 4, bottom: 2),
+                  ? const EdgeInsets.only(top: 0, bottom: 0)
+                  : const EdgeInsets.only(top: 0, bottom: 0),
             );
           },
           controller: _scrollController,

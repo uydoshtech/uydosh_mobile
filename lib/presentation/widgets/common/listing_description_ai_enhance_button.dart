@@ -314,7 +314,7 @@ class _ListingDescriptionAiEnhanceButtonState
             style: TextButton.styleFrom(
               foregroundColor: accent,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-              minimumSize: const Size(0, 44),
+              minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
               alignment: Alignment.centerLeft,

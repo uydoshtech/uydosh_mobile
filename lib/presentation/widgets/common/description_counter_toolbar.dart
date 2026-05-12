@@ -127,11 +127,36 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   static const double _actionSpacing = 12;
+  static const double _footerHeight = 22;
 
   Widget _wrapAction(Widget child) {
     if (!widget.debugShowTapBounds) return child;
     return DebugTapBounds(
       enabled: true,
+      child: child,
+    );
+  }
+
+  Widget _wrapFooter(Widget child) {
+    if (!widget.debugShowTapBounds) return child;
+    return DebugTapBounds(
+      enabled: true,
+      color: Colors.yellow,
+      borderWidth: 2,
+      borderRadius: 10,
+      fillOpacity: 0.04,
+      child: child,
+    );
+  }
+
+  Widget _wrapOuter(Widget child) {
+    if (!widget.debugShowTapBounds) return child;
+    return DebugTapBounds(
+      enabled: true,
+      color: Colors.greenAccent,
+      borderWidth: 2,
+      borderRadius: 12,
+      fillOpacity: 0.03,
       child: child,
     );
   }
@@ -142,27 +167,36 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         _wrapAction(
-          ListingDescriptionAiEnhanceButton(
-            controller: widget.controller,
-            inlineWithCounter: true,
+          SizedBox(
+            height: _footerHeight,
+            child: ListingDescriptionAiEnhanceButton(
+              controller: widget.controller,
+              inlineWithCounter: true,
+            ),
           ),
         ),
         const SizedBox(width: _actionSpacing),
         _wrapAction(
-          ListingDescriptionTemplateButton(
-            controller: widget.controller,
-            listingTypeId: widget.listingTypeId,
-            gender: widget.gender,
-            inlineWithCounter: true,
+          SizedBox(
+            height: _footerHeight,
+            child: ListingDescriptionTemplateButton(
+              controller: widget.controller,
+              listingTypeId: widget.listingTypeId,
+              gender: widget.gender,
+              inlineWithCounter: true,
+            ),
           ),
         ),
         const SizedBox(width: _actionSpacing),
         _wrapAction(
-          ListingDescriptionDictateButton(
-            controller: widget.controller,
-            inlineWithCounter: true,
-            maxDescriptionLength: widget.maxDescriptionLength,
-            dictationMeter: dictationMeter,
+          SizedBox(
+            height: _footerHeight,
+            child: ListingDescriptionDictateButton(
+              controller: widget.controller,
+              inlineWithCounter: true,
+              maxDescriptionLength: widget.maxDescriptionLength,
+              dictationMeter: dictationMeter,
+            ),
           ),
         ),
       ],
@@ -196,7 +230,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
             },
             child: SizedBox(
               width: 44,
-              height: 44,
+              height: _footerHeight,
               child: Center(
                 child: AnimatedRotation(
                   turns: widget.isExpanded ? 0.5 : 0.0,
@@ -204,7 +238,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
                   curve: Curves.easeInOut,
                   child: const Icon(
                     Icons.expand_more,
-                    size: 20,
+                    size: 18,
                     color: Colors.white,
                   ),
                 ),
@@ -222,18 +256,21 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
         padding: const EdgeInsets.only(top: 4, bottom: 8),
         child: SizedBox(
           width: double.infinity,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.centerLeft,
-            children: [
-              _buildActionsRow(dictateMeterSlot),
-              Positioned(
-                right: widget.stackCounterRightOffset,
-                top: 0,
-                bottom: 0,
-                child: _buildCounterColumn(color),
-              ),
-            ],
+          child: SizedBox(
+            height: _footerHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.centerLeft,
+              children: [
+                _buildActionsRow(dictateMeterSlot),
+                Positioned(
+                  right: widget.stackCounterRightOffset,
+                  top: 0,
+                  bottom: 0,
+                  child: _buildCounterColumn(color),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -241,13 +278,16 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildActionsRow(dictateMeterSlot),
-          const Spacer(),
-          _buildCounterColumn(color),
-        ],
+      child: SizedBox(
+        height: _footerHeight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildActionsRow(dictateMeterSlot),
+            const Spacer(),
+            _buildCounterColumn(color),
+          ],
+        ),
       ),
     );
   }
@@ -263,7 +303,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
         final slot = showMeterUi ? _dictationMeter : null;
         final inner = _buildInner(color, slot);
 
-        return Column(
+        final content = Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -285,6 +325,9 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
             inner,
           ],
         );
+
+        // Yellow + green share the exact same bounds now.
+        return _wrapFooter(_wrapOuter(content));
       },
     );
   }
