@@ -9,6 +9,7 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -171,7 +172,7 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
                     sliver: _buildLocationsSliver(context),
                   ),
                   const SliverToBoxAdapter(
-                    child: const SizedBox(height: 32),
+                    child: SizedBox(height: 32),
                   ),
                 ],
               ],
@@ -555,13 +556,14 @@ class _AdminSearchAnalyticsScreenState extends State<AdminSearchAnalyticsScreen>
       padding: const EdgeInsets.all(24),
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
-      retryButton: ElevatedButton.icon(
+      retryButton: PrimaryButtonFactory.iconText(
         onPressed: () {
           HapticFeedbackUtils.impact();
           _loadAnalytics();
         },
-        icon: const ThemeIcon(Icons.refresh),
-        label: Text(L10n.get("admin_search_analytics_retry")),
+        icon: Icons.refresh,
+        text: L10n.get("admin_search_analytics_retry"),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
     );
   }

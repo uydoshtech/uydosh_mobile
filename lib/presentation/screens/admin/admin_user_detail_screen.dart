@@ -17,16 +17,19 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
@@ -510,53 +513,38 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: GhostButtonFactory.iconText(
                   onPressed: (_blocking || isDisabled)
                       ? null
                       : () {
                           HapticFeedbackUtils.impact();
                           _unblockUser();
                         },
-                  icon: _blocking
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const ThemeIcon(Icons.lock_open),
-                  label: Text(
-                    L10n.get("admin_user_detail_unblock"),
-                  ),
+                  isLoading: _blocking,
+                  icon: Icons.lock_open,
+                  text: L10n.get("admin_user_detail_unblock"),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ] else ...[
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: GhostButtonFactory.iconText(
                   onPressed: (_blocking || isDisabled)
                       ? null
                       : () {
                           HapticFeedbackUtils.impact();
                           _showBlockDialog();
                         },
-                  icon: _blocking
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : ThemeIcon(
-                          Icons.block,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                  label: Text(
-                    L10n.get("admin_user_detail_block"),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
-                    side:
-                        BorderSide(color: Theme.of(context).colorScheme.error),
-                  ),
+                  isLoading: _blocking,
+                  icon: Icons.block,
+                  text: L10n.get("admin_user_detail_block"),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  borderColor: Theme.of(context).colorScheme.error,
+                  textColor: Theme.of(context).colorScheme.error,
+                  iconColor: Theme.of(context).colorScheme.error,
                 ),
               ),
             ],
@@ -583,7 +571,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => UydoshAlertDialog(
           title: Text(
             L10n.get("admin_user_detail_block"),
           ),
@@ -770,22 +758,22 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: (!_saving && canSave && !disableActions)
-                    ? () {
-                        HapticFeedbackUtils.impact();
-                        _updateRole();
-                      }
-                    : null,
-                child: _saving
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        L10n.get("admin_user_detail_role_save"),
-                      ),
+              child: PrimaryButton(
+                onPressed:
+                    (!_saving && canSave && !disableActions)
+                        ? () {
+                          HapticFeedbackUtils.impact();
+                          _updateRole();
+                        }
+                        : null,
+                isLoading: _saving,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: Text(
+                  L10n.get("admin_user_detail_role_save"),
+                ),
               ),
             ),
             if (disableActions) ...[
@@ -808,12 +796,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
     return _NeumorphicTile(
       child: Column(
         children: [
-          ListTile(
-            leading: const ThemeIcon(Icons.list_alt),
-            title: Text(
-              L10n.get("admin_user_detail_view_listings"),
-            ),
-            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
+          UydoshMenuItem(
+            icon: Icons.list_alt,
+            title: Text(L10n.get("admin_user_detail_view_listings")),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -829,12 +814,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             height: 1,
             color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
           ),
-          ListTile(
-            leading: const ThemeIcon(Icons.report_problem),
-            title: Text(
-              L10n.get("admin_user_detail_view_complaints"),
-            ),
-            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
+          UydoshMenuItem(
+            icon: Icons.report_problem,
+            title: Text(L10n.get("admin_user_detail_view_complaints")),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -850,12 +832,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             height: 1,
             color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
           ),
-          ListTile(
-            leading: const ThemeIcon(Icons.filter_alt_outlined),
-            title: Text(
-              L10n.get("admin_user_detail_view_alerts"),
-            ),
-            trailing: const ThemeIcon(Icons.arrow_forward_ios, size: 16),
+          UydoshMenuItem(
+            icon: Icons.filter_alt_outlined,
+            title: Text(L10n.get("admin_user_detail_view_alerts")),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

@@ -4,27 +4,21 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
-import "package:flutter_svg/flutter_svg.dart";
 // Prefixed because [IconAlignment] collides with Flutter Material's
 // own `IconAlignment` exported from `package:flutter/material.dart`.
 import "package:sign_in_with_apple/sign_in_with_apple.dart" as siwa;
-import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/apple_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/google_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
-/// Logical size of `assets/images/ios_*_rd_ctn.svg` (`width`/`height` in the SVG).
-const double _kGoogleSignInSvgWidth = 199;
-const double _kGoogleSignInSvgHeight = 44;
-
-class AuthWizardGoogleSignInPage extends StatefulWidget {
+class AuthWizardGoogleSignInPage extends StatelessWidget {
   const AuthWizardGoogleSignInPage({
     required this.phoneSignInEnabled,
     required this.isAuthenticating,
@@ -60,16 +54,6 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
   /// When false, the phone option is visually subdued but still explains itself via toast on tap.
   final bool phoneSignInEnabled;
 
-  @override
-  State<AuthWizardGoogleSignInPage> createState() =>
-      _AuthWizardGoogleSignInPageState();
-}
-
-class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage> {
-  bool _pressed = false;
-
-  bool get _enabled => !widget.isAuthenticating;
-
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
 
@@ -86,7 +70,9 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth - (horizontalPadding * 2);
-        final buttonWidth = availableWidth.clamp(minButtonWidth, maxButtonWidth);
+        final buttonWidth =
+            availableWidth.clamp(minButtonWidth, maxButtonWidth);
+        final enabled = !isAuthenticating;
 
         return SingleChildScrollView(
           child: ConstrainedBox(
@@ -100,7 +86,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                   SizedBox(
                     width: double.infinity,
                     child: L10n.text(
-                      widget.isGoogleSignedIn
+                      isGoogleSignedIn
                           ? "successfully_logged_in"
                           : AuthWizardTheme.oauthStepTitleL10nKey(),
                       textAlign: TextAlign.center,
@@ -108,7 +94,7 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                         // After successful sign-in, bump the title size by
                         // +2px so the success copy reads as a confirmation
                         // headline rather than the prompt it replaces.
-                        fontSize: widget.isGoogleSignedIn ? 20 : 18,
+                        fontSize: isGoogleSignedIn ? 20 : 18,
                         height: 1.25,
                         fontWeight: FontWeight.w500,
                         color: _getOnboardingTextSecondaryColor(context),
@@ -116,31 +102,30 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     ),
                   ),
                   const SizedBox(height: 40),
-                  if (!widget.isGoogleSignedIn) ...[
+                  if (!isGoogleSignedIn) ...[
                     // Sign in with Apple — App Review Guideline 4.8
                     // requires this option to be at least as prominent
                     // as Google when both are offered. The native
                     // [SignInWithAppleButton] is rendered by the
                     // package and respects Apple HIG (logo, font,
                     // localized label). Width/height match the Google
-                    // SVG button below for visual parity.
+                    // button below for visual parity.
                     if (AppleAuthService.isAvailable || kIsWeb) ...[
                       Center(
                         child: SizedBox(
                           width: buttonWidth,
                           height: 44,
                           child: siwa.SignInWithAppleButton(
-                            onPressed:
-                                kIsWeb
-                                    ? () {}
-                                    : _enabled
+                            onPressed: kIsWeb
+                                ? () {}
+                                : enabled
                                     ? () {
-                                      HapticFeedbackUtils.impact();
-                                      widget.onSignInWithApple();
-                                    }
+                                        HapticFeedbackUtils.impact();
+                                        onSignInWithApple();
+                                      }
                                     : () {},
                             // Always-black variant matches the dark
-                            // Google SVG asset shipped below; Apple's
+                            // Google branded style on light theme; Apple's
                             // button keeps the same look across themes
                             // per HIG.
                             style: siwa.SignInWithAppleButtonStyle.black,
@@ -157,69 +142,14 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                       child: SizedBox(
                         width: buttonWidth,
                         height: 44,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 90),
-                          transform: Matrix4.translationValues(
-                            0,
-                            _pressed && _enabled ? 2 : 0,
-                            0,
-                          ),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap:
-                                widget.isAuthenticating
-                                    ? null
-                                    : () {
-                                      HapticFeedbackUtils.impact();
-                                      widget.onSignInWithGoogle();
-                                    },
-                            onTapDown:
-                                _enabled
-                                    ? (_) => setState(() => _pressed = true)
-                                    : null,
-                            onTapUp:
-                                _enabled
-                                    ? (_) => setState(() => _pressed = false)
-                                    : null,
-                            onTapCancel:
-                                _enabled
-                                    ? () => setState(() => _pressed = false)
-                                    : null,
-                            child: ListenableBuilder(
-                              listenable: ThemeState(),
-                              builder: (context, child) {
-                                final currentTheme =
-                                    ThemeState().currentTheme;
-                                final svgAsset =
-                                    currentTheme == AppTheme.lightTheme
-                                        ? "assets/images/ios_dark_rd_ctn.svg"
-                                        : "assets/images/ios_neutral_rd_ctn.svg";
-                                // Match SIWA slot (`buttonWidth`×44). The SVG is 199×44;
-                                // scaling uniformly to full width would make height ~71.
-                                // Pin intrinsic layout to the SVG logical size, then let
-                                // [FittedBox] stretch only horizontally into this slot.
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(22),
-                                  clipBehavior: Clip.hardEdge,
-                                  child: SizedBox(
-                                    width: buttonWidth,
-                                    height: _kGoogleSignInSvgHeight,
-                                    child: FittedBox(
-                                      fit: BoxFit.fill,
-                                      clipBehavior: Clip.hardEdge,
-                                      alignment: Alignment.center,
-                                      child: SvgPicture.asset(
-                                        svgAsset,
-                                        width: _kGoogleSignInSvgWidth,
-                                        height: _kGoogleSignInSvgHeight,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                        child: GoogleSignInBrandedButton(
+                          label: L10n.get("sign_in_with_google"),
+                          onPressed: enabled
+                              ? () {
+                                  HapticFeedbackUtils.impact();
+                                  onSignInWithGoogle();
+                                }
+                              : null,
                         ),
                       ),
                     ),
@@ -253,9 +183,9 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     const SizedBox(height: 16),
                     Center(
                       child: Opacity(
-                        opacity: widget.phoneSignInEnabled ? 1.0 : 0.55,
+                        opacity: phoneSignInEnabled ? 1.0 : 0.55,
                         child: GhostButton(
-                          onPressed: _enabled ? widget.onSignInWithPhone : null,
+                          onPressed: enabled ? onSignInWithPhone : null,
                           width: buttonWidth,
                           height: 44,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -286,11 +216,10 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                       ),
                     ),
                   ],
-                  if (widget.isGoogleSignedIn && widget.currentUser != null) ...[
+                  if (isGoogleSignedIn && currentUser != null) ...[
                     Builder(
                       builder: (context) {
-                        final surface =
-                            Theme.of(context).colorScheme.surface;
+                        final surface = Theme.of(context).colorScheme.surface;
                         return Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -305,20 +234,19 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                           child: Row(
                             children: [
                               _AuthWizardOAuthAvatar(
-                                user: widget.currentUser!,
-                                delayReveal: widget.delayAppleAvatarReveal,
+                                user: currentUser!,
+                                delayReveal: delayAppleAvatarReveal,
                                 iconColor: _getOnboardingTextColor(context),
                                 backendResolvedAvatarUrl:
-                                    widget.backendResolvedAvatarUrl,
+                                    backendResolvedAvatarUrl,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      widget.currentUser!.displayName ??
+                                      currentUser!.displayName ??
                                           L10n.get("user"),
                                       style: TextStyle(
                                         color: _getOnboardingTextColor(
@@ -329,12 +257,11 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                                       ),
                                     ),
                                     Text(
-                                      widget.currentUser!.email ?? "",
+                                      currentUser!.email ?? "",
                                       style: TextStyle(
-                                        color:
-                                            _getOnboardingTextSecondaryColor(
-                                              context,
-                                            ),
+                                        color: _getOnboardingTextSecondaryColor(
+                                          context,
+                                        ),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -356,20 +283,19 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                         duration: const Duration(milliseconds: 180),
                         switchInCurve: Curves.easeOut,
                         switchOutCurve: Curves.easeIn,
-                        child:
-                            widget.isAuthenticating
-                                ? CenteredHouseLoadingIndicator(
-                                  key: const ValueKey("auth_loader"),
-                                  text: L10n.get("signing_in"),
-                                  textStyle: TextStyle(
-                                    color:
-                                        _getOnboardingTextSecondaryColor(context),
-                                    fontSize: 16,
-                                  ),
-                                )
-                                : const SizedBox(
-                                  key: ValueKey("auth_loader_placeholder"),
+                        child: isAuthenticating
+                            ? CenteredHouseLoadingIndicator(
+                                key: const ValueKey("auth_loader"),
+                                text: L10n.get("signing_in"),
+                                textStyle: TextStyle(
+                                  color:
+                                      _getOnboardingTextSecondaryColor(context),
+                                  fontSize: 16,
                                 ),
+                              )
+                            : const SizedBox(
+                                key: ValueKey("auth_loader_placeholder"),
+                              ),
                       ),
                     ),
                   ),
@@ -419,8 +345,7 @@ class _AuthWizardOAuthAvatar extends StatefulWidget {
   final String? backendResolvedAvatarUrl;
 
   @override
-  State<_AuthWizardOAuthAvatar> createState() =>
-      _AuthWizardOAuthAvatarState();
+  State<_AuthWizardOAuthAvatar> createState() => _AuthWizardOAuthAvatarState();
 }
 
 class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
@@ -490,54 +415,50 @@ class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
     final scheme = Theme.of(context).colorScheme;
     final backendUrl = widget.backendResolvedAvatarUrl?.trim();
     final firebaseUrl = widget.user.photoURL?.trim();
-    final photoUrl =
-        (backendUrl != null && backendUrl.isNotEmpty)
-            ? backendUrl
-            : firebaseUrl;
+    final photoUrl = (backendUrl != null && backendUrl.isNotEmpty)
+        ? backendUrl
+        : firebaseUrl;
     final initials = _firebaseUserOAuthInitials(widget.user);
 
     Widget buildGlyphFallback() => ColoredBox(
-      color: scheme.primaryContainer,
-      child: SizedBox(
-        width: _kOAuthAvatarSize,
-        height: _kOAuthAvatarSize,
-        child: Center(
-          child:
-              initials.isNotEmpty
+          color: scheme.primaryContainer,
+          child: SizedBox(
+            width: _kOAuthAvatarSize,
+            height: _kOAuthAvatarSize,
+            child: Center(
+              child: initials.isNotEmpty
                   ? Text(
-                    initials,
-                    style: TextStyle(
-                      color: scheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                      fontSize: _kOAuthAvatarSize * 0.35,
-                      height: 1.0,
-                    ),
-                  )
+                      initials,
+                      style: TextStyle(
+                        color: scheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _kOAuthAvatarSize * 0.35,
+                        height: 1.0,
+                      ),
+                    )
                   : ThemeIcon(
-                    Icons.person,
-                    size: 30,
-                    color: widget.iconColor,
-                  ),
-        ),
-      ),
-    );
+                      Icons.person,
+                      size: 30,
+                      color: widget.iconColor,
+                    ),
+            ),
+          ),
+        );
 
-    final Widget face =
-        photoUrl != null && photoUrl.isNotEmpty
-            ? ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: photoUrl,
-                width: _kOAuthAvatarSize,
-                height: _kOAuthAvatarSize,
-                fit: BoxFit.cover,
-                memCacheWidth: 120,
-                memCacheHeight: 120,
-                placeholder: (context, url) => buildGlyphFallback(),
-                errorWidget:
-                    (context, url, error) => buildGlyphFallback(),
-              ),
-            )
-            : ClipOval(child: buildGlyphFallback());
+    final Widget face = photoUrl != null && photoUrl.isNotEmpty
+        ? ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: photoUrl,
+              width: _kOAuthAvatarSize,
+              height: _kOAuthAvatarSize,
+              fit: BoxFit.cover,
+              memCacheWidth: 120,
+              memCacheHeight: 120,
+              placeholder: (context, url) => buildGlyphFallback(),
+              errorWidget: (context, url, error) => buildGlyphFallback(),
+            ),
+          )
+        : ClipOval(child: buildGlyphFallback());
 
     final raisedOrb = Container(
       width: _kOAuthAvatarSize,
@@ -554,16 +475,15 @@ class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
       duration: const Duration(milliseconds: 280),
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
-      child:
-          _revealed
-              ? KeyedSubtree(
-                key: const ValueKey("oauth_avatar_shown"),
-                child: raisedOrb,
-              )
-              : KeyedSubtree(
-                key: const ValueKey("oauth_avatar_placeholder"),
-                child: recessedPlaceholder,
-              ),
+      child: _revealed
+          ? KeyedSubtree(
+              key: const ValueKey("oauth_avatar_shown"),
+              child: raisedOrb,
+            )
+          : KeyedSubtree(
+              key: const ValueKey("oauth_avatar_placeholder"),
+              child: recessedPlaceholder,
+            ),
     );
   }
 }

@@ -8,8 +8,8 @@ class UydoshMenuItem extends StatelessWidget {
   const UydoshMenuItem({
     required this.icon,
     required this.title,
-    required this.onTap,
     super.key,
+    this.onTap,
     this.subtitle,
     this.iconColor,
     this.textColor,
@@ -20,7 +20,7 @@ class UydoshMenuItem extends StatelessWidget {
 
   final IconData icon;
   final Widget title;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget? subtitle;
   final Color? iconColor;
   final Color? textColor;
@@ -32,24 +32,30 @@ class UydoshMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final effectiveIconColor = iconColor ?? theme.iconTheme.color;
-    final effectiveTrailing = trailing ??
-        ThemeIcon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: trailingColor ?? theme.colorScheme.onSurfaceVariant,
-        );
+    final effectiveTrailing =
+        trailing ??
+        (onTap != null
+            ? ThemeIcon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: trailingColor ?? theme.colorScheme.onSurfaceVariant,
+            )
+            : null);
 
     return ListTile(
       leading: ThemeIcon(icon, color: effectiveIconColor),
       title: title,
       subtitle: subtitle,
       trailing: effectiveTrailing,
-      onTap: () {
-        if (useHapticFeedback) {
-          HapticFeedbackUtils.impact();
-        }
-        onTap();
-      },
+      onTap:
+          onTap != null
+              ? () {
+                if (useHapticFeedback) {
+                  HapticFeedbackUtils.impact();
+                }
+                onTap!();
+              }
+              : null,
     );
   }
 }

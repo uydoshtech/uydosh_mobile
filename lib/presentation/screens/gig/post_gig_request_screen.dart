@@ -15,6 +15,8 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class PostGigRequestScreen extends StatefulWidget {
@@ -84,15 +86,13 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
     return BlocConsumer<GigPostRequestBloc, GigPostRequestState>(
       listener: (context, state) {
         if (state is GigPostRequestSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(L10n.get("gigs_post_request_success_toast"))),
+          ToastTheme.showSuccessSimple(
+            context,
+            message: L10n.get("gigs_post_request_success_toast"),
           );
           Navigator.of(context).pop();
         } else if (state is GigPostRequestError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ToastTheme.showErrorSimple(context, message: state.message);
         }
       },
       builder: (context, state) {
@@ -127,34 +127,34 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   ),
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_title")),
-                  _PlateField(
+                  UydoshPlateTextFormField(
+                    hintText: "",
                     showErrorBorder: _showTitleError,
-                    child: TextFormField(
-                      controller: _titleController,
-                      textInputAction: TextInputAction.next,
-                      style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
-                        context,
-                        hint: L10n.get("gigs_post_request_field_title"),
-                      ),
-                      onChanged: (_) {
-                        if (_showTitleError) {
-                          setState(() => _showTitleError = false);
-                        }
-                      },
+                    controller: _titleController,
+                    textInputAction: TextInputAction.next,
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: L10n.get("gigs_post_request_field_title"),
                     ),
+                    onChanged: (_) {
+                      if (_showTitleError) {
+                        setState(() => _showTitleError = false);
+                      }
+                    },
                   ),
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_description")),
-                  _PlateField(
-                    child: TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 5,
-                      minLines: 4,
-                      style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
-                        context,
-                        hint: L10n.get("gigs_post_request_field_description"),
+                  UydoshPlateTextFormField(
+                    hintText: "",
+                    controller: _descriptionController,
+                    maxLines: 5,
+                    minLines: 4,
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: L10n.get(
+                        "gigs_post_request_field_description",
                       ),
                     ),
                   ),
@@ -167,31 +167,29 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   if (_budgetType != GigRequestBudgetType.open) ...[
                     const SizedBox(height: 14),
                     _FieldLabel(L10n.get("gigs_post_request_field_amount")),
-                    _PlateField(
-                      child: TextFormField(
-                        controller: _budgetController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        style: _fieldTextStyle(context),
-                        decoration: _plateInputDecoration(
-                          context,
-                          hint: "UZS",
-                        ),
+                    UydoshPlateTextFormField(
+                      hintText: "",
+                      controller: _budgetController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      style: _fieldTextStyle(context),
+                      decoration: UydoshPlateFieldDecoration.gigPostField(
+                        context,
+                        hintText: "UZS",
                       ),
                     ),
                   ],
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_address")),
-                  _PlateField(
-                    child: TextFormField(
-                      controller: _addressController,
-                      style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
-                        context,
-                        hint: L10n.get("gigs_post_request_field_address"),
-                      ),
+                  UydoshPlateTextFormField(
+                    hintText: "",
+                    controller: _addressController,
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: L10n.get("gigs_post_request_field_address"),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -236,35 +234,6 @@ TextStyle _fieldTextStyle(BuildContext context) {
     color: ThemeState().isLightTheme
         ? Colors.black
         : Theme.of(context).colorScheme.onSurface,
-  );
-}
-
-InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
-  final hintColor = Theme.of(context).brightness == Brightness.dark
-      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
-      : Colors.grey[500];
-  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
-  return InputDecoration(
-    hintText: cleanedHint,
-    hintStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: hintColor,
-    ),
-    // Override the global `inputDecorationTheme` (which fills with white).
-    filled: true,
-    fillColor: Colors.transparent,
-    border: const OutlineInputBorder(borderSide: BorderSide.none),
-    enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    // Validation feedback is rendered as a red border on the surrounding
-    // plate (see `_PlateField.showErrorBorder`); collapse the inline error
-    // text so no red copy ever appears beneath the field.
-    errorStyle: const TextStyle(height: 0, fontSize: 0),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-    isDense: true,
   );
 }
 

@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
@@ -304,7 +305,7 @@ class _ServicesListView extends StatelessWidget {
         }
         if (state is GigOffersLoaded) {
           if (state.offers.isEmpty) {
-            return RefreshIndicator(
+            return UydoshRefreshIndicator(
               onRefresh: onRefresh,
               child: UydoshEmptyColumn(
                 icon: Icons.handyman_outlined,
@@ -313,7 +314,7 @@ class _ServicesListView extends StatelessWidget {
               ),
             );
           }
-          return RefreshIndicator(
+          return UydoshRefreshIndicator(
             onRefresh: onRefresh,
             child: ListView.separated(
               controller: scrollController,
@@ -384,7 +385,7 @@ class _TasksListView extends StatelessWidget {
         }
         if (state is GigRequestsLoaded) {
           if (state.requests.isEmpty) {
-            return RefreshIndicator(
+            return UydoshRefreshIndicator(
               onRefresh: onRefresh,
               child: UydoshEmptyColumn(
                 icon: Icons.assignment_outlined,
@@ -393,7 +394,7 @@ class _TasksListView extends StatelessWidget {
               ),
             );
           }
-          return RefreshIndicator(
+          return UydoshRefreshIndicator(
             onRefresh: onRefresh,
             child: ListView.separated(
               controller: scrollController,

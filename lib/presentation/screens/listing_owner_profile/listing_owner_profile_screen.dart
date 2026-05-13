@@ -760,22 +760,6 @@ L10n.get("rating"),
     }
   }
 
-  Color _getTextPrimaryColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.textPrimary;
-    } else {
-      return AppColors.textPrimary;
-    }
-  }
-
-  Color _getTextSecondaryColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.textSecondary;
-    } else {
-      return AppColors.textSecondary;
-    }
-  }
-
   /// Raised circular face matching chat avatars and soft-UI profile controls.
   Widget _buildNeumorphicAvatar(BuildContext context, UserProfile profile) {
     const diameter = 100.0;

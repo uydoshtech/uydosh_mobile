@@ -5,8 +5,8 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
-import "package:uy_dosh/presentation/widgets/common/padded_slider_value_indicator_shape.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_slider.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class PriceRangePicker extends StatefulWidget {
@@ -218,34 +218,10 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
 
               Expanded(
                 child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 2.0,
-                    thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 8.0,
-                    ),
-                    rangeThumbShape: const RoundRangeSliderThumbShape(
-                      enabledThumbRadius: 8.0,
-                    ),
-                    overlayShape: const RoundSliderOverlayShape(
-                      overlayRadius: 16.0,
-                    ),
-                    activeTrackColor: sliderColor,
+                  data: UydoshSliderChrome.priceRangeTrack(
+                    context,
+                    sliderColor: sliderColor,
                     inactiveTrackColor: getInactiveTrackColor(),
-                    thumbColor: sliderColor,
-                    overlayColor: sliderColor.withValues(alpha: 0.1),
-                    showValueIndicator: ShowValueIndicator.always,
-                    valueIndicatorColor: sliderColor,
-                    valueIndicatorShape: const PaddedSliderValueIndicatorShape(
-                      labelPadding: 16.0,
-                    ),
-                    rangeValueIndicatorShape:
-                        const PaddleRangeSliderValueIndicatorShape(),
-                    valueIndicatorTextStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
                   ),
                   child: widget.useSinglePrice
                       ? Slider(

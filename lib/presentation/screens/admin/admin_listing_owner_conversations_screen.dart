@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart"
     show ThemeHelper, liquidGlassAppBarMaterialColor;
@@ -187,7 +188,7 @@ class _AdminListingOwnerConversationsScreenState
                 Theme.of(context).appBarTheme.foregroundColor ??
                 themeState.textColor,
           ),
-          body: RefreshIndicator(onRefresh: _load, child: bodyChild),
+          body: UydoshRefreshIndicator(onRefresh: _load, child: bodyChild),
         );
       },
     );

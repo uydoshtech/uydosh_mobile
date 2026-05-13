@@ -1406,8 +1406,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     // before the timer fires (e.g. user navigates away mid-window — we want
     // the archive to land, not silently drop).
     final bloc = context.read<MessagingBloc>();
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
+    ToastTheme.dismissMessengerSnackBar(context);
 
     late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
         controller;
@@ -1455,37 +1454,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       controller.close();
     }
 
-    controller = messenger.showSnackBar(
-      SnackBar(
-        // The content drives dismissal via [commit]/[cancel]; keep the
-        // SnackBar itself alive well past the 5s window so our timer wins.
-        duration: const Duration(days: 1),
-        // Strip SnackBar chrome — the [ThreeDElevatedSurface] below is the
-        // visible banner (same neumorphic language as [ConversationTile] but
-        // sized for a transient ribbon).
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        padding: EdgeInsets.zero,
-        content: _GlassySnackBarSurface(
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
-            child: _ArchiveCountdownContent(
-              message: L10n.get("chat_archived"),
-              undoLabel: L10n.get("undo"),
-              duration: const Duration(seconds: 5),
-              accentColor: AppColors.error,
-              messageColor: ThemeState().cardTextColor,
-              onTimeout: commit,
-              onUndo: cancel,
-            ),
-          ),
-        ),
-      ),
+    controller = ToastTheme.showMessagingArchiveUndoSnackBar(
+      context,
+      message: L10n.get("chat_archived"),
+      undoLabel: L10n.get("undo"),
+      accentColor: AppColors.error,
+      messageColor: ThemeState().cardTextColor,
+      onTimeout: commit,
+      onUndo: cancel,
     );
 
     // Safety net: if the SnackBar is dismissed externally (e.g. another
@@ -1502,7 +1478,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// consistency with the rest of the app.
   void _showArchiveWarning(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ToastTheme.dismissMessengerSnackBar(context);
     ToastTheme.showWarning(context, message: message);
   }
 
@@ -1894,251 +1870,6 @@ class _ToggleTabContent extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Snackbar body used for the "archive with 5s undo" ribbon.
-///
-/// Mirrors Telegram: the message sits on the left, a circular progress
-/// indicator shrinks clockwise around an undo icon on the right, and tapping
-/// anywhere on the trailing cluster (icon or label) cancels the archive.
-/// The surrounding [SnackBar] uses a long duration so timing is driven here.
-class _ArchiveCountdownContent extends StatefulWidget {
-  const _ArchiveCountdownContent({
-    required this.message,
-    required this.undoLabel,
-    required this.duration,
-    required this.accentColor,
-    required this.messageColor,
-    required this.onTimeout,
-    required this.onUndo,
-  });
-
-  final String message;
-  final String undoLabel;
-  final Duration duration;
-  final Color accentColor;
-  final Color messageColor;
-  final VoidCallback onTimeout;
-  final VoidCallback onUndo;
-
-  @override
-  State<_ArchiveCountdownContent> createState() =>
-      _ArchiveCountdownContentState();
-}
-
-class _ArchiveCountdownContentState extends State<_ArchiveCountdownContent>
-    with TickerProviderStateMixin {
-  static const Duration _fadeOutDuration = Duration(milliseconds: 320);
-
-  late final AnimationController _controller;
-  late final AnimationController _fadeController;
-  bool _fadingOut = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.duration)
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed && !_fadingOut) {
-          _startFadeOut();
-        }
-      })
-      ..forward();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: _fadeOutDuration,
-      value: 1.0,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  void _startFadeOut() {
-    if (_fadingOut) return;
-    setState(() => _fadingOut = true);
-    _fadeController.reverse().whenComplete(() {
-      if (!mounted) return;
-      widget.onTimeout();
-    });
-  }
-
-  void _handleUndo() {
-    // Disallow undo once we start fading out — archive is already committing.
-    if (_fadingOut) return;
-    if (_controller.isCompleted) return;
-    _controller.stop();
-    widget.onUndo();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final totalSeconds = widget.duration.inMilliseconds / 1000.0;
-    final totalSecondsCeil = totalSeconds.ceil();
-
-    return FadeTransition(
-      opacity: _fadeController,
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              widget.message,
-              style: TextStyle(color: widget.messageColor, fontSize: 14),
-            ),
-          ),
-          const SizedBox(width: 12),
-          InkWell(
-            onTap: _handleUndo,
-            borderRadius: BorderRadius.circular(24),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 26,
-                    height: 26,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _controller,
-                          builder: (context, _) => SizedBox.expand(
-                            child: CircularProgressIndicator(
-                              // Countdown: ring drains from full → empty.
-                              value: 1.0 - _controller.value,
-                              strokeWidth: 2.5,
-                              valueColor:
-                                  AlwaysStoppedAnimation(widget.accentColor),
-                              backgroundColor:
-                                  widget.accentColor.withValues(alpha: 0.22),
-                            ),
-                          ),
-                        ),
-                        AnimatedBuilder(
-                          animation: _controller,
-                          builder: (context, _) {
-                            final remaining = (totalSeconds *
-                                    (1.0 - _controller.value))
-                                .ceil()
-                                .clamp(1, totalSecondsCeil);
-                            return Text(
-                              "$remaining",
-                              style: TextStyle(
-                                color: widget.accentColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                height: 1.0,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    widget.undoLabel,
-                    style: TextStyle(
-                      color: widget.accentColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlassySnackBarSurface extends StatelessWidget {
-  const _GlassySnackBarSurface({
-    required this.child,
-    required this.borderRadius,
-  });
-
-  final Widget child;
-  final BorderRadius borderRadius;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: AnimationSettingsState(),
-      builder: (context, _) {
-        final theme = Theme.of(context);
-        final scheme = theme.colorScheme;
-        final isDark = theme.brightness == Brightness.dark;
-
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
-
-        final baseSurface = isDark ? Colors.black : scheme.surface;
-        final surfaceTint =
-            Color.lerp(baseSurface, scheme.primary, isDark ? 0.06 : 0.08) ??
-                baseSurface;
-
-        final decoration = BoxDecoration(
-          borderRadius: borderRadius,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: isDark ? 0.06 : 0.26),
-              surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
-              baseSurface.withValues(alpha: isDark ? 0.24 : 0.28),
-            ],
-            stops: const [0.0, 0.55, 1.0],
-          ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.40),
-            width: 0.7,
-          ),
-        );
-
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.38 : 0.14),
-                blurRadius: isDark ? 26 : 22,
-                spreadRadius: isDark ? 1.5 : 1,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: borderRadius,
-            child: enableGlass
-                ? BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: isDark ? 22 : 26,
-                      sigmaY: isDark ? 22 : 26,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: DecoratedBox(decoration: decoration, child: child),
-                    ),
-                  )
-                : Material(
-                    color: Colors.transparent,
-                    child: DecoratedBox(decoration: decoration, child: child),
-                  ),
-          ),
-        );
-      },
     );
   }
 }

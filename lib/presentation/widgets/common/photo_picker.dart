@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -248,7 +249,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return UydoshAlertDialog(
           title: Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),

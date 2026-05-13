@@ -260,3 +260,38 @@ class UydoshSlider extends StatelessWidget {
     );
   }
 }
+
+/// Shared slider chrome for price / range controls outside [UydoshSlider] rows.
+class UydoshSliderChrome {
+  UydoshSliderChrome._();
+
+  static SliderThemeData priceRangeTrack(
+    BuildContext context, {
+    required Color sliderColor,
+    required Color inactiveTrackColor,
+  }) {
+    return SliderTheme.of(context).copyWith(
+      trackHeight: 2.0,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+      rangeThumbShape:
+          const RoundRangeSliderThumbShape(enabledThumbRadius: 8.0),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+      activeTrackColor: sliderColor,
+      inactiveTrackColor: inactiveTrackColor,
+      thumbColor: sliderColor,
+      overlayColor: sliderColor.withValues(alpha: 0.1),
+      showValueIndicator: ShowValueIndicator.always,
+      valueIndicatorColor: sliderColor,
+      valueIndicatorShape: const PaddedSliderValueIndicatorShape(
+        labelPadding: 16.0,
+      ),
+      rangeValueIndicatorShape: const PaddleRangeSliderValueIndicatorShape(),
+      valueIndicatorTextStyle: const TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        height: 1.0,
+      ),
+    );
+  }
+}

@@ -679,10 +679,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeControl.accessibilityHint = strings.viewModeA11yHint
 
     // Readability on the bottom dark glass panel (no longer inherits nav bar blur).
+    // Selected thumb: medium grey (not near-white) so it matches the old nav-bar
+    // UISegmentedControl look and keeps white SF Symbols legible.
     if #available(iOS 13.0, *) {
       modeControl.overrideUserInterfaceStyle = .dark
       modeControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
-      modeControl.selectedSegmentTintColor = UIColor.white.withAlphaComponent(0.92)
+      modeControl.selectedSegmentTintColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
       modeControl.setTitleTextAttributes(
         [.foregroundColor: UIColor.white.withAlphaComponent(0.92)],
         for: .selected

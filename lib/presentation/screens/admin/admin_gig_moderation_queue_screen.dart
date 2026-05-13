@@ -446,9 +446,7 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
     } catch (e) {
       setStateIfMounted(() {
         _isLoadingMore = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ToastTheme.showErrorSimple(context, message: e.toString());
       });
     }
   }
@@ -468,9 +466,7 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
     } catch (e) {
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ToastTheme.showErrorSimple(context, message: e.toString());
     } finally {
       setStateIfMounted(() => _approvingId = null);
     }
@@ -809,9 +805,7 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
     } catch (e) {
       setStateIfMounted(() {
         _isLoadingMore = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ToastTheme.showErrorSimple(context, message: e.toString());
       });
     }
   }
@@ -831,9 +825,7 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
     } catch (e) {
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ToastTheme.showErrorSimple(context, message: e.toString());
     } finally {
       setStateIfMounted(() => _approvingId = null);
     }

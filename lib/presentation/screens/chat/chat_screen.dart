@@ -74,6 +74,9 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -949,12 +952,7 @@ class _ChatScreenState extends State<ChatScreen> {
               _isSendingMessage = false;
             });
             if (message.contains("USER_BLOCKED")) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            ToastTheme.showError(context, message: message);
           },
         );
       },
@@ -2011,47 +2009,23 @@ class _InviteProviderBookingDialogState
         ThemeState().isLightTheme ? Colors.black : scheme.onSurface;
     final currencyCode = _taskCurrencyCode;
     final step = CurrencyDisplayUtils.amountNudgeStep(currencyCode);
-    final plateDecoration = InputDecoration(
+    final plateDecoration = UydoshPlateFieldDecoration.forHint(
+      context,
       hintText: L10n.get("gigs_invite_provider_dialog_field_hint"),
       hintStyle: listingHintStyle,
-      border: OutlineInputBorder(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        borderSide: BorderSide.none,
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        borderSide: BorderSide.none,
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        borderSide: BorderSide.none,
-      ),
-      filled: true,
-      fillColor: Colors.transparent,
       contentPadding: const EdgeInsets.fromLTRB(10, 12, 8, 12),
     );
 
-    return AlertDialog(
-      backgroundColor: theme.dialogTheme.backgroundColor,
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+    return UydoshAlertDialog(
+      scrollable: true,
       title: Text(
         L10n.get("gigs_invite_provider_dialog_title"),
         style: listingFieldStyle,
       ),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
             Text(
               L10n.get("gigs_invite_provider_dialog_body"),
               style: bodyStyle,
@@ -2221,7 +2195,6 @@ class _InviteProviderBookingDialogState
             ),
           ],
         ),
-      ),
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.of(context).pop(),
@@ -2233,14 +2206,7 @@ class _InviteProviderBookingDialogState
         TextButton(
           onPressed: _sending ? null : () => unawaited(_submit()),
           child: _sending
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: scheme.primary,
-                  ),
-                )
+              ? UydoshInlineSpinner(color: scheme.primary, dimension: 20)
               : Text(L10n.get("gigs_invite_provider_confirm")),
         ),
       ],

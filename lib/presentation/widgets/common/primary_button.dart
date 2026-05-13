@@ -4,6 +4,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
@@ -115,14 +116,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
                       data: IconThemeData(color: fg),
                       child:
                           widget.isLoading
-                              ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(fg),
-                                ),
-                              )
+                              ? UydoshInlineSpinner(color: fg, dimension: 20)
                               : widget.child,
                     ),
                   ),

@@ -3,6 +3,7 @@ import "package:intl/intl.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 
 /// Profile discovery card for AI monthly quotas and premium upsell.
 class AiAllowanceUpsellBanner extends StatelessWidget {
@@ -164,9 +165,20 @@ class AiAllowanceUpsellBanner extends StatelessWidget {
               const SizedBox(height: 12),
               Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: FilledButton.tonal(
+                child: GhostButton(
                   onPressed: onUpgradeTap,
-                  child: Text(L10n.get("ai_allowance_upgrade_cta")),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  borderWidth: 1.5,
+                  child: Text(
+                    L10n.get("ai_allowance_upgrade_cta"),
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

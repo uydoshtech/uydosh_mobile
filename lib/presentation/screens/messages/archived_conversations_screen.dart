@@ -166,7 +166,7 @@ class _ArchivedConversationsScreenState
     // The bottom snackbar is reserved for the archive flow (it carries the
     // Undo action). For the simple "moved back to inbox" confirmation we reuse
     // the app-wide rolling top toast.
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ToastTheme.dismissMessengerSnackBar(context);
     ToastTheme.showSuccess(
       context,
       message: L10n.get("chat_unarchived"),

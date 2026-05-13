@@ -112,9 +112,7 @@ class _AdminListingModerationQueueScreenState
     } catch (e) {
       setStateIfMounted(() {
         _isLoadingMore = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ToastTheme.showErrorSimple(context, message: e.toString());
       });
     }
   }
@@ -134,9 +132,7 @@ class _AdminListingModerationQueueScreenState
     } catch (e) {
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ToastTheme.showErrorSimple(context, message: e.toString());
     } finally {
       setStateIfMounted(() => _approvingId = null);
     }

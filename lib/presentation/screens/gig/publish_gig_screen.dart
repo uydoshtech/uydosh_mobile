@@ -36,6 +36,7 @@ import "package:uy_dosh/presentation/widgets/common/form_dirty_field_outline.dar
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 const int _gigMinDurationStepMinutes = 5;
@@ -817,95 +818,109 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                           _FieldLabel(
                             L10n.get("gigs_post_request_field_title"),
                           ),
-                          _PlateField(
+                          UydoshPlateTextFormField(
+                            hintText: L10n.get("gigs_post_request_field_title"),
+                            decoration: UydoshPlateFieldDecoration.gigPostField(
+                              context,
+                              hintText:
+                                  L10n.get("gigs_post_request_field_title"),
+                            ),
                             showErrorBorder: _showTitleError,
                             dirtyOutlineColor: dirtyOutline(
                               _titleController.text != _baselineTitle,
                             ),
-                            child: TextFormField(
-                              controller: _titleController,
-                              textInputAction: TextInputAction.next,
-                              maxLength: _titleMaxLength,
-                              maxLines: 1,
-                              style: _fieldTextStyle(context),
-                              decoration: _plateInputDecoration(
-                                context,
-                                hint: L10n.get("gigs_post_request_field_title"),
-                              ),
-                              onChanged: (_) {
-                                if (_showTitleError) {
-                                  _mutateForm(() => _showTitleError = false);
-                                }
-                              },
-                              buildCounter: (
-                                context, {
-                                required currentLength,
-                                required isFocused,
-                                maxLength,
-                              }) =>
-                                  _buildSubtleCounter(
-                                context,
-                                currentLength: currentLength,
-                                maxLength: maxLength ?? _titleMaxLength,
-                                visibleAt: _titleCounterVisibleAt,
-                              ),
+                            controller: _titleController,
+                            textInputAction: TextInputAction.next,
+                            maxLength: _titleMaxLength,
+                            maxLines: 1,
+                            onChanged: (_) {
+                              if (_showTitleError) {
+                                _mutateForm(() => _showTitleError = false);
+                              }
+                            },
+                            buildCounter: (
+                              context, {
+                              required currentLength,
+                              required isFocused,
+                              maxLength,
+                            }) =>
+                                _buildSubtleCounter(
+                              context,
+                              currentLength: currentLength,
+                              maxLength: maxLength ?? _titleMaxLength,
+                              visibleAt: _titleCounterVisibleAt,
                             ),
                           ),
                           const SizedBox(height: 14),
                           _FieldLabel(
                             L10n.get("gigs_post_request_field_description"),
                           ),
-                          _PlateField(
-                            dirtyOutlineColor: dirtyOutline(
-                              _descriptionController.text !=
-                                  _baselineDescription,
-                            ),
-                            child: AnimatedSize(
-                              duration: const Duration(milliseconds: 320),
-                              reverseDuration:
-                                  const Duration(milliseconds: 320),
-                              curve: Curves.easeInOut,
-                              alignment: Alignment.topCenter,
-                              clipBehavior: Clip.hardEdge,
-                              child: TextFormField(
-                                controller: _descriptionController,
-                                minLines: _descriptionBaseLines +
-                                    (_isDescriptionExpanded
-                                        ? _descriptionExpandedExtraLines
-                                        : 0),
-                                maxLines: _descriptionBaseLines +
-                                    (_isDescriptionExpanded
-                                        ? _descriptionExpandedExtraLines
-                                        : 0),
-                                maxLength: _descriptionMaxLength,
-                                style: _descriptionTextStyle(context),
-                                decoration: _descriptionInputDecoration(
-                                  context,
-                                  hint: L10n.get(
-                                    "gigs_post_request_field_description",
-                                  ),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 320),
+                            reverseDuration:
+                                const Duration(milliseconds: 320),
+                            curve: Curves.easeInOut,
+                            alignment: Alignment.topCenter,
+                            clipBehavior: Clip.hardEdge,
+                            child: UydoshPlateTextFormField(
+                              hintText:
+                                  L10n.get("gigs_post_request_field_description"),
+                              style: _descriptionTextStyle(context),
+                              decoration: UydoshPlateFieldDecoration.forHint(
+                                context,
+                                hintText: L10n.get(
+                                  "gigs_post_request_field_description",
+                                ).replaceAll(RegExp(r"\s*\([^)]*\)"), "").trim(),
+                                hintStyle: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withOpacity(0.7)
+                                      : Colors.grey[400],
                                 ),
-                                buildCounter: (
-                                  context, {
-                                  required currentLength,
-                                  required isFocused,
-                                  maxLength,
-                                }) {
-                                  return _GigDescriptionToolbar(
-                                    controller: _descriptionController,
-                                    isOffer: _mode == GigPublishMode.service,
-                                    currentLength: currentLength,
-                                    maxLength:
-                                        maxLength ?? _descriptionMaxLength,
-                                    visibleAt: _descriptionCounterVisibleAt,
-                                    isExpanded: _isDescriptionExpanded,
-                                    onToggleExpanded: () => _mutateForm(() {
-                                      _isDescriptionExpanded =
-                                          !_isDescriptionExpanded;
-                                    }),
-                                  );
-                                },
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
                               ),
+                              dirtyOutlineColor: dirtyOutline(
+                                _descriptionController.text !=
+                                    _baselineDescription,
+                              ),
+                              controller: _descriptionController,
+                              minLines: _descriptionBaseLines +
+                                  (_isDescriptionExpanded
+                                      ? _descriptionExpandedExtraLines
+                                      : 0),
+                              maxLines: _descriptionBaseLines +
+                                  (_isDescriptionExpanded
+                                      ? _descriptionExpandedExtraLines
+                                      : 0),
+                              maxLength: _descriptionMaxLength,
+                              buildCounter: (
+                                context, {
+                                required currentLength,
+                                required isFocused,
+                                maxLength,
+                              }) {
+                                return _GigDescriptionToolbar(
+                                  controller: _descriptionController,
+                                  isOffer: _mode == GigPublishMode.service,
+                                  currentLength: currentLength,
+                                  maxLength:
+                                      maxLength ?? _descriptionMaxLength,
+                                  visibleAt: _descriptionCounterVisibleAt,
+                                  isExpanded: _isDescriptionExpanded,
+                                  onToggleExpanded: () => _mutateForm(() {
+                                    _isDescriptionExpanded =
+                                        !_isDescriptionExpanded;
+                                  }),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(height: 22),
@@ -995,18 +1010,17 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         ),
       const SizedBox(height: 14),
       _FieldLabel(L10n.get("gigs_post_request_field_address")),
-      _PlateField(
+      UydoshPlateTextFormField(
+        hintText: L10n.get("gigs_post_request_field_address"),
+        decoration: UydoshPlateFieldDecoration.gigPostField(
+          context,
+          hintText: L10n.get("gigs_post_request_field_address"),
+        ),
         dirtyOutlineColor: dirtyOutline(
           _addressController.text != _baselineAddressText,
         ),
-        child: TextFormField(
-          controller: _addressController,
-          style: _fieldTextStyle(context),
-          decoration: _plateInputDecoration(
-            context,
-            hint: L10n.get("gigs_post_request_field_address"),
-          ),
-        ),
+        controller: _addressController,
+        style: _fieldTextStyle(context),
       ),
     ];
   }
@@ -1338,52 +1352,6 @@ TextStyle _descriptionTextStyle(BuildContext context) {
   );
 }
 
-/// Description-only [InputDecoration] — mirrors `create_listing_screen.dart`
-/// so the gig description plate has the same internal padding, hint color,
-/// and (lack of) `isDense` as the listing one. Other gig fields keep the
-/// regular [_plateInputDecoration].
-InputDecoration _descriptionInputDecoration(
-  BuildContext context, {
-  String? hint,
-}) {
-  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
-  return InputDecoration(
-    hintText: cleanedHint,
-    hintStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7)
-          : Colors.grey[400],
-    ),
-    border: OutlineInputBorder(
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      borderSide: BorderSide.none,
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      borderSide: BorderSide.none,
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      borderSide: BorderSide.none,
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      borderSide: BorderSide.none,
-    ),
-    filled: true,
-    fillColor: Colors.transparent,
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 12,
-    ),
-  );
-}
 
 InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
   final hintColor = Theme.of(context).brightness == Brightness.dark

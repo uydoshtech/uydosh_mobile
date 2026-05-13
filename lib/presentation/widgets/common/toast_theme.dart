@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "dart:ui";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
+import "package:uy_dosh/presentation/widgets/common/messaging_archive_undo_snackbar.dart";
 
 enum ToastDismissReason { completed, preempted }
 
@@ -445,6 +446,56 @@ class ToastTheme {
         ),
       );
     }
+  }
+
+  /// Dismisses any bottom [SnackBar] from [ScaffoldMessenger] (before a rolling
+  /// toast, or when leaving archive flows).
+  static void dismissMessengerSnackBar(BuildContext context) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
+  /// Telegram-style archive ribbon with countdown + Undo at the bottom.
+  /// Other screens should use rolling [showWarning] / [showSuccess] instead.
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
+  showMessagingArchiveUndoSnackBar(
+    BuildContext context, {
+    required String message,
+    required String undoLabel,
+    required Color accentColor,
+    required Color messageColor,
+    required VoidCallback onUndo,
+    required VoidCallback onTimeout,
+    Duration undoWindow = const Duration(seconds: 5),
+  }) {
+    dismissMessengerSnackBar(context);
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(days: 1),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: EdgeInsets.zero,
+        content: GlassyMessagingArchiveUndoSurface(
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
+            child: MessagingArchiveUndoCountdownContent(
+              message: message,
+              undoLabel: undoLabel,
+              duration: undoWindow,
+              accentColor: accentColor,
+              messageColor: messageColor,
+              onTimeout: onTimeout,
+              onUndo: onUndo,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

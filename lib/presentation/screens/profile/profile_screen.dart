@@ -38,6 +38,8 @@ import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dar
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -570,7 +572,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       retryButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
+          PrimaryButton(
             onPressed: () {
               HapticFeedbackUtils.impact();
               if (isSessionExpired) {
@@ -587,11 +589,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           if (!isSessionExpired) ...[
             const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                HapticFeedbackUtils.impact();
-                _showLogoutDialog(context);
-              },
+            TextButtonThemed(
+              onPressed: () => _showLogoutDialog(context),
               child: Text(L10n.get("logout")),
             ),
           ],

@@ -16,9 +16,12 @@ import "package:uy_dosh/domain/services/admin_content_moderation_settings_servic
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
+
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class AdminContentModerationScreen extends StatefulWidget {
@@ -145,12 +148,9 @@ class _AdminContentModerationScreenState
       ClientLidarRoomScanConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
       setStateIfMounted(() => _isSavingLidar = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     }
   }
@@ -170,12 +170,9 @@ class _AdminContentModerationScreenState
       ClientCustomCameraConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
       setStateIfMounted(() => _isSavingCustomCamera = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     }
   }
@@ -194,12 +191,9 @@ class _AdminContentModerationScreenState
       ClientListingDictationMeterConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
       setStateIfMounted(() => _isSavingDictationMeter = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     }
   }
@@ -219,12 +213,9 @@ class _AdminContentModerationScreenState
       ClientGeminiListingUiConfig.applyHidden(hidden: res.hidden);
     } catch (e) {
       setStateIfMounted(() => _isSavingGemini = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     }
   }
@@ -242,12 +233,9 @@ class _AdminContentModerationScreenState
       });
     } catch (e) {
       setStateIfMounted(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     }
   }
@@ -265,12 +253,9 @@ class _AdminContentModerationScreenState
       });
       ClientListingContactsConfig.applyVisible(visible: res.visible);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     } finally {
       setStateIfMounted(() => _isSavingListingContacts = false);
@@ -289,12 +274,9 @@ class _AdminContentModerationScreenState
         _listingGigModerationQueueEnabled = res.enabled;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     } finally {
       setStateIfMounted(() => _isSavingModerationQueue = false);
@@ -312,12 +294,9 @@ class _AdminContentModerationScreenState
       });
       ClientPhoneSignInConfig.applyEnabled(enabled: res.enabled);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "${L10n.get("admin_content_moderation_save_error")}: $e",
-          ),
-        ),
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
       );
     } finally {
       setStateIfMounted(() => _isSavingPhoneSignIn = false);
@@ -436,11 +415,14 @@ class _AdminContentModerationScreenState
             return _neumorphicRow(
               ListTile(
                 leading: _isSavingTooltips
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const Padding(
+                      padding: EdgeInsets.all(2),
+                      child: UydoshInlineSpinner(
+                        color: Colors.white,
+                        dimension: 24,
+                        strokeWidth: 2,
+                      ),
+                    )
                     : const ThemeIcon(Icons.tips_and_updates_outlined),
                 title: Text(L10n.get("tooltips_toggle")),
                 subtitle: Text(

@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/blocs/gamification_bloc.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class AchievementsScreen extends StatefulWidget {
@@ -150,7 +151,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             children: [
               Text(L10n.get("achievements_auth_prompt")),
               const SizedBox(height: 16),
-              FilledButton(
+              PrimaryButton(
                 onPressed: () {
                   HapticFeedbackUtils.impact();
                   context.pushReplaceAuthWizard();

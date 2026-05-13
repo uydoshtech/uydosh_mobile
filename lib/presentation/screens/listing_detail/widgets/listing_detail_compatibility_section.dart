@@ -532,33 +532,22 @@ class _ListingDetailCompatibilitySectionState
                         ),
                       ],
                       const SizedBox(height: 14),
-                      SizedBox(
+                      GhostButtonFactory.iconText(
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          widget.onViewProfile();
+                        },
                         width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            widget.onViewProfile();
-                          },
-                          icon: ThemeIcon(
-                            Icons.person_outline,
-                            size: 18,
-                            color: _getIconColor(),
-                          ),
-                          label: Text(
-                            L10n.get("view_profile"),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _getDescriptionTextColor(),
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: _getIconColor()),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                        icon: Icons.person_outline,
+                        iconSize: 18,
+                        text: L10n.get("view_profile"),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        borderColor: _getIconColor(),
+                        textColor: _getDescriptionTextColor(),
+                        iconColor: _getIconColor(),
+                        textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

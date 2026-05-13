@@ -15,6 +15,7 @@ import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 
@@ -197,17 +198,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Center(
-        child: ElevatedButton(
+        child: PrimaryButton(
           onPressed: () {
             HapticFeedbackUtils.impact();
-            // Load more conversations
             context.read<ConversationsBloc>().add(
               const ConversationsFetch(page: 2),
             ); // TODO: make page dynamic
           },
-          child: Text(
-            L10n.get("load_more"),
-          ),
+          child: Text(L10n.get("load_more")),
         ),
       ),
     );

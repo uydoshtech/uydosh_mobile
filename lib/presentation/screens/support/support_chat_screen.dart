@@ -17,12 +17,14 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 
@@ -174,7 +176,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            ElevatedButton(
+            PrimaryButton(
               onPressed: () {
                 HapticFeedbackUtils.impact();
                 _fetchThreads();
@@ -253,14 +255,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_creatingThread)
-              SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(ts.textColor),
-                ),
-              )
+              UydoshInlineSpinner(color: ts.textColor, dimension: 22)
             else ...[
               ThemeIcon(Icons.add, color: ts.textColor, size: 22),
               const SizedBox(width: 10),

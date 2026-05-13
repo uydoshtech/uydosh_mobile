@@ -14,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 
 class AuthWizardProfilePage extends StatelessWidget {
   const AuthWizardProfilePage({
@@ -201,62 +202,14 @@ class AuthWizardProfilePage extends StatelessWidget {
               const SizedBox(height: 16),
               KeyedSubtree(
                 key: nameSectionKey,
-                child: WheelPickerPlateContainer(
+                child: UydoshPlateTextFormField(
+                  hintText: L10n.get("full_name_hint"),
                   showErrorBorder: nameMissing,
-                  theme: Theme.of(context),
-                  child: TextFormField(
-                    controller: nameController,
-                    maxLines: 1,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
-                    onTap: () => UiFeedbackUtils.tap(),
-                    decoration: InputDecoration(
-                      hintText: L10n.get("full_name_hint"),
-                      hintStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withOpacity(0.7)
-                            : Colors.grey[400],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 14,
-                      ),
-                    ),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: ThemeState().isLightTheme
-                          ? Colors.black
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                  controller: nameController,
+                  maxLines: 1,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  onTap: () => UiFeedbackUtils.tap(),
                 ),
               ),
               const SizedBox(height: 16),

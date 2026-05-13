@@ -153,9 +153,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
               if (state is GigOfferDetailLoaded) {
                 GigFavoritesState().syncFromOffers([state.offer]);
               } else if (state is GigOfferDetailError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                ToastTheme.showError(context, message: state.message);
               }
             },
             builder: (context, state) {

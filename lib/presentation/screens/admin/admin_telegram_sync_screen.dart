@@ -19,9 +19,11 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 
@@ -284,22 +286,22 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       context: context,
       builder: (ctx) {
         final theme = Theme.of(ctx);
-        return AlertDialog(
+        return UydoshAlertDialog(
+          scrollable: true,
           title: Text(title),
-          content: SingleChildScrollView(child: Text(body)),
+          content: Text(body),
           actions: [
-            TextButton(
+            TextButtonThemed(
               onPressed: () {
                 HapticFeedbackUtils.impact();
                 Navigator.of(ctx).pop(false);
               },
               child: Text(L10n.get("cancel")),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: theme.colorScheme.error,
-                foregroundColor: theme.colorScheme.onError,
-              ),
+            PrimaryButton(
+              surfaceGradientBase: theme.colorScheme.error,
+              textColor: theme.colorScheme.onError,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               onPressed: () {
                 HapticFeedbackUtils.impact();
                 Navigator.of(ctx).pop(true);
@@ -404,8 +406,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         chatKeyFilter: null,
         maxRows: maxRows,
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(L10n.get("admin_telegram_export_done"))),
+      ToastTheme.showSuccessSimple(
+        context,
+        message: L10n.get("admin_telegram_export_done"),
       );
     } catch (e) {
       setStateIfMounted(() {

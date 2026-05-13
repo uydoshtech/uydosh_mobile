@@ -23,10 +23,12 @@ import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_preview_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 
 /// Photo section used by the edit-listing screen.
 ///
@@ -193,7 +195,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return UydoshAlertDialog(
           title: Text(L10n.get("max_photos_reached")),
           content: Text(
             L10n.getWithParams(
@@ -202,7 +204,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
             ),
           ),
           actions: [
-            TextButton(
+            TextButtonThemed(
               onPressed: () {
                 HapticFeedbackUtils.impact();
                 Navigator.of(context).pop();

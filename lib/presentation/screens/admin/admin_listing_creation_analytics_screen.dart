@@ -10,13 +10,14 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/period_picker.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 sealed class _MonthGroupedListItem {}
@@ -573,13 +574,14 @@ class _AdminListingCreationAnalyticsScreenState
       padding: const EdgeInsets.all(24),
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
-      retryButton: ElevatedButton.icon(
+      retryButton: PrimaryButtonFactory.iconText(
         onPressed: () {
           HapticFeedbackUtils.impact();
           _loadAnalytics();
         },
-        icon: const ThemeIcon(Icons.refresh),
-        label: Text(L10n.get("admin_listing_creation_analytics_retry")),
+        icon: Icons.refresh,
+        text: L10n.get("admin_listing_creation_analytics_retry"),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
     );
   }

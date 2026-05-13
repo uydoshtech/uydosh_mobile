@@ -1,7 +1,6 @@
 import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:intl/intl.dart";
@@ -49,6 +48,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -716,60 +716,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           "listing_title_hint",
           builder: (hintText) => LabeledFieldOverlay(
             label: L10n.get("listing_title_label"),
-            child: WheelPickerPlateContainer(
-              theme: Theme.of(context),
-              child: TextFormField(
-                controller: _titleController,
-                maxLength: _titleMaxLength,
-                maxLines: 1,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  hintText: hintText,
-                  hintStyle: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                        : Colors.grey[400],
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
-                ),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ThemeState().isLightTheme
-                      ? Colors.black
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                buildCounter: _buildTitleCounter,
-              ),
+            child: UydoshPlateTextFormField(
+              hintText: hintText,
+              controller: _titleController,
+              maxLength: _titleMaxLength,
+              maxLines: 1,
+              textInputAction: TextInputAction.next,
+              buildCounter: _buildTitleCounter,
             ),
           ),
         ),
@@ -780,102 +733,64 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           "listing_description_hint",
           builder: (hintText) => LabeledFieldOverlay(
             label: L10n.get("listing_description_label"),
-            child: WheelPickerPlateContainer(
-              showErrorBorder: _showDescriptionError,
-              theme: Theme.of(context),
-              child: AnimatedSize(
-                duration: const Duration(milliseconds: 320),
-                reverseDuration: const Duration(milliseconds: 320),
-                curve: Curves.easeInOut,
-                alignment: Alignment.topCenter,
-                // [AnimatedSize] defaults clip while lerping; footer + transcript
-                // growth would hide text until animation finished / refocus.
-                clipBehavior: Clip.none,
-                child: TextFormField(
-                  controller: _descriptionController,
-                  onChanged: (value) {
-                    if (_showDescriptionError && value.trim().isNotEmpty) {
-                      setState(() {
-                        _showDescriptionError = false;
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: hintText,
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
-                          : Colors.grey[400],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.transparent,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 320),
+              reverseDuration: const Duration(milliseconds: 320),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              // [AnimatedSize] defaults clip while lerping; footer + transcript
+              // growth would hide text until animation finished / refocus.
+              clipBehavior: Clip.none,
+              child: UydoshPlateTextFormField(
+                hintText: hintText,
+                showErrorBorder: _showDescriptionError,
+                controller: _descriptionController,
+                decoration: UydoshPlateFieldDecoration.forHint(
+                  context,
+                  hintText: hintText,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
                   ),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: ThemeState().isLightTheme
-                        ? Colors.black
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  minLines: _descriptionBaseLines +
-                      (_isDescriptionExpanded
-                          ? _descriptionExpandedExtraLines
-                          : 0),
-                  maxLines: _descriptionBaseLines +
-                      (_isDescriptionExpanded
-                          ? _descriptionExpandedExtraLines
-                          : 0),
-                  maxLength: 1000,
-                  buildCounter: (
-                    context, {
-                    required currentLength,
-                    required isFocused,
-                    maxLength,
-                  }) {
-                    return DescriptionCounterToolbar(
-                      controller: _descriptionController,
-                      listingTypeId: _selectedListingTypeId,
-                      gender: _selectedGender,
-                      currentLength: currentLength,
-                      maxLength: maxLength ?? 0,
-                      isExpanded: _isDescriptionExpanded,
-                      onToggleExpanded: () => setState(() {
-                        _isDescriptionExpanded = !_isDescriptionExpanded;
-                      }),
-                      layout: DescriptionCounterToolbarLayout.stack,
-                      counterVisibleAtFraction: 0.7,
-                    debugShowTapBounds: false,
-                    );
-                  },
                 ),
+                clipBehavior: Clip.none,
+                onChanged: (value) {
+                  if (_showDescriptionError && value.trim().isNotEmpty) {
+                    setState(() {
+                      _showDescriptionError = false;
+                    });
+                  }
+                },
+                minLines: _descriptionBaseLines +
+                    (_isDescriptionExpanded
+                        ? _descriptionExpandedExtraLines
+                        : 0),
+                maxLines: _descriptionBaseLines +
+                    (_isDescriptionExpanded
+                        ? _descriptionExpandedExtraLines
+                        : 0),
+                maxLength: 1000,
+                buildCounter: (
+                  context, {
+                  required currentLength,
+                  required isFocused,
+                  maxLength,
+                }) {
+                  return DescriptionCounterToolbar(
+                    controller: _descriptionController,
+                    listingTypeId: _selectedListingTypeId,
+                    gender: _selectedGender,
+                    currentLength: currentLength,
+                    maxLength: maxLength ?? 0,
+                    isExpanded: _isDescriptionExpanded,
+                    onToggleExpanded: () => setState(() {
+                      _isDescriptionExpanded = !_isDescriptionExpanded;
+                    }),
+                    layout: DescriptionCounterToolbarLayout.stack,
+                    counterVisibleAtFraction: 0.7,
+                    debugShowTapBounds: false,
+                  );
+                },
               ),
             ),
           ),

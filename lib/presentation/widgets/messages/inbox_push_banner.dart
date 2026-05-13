@@ -3,6 +3,8 @@ import "package:flutter/material.dart";
 
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Warning banner shown at the top of the messages inbox when the OS push
@@ -53,7 +55,6 @@ class InboxPushBanner extends StatelessWidget {
     // so the two surfaces read as one system.
     final cardBg = AppColors.warning;
     const fg = Color(0xFF1F1300);
-    final buttonBorderColor = Colors.black.withValues(alpha: 0.85);
     final buttonBg = Colors.white.withValues(alpha: 0.18);
 
     return Semantics(
@@ -101,17 +102,22 @@ class InboxPushBanner extends StatelessWidget {
                     button: true,
                     label:
                         MaterialLocalizations.of(context).closeButtonLabel,
-                    child: IconButton(
-                      iconSize: 18,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
+                    child: IgnorePointer(
+                      ignoring: busy,
+                      child: Opacity(
+                        opacity: busy ? 0.35 : 1,
+                        child: ThreeDAppBarIconButton(
+                          iconData: Icons.close,
+                          iconWidget: Icon(Icons.close, color: fg, size: 18),
+                          onPressed: onDismiss,
+                          semanticsLabel:
+                              MaterialLocalizations.of(context).closeButtonLabel,
+                          iconSize: 18,
+                          padding: EdgeInsets.zero,
+                          contentSlotSize: 28,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      splashRadius: 18,
-                      onPressed: busy ? null : onDismiss,
-                      icon: const Icon(Icons.close, color: fg),
                     ),
                   ),
                 ],
@@ -124,46 +130,31 @@ class InboxPushBanner extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 8),
                 child: SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: buttonBg,
-                      foregroundColor: fg,
-                      side: BorderSide(color: buttonBorderColor, width: 1.5),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.1,
-                      ),
-                    ),
+                  child: PrimaryButtonFactory.iconTextCentered(
                     onPressed: busy ? null : onPressed,
-                    icon: busy
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(fg),
-                            ),
-                          )
-                        : Icon(
-                            _isDenied
-                                ? Icons.settings_outlined
-                                : Icons.notifications_outlined,
-                            size: 18,
-                          ),
-                    label: Text(
-                      _isDenied
-                          ? L10n.get("notifications_open_settings")
-                          : L10n.get("menu_enable_notifications"),
+                    isLoading: busy,
+                    surfaceGradientBase: buttonBg,
+                    textColor: fg,
+                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.1,
+                      height: 1.0,
+                    ),
+                    iconSize: 18,
+                    icon:
+                        _isDenied
+                            ? Icons.settings_outlined
+                            : Icons.notifications_outlined,
+                    text:
+                        _isDenied
+                            ? L10n.get("notifications_open_settings")
+                            : L10n.get("menu_enable_notifications"),
                   ),
                 ),
               ),

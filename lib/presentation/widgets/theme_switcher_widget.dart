@@ -4,6 +4,8 @@ import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Widget for switching between different app themes
@@ -83,34 +85,33 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      side: BorderSide(color: Colors.grey.shade400, width: 1),
-                    ),
+                  PrimaryButton(
                     onPressed: () async {
-                      UiFeedbackUtils.tap();
-                      // Apply theme globally and persist it
                       await _themeState.changeTheme(_selectedTheme);
-
-                      // Call the callback if provided (for backward compatibility)
                       if (widget.onThemeChanged != null) {
                         widget.onThemeChanged!(_selectedTheme);
                       }
-
-                      Navigator.of(context).pop();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
                     },
+                    borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                     child: Text(
                       AppStrings.get("confirm", _getCurrentLanguage(context)),
                     ),
                   ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      side: BorderSide(color: Colors.grey.shade400, width: 1),
-                    ),
+                  TextButtonThemed(
                     onPressed: () {
                       UiFeedbackUtils.tap();
                       Navigator.of(context).pop();
                     },
+                    style: TextButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade400, width: 1),
+                    ),
                     child: Text(
                       AppStrings.get("cancel", _getCurrentLanguage(context)),
                     ),

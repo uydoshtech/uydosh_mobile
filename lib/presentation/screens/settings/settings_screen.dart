@@ -8,7 +8,6 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
@@ -17,7 +16,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -325,8 +323,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLanguageMenuItem(BuildContext context) {
-    return ListTile(
-      leading: ThemeIcon(CupertinoIcons.globe, color: _getIconColor()),
+    return UydoshMenuItem(
+      icon: CupertinoIcons.globe,
       title: L10n.text(
         "menu_language",
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
@@ -340,15 +338,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
         },
       ),
-      onTap: () {
-        HapticFeedbackUtils.impact();
-        _showLanguageDialog(context);
-      },
-      trailing: ThemeIcon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: _getSecondaryIconColor(),
-      ),
+      iconColor: _getIconColor(),
+      trailingColor: _getSecondaryIconColor(),
+      onTap: () => _showLanguageDialog(context),
     );
   }
 
@@ -356,8 +348,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
-        return ListTile(
-          leading: ThemeIcon(Icons.palette, color: _getIconColor()),
+        return UydoshMenuItem(
+          icon: Icons.palette,
           title: L10n.text(
             "theme",
             style: TextStyle(
@@ -369,6 +361,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _getLocalizedThemeName(ThemeState().currentTheme),
             style: TextStyle(color: _getSecondaryTextColor()),
           ),
+          iconColor: _getIconColor(),
+          trailingColor: _getSecondaryIconColor(),
           trailing: ThemeToggleSunMoon(
             iconColor: _getIconColor(),
             size: 35,
@@ -625,31 +619,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildFeatureItem(context, "about_feature_3"),
           _buildFeatureItem(context, "about_feature_4"),
         ],
-      ),
-    );
-  }
-
-  void _showLegalDialog(
-    BuildContext context, {
-    required String titleKey,
-    required String bodyKey,
-  }) {
-    final textColor = _getAboutModalTextColor();
-    UydoshInfoDialog.show(
-      context,
-      backgroundColor: _getLanguageDialogBackgroundColor(),
-      scrollable: true,
-      title: L10n.text(
-        titleKey,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
-      ),
-      content: Text(
-        L10n.get(bodyKey),
-        style: TextStyle(fontSize: 16, color: textColor),
       ),
     );
   }

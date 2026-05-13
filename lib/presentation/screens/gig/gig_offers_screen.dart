@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 
@@ -73,7 +74,7 @@ class _GigOffersScreenState extends State<GigOffersScreen> {
                 title: L10n.get("gigs_browse_empty"),
               );
             }
-            return RefreshIndicator(
+            return UydoshRefreshIndicator(
               onRefresh: () async {
                 context
                     .read<GigOffersBloc>()

@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Mirror of [PostGigRequestScreen] but for the *provider* side: lets a user
@@ -140,34 +141,34 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                   ),
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_title")),
-                  _PlateField(
+                  UydoshPlateTextFormField(
+                    hintText: "",
                     showErrorBorder: _showTitleError,
-                    child: TextFormField(
-                      controller: _titleController,
-                      textInputAction: TextInputAction.next,
-                      style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
-                        context,
-                        hint: L10n.get("gigs_post_request_field_title"),
-                      ),
-                      onChanged: (_) {
-                        if (_showTitleError) {
-                          setState(() => _showTitleError = false);
-                        }
-                      },
+                    controller: _titleController,
+                    textInputAction: TextInputAction.next,
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: L10n.get("gigs_post_request_field_title"),
                     ),
+                    onChanged: (_) {
+                      if (_showTitleError) {
+                        setState(() => _showTitleError = false);
+                      }
+                    },
                   ),
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_description")),
-                  _PlateField(
-                    child: TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 5,
-                      minLines: 4,
-                      style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
-                        context,
-                        hint: L10n.get("gigs_post_request_field_description"),
+                  UydoshPlateTextFormField(
+                    hintText: "",
+                    controller: _descriptionController,
+                    maxLines: 5,
+                    minLines: 4,
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: L10n.get(
+                        "gigs_post_request_field_description",
                       ),
                     ),
                   ),
@@ -179,41 +180,40 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                   ),
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_offer_field_price")),
-                  _PlateField(
+                  UydoshPlateTextFormField(
+                    hintText: "",
                     showErrorBorder: _showPriceError,
-                    child: TextFormField(
-                      controller: _priceController,
+                    controller: _priceController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    style: _fieldTextStyle(context),
+                    decoration: UydoshPlateFieldDecoration.gigPostField(
+                      context,
+                      hintText: "UZS",
+                    ),
+                    onChanged: (_) {
+                      if (_showPriceError) {
+                        setState(() => _showPriceError = false);
+                      }
+                    },
+                  ),
+                  if (_pricingType == GigPricingType.hourly) ...[
+                    const SizedBox(height: 14),
+                    _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
+                    UydoshPlateTextFormField(
+                      hintText: "",
+                      controller: _minDurationController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       style: _fieldTextStyle(context),
-                      decoration: _plateInputDecoration(
+                      decoration: UydoshPlateFieldDecoration.gigPostField(
                         context,
-                        hint: "UZS",
-                      ),
-                      onChanged: (_) {
-                        if (_showPriceError) {
-                          setState(() => _showPriceError = false);
-                        }
-                      },
-                    ),
-                  ),
-                  if (_pricingType == GigPricingType.hourly) ...[
-                    const SizedBox(height: 14),
-                    _FieldLabel(L10n.get("gigs_post_offer_field_min_duration")),
-                    _PlateField(
-                      child: TextFormField(
-                        controller: _minDurationController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        style: _fieldTextStyle(context),
-                        decoration: _plateInputDecoration(
-                          context,
-                          hint: L10n.get(
-                              "gigs_post_offer_field_min_duration_hint"),
+                        hintText: L10n.get(
+                          "gigs_post_offer_field_min_duration_hint",
                         ),
                       ),
                     ),
@@ -260,35 +260,6 @@ TextStyle _fieldTextStyle(BuildContext context) {
     color: ThemeState().isLightTheme
         ? Colors.black
         : Theme.of(context).colorScheme.onSurface,
-  );
-}
-
-InputDecoration _plateInputDecoration(BuildContext context, {String? hint}) {
-  final hintColor = Theme.of(context).brightness == Brightness.dark
-      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45)
-      : Colors.grey[500];
-  final cleanedHint = hint?.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
-  return InputDecoration(
-    hintText: cleanedHint,
-    hintStyle: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500,
-      color: hintColor,
-    ),
-    // Override the global `inputDecorationTheme` (which fills with white).
-    filled: true,
-    fillColor: Colors.transparent,
-    border: const OutlineInputBorder(borderSide: BorderSide.none),
-    enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    errorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    focusedErrorBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-    // Validation feedback is rendered as a red border on the surrounding
-    // plate (see `_PlateField.showErrorBorder`); collapse the inline error
-    // text so no red copy ever appears beneath the field.
-    errorStyle: const TextStyle(height: 0, fontSize: 0),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-    isDense: true,
   );
 }
 
