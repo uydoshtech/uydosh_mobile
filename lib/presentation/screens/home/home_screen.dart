@@ -1126,10 +1126,31 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return ThemeState().mainShellGlassExtraTopInset(context);
   }
 
+  /// Must match [CustomCurvedNavigationBar] height / package limit (~70).
+  static const double _kCurvedBottomBarHeight = 70.0;
+
+  /// Bottom clearance for tabs under [MainNavigation] + blue [Scaffold.extendBody].
+  /// Flutter **web** often reports [MediaQuery.padding.bottom] as `0` even when
+  /// the curved bar overlaps the body; use at least [_kCurvedBottomBarHeight].
+  double _blueShellExtendBodyBottomInset(BuildContext context) {
+    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme || widget.isSearchMode) {
+      return 0;
+    }
+    final mq = MediaQuery.of(context);
+    return math.max(
+      _kCurvedBottomBarHeight,
+      math.max(mq.padding.bottom, mq.viewPadding.bottom),
+    );
+  }
+
   /// Keeps the last feed items above the curved bar when the shell uses
   /// [Scaffold.extendBody] (Scaffold raises [MediaQuery.padding.bottom] to the
   /// bar height).
   double _feedListBottomPadding(BuildContext context) {
+    final shellInset = _blueShellExtendBodyBottomInset(context);
+    if (shellInset != 0) {
+      return math.max(16.0, shellInset);
+    }
     return math.max(16.0, MediaQuery.paddingOf(context).bottom);
   }
 
@@ -1141,19 +1162,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// sitting above it like before extendBody.
   double _searchAlertFabStackBottom(BuildContext context) {
     const base = 30.0;
-    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme) {
-      return base;
-    }
-    return base + MediaQuery.paddingOf(context).bottom;
+    return base + _blueShellExtendBodyBottomInset(context);
   }
 
   /// Vertical anchor for the empty-search hint bubble above the bell FAB.
   double _searchAlertBellHintBottom(BuildContext context) {
     const base = 124.0;
-    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme) {
-      return base;
-    }
-    return base + MediaQuery.paddingOf(context).bottom;
+    return base + _blueShellExtendBodyBottomInset(context);
   }
 
   double _feedRibbonSpacerHeight() {

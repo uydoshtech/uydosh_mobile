@@ -32,11 +32,13 @@ class _DashedLinePainter extends CustomPainter {
 
 /// A reusable link-style button with underlined text.
 /// Supports both plain link and outlined variants.
+/// Use [destructive] for remove/delete actions so the label matches app error/red styling.
 class UydoshLinkButton extends StatelessWidget {
   const UydoshLinkButton({
     required this.text,
     required this.onPressed,
     this.color,
+    this.destructive = false,
     this.fontSize = 14,
     this.fontWeight = FontWeight.w600,
     this.outlined = false,
@@ -50,6 +52,9 @@ class UydoshLinkButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final Color? color;
+
+  /// When true (and [color] is null), uses [Theme.of(context).colorScheme.error].
+  final bool destructive;
   final double fontSize;
   final FontWeight fontWeight;
   final bool outlined;
@@ -65,7 +70,9 @@ class UydoshLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveColor = color ??
-        (ThemeState().isBlueTheme ? Colors.white : Colors.black);
+        (destructive
+            ? Theme.of(context).colorScheme.error
+            : (ThemeState().isBlueTheme ? Colors.white : Colors.black));
 
     final textStyle = TextStyle(
       fontSize: fontSize,

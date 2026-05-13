@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -145,6 +146,7 @@ class UydoshDropdownFormField<T> extends StatelessWidget {
     return DropdownButtonFormField<T>(
       value: value,
       items: items,
+      onTap: onChanged == null ? null : () => HapticFeedbackUtils.impact(),
       onChanged: onChanged == null ? null : handleChange,
       decoration: decoration,
       style: effectiveStyle,
@@ -220,6 +222,7 @@ class UydoshDropdown extends StatelessWidget {
               child: DropdownButton<String?>(
                 value: value,
                 isExpanded: true,
+                onTap: () => HapticFeedbackUtils.impact(),
                 elevation: AppTheme.menuPanelElevation,
                 borderRadius: BorderRadius.circular(16),
                 icon: UydoshDropdownChrome.arrowIcon(context),

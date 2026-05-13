@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_text_selection_context_menu.dart";
 
 /// Transparent “plate” [InputDecoration] used with [WheelPickerPlateContainer].
 class UydoshPlateFieldDecoration {
@@ -117,6 +118,7 @@ class UydoshPlateTextFormField extends StatelessWidget {
     this.clipBehavior = Clip.antiAlias,
     this.textCapitalization = TextCapitalization.none,
     this.onTap,
+    this.contextMenuBuilder,
   });
 
   final TextEditingController? controller;
@@ -145,6 +147,7 @@ class UydoshPlateTextFormField extends StatelessWidget {
   final Clip clipBehavior;
   final TextCapitalization textCapitalization;
   final VoidCallback? onTap;
+  final EditableTextContextMenuBuilder? contextMenuBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +192,8 @@ class UydoshPlateTextFormField extends StatelessWidget {
         autofocus: autofocus ?? false,
         style: resolvedStyle,
         decoration: inputDec,
+        contextMenuBuilder:
+            contextMenuBuilder ?? uydoshEditableContextMenuWithoutLiveText,
       ),
     );
   }

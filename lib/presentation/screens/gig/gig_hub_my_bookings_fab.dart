@@ -151,8 +151,8 @@ class _GigHubMyBookingsFabState extends State<GigHubMyBookingsFab> {
                         labelChip,
                         if (showDot)
                           Positioned(
-                            right: 6,
-                            top: 4,
+                            right: -3,
+                            top: 0,
                             child: PulseThenBlinkDotWidget(
                               trigger: pendingState.dotTrigger,
                               color: unreadColor,

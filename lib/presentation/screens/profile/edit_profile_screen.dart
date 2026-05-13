@@ -1573,7 +1573,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             style: theme.textTheme.bodyMedium?.copyWith(
               color: isBlueTheme ? Colors.white : theme.colorScheme.onSurface,
             ),
-            cursorColor: theme.colorScheme.primary,
             decoration: InputDecoration(
               prefixIcon: ThemeIcon(icon, color: iconColor),
               border: InputBorder.none,
@@ -1863,6 +1862,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     final defaultLeadingColor =
         isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
 
+    final tileRadius = BorderRadius.circular(14);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1873,66 +1873,64 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                 SendSoundUtils.playSelectionSound();
                 onTap();
               },
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
+        borderRadius: tileRadius,
+        child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: tileRadius,
             gradient: ThreeDSurfaceStyle.surfaceGradient(context, baseColor),
             boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.4,
-                    color: labelColor,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.4,
+                  color: labelColor,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 24,
+                    child: Center(
+                      child: IconTheme.merge(
+                        data: IconThemeData(color: defaultLeadingColor),
+                        child: leading,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      child: Center(
-                        child: IconTheme.merge(
-                          data: IconThemeData(color: defaultLeadingColor),
-                          child: leading,
-                        ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      valueText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight:
+                            isPlaceholder ? FontWeight.w500 : FontWeight.w600,
+                        fontStyle:
+                            isLoading ? FontStyle.italic : FontStyle.normal,
+                        color: valueColor,
+                        height: 1.2,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        valueText,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight:
-                              isPlaceholder ? FontWeight.w500 : FontWeight.w600,
-                          fontStyle:
-                              isLoading ? FontStyle.italic : FontStyle.normal,
-                          color: valueColor,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    ThemeIcon(
-                      Icons.arrow_drop_down,
-                      color: chevronColor,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(width: 4),
+                  ThemeIcon(
+                    Icons.arrow_drop_down,
+                    color: chevronColor,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

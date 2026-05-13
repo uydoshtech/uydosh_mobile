@@ -28,15 +28,20 @@ class TextButtonThemed extends StatelessWidget {
               HapticFeedbackUtils.impact();
               onPressed!();
             },
-      style: TextButton.styleFrom(
-        foregroundColor:
-            isLightTheme
-                ? Colors
-                    .black87 // Black text for light theme
-                : AppColors.textLight70, // White text for dark theme
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        padding: padding,
-      ).merge(style),
+      // Caller [style] must merge on top of defaults: Flutter's ButtonStyle.merge
+      // only replaces null fields on the receiver — the previous order always kept
+      // our default foregroundColor and ignored e.g. destructive dialog colors.
+      style: (style ?? const ButtonStyle()).merge(
+        TextButton.styleFrom(
+          foregroundColor:
+              isLightTheme
+                  ? Colors
+                      .black87 // Black text for light theme
+                  : AppColors.textLight70, // White text for dark theme
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          padding: padding,
+        ),
+      ),
       child: child,
     );
   }

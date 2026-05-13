@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -248,6 +249,22 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
     return allFeedIcon;
   }
 
+  /// Height of [CustomCurvedNavigationBar] / package bar (see shell widget).
+  static const double _kCurvedBottomBarHeight = 70.0;
+
+  /// When embedded in [MainNavigation] with the blue shell, [Scaffold.extendBody]
+  /// lets the tab paint under the curved bar. Prefer [MediaQuery.padding.bottom]
+  /// from the shell [_BodyBuilder], but on **web** it is often `0`; keep at least
+  /// [_kCurvedBottomBarHeight] so FABs are not tucked under the nav layer.
+  double _mainShellExtendBodyBottomInset(BuildContext context) {
+    if (!widget.embedded || !ThemeState().isBlueTheme) {
+      return 0;
+    }
+    final mq = MediaQuery.of(context);
+    final fromView = math.max(mq.padding.bottom, mq.viewPadding.bottom);
+    return math.max(_kCurvedBottomBarHeight, fromView);
+  }
+
   @override
   Widget build(BuildContext context) {
     // When hosted inside `MainNavigation`, the shell uses
@@ -266,8 +283,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
       listenable: AuthenticationState(),
       builder: (context, _) {
         final signedIn = AuthenticationState().isAuthenticated;
+        final shellBottomInset = _mainShellExtendBodyBottomInset(context);
         // Single "My bookings" control (label + circular button) when signed in.
-        final bottomClearance = signedIn ? 104.0 : 16.0;
+        final bottomClearance =
+            (signedIn ? 104.0 : 16.0) + shellBottomInset;
 
         final scrollable = UydoshRefreshIndicator.mainShell(
           onRefresh: _onRefresh,
@@ -310,10 +329,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           children: [
             Positioned.fill(child: scrollable),
             if (signedIn)
-              const Positioned(
+              Positioned(
                 right: 16,
-                bottom: 16,
-                child: GigHubMyBookingsFab(),
+                bottom: 16 + shellBottomInset,
+                child: const GigHubMyBookingsFab(),
               ),
           ],
         );

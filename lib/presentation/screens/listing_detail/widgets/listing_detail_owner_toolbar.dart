@@ -27,6 +27,11 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isUnfeature = ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
+    final promoteActionColor =
+        isUnfeature ? scheme.error : ListingDetailThemeHelper.iconColor;
+
     return Padding(
       padding: const EdgeInsets.only(left: 8, right: 8),
       child: Row(
@@ -87,28 +92,26 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: ListingDetailThemeHelper.iconColor,
+                      color: promoteActionColor,
                     ),
                   )
                 else
                   ThemeIcon(
-                    ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
+                    isUnfeature
                         ? CupertinoIcons.arrow_down
                         : CupertinoIcons.arrow_up,
                     size: 16,
-                    color: ListingDetailThemeHelper.iconColor,
+                    color: promoteActionColor,
                   ),
                 const SizedBox(width: 8),
                 Text(
                   L10n.get(
-                    ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-                        ? "remove_from_top"
-                        : "promote_listing",
+                    isUnfeature ? "remove_from_top" : "promote_listing",
                   ),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: ListingDetailThemeHelper.iconColor,
+                    color: promoteActionColor,
                   ),
                 ),
               ],

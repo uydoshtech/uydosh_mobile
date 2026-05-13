@@ -1,5 +1,9 @@
+import "dart:ui" show ImageFilter;
+
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -47,6 +51,11 @@ class QuickQuestionsWidget extends StatelessWidget {
         final pillTextColor = themeState.pillTextColor;
         final borderColor = themeState.borderColor;
         final bottomPad = MediaQuery.viewPaddingOf(context).bottom + 12;
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final glassAnimationsEnabled =
+            AnimationSettingsState().uiAnimationsEnabled &&
+            !disableAnimations;
 
         final stripDecoration =
             blendWithGlassBackdrop
@@ -72,10 +81,12 @@ class QuickQuestionsWidget extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: _buildPills(
-                context,
                 keys: keys,
                 pillColor: pillColor,
                 pillTextColor: pillTextColor,
+                useGlassBluePills:
+                    blendWithGlassBackdrop && themeState.isBlueTheme,
+                glassAnimationsEnabled: glassAnimationsEnabled,
               ),
             ),
           ),
@@ -84,11 +95,12 @@ class QuickQuestionsWidget extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildPills(
-    BuildContext context, {
+  List<Widget> _buildPills({
     required List<String> keys,
     required Color pillColor,
     required Color pillTextColor,
+    required bool useGlassBluePills,
+    required bool glassAnimationsEnabled,
   }) {
     final children = <Widget>[];
     for (var i = 0; i < keys.length; i++) {
@@ -96,48 +108,100 @@ class QuickQuestionsWidget extends StatelessWidget {
       final key = keys[i];
       children.add(
         _buildQuestionPill(
-          context,
           text: L10n.get(key),
           questionKey: key,
           backgroundColor: pillColor,
           textColor: pillTextColor,
+          useGlassBluePills: useGlassBluePills,
+          glassAnimationsEnabled: glassAnimationsEnabled,
         ),
       );
     }
     return children;
   }
 
-  Widget _buildQuestionPill(
-    BuildContext context, {
+  Widget _buildQuestionPill({
     required String text,
     required String questionKey,
     required Color backgroundColor,
     required Color textColor,
+    required bool useGlassBluePills,
+    required bool glassAnimationsEnabled,
   }) {
+    const radius = 20.0;
+    final borderRadius = BorderRadius.circular(radius);
+    final label = Text(
+      text,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+    final paddedLabel = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: label,
+    );
+
+    final Widget pillBody =
+        useGlassBluePills
+            ? ClipRRect(
+              borderRadius: borderRadius,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: glassAnimationsEnabled ? 14 : 0,
+                  sigmaY: glassAnimationsEnabled ? 14 : 0,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: borderRadius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.26),
+                        BlueThemeColors.primaryLight.withValues(alpha: 0.32),
+                        BlueThemeColors.primary.withValues(alpha: 0.48),
+                      ],
+                      stops: const [0.0, 0.42, 1.0],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.45),
+                      width: 1,
+                    ),
+                  ),
+                  child: paddedLabel,
+                ),
+              ),
+            )
+            : DecoratedBox(
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: borderRadius,
+                border: Border.all(
+                  color: backgroundColor.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            );
+
     return GestureDetector(
       onTap: () {
         HapticFeedbackUtils.impact();
         onQuestionTap(text, questionKey);
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: backgroundColor.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
+      child: pillBody,
     );
   }
 }

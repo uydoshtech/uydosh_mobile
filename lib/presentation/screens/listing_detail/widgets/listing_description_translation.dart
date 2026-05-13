@@ -18,6 +18,7 @@ import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_scre
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_text_selection_context_menu.dart";
 
 enum _TranslationTarget { original, en, ru, uz }
 
@@ -169,7 +170,11 @@ class _ListingDescriptionTranslationState
     final text = StringUtils.collapseExcessiveNewlines(content);
     if (ClientListingContactUiConfig.hidePublicContactDetails) {
       final redacted = ListingContactRedaction.stripForPublicDisplay(text);
-      return SelectableText(redacted, style: widget.textStyle);
+      return SelectableText(
+        redacted,
+        style: widget.textStyle,
+        contextMenuBuilder: uydoshEditableContextMenuWithoutLiveText,
+      );
     }
     _disposeTelegramRecognizers();
     final linkColor = ListingDetailThemeHelper.descriptionLinkColor;
@@ -232,6 +237,7 @@ class _ListingDescriptionTranslationState
     }
     return SelectableText.rich(
       TextSpan(style: widget.textStyle, children: spans),
+      contextMenuBuilder: uydoshEditableContextMenuWithoutLiveText,
     );
   }
 
