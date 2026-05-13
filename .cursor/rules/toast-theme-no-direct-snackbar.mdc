@@ -1,0 +1,11 @@
+---
+description: Use ToastTheme for transient messages — do not add raw SnackBar in feature UI
+globs: lib/**/*.dart
+alwaysApply: false
+---
+
+# Transient messages (toasts)
+
+- For success / error / warning / info banners in screens and widgets, use **`ToastTheme`** (`showSuccess`, `showError`, `showWarning`, `showInfo`, or `*Simple` variants) instead of **`SnackBar`**, **`ScaffoldMessenger.showSnackBar`**, or **`hideCurrentSnackBar`**.
+- **Exception:** [`toast_theme.dart`](lib/presentation/widgets/common/toast_theme.dart) may use `SnackBar` internally for bottom “simple” toasts — do not copy that pattern into feature code.
+- If you need something SnackBar-specific (e.g. a custom bottom banner with its own lifecycle), prefer an **overlay** or a dedicated widget — discuss before reintroducing `SnackBar` at call sites.

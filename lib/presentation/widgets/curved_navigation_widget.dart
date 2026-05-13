@@ -21,7 +21,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 /// tinted plate behind [CurvedNavigationBar] for blue only — match
 /// [LiquidGlassAppBarFlexibleSpace] (blur sigma ~18 when motion enabled,
 /// [BlueThemeColors.background] tint alpha ~0.40, ~10% white top hairline,
-/// subtle top→bottom sheen). (3) Blue [_getBackgroundColor]:
+/// subtle top→bottom sheen). (3) Blue [_getNotchBackgroundColor]:
 /// [Colors.transparent]. (4) Blue [_getCurvedColor]:
 /// [BlueThemeColors.navigationBackground.withValues] alpha ~0.32 so frost shows.
 /// (5) Tab FABs / lists: add ~70px bottom inset (`CurvedNavigationBar` height;
@@ -77,7 +77,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
                   // Active “disk” is drawn by [_CurvedNavActiveOrb] on the selected item;
                   // keep the package [Material] transparent so gradients/shadows show.
                   buttonBackgroundColor: Colors.transparent,
-                  backgroundColor: _getBackgroundColor(
+                  backgroundColor: _getNotchBackgroundColor(
                     context,
                   ), // Theme-dependent background color
                   animationCurve: Curves.easeInOut,
@@ -344,7 +344,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     }
   }
 
-  Color _getBackgroundColor(BuildContext context) {
+  Color _getNotchBackgroundColor(BuildContext context) {
     // Use ThemeState to detect current theme
     if (ThemeState().isBlueTheme) {
       // Blue theme - use primary blue for background

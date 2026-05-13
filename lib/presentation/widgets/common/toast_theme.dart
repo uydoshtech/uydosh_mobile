@@ -7,6 +7,10 @@ enum ToastDismissReason { completed, preempted }
 
 /// ToastTheme provides a centralized way to show toast messages throughout the app.
 ///
+/// Prefer these APIs from feature code instead of calling [SnackBar] /
+/// [ScaffoldMessenger.showSnackBar] directly (see project Cursor rule
+/// `toast-theme-no-direct-snackbar`).
+///
 /// Toast positioning:
 /// - Rolling toasts (with animation) appear right below the app header
 /// - Traditional SnackBars appear at the bottom of the screen
