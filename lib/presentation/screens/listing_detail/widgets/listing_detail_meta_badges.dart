@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
@@ -54,9 +55,9 @@ Widget _listingDetailMetaFavoriteChip({
       UserListingState(),
       FavoritesState().listenableFor(listingId),
     ]),
-    shouldShow: (ctx) =>
-        AuthenticationState().isAuthenticated &&
-        !UserListingState().isOwner(ownerUserId),
+    shouldShow: (ctx) => PeerInteractionEligibility.mayInteractWithPublisher(
+      publisherUserId: ownerUserId,
+    ),
     resolveIsFavorite: (_) => FavoritesState().isFavorite(listingId),
     hiddenBuilder: (_) => const SizedBox.shrink(),
     onToggle: (ctx, wasFavorite, pulse) async {
@@ -178,8 +179,10 @@ class ListingDetailMetaBadges extends StatelessWidget {
         PriceDisplaySettingsState(),
       ]),
       builder: (context, _) {
-        final showFavorite = AuthenticationState().isAuthenticated &&
-            !UserListingState().isOwner(listingDetail.user.id);
+        final showFavorite =
+            PeerInteractionEligibility.mayInteractWithPublisher(
+          publisherUserId: listingDetail.user.id,
+        );
         return SizedBox(
           width: double.infinity,
           child: Row(

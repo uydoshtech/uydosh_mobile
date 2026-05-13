@@ -13,6 +13,7 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -425,8 +426,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                         },
                         child: GigOfferTile(
                           offer: offer,
-                          showFavoriteIndicator:
-                              !isOwner && AuthenticationState().isAuthenticated,
+                          showFavoriteIndicator: PeerInteractionEligibility
+                              .mayInteractWithPublisher(
+                            publisherUserId: offer.providerUserId,
+                          ),
                         ),
                       );
                     },
@@ -500,10 +503,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
                         },
                         child: GigRequestTile(
                           request: request,
-                          showFavoriteIndicator: !UserListingState().isOwner(
-                                request.clientUserId,
-                              ) &&
-                              AuthenticationState().isAuthenticated,
+                          showFavoriteIndicator: PeerInteractionEligibility
+                              .mayInteractWithPublisher(
+                            publisherUserId: request.clientUserId,
+                          ),
                           onDetailClosed: (feedNeedsRefresh) {
                             if (!feedNeedsRefresh) return;
                             context.read<GigRequestsBloc>().add(

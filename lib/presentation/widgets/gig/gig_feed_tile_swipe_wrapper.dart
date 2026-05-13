@@ -5,16 +5,17 @@ import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
 
 /// Leading swipe (finger moves left) to remove **your** gig from a feed.
 ///
 /// Mirrors [MessagesInboxScreen] archive swipe: [DismissDirection.endToStart],
 /// stepped haptics, then [CommonConfirmationDialogs.showDeleteConfirmation]
-/// before the API runs. The delete runs inside [confirmDismiss] so a failed
-/// request snaps the tile back.
+/// before [DestructiveActionFlow.runDestructive] performs the API, gig-hub
+/// refresh notification, and success toast.
 class GigFeedTileSwipeWrapper extends StatefulWidget {
   const GigFeedTileSwipeWrapper({
     required this.entityId,
@@ -101,26 +102,19 @@ class _GigFeedTileSwipeWrapperState extends State<GigFeedTileSwipeWrapper> {
         if (confirmed != true || !context.mounted) {
           return false;
         }
-        try {
-          await widget.onConfirmDelete(getIt<IGigService>());
-          if (!context.mounted) return false;
-          if (widget.notifyGigHubFeedsOnDelete) {
-            getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
-          }
-          ToastTheme.showSuccess(
-            context,
-            message: L10n.get(widget.successMessageKey),
-          );
-          return true;
-        } catch (_) {
-          if (context.mounted) {
-            ToastTheme.showError(
-              context,
-              message: L10n.get(widget.errorMessageKey),
-            );
-          }
-          return false;
-        }
+        final ok = await DestructiveActionFlow.runDestructive(
+          context: context,
+          errorToastKey: widget.errorMessageKey,
+          action: () async {
+            await widget.onConfirmDelete(getIt<IGigService>());
+            if (!context.mounted) return;
+            if (widget.notifyGigHubFeedsOnDelete) {
+              getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
+            }
+            ToastReporting.successKey(context, widget.successMessageKey);
+          },
+        );
+        return ok;
       },
       onDismissed: (_) {
         _hapticStep = 0;

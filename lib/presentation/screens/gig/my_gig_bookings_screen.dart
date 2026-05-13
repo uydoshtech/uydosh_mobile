@@ -3,7 +3,6 @@ import "dart:async";
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
@@ -14,7 +13,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -25,7 +24,6 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
@@ -485,10 +483,6 @@ class _BookingActionsState extends State<_BookingActions> {
     if (me == null) return;
     setState(() => _chatOpening = true);
     try {
-      final conversation = await getIt<IMessagingService>().createConversation(
-        gigBookingId: booking.id,
-      );
-      if (!mounted) return;
       final otherId = booking.isProvider(me)
           ? booking.clientUserId
           : booking.providerUserId;
@@ -502,25 +496,19 @@ class _BookingActionsState extends State<_BookingActions> {
       final otherAvatar = booking.isProvider(me)
           ? booking.clientAvatarUrl
           : booking.providerAvatarUrl;
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
-          builder: (_) => ChatScreen(
-            conversationId: conversation.id,
-            conversationContextType: "gig_booking",
-            conversationParticipantId: booking.providerUserId,
-            otherUserId: otherId,
-            otherUserName: otherName,
-            otherUserInitials: StringUtils.extractInitials(otherName),
-            otherUserAvatar: otherAvatar,
-          ),
+
+      await ConversationEntryFlow.openGigBookingChat(
+        context: context,
+        gigBookingId: booking.id,
+        buildChat: (conversation) => ChatScreen(
+          conversationId: conversation.id,
+          conversationContextType: "gig_booking",
+          conversationParticipantId: booking.providerUserId,
+          otherUserId: otherId,
+          otherUserName: otherName,
+          otherUserInitials: StringUtils.extractInitials(otherName),
+          otherUserAvatar: otherAvatar,
         ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("conversation_failed"),
       );
     } finally {
       if (mounted) setState(() => _chatOpening = false);

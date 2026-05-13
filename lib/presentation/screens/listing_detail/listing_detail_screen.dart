@@ -33,6 +33,7 @@ import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -44,7 +45,6 @@ import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -55,7 +55,9 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listing_owner_conversations_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
+import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
@@ -81,10 +83,8 @@ import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dar
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
-import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -297,12 +297,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       logger.d("❌ Error details: $e");
 
       // Show error message
-      ToastTheme.showError(
-        context,
-        message: L10n.get(
-          "error_deactivating_listing",
-        ),
-      );
+      ToastReporting.errorKey(context, "error_deactivating_listing");
     } finally {
       if (mounted) {
         context.read<ListingDetailPageBloc>().setToggling(false);
@@ -560,10 +555,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     } catch (e) {
       logger.d("Error opening Telegram: $e");
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("could_not_open_telegram"),
-      );
+      ToastReporting.errorKey(context, "could_not_open_telegram");
     }
   }
 
@@ -582,10 +574,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     } catch (e) {
       logger.d("Error making phone call: $e");
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("could_not_make_call"),
-      );
+      ToastReporting.errorKey(context, "could_not_make_call");
     }
   }
 
@@ -776,6 +765,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     return fullUrl;
   }
 
+  void _toastRoom3dOpenError() {
+    ToastReporting.errorKey(context, "room_3d_open_error");
+  }
+
   Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
     final raw = listingDetail.pointCloudUrl;
     if (raw == null || raw.isEmpty) return;
@@ -799,10 +792,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
       if (!mounted) return;
       if (!ok) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("room_3d_open_error"),
-        );
+        _toastRoom3dOpenError();
       } else {
         // iOS resolves `presentLocalFile` when the viewer is dismissed; backfilled metrics
         // may already be on the server — reload listing so the tile shows dimensions.
@@ -821,18 +811,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       }
     } on MissingPluginException catch (e, st) {
       logger.d("Room 3D viewer missing-plugin: $e\n$st");
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_3d_open_error"),
-      );
+      _toastRoom3dOpenError();
     } on PlatformException catch (e, st) {
       logger.d("Room 3D viewer platform error: ${e.code} ${e.message}\n$st");
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_3d_open_error"),
-      );
+      _toastRoom3dOpenError();
     } on DioException catch (e) {
       logger.d(
         "Room 3D viewer network error (status=${e.response?.statusCode}): $e",
@@ -840,30 +822,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       if (!mounted) return;
       final status = e.response?.statusCode;
       if (status == 404) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("room_3d_open_error"),
-        );
+        _toastRoom3dOpenError();
         return;
       }
       if (status == 401 || status == 403) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("error_not_authenticated"),
-        );
+        ToastReporting.errorKey(context, "error_not_authenticated");
         return;
       }
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_3d_open_error"),
-      );
+      _toastRoom3dOpenError();
     } catch (e) {
       logger.d("Room 3D viewer error: $e");
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_3d_open_error"),
-      );
+      _toastRoom3dOpenError();
     }
   }
 
@@ -934,7 +903,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   void _showShareError(String message) {
-    ToastTheme.showError(context, message: message);
+    ToastReporting.errorMessage(context, message);
   }
 
   void _navigateToSignIn() => AuthFlow.openSignIn(context);
@@ -969,8 +938,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         builder: (context) => MultiBlocProvider(
           providers: [
             BlocProvider<SubwayStationsBloc>(
-              create: (context) =>
-                  SubwayStationsBloc(),
+              create: (context) => SubwayStationsBloc(),
             ),
             BlocProvider<LocationsBloc>(
               create: (context) => LocationsBloc(getIt<ILocationService>()),
@@ -993,7 +961,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   void _showEditError(String message) {
-    ToastTheme.showError(context, message: message);
+    ToastReporting.errorMessage(context, message);
   }
 
   Future<void> _toggleFeatureListing() async {
@@ -1070,16 +1038,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
 
       if (success) {
-        // Show success message based on current state
-        final message = ListingUtils.isCurrentlyFeaturedDetail(listingDetail)
-            ? L10n.get(
-                "unfeature_listing_success",
-              )
-            : L10n.get(
-                "feature_listing_success",
-              );
-
-        ToastTheme.showSuccess(context, message: message);
+        if (ListingUtils.isCurrentlyFeaturedDetail(listingDetail)) {
+          ToastReporting.successKey(context, "unfeature_listing_success");
+        } else {
+          ToastReporting.successKey(context, "feature_listing_success");
+        }
 
         if (isPromoting) {
           await _savePromotionTimestamp();
@@ -1121,7 +1084,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   void _showFeatureError(String message) {
-    ToastTheme.showError(context, message: message);
+    ToastReporting.errorMessage(context, message);
   }
 
   Future<void> _toggleFavorite() async {
@@ -1156,38 +1119,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         }
 
         // Show success message
-        ToastTheme.showSuccess(
-          context,
-          message: wasFavorite
-              ? L10n.get(
-                  "removed_from_favorites",
-                )
-              : L10n.get(
-                  "added_to_favorites",
-                ),
-        );
+        if (wasFavorite) {
+          ToastReporting.successKey(context, "removed_from_favorites");
+        } else {
+          ToastReporting.successKey(context, "added_to_favorites");
+        }
       } else {
         // Show error message to user
-        if (context.mounted) {
-          ToastTheme.showError(
-            context,
-            message: L10n.get(
-              "favorite_toggle_network_error",
-            ),
-          );
-        }
+        ToastReporting.errorKey(context, "favorite_toggle_network_error");
       }
     } catch (e) {
       logger.d("❌ Error toggling favorite: $e");
       // Show error message to user
-      if (context.mounted) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get(
-            "favorite_toggle_network_error",
-          ),
-        );
-      }
+      ToastReporting.errorKey(context, "favorite_toggle_network_error");
     }
   }
 
@@ -1362,12 +1306,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
 
     // If complaint was created successfully, show a message
     if (result == true) {
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get(
-          "complaint_created_success",
-        ),
-      );
+      ToastReporting.successKey(context, "complaint_created_success");
       _loadComplaintCount(listingDetail.id);
     }
   }
@@ -1393,291 +1332,56 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Future<void> _startConversation(ListingDetail listingDetail) async {
-    try {
-      logger.d("🚀 [Frontend] Starting conversation creation process...");
+    final pageState = context.read<ListingDetailPageBloc>().state;
+    final displayName =
+        (pageState.ownerName != null && pageState.ownerName!.trim().isNotEmpty)
+            ? pageState.ownerName!
+            : listingDetail.user.email ?? "";
 
-      // Refresh user listing state to ensure we have current user ID
-      await UserListingState().refreshUserId();
-
-      // Get current user ID
-      final currentUserId = await SessionManager.getUserId();
-      logger.d("🔍 [Frontend] Current user ID: $currentUserId");
-
-      if (currentUserId == null) {
-        logger.d("❌ [Frontend] No current user ID found");
-        ToastTheme.showError(
+    await ConversationEntryFlow.openListingThread(
+      context: context,
+      listingDetail: listingDetail,
+      analyticsListingRouteId: widget.listingId,
+      pushNewThread: (conversation) async {
+        await ConversationEntryFlow.pushChatShell(
           context,
-          message: L10n.get(
-            "error_not_authenticated",
+          conversationId: conversation.id,
+          chatScreenChild: ChatScreen(
+            conversationId: conversation.id,
+            listingId: widget.listingId,
+            listingTypeId: listingDetail.listingTypeId,
+            listingOwnerUserId: listingDetail.user.id,
+            listingTitle:
+                resolvedListingChatTitleFromListingDetail(listingDetail),
+            otherUserInitials: StringUtils.extractInitials(displayName),
+            otherUserName: displayName.isNotEmpty ? displayName : null,
+            otherUserId: listingDetail.user.id,
           ),
         );
-        return;
-      }
-
-      // Check if user is trying to message themselves
-      if (currentUserId == listingDetail.user.id) {
-        logger.d("❌ [Frontend] User trying to message themselves");
-        ToastTheme.showError(
+      },
+      pushExistingThread: (existingConversation, currentUserId) async {
+        await ConversationEntryFlow.pushChatShell(
           context,
-          message: L10n.get(
-            "error_cannot_message_self",
+          conversationId: existingConversation.id,
+          chatScreenChild: ChatScreen(
+            conversationId: existingConversation.id,
+            listingId: widget.listingId,
+            listingTypeId: existingConversation.listingTypeId,
+            listingOwnerUserId: existingConversation.participantId,
+            listingTitle:
+                resolvedConversationListingTitle(existingConversation),
+            otherUserInitials: StringUtils.extractInitials(
+              existingConversation.otherUserName,
+            ),
+            otherUserName: existingConversation.otherUserName,
+            otherUserId: existingConversation.initiatorId == currentUserId
+                ? existingConversation.participantId
+                : existingConversation.initiatorId,
+            otherUserAvatar: existingConversation.otherUserAvatar,
           ),
         );
-        return;
-      }
-
-      logger.d("📋 [Frontend] Conversation details:");
-      logger.d("   - Listing ID: ${listingDetail.id}");
-      logger.d("   - Listing Title: ${listingDetail.title}");
-      logger.d("   - Initiator ID (current user): $currentUserId");
-      logger.d("   - Participant ID (listing owner): ${listingDetail.user.id}");
-      logger.d("   - Participant Email: ${listingDetail.user.email ?? "N/A"}");
-      logger.d("   - Participant Phone: ${listingDetail.user.phone ?? "N/A"}");
-
-      // Show loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: HouseLoadingIndicator()),
-      );
-
-      logger.d("🌐 [Frontend] Making API call to create conversation...");
-
-      // Create conversation
-      final messagingService = getIt<IMessagingService>();
-
-      try {
-        final conversation = await messagingService.createConversation(
-          listingId: listingDetail.id,
-          participantId: listingDetail.user.id,
-        );
-
-        logger.d("✅ [Frontend] Conversation created successfully!");
-        logger.d("   - Conversation ID: ${conversation.id}");
-        logger.d("   - Created at: ${conversation.createdAt}");
-        logger.d("   - Conversation type: ${conversation.runtimeType}");
-        logger.d("   - Conversation details: $conversation");
-
-        // Hide loading
-        if (mounted) Navigator.of(context).pop();
-
-        // Navigate to chat screen
-        if (mounted) {
-          logger.d("🧭 [Frontend] Navigating to chat screen...");
-          logger.d(
-            "🧭 [Frontend] Conversation ID for navigation: ${conversation.id}",
-          );
-          try {
-            final pageState = context.read<ListingDetailPageBloc>().state;
-            final displayName = (pageState.ownerName != null &&
-                    pageState.ownerName!.trim().isNotEmpty)
-                ? pageState.ownerName!
-                : listingDetail.user.email ?? "";
-            final chatScreen = ChatScreen(
-              conversationId: conversation.id,
-              listingId: widget.listingId,
-              listingTypeId: listingDetail.listingTypeId,
-              listingOwnerUserId: listingDetail.user.id,
-              listingTitle:
-                  resolvedListingChatTitleFromListingDetail(listingDetail),
-              otherUserInitials: StringUtils.extractInitials(displayName),
-              otherUserName: displayName.isNotEmpty ? displayName : null,
-              otherUserId: listingDetail.user.id,
-            );
-            logger.d("🧭 [Frontend] ChatScreen created successfully");
-            Navigator.of(
-              context,
-            ).push(
-              MaterialPageRoute(
-                settings: RouteSettings(
-                  name: ChatScreen.routeName(conversation.id),
-                ),
-                builder: (context) => chatScreen,
-              ),
-            );
-            logger.d("🧭 [Frontend] Navigation completed successfully");
-          } catch (navigationError) {
-            logger.d("❌ [Frontend] Navigation error: $navigationError");
-            logger.d(
-              "❌ [Frontend] Navigation error type: ${navigationError.runtimeType}",
-            );
-            ToastTheme.showError(
-              context,
-              message: "Failed to open chat: $navigationError",
-            );
-          }
-        }
-
-        getIt<AppAnalyticsService>().logConversationStarted(
-          listingId: widget.listingId,
-          ownerId: listingDetail.user.id,
-        );
-
-        // Show success message
-        ToastTheme.showSuccess(
-          context,
-          message: L10n.get(
-            "conversation_created",
-          ),
-        );
-        return; // Exit early on success
-      } catch (e) {
-        logger.d("⚠️ [Frontend] Conversation creation failed: $e");
-        logger.d("⚠️ [Frontend] Error type: ${e.runtimeType}");
-        logger.d("⚠️ [Frontend] Error toString: ${e.toString()}");
-
-        // Check if it"s a "conversation already exists" error
-        // The error might be wrapped in an Exception, so we need to check the original DioException
-        final errorMessage = e.toString();
-        logger.d("🔍 [Frontend] Checking error message: $errorMessage");
-
-        // Check for the specific error message that appears in the HTTP response
-        // The error message is in the DioException response data, not in the toString()
-        final containsExactMessage = errorMessage.contains(
-          "Conversation already exists for this listing and participants",
-        );
-        final containsPartialMessage = errorMessage.contains(
-          "Conversation already exists",
-        );
-        final containsGenericMessage = errorMessage.contains("already exists");
-
-        // Check for DioException with 400 status (which indicates "already exists")
-        final isDioException400 = errorMessage.contains("DioException") &&
-            errorMessage.contains("400");
-
-        logger.d("🔍 [Frontend] Contains exact message: $containsExactMessage");
-        logger.d(
-          "🔍 [Frontend] Contains partial message: $containsPartialMessage",
-        );
-        logger.d(
-          "🔍 [Frontend] Contains generic message: $containsGenericMessage",
-        );
-        logger.d("🔍 [Frontend] Is DioException 400: $isDioException400");
-
-        // Consider it an "already exists" error if we can detect it
-        final isAlreadyExistsError = containsExactMessage ||
-            containsPartialMessage ||
-            containsGenericMessage ||
-            isDioException400;
-
-        logger.d(
-          "🔍 [Frontend] Is already exists error: $isAlreadyExistsError",
-        );
-
-        if (isAlreadyExistsError) {
-          logger.d(
-            "🔄 [Frontend] Conversation already exists, trying to find existing conversation...",
-          );
-
-          // Check if user is authenticated before making API calls
-          final isAuthenticated = await SessionManager.isAuthenticated();
-          if (!isAuthenticated) {
-            logger.d(
-              "❌ ListingDetailScreen: User not authenticated, cannot check for existing conversation",
-            );
-            return;
-          }
-
-          // Try to find existing conversation
-          try {
-            final conversations = await messagingService.getConversations(
-              page: 1,
-              limit: 100,
-            );
-            final existingConversation = conversations.data.firstWhere(
-              (conv) =>
-                  conv.listingId == listingDetail.id &&
-                  (conv.initiatorId == currentUserId ||
-                      conv.participantId == currentUserId),
-              orElse: () => throw Exception("Conversation not found in list"),
-            );
-
-            logger.d(
-              "✅ [Frontend] Found existing conversation: ${existingConversation.id}",
-            );
-
-            // Hide loading
-            if (mounted) Navigator.of(context).pop();
-
-            // Navigate to existing conversation
-            if (mounted) {
-              logger.d("🧭 [Frontend] Navigating to existing chat screen...");
-              try {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    settings: RouteSettings(
-                      name: ChatScreen.routeName(existingConversation.id),
-                    ),
-                    builder: (context) => ChatScreen(
-                      conversationId: existingConversation.id,
-                      listingId: widget.listingId,
-                      listingTypeId: existingConversation.listingTypeId,
-                      // Server convention: listing owner is `participant_id`.
-                      listingOwnerUserId: existingConversation.participantId,
-                      listingTitle:
-                          resolvedConversationListingTitle(
-                            existingConversation,
-                          ),
-                      otherUserInitials: StringUtils.extractInitials(
-                        existingConversation.otherUserName,
-                      ),
-                      otherUserName: existingConversation.otherUserName,
-                      otherUserId:
-                          existingConversation.initiatorId == currentUserId
-                              ? existingConversation.participantId
-                              : existingConversation.initiatorId,
-                      otherUserAvatar: existingConversation.otherUserAvatar,
-                    ),
-                  ),
-                );
-              } catch (navigationError) {
-                logger.d("❌ [Frontend] Navigation error: $navigationError");
-                ToastTheme.showError(
-                  context,
-                  message: "Failed to open chat: $navigationError",
-                );
-              }
-            }
-
-            // Show info message
-            ToastTheme.showInfo(
-              context,
-              message: L10n.get(
-                "opening_existing_conversation",
-              ),
-            );
-            return; // Exit early on success
-          } catch (findError) {
-            logger.d(
-              "❌ [Frontend] Could not find existing conversation: $findError",
-            );
-            // Fall through to show error
-          }
-        }
-
-        // Re-throw the original error to be handled by outer catch
-        rethrow;
-      }
-    } catch (e) {
-      logger.d("❌ [Frontend] Error creating conversation: $e");
-      logger.d("❌ [Frontend] Error type: ${e.runtimeType}");
-      logger.d("❌ [Frontend] Error details: $e");
-
-      // Hide loading if still showing
-      if (mounted) Navigator.of(context).pop();
-
-      // Show error message with details
-      var errorMessage = L10n.get(
-        "conversation_failed",
-      );
-      if (e.toString().contains("DioException")) {
-        errorMessage = "Network error: ${e.toString()}";
-      } else {
-        errorMessage = "Error: ${e.toString()}";
-      }
-
-      ToastTheme.showError(context, message: errorMessage);
-    }
+      },
+    );
   }
 
   Future<void> _confirmOpenInYandexMaps(ListingDetail listingDetail) async {
@@ -1698,12 +1402,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       // Get coordinates from the listing detail
       final coordinates = _getCoordinatesFromListing(listingDetail);
       if (coordinates == null) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get(
-            "error_loading_listing_details",
-          ),
-        );
+        ToastReporting.errorKey(context, "error_loading_listing_details");
         return;
       }
 
@@ -1719,17 +1418,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        ToastTheme.showError(
-          context,
-          message: "Could not open Yandex Maps",
-        );
+        ToastReporting.errorMessage(context, "Could not open Yandex Maps");
       }
     } catch (e) {
       logger.e("Error opening Yandex Maps: $e");
-      ToastTheme.showError(
-        context,
-        message: "Error opening Yandex Maps",
-      );
+      ToastReporting.errorMessage(context, "Error opening Yandex Maps");
     }
   }
 
@@ -2509,12 +2202,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   // Show delete confirmation dialog
-  void _showDeleteConfirmation(int listingId) {
-    CommonConfirmationDialogs.showDeleteConfirmation(
+  Future<void> _showDeleteConfirmation(int listingId) async {
+    await DestructiveActionFlow.runAfterDeleteConfirmed(
       context: context,
       titleKey: "delete_listing",
       messageKey: "delete_listing_confirmation",
-      onConfirm: () => _deleteListing(listingId),
+      errorToastKey: "delete_listing_error",
+      onConfirmed: () => _deleteListing(listingId),
     );
   }
 
@@ -2523,39 +2217,20 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     context.read<ListingDetailPageBloc>().setDeleting(true);
 
     try {
-      // Get the listing service from dependency injection
       final listingService = getIt<IListingService>();
 
-      // Call the delete API
       final success = await listingService.deleteListing(listingId);
 
       if (success) {
-        // Show success message
-        ToastTheme.showSuccess(
-          context,
-          message: L10n.get(
-            "delete_listing_success",
-          ),
-        );
+        if (!mounted) return;
+        ToastReporting.successKey(context, "delete_listing_success");
 
-        // Mark home screen for refresh to reflect the deletion
         HomeRefreshState().markForRefresh();
 
-        // Navigate back to home screen
         Navigator.of(context).pop();
       } else {
         throw Exception("Delete operation failed");
       }
-    } catch (e) {
-      logger.d("❌ Error deleting listing: $e");
-
-      // Show error message
-      ToastTheme.showError(
-        context,
-        message: L10n.get(
-          "delete_listing_error",
-        ),
-      );
     } finally {
       if (mounted) {
         context.read<ListingDetailPageBloc>().setDeleting(false);
@@ -2563,4 +2238,3 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     }
   }
 }
-

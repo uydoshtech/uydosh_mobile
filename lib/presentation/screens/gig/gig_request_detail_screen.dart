@@ -6,7 +6,6 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
@@ -15,25 +14,27 @@ import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
+import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
+import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
@@ -129,31 +130,24 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   }
 
   Future<void> _confirmAndDeleteTask(GigRequest request) async {
-    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+    if (_deleteInFlight) return;
+    await DestructiveActionFlow.runAfterDeleteConfirmed(
       context: context,
       titleKey: "gigs_request_delete_title",
       messageKey: "gigs_request_delete_message",
+      errorToastKey: "gigs_request_delete_failed",
+      onConfirmed: () async {
+        setState(() => _deleteInFlight = true);
+        try {
+          await getIt<IGigService>().cancelRequest(request.id);
+          if (!mounted) return;
+          ToastReporting.successKey(context, "gigs_request_delete_success");
+          Navigator.of(context).pop(true);
+        } finally {
+          if (mounted) setState(() => _deleteInFlight = false);
+        }
+      },
     );
-    if (confirmed != true || !mounted) return;
-    if (_deleteInFlight) return;
-    setState(() => _deleteInFlight = true);
-    try {
-      await getIt<IGigService>().cancelRequest(request.id);
-      if (!mounted) return;
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get("gigs_request_delete_success"),
-      );
-      Navigator.of(context).pop(true);
-    } catch (_) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("gigs_request_delete_failed"),
-      );
-    } finally {
-      if (mounted) setState(() => _deleteInFlight = false);
-    }
   }
 
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
@@ -237,8 +231,10 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
                   _isTaskOwner(request) &&
                   request.status == GigRequestStatus.open;
               final canFavoriteTask = request != null &&
-                  AuthenticationState().isAuthenticated &&
-                  !_isTaskOwner(request);
+                  PeerInteractionEligibility.mayInteractWithPublisher(
+                    publisherUserId: request.clientUserId,
+                    viewerUserIdFallback: _sessionUserId,
+                  );
               return Scaffold(
                 appBar: UydoshAppBar(
                   actionsPadding: const EdgeInsets.only(right: 8),
@@ -250,8 +246,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
                   actions: [
                     if (canFavoriteTask)
                       FavoriteHeartToggle(
-                        listenable:
-                            GigFavoritesState().listenableForRequest(request.id),
+                        listenable: GigFavoritesState()
+                            .listenableForRequest(request.id),
                         shouldShow: (_) => true,
                         resolveIsFavorite: (_) =>
                             GigFavoritesState().isRequestFavorite(request.id),
@@ -333,58 +329,25 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
 
   Future<void> _openChat(GigRequest request) async {
     if (_contactInFlight) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-
-    await UserListingState().refreshUserId();
-    final currentUserId = await SessionManager.getUserId();
-    if (currentUserId == null) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("error_not_authenticated"),
-      );
-      return;
-    }
-    if (currentUserId == request.clientUserId) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("error_cannot_message_self"),
-      );
-      return;
-    }
-
     setState(() => _contactInFlight = true);
     try {
-      final conversation = await getIt<IMessagingService>().createConversation(
-        gigRequestId: request.id,
-      );
-      if (!mounted) return;
-
       final clientName = (request.clientDisplayName ?? "").trim();
-      navigator.push(
-        MaterialPageRoute<void>(
-          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
-          builder: (_) => ChatScreen(
-            conversationId: conversation.id,
-            conversationContextType: "gig_request",
-            conversationParticipantId: request.clientUserId,
-            gigRequestId: request.id,
-            gigRequestDetailRouteBelow: true,
-            gigRequestTitle: request.title,
-            otherUserId: request.clientUserId,
-            otherUserName: clientName.isNotEmpty ? clientName : null,
-            otherUserInitials: clientName.isNotEmpty
-                ? StringUtils.extractInitials(clientName)
-                : null,
-          ),
+      await ConversationEntryFlow.openGigRequestChat(
+        context: context,
+        request: request,
+        buildChat: (conversation) => ChatScreen(
+          conversationId: conversation.id,
+          conversationContextType: "gig_request",
+          conversationParticipantId: request.clientUserId,
+          gigRequestId: request.id,
+          gigRequestDetailRouteBelow: true,
+          gigRequestTitle: request.title,
+          otherUserId: request.clientUserId,
+          otherUserName: clientName.isNotEmpty ? clientName : null,
+          otherUserInitials: clientName.isNotEmpty
+              ? StringUtils.extractInitials(clientName)
+              : null,
         ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(content: Text(L10n.get("gigs_request_contact_failed"))),
       );
     } finally {
       if (mounted) setState(() => _contactInFlight = false);
@@ -673,8 +636,10 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
   String _localizedDescription(String language) {
     final r = widget.request;
     final raw = switch (language) {
-      "uz" => (r.descriptionUz ?? r.descriptionRu ?? r.descriptionEn ?? "").trim(),
-      "en" => (r.descriptionEn ?? r.descriptionRu ?? r.descriptionUz ?? "").trim(),
+      "uz" =>
+        (r.descriptionUz ?? r.descriptionRu ?? r.descriptionEn ?? "").trim(),
+      "en" =>
+        (r.descriptionEn ?? r.descriptionRu ?? r.descriptionUz ?? "").trim(),
       _ => (r.descriptionRu ?? r.descriptionEn ?? r.descriptionUz ?? "").trim(),
     };
     return StringUtils.collapseExcessiveNewlines(raw);

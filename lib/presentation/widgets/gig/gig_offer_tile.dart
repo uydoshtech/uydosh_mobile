@@ -5,16 +5,15 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
-import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
@@ -233,10 +232,9 @@ class _GigOfferTileState extends State<GigOfferTile> {
                     ? FavoriteHeartToggle(
                         listenable: _favoriteListenable,
                         shouldShow: (ctx) =>
-                            AuthenticationState().isAuthenticated &&
-                            !UserListingState().isOwner(
-                              widget.offer.providerUserId,
-                            ),
+                            PeerInteractionEligibility.mayInteractWithPublisher(
+                          publisherUserId: widget.offer.providerUserId,
+                        ),
                         resolveIsFavorite: (ctx) =>
                             widget.forceFavorite ??
                             GigFavoritesState()

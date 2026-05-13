@@ -50,6 +50,9 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
+import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_input.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
@@ -61,7 +64,6 @@ import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -80,7 +82,8 @@ class ChatScreen extends StatefulWidget {
   /// Root [Navigator] route name for this conversation. Push with
   /// `RouteSettings(name: routeName(conversationId))` so deep links / push
   /// handling can pop back to an existing chat instead of stacking another.
-  static String routeName(int conversationId) => "/chat/$conversationId";
+  static String routeName(int conversationId) =>
+      ConversationEntryFlow.chatRouteName(conversationId);
 
   const ChatScreen({
     required this.conversationId,
@@ -1806,36 +1809,31 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _showAdminDeleteConversationConfirmation() {
-    CommonConfirmationDialogs.showDeleteConfirmation(
-      context: context,
-      titleKey: "admin_delete_conversation",
-      messageKey: "admin_delete_conversation_confirmation",
-      onConfirm: () => _performAdminDeleteConversation(),
+    unawaited(
+      DestructiveActionFlow.runAfterDeleteConfirmed(
+        context: context,
+        titleKey: "admin_delete_conversation",
+        messageKey: "admin_delete_conversation_confirmation",
+        errorToastKey: "admin_delete_conversation_error",
+        onConfirmed: () async {
+          if (_adminDeleteBusy || !mounted) return;
+          setState(() => _adminDeleteBusy = true);
+          try {
+            await getIt<IMessagingService>()
+                .deleteConversation(widget.conversationId);
+            if (!mounted) return;
+            ToastReporting.successKey(
+              context,
+              "admin_delete_conversation_success",
+            );
+            context.read<ConversationsBloc>().add(const ConversationsRefresh());
+            Navigator.of(context).pop();
+          } finally {
+            if (mounted) setState(() => _adminDeleteBusy = false);
+          }
+        },
+      ),
     );
-  }
-
-  Future<void> _performAdminDeleteConversation() async {
-    if (_adminDeleteBusy || !mounted) return;
-    setState(() => _adminDeleteBusy = true);
-    try {
-      await getIt<IMessagingService>()
-          .deleteConversation(widget.conversationId);
-      if (!mounted) return;
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get("admin_delete_conversation_success"),
-      );
-      context.read<ConversationsBloc>().add(const ConversationsRefresh());
-      Navigator.of(context).pop();
-    } catch (_) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("admin_delete_conversation_error"),
-      );
-    } finally {
-      if (mounted) setState(() => _adminDeleteBusy = false);
-    }
   }
 }
 

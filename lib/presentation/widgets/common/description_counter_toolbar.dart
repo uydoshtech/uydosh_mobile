@@ -19,7 +19,9 @@ enum DescriptionCounterToolbarLayout {
 }
 
 /// Shared toolbar rendered via [TextField.buildCounter] under the listing
-/// description field. Exposes:
+/// description field. Groups the **description assistant** actions from
+/// [ListingDescriptionAiEnhanceButton], [ListingDescriptionTemplateButton], and
+/// [ListingDescriptionDictateButton] (see [ListingDescriptionAssistant]).
 ///
 /// * The AI-enhance, template suggestion, and dictate actions on the left.
 /// * A `currentLength / maxLength` counter that turns red at 90% usage.
@@ -82,7 +84,8 @@ class DescriptionCounterToolbar extends StatefulWidget {
 }
 
 class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
-  late final DictationMeterController _dictationMeter = DictationMeterController();
+  late final DictationMeterController _dictationMeter =
+      DictationMeterController();
 
   void _onDictationMeterServerDisabled() {
     if (ClientListingDictationMeterConfig.dictationMeterDisabled.value) {
@@ -117,8 +120,8 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   Color _resolveCounterColor(BuildContext context) {
     final override = widget.counterColor;
     if (override != null) return override;
-    final isNearLimit =
-        widget.maxLength > 0 && (widget.currentLength / widget.maxLength) >= 0.9;
+    final isNearLimit = widget.maxLength > 0 &&
+        (widget.currentLength / widget.maxLength) >= 0.9;
     if (isNearLimit) return Colors.red;
     final theme = Theme.of(context);
     return theme.brightness == Brightness.dark
@@ -197,7 +200,8 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
         ],
         Semantics(
           button: true,
-          label: widget.isExpanded ? "Collapse description" : "Expand description",
+          label:
+              widget.isExpanded ? "Collapse description" : "Expand description",
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {

@@ -1,10 +1,12 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_assistant.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Compact “Template” action for listing description fields (create / edit).
 /// Inserts a short, non-personal template based on listing type + gender + app language.
+/// Uses [ListingDescriptionAssistant.accentColor] with other assistant toolbar controls.
 class ListingDescriptionTemplateButton extends StatelessWidget {
   const ListingDescriptionTemplateButton({
     required this.controller,
@@ -15,8 +17,10 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
   });
 
   final TextEditingController controller;
+
   /// App convention: 1 = room needed, 2 = roommate needed.
   final int listingTypeId;
+
   /// App convention: 1 = male, 2 = female.
   final int gender;
   final bool inlineWithCounter;
@@ -41,7 +45,7 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.onSurface;
+    final accent = ListingDescriptionAssistant.accentColor(context);
     final child = Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,4 +84,3 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
     return button;
   }
 }
-

@@ -8,7 +8,7 @@ import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_assistant.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Signature for callbacks that take the current trimmed text and return an
@@ -18,7 +18,8 @@ typedef DescriptionEnhanceCallback = Future<String?> Function(String text);
 /// Compact “AI enhance” action for listing/gig description fields (create /
 /// edit). Defaults to housing-listing copy + [GeminiService.enhanceListingDescription];
 /// callers can override [enhance] / [canEnhance] / [errorKey] to plug the same
-/// affordance into a different domain (e.g. gigs).
+/// affordance into a different domain (e.g. gigs). Validation and failure toasts
+/// go through [ListingDescriptionAssistant].
 class ListingDescriptionAiEnhanceButton extends StatefulWidget {
   const ListingDescriptionAiEnhanceButton({
     required this.controller,
@@ -62,7 +63,7 @@ class _ListingDescriptionAiEnhanceButtonState
   /// Uses [ColorScheme.onSurface] (app primary text: white / black), not [ColorScheme.primary]
   /// or default [TextButton] blue, which are low-contrast on this field’s fill.
   Color _accentColor(BuildContext context) {
-    return Theme.of(context).colorScheme.onSurface;
+    return ListingDescriptionAssistant.accentColor(context);
   }
 
   late final AnimationController _sparkleBlinkController;
@@ -141,20 +142,14 @@ class _ListingDescriptionAiEnhanceButtonState
     HapticFeedbackUtils.impact();
     final raw = widget.controller.text.trim();
     if (raw.isEmpty) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_ai_enhance_empty"),
-      );
+      ListingDescriptionAssistant.toastAiEnhanceEmpty(context);
       return;
     }
     final gemini = getIt<GeminiService>();
     final canEnhance =
         widget.canEnhance?.call() ?? gemini.canEnhanceListingDescription;
     if (!canEnhance) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_ai_enhance_unavailable"),
-      );
+      ListingDescriptionAssistant.toastAiEnhanceUnavailable(context);
       return;
     }
     setState(() {
@@ -177,17 +172,14 @@ class _ListingDescriptionAiEnhanceButtonState
         return;
       }
       if (outcome.authRequired) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("listing_translation_sign_in_required"),
-        );
+        ListingDescriptionAssistant.toastSignInRequired(context);
         return;
       }
       final enhanced = outcome.text;
       if (enhanced == null || enhanced.trim().isEmpty) {
-        ToastTheme.showError(
+        ListingDescriptionAssistant.toastAiEnhanceFailed(
           context,
-          message: L10n.get(widget.errorKey ?? "listing_ai_enhance_error"),
+          errorKey: widget.errorKey ?? "listing_ai_enhance_error",
         );
         return;
       }
@@ -288,16 +280,10 @@ class _ListingDescriptionAiEnhanceButtonState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_loading)
-          Padding(
+          ListingDescriptionAssistant.inlineProgress(
+            context,
+            size: 16,
             padding: const EdgeInsets.only(top: 2),
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: accent,
-              ),
-            ),
           )
         else
           Padding(
@@ -324,14 +310,7 @@ class _ListingDescriptionAiEnhanceButtonState
         : TextButton.icon(
             onPressed: _loading ? null : _onPressed,
             icon: _loading
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: accent,
-                    ),
-                  )
+                ? ListingDescriptionAssistant.inlineProgress(context, size: 16)
                 : _blinkingSparkleIcon(context),
             label: _buildEnhanceLabel(context),
             style: TextButton.styleFrom(

@@ -11,10 +11,11 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_assistant.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Mic control for listing description: records audio, uploads to Whisper via backend.
+/// Errors use [ListingDescriptionAssistant] for consistent keyed toasts + loading affordance.
 class ListingDescriptionDictateButton extends StatefulWidget {
   const ListingDescriptionDictateButton({
     required this.controller,
@@ -59,10 +60,6 @@ class _ListingDescriptionDictateButtonState
       return 1.0;
     }
     return (db - minDb) / (maxDb - minDb);
-  }
-
-  Color _accentColor(BuildContext context) {
-    return Theme.of(context).colorScheme.onSurface;
   }
 
   @override
@@ -114,9 +111,9 @@ class _ListingDescriptionDictateButtonState
     _amplitudeSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 72))
         .listen((amp) {
-          if (!_recording || !mounted) return;
-          meter.pushLevel(_normalizeDbToLevel(amp.current));
-        });
+      if (!_recording || !mounted) return;
+      meter.pushLevel(_normalizeDbToLevel(amp.current));
+    });
   }
 
   Future<void> _stopDueToMaxDuration() async {
@@ -144,10 +141,7 @@ class _ListingDescriptionDictateButtonState
     HapticFeedbackUtils.impact();
     if (!await SessionManager.isAuthenticated()) {
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_translation_sign_in_required"),
-      );
+      ListingDescriptionAssistant.toastSignInRequired(context);
       return;
     }
 
@@ -159,21 +153,14 @@ class _ListingDescriptionDictateButtonState
     final micOk = await _recorder.hasPermission(request: true);
     if (!micOk) {
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_description_dictate_mic_denied"),
-      );
+      ListingDescriptionAssistant.toastDictateMicDenied(context);
       return;
     }
 
-    final supported =
-        await _recorder.isEncoderSupported(AudioEncoder.aacLc);
+    final supported = await _recorder.isEncoderSupported(AudioEncoder.aacLc);
     if (!supported) {
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_description_dictate_failed"),
-      );
+      ListingDescriptionAssistant.toastDictateFailed(context);
       return;
     }
 
@@ -188,10 +175,7 @@ class _ListingDescriptionDictateButtonState
       );
     } catch (_) {
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_description_dictate_failed"),
-      );
+      ListingDescriptionAssistant.toastDictateFailed(context);
       return;
     }
 
@@ -230,10 +214,7 @@ class _ListingDescriptionDictateButtonState
     if (filePath == null || filePath.isEmpty) {
       if (mounted) {
         setState(() => _uploading = false);
-        ToastTheme.showError(
-          context,
-          message: L10n.get("listing_description_dictate_failed"),
-        );
+        ListingDescriptionAssistant.toastDictateFailed(context);
       }
       return;
     }
@@ -254,24 +235,15 @@ class _ListingDescriptionDictateButtonState
     setState(() => _uploading = false);
 
     if (result.authRequired) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_translation_sign_in_required"),
-      );
+      ListingDescriptionAssistant.toastSignInRequired(context);
       return;
     }
     if (result.notConfigured) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_description_dictate_not_configured"),
-      );
+      ListingDescriptionAssistant.toastDictateNotConfigured(context);
       return;
     }
     if (!result.isSuccess) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_description_dictate_failed"),
-      );
+      ListingDescriptionAssistant.toastDictateFailed(context);
       return;
     }
 
@@ -294,16 +266,9 @@ class _ListingDescriptionDictateButtonState
 
   @override
   Widget build(BuildContext context) {
-    final accent = _accentColor(context);
+    final accent = ListingDescriptionAssistant.accentColor(context);
     final icon = _uploading
-        ? SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: accent,
-            ),
-          )
+        ? ListingDescriptionAssistant.inlineProgress(context)
         : ThemeIcon(
             _recording ? Icons.stop_circle : Icons.mic_none_outlined,
             size: 18,

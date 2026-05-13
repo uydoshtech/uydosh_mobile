@@ -7,7 +7,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
@@ -20,21 +19,23 @@ import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
-import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
+import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
+import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -102,29 +103,19 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
   }
 
   Future<void> _deleteOffer(GigOffer offer) async {
-    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+    await DestructiveActionFlow.runAfterDeleteConfirmed(
       context: context,
       titleKey: "gigs_offer_delete_title",
       messageKey: "gigs_offer_delete_message",
+      errorToastKey: "gigs_offer_delete_failed",
+      onConfirmed: () async {
+        await getIt<IGigService>().deleteOffer(offer.id);
+        if (!mounted) return;
+        getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
+        ToastReporting.successKey(context, "gigs_offer_delete_success");
+        Navigator.of(context).pop();
+      },
     );
-    if (confirmed != true || !mounted) return;
-    try {
-      await getIt<IGigService>().deleteOffer(offer.id);
-      if (!mounted) return;
-      getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get("gigs_offer_delete_success"),
-      );
-      Navigator.of(context).pop();
-    } catch (_) {
-      if (mounted) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("gigs_offer_delete_failed"),
-        );
-      }
-    }
   }
 
   @override
@@ -163,8 +154,9 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
               final showOwnerActions = offerForMenu != null &&
                   UserListingState().isOwner(offerForMenu.providerUserId);
               final canFavoriteOffer = offerForMenu != null &&
-                  AuthenticationState().isAuthenticated &&
-                  !UserListingState().isOwner(offerForMenu.providerUserId);
+                  PeerInteractionEligibility.mayInteractWithPublisher(
+                    publisherUserId: offerForMenu.providerUserId,
+                  );
               return Scaffold(
                 appBar: AppBar(
                   leading: ThreeDAppBarIconButton.backLeading(context),
@@ -331,32 +323,21 @@ class _OfferDetailContentStatefulState
     if (!AuthFlow.requireAuth(context)) return;
     setState(() => _bookingChatInFlight = true);
     try {
-      final conversation = await getIt<IMessagingService>().createConversation(
-        gigBookingId: booking.id,
-      );
-      if (!mounted) return;
       final name = _providerDisplayName(offer);
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
-          builder: (_) => ChatScreen(
-            conversationId: conversation.id,
-            conversationContextType: "gig_booking",
-            conversationParticipantId: booking.providerUserId,
-            gigRequestId: conversation.gigRequestId,
-            gigRequestTitle: conversation.gigRequestTitle,
-            otherUserId: offer.providerUserId,
-            otherUserName: name,
-            otherUserInitials: StringUtils.extractInitials(name),
-            otherUserAvatar: offer.providerAvatarUrl,
-          ),
+      await ConversationEntryFlow.openGigBookingChat(
+        context: context,
+        gigBookingId: booking.id,
+        buildChat: (conversation) => ChatScreen(
+          conversationId: conversation.id,
+          conversationContextType: "gig_booking",
+          conversationParticipantId: booking.providerUserId,
+          gigRequestId: conversation.gigRequestId,
+          gigRequestTitle: conversation.gigRequestTitle,
+          otherUserId: offer.providerUserId,
+          otherUserName: name,
+          otherUserInitials: StringUtils.extractInitials(name),
+          otherUserAvatar: offer.providerAvatarUrl,
         ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("conversation_failed"),
       );
     } finally {
       if (mounted) {
