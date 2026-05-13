@@ -612,6 +612,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return L10n.get("role_service_provider");
       case "manager":
         return L10n.get("role_manager");
+      case "moderator":
+        return L10n.get("role_moderator");
       case "admin":
         return L10n.get("role_admin");
       default:

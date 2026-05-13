@@ -87,6 +87,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late ValueNotifier<bool> _isLoadingRegions;
   late ValueNotifier<bool> _isLoadingUniversities;
   bool _isAdmin = false;
+  /// Staff role fixed in DB (shown in picker but not self-assignable).
+  String? _pinnedStaffRole;
   late ValueNotifier<bool> _isRoleLoaded;
 
   /// Role as loaded from session (baseline for dirty check).
@@ -276,11 +278,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     }
     if (mounted) {
       _isAdmin = role == "admin";
+      _pinnedStaffRole =
+          (role == "manager" || role == "moderator") ? role : null;
       final resolved = (role != null &&
               (role == "admin" ||
                   role == "landlord" ||
                   role == "tenant" ||
                   role == "manager" ||
+                  role == "moderator" ||
                   role == "service_provider" ||
                   role == "service_requester"))
           ? role
@@ -944,6 +949,22 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                         "role_admin",
                                       ),
                                       icon: Icons.admin_panel_settings,
+                                    ),
+                                  if (_pinnedStaffRole == "manager")
+                                    DropdownOption(
+                                      value: "manager",
+                                      label: L10n.get(
+                                        "role_manager",
+                                      ),
+                                      icon: Icons.supervisor_account_outlined,
+                                    ),
+                                  if (_pinnedStaffRole == "moderator")
+                                    DropdownOption(
+                                      value: "moderator",
+                                      label: L10n.get(
+                                        "role_moderator",
+                                      ),
+                                      icon: Icons.shield_outlined,
                                     ),
                                   DropdownOption(
                                     value: "landlord",

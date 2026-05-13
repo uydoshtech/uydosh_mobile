@@ -9,6 +9,7 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
+import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -847,6 +848,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   // Phone Sign-In method
   Future<void> _signInWithPhone() async {
     if (_isAuthenticating) return;
+
+    if (!ClientPhoneSignInConfig.phoneSignInEnabled.value) {
+      if (!mounted) return;
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("phone_sign_in_under_construction"),
+      );
+      return;
+    }
 
     getIt<AppAnalyticsService>().logSignInStarted(method: "phone");
 
@@ -1962,16 +1972,23 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           selectedLanguage: _selectedLanguage,
                           onLanguageSelected: _selectLanguage,
                         ),
-                        AuthWizardGoogleSignInPage(
-                          isAuthenticating: _isAuthenticating,
-                          isGoogleSignedIn: _isGoogleSignedIn,
-                          currentUser: _currentUser,
-                          onSignInWithGoogle: _signInWithGoogle,
-                          onSignInWithApple: _signInWithApple,
-                          onSignInWithPhone: _signInWithPhone,
-                          delayAppleAvatarReveal:
-                              _authMethod == _AuthMethod.apple,
-                          backendResolvedAvatarUrl: _oauthSummaryAvatarUrl,
+                        ValueListenableBuilder<bool>(
+                          valueListenable:
+                              ClientPhoneSignInConfig.phoneSignInEnabled,
+                          builder: (context, phoneEnabled, _) {
+                            return AuthWizardGoogleSignInPage(
+                              phoneSignInEnabled: phoneEnabled,
+                              isAuthenticating: _isAuthenticating,
+                              isGoogleSignedIn: _isGoogleSignedIn,
+                              currentUser: _currentUser,
+                              onSignInWithGoogle: _signInWithGoogle,
+                              onSignInWithApple: _signInWithApple,
+                              onSignInWithPhone: _signInWithPhone,
+                              delayAppleAvatarReveal:
+                                  _authMethod == _AuthMethod.apple,
+                              backendResolvedAvatarUrl: _oauthSummaryAvatarUrl,
+                            );
+                          },
                         ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,

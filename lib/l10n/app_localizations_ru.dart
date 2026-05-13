@@ -57,6 +57,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get role_manager => 'Менеджер';
 
   @override
+  String get role_moderator => 'Модератор';
+
+  @override
   String get role_admin => 'Администратор';
 
   @override
@@ -1549,7 +1552,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'Скрывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).';
+      'Кнопки языка в описании и «Улучшить ИИ» при создании/редактировании.';
 
   @override
   String get admin_client_config_disable_lidar_room_scan =>
@@ -1557,7 +1560,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
-      'Скрывает шаг добавления скана после создания объявления, кнопку при редактировании и блокирует загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).';
+      'Шаг скана после создания, кнопка в редакторе, загрузка.';
 
   @override
   String get admin_client_config_disable_custom_camera =>
@@ -1565,7 +1568,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_custom_camera_description =>
-      'Когда включено, съёмка фото открывает кастомную камеру приложения с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).';
+      'Вкл — камера приложения с водяным знаком; выкл — системная.';
 
   @override
   String get admin_client_config_show_listing_dictation_meter =>
@@ -1573,7 +1576,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_config_show_listing_dictation_meter_description =>
-      'Когда включено, при создании и редактировании объявления в подвале описания показываются волна и время записи во время диктовки. Когда выключено — только кнопка микрофона/стоп отражает запись. Действует для всех пользователей и устройств (хранится на сервере).';
+      'Волна и таймер при диктовке; иначе только микрофон/стоп.';
 
   @override
   String get admin_content_moderation_blur_enabled =>
@@ -1590,6 +1593,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get admin_content_moderation_save_error =>
       'Не удалось сохранить настройку';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_title =>
+      'Ручное одобрение новых объявлений и гигов';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
+      'Когда включено, новые объявления об аренде, услуги и задачи скрыты от общего поиска до одобрения админом. Когда выключено — публикуются сразу.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Импорт данных';
@@ -1689,6 +1700,98 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_panel_section_listing_complaints => 'Объявления с жалобами';
+
+  @override
+  String get admin_panel_section_listing_moderation => 'Модерация объявлений';
+
+  @override
+  String get admin_listing_moderation_title => 'На проверке';
+
+  @override
+  String get admin_listing_moderation_loading => 'Загрузка очереди модерации…';
+
+  @override
+  String get admin_listing_moderation_error => 'Не удалось загрузить очередь';
+
+  @override
+  String get admin_listing_moderation_retry => 'Повторить';
+
+  @override
+  String get admin_listing_moderation_summary_total => 'В очереди';
+
+  @override
+  String get admin_listing_moderation_summary_today => 'Сегодня';
+
+  @override
+  String get admin_listing_moderation_summary_oldest => 'Дольше всего';
+
+  @override
+  String get admin_listing_moderation_days_short => 'дн.';
+
+  @override
+  String get admin_listing_moderation_section_list => 'Ожидают проверки';
+
+  @override
+  String get admin_listing_moderation_empty =>
+      'Нет объявлений, ожидающих одобрения.';
+
+  @override
+  String get admin_listing_moderation_open => 'Открыть';
+
+  @override
+  String get admin_listing_moderation_approve => 'Одобрить';
+
+  @override
+  String get admin_listing_moderation_id => 'ID';
+
+  @override
+  String get admin_listing_moderation_user => 'Пользователь';
+
+  @override
+  String get admin_listing_moderation_load_more => 'Ещё';
+
+  @override
+  String get admin_listing_moderation_approved_toast =>
+      'Объявление опубликовано';
+
+  @override
+  String get admin_panel_section_gig_moderation => 'Модерация услуг и задач';
+
+  @override
+  String get admin_gig_moderation_title => 'Модерация объявлений (гига)';
+
+  @override
+  String get admin_gig_moderation_tab_offers => 'Услуги';
+
+  @override
+  String get admin_gig_moderation_tab_requests => 'Задачи';
+
+  @override
+  String get admin_gig_moderation_section_offers => 'Услуги на проверке';
+
+  @override
+  String get admin_gig_moderation_section_requests => 'Задачи на проверке';
+
+  @override
+  String get admin_gig_moderation_empty_offers =>
+      'Нет услуг, ожидающих одобрения.';
+
+  @override
+  String get admin_gig_moderation_empty_requests =>
+      'Нет задач, ожидающих одобрения.';
+
+  @override
+  String get admin_gig_moderation_provider => 'Исполнитель';
+
+  @override
+  String get admin_gig_moderation_client => 'Заказчик';
+
+  @override
+  String get admin_gig_moderation_approved_offer_toast => 'Услуга опубликована';
+
+  @override
+  String get admin_gig_moderation_approved_request_toast =>
+      'Задача опубликована';
 
   @override
   String get admin_panel_section_district_heatmap => 'Тепловая карта районов';

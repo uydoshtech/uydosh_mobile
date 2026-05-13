@@ -13,6 +13,20 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
+/// Shell bottom navigation with theme-aware colors for [CurvedNavigationBar].
+///
+/// **Optional blue-shell “liquid glass” (currently off):** To draw a frosted bar
+/// over scrolling content: (1) Root [Scaffold] in [MainNavigation]:
+/// `extendBody: themeState.isBlueTheme`. (2) Here, stack [BackdropFilter] +
+/// tinted plate behind [CurvedNavigationBar] for blue only — match
+/// [LiquidGlassAppBarFlexibleSpace] (blur sigma ~18 when motion enabled,
+/// [BlueThemeColors.background] tint alpha ~0.40, ~10% white top hairline,
+/// subtle top→bottom sheen). (3) Blue [_getBackgroundColor]:
+/// [Colors.transparent]. (4) Blue [_getCurvedColor]:
+/// [BlueThemeColors.navigationBackground.withValues] alpha ~0.32 so frost shows.
+/// (5) Tab FABs / lists: add ~70px bottom inset (`CurvedNavigationBar` height;
+/// package asserts ≤75) because [Scaffold.extendBody] aligns body to the screen
+/// bottom and fixed `Positioned(bottom: …)` would sit under the bar.
 class CustomCurvedNavigationBar extends StatefulWidget {
   const CustomCurvedNavigationBar({
     required this.currentIndex, required this.onTap, required this.navigationKey, required this.isAuthenticated, super.key,

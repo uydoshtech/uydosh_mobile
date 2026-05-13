@@ -1,13 +1,50 @@
+import "dart:convert";
+
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
 Map<String, dynamic> _requireJsonMap(dynamic response, String errorMessage) {
-  if (response is! Map) {
+  dynamic decoded = response;
+  if (response is String) {
+    final s = response.trim();
+    if (s.isEmpty) {
+      throw Exception(errorMessage);
+    }
+    try {
+      decoded = jsonDecode(s);
+    } catch (_) {
+      throw Exception(errorMessage);
+    }
+  }
+  if (decoded is! Map) {
     throw Exception(errorMessage);
   }
-  return Map<String, dynamic>.from(response);
+  return Map<String, dynamic>.from(decoded);
+}
+
+/// Accepts bool, int, or common string forms (matches relaxed server parsers).
+bool _parseBoolLoose(dynamic value, {required bool defaultValue}) {
+  if (value == null) {
+    return defaultValue;
+  }
+  if (value is bool) {
+    return value;
+  }
+  if (value is num) {
+    return value != 0;
+  }
+  if (value is String) {
+    final s = value.trim().toLowerCase();
+    if (s == "true" || s == "1" || s == "yes") {
+      return true;
+    }
+    if (s == "false" || s == "0" || s == "no") {
+      return false;
+    }
+  }
+  return defaultValue;
 }
 
 class ContentModerationBlurResponse {
@@ -139,6 +176,50 @@ class _PatchListingDescriptionDictationMeterDisabledRequest
   dynamic toJson() => {"disabled": disabled};
 }
 
+class ListingGigModerationQueueResponse {
+  ListingGigModerationQueueResponse({required this.enabled});
+
+  factory ListingGigModerationQueueResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ListingGigModerationQueueResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: true),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchListingGigModerationQueueRequest implements IJsonEncodable {
+  _PatchListingGigModerationQueueRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
+class PhoneSignInEnabledResponse {
+  PhoneSignInEnabledResponse({required this.enabled});
+
+  factory PhoneSignInEnabledResponse.fromJson(Map<String, dynamic> json) {
+    return PhoneSignInEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: false),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchPhoneSignInEnabledRequest implements IJsonEncodable {
+  _PatchPhoneSignInEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -175,6 +256,19 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<ListingDescriptionDictationMeterDisabledResponse>
       setListingDescriptionDictationMeterDisabled({required bool disabled});
+
+  Future<ListingGigModerationQueueResponse>
+      getListingGigModerationQueueSetting();
+
+  Future<ListingGigModerationQueueResponse> setListingGigModerationQueueEnabled({
+    required bool enabled,
+  });
+
+  Future<PhoneSignInEnabledResponse> getPhoneSignInEnabledSetting();
+
+  Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
+    required bool enabled,
+  });
 }
 
 class AdminContentModerationSettingsService
@@ -442,6 +536,93 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating dictation meter disabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingGigModerationQueueResponse>
+      getListingGigModerationQueueSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/listing-gig-moderation-queue",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return ListingGigModerationQueueResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from listing/gig moderation queue setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading listing/gig moderation queue setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListingGigModerationQueueResponse> setListingGigModerationQueueEnabled({
+    required bool enabled,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/listing-gig-moderation-queue",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchListingGigModerationQueueRequest(enabled: enabled),
+      );
+      return ListingGigModerationQueueResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from listing/gig moderation queue setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating listing/gig moderation queue setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PhoneSignInEnabledResponse> getPhoneSignInEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/phone-sign-in-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return PhoneSignInEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from phone sign-in setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading phone sign-in enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
+    required bool enabled,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/phone-sign-in-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchPhoneSignInEnabledRequest(enabled: enabled),
+      );
+      return PhoneSignInEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from phone sign-in setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating phone sign-in enabled setting: $e");
       rethrow;
     }
   }

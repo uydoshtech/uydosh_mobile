@@ -899,6 +899,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         label: L10n.get("role_manager"),
       ),
       _RoleOption(
+        value: "moderator",
+        label: L10n.get("role_moderator"),
+      ),
+      _RoleOption(
         value: "admin",
         label: L10n.get("role_admin"),
       ),
@@ -917,6 +921,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
         return L10n.get("role_service_provider");
       case "manager":
         return L10n.get("role_manager");
+      case "moderator":
+        return L10n.get("role_moderator");
       case "admin":
         return L10n.get("role_admin");
       default:

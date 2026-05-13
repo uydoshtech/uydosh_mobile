@@ -936,6 +936,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ),
           Positioned(
             right: 16,
+            // With shell `extendBody` under curved nav, add ~70px to clear bar.
             bottom: 30, // Moved down a bit from 100
             child:
                 BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(

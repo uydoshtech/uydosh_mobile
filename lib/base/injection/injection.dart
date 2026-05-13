@@ -22,6 +22,8 @@ import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
+import "package:uy_dosh/domain/services/gig_moderation_admin_service.dart";
+import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
@@ -168,6 +170,14 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IListingCreationAnalyticsService>(
     () => ListingCreationAnalyticsService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IListingModerationAdminService>(
+    () => ListingModerationAdminService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IGigModerationAdminService>(
+    () => GigModerationAdminService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IGamificationService>(

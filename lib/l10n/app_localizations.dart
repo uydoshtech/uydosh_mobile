@@ -196,6 +196,12 @@ abstract class AppLocalizations {
   /// **'Manager'**
   String get role_manager;
 
+  /// No description provided for @role_moderator.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderator'**
+  String get role_moderator;
+
   /// No description provided for @role_admin.
   ///
   /// In en, this message translates to:
@@ -2947,7 +2953,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_client_config_hide_gemini_listing_ui_description.
   ///
   /// In en, this message translates to:
-  /// **'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).'**
+  /// **'Listing language buttons and AI improve when creating or editing.'**
   String get admin_client_config_hide_gemini_listing_ui_description;
 
   /// No description provided for @admin_client_config_disable_lidar_room_scan.
@@ -2959,7 +2965,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_client_config_disable_lidar_room_scan_description.
   ///
   /// In en, this message translates to:
-  /// **'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).'**
+  /// **'Post-create scan step, edit-screen control, and uploads.'**
   String get admin_client_config_disable_lidar_room_scan_description;
 
   /// No description provided for @admin_client_config_disable_custom_camera.
@@ -2971,7 +2977,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_client_config_disable_custom_camera_description.
   ///
   /// In en, this message translates to:
-  /// **'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).'**
+  /// **'On: in-app camera with watermark. Off: device camera.'**
   String get admin_client_config_disable_custom_camera_description;
 
   /// No description provided for @admin_client_config_show_listing_dictation_meter.
@@ -2983,7 +2989,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_client_config_show_listing_dictation_meter_description.
   ///
   /// In en, this message translates to:
-  /// **'When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).'**
+  /// **'Waveform and timer while dictating; off: mic/stop only.'**
   String get admin_client_config_show_listing_dictation_meter_description;
 
   /// No description provided for @admin_content_moderation_blur_enabled.
@@ -3009,6 +3015,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save setting'**
   String get admin_content_moderation_save_error;
+
+  /// No description provided for @admin_app_setting_listing_gig_moderation_queue_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Require approval for new listings and gigs'**
+  String get admin_app_setting_listing_gig_moderation_queue_title;
+
+  /// No description provided for @admin_app_setting_listing_gig_moderation_queue_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.'**
+  String get admin_app_setting_listing_gig_moderation_queue_subtitle;
 
   /// No description provided for @admin_panel_section_telegram_sync.
   ///
@@ -3189,6 +3207,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Listings with complaints'**
   String get admin_panel_section_listing_complaints;
+
+  /// No description provided for @admin_panel_section_listing_moderation.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve listings'**
+  String get admin_panel_section_listing_moderation;
+
+  /// No description provided for @admin_listing_moderation_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending listings'**
+  String get admin_listing_moderation_title;
+
+  /// No description provided for @admin_listing_moderation_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading moderation queue…'**
+  String get admin_listing_moderation_loading;
+
+  /// No description provided for @admin_listing_moderation_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load moderation queue'**
+  String get admin_listing_moderation_error;
+
+  /// No description provided for @admin_listing_moderation_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get admin_listing_moderation_retry;
+
+  /// No description provided for @admin_listing_moderation_summary_total.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get admin_listing_moderation_summary_total;
+
+  /// No description provided for @admin_listing_moderation_summary_today.
+  ///
+  /// In en, this message translates to:
+  /// **'New today'**
+  String get admin_listing_moderation_summary_today;
+
+  /// No description provided for @admin_listing_moderation_summary_oldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest wait'**
+  String get admin_listing_moderation_summary_oldest;
+
+  /// No description provided for @admin_listing_moderation_days_short.
+  ///
+  /// In en, this message translates to:
+  /// **'d'**
+  String get admin_listing_moderation_days_short;
+
+  /// No description provided for @admin_listing_moderation_section_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting review'**
+  String get admin_listing_moderation_section_list;
+
+  /// No description provided for @admin_listing_moderation_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No listings are waiting for approval.'**
+  String get admin_listing_moderation_empty;
+
+  /// No description provided for @admin_listing_moderation_open.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get admin_listing_moderation_open;
+
+  /// No description provided for @admin_listing_moderation_approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get admin_listing_moderation_approve;
+
+  /// No description provided for @admin_listing_moderation_id.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get admin_listing_moderation_id;
+
+  /// No description provided for @admin_listing_moderation_user.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get admin_listing_moderation_user;
+
+  /// No description provided for @admin_listing_moderation_load_more.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get admin_listing_moderation_load_more;
+
+  /// No description provided for @admin_listing_moderation_approved_toast.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing published'**
+  String get admin_listing_moderation_approved_toast;
+
+  /// No description provided for @admin_panel_section_gig_moderation.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve gigs'**
+  String get admin_panel_section_gig_moderation;
+
+  /// No description provided for @admin_gig_moderation_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Gig moderation'**
+  String get admin_gig_moderation_title;
+
+  /// No description provided for @admin_gig_moderation_tab_offers.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get admin_gig_moderation_tab_offers;
+
+  /// No description provided for @admin_gig_moderation_tab_requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get admin_gig_moderation_tab_requests;
+
+  /// No description provided for @admin_gig_moderation_section_offers.
+  ///
+  /// In en, this message translates to:
+  /// **'Services awaiting review'**
+  String get admin_gig_moderation_section_offers;
+
+  /// No description provided for @admin_gig_moderation_section_requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks awaiting review'**
+  String get admin_gig_moderation_section_requests;
+
+  /// No description provided for @admin_gig_moderation_empty_offers.
+  ///
+  /// In en, this message translates to:
+  /// **'No gig services are waiting for approval.'**
+  String get admin_gig_moderation_empty_offers;
+
+  /// No description provided for @admin_gig_moderation_empty_requests.
+  ///
+  /// In en, this message translates to:
+  /// **'No gig tasks are waiting for approval.'**
+  String get admin_gig_moderation_empty_requests;
+
+  /// No description provided for @admin_gig_moderation_provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get admin_gig_moderation_provider;
+
+  /// No description provided for @admin_gig_moderation_client.
+  ///
+  /// In en, this message translates to:
+  /// **'Client'**
+  String get admin_gig_moderation_client;
+
+  /// No description provided for @admin_gig_moderation_approved_offer_toast.
+  ///
+  /// In en, this message translates to:
+  /// **'Service published'**
+  String get admin_gig_moderation_approved_offer_toast;
+
+  /// No description provided for @admin_gig_moderation_approved_request_toast.
+  ///
+  /// In en, this message translates to:
+  /// **'Task published'**
+  String get admin_gig_moderation_approved_request_toast;
 
   /// No description provided for @admin_panel_section_district_heatmap.
   ///

@@ -952,22 +952,29 @@ class AppStrings {
       "admin_client_config_hide_gemini_listing_ui":
           "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Shows description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).",
+          "Listing language buttons and AI improve when creating or editing.",
       "admin_client_config_disable_custom_camera": "Use in-app custom camera",
       "admin_client_config_disable_custom_camera_description":
-          "When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device's native camera. Applies to all users and devices (stored on the server).",
+          "On: in-app camera with watermark. Off: device camera.",
       "admin_client_config_show_listing_dictation_meter":
           "Dictation level meter & timer",
       "admin_client_config_show_listing_dictation_meter_description":
-          "When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).",
+          "Waveform and timer while dictating; off: mic/stop only.",
       "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
-          "Enables the add-scan flow after creating a listing, the add-scan button when editing, and allows scan uploads. Applies to all users and devices (stored on the server).",
+          "Post-create scan step, edit-screen control, and uploads.",
       "admin_content_moderation_blur_enabled":
           "Detect and blur offensive photos",
       "admin_content_moderation_loading": "Loading moderation settings...",
       "admin_content_moderation_error": "Could not load moderation settings",
       "admin_content_moderation_save_error": "Could not save setting",
+      "admin_app_setting_listing_gig_moderation_queue_title":
+          "Require approval for new listings and gigs",
+      "admin_app_setting_listing_gig_moderation_queue_subtitle":
+          "When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.",
+      "admin_app_setting_phone_sign_in_enabled_title": "Allow sign-in with phone",
+      "admin_app_setting_phone_sign_in_enabled_subtitle":
+          "When off, the auth wizard keeps phone sign-in unavailable and shows an info toast. When on, users can use Firebase SMS verification.",
 
       "admin_panel_section_telegram_sync": "Data import",
       "admin_telegram_sync_title": "Data import",
@@ -1046,6 +1053,38 @@ class AppStrings {
       "admin_panel_section_support_chat": "Support chat",
       "admin_panel_section_complaints": "Complaints",
       "admin_panel_section_listing_complaints": "Listings with complaints",
+      "admin_panel_section_listing_moderation": "Approve listings",
+      "admin_listing_moderation_title": "Pending listings",
+      "admin_listing_moderation_loading": "Loading moderation queue…",
+      "admin_listing_moderation_error": "Could not load moderation queue",
+      "admin_listing_moderation_retry": "Retry",
+      "admin_listing_moderation_summary_total": "Pending",
+      "admin_listing_moderation_summary_today": "New today",
+      "admin_listing_moderation_summary_oldest": "Longest wait",
+      "admin_listing_moderation_days_short": "d",
+      "admin_listing_moderation_section_list": "Awaiting review",
+      "admin_listing_moderation_empty":
+          "No listings are waiting for approval.",
+      "admin_listing_moderation_open": "View",
+      "admin_listing_moderation_approve": "Approve",
+      "admin_listing_moderation_id": "ID",
+      "admin_listing_moderation_user": "User",
+      "admin_listing_moderation_load_more": "Load more",
+      "admin_listing_moderation_approved_toast": "Listing published",
+      "admin_panel_section_gig_moderation": "Approve gigs",
+      "admin_gig_moderation_title": "Gig moderation",
+      "admin_gig_moderation_tab_offers": "Services",
+      "admin_gig_moderation_tab_requests": "Tasks",
+      "admin_gig_moderation_section_offers": "Services awaiting review",
+      "admin_gig_moderation_section_requests": "Tasks awaiting review",
+      "admin_gig_moderation_empty_offers":
+          "No gig services are waiting for approval.",
+      "admin_gig_moderation_empty_requests":
+          "No gig tasks are waiting for approval.",
+      "admin_gig_moderation_provider": "Provider",
+      "admin_gig_moderation_client": "Client",
+      "admin_gig_moderation_approved_offer_toast": "Service published",
+      "admin_gig_moderation_approved_request_toast": "Task published",
       "admin_panel_section_district_heatmap": "District heat map",
       "admin_panel_section_subway_heatmap": "Subway line heat map",
       "admin_panel_section_subway_map": "Subway map",
@@ -1405,6 +1444,8 @@ class AppStrings {
 
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Sign in with phone",
+      "phone_sign_in_under_construction":
+          "Sign-in with phone is under construction. Use Google or Apple for now.",
       "sign_in_with_phone_description":
           "We'll text you a 6-digit code to confirm your number.",
       "auth_separator_or": "or",
@@ -2420,25 +2461,33 @@ class AppStrings {
       "admin_client_config_hide_gemini_listing_ui":
           "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "Показывает кнопки языков в описании объявления и действие «Улучшить ИИ» при создании и редактировании. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Кнопки языка в описании и «Улучшить ИИ» при создании/редактировании.",
       "admin_client_config_disable_custom_camera":
           "Использовать кастомную камеру",
       "admin_client_config_disable_custom_camera_description":
-          "Когда включено, съёмка фото открывает кастомную камеру приложения с водяным знаком. Когда выключено, клиенты используют стандартную камеру устройства. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Вкл — камера приложения с водяным знаком; выкл — системная.",
       "admin_client_config_show_listing_dictation_meter":
           "Индикатор уровня и таймер диктовки",
       "admin_client_config_show_listing_dictation_meter_description":
-          "Когда включено, при создании и редактировании объявления в подвале описания показываются волна и время записи во время диктовки. Когда выключено — только кнопка микрофона/стоп отражает запись. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Волна и таймер при диктовке; иначе только микрофон/стоп.",
       "admin_client_config_disable_lidar_room_scan":
           "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
-          "Включает шаг добавления скана после создания объявления, кнопку при редактировании и разрешает загрузку сканов. Действует для всех пользователей и устройств (хранится на сервере).",
+          "Шаг скана после создания, кнопка в редакторе, загрузка.",
       "admin_content_moderation_blur_enabled":
           "Проверять и размывать нежелательные фото",
       "admin_content_moderation_loading": "Загрузка настроек модерации...",
       "admin_content_moderation_error":
           "Не удалось загрузить настройки модерации",
       "admin_content_moderation_save_error": "Не удалось сохранить настройку",
+      "admin_app_setting_listing_gig_moderation_queue_title":
+          "Ручное одобрение новых объявлений и гигов",
+      "admin_app_setting_listing_gig_moderation_queue_subtitle":
+          "Когда включено, новые объявления об аренде, услуги и задачи скрыты от общего поиска до одобрения админом. Когда выключено — публикуются сразу.",
+      "admin_app_setting_phone_sign_in_enabled_title":
+          "Разрешить вход по номеру телефона",
+      "admin_app_setting_phone_sign_in_enabled_subtitle":
+          "Когда выключено, мастер входа не даёт войти по телефону и показывает подсказку. Когда включено — доступна проверка по SMS через Firebase.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_telegram_sync_title": "Импорт данных",
@@ -2518,6 +2567,38 @@ class AppStrings {
       "admin_panel_section_support_chat": "Поддержка",
       "admin_panel_section_complaints": "Жалобы",
       "admin_panel_section_listing_complaints": "Объявления с жалобами",
+      "admin_panel_section_listing_moderation": "Модерация объявлений",
+      "admin_listing_moderation_title": "На проверке",
+      "admin_listing_moderation_loading": "Загрузка очереди модерации…",
+      "admin_listing_moderation_error": "Не удалось загрузить очередь",
+      "admin_listing_moderation_retry": "Повторить",
+      "admin_listing_moderation_summary_total": "В очереди",
+      "admin_listing_moderation_summary_today": "Сегодня",
+      "admin_listing_moderation_summary_oldest": "Дольше всего",
+      "admin_listing_moderation_days_short": "дн.",
+      "admin_listing_moderation_section_list": "Ожидают проверки",
+      "admin_listing_moderation_empty":
+          "Нет объявлений, ожидающих одобрения.",
+      "admin_listing_moderation_open": "Открыть",
+      "admin_listing_moderation_approve": "Одобрить",
+      "admin_listing_moderation_id": "ID",
+      "admin_listing_moderation_user": "Пользователь",
+      "admin_listing_moderation_load_more": "Ещё",
+      "admin_listing_moderation_approved_toast": "Объявление опубликовано",
+      "admin_panel_section_gig_moderation": "Модерация услуг и задач",
+      "admin_gig_moderation_title": "Модерация объявлений (гига)",
+      "admin_gig_moderation_tab_offers": "Услуги",
+      "admin_gig_moderation_tab_requests": "Задачи",
+      "admin_gig_moderation_section_offers": "Услуги на проверке",
+      "admin_gig_moderation_section_requests": "Задачи на проверке",
+      "admin_gig_moderation_empty_offers":
+          "Нет услуг, ожидающих одобрения.",
+      "admin_gig_moderation_empty_requests":
+          "Нет задач, ожидающих одобрения.",
+      "admin_gig_moderation_provider": "Исполнитель",
+      "admin_gig_moderation_client": "Заказчик",
+      "admin_gig_moderation_approved_offer_toast": "Услуга опубликована",
+      "admin_gig_moderation_approved_request_toast": "Задача опубликована",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
       "admin_panel_section_subway_map": "Схема метро",
@@ -2880,6 +2961,8 @@ class AppStrings {
 
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Войти по номеру",
+      "phone_sign_in_under_construction":
+          "Вход по номеру в разработке. Пока воспользуйтесь Google или Apple.",
       "sign_in_with_phone_description":
           "Мы отправим SMS с 6-значным кодом для подтверждения номера.",
       "auth_separator_or": "или",
@@ -3902,25 +3985,33 @@ class AppStrings {
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":
-          "E'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni ko‘rsatadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "E’lon tafsifida til tugmalari; yaratish/tahrirlashda AI yaxshilash.",
       "admin_client_config_disable_custom_camera":
           "Maxsus kameradan foydalanish",
       "admin_client_config_disable_custom_camera_description":
-          "Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O'chirilganda, klientlar qurilmaning standart kamerasiga o'tadi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "Yoniq — suv belgili ilova kamerasi; o‘chiq — qurilma kamerasi.",
       "admin_client_config_show_listing_dictation_meter":
           "Diktat darajasi va taymer",
       "admin_client_config_show_listing_dictation_meter_description":
-          "Yoqilganda, eʼlon yaratish/tahrirlashda tavsif pastki qismida diktovqa paytida toʻlqin va yozib olish vaqti koʻrsatiladi. O‘chirilganda, faqat mikrofon/stop tugmasi holatini aks ettiradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "Diktovqa paytida toʻlqin va taymer; aks holda faqat mik/stop.",
       "admin_client_config_disable_lidar_room_scan":
           "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":
-          "E'lon yaratilgach skan qo'shish qadamini, tahrirlashdagi skan tugmasini ko‘rsatadi va yuklashga ruxsat beradi. Barcha foydalanuvchi va qurilmalarga qo'llanadi (serverda saqlanadi).",
+          "Yaratgach skan qadamı, tahrirda tugma, yuklash.",
       "admin_content_moderation_blur_enabled":
           "Nojo'ya fotolarni aniqla va xira qil",
       "admin_content_moderation_loading":
           "Moderatsiya sozlamalari yuklanmoqda...",
       "admin_content_moderation_error": "Moderatsiya sozlamalari yuklanmadi",
       "admin_content_moderation_save_error": "Sozlama saqlanmadi",
+      "admin_app_setting_listing_gig_moderation_queue_title":
+          "Yangi e'lon va gig'larni tasdiqlash",
+      "admin_app_setting_listing_gig_moderation_queue_subtitle":
+          "Yoqiq bo'lsa, yangi uy-joy e'lonlari, xizmatlar va vazifalar admin tasdig'igacha umumiy qidiruvda ko'rinmaydi. O'chiq bo'lsa — darhol e'lon qilinadi.",
+      "admin_app_setting_phone_sign_in_enabled_title":
+          "Telefon raqami bilan kirishga ruxsat",
+      "admin_app_setting_phone_sign_in_enabled_subtitle":
+          "O'chiq bo'lsa, kirish oynasida telefon orqali kirish ishlamaydi va ma'lumot toast'i chiqadi. Yoqiq bo'lsa — Firebase SMS tasdig'i ishlaydi.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_telegram_sync_title": "Maʼlumot importi",
@@ -3997,6 +4088,40 @@ class AppStrings {
       "admin_panel_section_support_chat": "Qo'llab-quvvatlash",
       "admin_panel_section_complaints": "Shikoyatlar",
       "admin_panel_section_listing_complaints": "Shikoyatli e'lonlar",
+      "admin_panel_section_listing_moderation": "E'lonlarni tasdiqlash",
+      "admin_listing_moderation_title": "Tasdiq kutilmoqda",
+      "admin_listing_moderation_loading":
+          "Moderatsiya navbati yuklanmoqda…",
+      "admin_listing_moderation_error": "Navbat yuklanmadi",
+      "admin_listing_moderation_retry": "Qayta urinish",
+      "admin_listing_moderation_summary_total": "Navbatda",
+      "admin_listing_moderation_summary_today": "Bugun",
+      "admin_listing_moderation_summary_oldest": "Eng uzoq",
+      "admin_listing_moderation_days_short": "kun",
+      "admin_listing_moderation_section_list":
+          "Ko'rib chiqish kutilmoqda",
+      "admin_listing_moderation_empty":
+          "Tasdiq kutilayotgan e'lonlar yo'q.",
+      "admin_listing_moderation_open": "Ochish",
+      "admin_listing_moderation_approve": "Tasdiqlash",
+      "admin_listing_moderation_id": "ID",
+      "admin_listing_moderation_user": "Foydalanuvchi",
+      "admin_listing_moderation_load_more": "Yana",
+      "admin_listing_moderation_approved_toast": "E'lon e'lon qilindi",
+      "admin_panel_section_gig_moderation": "Gig'larni tasdiqlash",
+      "admin_gig_moderation_title": "Gig moderatsiyasi",
+      "admin_gig_moderation_tab_offers": "Xizmatlar",
+      "admin_gig_moderation_tab_requests": "Vazifalar",
+      "admin_gig_moderation_section_offers": "Tekshiruvdagi xizmatlar",
+      "admin_gig_moderation_section_requests": "Tekshiruvdagi vazifalar",
+      "admin_gig_moderation_empty_offers":
+          "Tasdiq kutilayotgan xizmatlar yo'q.",
+      "admin_gig_moderation_empty_requests":
+          "Tasdiq kutilayotgan vazifalar yo'q.",
+      "admin_gig_moderation_provider": "Ijrochi",
+      "admin_gig_moderation_client": "Buyurtmachi",
+      "admin_gig_moderation_approved_offer_toast": "Xizmat e'lon qilindi",
+      "admin_gig_moderation_approved_request_toast": "Vazifa e'lon qilindi",
       "admin_panel_section_district_heatmap": "Tumanlar issiqlik xaritasi",
       "admin_panel_section_subway_heatmap":
           "Metro liniyalari issiqlik xaritasi",
@@ -4359,6 +4484,8 @@ class AppStrings {
 
       // ===== PHONE AUTHENTICATION =====
       "sign_in_with_phone": "Telefon raqami orqali kirish",
+      "phone_sign_in_under_construction":
+          "Telefon bilan kirish hozircha tayyorlanmoqda. Hozircha Google yoki Apple dan foydalaning.",
       "sign_in_with_phone_description":
           "Raqamingizni tasdiqlash uchun 6 xonali kod yuboramiz.",
       "auth_separator_or": "yoki",

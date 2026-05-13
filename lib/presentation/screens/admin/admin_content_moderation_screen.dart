@@ -4,7 +4,9 @@ import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
+import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
@@ -46,6 +48,10 @@ class _AdminContentModerationScreenState
   bool _isSavingDictationMeter = false;
   bool _listingContactsVisible = false;
   bool _isSavingListingContacts = false;
+  bool _listingGigModerationQueueEnabled = true;
+  bool _isSavingModerationQueue = false;
+  bool _phoneSignInEnabled = false;
+  bool _isSavingPhoneSignIn = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingTooltips = false;
 
@@ -73,6 +79,25 @@ class _AdminContentModerationScreenState
           await _settingsService.getListingDescriptionDictationMeterDisabledSetting();
       final contactsRes =
           await _settingsService.getListingContactsVisibleSetting();
+      var listingGigModQueueEnabled = true;
+      try {
+        final modQueueRes =
+            await _settingsService.getListingGigModerationQueueSetting();
+        listingGigModQueueEnabled = modQueueRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Listing/gig moderation queue setting skipped (is the API updated?): $e",
+        );
+      }
+      var phoneSignInEnabled = false;
+      try {
+        final phoneRes = await _settingsService.getPhoneSignInEnabledSetting();
+        phoneSignInEnabled = phoneRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Phone sign-in enabled setting skipped (is the API updated?): $e",
+        );
+      }
       setStateIfMounted(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
@@ -81,6 +106,8 @@ class _AdminContentModerationScreenState
         _customCameraEnabled = !cameraRes.disabled;
         _dictationMeterEnabled = !dictationMeterRes.disabled;
         _listingContactsVisible = contactsRes.visible;
+        _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
+        _phoneSignInEnabled = phoneSignInEnabled;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
@@ -92,6 +119,7 @@ class _AdminContentModerationScreenState
       ClientListingContactsConfig.applyVisible(
         visible: _listingContactsVisible,
       );
+      ClientPhoneSignInConfig.applyEnabled(enabled: phoneSignInEnabled);
     } catch (e) {
       setStateIfMounted(() {
         _hasError = true;
@@ -245,6 +273,53 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingListingContacts = false);
+    }
+  }
+
+  Future<void> _onListingGigModerationQueueChanged(bool value) async {
+    if (_isSavingModerationQueue) return;
+    setState(() => _isSavingModerationQueue = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setListingGigModerationQueueEnabled(
+        enabled: value,
+      );
+      setStateIfMounted(() {
+        _listingGigModerationQueueEnabled = res.enabled;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingModerationQueue = false);
+    }
+  }
+
+  Future<void> _onPhoneSignInEnabledChanged(bool value) async {
+    if (_isSavingPhoneSignIn) return;
+    setState(() => _isSavingPhoneSignIn = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setPhoneSignInEnabled(enabled: value);
+      setStateIfMounted(() {
+        _phoneSignInEnabled = res.enabled;
+      });
+      ClientPhoneSignInConfig.applyEnabled(enabled: res.enabled);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${L10n.get("admin_content_moderation_save_error")}: $e",
+          ),
+        ),
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingPhoneSignIn = false);
     }
   }
 
@@ -411,6 +486,62 @@ class _AdminContentModerationScreenState
               value: _listingContactsVisible,
               enabled: !_isSavingListingContacts,
               onChanged: _onShowListingContactsChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingModerationQueue
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.fact_check_outlined),
+            title: Text(
+              L10n.get("admin_app_setting_listing_gig_moderation_queue_title"),
+            ),
+            subtitle: Text(
+              L10n.get(
+                "admin_app_setting_listing_gig_moderation_queue_subtitle",
+              ),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _listingGigModerationQueueEnabled,
+              enabled: !_isSavingModerationQueue,
+              onChanged: _onListingGigModerationQueueChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingPhoneSignIn
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.phone_android_outlined),
+            title: Text(
+              L10n.get("admin_app_setting_phone_sign_in_enabled_title"),
+            ),
+            subtitle: Text(
+              L10n.get("admin_app_setting_phone_sign_in_enabled_subtitle"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _phoneSignInEnabled,
+              enabled: !_isSavingPhoneSignIn,
+              onChanged: _onPhoneSignInEnabledChanged,
             ),
           ),
         ),

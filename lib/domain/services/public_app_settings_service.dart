@@ -12,6 +12,8 @@ abstract class IPublicAppSettingsService {
   Future<bool> getListingContactsVisible();
 
   Future<bool> getListingDescriptionDictationMeterDisabled();
+
+  Future<bool> getPhoneSignInEnabled();
 }
 
 class PublicAppSettingsService implements IPublicAppSettingsService {
@@ -110,6 +112,35 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
       return false;
     } catch (e) {
       logger.d("PublicAppSettingsService.getListingDescriptionDictationMeterDisabled: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> getPhoneSignInEnabled() async {
+    try {
+      final response = await _apiClient.get<dynamic>(
+        "/app/settings/phone-sign-in-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      if (response is Map) {
+        final map = Map<String, dynamic>.from(response);
+        final v = map["enabled"];
+        if (v is bool) {
+          return v;
+        }
+        if (v is num) {
+          return v != 0;
+        }
+        if (v is String) {
+          final s = v.trim().toLowerCase();
+          return s == "true" || s == "1" || s == "yes";
+        }
+      }
+      return false;
+    } catch (e) {
+      logger.d("PublicAppSettingsService.getPhoneSignInEnabled: $e");
       rethrow;
     }
   }

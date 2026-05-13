@@ -26,6 +26,7 @@ const double _kGoogleSignInSvgHeight = 44;
 
 class AuthWizardGoogleSignInPage extends StatefulWidget {
   const AuthWizardGoogleSignInPage({
+    required this.phoneSignInEnabled,
     required this.isAuthenticating,
     required this.isGoogleSignedIn,
     required this.currentUser,
@@ -55,6 +56,9 @@ class AuthWizardGoogleSignInPage extends StatefulWidget {
   /// does not call this.
   final VoidCallback onSignInWithApple;
   final VoidCallback onSignInWithPhone;
+
+  /// When false, the phone option is visually subdued but still explains itself via toast on tap.
+  final bool phoneSignInEnabled;
 
   @override
   State<AuthWizardGoogleSignInPage> createState() =>
@@ -248,33 +252,36 @@ class _AuthWizardGoogleSignInPageState extends State<AuthWizardGoogleSignInPage>
                     ),
                     const SizedBox(height: 16),
                     Center(
-                      child: GhostButton(
-                        onPressed: _enabled ? widget.onSignInWithPhone : null,
-                        width: buttonWidth,
-                        height: 44,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        borderRadius: BorderRadius.circular(22),
-                        textColor: _getOnboardingTextColor(context),
-                        iconColor: _getOnboardingTextColor(context),
-                        neumorphicSoftUi: true,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ThemeIcon(
-                              Icons.phone_iphone,
-                              color: _getOnboardingTextColor(context),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              L10n.get("sign_in_with_phone"),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                height: 1.0,
+                      child: Opacity(
+                        opacity: widget.phoneSignInEnabled ? 1.0 : 0.55,
+                        child: GhostButton(
+                          onPressed: _enabled ? widget.onSignInWithPhone : null,
+                          width: buttonWidth,
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          borderRadius: BorderRadius.circular(22),
+                          textColor: _getOnboardingTextColor(context),
+                          iconColor: _getOnboardingTextColor(context),
+                          neumorphicSoftUi: true,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ThemeIcon(
+                                Icons.phone_iphone,
+                                color: _getOnboardingTextColor(context),
+                                size: 18,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                L10n.get("sign_in_with_phone"),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -57,6 +57,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get role_manager => 'Menejer';
 
   @override
+  String get role_moderator => 'Moderator';
+
+  @override
   String get role_admin => 'Administrator';
 
   @override
@@ -1565,7 +1568,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'E\'lon tafsifidagi til tugmalarini va yaratish/tahrirlashda AI yaxshilashni yashiradi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+      'E’lon tafsifida til tugmalari; yaratish/tahrirlashda AI yaxshilash.';
 
   @override
   String get admin_client_config_disable_lidar_room_scan =>
@@ -1573,7 +1576,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
-      'E\'lon yaratilgach skan qo\'shish qadamini, tahrirlashdagi skan tugmasini yashiradi va yuklashni bloklaydi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+      'Yaratgach skan qadamı, tahrirda tugma, yuklash.';
 
   @override
   String get admin_client_config_disable_custom_camera =>
@@ -1581,7 +1584,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_custom_camera_description =>
-      'Yoqilganda, foto olish vaqtida ilovaning maxsus kamerasi suv belgisi bilan ochiladi. O\'chirilganda, klientlar qurilmaning standart kamerasiga o\'tadi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+      'Yoniq — suv belgili ilova kamerasi; o‘chiq — qurilma kamerasi.';
 
   @override
   String get admin_client_config_show_listing_dictation_meter =>
@@ -1589,7 +1592,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_config_show_listing_dictation_meter_description =>
-      'Yoqilganda, eʼlon yaratish/tahrirlashda tavsif pastki qismida diktovqa paytida toʻlqin va yozib olish vaqti koʻrsatiladi. O‘chirilganda, faqat mikrofon/stop tugmasi holatini aks ettiradi. Barcha foydalanuvchi va qurilmalarga qo\'llanadi (serverda saqlanadi).';
+      'Diktovqa paytida toʻlqin va taymer; aks holda faqat mik/stop.';
 
   @override
   String get admin_content_moderation_blur_enabled =>
@@ -1605,6 +1608,14 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_content_moderation_save_error => 'Sozlama saqlanmadi';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_title =>
+      'Yangi e\'lon va gig\'larni tasdiqlash';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
+      'Yoqiq bo\'lsa, yangi uy-joy e\'lonlari, xizmatlar va vazifalar admin tasdig\'igacha umumiy qidiruvda ko\'rinmaydi. O\'chiq bo\'lsa — darhol e\'lon qilinadi.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Maʼlumot importi';
@@ -1705,6 +1716,100 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_panel_section_listing_complaints => 'Shikoyatli e\'lonlar';
+
+  @override
+  String get admin_panel_section_listing_moderation => 'E\'lonlarni tasdiqlash';
+
+  @override
+  String get admin_listing_moderation_title => 'Tasdiq kutilmoqda';
+
+  @override
+  String get admin_listing_moderation_loading =>
+      'Moderatsiya navbati yuklanmoqda…';
+
+  @override
+  String get admin_listing_moderation_error => 'Navbat yuklanmadi';
+
+  @override
+  String get admin_listing_moderation_retry => 'Qayta urinish';
+
+  @override
+  String get admin_listing_moderation_summary_total => 'Navbatda';
+
+  @override
+  String get admin_listing_moderation_summary_today => 'Bugun';
+
+  @override
+  String get admin_listing_moderation_summary_oldest => 'Eng uzoq';
+
+  @override
+  String get admin_listing_moderation_days_short => 'kun';
+
+  @override
+  String get admin_listing_moderation_section_list =>
+      'Ko\'rib chiqish kutilmoqda';
+
+  @override
+  String get admin_listing_moderation_empty =>
+      'Tasdiq kutilayotgan e\'lonlar yo\'q.';
+
+  @override
+  String get admin_listing_moderation_open => 'Ochish';
+
+  @override
+  String get admin_listing_moderation_approve => 'Tasdiqlash';
+
+  @override
+  String get admin_listing_moderation_id => 'ID';
+
+  @override
+  String get admin_listing_moderation_user => 'Foydalanuvchi';
+
+  @override
+  String get admin_listing_moderation_load_more => 'Yana';
+
+  @override
+  String get admin_listing_moderation_approved_toast => 'E\'lon e\'lon qilindi';
+
+  @override
+  String get admin_panel_section_gig_moderation => 'Gig\'larni tasdiqlash';
+
+  @override
+  String get admin_gig_moderation_title => 'Gig moderatsiyasi';
+
+  @override
+  String get admin_gig_moderation_tab_offers => 'Xizmatlar';
+
+  @override
+  String get admin_gig_moderation_tab_requests => 'Vazifalar';
+
+  @override
+  String get admin_gig_moderation_section_offers => 'Tekshiruvdagi xizmatlar';
+
+  @override
+  String get admin_gig_moderation_section_requests => 'Tekshiruvdagi vazifalar';
+
+  @override
+  String get admin_gig_moderation_empty_offers =>
+      'Tasdiq kutilayotgan xizmatlar yo\'q.';
+
+  @override
+  String get admin_gig_moderation_empty_requests =>
+      'Tasdiq kutilayotgan vazifalar yo\'q.';
+
+  @override
+  String get admin_gig_moderation_provider => 'Ijrochi';
+
+  @override
+  String get admin_gig_moderation_client => 'Buyurtmachi';
+
+  @override
+  String get admin_gig_moderation_approved_offer_toast =>
+      'Xizmat e\'lon qilindi';
+
+  @override
+  String get admin_gig_moderation_approved_request_toast =>
+      'Vazifa e\'lon qilindi';
 
   @override
   String get admin_panel_section_district_heatmap =>

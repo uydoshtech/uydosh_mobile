@@ -5,6 +5,8 @@ import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_content_moderation_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listing_creation_analytics_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_gig_moderation_queue_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_listing_moderation_queue_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
@@ -108,6 +110,32 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     MaterialPageRoute(
                       builder: (context) =>
                           const AdminListingsWithComplaintsScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.verified_outlined,
+                titleKey: "admin_panel_section_listing_moderation",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const AdminListingModerationQueueScreen(),
+                    ),
+                  );
+                },
+              ),
+              _AdminMenuRow(
+                icon: Icons.work_outline,
+                titleKey: "admin_panel_section_gig_moderation",
+                iconColor: iconColor,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const AdminGigModerationQueueScreen(),
                     ),
                   );
                 },

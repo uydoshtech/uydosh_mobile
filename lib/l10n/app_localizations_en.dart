@@ -57,6 +57,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get role_manager => 'Manager';
 
   @override
+  String get role_moderator => 'Moderator';
+
+  @override
   String get role_admin => 'Admin';
 
   @override
@@ -1546,7 +1549,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_client_config_hide_gemini_listing_ui_description =>
-      'Hides description language buttons on listing details and the AI improve action when creating or editing listings. Applies to all users and devices (stored on the server).';
+      'Listing language buttons and AI improve when creating or editing.';
 
   @override
   String get admin_client_config_disable_lidar_room_scan =>
@@ -1554,7 +1557,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_lidar_room_scan_description =>
-      'Hides the add-scan flow after creating a listing, the add-scan button when editing, and blocks uploads. Applies to all users and devices (stored on the server).';
+      'Post-create scan step, edit-screen control, and uploads.';
 
   @override
   String get admin_client_config_disable_custom_camera =>
@@ -1562,7 +1565,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_client_config_disable_custom_camera_description =>
-      'When on, photo capture opens the in-app camera with watermark overlay. When off, clients fall back to the device\'s native camera. Applies to all users and devices (stored on the server).';
+      'On: in-app camera with watermark. Off: device camera.';
 
   @override
   String get admin_client_config_show_listing_dictation_meter =>
@@ -1570,7 +1573,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_client_config_show_listing_dictation_meter_description =>
-      'When on, creating or editing a listing shows a waveform and elapsed time in the description footer while dictating. When off, only the mic/stop control reflects recording. Applies to all users and devices (stored on the server).';
+      'Waveform and timer while dictating; off: mic/stop only.';
 
   @override
   String get admin_content_moderation_blur_enabled =>
@@ -1586,6 +1589,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_content_moderation_save_error => 'Could not save setting';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_title =>
+      'Require approval for new listings and gigs';
+
+  @override
+  String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
+      'When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Data import';
@@ -1684,6 +1695,97 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get admin_panel_section_listing_complaints =>
       'Listings with complaints';
+
+  @override
+  String get admin_panel_section_listing_moderation => 'Approve listings';
+
+  @override
+  String get admin_listing_moderation_title => 'Pending listings';
+
+  @override
+  String get admin_listing_moderation_loading => 'Loading moderation queue…';
+
+  @override
+  String get admin_listing_moderation_error =>
+      'Could not load moderation queue';
+
+  @override
+  String get admin_listing_moderation_retry => 'Retry';
+
+  @override
+  String get admin_listing_moderation_summary_total => 'Pending';
+
+  @override
+  String get admin_listing_moderation_summary_today => 'New today';
+
+  @override
+  String get admin_listing_moderation_summary_oldest => 'Longest wait';
+
+  @override
+  String get admin_listing_moderation_days_short => 'd';
+
+  @override
+  String get admin_listing_moderation_section_list => 'Awaiting review';
+
+  @override
+  String get admin_listing_moderation_empty =>
+      'No listings are waiting for approval.';
+
+  @override
+  String get admin_listing_moderation_open => 'View';
+
+  @override
+  String get admin_listing_moderation_approve => 'Approve';
+
+  @override
+  String get admin_listing_moderation_id => 'ID';
+
+  @override
+  String get admin_listing_moderation_user => 'User';
+
+  @override
+  String get admin_listing_moderation_load_more => 'Load more';
+
+  @override
+  String get admin_listing_moderation_approved_toast => 'Listing published';
+
+  @override
+  String get admin_panel_section_gig_moderation => 'Approve gigs';
+
+  @override
+  String get admin_gig_moderation_title => 'Gig moderation';
+
+  @override
+  String get admin_gig_moderation_tab_offers => 'Services';
+
+  @override
+  String get admin_gig_moderation_tab_requests => 'Tasks';
+
+  @override
+  String get admin_gig_moderation_section_offers => 'Services awaiting review';
+
+  @override
+  String get admin_gig_moderation_section_requests => 'Tasks awaiting review';
+
+  @override
+  String get admin_gig_moderation_empty_offers =>
+      'No gig services are waiting for approval.';
+
+  @override
+  String get admin_gig_moderation_empty_requests =>
+      'No gig tasks are waiting for approval.';
+
+  @override
+  String get admin_gig_moderation_provider => 'Provider';
+
+  @override
+  String get admin_gig_moderation_client => 'Client';
+
+  @override
+  String get admin_gig_moderation_approved_offer_toast => 'Service published';
+
+  @override
+  String get admin_gig_moderation_approved_request_toast => 'Task published';
 
   @override
   String get admin_panel_section_district_heatmap => 'District heat map';
