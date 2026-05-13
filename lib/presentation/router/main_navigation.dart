@@ -916,11 +916,9 @@ class MainNavigationState extends State<MainNavigation>
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
           extendBodyBehindAppBar: useLiquidGlassAppBar,
-          // To re-enable curved-bar liquid glass: when blue shell uses a
-          // transparent [CurvedNavigationBar.backgroundColor] and a
-          // [BackdropFilter] under the bar, set `extendBody: themeState.isBlueTheme`
-          // so tab bodies paint beneath the bar (see [CustomCurvedNavigationBar]
-          // class dartdoc).
+          // Draw bodies under the curved bar so notch/alpha tints show cards and
+          // feed — not only [themeState.backgroundColor] (same 0xFF1E3A5F as primary).
+          extendBody: themeState.isBlueTheme,
           appBar: UydoshAppBar(
             backgroundColor:
                 useLiquidGlassAppBar

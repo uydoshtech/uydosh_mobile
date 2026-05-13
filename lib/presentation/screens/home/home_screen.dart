@@ -936,8 +936,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             ),
           Positioned(
             right: 16,
-            // With shell `extendBody` under curved nav, add ~70px to clear bar.
-            bottom: 30, // Moved down a bit from 100
+            bottom: _searchAlertFabStackBottom(context),
             child:
                 BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(
               selector: (state) {
@@ -962,7 +961,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     // Phantom sizer: forces this Stack's bounds to also cover
                     // the area above the FAB column where the empty-state
                     // hint bubble lives. Without it, the bubble (added via a
-                    // [Positioned] at `bottom: 124`) sits above the Stack's
+                    // [Positioned] at the same vertical offset pattern as
+                    // [_searchAlertBellHintBottom]) sits above the Stack's
                     // hit-test rect — Flutter then paints it (Clip.none) but
                     // routes taps to whatever is below, so the close "x"
                     // never receives them.
@@ -1021,7 +1021,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     // center) lands directly above the bell.
                     Positioned(
                       // 56 (search FAB) + 12 (gap) + 52 (bell FAB scaled .92) + 4 px breathing room
-                      bottom: 124,
+                      bottom: _searchAlertBellHintBottom(context),
                       right: 0,
                       // No IgnorePointer here: the bubble carries an "x" close
                       // button that needs to receive taps. The bubble itself
@@ -1126,6 +1126,36 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return ThemeState().mainShellGlassExtraTopInset(context);
   }
 
+  /// Keeps the last feed items above the curved bar when the shell uses
+  /// [Scaffold.extendBody] (Scaffold raises [MediaQuery.padding.bottom] to the
+  /// bar height).
+  double _feedListBottomPadding(BuildContext context) {
+    return math.max(16.0, MediaQuery.paddingOf(context).bottom);
+  }
+
+  /// Bottom inset for the search / bell FAB column on the housing [Stack].
+  ///
+  /// [MainNavigation] uses [Scaffold.extendBody] for the blue shell so the
+  /// body (and this [Stack]) reaches the screen bottom. A fixed `bottom:` would
+  /// then pin to the physical bottom — under the curved bar — instead of
+  /// sitting above it like before extendBody.
+  double _searchAlertFabStackBottom(BuildContext context) {
+    const base = 30.0;
+    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme) {
+      return base;
+    }
+    return base + MediaQuery.paddingOf(context).bottom;
+  }
+
+  /// Vertical anchor for the empty-search hint bubble above the bell FAB.
+  double _searchAlertBellHintBottom(BuildContext context) {
+    const base = 124.0;
+    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme) {
+      return base;
+    }
+    return base + MediaQuery.paddingOf(context).bottom;
+  }
+
   double _feedRibbonSpacerHeight() {
     if (widget.isSearchMode) return 0;
     return _inlineSearchSpacerExpanded ? _inlineSearchRibbonHeight : 0;
@@ -1224,7 +1254,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             return ListView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16.0, baseTopPad, 16.0, 16.0),
+              padding: EdgeInsets.fromLTRB(
+                16.0,
+                baseTopPad,
+                16.0,
+                _feedListBottomPadding(context),
+              ),
               children: [
                 _buildAnimatedFeedTopSpacer(trailingSpacing: 0),
                 SizedBox(
@@ -1721,7 +1756,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildLoadingState() {
     final baseTopPad = _feedBaseTopPadding();
     return CommonListView(
-      padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
+      padding: EdgeInsets.fromLTRB(
+        14.0,
+        baseTopPad,
+        14.0,
+        _feedListBottomPadding(context),
+      ),
       itemSpacing: 16.0,
       itemCount: 7,
       itemBuilder: (context, index) {
@@ -1748,7 +1788,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           itemSpacing: feedItemSpacing,
           itemCount: feedEntries.length + 1,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(14.0, baseTopPad, 14.0, 16.0),
+          padding: EdgeInsets.fromLTRB(
+            14.0,
+            baseTopPad,
+            14.0,
+            _feedListBottomPadding(context),
+          ),
           itemBuilder: (context, index) {
             if (index == 0)
               return _buildAnimatedFeedTopSpacer(

@@ -7,7 +7,7 @@ import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/curved_navigation_widget.dart";
+import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 
 /// Label chip + circular control (browser-style), opening "My bookings".
 class GigHubMyBookingsFab extends StatefulWidget {
