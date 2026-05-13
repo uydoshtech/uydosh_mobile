@@ -426,7 +426,7 @@ class AppStrings {
       "unsaved_changes_title": "Unsaved changes",
       "unsaved_changes_message":
           "You have unsaved changes. If you leave now, they will be lost.",
-      "keep_editing": "Keep editing",
+      "keep_editing": "Continue",
       "leave_without_saving": "Leave",
 
       "confirm": "Confirm",
@@ -1927,7 +1927,7 @@ class AppStrings {
       "unsaved_changes_title": "Несохранённые изменения",
       "unsaved_changes_message":
           "У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.",
-      "keep_editing": "Продолжить редактирование",
+      "keep_editing": "Продолжить",
       "leave_without_saving": "Выйти",
 
       "confirm": "Подтвердить",
@@ -3452,7 +3452,7 @@ class AppStrings {
       "unsaved_changes_title": "Saqlanmagan o'zgarishlar",
       "unsaved_changes_message":
           "Saqlanmagan o'zgarishlaringiz bor. Hozir chiqsangiz, ular yo'qoladi.",
-      "keep_editing": "Tahrirlashni davom ettirish",
+      "keep_editing": "Davom etish",
       "leave_without_saving": "Chiqish",
 
       "confirm": "Tasdiqlash",

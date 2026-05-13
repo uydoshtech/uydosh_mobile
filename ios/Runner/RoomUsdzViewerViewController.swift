@@ -220,7 +220,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var displayMode: DisplayMode = .fullRoom
   private let modeControl = UISegmentedControl(items: ["", "", ""])
   private var useStylizedMaterials = true
-  private var materialsBarButton: UIBarButtonItem?
+  /// Materials toggle lives in the bottom-center toolbar with view mode segments.
+  private let materialsStyleButton = UIButton(type: .system)
+  /// Bottom-centered “glassy” bar: 3-way mode picker + materials style (matches zoom panel styling).
+  private let modeMaterialsToolbarContainer = UIView()
+  private let modeMaterialsToolbarPanel = UIView()
+  private let modeMaterialsStack = UIStackView()
   private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
@@ -230,6 +235,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private static let zoomControlsPanelCornerRadius: CGFloat = 28
   private static let zoomButtonSize: CGFloat = 38
   private static let zoomButtonCornerRadius: CGFloat = 19
+  /// Matches zoom +/- row and segmented + materials row so both bottom pills share one height.
+  private static let bottomToolbarPanelInset: CGFloat = 12
   /// How many zoom-in steps to apply on open (model appears larger; same camera distance as padded fit).
   private static let initialZoomInSteps: Int = 2
   /// Manual orbit: translation (points) → angle delta, per `changed` callback.
@@ -277,11 +284,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       action: #selector(closeTapped)
     )
     setupModeControl()
-    setupMaterialsToggle()
-    navigationItem.rightBarButtonItems = [
-      materialsBarButton,
-      UIBarButtonItem(customView: modeControl),
-    ].compactMap { $0 }
+    setupMaterialsStyleButton()
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
@@ -372,7 +375,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     dimensionsLineStack.translatesAutoresizingMaskIntoConstraints = false
     dimensionsLineStack.axis = .vertical
     dimensionsLineStack.spacing = 6
-    dimensionsLineStack.alignment = .center
+    // Leading-align every row to the widest line; `.center` offset each row
+    // horizontally by half its slack, so icons/labels zig-zagged across rows.
+    dimensionsLineStack.alignment = .fill
     dimensionsLineStack.addArrangedSubview(row1)
     dimensionsLineStack.addArrangedSubview(rowHeight)
     dimensionsLineStack.addArrangedSubview(row2)
@@ -414,34 +419,62 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
     view.addSubview(brandMarkView)
 
+    setupModeMaterialsToolbar()
+
     // Make sure overlay controls remain tappable/draggable above SceneKit.
     view.bringSubviewToFront(zoomControlsContainer)
+    view.bringSubviewToFront(modeMaterialsToolbarContainer)
 
-    NSLayoutConstraint.activate([
-      sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-      sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+    let modeMaterialsToolbarPlacement: [NSLayoutConstraint] = {
+      let modeCenterX = modeMaterialsToolbarContainer.centerXAnchor.constraint(
+        equalTo: view.safeAreaLayoutGuide.centerXAnchor
+      )
+      modeCenterX.priority = UILayoutPriority(750)
+      return [
+        modeCenterX,
+        modeMaterialsToolbarContainer.leadingAnchor.constraint(
+          greaterThanOrEqualTo: zoomControlsContainer.trailingAnchor,
+          constant: 8
+        ),
+        modeMaterialsToolbarContainer.trailingAnchor.constraint(
+          lessThanOrEqualTo: brandMarkView.leadingAnchor,
+          constant: -8
+        ),
+        modeMaterialsToolbarContainer.bottomAnchor.constraint(
+          equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+          constant: -22
+        ),
+      ]
+    }()
 
-      hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
-      hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
-      hintStack.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
-      hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
+    NSLayoutConstraint.activate(
+      [
+        sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+        sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+        sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
-      hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-      hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-      hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+        hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
+        hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
+        hintStack.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
+        hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
 
-      // Brand mark moved to bottom-trailing (was bottom-leading); zoom
-      // controls take over the bottom-leading slot below.
-      brandMarkView.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
-      brandMarkView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
-      brandMarkView.widthAnchor.constraint(equalToConstant: 62),
-      brandMarkView.heightAnchor.constraint(equalToConstant: 62),
+        hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+        hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+        hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
 
-      zoomControlsContainer.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
-      zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
-    ])
+        // Brand mark moved to bottom-trailing (was bottom-leading); zoom
+        // controls take over the bottom-leading slot below.
+        brandMarkView.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
+        brandMarkView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
+        brandMarkView.widthAnchor.constraint(equalToConstant: 62),
+        brandMarkView.heightAnchor.constraint(equalToConstant: 62),
+
+        zoomControlsContainer.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
+        zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
+      ]
+        + modeMaterialsToolbarPlacement
+    )
 
     // Pan / pinch from launch so a drag or pinch ends intro auto-rotation (tap-only was too limiting).
     installManualOrbitGestures()
@@ -457,9 +490,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     refreshZoomControlsNeumorphicShadowPaths()
+    refreshModeMaterialsToolbarShadowPaths()
     let stackWidth = hintStack.bounds.width
     guard stackWidth > 0 else { return }
-    // Multiline labels need a max width when the stack uses centered alignment.
+    // Multiline dimension lines need an explicit width so labels wrap correctly.
     dimensionsTitleLabel.preferredMaxLayoutWidth = stackWidth
     let lineLabelMaxWidth = stackWidth - 20 - 8  // icon width + row spacing
     dimensionsLine1Label.preferredMaxLayoutWidth = lineLabelMaxWidth
@@ -560,10 +594,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     zoomControlsPanel.addSubview(zoomStack)
 
     NSLayoutConstraint.activate([
-      zoomStack.topAnchor.constraint(equalTo: zoomControlsPanel.topAnchor, constant: 12),
-      zoomStack.leadingAnchor.constraint(equalTo: zoomControlsPanel.leadingAnchor, constant: 12),
-      zoomStack.trailingAnchor.constraint(equalTo: zoomControlsPanel.trailingAnchor, constant: -12),
-      zoomStack.bottomAnchor.constraint(equalTo: zoomControlsPanel.bottomAnchor, constant: -12),
+      zoomStack.topAnchor.constraint(equalTo: zoomControlsPanel.topAnchor, constant: Self.bottomToolbarPanelInset),
+      zoomStack.leadingAnchor.constraint(equalTo: zoomControlsPanel.leadingAnchor, constant: Self.bottomToolbarPanelInset),
+      zoomStack.trailingAnchor.constraint(equalTo: zoomControlsPanel.trailingAnchor, constant: -Self.bottomToolbarPanelInset),
+      zoomStack.bottomAnchor.constraint(equalTo: zoomControlsPanel.bottomAnchor, constant: -Self.bottomToolbarPanelInset),
     ])
   }
 
@@ -643,28 +677,140 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeControl.isAccessibilityElement = true
     modeControl.accessibilityLabel = strings.viewModeA11yLabel
     modeControl.accessibilityHint = strings.viewModeA11yHint
+
+    // Readability on the bottom dark glass panel (no longer inherits nav bar blur).
+    if #available(iOS 13.0, *) {
+      modeControl.overrideUserInterfaceStyle = .dark
+      modeControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
+      modeControl.selectedSegmentTintColor = UIColor.white.withAlphaComponent(0.92)
+      modeControl.setTitleTextAttributes(
+        [.foregroundColor: UIColor.white.withAlphaComponent(0.92)],
+        for: .selected
+      )
+      modeControl.setTitleTextAttributes(
+        [.foregroundColor: UIColor.white.withAlphaComponent(0.55)],
+        for: .normal
+      )
+    }
+    modeControl.tintColor = UIColor.white.withAlphaComponent(0.92)
+
+    // Same vertical size as circular zoom / materials controls inside the pills.
+    NSLayoutConstraint.activate([
+      modeControl.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+    ])
   }
 
-  private func setupMaterialsToggle() {
-    let btn = UIBarButtonItem(
-      image: UIImage(systemName: "paintbrush.fill"),
-      style: .plain,
-      target: self,
-      action: #selector(toggleMaterialsStyle)
-    )
-    btn.accessibilityLabel = strings.materialsStyleA11yLabel
-    btn.accessibilityHint = strings.materialsStyleA11yHint
-    materialsBarButton = btn
+  private func setupMaterialsStyleButton() {
+    materialsStyleButton.translatesAutoresizingMaskIntoConstraints = false
+    let iconCfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    materialsStyleButton.setPreferredSymbolConfiguration(iconCfg, forImageIn: .normal)
+    let buttonTint = UIColor.white.withAlphaComponent(0.92)
+    materialsStyleButton.tintColor = buttonTint
+    materialsStyleButton.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
+    materialsStyleButton.layer.cornerRadius = Self.zoomButtonCornerRadius
+    if #available(iOS 13.0, *) {
+      materialsStyleButton.layer.cornerCurve = .continuous
+    }
+    materialsStyleButton.clipsToBounds = false
+    materialsStyleButton.layer.masksToBounds = false
+    materialsStyleButton.layer.shadowColor = UIColor.black.cgColor
+    materialsStyleButton.layer.shadowOpacity = 0.4
+    materialsStyleButton.layer.shadowOffset = CGSize(width: 2, height: 3)
+    materialsStyleButton.layer.shadowRadius = 4
+    materialsStyleButton.layer.borderWidth = 0.5
+    materialsStyleButton.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
+    materialsStyleButton.accessibilityLabel = strings.materialsStyleA11yLabel
+    materialsStyleButton.accessibilityHint = strings.materialsStyleA11yHint
+    materialsStyleButton.addTarget(self, action: #selector(toggleMaterialsStyle), for: .touchUpInside)
+    NSLayoutConstraint.activate([
+      materialsStyleButton.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+      materialsStyleButton.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+    ])
     updateMaterialsButtonAppearance()
   }
 
   private func updateMaterialsButtonAppearance() {
     // Stylized: paintbrush, Real: photo
     let name = useStylizedMaterials ? "paintbrush.fill" : "photo.fill.on.rectangle.fill"
-    materialsBarButton?.image = UIImage(systemName: name)
-    materialsBarButton?.accessibilityValue = useStylizedMaterials
+    materialsStyleButton.setImage(UIImage(systemName: name), for: .normal)
+    materialsStyleButton.accessibilityValue = useStylizedMaterials
       ? strings.materialsStyleValueStylized
       : strings.materialsStyleValueReal
+  }
+
+  /// Hosts segmented view mode control + materials toggle centered at the bottom safe area.
+  private func setupModeMaterialsToolbar() {
+    modeMaterialsToolbarContainer.translatesAutoresizingMaskIntoConstraints = false
+    modeMaterialsToolbarContainer.isUserInteractionEnabled = true
+    modeMaterialsToolbarContainer.backgroundColor = .clear
+    modeMaterialsToolbarContainer.clipsToBounds = false
+    modeMaterialsToolbarContainer.layer.masksToBounds = false
+    modeMaterialsToolbarContainer.layer.shadowColor = UIColor.black.cgColor
+    modeMaterialsToolbarContainer.layer.shadowOpacity = 0.52
+    modeMaterialsToolbarContainer.layer.shadowOffset = CGSize(width: 5, height: 7)
+    modeMaterialsToolbarContainer.layer.shadowRadius = 14
+
+    modeMaterialsToolbarPanel.translatesAutoresizingMaskIntoConstraints = false
+    modeMaterialsToolbarPanel.isUserInteractionEnabled = true
+    modeMaterialsToolbarPanel.backgroundColor = UIColor(red: 0.17, green: 0.17, blue: 0.19, alpha: 1)
+    modeMaterialsToolbarPanel.layer.cornerRadius = Self.zoomControlsPanelCornerRadius
+    if #available(iOS 13.0, *) {
+      modeMaterialsToolbarPanel.layer.cornerCurve = .continuous
+    }
+    modeMaterialsToolbarPanel.clipsToBounds = true
+    modeMaterialsToolbarPanel.layer.borderWidth = 1
+    modeMaterialsToolbarPanel.layer.borderColor = UIColor.white.withAlphaComponent(0.07).cgColor
+
+    modeMaterialsToolbarContainer.addSubview(modeMaterialsToolbarPanel)
+    NSLayoutConstraint.activate([
+      modeMaterialsToolbarPanel.topAnchor.constraint(equalTo: modeMaterialsToolbarContainer.topAnchor),
+      modeMaterialsToolbarPanel.leadingAnchor.constraint(equalTo: modeMaterialsToolbarContainer.leadingAnchor),
+      modeMaterialsToolbarPanel.trailingAnchor.constraint(equalTo: modeMaterialsToolbarContainer.trailingAnchor),
+      modeMaterialsToolbarPanel.bottomAnchor.constraint(equalTo: modeMaterialsToolbarContainer.bottomAnchor),
+    ])
+
+    modeMaterialsStack.translatesAutoresizingMaskIntoConstraints = false
+    modeMaterialsStack.axis = .horizontal
+    modeMaterialsStack.alignment = .center
+    modeMaterialsStack.spacing = 12
+
+    modeMaterialsStack.addArrangedSubview(modeControl)
+    modeMaterialsStack.addArrangedSubview(materialsStyleButton)
+    modeMaterialsToolbarPanel.addSubview(modeMaterialsStack)
+
+    NSLayoutConstraint.activate([
+      modeMaterialsStack.topAnchor.constraint(
+        equalTo: modeMaterialsToolbarPanel.topAnchor,
+        constant: Self.bottomToolbarPanelInset
+      ),
+      modeMaterialsStack.leadingAnchor.constraint(
+        equalTo: modeMaterialsToolbarPanel.leadingAnchor,
+        constant: Self.bottomToolbarPanelInset
+      ),
+      modeMaterialsStack.trailingAnchor.constraint(
+        equalTo: modeMaterialsToolbarPanel.trailingAnchor,
+        constant: -Self.bottomToolbarPanelInset
+      ),
+      modeMaterialsStack.bottomAnchor.constraint(
+        equalTo: modeMaterialsToolbarPanel.bottomAnchor,
+        constant: -Self.bottomToolbarPanelInset
+      ),
+    ])
+
+    view.addSubview(modeMaterialsToolbarContainer)
+  }
+
+  private func refreshModeMaterialsToolbarShadowPaths() {
+    let panelR = Self.zoomControlsPanelCornerRadius
+    let outer = modeMaterialsToolbarContainer.bounds
+    guard outer.width > 1, outer.height > 1 else { return }
+    modeMaterialsToolbarContainer.layer.shadowPath =
+      UIBezierPath(roundedRect: outer, cornerRadius: panelR).cgPath
+    let br = Self.zoomButtonCornerRadius
+    let bb = materialsStyleButton.bounds
+    if bb.width > 1, bb.height > 1 {
+      materialsStyleButton.layer.shadowPath = UIBezierPath(roundedRect: bb, cornerRadius: br).cgPath
+    }
   }
 
   // (Removed: `UydoshVectorBrandMarkView` and its `SVGPathParser` helper

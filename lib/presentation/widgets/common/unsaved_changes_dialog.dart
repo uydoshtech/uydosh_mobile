@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 
 /// Confirmation dialog shown when the user tries to leave an edit form with
 /// pending changes. Displays a localized title/message and a bullet list of
@@ -35,6 +35,13 @@ class _UnsavedChangesDialog extends StatelessWidget {
 
   final List<String> changedFieldLabels;
 
+  /// Matches [TextButtonThemed] actions; applied on labels so merged
+  /// [ButtonStyle] on the destructive action cannot pick a different theme text style.
+  static const TextStyle _actionLabelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+  );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -63,22 +70,21 @@ class _UnsavedChangesDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
+        TextButtonThemed(
           onPressed: () {
-            HapticFeedbackUtils.impact();
             Navigator.of(context).pop(false);
           },
-          child: Text(L10n.get("keep_editing")),
+          child: Text(L10n.get("keep_editing"), style: _actionLabelStyle),
         ),
-        TextButton(
+        TextButtonThemed(
           onPressed: () {
-            HapticFeedbackUtils.impact();
             Navigator.of(context).pop(true);
           },
           style: TextButton.styleFrom(
             foregroundColor: theme.colorScheme.error,
+            textStyle: _actionLabelStyle,
           ),
-          child: Text(L10n.get("leave_without_saving")),
+          child: Text(L10n.get("leave_without_saving"), style: _actionLabelStyle),
         ),
       ],
     );

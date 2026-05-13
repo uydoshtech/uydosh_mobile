@@ -16,6 +16,7 @@ import "package:uy_dosh/domain/services/admin_content_moderation_settings_servic
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -417,12 +418,10 @@ class _AdminContentModerationScreenState
               ),
             ],
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                HapticFeedbackUtils.impact();
-                _load();
-              },
-              child: Text(L10n.get("admin_search_analytics_retry")),
+            PrimaryButtonFactory.text(
+              onPressed: _load,
+              text: L10n.get("admin_search_analytics_retry"),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ],
         ),

@@ -7,8 +7,8 @@ import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
@@ -241,20 +241,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 const SizedBox(height: 16),
                 // Retry button if initialization failed
                 if (_retryCount > 0 && _retryCount < _maxRetries)
-                  ElevatedButton.icon(
+                  PrimaryButtonFactory.iconText(
                     onPressed: () {
-                      HapticFeedbackUtils.impact();
                       _retryMapInitialization();
                     },
-                    icon: const ThemeIcon(Icons.refresh, size: 16),
-                    label: Text(context.l10n.retry),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
+                    icon: Icons.refresh,
+                    text: context.l10n.retry,
+                    surfaceGradientBase: Colors.red,
+                    textColor: Colors.white,
+                    iconSize: 16,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
                   ),
               ],

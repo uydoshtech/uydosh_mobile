@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -464,30 +465,29 @@ class _AdminListingModerationQueueScreenState
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton(
+                  child: PrimaryButton(
                     onPressed: busy ? null : () => _approve(item),
+                    isLoading: busy,
+                    surfaceGradientBase: scheme.primary,
+                    textColor: scheme.onPrimary,
+                    borderRadius: BorderRadius.circular(8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                     child:
-                        busy
-                            ? SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: scheme.onPrimary,
-                              ),
-                            )
-                            : ButtonIconLabel(
-                              slotWidth: 26,
-                              leading: ThemeIcon(
-                                Icons.check_circle_outline,
-                                size: 18,
-                                color: scheme.onPrimary,
-                              ),
-                              label: Text(
-                                L10n.get("admin_listing_moderation_approve"),
-                                style: TextStyle(color: scheme.onPrimary),
-                              ),
-                            ),
+                        ButtonIconLabel(
+                          slotWidth: 26,
+                          leading: ThemeIcon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                            color: scheme.onPrimary,
+                          ),
+                          label: Text(
+                            L10n.get("admin_listing_moderation_approve"),
+                            style: TextStyle(color: scheme.onPrimary),
+                          ),
+                        ),
                   ),
                 ),
               ],
@@ -632,14 +632,8 @@ class _AdminListingModerationQueueScreenState
       padding: const EdgeInsets.all(24),
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
-      retryButton: ElevatedButton.icon(
-        onPressed: () {
-          HapticFeedbackUtils.impact();
-          _loadFirstPage();
-        },
-        icon: const ThemeIcon(Icons.refresh),
-        label: Text(L10n.get("admin_listing_moderation_retry")),
-      ),
+      onRetry: _loadFirstPage,
+      retryLabel: L10n.get("admin_listing_moderation_retry"),
     );
   }
 }

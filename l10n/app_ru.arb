@@ -335,7 +335,7 @@
   "save_changes": "Сохранить изменения",
   "unsaved_changes_title": "Несохранённые изменения",
   "unsaved_changes_message": "У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.",
-  "keep_editing": "Продолжить редактирование",
+  "keep_editing": "Продолжить",
   "leave_without_saving": "Выйти",
   "confirm": "Подтвердить",
   "apply": "Применить",

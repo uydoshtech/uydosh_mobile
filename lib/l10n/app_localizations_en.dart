@@ -777,7 +777,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have unsaved changes. If you leave now, they will be lost.';
 
   @override
-  String get keep_editing => 'Keep editing';
+  String get keep_editing => 'Continue';
 
   @override
   String get leave_without_saving => 'Leave';

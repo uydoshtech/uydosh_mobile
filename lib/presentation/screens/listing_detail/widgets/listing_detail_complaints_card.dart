@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 
 /// Complaints warning card for listing detail (shown when listing has complaints).
 ///
@@ -57,23 +57,39 @@ class _ListingDetailComplaintsCardState
         padding: const EdgeInsets.all(20.0),
         child: SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          child: PrimaryButton(
             onPressed: () {
               HapticFeedbackUtils.impact();
               widget.onPressed();
             },
-            icon: FadeTransition(
-              opacity: _blinkAnimation,
-              child: const ThemeIcon(Icons.report_outlined),
-            ),
-            label: FadeTransition(
-              opacity: _blinkAnimation,
-              child: Text(widget.complaintsLabel),
-            ),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textLight,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            surfaceGradientBase: AppColors.error,
+            textColor: AppColors.textLight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _blinkAnimation,
+                  child: Icon(
+                    Icons.report_outlined,
+                    color: AppColors.textLight,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: FadeTransition(
+                    opacity: _blinkAnimation,
+                    child: Text(
+                      widget.complaintsLabel,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.textLight),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

@@ -32,11 +32,14 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/the_dot_drop_menu_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
@@ -133,9 +136,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
     const fg = Color(0xFF1F1300);
 
-    // Button: black outlined "ghost" sitting on the warning tile.
-    final buttonBorderColor = Colors.black.withValues(alpha: 0.85);
-    const buttonFg = Color(0xFF1F1300);
+    final buttonFg = Color(0xFF1F1300);
     final buttonBg = Colors.white.withValues(alpha: 0.18);
 
     final platformLabel = _platformPushLabel();
@@ -192,21 +193,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: buttonBg,
-                  foregroundColor: buttonFg,
-                  side: BorderSide(color: buttonBorderColor, width: 1.5),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+              child: PrimaryButton(
+                borderRadius: BorderRadius.circular(12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                surfaceGradientBase: buttonBg,
+                textColor: buttonFg,
                 onPressed: _pushStatusLoading
                     ? null
                     : () async {
-                        HapticFeedbackUtils.impact();
                         if (isDenied) {
                           await openAppSettings();
                           if (!mounted) return;
@@ -229,15 +224,30 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         }
                         await _loadPushStatus();
                       },
-                icon: Icon(
-                  isDenied
-                      ? Icons.settings_outlined
-                      : Icons.notifications_outlined,
-                ),
-                label: Text(
-                  isDenied
-                      ? L10n.get("notifications_open_settings")
-                      : L10n.get("menu_enable_notifications"),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isDenied
+                          ? Icons.settings_outlined
+                          : Icons.notifications_outlined,
+                      color: buttonFg,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        isDenied
+                            ? L10n.get("notifications_open_settings")
+                            : L10n.get("menu_enable_notifications"),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: buttonFg,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -326,20 +336,17 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             spacing: 10,
             runSpacing: 10,
             children: [
-              OutlinedButton(
-                onPressed: _pushDebugLoading
-                    ? null
-                    : () {
-                        HapticFeedbackUtils.impact();
-                        _refreshPushDebug();
-                      },
-                child: const Text("Refresh"),
+              GhostButtonFactory.text(
+                onPressed: _pushDebugLoading ? null : _refreshPushDebug,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                text: "Refresh",
+                neumorphicSoftUi: true,
               ),
-              OutlinedButton(
+              GhostButtonFactory.text(
                 onPressed: _pushDebugLoading
                     ? null
                     : () async {
-                        HapticFeedbackUtils.impact();
                         final ok = await getIt<IPushNotificationService>()
                             .requestPermissionAndRegister();
                         if (!mounted) return;
@@ -351,13 +358,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         );
                         await _refreshPushDebug();
                       },
-                child: const Text("Request permission + register"),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                text: "Request permission + register",
+                neumorphicSoftUi: true,
               ),
-              OutlinedButton(
+              GhostButtonFactory.text(
                 onPressed: _pushDebugLoading
                     ? null
                     : () async {
-                        HapticFeedbackUtils.impact();
                         await getIt<IPushNotificationService>()
                             .registerTokenWithBackend();
                         if (!mounted) return;
@@ -367,13 +376,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         );
                         await _refreshPushDebug();
                       },
-                child: const Text("Register now"),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                text: "Register now",
+                neumorphicSoftUi: true,
               ),
-              OutlinedButton(
+              GhostButtonFactory.text(
                 onPressed: _pushDebugLoading
                     ? null
                     : () async {
-                        HapticFeedbackUtils.impact();
                         setState(() => _pushDebugLoading = true);
                         try {
                           final r = await getIt<IPushNotificationService>()
@@ -401,7 +412,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           }
                         }
                       },
-                child: const Text("Send test push"),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                text: "Send test push",
+                neumorphicSoftUi: true,
               ),
             ],
           ),
@@ -445,7 +459,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         padding: const EdgeInsets.only(top: 6, left: 25),
         child: SizedBox(
           width: double.infinity,
-          child: TextButton(
+          child: TextButtonThemed(
             style: TextButton.styleFrom(
               alignment: Alignment.centerLeft,
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
@@ -453,7 +467,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: () async {
-              HapticFeedbackUtils.impact();
               if (needsEnable && !isDenied) {
                 final ok = await push.requestPermissionAndRegister();
                 if (!mounted) return;

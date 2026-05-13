@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -664,6 +665,12 @@ class _AdminSupportChatThreadScreenState
             themeState.chatComposerFieldTextColor(context);
         final inputFieldHintColor =
             themeState.chatComposerFieldHintColor(context);
+        final scheme = Theme.of(context).colorScheme;
+        final sendButtonBase = Color.lerp(
+          scheme.surface,
+          scheme.onSurface,
+          themeState.isBlueTheme ? 0.06 : 0.02,
+        )!;
         return Container(
           padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
           decoration: BoxDecoration(
@@ -692,25 +699,36 @@ class _AdminSupportChatThreadScreenState
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
+              ThreeDPillButton(
                 onPressed: _isSending
                     ? null
                     : () {
-                        HapticFeedbackUtils.impact();
                         _sendMessage();
                       },
-                icon: _isSending
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            themeState.sendButtonColor,
-                          ),
-                        ),
-                      )
-                    : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
+                padding: const EdgeInsets.all(10),
+                backgroundColor: sendButtonBase,
+                borderSide: BorderSide(
+                  color: scheme.onSurface.withValues(alpha: 0.06),
+                  width: 1,
+                ),
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Center(
+                    child: _isSending
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                themeState.sendButtonColor,
+                              ),
+                            ),
+                          )
+                        : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
+                  ),
+                ),
               ),
             ],
           ),

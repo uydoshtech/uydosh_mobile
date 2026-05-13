@@ -45,7 +45,9 @@ import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -1098,16 +1100,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           L10n.get("user_blocked_violation_message"),
         ),
         actions: [
-          TextButton(
+          TextButtonThemed(
             onPressed: () {
-              HapticFeedbackUtils.impact();
               Navigator.of(ctx).pop("contact_support");
             },
             child: Text(L10n.get("menu_contact_support")),
           ),
-          TextButton(
+          TextButtonThemed(
             onPressed: () {
-              HapticFeedbackUtils.impact();
               Navigator.of(ctx).pop();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -1856,14 +1856,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   ),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: ThemeIcon(
+                      ThreeDAppBarIconButton(
+                        iconData: Icons.close,
+                        iconWidget: ThemeIcon(
                           Icons.close,
                           color: _getOnboardingTextColor(context),
+                          size: 26,
                         ),
-                        tooltip: L10n.get("close"),
+                        semanticsLabel: L10n.get("close"),
                         onPressed: () {
-                          HapticFeedbackUtils.impact();
                           if (Navigator.of(context).canPop()) {
                             Navigator.of(context).pop();
                             return;
@@ -1871,6 +1872,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
                           _navigateToMainNavigation();
                         },
+                        padding: EdgeInsets.zero,
+                        contentSlotSize: 32,
                       ),
                       const SizedBox(width: 8),
                       Expanded(

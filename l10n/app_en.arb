@@ -343,7 +343,7 @@
   "save_changes": "Save Changes",
   "unsaved_changes_title": "Unsaved changes",
   "unsaved_changes_message": "You have unsaved changes. If you leave now, they will be lost.",
-  "keep_editing": "Keep editing",
+  "keep_editing": "Continue",
   "leave_without_saving": "Leave",
   "confirm": "Confirm",
   "apply": "Apply",

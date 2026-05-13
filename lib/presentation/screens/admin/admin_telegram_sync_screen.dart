@@ -8,7 +8,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
-import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
@@ -24,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
   const AdminTelegramSyncScreen({super.key});
@@ -734,12 +734,19 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     NeumorphicInsetContainer(
                       borderRadius: const BorderRadius.all(Radius.circular(12)),
                       backgroundColor: isBlue ? BlueThemeColors.surface : null,
-                      child: DropdownButtonFormField<String>(
-                        // Controlled selection; `value` is required (the newer
-                        // `initialValue` resets on rebuild and would drop the
-                        // admin's choice every setState).
-                        // ignore: deprecated_member_use
+                      child: UydoshDropdownFormField<String>(
                         value: _selectedChannel,
+                        decoration: _fieldDecoration(
+                          context,
+                          labelText: L10n.get("admin_telegram_sync_chat_label"),
+                        ),
+                        style: fieldStyle,
+                        isExpanded: true,
+                        materialMenuOverlay: true,
+                        menuOverlayColor:
+                            isBlue ? BlueThemeColors.surface : null,
+                        dropdownIconColor:
+                            isBlue ? BlueThemeColors.textPrimary : null,
                         items: [
                           for (final handle in _kKnownChannels)
                             DropdownMenuItem<String>(
@@ -761,12 +768,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                             ? null
                             : (v) {
                                 if (v == null) return;
-                                UiFeedbackUtils.tap();
                                 setState(() {
                                   _selectedChannel = v;
                                   if (v != _kCustomChannelSentinel) {
-                                    // Keep controller in sync so _run() reads the
-                                    // handle straight from it, same as before.
                                     _chatController.text = v;
                                     _chatController.selection =
                                         TextSelection.fromPosition(
@@ -777,15 +781,6 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                                   }
                                 });
                               },
-                        decoration: _fieldDecoration(
-                          context,
-                          labelText: L10n.get("admin_telegram_sync_chat_label"),
-                        ),
-                        style: fieldStyle,
-                        isExpanded: true,
-                        dropdownColor: isBlue ? BlueThemeColors.surface : null,
-                        iconEnabledColor:
-                            isBlue ? BlueThemeColors.textPrimary : null,
                       ),
                     ),
                     if (_selectedChannel == _kCustomChannelSentinel) ...[
@@ -883,10 +878,20 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                             const BorderRadius.all(Radius.circular(12)),
                         backgroundColor:
                             isBlue ? BlueThemeColors.surface : null,
-                        child: DropdownButtonFormField<int?>(
-                          // Controlled after async load; `value` is required (`initialValue` resets on rebuild).
-                          // ignore: deprecated_member_use
+                        child: UydoshDropdownFormField<int?>(
                           value: _selectedImportUserId,
+                          decoration: _fieldDecoration(
+                            context,
+                            labelText: L10n.get(
+                                "admin_telegram_sync_import_user_label"),
+                          ),
+                          style: fieldStyle,
+                          isExpanded: true,
+                          materialMenuOverlay: true,
+                          menuOverlayColor:
+                              isBlue ? BlueThemeColors.surface : null,
+                          dropdownIconColor:
+                              isBlue ? BlueThemeColors.textPrimary : null,
                           items: [
                             DropdownMenuItem<int?>(
                               value: null,
@@ -908,20 +913,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                           onChanged: _running
                               ? null
                               : (v) {
-                                  UiFeedbackUtils.tap();
                                   setState(() => _selectedImportUserId = v);
                                 },
-                          decoration: _fieldDecoration(
-                            context,
-                            labelText: L10n.get(
-                                "admin_telegram_sync_import_user_label"),
-                          ),
-                          style: fieldStyle,
-                          isExpanded: true,
-                          dropdownColor:
-                              isBlue ? BlueThemeColors.surface : null,
-                          iconEnabledColor:
-                              isBlue ? BlueThemeColors.textPrimary : null,
                         ),
                       ),
                     ],

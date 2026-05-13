@@ -1,10 +1,13 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
 class SuspiciousMessageBottomSheet {
   static Future<void> show(
@@ -61,16 +64,17 @@ class SuspiciousMessageBottomSheet {
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            Navigator.of(sheetContext).pop();
-                          },
-                          icon: ThemeIcon(
+                        ThreeDAppBarIconButton(
+                          iconData: Icons.close,
+                          iconWidget: ThemeIcon(
                             Icons.close,
                             color: scheme.onSurface.withValues(alpha: 0.75),
                           ),
+                          semanticsLabel: MaterialLocalizations.of(sheetContext)
+                              .closeButtonTooltip,
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          padding: EdgeInsets.zero,
+                          contentSlotSize: 22,
                         ),
                       ],
                     ),
@@ -138,43 +142,48 @@ class SuspiciousMessageBottomSheet {
                       children: [
                         SizedBox(
                           width: double.infinity,
-                          child: FilledButton.icon(
+                          child: PrimaryButtonFactory.iconText(
                             onPressed: () {
-                              HapticFeedbackUtils.impact();
                               Navigator.of(sheetContext).pop();
                               onCopyPressed();
                             },
-                            icon: const ThemeIcon(Icons.copy_rounded, size: 18),
-                            label: Text(L10n.get("chat_safety_sheet_copy")),
+                            icon: Icons.copy_rounded,
+                            text: L10n.get("chat_safety_sheet_copy"),
+                            iconSize: 18,
+                            borderRadius: BorderRadius.circular(12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
                         ),
                         if (onReportPressed != null) ...[
                           const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton.icon(
+                            child: GhostButtonFactory.iconText(
                               onPressed: () {
-                                HapticFeedbackUtils.impact();
                                 Navigator.of(sheetContext).pop();
                                 onReportPressed();
                               },
-                              icon: const ThemeIcon(
-                                Icons.report_outlined,
-                                size: 18,
+                              icon: Icons.report_outlined,
+                              text: L10n.get("chat_safety_sheet_report"),
+                              iconSize: 18,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
                               ),
-                              label: Text(L10n.get("chat_safety_sheet_report")),
                             ),
                           ),
                         ],
                         const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton(
+                        Center(
+                          child: TextButtonThemed(
                             onPressed: () {
-                              HapticFeedbackUtils.impact();
                               Navigator.of(sheetContext).pop();
                             },
-                            child: Text(L10n.get("chat_safety_sheet_close")),
+                            child:
+                                Text(L10n.get("chat_safety_sheet_close")),
                           ),
                         ),
                       ],

@@ -5,7 +5,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 
 export "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart"
-    show DropdownOption;
+    show DropdownOption, UydoshDropdownChrome, UydoshDropdownFormField;
 
 /// Profile-section styled wrapper around [UydoshDropdown]. Uses a raised
 /// neumorphic surface ([ThreeDSurfaceStyle.elevatedShadows]) — no hard border

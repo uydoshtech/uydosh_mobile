@@ -5,8 +5,8 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
 class ChatSecurityRibbon extends StatelessWidget {
   const ChatSecurityRibbon({required this.onClose, super.key});
@@ -81,16 +81,13 @@ class ChatSecurityRibbon extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              IconButton(
-                visualDensity: VisualDensity.compact,
+              ThreeDAppBarIconButton(
+                iconData: Icons.close,
+                iconWidget: ThemeIcon(Icons.close, size: 18, color: ts.textColor),
+                semanticsLabel: L10n.get("close"),
+                onPressed: onClose,
                 padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                icon: ThemeIcon(Icons.close, size: 18, color: ts.textColor),
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  onClose();
-                },
-                tooltip: L10n.get("close"),
+                contentSlotSize: 20,
               ),
             ],
           ),

@@ -775,7 +775,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.';
 
   @override
-  String get keep_editing => 'Продолжить редактирование';
+  String get keep_editing => 'Продолжить';
 
   @override
   String get leave_without_saving => 'Выйти';

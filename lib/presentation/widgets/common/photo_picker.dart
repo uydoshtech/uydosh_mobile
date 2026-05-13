@@ -17,6 +17,8 @@ import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -256,9 +258,8 @@ class _PhotoPickerState extends State<PhotoPicker> {
             style: const TextStyle(fontSize: 16),
           ),
           actions: [
-            TextButton(
+            TextButtonThemed(
               onPressed: () {
-                HapticFeedbackUtils.impact();
                 Navigator.of(context).pop();
               },
               child: Text(
@@ -383,23 +384,22 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   ),
                 ),
                 if (widget.selectedPhotos.length < _effectiveMaxPhotos)
-                  IconButton(
-                    onPressed: _isProcessingImage
-                        ? null
-                        : () {
-                            HapticFeedbackUtils.impact();
-                            _showImageSourceDialog();
-                          },
-                    icon: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color:
-                            _isProcessingImage
-                                ? Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.38)
-                                : Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  Tooltip(
+                    message:
+                        _isProcessingImage
+                            ? "Processing..."
+                            : L10n.get("add_photo"),
+                    child: ThreeDPillButton(
+                      onPressed:
+                          _isProcessingImage ? null : _showImageSourceDialog,
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(8),
+                      backgroundColor:
+                          _isProcessingImage
+                              ? Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.38)
+                              : Theme.of(context).colorScheme.primary,
                       child: Padding(
                         padding: const EdgeInsets.all(8),
                         child:
@@ -422,10 +422,6 @@ class _PhotoPickerState extends State<PhotoPicker> {
                                 ),
                       ),
                     ),
-                    tooltip:
-                        _isProcessingImage
-                            ? "Processing..."
-                            : L10n.get("add_photo"),
                   ),
               ],
             ),

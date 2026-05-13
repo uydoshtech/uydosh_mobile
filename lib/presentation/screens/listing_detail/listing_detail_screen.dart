@@ -1997,6 +1997,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
             onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
           ),
+          if (compatibilitySection != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: compatibilitySection,
+            ),
           BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
               ({int? count, int? listingId})>(
             selector: (s) => (
@@ -2018,11 +2023,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
               );
             },
           ),
-          if (compatibilitySection != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: compatibilitySection,
-            ),
           BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
               ({int? count, bool isLoading})>(
             selector: (s) => (

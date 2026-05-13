@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
 /// and provides consistent styling across all confirmation dialogs
@@ -76,10 +76,8 @@ class ConfirmationDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        // Cancel button
-        TextButton(
+        TextButtonThemed(
           onPressed: () {
-            HapticFeedbackUtils.impact();
             Navigator.of(context).pop(false);
             onCancel?.call();
           },
@@ -89,10 +87,8 @@ class ConfirmationDialog extends StatelessWidget {
             style: const TextStyle(fontSize: 16),
           ),
         ),
-        // Confirm button
-        TextButton(
+        TextButtonThemed(
           onPressed: () {
-            HapticFeedbackUtils.impact();
             Navigator.of(context).pop(true);
             onConfirm?.call();
           },

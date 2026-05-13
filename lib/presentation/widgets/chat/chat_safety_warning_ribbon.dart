@@ -1,8 +1,8 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
 enum ChatSafetyWarningSeverity { medium, high }
 
@@ -128,19 +128,18 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
                 ),
                 const SizedBox(width: 6),
                 if (widget.onClose != null)
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    icon: ThemeIcon(
+                  ThreeDAppBarIconButton(
+                    iconData: Icons.close,
+                    iconWidget: ThemeIcon(
                       Icons.close,
                       size: 18,
                       color: Colors.black.withValues(alpha: 0.78),
                     ),
-                    onPressed: () {
-                      HapticFeedbackUtils.impact();
-                      widget.onClose!();
-                    },
+                    semanticsLabel: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    onPressed: widget.onClose!,
+                    padding: const EdgeInsets.all(8),
+                    contentSlotSize: 20,
                   ),
               ],
             ),

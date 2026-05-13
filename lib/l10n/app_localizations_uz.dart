@@ -789,7 +789,7 @@ class AppLocalizationsUz extends AppLocalizations {
       'Saqlanmagan o\'zgarishlaringiz bor. Hozir chiqsangiz, ular yo\'qoladi.';
 
   @override
-  String get keep_editing => 'Tahrirlashni davom ettirish';
+  String get keep_editing => 'Davom etish';
 
   @override
   String get leave_without_saving => 'Chiqish';

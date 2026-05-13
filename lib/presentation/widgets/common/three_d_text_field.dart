@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
+import "package:flutter/services.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/presentation/widgets/common/error_border_pulse.dart";
 
 class ThreeDTextField extends StatefulWidget {
   const ThreeDTextField({
@@ -12,15 +13,26 @@ class ThreeDTextField extends StatefulWidget {
     this.enabled = true,
     this.onTap,
     this.onSubmitted,
+    this.onChanged,
     this.textCapitalization = TextCapitalization.none,
     this.textInputAction,
     this.focusNode,
     this.autofocus = false,
+    this.readOnly = false,
+    this.keyboardType,
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.inputFormatters,
+    this.maxLength,
+    this.buildCounter,
+    this.style,
     this.contentPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.borderRadius = const BorderRadius.all(Radius.circular(24)),
     this.backgroundColor,
     this.textColor,
     this.hintColor,
+    this.hintStyle,
     this.cursorColor,
     this.showErrorBorder = false,
   });
@@ -32,15 +44,26 @@ class ThreeDTextField extends StatefulWidget {
   final bool enabled;
   final VoidCallback? onTap;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
   final TextCapitalization textCapitalization;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final bool autofocus;
-  final EdgeInsets contentPadding;
+  final bool readOnly;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final bool autocorrect;
+  final bool enableSuggestions;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength;
+  final InputCounterWidgetBuilder? buildCounter;
+  final TextStyle? style;
+  final EdgeInsetsGeometry contentPadding;
   final BorderRadius borderRadius;
   final Color? backgroundColor;
   final Color? textColor;
   final Color? hintColor;
+  final TextStyle? hintStyle;
   final Color? cursorColor;
 
   /// When true, paints a gently pulsing red border around the field to
@@ -104,7 +127,9 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
     final effectiveTextColor = widget.textColor ?? fallbackTextColor;
     final effectiveHintColor = widget.hintColor ??
         effectiveTextColor.withValues(alpha: innerBrightness == Brightness.dark ? 0.7 : 0.65);
+    final effectiveHintStyle = widget.hintStyle ?? TextStyle(color: effectiveHintColor);
     final effectiveCursorColor = widget.cursorColor ?? effectiveTextColor;
+    final effectiveStyle = widget.style ?? TextStyle(color: effectiveTextColor);
 
     final outerDarkA = isDark ? (focused ? 0.18 : 0.24) : (focused ? 0.08 : 0.12);
     final outerLightA = isDark ? 0.05 : 0.75;
@@ -184,11 +209,19 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   focusNode: _focusNode,
                   autofocus: widget.autofocus,
                   enabled: widget.enabled,
+                  readOnly: widget.readOnly,
+                  obscureText: widget.obscureText,
+                  autocorrect: widget.autocorrect,
+                  enableSuggestions: widget.enableSuggestions,
+                  keyboardType: widget.keyboardType,
+                  inputFormatters: widget.inputFormatters,
+                  maxLength: widget.maxLength,
+                  buildCounter: widget.buildCounter,
                   cursorColor: effectiveCursorColor,
-                  style: TextStyle(color: effectiveTextColor),
+                  style: effectiveStyle,
                   decoration: InputDecoration(
                     hintText: widget.hintText,
-                    hintStyle: TextStyle(color: effectiveHintColor),
+                    hintStyle: effectiveHintStyle,
                     // Blue theme sets [InputDecorationTheme.fillColor] to white; without
                     // an explicit fill here the TextField paints over our plate background.
                     filled: true,
@@ -205,6 +238,7 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   textCapitalization: widget.textCapitalization,
                   textInputAction: widget.textInputAction,
                   onTap: widget.onTap,
+                  onChanged: widget.onChanged,
                   onSubmitted: widget.onSubmitted,
                 ),
               ],

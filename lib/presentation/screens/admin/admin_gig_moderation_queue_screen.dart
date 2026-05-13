@@ -616,14 +616,8 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
       padding: const EdgeInsets.all(24),
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
-      retryButton: ElevatedButton.icon(
-        onPressed: () {
-          HapticFeedbackUtils.impact();
-          _loadFirstPage();
-        },
-        icon: const ThemeIcon(Icons.refresh),
-        label: Text(L10n.get("admin_listing_moderation_retry")),
-      ),
+      onRetry: _loadFirstPage,
+      retryLabel: L10n.get("admin_listing_moderation_retry"),
     );
   }
 
@@ -715,10 +709,16 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
                           padding: EdgeInsets.all(16),
                           child: CircularProgressIndicator(),
                         )
-                      : OutlinedButton(
+                      : GhostButtonFactory.text(
                           onPressed: _loadMore,
-                          child: Text(
-                            L10n.get("admin_listing_moderation_load_more"),
+                          text:
+                              L10n.get(
+                                "admin_listing_moderation_load_more",
+                              ),
+                          neumorphicSoftUi: true,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
                           ),
                         ),
                 ),
@@ -981,14 +981,8 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
       padding: const EdgeInsets.all(24),
       spacingAfterTitle: 8,
       spacingBeforeButton: 20,
-      retryButton: ElevatedButton.icon(
-        onPressed: () {
-          HapticFeedbackUtils.impact();
-          _loadFirstPage();
-        },
-        icon: const ThemeIcon(Icons.refresh),
-        label: Text(L10n.get("admin_listing_moderation_retry")),
-      ),
+      onRetry: _loadFirstPage,
+      retryLabel: L10n.get("admin_listing_moderation_retry"),
     );
   }
 
@@ -1080,10 +1074,16 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
                           padding: EdgeInsets.all(16),
                           child: CircularProgressIndicator(),
                         )
-                      : OutlinedButton(
+                      : GhostButtonFactory.text(
                           onPressed: _loadMore,
-                          child: Text(
-                            L10n.get("admin_listing_moderation_load_more"),
+                          text:
+                              L10n.get(
+                                "admin_listing_moderation_load_more",
+                              ),
+                          neumorphicSoftUi: true,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
                           ),
                         ),
                 ),

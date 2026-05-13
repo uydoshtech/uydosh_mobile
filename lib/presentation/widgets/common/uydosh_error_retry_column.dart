@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Centered error state column: icon + (optional) title + (optional) detail +
@@ -11,7 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 ///
 /// * **Title + detail** (admin screens): a short bold error header in
 ///   [ColorScheme.error], optional secondary [message] in the muted
-///   [ColorScheme.onSurfaceVariant] color, and an `ElevatedButton` retry.
+///   [ColorScheme.onSurfaceVariant] color, and a [PrimaryButton] retry.
 ///
 /// * **Detail only** (chat / conversations): no [title], just the error
 ///   [message] rendered in [TextTheme.bodyLarge]. Pass a larger
@@ -60,14 +60,14 @@ class UydoshErrorRetryColumn extends StatelessWidget {
   final TextOverflow? messageOverflow;
   final TextAlign messageTextAlign;
 
-  /// If provided, a default `ElevatedButton` retry is shown. Ignored when
+  /// If provided, a default [PrimaryButtonFactory.iconText] retry is shown. Ignored when
   /// [retryButton] is also provided.
   final VoidCallback? onRetry;
 
   /// Label for the default retry button. Defaults to `L10n.get("retry")`.
   final String? retryLabel;
 
-  /// Fully-custom retry widget (e.g. `ElevatedButton.icon`). Takes precedence
+  /// Fully-custom retry widget (e.g. branded icon+label). Takes precedence
   /// over [onRetry].
   final Widget? retryButton;
 
@@ -135,12 +135,10 @@ class UydoshErrorRetryColumn extends StatelessWidget {
     final effectiveButton = retryButton ??
         (onRetry == null
             ? null
-            : ElevatedButton(
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  onRetry!();
-                },
-                child: Text(retryLabel ?? L10n.get("retry")),
+            : PrimaryButtonFactory.iconText(
+                onPressed: () => onRetry!(),
+                icon: Icons.refresh,
+                text: retryLabel ?? L10n.get("retry"),
               ));
     if (effectiveButton != null) {
       children.add(SizedBox(height: spacingBeforeButton));

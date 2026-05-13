@@ -1489,7 +1489,7 @@ abstract class AppLocalizations {
   /// No description provided for @keep_editing.
   ///
   /// In en, this message translates to:
-  /// **'Keep editing'**
+  /// **'Continue'**
   String get keep_editing;
 
   /// No description provided for @leave_without_saving.

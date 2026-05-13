@@ -9,7 +9,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/apple_device_model_name.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/admin_user.dart";
 import "package:uy_dosh/domain/models/admin_user_device.dart";
@@ -19,11 +18,15 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_complaints_screen.
 import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AdminUserDetailScreen extends StatefulWidget {
@@ -595,12 +598,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
+                  ThreeDTextField(
                     controller: reasonController,
-                    decoration: InputDecoration(
-                      labelText: L10n.get("admin_user_detail_block_reason"),
-                    ),
+                    hintText: L10n.get("admin_user_detail_block_reason"),
                     maxLines: 2,
+                    minLines: 2,
+                    borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
                   ),
                   const SizedBox(height: 16),
                   ListTile(
@@ -612,10 +615,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                           ? blockedUntil!.toIso8601String().split("T")[0]
                           : L10n.get("admin_user_detail_block_permanent"),
                     ),
-                    trailing: IconButton(
-                      icon: const ThemeIcon(Icons.calendar_today),
+                    trailing: TextButtonThemedFactory.icon(
+                      icon: Icons.calendar_today,
+                      padding: EdgeInsets.zero,
                       onPressed: () async {
-                        HapticFeedbackUtils.impact();
                         final date = await showDatePicker(
                           context: context,
                           initialDate:
@@ -630,9 +633,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                       },
                     ),
                   ),
-                  TextButton(
+                  TextButtonThemed(
                     onPressed: () {
-                      HapticFeedbackUtils.impact();
                       setDialogState(() => blockedUntil = null);
                     },
                     child: Text(
@@ -644,16 +646,15 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(
+            TextButtonThemed(
               onPressed: () {
-                HapticFeedbackUtils.impact();
                 Navigator.of(ctx).pop();
               },
               child: Text(L10n.get("cancel")),
             ),
-            ElevatedButton(
+            PrimaryButton(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               onPressed: () {
-                HapticFeedbackUtils.impact();
                 Navigator.of(ctx).pop();
                 _blockUser(
                   reason: reasonController.text.trim().isEmpty
@@ -733,10 +734,25 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<String?>(
+            UydoshDropdownFormField<String?>(
               key: ValueKey(_currentUser.id),
               value: _selectedRole,
-              elevation: AppTheme.menuPanelElevation,
+              decoration: InputDecoration(
+                filled: roleFieldFillColor != null,
+                fillColor: roleFieldFillColor,
+                border: const OutlineInputBorder(),
+              ),
+              materialMenuOverlay: true,
+              menuOverlayColor: isBlueTheme
+                  ? Colors.blue.shade600.withValues(
+                      alpha: AppTheme.menuOverlaySurfaceOpacity,
+                    )
+                  : theme.popupMenuTheme.color,
+              style: isBlueTheme
+                  ? theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                    )
+                  : null,
               items: _roleOptions(context)
                   .map(
                     (item) => DropdownMenuItem<String?>(
@@ -748,24 +764,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               onChanged: (_saving || disableActions)
                   ? null
                   : (value) {
-                      UiFeedbackUtils.tap();
                       setState(() => _selectedRole = value);
                     },
-              style: isBlueTheme
-                  ? theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface,
-                    )
-                  : null,
-              dropdownColor: isBlueTheme
-                  ? Colors.blue.shade600.withValues(
-                      alpha: AppTheme.menuOverlaySurfaceOpacity,
-                    )
-                  : theme.popupMenuTheme.color,
-              decoration: InputDecoration(
-                filled: roleFieldFillColor != null,
-                fillColor: roleFieldFillColor,
-                border: const OutlineInputBorder(),
-              ),
             ),
             const SizedBox(height: 12),
             SizedBox(

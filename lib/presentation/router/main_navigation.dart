@@ -41,6 +41,8 @@ import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -503,9 +505,9 @@ class MainNavigationState extends State<MainNavigation>
                       children: [
                         Expanded(
                           flex: 2,
-                          child: OutlinedButton(
+                          child: GhostButton(
+                            width: double.infinity,
                             onPressed: () {
-                              HapticFeedbackUtils.impact();
                               Navigator.of(sheetContext).pop();
                             },
                             child: Text(
@@ -517,9 +519,9 @@ class MainNavigationState extends State<MainNavigation>
                         const SizedBox(width: 12),
                         Expanded(
                           flex: 3,
-                          child: ElevatedButton(
+                          child: PrimaryButton(
+                            width: double.infinity,
                             onPressed: () async {
-                              HapticFeedbackUtils.impact();
                               Navigator.of(sheetContext).pop();
                               if (!mounted) return;
                               final profile =
