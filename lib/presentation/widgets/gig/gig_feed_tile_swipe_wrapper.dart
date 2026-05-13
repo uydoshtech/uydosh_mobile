@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -71,12 +72,11 @@ class _GigFeedTileSwipeWrapperState extends State<GigFeedTileSwipeWrapper> {
       return expandedChild;
     }
 
-    final scheme = Theme.of(context).colorScheme;
     final ts = ThemeState();
-    final swipeFgColor = ts.isBlueTheme ? Colors.white : scheme.primary;
+    final swipeFgColor = ts.isBlueTheme ? Colors.white : AppColors.error;
     final swipeBgColor = ts.isBlueTheme
-        ? Colors.white.withValues(alpha: 0.14)
-        : scheme.primary.withValues(alpha: 0.18);
+        ? AppColors.error.withValues(alpha: 0.38)
+        : AppColors.error.withValues(alpha: 0.2);
 
     return Dismissible(
       key: ValueKey("${widget.dismissKeyPrefix}-${widget.entityId}"),

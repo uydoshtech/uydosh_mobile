@@ -32,6 +32,7 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -1137,7 +1138,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
 
   List<ActionMenuItem> _buildActionMenuItems(
     ListingDetail listingDetail, {
-    required bool isAdmin,
+    required bool isListingStaff,
+    required bool isStrictAdmin,
   }) {
     final userListingState = UserListingState();
     final isOwner = userListingState.isOwner(listingDetail.user.id);
@@ -1201,8 +1203,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
     }
 
-    // Edit option - show for listing owner or admin
-    if (isOwner || isAdmin) {
+    // Edit option - show for listing owner or moderation staff
+    if (isOwner || isListingStaff) {
       items.add(
         ActionMenuItem(
           value: "edit",
@@ -1229,8 +1231,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
     }
 
-    // Delete option - show for listing owner or admin
-    if (isOwner || isAdmin) {
+    // Delete option - show for listing owner or moderation staff
+    if (isOwner || isListingStaff) {
       items.add(
         ActionMenuItem(
           value: "delete",
@@ -1238,6 +1240,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           textKey: "delete_listing",
           onPressed: () => _showDeleteConfirmation(listingDetail.id),
           iconColor: Colors.red,
+          textColor: Colors.red,
         ),
       );
     }
@@ -1250,7 +1253,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     // — because the listing is currently featured — will go down the
     // "unfeature" branch (DELETE /listings/:id/feature) and skip the
     // owner-only weekly promotion cooldown.
-    if (isAdmin &&
+    if (isStrictAdmin &&
         !isOwner &&
         ListingUtils.isCurrentlyFeaturedDetail(listingDetail)) {
       items.add(
@@ -1590,18 +1593,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                               return ActionDropdownMenu(
                                 items: _buildActionMenuItems(
                                   listingDetail,
-                                  isAdmin: false,
+                                  isListingStaff: false,
+                                  isStrictAdmin: false,
                                 ),
                               );
                             }
                             return FutureBuilder<String?>(
                               future: _userRoleFuture,
                               builder: (context, snapshot) {
-                                final isAdmin = snapshot.data == "admin";
+                                final role = snapshot.data;
+                                final isListingStaff =
+                                    ModerationStaffUtils.isModerationStaff(
+                                  role,
+                                );
+                                final isStrictAdmin = role == "admin";
                                 return ActionDropdownMenu(
                                   items: _buildActionMenuItems(
                                     listingDetail,
-                                    isAdmin: isAdmin,
+                                    isListingStaff: isListingStaff,
+                                    isStrictAdmin: isStrictAdmin,
                                   ),
                                 );
                               },

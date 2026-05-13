@@ -25,8 +25,8 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
   bool _countReady = false;
 
   /// Fine vertical tuning for inline [WidgetSpan]s (logical px; +Y is down).
-  static const double _bulletDiscDy = 1.5;
-  static const double _countTallyDy = 2;
+  static const double _bulletDiscDy = 0.5;
+  static const double _countTallyDy = 1;
 
   @override
   Widget build(BuildContext context) {

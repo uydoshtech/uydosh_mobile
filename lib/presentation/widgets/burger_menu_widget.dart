@@ -18,6 +18,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -342,7 +343,10 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     if (isAuthenticated) {
       items.add(
         _AsyncVisibleMenuItem(
-          isVisible: () async => (await SessionManager.getUserRole()) == "admin",
+          isVisible: () async {
+            final r = await SessionManager.getUserRole();
+            return ModerationStaffUtils.isModerationStaff(r);
+          },
           child: _DrawerMenuItem.fromSpec(
             _DrawerItemSpec(
               icon: Icons.admin_panel_settings,

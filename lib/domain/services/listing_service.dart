@@ -169,7 +169,7 @@ class ListingService implements IListingService {
   ListingService(IPublicApiClient apiClient, IOAuthApiClient oauthApiClient)
       : _searchService = ListingSearchService(apiClient, oauthApiClient),
         _crudService = ListingCrudService(oauthApiClient),
-        _detailService = ListingDetailService(apiClient, oauthApiClient);
+        _detailService = ListingDetailService(oauthApiClient);
 
   final IListingSearchService _searchService;
   final IListingCrudService _crudService;

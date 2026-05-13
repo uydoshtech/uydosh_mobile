@@ -1,19 +1,38 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/gig_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+
+/// Same segmented switch height/padding as the Services (gig) hub screen.
+const double _kGigModerationSwitchHeight = 135 * 60 / 145;
+
+const double _kGigModerationSwitchPadV = 8;
+
+Color _adminModerationNeumoOpenFill() {
+  if (ThemeState().isBlueTheme) return BlueThemeColors.buttonPrimary;
+  return AppColors.secondary;
+}
+
+Color _adminModerationNeumoApproveFill() => AppColors.buttonSuccess;
+
+enum _GigModerationQueueTab { offers, requests }
 
 String _formatIsoDate(String iso) {
   try {
@@ -253,14 +272,20 @@ class _AdminGigModerationQueueScreenState extends State<AdminGigModerationQueueS
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
+  void _onTabControllerTick() {
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabControllerTick);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabControllerTick);
     _tabController.dispose();
     super.dispose();
   }
@@ -268,6 +293,8 @@ class _AdminGigModerationQueueScreenState extends State<AdminGigModerationQueueS
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final switchSectionHeight =
+        _kGigModerationSwitchPadV * 2 + _kGigModerationSwitchHeight;
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: UydoshAppBar(
@@ -276,12 +303,56 @@ class _AdminGigModerationQueueScreenState extends State<AdminGigModerationQueueS
           L10n.get("admin_gig_moderation_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: L10n.get("admin_gig_moderation_tab_offers")),
-            Tab(text: L10n.get("admin_gig_moderation_tab_requests")),
-          ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(switchSectionHeight),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              _kGigModerationSwitchPadV,
+              16,
+              _kGigModerationSwitchPadV,
+            ),
+            child: ListenableBuilder(
+              listenable: Listenable.merge([LanguageState(), ThemeState()]),
+              builder: (context, _) {
+                final themeState = ThemeState();
+                final tab = _tabController.index == 0
+                    ? _GigModerationQueueTab.offers
+                    : _GigModerationQueueTab.requests;
+                return NeumorphicSegmentedSwitch<_GigModerationQueueTab>(
+                  liquidGlass:
+                      themeState.isBlueTheme || themeState.isLightTheme,
+                  height: _kGigModerationSwitchHeight,
+                  value: tab,
+                  onChanged: (next) {
+                    final i =
+                        next == _GigModerationQueueTab.offers ? 0 : 1;
+                    if (_tabController.index != i) {
+                      _tabController.animateTo(i);
+                    }
+                  },
+                  entries: [
+                    SegmentedSwitchEntry(
+                      value: _GigModerationQueueTab.offers,
+                      label:
+                          L10n.get("admin_gig_moderation_tab_offers"),
+                      subtitle:
+                          L10n.get("gigs_publish_mode_service_subtitle"),
+                      icon: Icons.handyman_outlined,
+                    ),
+                    SegmentedSwitchEntry(
+                      value: _GigModerationQueueTab.requests,
+                      label:
+                          L10n.get("admin_gig_moderation_tab_requests"),
+                      subtitle:
+                          L10n.get("gigs_publish_mode_task_subtitle"),
+                      icon: Icons.assignment_outlined,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
       body: ListenableBuilder(
@@ -389,10 +460,9 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
       await _service.approveOffer(row.id);
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(L10n.get("admin_gig_moderation_approved_offer_toast")),
-        ),
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("admin_gig_moderation_approved_offer_toast"),
       );
       await _loadFirstPage();
     } catch (e) {
@@ -496,27 +566,37 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: GhostButtonFactory.iconTextCentered(
                     onPressed: busy ? null : () => context.pushGigOfferDetail(row.id),
-                    icon: const ThemeIcon(Icons.open_in_new, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_open")),
+                    icon: Icons.open_in_new_rounded,
+                    text: L10n.get("admin_listing_moderation_open"),
+                    iconSize: 18,
+                    neumorphicSoftUi: true,
+                    neumorphicFillColor: _adminModerationNeumoOpenFill(),
+                    textColor: Colors.white,
+                    iconColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton.icon(
+                  child: GhostButtonFactory.iconTextCentered(
                     onPressed: busy ? null : () => _approve(row),
-                    icon: busy
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: scheme.onPrimary,
-                            ),
-                          )
-                        : const ThemeIcon(Icons.check_circle_outline, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_approve")),
+                    icon: Icons.check_circle_outline,
+                    text: L10n.get("admin_listing_moderation_approve"),
+                    iconSize: 18,
+                    isLoading: busy,
+                    neumorphicSoftUi: true,
+                    neumorphicFillColor: _adminModerationNeumoApproveFill(),
+                    textColor: Colors.white,
+                    iconColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ],
@@ -743,10 +823,9 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
       await _service.approveRequest(row.id);
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(L10n.get("admin_gig_moderation_approved_request_toast")),
-        ),
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("admin_gig_moderation_approved_request_toast"),
       );
       await _loadFirstPage();
     } catch (e) {
@@ -850,29 +929,39 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: GhostButtonFactory.iconTextCentered(
                     onPressed: busy
                         ? null
                         : () => context.pushGigRequestDetail(row.id),
-                    icon: const ThemeIcon(Icons.open_in_new, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_open")),
+                    icon: Icons.open_in_new_rounded,
+                    text: L10n.get("admin_listing_moderation_open"),
+                    iconSize: 18,
+                    neumorphicSoftUi: true,
+                    neumorphicFillColor: _adminModerationNeumoOpenFill(),
+                    textColor: Colors.white,
+                    iconColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton.icon(
+                  child: GhostButtonFactory.iconTextCentered(
                     onPressed: busy ? null : () => _approve(row),
-                    icon: busy
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: scheme.onPrimary,
-                            ),
-                          )
-                        : const ThemeIcon(Icons.check_circle_outline, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_approve")),
+                    icon: Icons.check_circle_outline,
+                    text: L10n.get("admin_listing_moderation_approve"),
+                    iconSize: 18,
+                    isLoading: busy,
+                    neumorphicSoftUi: true,
+                    neumorphicFillColor: _adminModerationNeumoApproveFill(),
+                    textColor: Colors.white,
+                    iconColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ],

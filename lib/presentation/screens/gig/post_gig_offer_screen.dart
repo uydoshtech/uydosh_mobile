@@ -375,8 +375,13 @@ class _CategoryPlate extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Flexible(
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(sheetCtx).height * 0.55,
+                    ),
                     child: ListView.separated(
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: categories.length,
                       separatorBuilder: (_, __) => Divider(

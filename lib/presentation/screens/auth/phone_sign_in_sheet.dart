@@ -721,8 +721,15 @@ class _PhoneSignInSheetState extends State<PhoneSignInSheet> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Flexible(
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: (MediaQuery.sizeOf(ctx).height -
+                                MediaQuery.viewInsetsOf(ctx).bottom) *
+                            0.42,
+                      ),
                       child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
                         itemCount: filtered.length,
                         separatorBuilder: (_, __) => Divider(
                           height: 1,

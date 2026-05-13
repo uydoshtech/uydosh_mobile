@@ -12,6 +12,7 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
@@ -57,6 +58,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
 
   /// Session uid fallback while [UserListingState] has not finished hydrating.
   int? _sessionUserId;
+  String? _sessionRole;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
 
@@ -70,6 +72,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     unawaited(_hydrateSessionUserId());
+    unawaited(_hydrateSessionRole());
     _future = getIt<IGigService>().getRequest(widget.requestId);
     unawaited(
       _future.then((r) {
@@ -108,6 +111,14 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     final id = await SessionManager.getUserId();
     if (mounted) setState(() => _sessionUserId = id);
   }
+
+  Future<void> _hydrateSessionRole() async {
+    final r = await SessionManager.getUserRole();
+    if (mounted) setState(() => _sessionRole = r);
+  }
+
+  bool _staffMayModerate() =>
+      ModerationStaffUtils.isModerationStaff(_sessionRole);
 
   bool _isTaskOwner(GigRequest request) {
     final uid = UserListingState().currentUserId ?? _sessionUserId;
@@ -153,7 +164,8 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
     final isOwner = _isTaskOwner(request);
-    if (!isOwner || !open) return const <Widget>[];
+    final allowMenu = open && (isOwner || _staffMayModerate());
+    if (!allowMenu) return const <Widget>[];
     return [
       ActionDropdownMenu(
         items: [
@@ -227,9 +239,10 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
             future: _future,
             builder: (context, snap) {
               final request = snap.data;
+              final staff = _staffMayModerate();
               final showOwnerMenu = request != null &&
-                  _isTaskOwner(request) &&
-                  request.status == GigRequestStatus.open;
+                  request.status == GigRequestStatus.open &&
+                  (_isTaskOwner(request) || staff);
               final canFavoriteTask = request != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: request.clientUserId,
@@ -314,8 +327,10 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
       return const SizedBox.shrink();
     }
     final isOwner = _isTaskOwner(request);
-    final canEdit = isOwner && request.status == GigRequestStatus.open;
-    final showContact = !isOwner;
+    final staff = _staffMayModerate();
+    final canEdit =
+        request.status == GigRequestStatus.open && (isOwner || staff);
+    final showContact = !isOwner && !staff;
 
     return _RequestDetailContent(
       request: request,

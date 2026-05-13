@@ -53,9 +53,10 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cancelTextColor = Theme.of(context).colorScheme.error;
+    final scheme = Theme.of(context).colorScheme;
+    final cancelTextColor = scheme.onSurface;
     final confirmTextColor = confirmButtonColor ??
-        Theme.of(context).colorScheme.onSurface;
+        (isDestructive ? scheme.error : scheme.onSurface);
 
     return AlertDialog(
       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,

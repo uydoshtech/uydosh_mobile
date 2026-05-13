@@ -9,10 +9,13 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
@@ -122,10 +125,9 @@ class _AdminListingModerationQueueScreenState
       await _service.approveListing(listing.id);
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(L10n.get("admin_listing_moderation_approved_toast")),
-        ),
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("admin_listing_moderation_approved_toast"),
       );
       await _loadFirstPage();
     } catch (e) {
@@ -447,28 +449,45 @@ class _AdminListingModerationQueueScreenState
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: busy ? null : () => _openListingDetail(item.id),
-                    icon: const ThemeIcon(Icons.open_in_new, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_open")),
+                  child: GhostButtonFactory.iconTextCentered(
+                    onPressed:
+                        busy ? null : () => _openListingDetail(item.id),
+                    icon: Icons.open_in_new_rounded,
+                    text: L10n.get("admin_listing_moderation_open"),
+                    iconSize: 18,
+                    neumorphicSoftUi: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: FilledButton.icon(
-                    onPressed:
-                        busy ? null : () => _approve(item),
-                    icon: busy
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: scheme.onPrimary,
+                  child: FilledButton(
+                    onPressed: busy ? null : () => _approve(item),
+                    child:
+                        busy
+                            ? SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.onPrimary,
+                              ),
+                            )
+                            : ButtonIconLabel(
+                              slotWidth: 26,
+                              leading: ThemeIcon(
+                                Icons.check_circle_outline,
+                                size: 18,
+                                color: scheme.onPrimary,
+                              ),
+                              label: Text(
+                                L10n.get("admin_listing_moderation_approve"),
+                                style: TextStyle(color: scheme.onPrimary),
+                              ),
                             ),
-                          )
-                        : const ThemeIcon(Icons.check_circle_outline, size: 18),
-                    label: Text(L10n.get("admin_listing_moderation_approve")),
                   ),
                 ),
               ],
@@ -580,10 +599,15 @@ class _AdminListingModerationQueueScreenState
                                 padding: EdgeInsets.all(16),
                                 child: CircularProgressIndicator(),
                               )
-                            : OutlinedButton(
+                            : GhostButtonFactory.text(
                                 onPressed: _loadMore,
-                                child: Text(
-                                  L10n.get("admin_listing_moderation_load_more"),
+                                text: L10n.get(
+                                  "admin_listing_moderation_load_more",
+                                ),
+                                neumorphicSoftUi: true,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 14,
                                 ),
                               ),
                       ),

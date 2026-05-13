@@ -1,5 +1,4 @@
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
-import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -30,9 +29,8 @@ abstract class IListingDetailService {
 }
 
 class ListingDetailService implements IListingDetailService {
-  ListingDetailService(this._apiClient, this._oauthApiClient);
+  ListingDetailService(this._oauthApiClient);
 
-  final IPublicApiClient _apiClient;
   final IOAuthApiClient _oauthApiClient;
 
   @override
@@ -43,7 +41,11 @@ class ListingDetailService implements IListingDetailService {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
     try {
-      final response = await _apiClient.get<Map<String, dynamic>>(
+      // Use the OAuth client so `optionalAuthenticateToken` on the server can
+      // resolve the viewer (owners see their pending listings; admins see the
+      // moderation queue). Anonymous sessions omit the header and behave like
+      // the public client.
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/$listingId",
         (json) => json,
         basePath: EnvironmentUtil.basePath,

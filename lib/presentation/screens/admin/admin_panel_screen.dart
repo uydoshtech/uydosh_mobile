@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_content_moderation_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_district_heatmap_screen.dart";
@@ -14,6 +16,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart"
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -27,6 +30,10 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  /// Cached so expanding/collapsing does not restart [FutureBuilder] with a new
+  /// future on every [setState] (which briefly showed the loading scaffold).
+  late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
+
   /// Expanded category indices (0–3: management, maps, analytics, settings).
   final Set<int> _expandedCategories = {0};
 
@@ -47,220 +54,262 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final iconColor = isDark ? Colors.white : Colors.black;
 
-    return Scaffold(
-      appBar: UydoshAppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: Text(
-          L10n.get("admin_panel_title"),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+    final appBar = UydoshAppBar(
+      leading: ThreeDAppBarIconButton.backLeading(context),
+      title: Text(
+        L10n.get("admin_panel_title"),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20.0),
-        children: [
-          _AdminCategoryCard(
-            variant: _AdminCategoryHeaderVariant.moderation,
-            headerIcon: Icons.manage_accounts,
-            titleKey: "admin_panel_category_management",
-            expanded: _expandedCategories.contains(0),
-            onHeaderTap: () => _toggleCategory(0),
+    );
+
+    return FutureBuilder<String?>(
+      future: _userRoleFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Scaffold(
+            appBar: appBar,
+            body: const Center(child: HouseLoadingIndicator()),
+          );
+        }
+        final role = snapshot.data;
+        if (!ModerationStaffUtils.isModerationStaff(role)) {
+          return Scaffold(
+            appBar: appBar,
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  L10n.get("error_access_denied"),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+        final isAdmin = role == "admin";
+
+        return Scaffold(
+          appBar: appBar,
+          body: ListView(
+            padding: const EdgeInsets.all(20.0),
             children: [
-              _AdminMenuRow(
-                icon: Icons.people,
-                titleKey: "admin_panel_section_users",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminUsersScreen(),
+              _AdminCategoryCard(
+                variant: _AdminCategoryHeaderVariant.moderation,
+                headerIcon: Icons.manage_accounts,
+                titleKey: "admin_panel_category_management",
+                expanded: _expandedCategories.contains(0),
+                onHeaderTap: () => _toggleCategory(0),
+                children: [
+                  if (isAdmin) ...[
+                    _AdminMenuRow(
+                      icon: Icons.people,
+                      titleKey: "admin_panel_section_users",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AdminUsersScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.support_agent,
-                titleKey: "admin_panel_section_support_chat",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminSupportChatScreen(),
+                    _AdminMenuRow(
+                      icon: Icons.support_agent,
+                      titleKey: "admin_panel_section_support_chat",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminSupportChatScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.report_problem,
-                titleKey: "admin_panel_section_complaints",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminComplaintsScreen(),
+                    _AdminMenuRow(
+                      icon: Icons.report_problem,
+                      titleKey: "admin_panel_section_complaints",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminComplaintsScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.home_work_outlined,
-                titleKey: "admin_panel_section_listing_complaints",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminListingsWithComplaintsScreen(),
+                    _AdminMenuRow(
+                      icon: Icons.home_work_outlined,
+                      titleKey:
+                          "admin_panel_section_listing_complaints",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminListingsWithComplaintsScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ],
+                  _AdminMenuRow(
+                    icon: Icons.verified_outlined,
+                    titleKey: "admin_panel_section_listing_moderation",
+                    iconColor: iconColor,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const AdminListingModerationQueueScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _AdminMenuRow(
+                    icon: Icons.work_outline,
+                    titleKey: "admin_panel_section_gig_moderation",
+                    iconColor: iconColor,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const AdminGigModerationQueueScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-              _AdminMenuRow(
-                icon: Icons.verified_outlined,
-                titleKey: "admin_panel_section_listing_moderation",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminListingModerationQueueScreen(),
+              if (isAdmin) ...[
+                const SizedBox(height: 12),
+                _AdminCategoryCard(
+                  variant: _AdminCategoryHeaderVariant.maps,
+                  headerIcon: Icons.map_outlined,
+                  titleKey: "admin_panel_category_maps",
+                  expanded: _expandedCategories.contains(1),
+                  onHeaderTap: () => _toggleCategory(1),
+                  children: [
+                    _AdminMenuRow(
+                      icon: Icons.map_outlined,
+                      titleKey: "admin_panel_section_district_heatmap",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminDistrictHeatmapScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.work_outline,
-                titleKey: "admin_panel_section_gig_moderation",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminGigModerationQueueScreen(),
+                    _AdminMenuRow(
+                      icon: Icons.train,
+                      titleKey: "admin_panel_section_subway_heatmap",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminSubwayLineHeatmapScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                    _AdminMenuRow(
+                      icon: Icons.subway,
+                      titleKey: "admin_panel_section_subway_map",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminSubwayMapScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _AdminCategoryCard(
+                  variant: _AdminCategoryHeaderVariant.analytics,
+                  headerIcon: Icons.insights_outlined,
+                  titleKey: "admin_panel_category_analytics",
+                  expanded: _expandedCategories.contains(2),
+                  onHeaderTap: () => _toggleCategory(2),
+                  children: [
+                    _AdminMenuRow(
+                      icon: Icons.analytics_outlined,
+                      titleKey: "admin_panel_section_search_analytics",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminSearchAnalyticsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
+                      icon: Icons.trending_up,
+                      titleKey:
+                          "admin_panel_section_listing_creation_analytics",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminListingCreationAnalyticsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _AdminCategoryCard(
+                  variant: _AdminCategoryHeaderVariant.settings,
+                  headerIcon: Icons.settings_outlined,
+                  titleKey: "admin_panel_category_settings",
+                  expanded: _expandedCategories.contains(3),
+                  onHeaderTap: () => _toggleCategory(3),
+                  children: [
+                    _AdminMenuRow(
+                      icon: Icons.import_export,
+                      titleKey: "admin_panel_section_telegram_sync",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminTelegramSyncScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
+                      icon: Icons.tune_outlined,
+                      titleKey: "admin_panel_section_content_moderation",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminContentModerationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
-          _AdminCategoryCard(
-            variant: _AdminCategoryHeaderVariant.maps,
-            headerIcon: Icons.map_outlined,
-            titleKey: "admin_panel_category_maps",
-            expanded: _expandedCategories.contains(1),
-            onHeaderTap: () => _toggleCategory(1),
-            children: [
-              _AdminMenuRow(
-                icon: Icons.map_outlined,
-                titleKey: "admin_panel_section_district_heatmap",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminDistrictHeatmapScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.train,
-                titleKey: "admin_panel_section_subway_heatmap",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminSubwayLineHeatmapScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.subway,
-                titleKey: "admin_panel_section_subway_map",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminSubwayMapScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _AdminCategoryCard(
-            variant: _AdminCategoryHeaderVariant.analytics,
-            headerIcon: Icons.insights_outlined,
-            titleKey: "admin_panel_category_analytics",
-            expanded: _expandedCategories.contains(2),
-            onHeaderTap: () => _toggleCategory(2),
-            children: [
-              _AdminMenuRow(
-                icon: Icons.analytics_outlined,
-                titleKey: "admin_panel_section_search_analytics",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminSearchAnalyticsScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.trending_up,
-                titleKey: "admin_panel_section_listing_creation_analytics",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminListingCreationAnalyticsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _AdminCategoryCard(
-            variant: _AdminCategoryHeaderVariant.settings,
-            headerIcon: Icons.settings_outlined,
-            titleKey: "admin_panel_category_settings",
-            expanded: _expandedCategories.contains(3),
-            onHeaderTap: () => _toggleCategory(3),
-            children: [
-              _AdminMenuRow(
-                icon: Icons.import_export,
-                titleKey: "admin_panel_section_telegram_sync",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AdminTelegramSyncScreen(),
-                    ),
-                  );
-                },
-              ),
-              _AdminMenuRow(
-                icon: Icons.tune_outlined,
-                titleKey: "admin_panel_section_content_moderation",
-                iconColor: iconColor,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminContentModerationScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

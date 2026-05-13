@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
@@ -16,6 +17,7 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
@@ -58,6 +60,8 @@ class GigOfferDetailScreen extends StatefulWidget {
 }
 
 class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
+  String? _sessionRole;
+
   @override
   void initState() {
     super.initState();
@@ -65,7 +69,13 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     // from the tab bar without visiting Home first, so initialize here.
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
+    unawaited(_hydrateSessionRole());
     context.read<GigOfferDetailBloc>().add(FetchGigOfferDetail(widget.offerId));
+  }
+
+  Future<void> _hydrateSessionRole() async {
+    final r = await SessionManager.getUserRole();
+    if (mounted) setState(() => _sessionRole = r);
   }
 
   Future<void> _persistOfferFavoriteToggle(
@@ -152,7 +162,8 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
               final offerForMenu =
                   state is GigOfferDetailLoaded ? state.offer : null;
               final showOwnerActions = offerForMenu != null &&
-                  UserListingState().isOwner(offerForMenu.providerUserId);
+                  (UserListingState().isOwner(offerForMenu.providerUserId) ||
+                      ModerationStaffUtils.isModerationStaff(_sessionRole));
               final canFavoriteOffer = offerForMenu != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: offerForMenu.providerUserId,
@@ -250,6 +261,8 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       return _OfferDetailContentStateful(
         state: state,
         onEditOffer: _editOffer,
+        canStaffEditOffer:
+            ModerationStaffUtils.isModerationStaff(_sessionRole),
       );
     }
     return const SizedBox.shrink();
@@ -272,9 +285,11 @@ class _OfferDetailContentStateful extends StatefulWidget {
   const _OfferDetailContentStateful({
     required this.state,
     required this.onEditOffer,
+    required this.canStaffEditOffer,
   });
   final GigOfferDetailLoaded state;
   final Future<void> Function(GigOffer offer) onEditOffer;
+  final bool canStaffEditOffer;
 
   @override
   State<_OfferDetailContentStateful> createState() =>
@@ -527,7 +542,8 @@ class _OfferDetailContentStatefulState
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: UserListingState().isOwner(offer.providerUserId)
+              child: UserListingState().isOwner(offer.providerUserId) ||
+                      widget.canStaffEditOffer
                   ? PrimaryButtonFactory.iconText(
                       onPressed: () => unawaited(widget.onEditOffer(offer)),
                       icon: Icons.edit_outlined,
