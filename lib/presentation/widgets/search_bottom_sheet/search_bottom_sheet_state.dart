@@ -226,10 +226,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }
 
   Future<void> _addAlertFromCurrentSearch() async {
-    if (!AuthenticationState().isAuthenticated) {
-      context.pushAuthWizard();
-      return;
-    }
+    if (!AuthFlow.requireAuth(context)) return;
 
     final locationId = _getSelectedLocationId();
     final subwayLineId = _searchFiltersState.selectedSubwayLine > 0

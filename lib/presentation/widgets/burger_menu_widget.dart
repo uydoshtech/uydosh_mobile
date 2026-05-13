@@ -18,7 +18,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -376,7 +376,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
             return;
           }
           Navigator.pop(context);
-          if (context.mounted) context.pushAuthWizard();
+          if (context.mounted) AuthFlow.openSignIn(context);
         },
       ),
     );
@@ -681,11 +681,10 @@ class _ProfilePicture extends StatelessWidget {
         memCacheHeight: 128,
         fadeInDuration: const Duration(milliseconds: 300),
         fadeInCurve: Curves.easeOut,
-        placeholder: (context, url) => Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(_DrawerColors.border()),
-            strokeWidth: 3,
-          ),
+        placeholder: (context, url) => ThemeIcon(
+          Icons.person,
+          color: _DrawerColors.border(),
+          size: 40,
         ),
         errorWidget: (context, url, error) => ThemeIcon(
           Icons.person,

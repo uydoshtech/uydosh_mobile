@@ -11,12 +11,13 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
 import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/theme_helper.dart" show ThemeHelper;
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -24,9 +25,12 @@ import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
+import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
+import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -39,6 +43,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -51,20 +56,41 @@ class GigOfferDetailScreen extends StatefulWidget {
   State<GigOfferDetailScreen> createState() => _GigOfferDetailScreenState();
 }
 
-class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
-    with TickerProviderStateMixin {
-  bool _offerFavoriteBusy = false;
-  late final FavoriteHeartPulseController _offerFavPulse;
-
+class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _offerFavPulse = FavoriteHeartPulseController(vsync: this);
     // Same as listings: owner checks need a loaded user id. Gigs are reachable
     // from the tab bar without visiting Home first, so initialize here.
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     context.read<GigOfferDetailBloc>().add(FetchGigOfferDetail(widget.offerId));
+  }
+
+  Future<void> _persistOfferFavoriteToggle(
+    BuildContext context,
+    GigOffer offer,
+    bool wasFavorite,
+    FavoriteHeartPulseController pulse,
+  ) async {
+    final gigFav = GigFavoritesState();
+    final screenFav = FavoritesState();
+    gigFav.toggleOfferLocal(offer.id);
+    if (!wasFavorite) {
+      unawaited(pulse.playTapPulse());
+      screenFav.markDirty();
+    }
+    try {
+      await getIt<IGigService>().toggleFavoriteOffer(offer.id);
+    } catch (_) {
+      gigFav.toggleOfferLocal(offer.id);
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    }
   }
 
   Future<void> _editOffer(GigOffer offer) async {
@@ -99,41 +125,6 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
         );
       }
     }
-  }
-
-  Future<void> _toggleOfferFavorite(
-      BuildContext context, GigOffer offer) async {
-    if (_offerFavoriteBusy) return;
-    final gigFav = GigFavoritesState();
-    final screenFav = FavoritesState();
-    final was = gigFav.isOfferFavorite(offer.id);
-    gigFav.toggleOfferLocal(offer.id);
-    if (!was) {
-      unawaited(_offerFavPulse.playTapPulse());
-      screenFav.markDirty();
-    }
-    setState(() => _offerFavoriteBusy = true);
-    try {
-      await getIt<IGigService>().toggleFavoriteOffer(offer.id);
-    } catch (_) {
-      gigFav.toggleOfferLocal(offer.id);
-      if (mounted) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("favorite_toggle_error"),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _offerFavoriteBusy = false);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _offerFavPulse.dispose();
-    super.dispose();
   }
 
   @override
@@ -182,40 +173,40 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen>
                     if (canFavoriteOffer)
                       Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: ListenableBuilder(
+                        child: FavoriteHeartToggle(
                           listenable: GigFavoritesState()
                               .listenableForOffer(offerForMenu.id),
-                          builder: (context, _) {
-                            final fav = GigFavoritesState()
-                                .isOfferFavorite(offerForMenu.id);
-                            _offerFavPulse.setFavoriteOutlineState(
-                                isFavorite: fav);
-                            return IconButton(
-                              onPressed: _offerFavoriteBusy
-                                  ? null
-                                  : () => unawaited(
-                                        _toggleOfferFavorite(
-                                          context,
-                                          offerForMenu,
-                                        ),
-                                      ),
-                              icon: AnimatedBuilder(
-                                animation: _offerFavPulse.listenable,
-                                builder: (context, child) {
-                                  return Transform.scale(
-                                    scale: _offerFavPulse.scale,
-                                    child: child,
-                                  );
-                                },
-                                child: Icon(
-                                  fav ? Icons.favorite : Icons.favorite_border,
-                                  color: fav
-                                      ? AppColors.favoriteActive
-                                      : AppColors.favoriteInactive,
-                                ),
+                          shouldShow: (_) => true,
+                          resolveIsFavorite: (_) => GigFavoritesState()
+                              .isOfferFavorite(offerForMenu.id),
+                          hiddenBuilder: (_) => const SizedBox.shrink(),
+                          onToggle: (ctx, wasFavorite, pulse) =>
+                              _persistOfferFavoriteToggle(
+                            ctx,
+                            offerForMenu,
+                            wasFavorite,
+                            pulse,
+                          ),
+                          builder: (context, ui) => IconButton(
+                            onPressed: ui.onTap,
+                            icon: AnimatedBuilder(
+                              animation: ui.pulse.listenable,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: ui.pulse.scale,
+                                  child: child,
+                                );
+                              },
+                              child: Icon(
+                                ui.isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: ui.isFavorite
+                                    ? AppColors.favoriteActive
+                                    : AppColors.favoriteInactive,
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         ),
                       ),
                     if (showOwnerActions)
@@ -337,10 +328,7 @@ class _OfferDetailContentStatefulState
   Future<void> _openActiveBookingChat(
       GigBooking booking, GigOffer offer) async {
     if (_bookingChatInFlight) return;
-    if (!AuthenticationState().isAuthenticated) {
-      context.pushAuthWizard();
-      return;
-    }
+    if (!AuthFlow.requireAuth(context)) return;
     setState(() => _bookingChatInFlight = true);
     try {
       final conversation = await getIt<IMessagingService>().createConversation(
@@ -378,10 +366,7 @@ class _OfferDetailContentStatefulState
   }
 
   void _onBookThisServicePressed() {
-    if (!AuthenticationState().isAuthenticated) {
-      context.pushAuthWizard();
-      return;
-    }
+    if (!AuthFlow.requireAuth(context)) return;
     if (widget.state.activeClientBookingForOffer != null) {
       return;
     }
@@ -787,62 +772,83 @@ class _GigOfferProviderBottomTile extends StatelessWidget {
     return ThreeDElevatedSurface(
       baseColor: scheme.surface,
       borderRadius: const BorderRadius.all(Radius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundImage: offer.providerAvatarUrl != null
-                  ? CachedNetworkImageProvider(
-                      EnvironmentUtil.hostedImageUrl(
-                        offer.providerAvatarUrl!,
-                      ),
-                    )
-                  : null,
-              child: offer.providerAvatarUrl == null
-                  ? Icon(
-                      Icons.person_rounded,
-                      size: 30,
-                      color: scheme.onSurface.withValues(alpha: 0.45),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _displayName,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: scheme.onSurface,
-                    ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: const BorderRadius.all(Radius.circular(18)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            HapticFeedbackUtils.selection();
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => BlocProvider(
+                  create: (_) =>
+                      ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+                  child: ListingOwnerProfileScreen(
+                    userId: offer.providerUserId,
                   ),
-                  const SizedBox(height: 8),
-                  _gigOfferDetailProviderRatingReviewsRow(
-                    offer: offer,
-                    scheme: scheme,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    L10n.getWithParams(
-                      "gigs_offer_provider_completed_jobs",
-                      params: {"count": _completedJobs.toString()},
-                    ),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurface.withValues(alpha: 0.72),
-                    ),
-                  ),
-                ],
+                ),
               ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundImage: offer.providerAvatarUrl != null
+                      ? CachedNetworkImageProvider(
+                          EnvironmentUtil.hostedImageUrl(
+                            offer.providerAvatarUrl!,
+                          ),
+                        )
+                      : null,
+                  child: offer.providerAvatarUrl == null
+                      ? Icon(
+                          Icons.person_rounded,
+                          size: 30,
+                          color: scheme.onSurface.withValues(alpha: 0.45),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _displayName,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _gigOfferDetailProviderRatingReviewsRow(
+                        offer: offer,
+                        scheme: scheme,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        L10n.getWithParams(
+                          "gigs_offer_provider_completed_jobs",
+                          params: {"count": _completedJobs.toString()},
+                        ),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface.withValues(alpha: 0.72),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

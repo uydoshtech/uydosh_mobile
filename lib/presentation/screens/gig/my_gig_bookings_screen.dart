@@ -6,12 +6,11 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
-import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
@@ -481,10 +480,7 @@ class _BookingActionsState extends State<_BookingActions> {
 
   Future<void> _openChat(BuildContext context) async {
     if (_chatOpening) return;
-    if (!AuthenticationState().isAuthenticated) {
-      context.pushAuthWizard();
-      return;
-    }
+    if (!AuthFlow.requireAuth(context)) return;
     final me = widget.sessionUserId;
     if (me == null) return;
     setState(() => _chatOpening = true);

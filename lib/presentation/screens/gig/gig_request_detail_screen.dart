@@ -11,8 +11,8 @@ import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -50,25 +51,21 @@ class GigRequestDetailScreen extends StatefulWidget {
   State<GigRequestDetailScreen> createState() => _GigRequestDetailScreenState();
 }
 
-class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
-    with TickerProviderStateMixin {
+class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   late Future<GigRequest> _future;
 
   /// Session uid fallback while [UserListingState] has not finished hydrating.
   int? _sessionUserId;
   bool _contactInFlight = false;
   bool _deleteInFlight = false;
-  bool _requestFavoriteBusy = false;
 
   /// After a successful edit, parent feeds must refetch — detail shows fresh data
   /// but list tiles still hold stale [GigRequest] rows until refreshed.
   bool _editedWhileOpen = false;
-  late final FavoriteHeartPulseController _requestFavPulse;
 
   @override
   void initState() {
     super.initState();
-    _requestFavPulse = FavoriteHeartPulseController(vsync: this);
     UserListingState().initialize();
     unawaited(UserListingState().refreshUserId());
     unawaited(_hydrateSessionUserId());
@@ -78,6 +75,32 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
         GigFavoritesState().syncFromRequests([r]);
       }),
     );
+  }
+
+  Future<void> _persistRequestFavoriteToggle(
+    BuildContext context,
+    GigRequest request,
+    bool wasFavorite,
+    FavoriteHeartPulseController pulse,
+  ) async {
+    final gigFav = GigFavoritesState();
+    final screenFav = FavoritesState();
+    gigFav.toggleRequestLocal(request.id);
+    if (!wasFavorite) {
+      unawaited(pulse.playTapPulse());
+      screenFav.markDirty();
+    }
+    try {
+      await getIt<IGigService>().toggleFavoriteRequest(request.id);
+    } catch (_) {
+      gigFav.toggleRequestLocal(request.id);
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("favorite_toggle_error"),
+        );
+      }
+    }
   }
 
   Future<void> _hydrateSessionUserId() async {
@@ -133,40 +156,6 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
     }
   }
 
-  Future<void> _toggleRequestFavorite(GigRequest request) async {
-    if (_requestFavoriteBusy) return;
-    final gigFav = GigFavoritesState();
-    final screenFav = FavoritesState();
-    final was = gigFav.isRequestFavorite(request.id);
-    gigFav.toggleRequestLocal(request.id);
-    if (!was) {
-      unawaited(_requestFavPulse.playTapPulse());
-      screenFav.markDirty();
-    }
-    setState(() => _requestFavoriteBusy = true);
-    try {
-      await getIt<IGigService>().toggleFavoriteRequest(request.id);
-    } catch (_) {
-      gigFav.toggleRequestLocal(request.id);
-      if (mounted) {
-        ToastTheme.showError(
-          context,
-          message: L10n.get("favorite_toggle_error"),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _requestFavoriteBusy = false);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _requestFavPulse.dispose();
-    super.dispose();
-  }
-
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
     final isOwner = _isTaskOwner(request);
@@ -196,10 +185,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
   }
 
   void _openTaskChats(GigRequest? loaded) {
-    if (!AuthenticationState().isAuthenticated) {
-      context.pushAuthWizard();
-      return;
-    }
+    if (!AuthFlow.requireAuth(context)) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => PushedMessagesInboxScaffold(
@@ -263,38 +249,40 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen>
                   title: Text(L10n.get("gigs_request_detail_title")),
                   actions: [
                     if (canFavoriteTask)
-                      ListenableBuilder(
-                        listenable: GigFavoritesState()
-                            .listenableForRequest(request.id),
-                        builder: (context, _) {
-                          final fav =
-                              GigFavoritesState().isRequestFavorite(request.id);
-                          _requestFavPulse.setFavoriteOutlineState(
-                            isFavorite: fav,
-                          );
-                          return IconButton(
-                            onPressed: _requestFavoriteBusy
-                                ? null
-                                : () => unawaited(
-                                      _toggleRequestFavorite(request),
-                                    ),
-                            icon: AnimatedBuilder(
-                              animation: _requestFavPulse.listenable,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scale: _requestFavPulse.scale,
-                                  child: child,
-                                );
-                              },
-                              child: Icon(
-                                fav ? Icons.favorite : Icons.favorite_border,
-                                color: fav
-                                    ? AppColors.favoriteActive
-                                    : AppColors.favoriteInactive,
-                              ),
+                      FavoriteHeartToggle(
+                        listenable:
+                            GigFavoritesState().listenableForRequest(request.id),
+                        shouldShow: (_) => true,
+                        resolveIsFavorite: (_) =>
+                            GigFavoritesState().isRequestFavorite(request.id),
+                        hiddenBuilder: (_) => const SizedBox.shrink(),
+                        onToggle: (ctx, wasFavorite, pulse) =>
+                            _persistRequestFavoriteToggle(
+                          ctx,
+                          request,
+                          wasFavorite,
+                          pulse,
+                        ),
+                        builder: (context, ui) => IconButton(
+                          onPressed: ui.onTap,
+                          icon: AnimatedBuilder(
+                            animation: ui.pulse.listenable,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: ui.pulse.scale,
+                                child: child,
+                              );
+                            },
+                            child: Icon(
+                              ui.isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: ui.isFavorite
+                                  ? AppColors.favoriteActive
+                                  : AppColors.favoriteInactive,
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     _messagesInboxAppBarButton(
                       hasOwnerOverflow: showOwnerMenu,

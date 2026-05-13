@@ -57,11 +57,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         padding: const EdgeInsets.all(20.0),
         children: [
           _AdminCategoryCard(
+            variant: _AdminCategoryHeaderVariant.moderation,
             headerIcon: Icons.manage_accounts,
             titleKey: "admin_panel_category_management",
             expanded: _expandedCategories.contains(0),
             onHeaderTap: () => _toggleCategory(0),
-            iconColor: iconColor,
             children: [
               _AdminMenuRow(
                 icon: Icons.people,
@@ -116,11 +116,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ),
           const SizedBox(height: 12),
           _AdminCategoryCard(
+            variant: _AdminCategoryHeaderVariant.maps,
             headerIcon: Icons.map_outlined,
             titleKey: "admin_panel_category_maps",
             expanded: _expandedCategories.contains(1),
             onHeaderTap: () => _toggleCategory(1),
-            iconColor: iconColor,
             children: [
               _AdminMenuRow(
                 icon: Icons.map_outlined,
@@ -163,11 +163,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ),
           const SizedBox(height: 12),
           _AdminCategoryCard(
+            variant: _AdminCategoryHeaderVariant.analytics,
             headerIcon: Icons.insights_outlined,
             titleKey: "admin_panel_category_analytics",
             expanded: _expandedCategories.contains(2),
             onHeaderTap: () => _toggleCategory(2),
-            iconColor: iconColor,
             children: [
               _AdminMenuRow(
                 icon: Icons.analytics_outlined,
@@ -198,11 +198,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ),
           const SizedBox(height: 12),
           _AdminCategoryCard(
+            variant: _AdminCategoryHeaderVariant.settings,
             headerIcon: Icons.settings_outlined,
             titleKey: "admin_panel_category_settings",
             expanded: _expandedCategories.contains(3),
             onHeaderTap: () => _toggleCategory(3),
-            iconColor: iconColor,
             children: [
               _AdminMenuRow(
                 icon: Icons.import_export,
@@ -237,13 +237,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 }
 
+enum _AdminCategoryHeaderVariant {
+  moderation,
+  maps,
+  analytics,
+  settings;
+
+  Color accent(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    switch (this) {
+      case _AdminCategoryHeaderVariant.moderation:
+        return isDark ? const Color(0xFF82B1FF) : const Color(0xFF1565C0);
+      case _AdminCategoryHeaderVariant.maps:
+        return isDark ? const Color(0xFF69F0AE) : const Color(0xFF00897B);
+      case _AdminCategoryHeaderVariant.analytics:
+        return isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100);
+      case _AdminCategoryHeaderVariant.settings:
+        return isDark ? const Color(0xFFCE93D8) : const Color(0xFF6A1B9A);
+    }
+  }
+}
+
 class _AdminCategoryCard extends StatelessWidget {
   const _AdminCategoryCard({
+    required this.variant,
     required this.headerIcon,
     required this.titleKey,
     required this.expanded,
     required this.onHeaderTap,
-    required this.iconColor,
     required this.children,
   });
 
@@ -251,17 +272,18 @@ class _AdminCategoryCard extends StatelessWidget {
     Radius.circular(16),
   );
 
+  final _AdminCategoryHeaderVariant variant;
   final IconData headerIcon;
   final String titleKey;
   final bool expanded;
   final VoidCallback onHeaderTap;
-  final Color iconColor;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final accent = variant.accent(context);
     final dividerColor =
         theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
     final baseSurface = theme.colorScheme.surface;
@@ -287,31 +309,86 @@ class _AdminCategoryCard extends StatelessWidget {
             InkWell(
               onTap: onHeaderTap,
               borderRadius: headerSplashRadius,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Row(
-                  children: [
-                    ThemeIcon(headerIcon, size: 24, color: onSurface),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        L10n.get(titleKey),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: onSurface,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      accent.withValues(alpha: expanded ? 0.14 : 0.08),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 3,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accent.withValues(alpha: 0.45),
+                              blurRadius: 6,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color.lerp(accent, Colors.white, 0.18)!,
+                              accent,
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    AnimatedRotation(
-                      turns: expanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: ThemeIcon(
-                        Icons.keyboard_arrow_down,
-                        color: onSurface,
+                      const SizedBox(width: 12),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
+                          color: accent.withValues(alpha: 0.22),
+                          border: Border.all(
+                            color: accent.withValues(alpha: 0.42),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(7),
+                          child: ThemeIcon(
+                            headerIcon,
+                            size: 22,
+                            color: accent,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          L10n.get(titleKey),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.25,
+                            color: onSurface,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      AnimatedRotation(
+                        turns: expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: ThemeIcon(
+                          Icons.keyboard_arrow_down,
+                          color: accent.withValues(alpha: 0.9),
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

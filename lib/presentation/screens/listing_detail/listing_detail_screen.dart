@@ -32,6 +32,7 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -82,6 +83,7 @@ import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -935,7 +937,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     ToastTheme.showError(context, message: message);
   }
 
-  void _navigateToSignIn() => context.pushAuthWizard();
+  void _navigateToSignIn() => AuthFlow.openSignIn(context);
 
   void _editListing() {
     // Get the current listing detail from the bloc state
@@ -1123,8 +1125,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Future<void> _toggleFavorite() async {
-    // Add haptic feedback
-    HapticFeedbackUtils.impact();
+    triggerFavoriteToggleFeedback();
 
     final favoritesState = FavoritesState();
     final isFavorite = favoritesState.isFavorite(widget.listingId);

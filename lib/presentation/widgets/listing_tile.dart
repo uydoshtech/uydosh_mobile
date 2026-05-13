@@ -17,7 +17,6 @@ import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
-import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -25,6 +24,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
+import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -37,7 +37,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
-    required this.listing, super.key,
+    required this.listing,
+    super.key,
     this.forceFavorite, // Optional parameter
     this.onFavoriteRemoved, // Optional callback
     this.onFavoriteRemovalFailed, // Optional rollback callback (favorites screen)
@@ -54,7 +55,7 @@ class ListingTile extends StatefulWidget {
   final bool? forceFavorite; // New parameter to force heart to be red
   final VoidCallback? onFavoriteRemoved; // Callback when favorite is removed
   final VoidCallback?
-  onFavoriteRemovalFailed; // Callback when optimistic removal must be rolled back
+      onFavoriteRemovalFailed; // Callback when optimistic removal must be rolled back
   final bool showHeartIcon; // New parameter to control heart icon visibility
   /// When true, renders a small non-interactive filled heart in the top-right
   /// of the tile if the listing is currently in the user's favorites.
@@ -62,16 +63,13 @@ class ListingTile extends StatefulWidget {
   final bool showFavoriteIndicator;
   final bool showActiveStatus; // Show active/inactive badge in top-right corner
   final int?
-  searchLineId; // Line ID used for search (helps order transfer stations)
+      searchLineId; // Line ID used for search (helps order transfer stations)
 
   @override
   State<ListingTile> createState() => _ListingTileState();
 }
 
-class _ListingTileState extends State<ListingTile>
-    with TickerProviderStateMixin {
-  FavoriteHeartPulseController? _favoritePulse;
-  bool _isTogglingFavorite = false;
+class _ListingTileState extends State<ListingTile> {
   // View count UI state lives in a dedicated notifier so the owner-only
   // "views + active badge" area can rebuild on its own when the count lands,
   // without forcing a full tile rebuild (which would re-lay-out photos,
@@ -94,10 +92,10 @@ class _ListingTileState extends State<ListingTile>
 
   void _updateCachedValues() {
     _cachedFormattedMoveInDate = _computeFormattedMoveInDate();
-    _cachedSortedAmenities = widget.listing.amenities != null &&
-            widget.listing.amenities!.isNotEmpty
-        ? _computeSortedAmenities(widget.listing.amenities!)
-        : null;
+    _cachedSortedAmenities =
+        widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty
+            ? _computeSortedAmenities(widget.listing.amenities!)
+            : null;
   }
 
   Listenable _buildFavoriteListenable() => Listenable.merge([
@@ -111,9 +109,6 @@ class _ListingTileState extends State<ListingTile>
     super.initState();
     _updateCachedValues();
     _favoriteListenable = _buildFavoriteListenable();
-    if (widget.showHeartIcon || widget.showFavoriteIndicator) {
-      _favoritePulse = FavoriteHeartPulseController(vsync: this);
-    }
     if (widget.showActiveStatus) {
       // Delay view count load so tiles that scroll off quickly don't fire requests
       _viewCountDelayTimer = Timer(_viewCountLoadDelay, () {
@@ -136,15 +131,6 @@ class _ListingTileState extends State<ListingTile>
       // to the right per-id FavoritesState notifier.
       _favoriteListenable = _buildFavoriteListenable();
     }
-    final needPulse = widget.showHeartIcon || widget.showFavoriteIndicator;
-    final hadPulse =
-        oldWidget.showHeartIcon || oldWidget.showFavoriteIndicator;
-    if (needPulse && !hadPulse) {
-      _favoritePulse = FavoriteHeartPulseController(vsync: this);
-    } else if (!needPulse && hadPulse) {
-      _favoritePulse?.dispose();
-      _favoritePulse = null;
-    }
   }
 
   @override
@@ -152,7 +138,6 @@ class _ListingTileState extends State<ListingTile>
     _viewCountDelayTimer?.cancel();
     _viewCountDelayTimer = null;
     _viewCountState.dispose();
-    _favoritePulse?.dispose();
     super.dispose();
   }
 
@@ -176,43 +161,24 @@ class _ListingTileState extends State<ListingTile>
     }
   }
 
-  Future<void> _pulsateHeart() async {
-    await _favoritePulse?.playTapPulse();
-  }
-
-  /// Shared favorite-toggle handler used by both the interactive heart
-  /// (favorites screen) and the compact heart indicator (home screen).
-  ///
-  /// Uses an optimistic update: the local [FavoritesState] is toggled
-  /// immediately so the heart animation plays without waiting for the
-  /// network round-trip. If the API call fails, the state is rolled back
-  /// and an error toast is shown.
-  Future<void> _handleFavoriteTap(BuildContext context) async {
-    if (_isTogglingFavorite) return;
-    HapticFeedbackUtils.impact();
-    SoundService().playLike();
+  /// Optimistic toggle + API for listing favorites (tiles).
+  /// Haptics/sound/busy pulse live in [FavoriteHeartToggle].
+  Future<void> _onListingFavoriteToggle(
+    BuildContext context,
+    bool wasFavorite,
+    FavoriteHeartPulseController pulse,
+  ) async {
     final favoritesState = FavoritesState();
-    final wasFavorite =
-        widget.forceFavorite ?? favoritesState.isFavorite(widget.listing.id);
-
-    // Optimistic local toggle — triggers the heart's scale/pulse animation
-    // immediately, before we know whether the server accepted the change.
     favoritesState.toggleFavorite(widget.listing.id);
     if (!wasFavorite) {
-      _pulsateHeart();
-      // Favorited from a non-favorites surface (e.g. Home): mark Favorites list dirty
-      // so the favorites screen can refresh next time it's opened.
+      unawaited(pulse.playTapPulse());
       favoritesState.markDirty();
     }
 
-    // Favorites screen: remove from the list immediately (optimistic),
-    // without waiting for the network round-trip.
     if (wasFavorite && widget.onFavoriteRemoved != null) {
       widget.onFavoriteRemoved!();
     }
 
-    setState(() => _isTogglingFavorite = true);
-    _favoritePulse?.setNetworkBusy(true);
     try {
       final favoriteService = getIt<IFavoriteService>();
       final success = await favoriteService.toggleFavorite(widget.listing.id);
@@ -221,7 +187,6 @@ class _ListingTileState extends State<ListingTile>
         return;
       }
 
-      // Server rejected the toggle — roll back local state.
       favoritesState.toggleFavorite(widget.listing.id);
       if (wasFavorite && widget.onFavoriteRemovalFailed != null) {
         widget.onFavoriteRemovalFailed!();
@@ -242,11 +207,6 @@ class _ListingTileState extends State<ListingTile>
           context,
           message: L10n.get("favorite_toggle_network_error"),
         );
-      }
-    } finally {
-      _favoritePulse?.setNetworkBusy(false);
-      if (mounted) {
-        setState(() => _isTogglingFavorite = false);
       }
     }
   }
@@ -318,45 +278,43 @@ class _ListingTileState extends State<ListingTile>
 
     final cardWidget = RepaintBoundary(
       child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.lerp(
-                    bg,
-                    scheme.onSurface,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 0.06
-                        : 0.03,
-                  )!,
-                  bg,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: lightShadow,
-                  offset: const Offset(-3, -3),
-                  blurRadius: 10,
-                ),
-                BoxShadow(
-                  color: darkShadow,
-                  offset: const Offset(6, 6),
-                  blurRadius: 14,
-                ),
-              ],
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.lerp(
+                bg,
+                scheme.onSurface,
+                Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.03,
+              )!,
+              bg,
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: lightShadow,
+              offset: const Offset(-3, -3),
+              blurRadius: 10,
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  HapticFeedbackUtils.lightImpact();
-                  context.pushListingDetail(widget.listing.id);
-                },
-                borderRadius: borderRadius,
-                child: Stack(
-                  children: [
+            BoxShadow(
+              color: darkShadow,
+              offset: const Offset(6, 6),
+              blurRadius: 14,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushListingDetail(widget.listing.id);
+            },
+            borderRadius: borderRadius,
+            child: Stack(
+              children: [
                 // Active/Inactive badge and views count in top-right corner (for my listings)
                 if (widget.showActiveStatus)
                   Positioned(
@@ -416,7 +374,8 @@ class _ListingTileState extends State<ListingTile>
                           decoration: BoxDecoration(
                             color: widget.listing.isActive
                                 ? AppColors.statusActive.withValues(alpha: 0.2)
-                                : AppColors.statusInactive.withValues(alpha: 0.2),
+                                : AppColors.statusInactive
+                                    .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: widget.listing.isActive
@@ -513,109 +472,67 @@ class _ListingTileState extends State<ListingTile>
                               ],
                             ),
                           ),
-                          // Heart icon in top-right corner - only show when showHeartIcon is true and user is authenticated
-                          if (widget.showHeartIcon)
-                            ListenableBuilder(
-                              listenable: _favoriteListenable,
-                              builder: (context, child) {
-                                if (!AuthenticationState().isAuthenticated) {
-                                  _favoritePulse?.setFavoriteOutlineState(
-                                    isFavorite: true,
-                                  );
-                                  return const SizedBox.shrink();
-                                }
-                                // Owners can't favorite their own listing.
-                                if (UserListingState()
-                                    .isOwner(widget.listing.userId)) {
-                                  _favoritePulse?.setFavoriteOutlineState(
-                                    isFavorite: true,
-                                  );
-                                  return const SizedBox.shrink();
-                                }
-
-                                final isFavorite =
-                                    widget.forceFavorite ??
-                                    FavoritesState().isFavorite(
-                                      widget.listing.id,
-                                    );
-                                _favoritePulse?.setFavoriteOutlineState(
-                                  isFavorite: isFavorite,
-                                );
-                                // 20×20 layout slot; centered 48×48 hit target
-                                // (Stack + IgnorePointer keeps taps aligned with the icon).
-                                return SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    alignment: Alignment.center,
-                                    children: [
-                                      GestureDetector(
-                                        behavior: HitTestBehavior.opaque,
-                                        onTap: _isTogglingFavorite
-                                            ? null
-                                            : () =>
-                                                  _handleFavoriteTap(context),
-                                        child: const SizedBox(
-                                          width: 48,
-                                          height: 48,
-                                        ),
-                                      ),
-                                      IgnorePointer(
-                                        child: AnimatedBuilder(
-                                          animation:
-                                              _favoritePulse!.listenable,
-                                          builder: (context, child) {
-                                            return Transform.scale(
-                                              scale: _favoritePulse!.scale,
-                                              child: ThemeIcon(
-                                                isFavorite
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                                color: isFavorite
-                                                    ? AppColors.favoriteActive
-                                                    : AppColors
-                                                          .favoriteInactive,
-                                                size: 20,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          // Tappable favorite indicator (e.g. for home screen):
-                          // shows an outline heart when not favorited and a
-                          // filled heart when favorited. Tapping toggles the
-                          // favorite. Transitions are animated with a scale
-                          // pulse via AnimatedSwitcher.
-                          if (!widget.showHeartIcon &&
+                          // Favorite heart(s): explicit icon on favorites screen,
+                          // or compact indicator on home / feeds ([FavoriteHeartToggle]).
+                          if (widget.showHeartIcon ||
                               widget.showFavoriteIndicator)
-                            ListenableBuilder(
+                            FavoriteHeartToggle(
                               listenable: _favoriteListenable,
-                              builder: (context, child) {
-                                if (!AuthenticationState().isAuthenticated) {
-                                  _favoritePulse?.setFavoriteOutlineState(
-                                    isFavorite: true,
+                              shouldShow: (ctx) =>
+                                  AuthenticationState().isAuthenticated &&
+                                  !UserListingState()
+                                      .isOwner(widget.listing.userId),
+                              resolveIsFavorite: (ctx) => widget.showHeartIcon
+                                  ? (widget.forceFavorite ??
+                                      FavoritesState().isFavorite(
+                                        widget.listing.id,
+                                      ))
+                                  : FavoritesState().isFavorite(
+                                      widget.listing.id,
+                                    ),
+                              hiddenBuilder: (_) => const SizedBox.shrink(),
+                              onToggle: _onListingFavoriteToggle,
+                              builder: (context, ui) {
+                                if (widget.showHeartIcon) {
+                                  return SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      alignment: Alignment.center,
+                                      children: [
+                                        GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: ui.onTap,
+                                          child: const SizedBox(
+                                            width: 48,
+                                            height: 48,
+                                          ),
+                                        ),
+                                        IgnorePointer(
+                                          child: AnimatedBuilder(
+                                            animation: ui.pulse.listenable,
+                                            builder: (context, child) {
+                                              return Transform.scale(
+                                                scale: ui.pulse.scale,
+                                                child: ThemeIcon(
+                                                  ui.isFavorite
+                                                      ? Icons.favorite
+                                                      : Icons.favorite_border,
+                                                  color: ui.isFavorite
+                                                      ? AppColors.favoriteActive
+                                                      : AppColors
+                                                          .favoriteInactive,
+                                                  size: 20,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   );
-                                  return const SizedBox.shrink();
                                 }
-                                // Owners can't favorite their own listing.
-                                if (UserListingState()
-                                    .isOwner(widget.listing.userId)) {
-                                  _favoritePulse?.setFavoriteOutlineState(
-                                    isFavorite: true,
-                                  );
-                                  return const SizedBox.shrink();
-                                }
-                                final isFavorite = FavoritesState()
-                                    .isFavorite(widget.listing.id);
-                                _favoritePulse?.setFavoriteOutlineState(
-                                  isFavorite: isFavorite,
-                                );
                                 return SizedBox(
                                   width: 20,
                                   height: 20,
@@ -625,10 +542,7 @@ class _ListingTileState extends State<ListingTile>
                                     children: [
                                       GestureDetector(
                                         behavior: HitTestBehavior.opaque,
-                                        onTap: _isTogglingFavorite
-                                            ? null
-                                            : () =>
-                                                  _handleFavoriteTap(context),
+                                        onTap: ui.onTap,
                                         child: const SizedBox(
                                           width: 48,
                                           height: 48,
@@ -636,11 +550,10 @@ class _ListingTileState extends State<ListingTile>
                                       ),
                                       IgnorePointer(
                                         child: AnimatedBuilder(
-                                          animation:
-                                              _favoritePulse!.listenable,
+                                          animation: ui.pulse.listenable,
                                           builder: (context, child) {
                                             return Transform.scale(
-                                              scale: _favoritePulse!.scale,
+                                              scale: ui.pulse.scale,
                                               child: child,
                                             );
                                           },
@@ -661,15 +574,17 @@ class _ListingTileState extends State<ListingTile>
                                             ),
                                             child: SizedBox(
                                               key: ValueKey(
-                                                isFavorite ? "fav-on" : "fav-off",
+                                                ui.isFavorite
+                                                    ? "fav-on"
+                                                    : "fav-off",
                                               ),
                                               width: 20,
                                               height: 20,
                                               child: ThemeIcon(
-                                                isFavorite
+                                                ui.isFavorite
                                                     ? Icons.favorite
                                                     : Icons.favorite_border,
-                                                color: isFavorite
+                                                color: ui.isFavorite
                                                     ? AppColors.favoriteActive
                                                     : AppColors
                                                         .favoriteInactive,
@@ -695,12 +610,11 @@ class _ListingTileState extends State<ListingTile>
                         ), // Add right padding to avoid arrow overlap
                         child: Text(
                           ListingUtils.usesPresetListingTitle(
-                                widget.listing.listingTypeId,
-                              )
+                            widget.listing.listingTypeId,
+                          )
                               ? L10n.get(
                                   ListingUtils.presetListingTitleL10nKey(
-                                    listingTypeId:
-                                        widget.listing.listingTypeId,
+                                    listingTypeId: widget.listing.listingTypeId,
                                     gender: widget.listing.gender,
                                   ),
                                 )
@@ -740,8 +654,7 @@ class _ListingTileState extends State<ListingTile>
                         ListenableBuilder(
                           listenable: LanguageState(),
                           builder: (context, child) {
-                            final hasLocation =
-                                widget.listing.location != null;
+                            final hasLocation = widget.listing.location != null;
                             final hasStation =
                                 widget.listing.subwayStation != null;
                             return Row(
@@ -889,9 +802,9 @@ class _ListingTileState extends State<ListingTile>
                   ),
                 ),
               ],
-                ),
-              ),
             ),
+          ),
+        ),
       ),
     );
 
@@ -1150,11 +1063,10 @@ class _ListingTileState extends State<ListingTile>
         line: transferInfo["connectedStationLine"],
       );
 
-      final mainStation =
-          (widget.searchLineId != null &&
-                  connectedStation.line == widget.searchLineId)
-              ? connectedStation
-              : station;
+      final mainStation = (widget.searchLineId != null &&
+              connectedStation.line == widget.searchLineId)
+          ? connectedStation
+          : station;
       final transferStation =
           (mainStation.id == station.id) ? connectedStation : station;
 
