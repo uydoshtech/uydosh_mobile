@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -8,6 +7,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -20,6 +20,7 @@ class ConversationTile extends StatelessWidget {
     super.key,
     this.currentUserId,
     this.isGrouped = false,
+
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
     this.onLongPress,
@@ -34,8 +35,7 @@ class ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable:
-          Listenable.merge([ThemeState(), ProfileCompletionState()]),
+      listenable: Listenable.merge([ThemeState(), ProfileCompletionState()]),
       builder: (context, child) {
         final themeState = ThemeState();
         final cardColor = themeState.cardColor;
@@ -69,11 +69,23 @@ class ConversationTile extends StatelessWidget {
             : (lastSenderIsCurrentUser ? profileState.cachedName : null);
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
-        final unreadBoldName =
-            conversation.unreadCount != null &&
-                conversation.unreadCount! > 0 &&
-                currentUserId != null &&
-                conversation.lastMessageSenderId != currentUserId;
+        final unreadBoldName = conversation.unreadCount != null &&
+            conversation.unreadCount! > 0 &&
+            currentUserId != null &&
+            conversation.lastMessageSenderId != currentUserId;
+
+        final avatarFallback = SizedBox(
+          width: avatarSize,
+          height: avatarSize,
+          child: CircleAvatar(
+            backgroundColor: avatarColor,
+            child: ConversationAvatarContent(
+              conversation: conversation,
+              iconColor: avatarIconColor,
+              userNameOverride: initialsName,
+            ),
+          ),
+        );
 
         final listTile = ListTile(
           onTap: onTap,
@@ -82,38 +94,10 @@ class ConversationTile extends StatelessWidget {
           tileColor: isGrouped ? Colors.transparent : null,
           leading: resolvedAvatarUrl != null
               ? ClipOval(
-                  child: CachedNetworkImage(
+                  child: NetworkAvatarImage(
                     imageUrl: resolvedAvatarUrl,
-                    width: avatarSize,
-                    height: avatarSize,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 80,
-                    memCacheHeight: 80,
-                    placeholder:
-                        (context, url) => SizedBox(
-                          width: avatarSize,
-                          height: avatarSize,
-                          child: Center(
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                              userNameOverride: initialsName,
-                            ),
-                          ),
-                        ),
-                    errorWidget:
-                        (context, url, error) => SizedBox(
-                          width: avatarSize,
-                          height: avatarSize,
-                          child: CircleAvatar(
-                            backgroundColor: avatarColor,
-                            child: ConversationAvatarContent(
-                              conversation: conversation,
-                              iconColor: avatarIconColor,
-                              userNameOverride: initialsName,
-                            ),
-                          ),
-                        ),
+                    size: avatarSize,
+                    fallback: avatarFallback,
                   ),
                 )
               : CircleAvatar(
@@ -124,26 +108,25 @@ class ConversationTile extends StatelessWidget {
                     userNameOverride: initialsName,
                   ),
                 ),
-          title:
-              !isGrouped && !isListingMarketplace
-                  ? ConversationListingTitleWithCategoryIcon(
-                      conversation: conversation,
-                      textStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                      iconColor: iconColor,
-                    )
-                  : Text(
-                      conversation.otherUserName ?? "Unknown User",
-                      style: TextStyle(
-                        fontWeight:
-                            unreadBoldName ? FontWeight.bold : FontWeight.normal,
-                        color: textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          title: !isGrouped && !isListingMarketplace
+              ? ConversationListingTitleWithCategoryIcon(
+                  conversation: conversation,
+                  textStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  iconColor: iconColor,
+                )
+              : Text(
+                  conversation.otherUserName ?? "Unknown User",
+                  style: TextStyle(
+                    fontWeight:
+                        unreadBoldName ? FontWeight.bold : FontWeight.normal,
+                    color: textColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -205,10 +188,9 @@ class ConversationTile extends StatelessWidget {
                   child: Align(
                     // Optical centering: the small badge reads slightly low next
                     // to the 18px count badge because of shadow/gradient.
-                    alignment:
-                        conversation.unreadCount! > 1
-                            ? Alignment.center
-                            : const Alignment(0, -0.12),
+                    alignment: conversation.unreadCount! > 1
+                        ? Alignment.center
+                        : const Alignment(0, -0.12),
                     child: Container(
                       width: conversation.unreadCount! > 1 ? 18 : 11,
                       height: conversation.unreadCount! > 1 ? 18 : 11,
@@ -236,7 +218,8 @@ class ConversationTile extends StatelessWidget {
                             offset: const Offset(2, 2),
                           ),
                         ],
-                        color: conversation.unreadCount! > 1 ? null : unreadColor,
+                        color:
+                            conversation.unreadCount! > 1 ? null : unreadColor,
                       ),
                       child: conversation.unreadCount! > 1
                           ? Center(

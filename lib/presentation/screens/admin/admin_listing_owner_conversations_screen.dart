@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -12,6 +11,7 @@ import "package:uy_dosh/domain/services/admin_listing_conversations_service.dart
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -22,7 +22,6 @@ import "package:uy_dosh/base/util/theme_helper.dart"
 
 /// Lists every listing-scoped in-app conversation (owner ↔ other users) for moderation.
 class AdminListingOwnerConversationsScreen extends StatefulWidget {
-
   const AdminListingOwnerConversationsScreen({
     required this.listingDetail,
     super.key,
@@ -83,21 +82,20 @@ class _AdminListingOwnerConversationsScreenState
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: RouteSettings(name: ChatScreen.routeName(c.id)),
-        builder:
-            (context) => ChatScreen(
-              conversationId: c.id,
-              listingId: widget.listingDetail.id,
-              listingTypeId: c.listingTypeId ?? widget.listingDetail.listingTypeId,
-              listingOwnerUserId: listingOwnerId,
-              conversationContextType: c.contextType,
-              conversationParticipantId: c.participantId,
-              listingTitle:
-                  resolvedListingChatTitleFromListingDetail(widget.listingDetail),
-              otherUserInitials: StringUtils.extractInitials(c.otherUserName),
-              otherUserName: c.otherUserName,
-              otherUserId: otherId,
-              otherUserAvatar: c.otherUserAvatar,
-            ),
+        builder: (context) => ChatScreen(
+          conversationId: c.id,
+          listingId: widget.listingDetail.id,
+          listingTypeId: c.listingTypeId ?? widget.listingDetail.listingTypeId,
+          listingOwnerUserId: listingOwnerId,
+          conversationContextType: c.contextType,
+          conversationParticipantId: c.participantId,
+          listingTitle:
+              resolvedListingChatTitleFromListingDetail(widget.listingDetail),
+          otherUserInitials: StringUtils.extractInitials(c.otherUserName),
+          otherUserName: c.otherUserName,
+          otherUserId: otherId,
+          otherUserAvatar: c.otherUserAvatar,
+        ),
       ),
     );
   }
@@ -110,58 +108,55 @@ class _AdminListingOwnerConversationsScreenState
         final themeState = ThemeState();
         final useLiquidGlass =
             themeState.isBlueTheme || themeState.isLightTheme;
-        final appBarBg =
-            useLiquidGlass
-                ? liquidGlassAppBarMaterialColor(context)
-                : themeState.appBarBackgroundColor;
+        final appBarBg = useLiquidGlass
+            ? liquidGlassAppBarMaterialColor(context)
+            : themeState.appBarBackgroundColor;
 
         final title = Text(
           L10n.get("admin_listing_owner_conversations_screen_title"),
           style: TextStyle(
-            color:
-                Theme.of(context).appBarTheme.foregroundColor ??
+            color: Theme.of(context).appBarTheme.foregroundColor ??
                 themeState.textColor,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         );
 
-        final bodyChild =
-            _loading
-                ? const Center(child: HouseLoadingIndicator())
-                : _error != null
-                    ? ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        const SizedBox(height: 72),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
+        final bodyChild = _loading
+            ? const Center(child: HouseLoadingIndicator())
+            : _error != null
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      const SizedBox(height: 72),
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                L10n.get(
+                                  "admin_listing_owner_conversations_error",
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: _load,
+                                child: Text(
                                   L10n.get(
-                                    "admin_listing_owner_conversations_error",
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                TextButton(
-                                  onPressed: _load,
-                                  child: Text(
-                                    L10n.get(
-                                      "admin_listing_owner_conversations_retry",
-                                    ),
+                                    "admin_listing_owner_conversations_retry",
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    )
-                    : _buildList();
+                      ),
+                    ],
+                  )
+                : _buildList();
 
         return Scaffold(
           extendBodyBehindAppBar: useLiquidGlass,
@@ -169,23 +164,18 @@ class _AdminListingOwnerConversationsScreenState
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: title,
             backgroundColor: appBarBg,
-            surfaceTintColor:
-                useLiquidGlass
-                    ? Colors.transparent
-                    : Theme.of(context).appBarTheme.surfaceTintColor,
+            surfaceTintColor: useLiquidGlass
+                ? Colors.transparent
+                : Theme.of(context).appBarTheme.surfaceTintColor,
             elevation: useLiquidGlass ? 0 : null,
             scrolledUnderElevation: useLiquidGlass ? 0 : null,
-            shadowColor:
-                useLiquidGlass
-                    ? Colors.transparent
-                    : Theme.of(context).appBarTheme.shadowColor,
+            shadowColor: useLiquidGlass
+                ? Colors.transparent
+                : Theme.of(context).appBarTheme.shadowColor,
             forceMaterialTransparency: useLiquidGlass,
             flexibleSpace:
-                useLiquidGlass
-                    ? const LiquidGlassAppBarFlexibleSpace()
-                    : null,
-            foregroundColor:
-                Theme.of(context).appBarTheme.foregroundColor ??
+                useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
+            foregroundColor: Theme.of(context).appBarTheme.foregroundColor ??
                 themeState.textColor,
           ),
           body: UydoshRefreshIndicator(onRefresh: _load, child: bodyChild),
@@ -226,8 +216,10 @@ class _AdminListingOwnerConversationsScreenState
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color:
-                    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.75),
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -245,12 +237,10 @@ class _AdminListingOwnerConversationsScreenState
     ConversationSummary c,
     int listingOwnerId,
   ) {
-    final resolvedAvatar =
-        resolveAvatarUrl(c.otherUserAvatar)?.trim() ?? "";
-    final last =
-        (c.lastMessageContent ?? "").trim().isEmpty
-            ? "—"
-            : c.lastMessageContent!.trim();
+    final resolvedAvatar = resolveAvatarUrl(c.otherUserAvatar)?.trim() ?? "";
+    final last = (c.lastMessageContent ?? "").trim().isEmpty
+        ? "—"
+        : c.lastMessageContent!.trim();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -262,21 +252,35 @@ class _AdminListingOwnerConversationsScreenState
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                backgroundImage:
-                    resolvedAvatar.isNotEmpty
-                        ? CachedNetworkImageProvider(resolvedAvatar)
-                        : null,
-                child:
-                    resolvedAvatar.isEmpty
-                        ? Text(
+              SizedBox(
+                width: 52,
+                height: 52,
+                child: resolvedAvatar.isNotEmpty
+                    ? ClipOval(
+                        child: NetworkAvatarImage(
+                          imageUrl: resolvedAvatar,
+                          size: 52,
+                          fallback: CircleAvatar(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            child: Text(
+                              _otherUserInitialLetter(c),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      )
+                    : CircleAvatar(
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        child: Text(
                           _otherUserInitialLetter(c),
                           style: const TextStyle(fontWeight: FontWeight.w600),
-                        )
-                        : null,
+                        ),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -338,8 +342,8 @@ class _AdminListingOwnerConversationsScreenState
                         fontSize: 13,
                         color:
                             Theme.of(context).colorScheme.onSurface.withValues(
-                              alpha: 0.7,
-                            ),
+                                  alpha: 0.7,
+                                ),
                       ),
                     ),
                   ],
@@ -349,8 +353,7 @@ class _AdminListingOwnerConversationsScreenState
                 alignment: Alignment.centerRight,
                 child: Icon(
                   Icons.chevron_right,
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withValues(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(
                         alpha: 0.38,
                       ),
                 ),

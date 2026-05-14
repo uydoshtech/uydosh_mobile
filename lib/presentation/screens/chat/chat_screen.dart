@@ -1,7 +1,6 @@
 import "dart:async";
 import "dart:ui" show ImageFilter;
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
@@ -69,6 +68,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
@@ -1379,11 +1379,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
               onSetReaction: isCurrentUser
                   ? null
-                  : (reactionId) =>
-                        _setMessageReaction(message, reactionId),
-              onClearReaction: isCurrentUser
-                  ? null
-                  : () => _clearMessageReaction(message),
+                  : (reactionId) => _setMessageReaction(message, reactionId),
+              onClearReaction:
+                  isCurrentUser ? null : () => _clearMessageReaction(message),
             ),
         };
       },
@@ -1682,18 +1680,19 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildProfileMenuIcon() {
     final resolvedAvatarUrl = resolveAvatarUrl(_peerAvatarUrl);
     if (resolvedAvatarUrl != null) {
+      const iconSize = 24.0;
+      final fallback = const Center(
+        child: ThemeIcon(Icons.person, size: 20),
+      );
       return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: resolvedAvatarUrl,
-          width: 24,
-          height: 24,
-          fit: BoxFit.cover,
-          memCacheWidth: 48,
-          memCacheHeight: 48,
-          placeholder: (context, url) =>
-              const ThemeIcon(Icons.person, size: 20),
-          errorWidget: (context, url, error) =>
-              const ThemeIcon(Icons.person, size: 20),
+        child: SizedBox(
+          width: iconSize,
+          height: iconSize,
+          child: NetworkAvatarImage(
+            imageUrl: resolvedAvatarUrl,
+            size: iconSize,
+            fallback: fallback,
+          ),
         ),
       );
     }
@@ -2093,175 +2092,172 @@ class _InviteProviderBookingDialogState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-            Text(
-              L10n.get("gigs_invite_provider_dialog_body"),
-              style: bodyStyle,
-            ),
-            const SizedBox(height: 16),
-            LabeledFieldOverlay(
-              label: L10n.get("gigs_post_request_field_amount"),
-              child: IgnorePointer(
-                ignoring: _sending,
-                child: Opacity(
-                  opacity: _sending ? 0.45 : 1,
-                  child: WheelPickerPlateContainer(
-                    theme: theme,
-                    child: SizedBox(
-                      height: 80,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Center(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    CurrencyDisplayUtils.flagEmoji(
-                                        currencyCode),
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    currencyCode,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: currencyChipColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Center(
-                            child: Container(
-                              width: 1,
-                              height: 44,
-                              color: dividerColor,
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              height: 80,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: TextFormField(
-                                  controller: _amountController,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal: false,
-                                    signed: false,
-                                  ),
-                                  inputFormatters: [
-                                    DotThousandsDigitsInputFormatter(),
-                                  ],
-                                  decoration: plateDecoration.copyWith(
-                                    contentPadding: const EdgeInsets.fromLTRB(
-                                      10,
-                                      12,
-                                      6,
-                                      12,
-                                    ),
-                                  ),
-                                  style: listingFieldStyle,
-                                  textAlignVertical: TextAlignVertical.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Center(
-                            child: Container(
-                              width: 1,
-                              height: 52,
-                              color: dividerColor,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 120,
+          Text(
+            L10n.get("gigs_invite_provider_dialog_body"),
+            style: bodyStyle,
+          ),
+          const SizedBox(height: 16),
+          LabeledFieldOverlay(
+            label: L10n.get("gigs_post_request_field_amount"),
+            child: IgnorePointer(
+              ignoring: _sending,
+              child: Opacity(
+                opacity: _sending ? 0.45 : 1,
+                child: WheelPickerPlateContainer(
+                  theme: theme,
+                  child: SizedBox(
+                    height: 80,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Expanded(
-                                  child: CupertinoPicker(
-                                    backgroundColor: Colors.transparent,
-                                    changeReportingBehavior:
-                                        ChangeReportingBehavior.onScrollEnd,
-                                    scrollController: _amountSpinnerController,
-                                    itemExtent: 40,
-                                    onSelectedItemChanged:
-                                        _onInviteAmountSpinnerIndexChanged,
-                                    children: List.generate(
-                                      _inviteAmountSpinnerMaxIndex + 1,
-                                      (i) {
-                                        final n = i * step;
-                                        final isFocusedSlot =
-                                            i == _amountSpinnerSelectedIndex;
-                                        // Omit the centered label so the wheel
-                                        // does not duplicate the text field; keep
-                                        // neighbors as drag context only.
-                                        final label = isFocusedSlot
-                                            ? ""
-                                            : (n <= 0
-                                                ? "—"
-                                                : IntFormatUtils
-                                                    .withDotThousands(n));
-                                        return Center(
-                                          child: Text(
-                                            label,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: ThemeState().isLightTheme
-                                                  ? Colors.black
-                                                  : scheme.onSurfaceVariant,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                Text(
+                                  CurrencyDisplayUtils.flagEmoji(currencyCode),
+                                  style: const TextStyle(fontSize: 18),
                                 ),
-                                Container(
-                                  width: 24,
-                                  decoration: BoxDecoration(
-                                    color:
-                                        scheme.outline.withValues(alpha: 0.1),
-                                    borderRadius: ThreeDSurfaceStyle
-                                        .wheelPickerPlateArrowStripBorderRadius,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      ThemeIcon(
-                                        Icons.keyboard_arrow_up,
-                                        color: scheme.onSurfaceVariant,
-                                        size: 16,
-                                      ),
-                                      ThemeIcon(
-                                        Icons.keyboard_arrow_down,
-                                        color: scheme.onSurfaceVariant,
-                                        size: 16,
-                                      ),
-                                    ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  currencyCode,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: currencyChipColor,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        Center(
+                          child: Container(
+                            width: 1,
+                            height: 44,
+                            color: dividerColor,
+                          ),
+                        ),
+                        Expanded(
+                          child: SizedBox(
+                            height: 80,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextFormField(
+                                controller: _amountController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                  decimal: false,
+                                  signed: false,
+                                ),
+                                inputFormatters: [
+                                  DotThousandsDigitsInputFormatter(),
+                                ],
+                                decoration: plateDecoration.copyWith(
+                                  contentPadding: const EdgeInsets.fromLTRB(
+                                    10,
+                                    12,
+                                    6,
+                                    12,
+                                  ),
+                                ),
+                                style: listingFieldStyle,
+                                textAlignVertical: TextAlignVertical.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Container(
+                            width: 1,
+                            height: 52,
+                            color: dividerColor,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 120,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: CupertinoPicker(
+                                  backgroundColor: Colors.transparent,
+                                  changeReportingBehavior:
+                                      ChangeReportingBehavior.onScrollEnd,
+                                  scrollController: _amountSpinnerController,
+                                  itemExtent: 40,
+                                  onSelectedItemChanged:
+                                      _onInviteAmountSpinnerIndexChanged,
+                                  children: List.generate(
+                                    _inviteAmountSpinnerMaxIndex + 1,
+                                    (i) {
+                                      final n = i * step;
+                                      final isFocusedSlot =
+                                          i == _amountSpinnerSelectedIndex;
+                                      // Omit the centered label so the wheel
+                                      // does not duplicate the text field; keep
+                                      // neighbors as drag context only.
+                                      final label = isFocusedSlot
+                                          ? ""
+                                          : (n <= 0
+                                              ? "—"
+                                              : IntFormatUtils.withDotThousands(
+                                                  n));
+                                      return Center(
+                                        child: Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: ThemeState().isLightTheme
+                                                ? Colors.black
+                                                : scheme.onSurfaceVariant,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 24,
+                                decoration: BoxDecoration(
+                                  color: scheme.outline.withValues(alpha: 0.1),
+                                  borderRadius: ThreeDSurfaceStyle
+                                      .wheelPickerPlateArrowStripBorderRadius,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ThemeIcon(
+                                      Icons.keyboard_arrow_up,
+                                      color: scheme.onSurfaceVariant,
+                                      size: 16,
+                                    ),
+                                    ThemeIcon(
+                                      Icons.keyboard_arrow_down,
+                                      color: scheme.onSurfaceVariant,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.of(context).pop(),

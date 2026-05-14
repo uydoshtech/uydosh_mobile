@@ -1,7 +1,7 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 
 /// Circular avatar chip with optional ring stroke (clips image to oval).
 ///
@@ -29,7 +29,6 @@ class GigParticipantAvatarBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final url = resolveAvatarUrl(avatarUrl);
-    final cacheExtent = (size * MediaQuery.devicePixelRatioOf(context)).round();
 
     Widget fallback() {
       final initials = StringUtils.extractInitials(displayName ?? "");
@@ -61,13 +60,10 @@ class GigParticipantAvatarBadge extends StatelessWidget {
           Positioned.fill(
             child: ClipOval(
               child: url != null
-                  ? CachedNetworkImage(
+                  ? NetworkAvatarImage(
                       imageUrl: url,
-                      fit: BoxFit.cover,
-                      memCacheWidth: cacheExtent,
-                      memCacheHeight: cacheExtent,
-                      placeholder: (_, __) => fallback(),
-                      errorWidget: (_, __, ___) => fallback(),
+                      size: size,
+                      fallback: fallback(),
                     )
                   : fallback(),
             ),

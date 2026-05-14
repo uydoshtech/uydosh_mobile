@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -20,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -657,8 +657,6 @@ class _BookingPeerAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final resolved = resolveAvatarUrl(avatarUrl);
-    final cacheExtent =
-        (_size * MediaQuery.devicePixelRatioOf(context)).round();
     final initials = StringUtils.extractInitials(displayName);
 
     Widget fallback() {
@@ -685,15 +683,10 @@ class _BookingPeerAvatar extends StatelessWidget {
     if (resolved == null) return fallback();
 
     return ClipOval(
-      child: CachedNetworkImage(
+      child: NetworkAvatarImage(
         imageUrl: resolved,
-        width: _size,
-        height: _size,
-        fit: BoxFit.cover,
-        memCacheWidth: cacheExtent,
-        memCacheHeight: cacheExtent,
-        placeholder: (_, __) => fallback(),
-        errorWidget: (_, __, ___) => fallback(),
+        size: _size,
+        fallback: fallback(),
       ),
     );
   }

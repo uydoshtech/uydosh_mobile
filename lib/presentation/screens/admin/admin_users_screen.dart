@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -13,6 +12,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_user_detail_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -568,25 +568,19 @@ class _AdminUserAvatar extends StatelessWidget {
     final border = onSurface.withValues(alpha: 0.08);
 
     final url = resolveAvatarUrl(avatarUrl);
-    final hasUrl = url != null && url.isNotEmpty;
 
     Widget content;
-    if (hasUrl) {
-      // 2x DPR for the 36x36 slot so the image stays crisp on 3x screens
-      // without decoding the full-resolution original into a tiny widget.
-      // Cuts per-avatar memory from ~MB's to ~10s of KB each.
-      final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-      final rasterDim = (size * devicePixelRatio).round();
+    if (url != null && url.isNotEmpty) {
       content = ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url,
+        child: SizedBox(
           width: size,
           height: size,
-          fit: BoxFit.cover,
-          memCacheWidth: rasterDim,
-          memCacheHeight: rasterDim,
-          errorWidget: (context, error, stackTrace) =>
-              _InitialsAvatarFallback(initials: initials),
+          child: NetworkAvatarImage(
+            imageUrl: url,
+            size: size,
+            fallback:
+                Center(child: _InitialsAvatarFallback(initials: initials)),
+          ),
         ),
       );
     } else {

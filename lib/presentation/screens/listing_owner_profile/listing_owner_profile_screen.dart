@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -18,6 +17,7 @@ import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -28,7 +28,6 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 class _ListingOwnerProfileData {
-
   const _ListingOwnerProfileData({
     required this.isLoading,
     required this.hasError,
@@ -60,9 +59,9 @@ class _ListingOwnerProfileData {
 }
 
 class ListingOwnerProfileScreen extends StatefulWidget {
-
   const ListingOwnerProfileScreen({
-    required this.userId, super.key,
+    required this.userId,
+    super.key,
     this.phoneNumber,
   });
   final int userId;
@@ -77,11 +76,12 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   @override
   void initState() {
     super.initState();
-    getIt<AppAnalyticsService>().logScreenView(screenName: "listing_owner_profile");
+    getIt<AppAnalyticsService>()
+        .logScreenView(screenName: "listing_owner_profile");
     getIt<AppAnalyticsService>().logOwnerProfileViewed(ownerId: widget.userId);
     context.read<ListingOwnerProfileBloc>().add(
-      ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
-    );
+          ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
+        );
   }
 
   @override
@@ -98,60 +98,50 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
             leading: ThreeDAppBarIconButton.backLeading(context),
             title: L10n.text(
               "profile",
-              style:
-                  Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ) ??
+              style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ) ??
                   const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
             ),
-            backgroundColor:
-                Theme.of(context).appBarTheme.backgroundColor ??
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
                 _getPrimaryColor(),
             foregroundColor:
                 Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
             elevation: 0,
           ),
-          body: BlocSelector<
-            ListingOwnerProfileBloc,
-            ListingOwnerProfileState,
-            _ListingOwnerProfileData
-          >(
-            selector:
-                (state) => state.map(
-                  initial:
-                      (_) => const _ListingOwnerProfileData(
-                        isLoading: true,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: null,
-                      ),
-                  loading:
-                      (_) => const _ListingOwnerProfileData(
-                        isLoading: true,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: null,
-                      ),
-                  loaded:
-                      (loadedState) => _ListingOwnerProfileData(
-                        isLoading: false,
-                        hasError: false,
-                        errorMessage: "",
-                        profile: loadedState.profile,
-                      ),
-                  error:
-                      (errorState) => _ListingOwnerProfileData(
-                        isLoading: false,
-                        hasError: true,
-                        errorMessage: errorState.message,
-                        profile: null,
-                      ),
-                ),
+          body: BlocSelector<ListingOwnerProfileBloc, ListingOwnerProfileState,
+              _ListingOwnerProfileData>(
+            selector: (state) => state.map(
+              initial: (_) => const _ListingOwnerProfileData(
+                isLoading: true,
+                hasError: false,
+                errorMessage: "",
+                profile: null,
+              ),
+              loading: (_) => const _ListingOwnerProfileData(
+                isLoading: true,
+                hasError: false,
+                errorMessage: "",
+                profile: null,
+              ),
+              loaded: (loadedState) => _ListingOwnerProfileData(
+                isLoading: false,
+                hasError: false,
+                errorMessage: "",
+                profile: loadedState.profile,
+              ),
+              error: (errorState) => _ListingOwnerProfileData(
+                isLoading: false,
+                hasError: true,
+                errorMessage: errorState.message,
+                profile: null,
+              ),
+            ),
             builder: (context, data) {
               logger.d(
                 "🔍 Profile Screen: Building with data: isLoading=${data.isLoading}, hasError=${data.hasError}",
@@ -323,8 +313,8 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 Text(
                                   profile.university != null
                                       ? _getLocalizedUniversityName(
-                                        profile.university!,
-                                      )
+                                          profile.university!,
+                                        )
                                       : L10n.get("not_specified"),
                                   style: TextStyle(
                                     fontSize: 16,
@@ -358,7 +348,8 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                     ),
                                   ),
                                   Text(
-                                    LanguageDisplayHelper.getLocalizedLanguageName(
+                                    LanguageDisplayHelper
+                                        .getLocalizedLanguageName(
                                       profile.preferredLanguage!,
                                     ),
                                     style: TextStyle(
@@ -424,7 +415,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-L10n.get("rating"),
+                                    L10n.get("rating"),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey,
@@ -435,12 +426,11 @@ L10n.get("rating"),
                                       return ThemeIcon(
                                         Icons.star,
                                         size: 19,
-                                        color:
-                                            index < profile.rating!
-                                                ? _getPrimaryColor()
-                                                : Colors.grey.withValues(
-                                                  alpha: 0.3,
-                                                ),
+                                        color: index < profile.rating!
+                                            ? _getPrimaryColor()
+                                            : Colors.grey.withValues(
+                                                alpha: 0.3,
+                                              ),
                                       );
                                     }),
                                   ),
@@ -479,10 +469,9 @@ L10n.get("rating"),
                           _buildProfileField(
                             icon: Icons.work,
                             label: L10n.get("work"),
-                            value:
-                                profile.employed!
-                                    ? L10n.get("yes")
-                                    : L10n.get("no"),
+                            value: profile.employed!
+                                ? L10n.get("yes")
+                                : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -563,10 +552,9 @@ L10n.get("rating"),
                           _buildProfileField(
                             icon: Icons.group_add,
                             label: L10n.get("guests"),
-                            value:
-                                profile.guestsAllowed!
-                                    ? L10n.get("yes")
-                                    : L10n.get("no"),
+                            value: profile.guestsAllowed!
+                                ? L10n.get("yes")
+                                : L10n.get("no"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -605,10 +593,9 @@ L10n.get("rating"),
                           _buildProfileField(
                             icon: Icons.restaurant,
                             label: L10n.get("cooking_habits"),
-                            value:
-                                profile.cookingHabits!
-                                    ? L10n.get("cook")
-                                    : L10n.get("dont_cook"),
+                            value: profile.cookingHabits!
+                                ? L10n.get("cook")
+                                : L10n.get("dont_cook"),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -626,7 +613,6 @@ L10n.get("rating"),
                           ),
                           const SizedBox(height: 16),
                         ],
-
                       ],
                     ),
                   ),
@@ -710,7 +696,8 @@ L10n.get("rating"),
                   ],
                 ),
               ),
-              const ThemeIcon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              const ThemeIcon(Icons.arrow_forward_ios,
+                  color: Colors.grey, size: 16),
             ],
           ),
         ),
@@ -742,8 +729,8 @@ L10n.get("rating"),
       retryButton: GhostButtonFactory.text(
         onPressed: () {
           context.read<ListingOwnerProfileBloc>().add(
-            ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
-          );
+                ListingOwnerProfileEvent.fetchProfile(userId: widget.userId),
+              );
         },
         text: L10n.get("retry"),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -780,8 +767,9 @@ L10n.get("rating"),
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient:
-              hasAvatar ? null : ThreeDSurfaceStyle.surfaceGradient(context, faceBase),
+          gradient: hasAvatar
+              ? null
+              : ThreeDSurfaceStyle.surfaceGradient(context, faceBase),
           color: hasAvatar ? faceBase : null,
           boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           border: Border.all(
@@ -790,38 +778,17 @@ L10n.get("rating"),
           ),
         ),
         child: ClipOval(
-          child:
-              hasAvatar
-                  ? CachedNetworkImage(
-                    imageUrl: resolvedUrl,
-                    width: diameter,
-                    height: diameter,
-                    fit: BoxFit.cover,
-                    memCacheWidth: (diameter * 2).round(),
-                    memCacheHeight: (diameter * 2).round(),
-                    placeholder:
-                        (context, url) => Center(
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: glyphColor,
-                            ),
-                          ),
-                        ),
-                    errorWidget:
-                        (context, url, error) => Center(
-                          child: ThemeIcon(
-                            Icons.person,
-                            size: 50,
-                            color: glyphColor,
-                          ),
-                        ),
-                  )
-                  : Center(
+          child: hasAvatar
+              ? NetworkAvatarImage(
+                  imageUrl: resolvedUrl,
+                  size: diameter,
+                  fallback: Center(
                     child: ThemeIcon(Icons.person, size: 50, color: glyphColor),
                   ),
+                )
+              : Center(
+                  child: ThemeIcon(Icons.person, size: 50, color: glyphColor),
+                ),
         ),
       ),
     );
@@ -883,10 +850,9 @@ L10n.get("rating"),
     BuildContext context,
   ) async {
     // Remove @ symbol if present and create Telegram URL
-    final cleanUsername =
-        telegramUsername.startsWith("@")
-            ? telegramUsername.substring(1)
-            : telegramUsername;
+    final cleanUsername = telegramUsername.startsWith("@")
+        ? telegramUsername.substring(1)
+        : telegramUsername;
 
     final url = "https://t.me/$cleanUsername";
 
@@ -955,7 +921,8 @@ L10n.get("rating"),
   }) {
     return Row(
       children: [
-        ThemeIcon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon,
+            size: 20, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -1059,7 +1026,6 @@ L10n.get("rating"),
         return value;
     }
   }
-
 
   String _getTimePreferenceText(String value, BuildContext context) {
     switch (value) {

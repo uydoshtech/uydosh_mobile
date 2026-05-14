@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -10,6 +9,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_moderation_user_picker_service.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -101,8 +101,7 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
       setState(() {
         _users = list;
         _loading = false;
-        if (_selected != null &&
-            !_users.any((u) => u.id == _selected!.id)) {
+        if (_selected != null && !_users.any((u) => u.id == _selected!.id)) {
           _selected = null;
         }
       });
@@ -226,8 +225,7 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
             const SizedBox(height: 12),
             ThreeDTextField(
               controller: _searchController,
-              hintText:
-                  L10n.get("admin_reassign_owner_search_placeholder"),
+              hintText: L10n.get("admin_reassign_owner_search_placeholder"),
               borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
               textInputAction: TextInputAction.search,
               prefixIconConstraints: const BoxConstraints(
@@ -248,78 +246,107 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _loadError != null
-                  ? Center(
-                      child: Text(
-                        _loadError!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  : _users.isEmpty
-                  ? Center(
-                      child: Text(
-                        L10n.get("admin_reassign_owner_empty"),
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _users.length,
-                      itemBuilder: (context, i) {
-                        final u = _users[i];
-                        final selected = _selected?.id == u.id;
-                        final avatarUrl = resolveAvatarUrl(u.avatarUrl);
-                        final titleStyle = theme.textTheme.titleMedium?.copyWith(
-                          color: selected
-                              ? theme.colorScheme.onPrimaryContainer
-                              : theme.colorScheme.onSurface,
-                        );
-                        final subtitleStyle =
-                            theme.textTheme.bodySmall?.copyWith(
-                          color: selected
-                              ? theme.colorScheme.onPrimaryContainer
-                                  .withValues(alpha: 0.9)
-                              : theme.colorScheme.onSurfaceVariant,
-                        );
-                        return ListTile(
-                          selected: selected,
-                          selectedTileColor: theme.colorScheme.primaryContainer,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      ? Center(
+                          child: Text(
+                            _loadError!,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.error,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          leading: CircleAvatar(
-                            radius: 22,
-                            backgroundColor:
-                                theme.colorScheme.surfaceContainerHighest,
-                            backgroundImage: avatarUrl != null
-                                ? CachedNetworkImageProvider(avatarUrl)
-                                : null,
-                            child: avatarUrl == null
-                                ? Text(
-                                    u.displayLabel.isNotEmpty
-                                        ? u.displayLabel[0].toUpperCase()
-                                        : "?",
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                      color: selected
-                                          ? theme.colorScheme.onPrimaryContainer
-                                          : null,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          title: Text(u.displayLabel, style: titleStyle),
-                          subtitle: Text(
-                            "#${u.id} · ${u.email ?? "—"}",
-                            style: subtitleStyle,
-                          ),
-                          onTap: _submitting
-                              ? null
-                              : () => setState(() => _selected = u),
-                        );
-                      },
-                    ),
+                        )
+                      : _users.isEmpty
+                          ? Center(
+                              child: Text(
+                                L10n.get("admin_reassign_owner_empty"),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _users.length,
+                              itemBuilder: (context, i) {
+                                final u = _users[i];
+                                final selected = _selected?.id == u.id;
+                                final avatarUrl = resolveAvatarUrl(u.avatarUrl);
+                                final titleStyle =
+                                    theme.textTheme.titleMedium?.copyWith(
+                                  color: selected
+                                      ? theme.colorScheme.onPrimaryContainer
+                                      : theme.colorScheme.onSurface,
+                                );
+                                final subtitleStyle =
+                                    theme.textTheme.bodySmall?.copyWith(
+                                  color: selected
+                                      ? theme.colorScheme.onPrimaryContainer
+                                          .withValues(alpha: 0.9)
+                                      : theme.colorScheme.onSurfaceVariant,
+                                );
+                                return ListTile(
+                                  selected: selected,
+                                  selectedTileColor:
+                                      theme.colorScheme.primaryContainer,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  leading: SizedBox(
+                                    width: 44,
+                                    height: 44,
+                                    child: avatarUrl != null
+                                        ? ClipOval(
+                                            child: NetworkAvatarImage(
+                                              imageUrl: avatarUrl,
+                                              size: 44,
+                                              fallback: CircleAvatar(
+                                                backgroundColor: theme
+                                                    .colorScheme
+                                                    .surfaceContainerHighest,
+                                                child: Text(
+                                                  u.displayLabel.isNotEmpty
+                                                      ? u.displayLabel[0]
+                                                          .toUpperCase()
+                                                      : "?",
+                                                  style: theme
+                                                      .textTheme.titleMedium
+                                                      ?.copyWith(
+                                                    color: selected
+                                                        ? theme.colorScheme
+                                                            .onPrimaryContainer
+                                                        : null,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : CircleAvatar(
+                                            backgroundColor: theme.colorScheme
+                                                .surfaceContainerHighest,
+                                            child: Text(
+                                              u.displayLabel.isNotEmpty
+                                                  ? u.displayLabel[0]
+                                                      .toUpperCase()
+                                                  : "?",
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                color: selected
+                                                    ? theme.colorScheme
+                                                        .onPrimaryContainer
+                                                    : null,
+                                              ),
+                                            ),
+                                          ),
+                                  ),
+                                  title:
+                                      Text(u.displayLabel, style: titleStyle),
+                                  subtitle: Text(
+                                    "#${u.id} · ${u.email ?? "—"}",
+                                    style: subtitleStyle,
+                                  ),
+                                  onTap: _submitting
+                                      ? null
+                                      : () => setState(() => _selected = u),
+                                );
+                              },
+                            ),
             ),
             const SizedBox(height: 16),
             PrimaryButtonFactory.iconTextCentered(

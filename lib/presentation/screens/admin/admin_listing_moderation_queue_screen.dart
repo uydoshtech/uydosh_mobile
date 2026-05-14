@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -17,6 +16,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_scree
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -213,7 +213,8 @@ class _AdminListingModerationQueueScreenState
                 scheme.surface,
               ),
               borderRadius: BorderRadius.circular(999),
-              boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+              boxShadow:
+                  ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
             ),
             child: Text(
               label,
@@ -336,7 +337,8 @@ class _AdminListingModerationQueueScreenState
       BuildContext context, String titleKey, IconData icon) {
     return Row(
       children: [
-        ThemeIcon(icon, size: 22, color: Theme.of(context).colorScheme.onSurface),
+        ThemeIcon(icon,
+            size: 22, color: Theme.of(context).colorScheme.onSurface),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -360,47 +362,38 @@ class _AdminListingModerationQueueScreenState
   }) {
     final name = item.userName?.trim();
     final email = item.userEmail?.trim();
-    final fallbackLabel =
-        (name != null && name.isNotEmpty)
-            ? name
-            : (email != null && email.isNotEmpty)
+    final fallbackLabel = (name != null && name.isNotEmpty)
+        ? name
+        : (email != null && email.isNotEmpty)
             ? email
             : "?";
 
     final url = resolveAvatarUrl(item.userAvatarUrl);
-    final cachePx =
-        (_ownerAvatarSize * MediaQuery.devicePixelRatioOf(context)).round();
 
     Widget fallback() {
       final initials = StringUtils.extractInitials(fallbackLabel);
       return CircleAvatar(
         radius: _ownerAvatarSize / 2,
         backgroundColor: avatarColor,
-        child:
-            initials.isNotEmpty
-                ? Text(
-                  initials,
-                  style: TextStyle(
-                    color: avatarIconColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                )
-                : ThemeIcon(Icons.person, color: avatarIconColor, size: 18),
+        child: initials.isNotEmpty
+            ? Text(
+                initials,
+                style: TextStyle(
+                  color: avatarIconColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              )
+            : ThemeIcon(Icons.person, color: avatarIconColor, size: 18),
       );
     }
 
     if (url != null) {
       return ClipOval(
-        child: CachedNetworkImage(
+        child: NetworkAvatarImage(
           imageUrl: url,
-          width: _ownerAvatarSize,
-          height: _ownerAvatarSize,
-          fit: BoxFit.cover,
-          memCacheWidth: cachePx,
-          memCacheHeight: cachePx,
-          placeholder: (_, __) => fallback(),
-          errorWidget: (_, __, ___) => fallback(),
+          size: _ownerAvatarSize,
+          fallback: fallback(),
         ),
       );
     }
@@ -602,7 +595,8 @@ class _AdminListingModerationQueueScreenState
                           if (item.listingTypeLabel != null &&
                               item.listingTypeLabel!.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4, bottom: 10),
+                              padding:
+                                  const EdgeInsets.only(top: 4, bottom: 10),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
@@ -636,8 +630,7 @@ class _AdminListingModerationQueueScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: PrimaryButton(
-                                  onPressed:
-                                      busy ? null : () => _approve(item),
+                                  onPressed: busy ? null : () => _approve(item),
                                   isLoading: busy,
                                   surfaceGradientBase: scheme.primary,
                                   textColor: scheme.onPrimary,

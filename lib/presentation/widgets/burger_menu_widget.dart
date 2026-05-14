@@ -1,6 +1,5 @@
 import "dart:ui";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -36,6 +35,7 @@ import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -159,8 +159,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                                 if (!context.mounted) return;
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ProfileScreen(),
+                                    builder: (context) => const ProfileScreen(),
                                   ),
                                 );
                               },
@@ -271,7 +270,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
             Navigator.pop(context);
             if (!context.mounted) return;
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const ViewHistoryScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const ViewHistoryScreen()),
             );
           },
         ),
@@ -396,7 +396,8 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     }
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (context) => AppRouter.buildMainNavigation(initialIndex: index),
+        builder: (context) =>
+            AppRouter.buildMainNavigation(initialIndex: index),
       ),
     );
   }
@@ -582,11 +583,8 @@ class _DrawerProfileHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            BlocSelector<
-              CurrentUserProfileBloc,
-              CurrentUserProfileState,
-              _BurgerMenuProfileData
-            >(
+            BlocSelector<CurrentUserProfileBloc, CurrentUserProfileState,
+                _BurgerMenuProfileData>(
               selector: (state) => state.map(
                 initial: (_) => const _BurgerMenuProfileData(
                   isLoading: true,
@@ -644,8 +642,8 @@ class _DrawerProfileHeader extends StatelessWidget {
                     (profileName != null && profileName.isNotEmpty)
                         ? profileName
                         : (cachedGoogleDisplayName?.trim().isNotEmpty ?? false)
-                        ? cachedGoogleDisplayName!.trim()
-                        : L10n.get("user");
+                            ? cachedGoogleDisplayName!.trim()
+                            : L10n.get("user");
 
                 return Text(
                   displayName,
@@ -675,25 +673,21 @@ class _ProfilePicture extends StatelessWidget {
       return ThemeIcon(Icons.person, color: _DrawerColors.border(), size: 40);
     }
 
+    const avatarSize = 64.0;
+    final fallback = ThemeIcon(
+      Icons.person,
+      color: _DrawerColors.border(),
+      size: 40,
+    );
+
     return ClipOval(
-      child: CachedNetworkImage(
-        imageUrl: url,
-        width: 64,
-        height: 64,
-        fit: BoxFit.cover,
-        memCacheWidth: 128,
-        memCacheHeight: 128,
-        fadeInDuration: const Duration(milliseconds: 300),
-        fadeInCurve: Curves.easeOut,
-        placeholder: (context, url) => ThemeIcon(
-          Icons.person,
-          color: _DrawerColors.border(),
-          size: 40,
-        ),
-        errorWidget: (context, url, error) => ThemeIcon(
-          Icons.person,
-          color: _DrawerColors.border(),
-          size: 40,
+      child: SizedBox(
+        width: avatarSize,
+        height: avatarSize,
+        child: NetworkAvatarImage(
+          imageUrl: url,
+          size: avatarSize,
+          fallback: Center(child: fallback),
         ),
       ),
     );

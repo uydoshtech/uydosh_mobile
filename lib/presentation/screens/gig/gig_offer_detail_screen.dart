@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -42,6 +41,7 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/detail_hosted_photo_gallery.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/full_screen_photo_viewer.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -172,12 +172,13 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
             builder: (context, state) {
               final offerForMenu =
                   state is GigOfferDetailLoaded ? state.offer : null;
-              final staff = ModerationStaffUtils.isModerationStaff(_sessionRole);
+              final staff =
+                  ModerationStaffUtils.isModerationStaff(_sessionRole);
               final isOfferOwner = offerForMenu != null &&
                   UserListingState().isOwner(offerForMenu.providerUserId);
               final staffActingOnOther = staff && !isOfferOwner;
-              final showOwnerActions = offerForMenu != null &&
-                  (isOfferOwner || staff);
+              final showOwnerActions =
+                  offerForMenu != null && (isOfferOwner || staff);
               final canFavoriteOffer = offerForMenu != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: offerForMenu.providerUserId,
@@ -288,8 +289,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
       return _OfferDetailContentStateful(
         state: state,
         onEditOffer: _editOffer,
-        canStaffEditOffer:
-            ModerationStaffUtils.isModerationStaff(_sessionRole),
+        canStaffEditOffer: ModerationStaffUtils.isModerationStaff(_sessionRole),
       );
     }
     return const SizedBox.shrink();
@@ -820,22 +820,34 @@ class _GigOfferProviderBottomTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundImage: offer.providerAvatarUrl != null
-                      ? CachedNetworkImageProvider(
-                          EnvironmentUtil.hostedImageUrl(
-                            offer.providerAvatarUrl!,
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: offer.providerAvatarUrl != null
+                      ? ClipOval(
+                          child: NetworkAvatarImage(
+                            imageUrl: EnvironmentUtil.hostedImageUrl(
+                              offer.providerAvatarUrl!,
+                            ),
+                            size: 56,
+                            fallback: CircleAvatar(
+                              backgroundColor: scheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.person_rounded,
+                                size: 30,
+                                color: scheme.onSurface.withValues(alpha: 0.45),
+                              ),
+                            ),
                           ),
                         )
-                      : null,
-                  child: offer.providerAvatarUrl == null
-                      ? Icon(
-                          Icons.person_rounded,
-                          size: 30,
-                          color: scheme.onSurface.withValues(alpha: 0.45),
-                        )
-                      : null,
+                      : CircleAvatar(
+                          radius: 28,
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: 30,
+                            color: scheme.onSurface.withValues(alpha: 0.45),
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

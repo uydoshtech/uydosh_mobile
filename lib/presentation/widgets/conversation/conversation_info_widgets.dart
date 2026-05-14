@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -8,6 +7,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
@@ -48,8 +48,6 @@ class ConversationGigOwnerRow extends StatelessWidget {
     if (name == null || name.isEmpty) return const SizedBox.shrink();
 
     final url = resolveAvatarUrl(conversation.gigOwnerAvatar);
-    final cacheExtent =
-        (_avatarSize * MediaQuery.devicePixelRatioOf(context)).round();
 
     Widget fallbackAvatar() {
       final initials = StringUtils.extractInitials(name);
@@ -71,15 +69,10 @@ class ConversationGigOwnerRow extends StatelessWidget {
 
     final avatar = url != null
         ? ClipOval(
-            child: CachedNetworkImage(
+            child: NetworkAvatarImage(
               imageUrl: url,
-              width: _avatarSize,
-              height: _avatarSize,
-              fit: BoxFit.cover,
-              memCacheWidth: cacheExtent,
-              memCacheHeight: cacheExtent,
-              placeholder: (_, __) => fallbackAvatar(),
-              errorWidget: (_, __, ___) => fallbackAvatar(),
+              size: _avatarSize,
+              fallback: fallbackAvatar(),
             ),
           )
         : fallbackAvatar();
@@ -119,6 +112,7 @@ class ConversationGigOwnerRow extends StatelessWidget {
     );
   }
 }
+
 class ConversationAvatarContent extends StatelessWidget {
   const ConversationAvatarContent({
     required this.conversation,
@@ -191,12 +185,10 @@ class ConversationLocationInfo extends StatelessWidget {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
-        final hasLocation =
-            conversation.locationNameUz != null ||
+        final hasLocation = conversation.locationNameUz != null ||
             conversation.locationNameRu != null ||
             conversation.locationNameEn != null;
-        final hasSubwayStation =
-            conversation.subwayStationNameUz != null ||
+        final hasSubwayStation = conversation.subwayStationNameUz != null ||
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
 
@@ -304,7 +296,8 @@ class ConversationLocationInfo extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const ThemeIcon(Icons.payments, color: Colors.green, size: 16),
+                  const ThemeIcon(Icons.payments,
+                      color: Colors.green, size: 16),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(

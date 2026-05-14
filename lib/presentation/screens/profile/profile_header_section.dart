@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
@@ -15,6 +14,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_blinking_dot.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_role_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -601,28 +601,18 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     final photoUrl = _effectiveAvatarUrl();
 
     if (photoUrl != null) {
-      return CachedNetworkImage(
+      const side = 100.0;
+      final glyphFallback = Center(
+        child: ThemeIcon(
+          Icons.person,
+          size: 50,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      );
+      return NetworkAvatarImage(
         imageUrl: photoUrl,
-        width: 100,
-        height: 100,
-        fit: BoxFit.cover,
-        memCacheWidth: 200,
-        memCacheHeight: 200,
-        fadeInDuration: const Duration(milliseconds: 300),
-        fadeInCurve: Curves.easeOut,
-        placeholder:
-            (context, url) => Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-        errorWidget:
-            (context, url, error) => ThemeIcon(
-              Icons.person,
-              size: 50,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+        size: side,
+        fallback: glyphFallback,
       );
     }
 
@@ -918,8 +908,7 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
     final labelKey = currency == PriceDisplayCurrency.usd
         ? "price_display_currency_usd"
         : "price_display_currency_national";
-    final shortCode =
-        currency == PriceDisplayCurrency.usd ? "USD" : "UZS";
+    final shortCode = currency == PriceDisplayCurrency.usd ? "USD" : "UZS";
     const borderRadius = BorderRadius.all(Radius.circular(12));
 
     return Tooltip(
@@ -959,8 +948,7 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     height: 1,
-                    fontWeight:
-                        isCurrent ? FontWeight.w700 : FontWeight.w600,
+                    fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w600,
                     letterSpacing: 0.2,
                     color: scheme.onSurface,
                   ),
@@ -976,18 +964,18 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
   Widget _segmentLeading(Color onSurface) {
     return switch (currency) {
       PriceDisplayCurrency.usd => Text(
-        r"$",
-        style: TextStyle(
-          fontSize: 18,
-          height: 1,
-          fontWeight: FontWeight.w700,
-          color: onSurface,
+          r"$",
+          style: TextStyle(
+            fontSize: 18,
+            height: 1,
+            fontWeight: FontWeight.w700,
+            color: onSurface,
+          ),
         ),
-      ),
       PriceDisplayCurrency.national => const Text(
-        "🇺🇿",
-        style: TextStyle(fontSize: 18, height: 1),
-      ),
+          "🇺🇿",
+          style: TextStyle(fontSize: 18, height: 1),
+        ),
     };
   }
 }

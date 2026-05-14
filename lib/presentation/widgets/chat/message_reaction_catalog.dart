@@ -9,34 +9,36 @@ abstract final class MessageReactionCatalog {
     "lightning",
   ];
 
-  static IconData iconFor(String reaction) {
+  /// Filled, rounded Material glyphs — same weight as the posted badge, picker, strip.
+  static IconData iconForBubbleBadge(String reaction) {
     switch (reaction) {
       case "thumbs_up":
-        return Icons.thumb_up_outlined;
+        return Icons.thumb_up_alt_rounded;
       case "thumbs_down":
-        return Icons.thumb_down_outlined;
+        return Icons.thumb_down_alt_rounded;
       case "heart":
-        return Icons.favorite_border;
+        return Icons.favorite_rounded;
       case "lightning":
-        return Icons.bolt_outlined;
+        return Icons.electric_bolt_rounded;
       default:
         return Icons.emoji_emotions_outlined;
     }
   }
 
-  /// Filled icons for the overlapping bubble badge (active reaction).
-  static IconData iconForBubbleBadge(String reaction) {
-    switch (reaction) {
-      case "thumbs_up":
-        return Icons.thumb_up;
-      case "thumbs_down":
-        return Icons.thumb_down;
+  /// Warm “emoji 👍” yellow for thumbs / lightning; heart stays red.
+  static const Color emojiAccentYellow = Color(0xFFFFD54F);
+
+  /// Icon tint for reactions on bubbles, picker, and strips.
+  static Color accentIconColor(String reactionId, Color fallback) {
+    switch (reactionId) {
       case "heart":
-        return Icons.favorite;
+        return const Color(0xFFE53935);
+      case "thumbs_up":
+      case "thumbs_down":
       case "lightning":
-        return Icons.bolt;
+        return emojiAccentYellow;
       default:
-        return Icons.emoji_emotions_outlined;
+        return fallback.withValues(alpha: 0.95);
     }
   }
 }

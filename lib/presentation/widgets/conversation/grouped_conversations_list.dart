@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -16,6 +15,7 @@ import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
@@ -277,15 +277,15 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     if (_groupCoachSequenceActive) return;
 
     final targetId = _sortedListingIds.cast<int?>().firstWhere(
-          (id) {
-            final convs = _groupedConversations[id] ?? const [];
-            final isCollapsed = !(_expandedGroups[id] ?? false);
-            final canVisiblyExpand =
-                convs.length > 1 && !_groupHasIncomingUnread(convs);
-            return canVisiblyExpand && isCollapsed;
-          },
-          orElse: () => null,
-        );
+      (id) {
+        final convs = _groupedConversations[id] ?? const [];
+        final isCollapsed = !(_expandedGroups[id] ?? false);
+        final canVisiblyExpand =
+            convs.length > 1 && !_groupHasIncomingUnread(convs);
+        return canVisiblyExpand && isCollapsed;
+      },
+      orElse: () => null,
+    );
     if (targetId == null) return;
     unawaited(_runGroupExpandCoachSequence(targetId));
   }
@@ -1087,7 +1087,6 @@ class _ParticipantAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final url = resolveAvatarUrl(conversation.otherUserAvatar);
-    final cacheExtent = (size * MediaQuery.devicePixelRatioOf(context)).round();
 
     Widget fallback() => Container(
           color: avatarColor,
@@ -1112,13 +1111,10 @@ class _ParticipantAvatar extends StatelessWidget {
           Positioned.fill(
             child: ClipOval(
               child: url != null
-                  ? CachedNetworkImage(
+                  ? NetworkAvatarImage(
                       imageUrl: url,
-                      fit: BoxFit.cover,
-                      memCacheWidth: cacheExtent,
-                      memCacheHeight: cacheExtent,
-                      placeholder: (_, __) => fallback(),
-                      errorWidget: (_, __, ___) => fallback(),
+                      size: size,
+                      fallback: fallback(),
                     )
                   : fallback(),
             ),

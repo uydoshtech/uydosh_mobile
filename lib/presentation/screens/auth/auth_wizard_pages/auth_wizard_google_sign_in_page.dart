@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
@@ -15,6 +14,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/google_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -488,15 +488,10 @@ class _AuthWizardOAuthAvatarState extends State<_AuthWizardOAuthAvatar> {
 
     final Widget face = photoUrl != null && photoUrl.isNotEmpty
         ? ClipOval(
-            child: CachedNetworkImage(
+            child: NetworkAvatarImage(
               imageUrl: photoUrl,
-              width: _kOAuthAvatarSize,
-              height: _kOAuthAvatarSize,
-              fit: BoxFit.cover,
-              memCacheWidth: 120,
-              memCacheHeight: 120,
-              placeholder: (context, url) => buildGlyphFallback(),
-              errorWidget: (context, url, error) => buildGlyphFallback(),
+              size: _kOAuthAvatarSize,
+              fallback: buildGlyphFallback(),
             ),
           )
         : ClipOval(child: buildGlyphFallback());

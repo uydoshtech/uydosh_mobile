@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_user_listings_screen.da
 import "package:uy_dosh/presentation/screens/admin/admin_user_search_alerts_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
@@ -759,13 +760,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
             SizedBox(
               width: double.infinity,
               child: PrimaryButton(
-                onPressed:
-                    (!_saving && canSave && !disableActions)
-                        ? () {
-                          HapticFeedbackUtils.impact();
-                          _updateRole();
-                        }
-                        : null,
+                onPressed: (!_saving && canSave && !disableActions)
+                    ? () {
+                        HapticFeedbackUtils.impact();
+                        _updateRole();
+                      }
+                    : null,
                 isLoading: _saving,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -1045,18 +1045,19 @@ class _AdminUserAvatar extends StatelessWidget {
     final border = onSurface.withValues(alpha: 0.08);
 
     final url = resolveAvatarUrl(avatarUrl);
-    final hasUrl = url != null && url.isNotEmpty;
 
     Widget content;
-    if (hasUrl) {
+    if (url != null && url.isNotEmpty) {
       content = ClipOval(
-        child: Image.network(
-          url,
+        child: SizedBox(
           width: size,
           height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              _InitialsAvatarFallback(initials: initials),
+          child: NetworkAvatarImage(
+            imageUrl: url,
+            size: size,
+            fallback:
+                Center(child: _InitialsAvatarFallback(initials: initials)),
+          ),
         ),
       );
     } else {

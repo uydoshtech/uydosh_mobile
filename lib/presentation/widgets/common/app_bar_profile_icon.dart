@@ -2,6 +2,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Diameter of the full-bleed avatar disc: matches neighboring app bar icons
@@ -48,28 +49,13 @@ class AppBarProfileIcon extends StatelessWidget {
         if (resolved == null) {
           return fallback;
         }
-        final dpr = MediaQuery.of(context).devicePixelRatio;
-        final px = (iconSize * dpr).round();
         return SizedBox.square(
           dimension: iconSize,
           child: ClipOval(
-            child: Image(
-              image: CachedNetworkImageProvider(
-                resolved,
-                maxWidth: px,
-                maxHeight: px,
-              ),
-              width: iconSize,
-              height: iconSize,
-              fit: BoxFit.cover,
-              gaplessPlayback: true,
-              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded || frame != null) {
-                  return child;
-                }
-                return fallback;
-              },
-              errorBuilder: (context, error, stackTrace) => fallback,
+            child: NetworkAvatarImage(
+              imageUrl: resolved,
+              size: iconSize,
+              fallback: fallback,
             ),
           ),
         );

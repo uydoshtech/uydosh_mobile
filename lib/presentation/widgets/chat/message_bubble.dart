@@ -17,9 +17,10 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessageBubble extends StatefulWidget {
-
   const MessageBubble({
-    required this.message, required this.isCurrentUser, super.key,
+    required this.message,
+    required this.isCurrentUser,
+    super.key,
     this.isLatest = false,
     this.onAnimationComplete,
     this.riskLevel,
@@ -84,6 +85,10 @@ class MessageBubble extends StatefulWidget {
 class _MessageBubbleState extends State<MessageBubble>
     with TickerProviderStateMixin {
   static const double _reactionBadgeHoverHeight = 30;
+  static const double _reactionBadgeOutsideShift = 10;
+
+  /// Space between the bubble top edge and the reaction picker when shown above.
+  static const double _reactionBubbleGap = 6;
 
   late AnimationController _scaleAnimationController;
   late AnimationController _fadeAnimationController;
@@ -175,9 +180,8 @@ class _MessageBubbleState extends State<MessageBubble>
           themeState,
         );
 
-        final textColor = widget.isCurrentUser
-            ? ownMessageTextColor
-            : otherMessageTextColor;
+        final textColor =
+            widget.isCurrentUser ? ownMessageTextColor : otherMessageTextColor;
 
         return AnimatedBuilder(
           animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
@@ -217,11 +221,11 @@ class _MessageBubbleState extends State<MessageBubble>
                                   : 1;
                               final reactionEndInset =
                                   (_reactionsEnabled && myId != null)
-                                  ? _reactionBadgeTrailingEndInset(
-                                      bubbleInnerWidth: bubbleInnerW,
-                                      aggregateCount: aggCount,
-                                    )
-                                  : 0.0;
+                                      ? _reactionBadgeTrailingEndInset(
+                                          bubbleInnerWidth: bubbleInnerW,
+                                          aggregateCount: aggCount,
+                                        )
+                                      : 0.0;
 
                               return Stack(
                                 clipBehavior: Clip.none,
@@ -280,8 +284,8 @@ class _MessageBubbleState extends State<MessageBubble>
                                             IconButton(
                                               onPressed: () =>
                                                   _openReactionToolbar(
-                                                    context,
-                                                  ),
+                                                context,
+                                              ),
                                               style: IconButton.styleFrom(
                                                 minimumSize: Size.zero,
                                                 tapTargetSize:
@@ -329,8 +333,8 @@ class _MessageBubbleState extends State<MessageBubble>
                                     ),
                                   if (_reactionsEnabled && myId != null)
                                     PositionedDirectional(
-                                      bottom:
-                                          -_reactionBadgeHoverHeight / 2,
+                                      bottom: -_reactionBadgeHoverHeight / 2 -
+                                          _reactionBadgeOutsideShift,
                                       end: reactionEndInset,
                                       child: _buildMyReactionCornerBadge(
                                         textColor,
@@ -343,7 +347,8 @@ class _MessageBubbleState extends State<MessageBubble>
                         ),
                       ),
                     ),
-                    if (_hasReactionRow) _buildReactionStrip(context, textColor),
+                    if (_hasReactionRow)
+                      _buildReactionStrip(context, textColor),
                   ],
                 ),
               ),
@@ -407,12 +412,9 @@ class _MessageBubbleState extends State<MessageBubble>
   Widget _buildMyReactionCornerBadge(Color textColor) {
     final id = widget.message.myReaction!;
     final count = _aggregateCountForReaction(id);
-    final isHeart = id == 'heart';
-    final iconColor = isHeart ? Colors.red.shade500 : textColor.withValues(alpha: 0.95);
+    final iconColor = MessageReactionCatalog.accentIconColor(id, textColor);
     final isRoundCapsule = count <= 1;
-    final bubbleRadius = isRoundCapsule
-        ? _reactionBadgeHoverHeight / 2
-        : 15.0;
+    final bubbleRadius = isRoundCapsule ? _reactionBadgeHoverHeight / 2 : 15.0;
 
     return GestureDetector(
       onTap: widget.onClearReaction != null
@@ -483,17 +485,16 @@ class _MessageBubbleState extends State<MessageBubble>
         final h = mq.size.height;
         final padTop = mq.padding.top;
         final padBottom = mq.padding.bottom;
+        final scheme = Theme.of(ctx).colorScheme;
+        final fallbackIcon = scheme.onSurface.withValues(alpha: 0.88);
         var left = 16.0;
         var top = 100.0;
-        const toolbarGap = 6.0;
         const toolbarHeightEstimate = 40.0;
         const toolbarWidthEstimate = 132.0;
-        final iconColor =
-            Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.88);
         if (box != null) {
           final o = box.localToGlobal(Offset.zero);
-          final bubbleBottom = o.dy + box.size.height;
-          top = (bubbleBottom + toolbarGap).clamp(
+          final bubbleTop = o.dy;
+          top = (bubbleTop - _reactionBubbleGap - toolbarHeightEstimate).clamp(
             padTop + 8,
             h - padBottom - toolbarHeightEstimate - 8,
           );
@@ -543,9 +544,12 @@ class _MessageBubbleState extends State<MessageBubble>
                             await _applyReactionChoice(id);
                           },
                           icon: Icon(
-                            MessageReactionCatalog.iconFor(id),
+                            MessageReactionCatalog.iconForBubbleBadge(id),
                             size: 18,
-                            color: iconColor,
+                            color: MessageReactionCatalog.accentIconColor(
+                              id,
+                              fallbackIcon,
+                            ),
                           ),
                         ),
                     ],
@@ -565,6 +569,8 @@ class _MessageBubbleState extends State<MessageBubble>
       context: context,
       barrierDismissible: true,
       builder: (ctx) {
+        final fallback =
+            Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.88);
         return AlertDialog(
           contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
           content: Wrap(
@@ -582,7 +588,11 @@ class _MessageBubbleState extends State<MessageBubble>
                     Navigator.of(ctx).pop();
                     await _applyReactionChoice(id);
                   },
-                  icon: Icon(MessageReactionCatalog.iconFor(id), size: 28),
+                  icon: Icon(
+                    MessageReactionCatalog.iconForBubbleBadge(id),
+                    size: 28,
+                    color: MessageReactionCatalog.accentIconColor(id, fallback),
+                  ),
                 ),
             ],
           ),
@@ -614,27 +624,24 @@ class _MessageBubbleState extends State<MessageBubble>
       child: Wrap(
         spacing: 4,
         runSpacing: 2,
-        alignment: widget.isCurrentUser
-            ? WrapAlignment.end
-            : WrapAlignment.start,
+        alignment:
+            widget.isCurrentUser ? WrapAlignment.end : WrapAlignment.start,
         children: [
           for (final e in entries)
             Material(
-              color:
-                  (!_reactionsEnabled && mine == e.reaction)
+              color: (!_reactionsEnabled && mine == e.reaction)
                   ? scheme.primaryContainer.withValues(alpha: 0.85)
                   : scheme.surfaceContainerHighest.withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
-                onTap:
-                    (!_reactionsEnabled &&
-                            mine == e.reaction &&
-                            widget.onClearReaction != null)
-                        ? () {
-                            HapticFeedback.lightImpact();
-                            widget.onClearReaction?.call();
-                          }
-                        : null,
+                onTap: (!_reactionsEnabled &&
+                        mine == e.reaction &&
+                        widget.onClearReaction != null)
+                    ? () {
+                        HapticFeedback.lightImpact();
+                        widget.onClearReaction?.call();
+                      }
+                    : null,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -645,9 +652,12 @@ class _MessageBubbleState extends State<MessageBubble>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        MessageReactionCatalog.iconFor(e.reaction),
+                        MessageReactionCatalog.iconForBubbleBadge(e.reaction),
                         size: 14,
-                        color: textColor.withValues(alpha: 0.95),
+                        color: MessageReactionCatalog.accentIconColor(
+                          e.reaction,
+                          textColor,
+                        ),
                       ),
                       if (e.count > 1) ...[
                         const SizedBox(width: 3),
@@ -876,7 +886,8 @@ class _TranslationToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prefixKey = _translatedFromKeyForSource(translation.sourceLanguageCode);
+    final prefixKey =
+        _translatedFromKeyForSource(translation.sourceLanguageCode);
     final basePrefix = prefixKey != null ? L10n.get(prefixKey) : null;
     final targetFlag = _flagForLanguage(translation.targetLanguageCode);
     // Append "→ <target-flag>" so the viewer can see WHICH language the
@@ -969,8 +980,7 @@ class _RiskBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        level == 'high' ? Colors.redAccent : Colors.amber.shade700;
+    final color = level == 'high' ? Colors.redAccent : Colors.amber.shade700;
 
     const badgeSize = 22.0;
 

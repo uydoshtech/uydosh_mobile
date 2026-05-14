@@ -1,4 +1,3 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -8,6 +7,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -19,9 +19,11 @@ class OutgoingConversationTile extends StatelessWidget {
     required this.onTap,
     super.key,
     this.currentUserId,
+
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
     this.onLongPress,
+
     /// When true, listing title / price live on the parent [GroupedConversationsList] header — omit them here.
     this.isGrouped = false,
   });
@@ -35,8 +37,7 @@ class OutgoingConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable:
-          Listenable.merge([ThemeState(), ProfileCompletionState()]),
+      listenable: Listenable.merge([ThemeState(), ProfileCompletionState()]),
       builder: (context, child) {
         final themeState = ThemeState();
         final cardColor = themeState.cardColor;
@@ -55,7 +56,8 @@ class OutgoingConversationTile extends StatelessWidget {
         final hasSubwayStation = conversation.subwayStationNameUz != null ||
             conversation.subwayStationNameRu != null ||
             conversation.subwayStationNameEn != null;
-        final hasBudgetBadge = conversationSummaryShowsBudgetBadge(conversation);
+        final hasBudgetBadge =
+            conversationSummaryShowsBudgetBadge(conversation);
         final isListingMarketplace =
             conversationSummaryIsListingMarketplaceChat(conversation);
 
@@ -79,40 +81,25 @@ class OutgoingConversationTile extends StatelessWidget {
         final showMarketplaceCounterpartyNameOnly =
             isGrouped && isListingMarketplace;
 
+        final avatarFallback = SizedBox(
+          width: avatarSize,
+          height: avatarSize,
+          child: CircleAvatar(
+            backgroundColor: avatarColor,
+            child: ConversationAvatarContent(
+              conversation: conversation,
+              iconColor: avatarIconColor,
+              userNameOverride: initialsName,
+            ),
+          ),
+        );
+
         final avatarLeading = resolvedAvatarUrl != null
             ? ClipOval(
-                child: CachedNetworkImage(
+                child: NetworkAvatarImage(
                   imageUrl: resolvedAvatarUrl,
-                  width: avatarSize,
-                  height: avatarSize,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 80,
-                  memCacheHeight: 80,
-                  placeholder:
-                      (context, url) => SizedBox(
-                        width: avatarSize,
-                        height: avatarSize,
-                        child: Center(
-                          child: ConversationAvatarContent(
-                            conversation: conversation,
-                            iconColor: avatarIconColor,
-                            userNameOverride: initialsName,
-                          ),
-                        ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => SizedBox(
-                        width: avatarSize,
-                        height: avatarSize,
-                        child: CircleAvatar(
-                          backgroundColor: avatarColor,
-                          child: ConversationAvatarContent(
-                            conversation: conversation,
-                            iconColor: avatarIconColor,
-                            userNameOverride: initialsName,
-                          ),
-                        ),
-                      ),
+                  size: avatarSize,
+                  fallback: avatarFallback,
                 ),
               )
             : CircleAvatar(
@@ -161,7 +148,9 @@ class OutgoingConversationTile extends StatelessWidget {
                           iconColor: iconColor,
                           titleMaxLines: 2,
                         ),
-                        if (hasLocation || hasSubwayStation || hasBudgetBadge) ...[
+                        if (hasLocation ||
+                            hasSubwayStation ||
+                            hasBudgetBadge) ...[
                           const SizedBox(height: 8),
                           ConversationLocationInfo(
                             conversation: conversation,
@@ -185,7 +174,8 @@ class OutgoingConversationTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                if (showFullListingBanner || showMarketplaceCounterpartyNameOnly) ...[
+                if (showFullListingBanner ||
+                    showMarketplaceCounterpartyNameOnly) ...[
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -196,8 +186,7 @@ class OutgoingConversationTile extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.fromLTRB(
                     16,
-                    showFullListingBanner ||
-                            showMarketplaceCounterpartyNameOnly
+                    showFullListingBanner || showMarketplaceCounterpartyNameOnly
                         ? 0
                         : 12,
                     16,
@@ -258,10 +247,9 @@ class OutgoingConversationTile extends StatelessWidget {
                               width: 18,
                               height: 18,
                               child: Align(
-                                alignment:
-                                    conversation.unreadCount! > 1
-                                        ? Alignment.center
-                                        : const Alignment(0, -0.12),
+                                alignment: conversation.unreadCount! > 1
+                                    ? Alignment.center
+                                    : const Alignment(0, -0.12),
                                 child: Container(
                                   width:
                                       conversation.unreadCount! > 1 ? 18 : 11,
@@ -303,10 +291,9 @@ class OutgoingConversationTile extends StatelessWidget {
                                         offset: const Offset(2, 2),
                                       ),
                                     ],
-                                    color:
-                                        conversation.unreadCount! > 1
-                                            ? null
-                                            : unreadColor,
+                                    color: conversation.unreadCount! > 1
+                                        ? null
+                                        : unreadColor,
                                   ),
                                   child: conversation.unreadCount! > 1
                                       ? Center(

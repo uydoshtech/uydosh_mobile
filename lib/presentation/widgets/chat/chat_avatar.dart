@@ -1,7 +1,7 @@
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -44,10 +44,13 @@ class ChatAvatar extends StatelessWidget {
     final base = (!isCurrentUser && isBlueTheme)
         ? Colors.white
         : (isCurrentUser
-              ? Color.lerp(surface, onSurface, 0.06)!
-              : Color.lerp(surface, onSurface, 0.02)!);
-    final glyphColor =
-        (!isCurrentUser && isBlueTheme) ? primary : Theme.of(context).colorScheme.onSurface;
+            ? Color.lerp(surface, onSurface, 0.06)!
+            : Color.lerp(surface, onSurface, 0.02)!);
+    final glyphColor = (!isCurrentUser && isBlueTheme)
+        ? primary
+        : Theme.of(context).colorScheme.onSurface;
+
+    final fallback = _buildFallback(context, glyphColor, hasInitials);
 
     return SizedBox(
       width: diameter,
@@ -61,25 +64,19 @@ class ChatAvatar extends StatelessWidget {
           color: hasAvatar ? base : null,
           boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           border: Border.all(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
             width: 1,
           ),
         ),
         child: ClipOval(
           child: hasAvatar
-              ? CachedNetworkImage(
+              ? NetworkAvatarImage(
                   imageUrl: resolvedAvatarUrl,
-                  width: diameter,
-                  height: diameter,
-                  fit: BoxFit.cover,
-                  memCacheWidth: (diameter * 2).round(),
-                  memCacheHeight: (diameter * 2).round(),
-                  placeholder: (context, url) =>
-                      _buildFallback(context, glyphColor, hasInitials),
-                  errorWidget: (context, url, error) =>
-                      _buildFallback(context, glyphColor, hasInitials),
+                  size: diameter,
+                  fallback: fallback,
                 )
-              : _buildFallback(context, glyphColor, hasInitials),
+              : fallback,
         ),
       ),
     );

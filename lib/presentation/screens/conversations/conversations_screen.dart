@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -15,6 +14,7 @@ import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
@@ -84,8 +84,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   Widget _buildCustomHeader() {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color:
-            Theme.of(context).appBarTheme.backgroundColor ??
+        color: Theme.of(context).appBarTheme.backgroundColor ??
             Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
@@ -104,11 +103,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             Expanded(
               child: Text(
                 L10n.get("conversations"),
-                style:
-                    Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ) ??
+                style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ) ??
                     TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -124,13 +122,12 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 onPressed: () {
                   HapticFeedbackUtils.impact();
                   context.read<ConversationsBloc>().add(
-                    const ConversationsRefresh(),
-                  );
+                        const ConversationsRefresh(),
+                      );
                 },
                 icon: ThemeIcon(
                   Icons.refresh,
-                  color:
-                      Theme.of(context).appBarTheme.foregroundColor ??
+                  color: Theme.of(context).appBarTheme.foregroundColor ??
                       Theme.of(context).colorScheme.onSurface,
                 ),
                 tooltip: L10n.get("refresh"),
@@ -202,8 +199,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           onPressed: () {
             HapticFeedbackUtils.impact();
             context.read<ConversationsBloc>().add(
-              const ConversationsFetch(page: 2),
-            ); // TODO: make page dynamic
+                  const ConversationsFetch(page: 2),
+                ); // TODO: make page dynamic
           },
           child: Text(L10n.get("load_more")),
         ),
@@ -229,48 +226,43 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     final otherUserId =
         conv != null ? conversationCounterpartyUserId(conv, me) : null;
     final rawCtx = conv?.contextType?.trim().toLowerCase();
-    final isGigConversation =
-        (rawCtx != null && rawCtx.startsWith("gig_")) ||
+    final isGigConversation = (rawCtx != null && rawCtx.startsWith("gig_")) ||
         (conv?.gigRequestId != null);
 
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
-        builder:
-            (context) => ChatScreen(
-              conversationId: conversationId,
-              listingId: isGigConversation ? null : conv?.listingId,
-              listingTypeId:
-                  isGigConversation ? null : conv?.listingTypeId,
-              // Server convention: listing owner is always `participant_id`.
-              listingOwnerUserId:
-                  isGigConversation ? null : conv?.participantId,
-              conversationContextType: conv?.contextType,
-              conversationParticipantId: conv?.participantId,
-              gigRequestId: conv?.gigRequestId,
-              gigRequestTitle: conv?.gigRequestTitle,
-              listingTitle:
-                  conv != null && !isGigConversation
-                      ? resolvedConversationListingTitle(conv)
-                      : null,
-              otherUserInitials:
-                  conv != null
-                      ? StringUtils.extractInitials(conv.otherUserName)
-                      : null,
-              otherUserName: conv?.otherUserName,
-              otherUserId: otherUserId,
-              otherUserAvatar: conv?.otherUserAvatar,
-            ),
+        builder: (context) => ChatScreen(
+          conversationId: conversationId,
+          listingId: isGigConversation ? null : conv?.listingId,
+          listingTypeId: isGigConversation ? null : conv?.listingTypeId,
+          // Server convention: listing owner is always `participant_id`.
+          listingOwnerUserId: isGigConversation ? null : conv?.participantId,
+          conversationContextType: conv?.contextType,
+          conversationParticipantId: conv?.participantId,
+          gigRequestId: conv?.gigRequestId,
+          gigRequestTitle: conv?.gigRequestTitle,
+          listingTitle: conv != null && !isGigConversation
+              ? resolvedConversationListingTitle(conv)
+              : null,
+          otherUserInitials: conv != null
+              ? StringUtils.extractInitials(conv.otherUserName)
+              : null,
+          otherUserName: conv?.otherUserName,
+          otherUserId: otherUserId,
+          otherUserAvatar: conv?.otherUserAvatar,
+        ),
       ),
     );
   }
 }
 
 class ConversationCard extends StatelessWidget {
-
   const ConversationCard({
-    required this.conversation, required this.onTap, super.key,
+    required this.conversation,
+    required this.onTap,
+    super.key,
   });
   final ConversationSummary conversation;
   final VoidCallback onTap;
@@ -279,6 +271,18 @@ class ConversationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedAvatarUrl = resolveAvatarUrl(conversation.otherUserAvatar);
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final glyphFallback = SizedBox(
+      width: _avatarSize,
+      height: _avatarSize,
+      child: Center(
+        child: ThemeIcon(
+          Icons.person,
+          size: 18,
+          color: onSurface,
+        ),
+      ),
+    );
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 6,
@@ -290,37 +294,10 @@ class ConversationCard extends StatelessWidget {
         onTap: onTap,
         leading: resolvedAvatarUrl != null
             ? ClipOval(
-                child: CachedNetworkImage(
+                child: NetworkAvatarImage(
                   imageUrl: resolvedAvatarUrl,
-                  width: _avatarSize,
-                  height: _avatarSize,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 80,
-                  memCacheHeight: 80,
-                  placeholder:
-                      (context, url) => SizedBox(
-                        width: _avatarSize,
-                        height: _avatarSize,
-                        child: Center(
-                          child: ThemeIcon(
-                            Icons.person,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => SizedBox(
-                        width: _avatarSize,
-                        height: _avatarSize,
-                        child: Center(
-                          child: ThemeIcon(
-                            Icons.person,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
+                  size: _avatarSize,
+                  fallback: glyphFallback,
                 ),
               )
             : CircleAvatar(
@@ -333,11 +310,10 @@ class ConversationCard extends StatelessWidget {
         title: Text(
           conversation.otherUserName ?? "Unknown User",
           style: TextStyle(
-            fontWeight:
-                conversation.unreadCount != null &&
-                        conversation.unreadCount! > 0
-                    ? FontWeight.bold
-                    : FontWeight.normal,
+            fontWeight: conversation.unreadCount != null &&
+                    conversation.unreadCount! > 0
+                ? FontWeight.bold
+                : FontWeight.normal,
           ),
         ),
         subtitle: Column(
@@ -350,8 +326,8 @@ class ConversationCard extends StatelessWidget {
               ConversationListingTitleWithCategoryIcon(
                 conversation: conversation,
                 textStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                 iconColor: Theme.of(context).colorScheme.primary,
                 iconSize: 18,
               ),
@@ -363,13 +339,12 @@ class ConversationCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color:
-                      conversation.unreadCount != null &&
-                              conversation.unreadCount! > 0
-                          ? Theme.of(context).colorScheme.onSurface
-                          : Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: conversation.unreadCount != null &&
+                          conversation.unreadCount! > 0
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
           ],
@@ -382,10 +357,10 @@ class ConversationCard extends StatelessWidget {
               Text(
                 _formatTime(context, conversation.lastMessageAt!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
               ),
             if (conversation.unreadCount != null &&
                 conversation.unreadCount! > 0) ...[
