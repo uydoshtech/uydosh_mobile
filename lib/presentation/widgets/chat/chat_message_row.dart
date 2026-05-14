@@ -12,6 +12,7 @@ class ChatMessageRow extends StatelessWidget {
     this.rightAvatarInitials,
     this.leftAvatarUrl,
     this.rightAvatarUrl,
+    this.belowBubble,
     super.key,
   });
 
@@ -20,6 +21,18 @@ class ChatMessageRow extends StatelessWidget {
 
   /// Content inside the bubble.
   final Widget bubbleChild;
+
+  /// Optional row rendered **below** [ChatBubbleWithTail] (outside the painted
+  /// bubble). Use for controls that should visually overlap the bubble bottom
+  /// (e.g. reaction chip) without breaking hit tests.
+  ///
+  /// [maxWidth] is the upper bound from the surrounding [LayoutBuilder] (the
+  /// chat [Flexible] lane), for inset math. The bubble column is wrapped in
+  /// [IntrinsicWidth] so [belowBubble] aligns to the bubble, not the full lane.
+  ///
+  /// Do not put a [LayoutBuilder] inside [belowBubble]: [IntrinsicWidth] would
+  /// then trigger the intrinsic-dimension assert.
+  final Widget Function(BuildContext context, double maxWidth)? belowBubble;
 
   /// Initials for avatar on the left (other user / support).
   final String? leftAvatarInitials;
@@ -35,6 +48,45 @@ class ChatMessageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bubbleColumnCrossAxis = isFromCurrentUser
+        ? CrossAxisAlignment.end
+        : CrossAxisAlignment.start;
+
+    final Widget flexibleInner;
+    if (belowBubble == null) {
+      flexibleInner = ChatBubbleWithTail(
+        isFromCurrentUser: isFromCurrentUser,
+        child: bubbleChild,
+      );
+    } else {
+      // [IntrinsicWidth] ties the column width to the bubble so an [Align]
+      // bottomEnd in [belowBubble] hugs the bubble, not the [Flexible] lane.
+      // Lane [maxWidth] comes only from this outer [LayoutBuilder], not from a
+      // [LayoutBuilder] under [IntrinsicWidth].
+      flexibleInner = LayoutBuilder(
+        builder: (context, constraints) {
+          return Align(
+            alignment: isFromCurrentUser
+                ? AlignmentDirectional.centerEnd
+                : AlignmentDirectional.centerStart,
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: bubbleColumnCrossAxis,
+                children: [
+                  ChatBubbleWithTail(
+                    isFromCurrentUser: isFromCurrentUser,
+                    child: bubbleChild,
+                  ),
+                  belowBubble!(context, constraints.maxWidth),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -55,10 +107,7 @@ class ChatMessageRow extends StatelessWidget {
                 left: isFromCurrentUser ? 0 : 10,
                 right: isFromCurrentUser ? 10 : 0,
               ),
-              child: ChatBubbleWithTail(
-                isFromCurrentUser: isFromCurrentUser,
-                child: bubbleChild,
-              ),
+              child: flexibleInner,
             ),
           ),
           if (isFromCurrentUser) ...[

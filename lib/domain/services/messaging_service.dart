@@ -597,12 +597,18 @@ class MessagingService implements IMessagingService {
     try {
       final request = SendMessageRequest(content: newContent);
 
-      final response = await _apiClient.put<Message, SendMessageRequest>(
-        "/messages/$messageId",
-        (json) => Message.fromJson(json as Map<String, dynamic>),
-        data: request,
-      );
-      return response;
+      final response = await _apiClient
+          .put<Map<String, dynamic>, SendMessageRequest>(
+            "/messages/$messageId",
+            (json) => json as Map<String, dynamic>,
+            data: request,
+          );
+
+      final messageData = response["data"] as Map<String, dynamic>?;
+      if (messageData == null) {
+        throw Exception("No message data found in response");
+      }
+      return Message.fromJson(messageData);
     } on DioException catch (e) {
       if (e.response?.statusCode == 403) {
         final data = e.response?.data;

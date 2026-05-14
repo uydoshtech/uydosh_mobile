@@ -1016,6 +1016,9 @@ class AppLocalizationsUz extends AppLocalizations {
       'Har bir xabarni faqat bir marta o‘zgartirish mumkin — tahriringiz allaqachon saqlangan.';
 
   @override
+  String get chat_message_edited_label => 'Tahrirlangan';
+
+  @override
   String get view_similar_results => 'O‘xshash e\'lonlar';
 
   @override

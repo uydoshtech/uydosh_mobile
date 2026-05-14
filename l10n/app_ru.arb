@@ -433,6 +433,7 @@
   "chat_edit_message_cancel": "Отмена",
   "chat_edit_message_once_only": "Вы уже использовали единственное редактирование для этого сообщения.",
   "chat_edit_hold_already_edited_toast": "Каждое сообщение можно изменить только один раз — вы уже сохранили правку.",
+  "chat_message_edited_label": "Изменено",
   "view_similar_results": "Похожие объявления",
   "coming_soon": "Скоро будет",
   "listing_ai_enhance": "Улучшить с AI",

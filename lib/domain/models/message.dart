@@ -78,6 +78,17 @@ class Message with _$Message {
       _$MessageFromJson(json);
 }
 
+/// Whether a message should show edit UI / “edited” affordances.
+extension MessageVisibleEditState on Message {
+  bool get isVisiblyEdited {
+    if (isEdited == true) return true;
+    final at = editedAt;
+    if (at != null && at.isNotEmpty) return true;
+    final prev = previousContent;
+    return prev != null && prev.isNotEmpty;
+  }
+}
+
 @freezed
 class MessageType with _$MessageType {
   const factory MessageType.text() = _Text;

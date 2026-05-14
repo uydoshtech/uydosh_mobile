@@ -24,6 +24,11 @@ class ChatBubbleWithTail extends StatelessWidget {
   /// Corner radius of the bubble body (must stay in sync with painter path).
   static const double cornerRadius = 18;
 
+  /// Vertical padding between painted bubble edge and [child] layout origin.
+  /// Keep in sync with [build] — overlays (e.g. reaction ribbon) use this to
+  /// align to the visible glass top instead of the inner content box.
+  static const double innerVerticalPadding = 12;
+
   static const double _tailWidth = 10;
   static const double _tailHeight = 16;
 
@@ -85,8 +90,8 @@ class ChatBubbleWithTail extends StatelessWidget {
           padding: EdgeInsets.only(
             left: isFromCurrentUser ? 16 : 20,
             right: isFromCurrentUser ? 20 : 16,
-            top: 12,
-            bottom: 12,
+            top: innerVerticalPadding,
+            bottom: innerVerticalPadding,
           ),
           child: child,
         );

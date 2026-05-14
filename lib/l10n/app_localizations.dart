@@ -1906,6 +1906,12 @@ abstract class AppLocalizations {
   /// **'You can only change a message once—and you’ve already saved your edit.'**
   String get chat_edit_hold_already_edited_toast;
 
+  /// No description provided for @chat_message_edited_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get chat_message_edited_label;
+
   /// No description provided for @view_similar_results.
   ///
   /// In en, this message translates to:

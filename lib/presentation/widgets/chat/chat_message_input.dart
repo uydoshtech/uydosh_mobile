@@ -1,10 +1,9 @@
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/presentation/widgets/chat/composer_edit_invite_pulse.dart";
+import "package:uy_dosh/presentation/widgets/chat/composer_edit_glow.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -18,7 +17,7 @@ class ChatMessageInput extends StatelessWidget {
     required this.isSendingMessage,
     this.focusNode,
     this.blendWithGlassBackdrop = false,
-    this.composerEditPulseTrigger,
+    this.isEditingExistingMessage = false,
     super.key,
   });
   final TextEditingController controller;
@@ -26,9 +25,9 @@ class ChatMessageInput extends StatelessWidget {
   final VoidCallback onSend;
   final bool isSendingMessage;
 
-  /// Increment (e.g. `value++`) to play the green “edit here” border blink on
-  /// the text field.
-  final ValueListenable<int>? composerEditPulseTrigger;
+  /// When true, paints a breathing green halo on the composer (edit existing
+  /// bubble mode).
+  final bool isEditingExistingMessage;
 
   /// When true, no bar fill (used with a parent [BackdropFilter] glass panel).
   final bool blendWithGlassBackdrop;
@@ -84,14 +83,11 @@ class ChatMessageInput extends StatelessWidget {
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
                 );
-        final pulseTrigger = composerEditPulseTrigger;
-        if (pulseTrigger != null) {
-          textField = ComposerEditInvitePulse(
-            pulseTrigger: pulseTrigger,
-            borderRadius: fieldRadius,
-            child: textField,
-          );
-        }
+        textField = ComposerEditGlow(
+          enabled: isEditingExistingMessage,
+          borderRadius: fieldRadius,
+          child: textField,
+        );
 
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),

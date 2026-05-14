@@ -9,6 +9,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
@@ -168,8 +169,6 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
-  /// Bumps to replay the composer’s green “edit here” border cue.
-  final ValueNotifier<int> _composerEditPulseTick = ValueNotifier<int>(0);
   /// When non-null, send submits an [EditMessage] for this id instead of posting.
   int? _editingMessageId;
   bool _hasLoadedMessagesForConversation =
@@ -331,7 +330,6 @@ class _ChatScreenState extends State<ChatScreen> {
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     _incomingRefreshDebounce?.cancel();
     _messageController.dispose();
-    _composerEditPulseTick.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
     // Surface any achievement that was unlocked while the user was inside
@@ -701,29 +699,58 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                _buildTranslateLanguageTile(
-                  sheetContext: sheetContext,
-                  label: L10n.get("chat_translate_picker_auto"),
+                PreferenceSegmentTile(
                   selected: _targetLanguageOverride == null,
+                  tooltip: L10n.get("chat_translate_picker_auto"),
                   onTap: () => Navigator.of(sheetContext).pop(""),
+                  leading: Text(
+                    languageFlagForCode(""),
+                    style: const TextStyle(fontSize: 18, height: 1),
+                  ),
+                  label: L10n.get("chat_translate_picker_auto"),
                 ),
-                _buildTranslateLanguageTile(
-                  sheetContext: sheetContext,
-                  label: LanguageDisplayHelper.getLanguageDisplayName("uz"),
-                  selected: _targetLanguageOverride == "uz",
-                  onTap: () => Navigator.of(sheetContext).pop("uz"),
-                ),
-                _buildTranslateLanguageTile(
-                  sheetContext: sheetContext,
-                  label: LanguageDisplayHelper.getLanguageDisplayName("ru"),
-                  selected: _targetLanguageOverride == "ru",
-                  onTap: () => Navigator.of(sheetContext).pop("ru"),
-                ),
-                _buildTranslateLanguageTile(
-                  sheetContext: sheetContext,
-                  label: LanguageDisplayHelper.getLanguageDisplayName("en"),
-                  selected: _targetLanguageOverride == "en",
-                  onTap: () => Navigator.of(sheetContext).pop("en"),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: PreferenceSegmentTile(
+                        selected: _targetLanguageOverride == "uz",
+                        tooltip: L10n.get(languageNameKeyForCode("uz")),
+                        onTap: () => Navigator.of(sheetContext).pop("uz"),
+                        leading: Text(
+                          languageFlagForCode("uz"),
+                          style: const TextStyle(fontSize: 18, height: 1),
+                        ),
+                        label: "UZ",
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: PreferenceSegmentTile(
+                        selected: _targetLanguageOverride == "ru",
+                        tooltip: L10n.get(languageNameKeyForCode("ru")),
+                        onTap: () => Navigator.of(sheetContext).pop("ru"),
+                        leading: Text(
+                          languageFlagForCode("ru"),
+                          style: const TextStyle(fontSize: 18, height: 1),
+                        ),
+                        label: "RU",
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: PreferenceSegmentTile(
+                        selected: _targetLanguageOverride == "en",
+                        tooltip: L10n.get(languageNameKeyForCode("en")),
+                        onTap: () => Navigator.of(sheetContext).pop("en"),
+                        leading: Text(
+                          languageFlagForCode("en"),
+                          style: const TextStyle(fontSize: 18, height: 1),
+                        ),
+                        label: "EN",
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -734,25 +761,6 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!mounted || picked == null) return;
     // Empty string === explicit "Auto", which clears the override.
     await _setTargetLanguageOverride(picked.isEmpty ? null : picked);
-  }
-
-  Widget _buildTranslateLanguageTile({
-    required BuildContext sheetContext,
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      title: Text(label),
-      trailing: selected
-          ? ThemeIcon(
-              Icons.check,
-              size: 20,
-              color: Theme.of(sheetContext).colorScheme.primary,
-            )
-          : null,
-      onTap: onTap,
-    );
   }
 
   String _localizedSafetyReason(String reason) {
@@ -985,7 +993,7 @@ class _ChatScreenState extends State<ChatScreen> {
         onSend: _sendMessage,
         isSendingMessage: _isSendingMessage,
         blendWithGlassBackdrop: blendWithGlassBackdrop,
-        composerEditPulseTrigger: _composerEditPulseTick,
+        isEditingExistingMessage: _editingMessageId != null,
       ),
     );
   }
@@ -1498,10 +1506,10 @@ class _ChatScreenState extends State<ChatScreen> {
       _startComposerEditFromMessage(message);
       return;
     }
-    if (message.isEdited == true) {
+    if (message.isVisiblyEdited) {
       ToastTheme.showInfo(
         context,
-        message: L10n.get("chat_edit_hold_already_edited_toast"),
+        message: context.l10n.chat_edit_hold_already_edited_toast,
       );
     }
   }
@@ -1515,7 +1523,6 @@ class _ChatScreenState extends State<ChatScreen> {
         selection: TextSelection.collapsed(offset: message.content.length),
       );
     });
-    _composerEditPulseTick.value++;
     _messageFocusNode.requestFocus();
     HapticFeedbackUtils.lightImpact();
     _scrollToBottom();
@@ -1531,7 +1538,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _messageIsEditable(Message message) {
     if (message.isDeleted == true) return false;
-    if (message.isEdited == true) return false;
+    if (message.isVisiblyEdited) return false;
     if (message.messageType.toLowerCase() != 'text') return false;
     final atts = message.attachments;
     if (atts != null && atts.isNotEmpty) return false;

@@ -222,6 +222,14 @@ class AppStrings {
           "Chats you archive will appear here",
       "chat_archived": "Chat archived",
       "chat_unarchived": "Chat moved back to inbox",
+      "chat_edit_message_title": "Edit message",
+      "chat_edit_message_save": "Save",
+      "chat_edit_message_cancel": "Cancel",
+      "chat_edit_message_once_only":
+          "You’ve already used your one edit on this message.",
+      "chat_edit_hold_already_edited_toast":
+          "You can only change a message once—and you’ve already saved your edit.",
+      "chat_message_edited_label": "Edited",
       "archive_failed_has_unread":
           "Can't archive: this chat has unread messages",
       "undo": "Undo",
@@ -1656,8 +1664,8 @@ class AppStrings {
       "profile_interlocutor": "Профиль Собеседника",
       "view_listing": "Посмотреть объявление",
       "chat_menu_translate_to": "Перевести на…",
-      "chat_menu_show_original": "Показывать оригиналы сообщений",
-      "chat_menu_show_translated": "Показывать переводы сообщений",
+      "chat_menu_show_original": "Оригиналы",
+      "chat_menu_show_translated": "Переводы",
       "admin_delete_conversation": "Удалить переписку для всех",
       "admin_delete_conversation_confirmation":
           "Чат исчезнет из списков обоих пользователей, продолжить общение в этой ветке будет нельзя. Продолжить?",
@@ -1739,6 +1747,14 @@ class AppStrings {
           "Архивированные чаты появятся здесь",
       "chat_archived": "Чат в архиве",
       "chat_unarchived": "Чат возвращён во входящие",
+      "chat_edit_message_title": "Редактировать сообщение",
+      "chat_edit_message_save": "Сохранить",
+      "chat_edit_message_cancel": "Отмена",
+      "chat_edit_message_once_only":
+          "Вы уже использовали единственное редактирование для этого сообщения.",
+      "chat_edit_hold_already_edited_toast":
+          "Каждое сообщение можно изменить только один раз — вы уже сохранили правку.",
+      "chat_message_edited_label": "Изменено",
       "archive_failed_has_unread":
           "Нельзя архивировать чат с непрочитанными сообщениями",
       "undo": "Отменить",
@@ -3286,6 +3302,14 @@ class AppStrings {
           "Arxivlangan suhbatlar shu yerda ko'rinadi",
       "chat_archived": "Suhbat arxivga olindi",
       "chat_unarchived": "Suhbat qayta kirish qutisiga qaytdi",
+      "chat_edit_message_title": "Xabarni tahrirlash",
+      "chat_edit_message_save": "Saqlash",
+      "chat_edit_message_cancel": "Bekor qilish",
+      "chat_edit_message_once_only":
+          "Bu xabar uchun bitta tahriringizni allaqachon ishlatgansiz.",
+      "chat_edit_hold_already_edited_toast":
+          "Har bir xabarni faqat bir marta o‘zgartirish mumkin — tahriringiz allaqachon saqlangan.",
+      "chat_message_edited_label": "Tahrirlangan",
       "archive_failed_has_unread":
           "O'qilmagan xabari bor suhbatni arxivlab bo'lmaydi",
       "undo": "Bekor qilish",

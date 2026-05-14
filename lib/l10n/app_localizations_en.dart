@@ -1001,6 +1001,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can only change a message once—and you’ve already saved your edit.';
 
   @override
+  String get chat_message_edited_label => 'Edited';
+
+  @override
   String get view_similar_results => 'View similar';
 
   @override

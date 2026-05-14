@@ -1001,6 +1001,9 @@ class AppLocalizationsRu extends AppLocalizations {
       'Каждое сообщение можно изменить только один раз — вы уже сохранили правку.';
 
   @override
+  String get chat_message_edited_label => 'Изменено';
+
+  @override
   String get view_similar_results => 'Похожие объявления';
 
   @override

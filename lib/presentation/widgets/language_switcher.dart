@@ -332,6 +332,82 @@ String languageNameKeyForCode(String code) {
   };
 }
 
+/// Compact rounded segment matching profile header language / currency chips.
+class PreferenceSegmentTile extends StatelessWidget {
+  const PreferenceSegmentTile({
+    required this.selected,
+    required this.onTap,
+    required this.leading,
+    required this.label,
+    this.tooltip,
+    super.key,
+  });
+
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget leading;
+  final String label;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    const borderRadius = BorderRadius.all(Radius.circular(12));
+
+    final tile = PressableTransform(
+      feedback: PressableFeedback.selection,
+      onTap: onTap,
+      borderRadius: borderRadius,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+          boxShadow: selected
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+          border: Border.all(
+            color: selected
+                ? preferenceSegmentSelectedBorderColor(context)
+                : scheme.outline.withValues(alpha: 0.4),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            leading,
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  letterSpacing: 0.2,
+                  color: scheme.onSurface,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final tip = tooltip?.trim();
+    if (tip != null && tip.isNotEmpty) {
+      return Tooltip(message: tip, child: tile);
+    }
+    return tile;
+  }
+}
+
 /// Opens the standard "select language" dialog. Used by both the settings
 /// screen and the profile-header flag chip so the picker behaves identically
 /// (theming, analytics, server sync, success toast) wherever it is invoked.
@@ -504,70 +580,28 @@ class LanguagePickerOptionTile extends StatelessWidget {
 
   Widget _buildSegmentSlot(BuildContext context) {
     final isCurrent = LanguageState().currentLanguage == code;
-    final scheme = Theme.of(context).colorScheme;
-    final surface = scheme.surface;
     final nameKey = languageNameKeyForCode(code);
-    const borderRadius = BorderRadius.all(Radius.circular(12));
 
-    return Tooltip(
-      message: L10n.get(nameKey),
-      child: PressableTransform(
-        feedback: PressableFeedback.selection,
-        onTap: () {
-          if (popNavigatorOnSelect) Navigator.pop(context);
-          LanguageState().setLanguage(code);
-          ToastTheme.showSuccess(
-            context,
-            message: AppStrings.getWithParams(
-              "language_changed_to",
-              LanguageState().currentLanguage,
-              params: {"language": L10n.get(nameKey)},
-            ),
-          );
-        },
-        borderRadius: borderRadius,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
-            boxShadow: isCurrent
-                ? ThreeDSurfaceStyle.insetRecessedShadows(context)
-                : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
-            border: Border.all(
-              color: isCurrent
-                  ? preferenceSegmentSelectedBorderColor(context)
-                  : scheme.outline.withValues(alpha: 0.4),
-              width: isCurrent ? 2 : 1,
-            ),
+    return PreferenceSegmentTile(
+      selected: isCurrent,
+      tooltip: L10n.get(nameKey),
+      onTap: () {
+        if (popNavigatorOnSelect) Navigator.pop(context);
+        LanguageState().setLanguage(code);
+        ToastTheme.showSuccess(
+          context,
+          message: AppStrings.getWithParams(
+            "language_changed_to",
+            LanguageState().currentLanguage,
+            params: {"language": L10n.get(nameKey)},
           ),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  languageFlagForCode(code),
-                  style: const TextStyle(fontSize: 18, height: 1),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  code.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1,
-                    fontWeight:
-                        isCurrent ? FontWeight.w700 : FontWeight.w600,
-                    letterSpacing: 0.2,
-                    color: scheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        );
+      },
+      leading: Text(
+        languageFlagForCode(code),
+        style: const TextStyle(fontSize: 18, height: 1),
       ),
+      label: code.toUpperCase(),
     );
   }
 }

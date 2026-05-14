@@ -5,6 +5,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
@@ -91,8 +92,9 @@ class _MessageBubbleState extends State<MessageBubble>
   static const double _reactionBadgeHoverHeight = 30;
   static const double _reactionBadgeOutsideShift = 10;
 
-  /// How far the picker extends **below** the bubble top (positive = overlaps glass).
-  static const double _reactionToolbarOverlapIntoBubble = 12;
+  /// How far the picker extends **below** the painted bubble top (positive =
+  /// overlaps glass). Tuned so most of the pill sits on the bubble like legacy UX.
+  static const double _reactionToolbarOverlapIntoBubble = 22;
 
   /// Picker uses a slightly smaller inward trailing inset than the corner badge
   /// so the strip sits nearer the bubble edge.
@@ -124,13 +126,6 @@ class _MessageBubbleState extends State<MessageBubble>
       widget.message.isDeleted != true &&
       (widget.message.attachments == null ||
           widget.message.attachments!.isEmpty);
-
-  /// Vertical gap under the bubble body so the corner reaction control stays
-  /// inside the [Stack]'s layout bounds. [Positioned] with a negative `bottom`
-  /// drew the badge visually correct but placed it outside [RenderBox.hitTest],
-  /// so taps never reached the smile+ [GestureDetector].
-  double get _reactionBadgeHitReserve =>
-      _reactionBadgeHoverHeight / 2 + _reactionBadgeOutsideShift;
 
   /// Server / JSON may vary casing; keeps ribbon toggle vs [Message.myReaction] stable.
   static bool _reactionKeysEqual(String a, String b) =>
@@ -297,120 +292,102 @@ class _MessageBubbleState extends State<MessageBubble>
                         rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
                         bubbleChild: KeyedSubtree(
                           key: _bubbleAnchorKey,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final bubbleInnerW = constraints.maxWidth;
-                              final myId = widget.message.myReaction;
-                              final aggCount = myId != null
-                                  ? _aggregateCountForReaction(myId)
-                                  : 1;
-                              final reactionEndInset = _reactionsEnabled
-                                  ? _reactionBadgeTrailingEndInset(
-                                      bubbleInnerWidth: bubbleInnerW,
-                                      aggregateCount: aggCount,
-                                    )
-                                  : 0.0;
-
-                              return Stack(
-                                clipBehavior: Clip.none,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  _buildMessageContent(
+                                    _displayText(),
+                                    textColor,
+                                  ),
+                                  if (widget.translation == null &&
+                                      widget.isTranslating) ...[
+                                    const SizedBox(height: 6),
+                                    _TranslationSkeleton(
+                                      textColor: textColor,
+                                    ),
+                                  ],
+                                  if (widget.translation != null) ...[
+                                    const SizedBox(height: 4),
+                                    _TranslationToggleRow(
+                                      translation: widget.translation!,
+                                      isShowingOriginal:
+                                          widget.showOriginal,
+                                      textColor: textColor,
+                                      onTap: widget.onToggleTranslation,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 4),
+                                  Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _buildMessageContent(
-                                        _displayText(),
-                                        textColor,
+                                      ThemeIcon(
+                                        Icons.access_time,
+                                        size: 10,
+                                        color: textColor.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
-                                      if (widget.translation == null &&
-                                          widget.isTranslating) ...[
-                                        const SizedBox(height: 6),
-                                        _TranslationSkeleton(
-                                          textColor: textColor,
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        _formatTime(
+                                          widget.message.createdAt,
                                         ),
-                                      ],
-                                      if (widget.translation != null) ...[
-                                        const SizedBox(height: 4),
-                                        _TranslationToggleRow(
-                                          translation: widget.translation!,
-                                          isShowingOriginal:
-                                              widget.showOriginal,
-                                          textColor: textColor,
-                                          onTap: widget.onToggleTranslation,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: textColor.withValues(
+                                            alpha: 0.7,
+                                          ),
                                         ),
-                                      ],
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          ThemeIcon(
-                                            Icons.access_time,
-                                            size: 10,
+                                      ),
+                                      if (widget.message.isVisiblyEdited) ...[
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          context.l10n.chat_message_edited_label,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontStyle: FontStyle.italic,
                                             color: textColor.withValues(
-                                              alpha: 0.7,
+                                              alpha: 0.55,
                                             ),
                                           ),
-                                          const SizedBox(width: 2),
-                                          Text(
-                                            _formatTime(
-                                              widget.message.createdAt,
-                                            ),
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: textColor.withValues(
-                                                alpha: 0.7,
-                                              ),
-                                            ),
-                                          ),
-                                          if (widget.isCurrentUser) ...[
-                                            const SizedBox(width: 4),
-                                            _buildCheckmarks(textColor),
-                                          ],
-                                        ],
-                                      ),
-                                      if (_reactionsEnabled)
-                                        SizedBox(height: _reactionBadgeHitReserve),
+                                        ),
+                                      ],
+                                      if (widget.isCurrentUser) ...[
+                                        const SizedBox(width: 4),
+                                        _buildCheckmarks(textColor),
+                                      ],
                                     ],
                                   ),
-                                  if (!widget.isCurrentUser &&
-                                      (widget.riskLevel == 'medium' ||
-                                          widget.riskLevel == 'high'))
-                                    PositionedDirectional(
-                                      top: -22,
-                                      end: -22,
-                                      child: GestureDetector(
-                                        onTap: widget.onRiskBadgeTap,
-                                        behavior: HitTestBehavior.opaque,
-                                        child: _RiskBadge(
-                                          level: widget.riskLevel!,
-                                        ),
-                                      ),
-                                    ),
-                                  if (_reactionsEnabled)
-                                    PositionedDirectional(
-                                      bottom: 0,
-                                      end: reactionEndInset,
-                                      child: myId != null
-                                          ? ScaleTransition(
-                                              scale: _reactionAppearPulseScale,
-                                              alignment: Alignment.center,
-                                              child:
-                                                  _buildMyReactionCornerBadge(
-                                                context,
-                                                textColor,
-                                              ),
-                                            )
-                                          : _buildAddReactionCornerBadge(
-                                              context,
-                                              textColor,
-                                            ),
-                                    ),
                                 ],
-                              );
-                            },
+                              ),
+                              if (!widget.isCurrentUser &&
+                                  (widget.riskLevel == 'medium' ||
+                                      widget.riskLevel == 'high'))
+                                PositionedDirectional(
+                                  top: -22,
+                                  end: -22,
+                                  child: GestureDetector(
+                                    onTap: widget.onRiskBadgeTap,
+                                    behavior: HitTestBehavior.opaque,
+                                    child: _RiskBadge(
+                                      level: widget.riskLevel!,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
+                        belowBubble: _reactionsEnabled
+                            ? (ctx, maxWidth) => _buildOverlappingReactionRow(
+                                  ctx,
+                                  maxWidth,
+                                  textColor,
+                                )
+                            : null,
                       ),
                     ),
                     if (_hasReactionRow)
@@ -482,6 +459,43 @@ class _MessageBubbleState extends State<MessageBubble>
     return _reactionBadgeTrailingEndInset(
       bubbleInnerWidth: bubbleInnerWidth,
       aggregateCount: agg,
+    );
+  }
+
+  /// Reaction control is laid out *below* the painted bubble (reliable hit
+  /// testing) and shifted up so it overlaps the corner like the original
+  /// overlapping design.
+  Widget _buildOverlappingReactionRow(
+    BuildContext context,
+    double maxWidth,
+    Color textColor,
+  ) {
+    final myId = widget.message.myReaction;
+    final aggCount = myId != null ? _aggregateCountForReaction(myId) : 1;
+    final reactionEndInset = _reactionBadgeTrailingEndInset(
+      bubbleInnerWidth: maxWidth,
+      aggregateCount: aggCount,
+    );
+    final overlapY =
+        _reactionBadgeHoverHeight / 2 + _reactionBadgeOutsideShift;
+    return Transform.translate(
+      offset: Offset(0, -overlapY),
+      child: SizedBox(
+        height: overlapY + 8,
+        child: Align(
+          alignment: AlignmentDirectional.bottomEnd,
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(end: reactionEndInset),
+            child: myId != null
+                ? ScaleTransition(
+                    scale: _reactionAppearPulseScale,
+                    alignment: Alignment.center,
+                    child: _buildMyReactionCornerBadge(context, textColor),
+                  )
+                : _buildAddReactionCornerBadge(context, textColor),
+          ),
+        ),
+      ),
     );
   }
 
@@ -607,7 +621,7 @@ class _MessageBubbleState extends State<MessageBubble>
     RenderBox? bubbleBox,
     TextDirection textDir,
   ) {
-    const toolbarHeightEstimate = 52.0;
+    const toolbarHeightEstimate = 48.0;
     const toolbarWidthEstimate = 248.0;
     final w = mq.size.width;
     final h = mq.size.height;
@@ -617,7 +631,11 @@ class _MessageBubbleState extends State<MessageBubble>
     var top = 100.0;
     if (bubbleBox != null) {
       final o = bubbleBox.localToGlobal(Offset.zero);
-      final bubbleTop = o.dy;
+      // [_bubbleAnchorKey] sits inside [ChatBubbleWithTail]'s padded container,
+      // so [o.dy] is the inner content top — subtract vertical inset to match
+      // the visible frosted / painted bubble edge for overlap placement.
+      final bubbleTop =
+          o.dy - ChatBubbleWithTail.innerVerticalPadding;
       final bubbleW = bubbleBox.size.width;
       final badgeEndInset = _reactionToolbarTrailingEndInset(bubbleW);
       final toolbarEndInset = math.max(

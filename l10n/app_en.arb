@@ -441,6 +441,7 @@
   "chat_edit_message_cancel": "Cancel",
   "chat_edit_message_once_only": "You’ve already used your one edit on this message.",
   "chat_edit_hold_already_edited_toast": "You can only change a message once—and you’ve already saved your edit.",
+  "chat_message_edited_label": "Edited",
   "view_similar_results": "View similar",
   "coming_soon": "Coming soon",
   "listing_ai_enhance": "Improve with AI",
