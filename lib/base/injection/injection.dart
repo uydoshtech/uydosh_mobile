@@ -11,6 +11,7 @@ import "package:uy_dosh/base/services/description_dictation_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
+import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -142,6 +143,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAdminUserService>(
     () => AdminUserService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminEntityOwnershipService>(
+    () => AdminEntityOwnershipService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAdminUserSearchAlertService>(

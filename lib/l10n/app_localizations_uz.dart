@@ -1717,6 +1717,49 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_panel_section_users => 'Foydalanuvchilar';
 
   @override
+  String get admin_panel_section_reassign_ownership => 'Egaga o\'tkazish';
+
+  @override
+  String get admin_reassign_ownership_title => 'Egaga o\'tkazish';
+
+  @override
+  String get admin_reassign_ownership_intro =>
+      'E\'lonni, xizmat taklifini (offer) yoki vazifani (request) texnik akkauntdan haqiqiy foydalanuvchiga o\'tkazing. Ma\'lumotlar bazasidagi foydalanuvchi id si (import egasi bilan bir xil).';
+
+  @override
+  String get admin_reassign_ownership_entity_type_label => 'Ob\'ekt turi';
+
+  @override
+  String get admin_reassign_ownership_type_listing => 'E\'lon';
+
+  @override
+  String get admin_reassign_ownership_type_gig_offer => 'Xizmat (offer)';
+
+  @override
+  String get admin_reassign_ownership_type_gig_request => 'Vazifa (request)';
+
+  @override
+  String get admin_reassign_ownership_entity_id_label => 'Ob\'ekt id';
+
+  @override
+  String get admin_reassign_ownership_from_user_label =>
+      'Joriy egasi foydalanuvchi id (ixtiyoriy)';
+
+  @override
+  String get admin_reassign_ownership_from_user_hint =>
+      'Ko\'rsatilsa, joriy egasi bilan mos kelishi kerak (masalan, 86).';
+
+  @override
+  String get admin_reassign_ownership_to_user_label =>
+      'Yangi egasi foydalanuvchi id';
+
+  @override
+  String get admin_reassign_ownership_submit => 'O\'tkazish';
+
+  @override
+  String get admin_reassign_ownership_success => 'Ega yangilandi';
+
+  @override
   String get admin_panel_section_support_chat => 'Qo\'llab-quvvatlash';
 
   @override
