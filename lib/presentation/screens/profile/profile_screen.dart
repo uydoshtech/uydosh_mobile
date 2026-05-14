@@ -16,6 +16,7 @@ import "package:uy_dosh/base/services/logout_service.dart"
     show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -38,6 +39,7 @@ import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dar
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -340,6 +342,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             builder: (context, data) {
               final effectiveProfile = data.profile ?? _cachedUserProfile;
+              final themeState = ThemeState();
+              final useLiquidGlassAppBar =
+                  themeState.isBlueTheme || themeState.isLightTheme;
 
               if (effectiveProfile == null &&
                   data.isLoading &&
@@ -364,28 +369,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final footerFill = Theme.of(context).scaffoldBackgroundColor;
                 return ColoredBox(
                   color: footerFill,
-                  child: Transform.translate(
-                    offset: const Offset(0, -20),
-                    child: Scaffold(
-                      backgroundColor: footerFill,
-                      appBar: UydoshAppBar(
-                        leading: ThreeDAppBarIconButton.backLeading(
+                  child: Scaffold(
+                    backgroundColor: footerFill,
+                    extendBodyBehindAppBar: useLiquidGlassAppBar,
+                    appBar: _buildProfileScreenAppBar(
+                      context,
+                      useLiquidGlass: useLiquidGlassAppBar,
+                    ),
+                    body: Padding(
+                      padding: EdgeInsets.only(
+                        top: _profileScrollTopInset(
                           context,
-                          onPressed: () {
-                            if (Navigator.of(context).canPop()) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                        ),
-                        title: Text(
-                          L10n.get("profile"),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          useLiquidGlassAppBar,
                         ),
                       ),
-                      body: _buildErrorState(data.errorMessage, context),
+                      child: _buildErrorState(data.errorMessage, context),
                     ),
                   ),
                 );
@@ -407,47 +405,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final footerFill = Theme.of(context).scaffoldBackgroundColor;
               return ColoredBox(
                 color: footerFill,
-                child: Transform.translate(
-                  offset: const Offset(0, -20),
-                  child: Scaffold(
-                    backgroundColor: footerFill,
-                    appBar: UydoshAppBar(
-                      leading: ThreeDAppBarIconButton.backLeading(
-                        context,
-                        onPressed: () {
-                          if (Navigator.of(context).canPop()) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                      title: Text(
-                        L10n.get("profile"),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                child: Scaffold(
+                  backgroundColor: footerFill,
+                  extendBodyBehindAppBar: useLiquidGlassAppBar,
+                  appBar: _buildProfileScreenAppBar(
+                    context,
+                    useLiquidGlass: useLiquidGlassAppBar,
+                    actions: [
+                      ActionDropdownMenu(
+                        items: buildProfileActionMenuItems(
+                          context: context,
+                          userBlocked: _userBlocked,
+                          userRole: _userRole,
+                          cachedUserProfile: _cachedUserProfile,
+                          onEditProfile: (profile) =>
+                              _openEditProfileScreen(context, profile),
+                          onLogout: () => _showLogoutDialog(context),
                         ),
+                        icon: Icons.more_vert,
+                        tooltip: L10n.get("menu_settings"),
+                        padding: const EdgeInsets.only(right: 16.0),
                       ),
-                      actions: [
-                        ActionDropdownMenu(
-                          items: buildProfileActionMenuItems(
-                            context: context,
-                            userBlocked: _userBlocked,
-                            userRole: _userRole,
-                            cachedUserProfile: _cachedUserProfile,
-                            onEditProfile: (profile) =>
-                                _openEditProfileScreen(context, profile),
-                            onLogout: () => _showLogoutDialog(context),
-                          ),
-                          icon: Icons.more_vert,
-                          tooltip: L10n.get("menu_settings"),
-                          padding: const EdgeInsets.only(right: 16.0),
-                        ),
-                      ],
-                    ),
-                    body: data.hasError
-                        ? _buildErrorState(data.errorMessage, context)
-                        : _buildProfileContent(profile),
+                    ],
                   ),
+                  body: data.hasError
+                      ? Padding(
+                          padding: EdgeInsets.only(
+                            top: _profileScrollTopInset(
+                              context,
+                              useLiquidGlassAppBar,
+                            ),
+                          ),
+                          child: _buildErrorState(data.errorMessage, context),
+                        )
+                      : _buildProfileContent(profile),
                 ),
               );
             },
@@ -457,12 +448,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  PreferredSizeWidget _buildProfileScreenAppBar(
+    BuildContext context, {
+    required bool useLiquidGlass,
+    List<Widget>? actions,
+  }) {
+    final themeState = ThemeState();
+    final appBarTheme = Theme.of(context).appBarTheme;
+    return UydoshAppBar(
+      leading: ThreeDAppBarIconButton.backLeading(
+        context,
+        onPressed: () {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        },
+      ),
+      title: Text(
+        L10n.get("profile"),
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      actions: actions,
+      backgroundColor:
+          useLiquidGlass
+              ? liquidGlassAppBarMaterialColor(context)
+              : appBarTheme.backgroundColor,
+      surfaceTintColor:
+          useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
+      elevation: useLiquidGlass ? 0 : null,
+      scrolledUnderElevation: useLiquidGlass ? 0 : null,
+      shadowColor:
+          useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
+      forceMaterialTransparency: useLiquidGlass,
+      flexibleSpace:
+          useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
+      foregroundColor:
+          useLiquidGlass
+              ? (appBarTheme.foregroundColor ?? themeState.textColor)
+              : appBarTheme.foregroundColor,
+    );
+  }
+
+  double _profileScrollTopInset(BuildContext context, bool useLiquidGlass) {
+    if (!useLiquidGlass) return 0;
+    return MediaQuery.paddingOf(context).top + kToolbarHeight;
+  }
+
   Widget _buildProfileContent(UserProfile profile) {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
+        final themeState = ThemeState();
+        final useLiquidGlass =
+            themeState.isBlueTheme || themeState.isLightTheme;
+        final topInset = _profileScrollTopInset(context, useLiquidGlass);
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.fromLTRB(20, 20 + topInset, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

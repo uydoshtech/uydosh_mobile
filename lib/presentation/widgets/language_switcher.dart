@@ -381,11 +381,11 @@ class _NeumorphicLanguagePickerDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              const _LanguagePickerOption(code: "uz"),
+              const LanguagePickerOptionTile(code: "uz"),
               const SizedBox(height: 12),
-              const _LanguagePickerOption(code: "ru"),
+              const LanguagePickerOptionTile(code: "ru"),
               const SizedBox(height: 12),
-              const _LanguagePickerOption(code: "en"),
+              const LanguagePickerOptionTile(code: "en"),
             ],
           ),
         ),
@@ -394,23 +394,63 @@ class _NeumorphicLanguagePickerDialog extends StatelessWidget {
   }
 }
 
-class _LanguagePickerOption extends StatelessWidget {
-  const _LanguagePickerOption({required this.code});
+/// Single language row for pickers and preference sheets.
+///
+/// When shown inside a [Dialog], pass the default [popNavigatorOnSelect]
+/// so choosing a language closes the dialog. When embedded in a persistent
+/// surface such as a bottom sheet, set [popNavigatorOnSelect] to false.
+///
+/// Use [dense] for tighter rows (e.g. profile preferences bottom sheet).
+///
+/// Use [segmentSlot] when the tile sits in an [Expanded] inside a [Row]
+/// (compact flag / symbol + short code).
+class LanguagePickerOptionTile extends StatelessWidget {
+  const LanguagePickerOptionTile({
+    required this.code,
+    this.popNavigatorOnSelect = true,
+    this.dense = false,
+    this.segmentSlot = false,
+    super.key,
+  });
 
   final String code;
 
+  /// Whether to pop the current route (e.g. dialog) after a successful choice.
+  final bool popNavigatorOnSelect;
+
+  /// Smaller padding and type for bottom sheets and tight layouts.
+  final bool dense;
+
+  /// Compact cell for a horizontal segment row (profile preferences sheet).
+  final bool segmentSlot;
+
   @override
   Widget build(BuildContext context) {
+    if (segmentSlot) {
+      return _buildSegmentSlot(context);
+    }
     final isCurrent = LanguageState().currentLanguage == code;
     final scheme = Theme.of(context).colorScheme;
     final surface = scheme.surface;
     final nameKey = languageNameKeyForCode(code);
-    const borderRadius = BorderRadius.all(Radius.circular(14));
+    final radius = dense ? 12.0 : 14.0;
+    final borderRadius = BorderRadius.circular(radius);
+    final hPad = dense ? 12.0 : 16.0;
+    final vPad = dense ? 8.0 : 14.0;
+    final flagGap = dense ? 10.0 : 14.0;
+    final flagSize = dense ? 20.0 : 26.0;
+    final titleSize = dense ? 14.0 : 16.0;
+    final checkSize = dense ? 18.0 : 22.0;
+
+    final flagWidget = Text(
+      languageFlagForCode(code),
+      style: TextStyle(fontSize: flagSize, height: 1.1),
+    );
 
     return PressableTransform(
       feedback: PressableFeedback.selection,
       onTap: () {
-        Navigator.pop(context);
+        if (popNavigatorOnSelect) Navigator.pop(context);
         LanguageState().setLanguage(code);
         ToastTheme.showSuccess(
           context,
@@ -424,7 +464,7 @@ class _LanguagePickerOption extends StatelessWidget {
       borderRadius: borderRadius,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
@@ -434,24 +474,109 @@ class _LanguagePickerOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(
-              languageFlagForCode(code),
-              style: const TextStyle(fontSize: 26),
-            ),
-            const SizedBox(width: 14),
+            if (dense)
+              SizedBox(
+                width: 28,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: flagWidget,
+                ),
+              )
+            else
+              flagWidget,
+            SizedBox(width: flagGap),
             Expanded(
               child: L10n.text(
                 nameKey,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: titleSize,
+                  height: 1.2,
                   fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
                   color: scheme.onSurface,
                 ),
               ),
             ),
             if (isCurrent)
-              ThemeIcon(Icons.check, color: scheme.onSurface, size: 22),
+              ThemeIcon(Icons.check, color: scheme.onSurface, size: checkSize),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSegmentSlot(BuildContext context) {
+    final isCurrent = LanguageState().currentLanguage == code;
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    final nameKey = languageNameKeyForCode(code);
+    const borderRadius = BorderRadius.all(Radius.circular(12));
+
+    return Tooltip(
+      message: L10n.get(nameKey),
+      child: PressableTransform(
+        feedback: PressableFeedback.selection,
+        onTap: () {
+          if (popNavigatorOnSelect) Navigator.pop(context);
+          LanguageState().setLanguage(code);
+          ToastTheme.showSuccess(
+            context,
+            message: AppStrings.getWithParams(
+              "language_changed_to",
+              LanguageState().currentLanguage,
+              params: {"language": L10n.get(nameKey)},
+            ),
+          );
+        },
+        borderRadius: borderRadius,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+            boxShadow: isCurrent
+                ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+                : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    languageFlagForCode(code),
+                    style: const TextStyle(fontSize: 24, height: 1.05),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    code.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.1,
+                      fontWeight:
+                          isCurrent ? FontWeight.w700 : FontWeight.w600,
+                      letterSpacing: 0.2,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              if (isCurrent)
+                Positioned(
+                  top: -2,
+                  right: -2,
+                  child: ThemeIcon(
+                    Icons.check_circle,
+                    color: scheme.primary,
+                    size: 18,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
