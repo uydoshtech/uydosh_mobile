@@ -2,6 +2,8 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
@@ -13,6 +15,7 @@ import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -182,15 +185,6 @@ class _AdminListingModerationQueueScreenState
           child: ListingDetailScreen(listingId: listingId),
         ),
       ),
-    );
-  }
-
-  BoxDecoration _softTileDecoration(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return BoxDecoration(
-      gradient: ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
     );
   }
 
@@ -388,109 +382,183 @@ class _AdminListingModerationQueueScreenState
         "${L10n.get("admin_listing_moderation_user")}: ${item.userEmail}",
     ];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: _softTileDecoration(context),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          key: PageStorageKey<int>(item.id),
-          initiallyExpanded: expanded,
-          onExpansionChanged: (v) =>
-              setState(() => _expandedById[item.id] = v),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-          leading: ThemeIcon(
-            Icons.home_work_outlined,
-            size: 22,
-            color: scheme.onSurfaceVariant,
-          ),
-          title: Text(
-            item.title.isEmpty
-                ? "${L10n.get("admin_listing_moderation_id")} #${item.id}"
-                : item.title,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            subtitleParts.join(" · "),
-            style: TextStyle(
-              fontSize: 12,
-              color: scheme.onSurfaceVariant,
-            ),
-            maxLines: 3,
-          ),
-          trailing: AnimatedRotation(
-            turns: expanded ? 0.5 : 0,
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.easeOut,
-            child: const ThemeIcon(Icons.expand_more),
-          ),
-          children: [
-            if (item.listingTypeLabel != null &&
-                item.listingTypeLabel!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    item.listingTypeLabel!,
-                    style: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 13,
-                    ),
+    final titleText = item.title.isEmpty
+        ? "${L10n.get("admin_listing_moderation_id")} #${item.id}"
+        : item.title;
+
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final themeState = ThemeState();
+        final cardColor = themeState.cardColor;
+        final textColor = themeState.cardTextColor;
+        final secondaryTextColor = themeState.cardSecondaryTextColor;
+        final iconColor = themeState.cardIconColor;
+
+        return ThreeDElevatedSurface(
+          baseColor: cardColor,
+          margin: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedbackUtils.impact();
+                  setState(() => _expandedById[item.id] = !expanded);
+                },
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 12, 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: ThemeIcon(
+                                    Icons.home_work_outlined,
+                                    size: 22,
+                                    color: iconColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    titleText,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: textColor,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitleParts.join(" · "),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
+                              ),
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      AnimatedRotation(
+                        turns: expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: ThemeIcon(Icons.expand_more, color: iconColor),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            Row(
-              children: [
-                Expanded(
-                  child: GhostButtonFactory.iconTextCentered(
-                    onPressed:
-                        busy ? null : () => _openListingDetail(item.id),
-                    icon: Icons.open_in_new_rounded,
-                    text: L10n.get("admin_listing_moderation_open"),
-                    iconSize: 18,
-                    neumorphicSoftUi: true,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: PrimaryButton(
-                    onPressed: busy ? null : () => _approve(item),
-                    isLoading: busy,
-                    surfaceGradientBase: scheme.primary,
-                    textColor: scheme.onPrimary,
-                    borderRadius: BorderRadius.circular(8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                    child:
-                        ButtonIconLabel(
-                          slotWidth: 26,
-                          leading: ThemeIcon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                            color: scheme.onPrimary,
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 280),
+                sizeCurve: Curves.easeInOut,
+                firstCurve: Curves.easeIn,
+                secondCurve: Curves.easeOut,
+                crossFadeState: expanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                firstChild: const SizedBox(width: double.infinity, height: 0),
+                secondChild: Column(
+                  children: [
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (item.listingTypeLabel != null &&
+                              item.listingTypeLabel!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4, bottom: 10),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  item.listingTypeLabel!,
+                                  style: TextStyle(
+                                    color: secondaryTextColor,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GhostButtonFactory.iconTextCentered(
+                                  onPressed: busy
+                                      ? null
+                                      : () => _openListingDetail(item.id),
+                                  icon: Icons.open_in_new_rounded,
+                                  text: L10n.get(
+                                    "admin_listing_moderation_open",
+                                  ),
+                                  iconSize: 18,
+                                  neumorphicSoftUi: true,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: PrimaryButton(
+                                  onPressed:
+                                      busy ? null : () => _approve(item),
+                                  isLoading: busy,
+                                  surfaceGradientBase: scheme.primary,
+                                  textColor: scheme.onPrimary,
+                                  borderRadius: BorderRadius.circular(8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 12,
+                                  ),
+                                  child: ButtonIconLabel(
+                                    slotWidth: 26,
+                                    leading: ThemeIcon(
+                                      Icons.check_circle_outline,
+                                      size: 18,
+                                      color: scheme.onPrimary,
+                                    ),
+                                    label: Text(
+                                      L10n.get(
+                                        "admin_listing_moderation_approve",
+                                      ),
+                                      style: TextStyle(
+                                        color: scheme.onPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          label: Text(
-                            L10n.get("admin_listing_moderation_approve"),
-                            style: TextStyle(color: scheme.onPrimary),
-                          ),
-                        ),
-                  ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -1694,46 +1694,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_section_users => 'Users';
 
   @override
-  String get admin_panel_section_reassign_ownership => 'Reassign ownership';
-
-  @override
-  String get admin_reassign_ownership_title => 'Reassign ownership';
-
-  @override
-  String get admin_reassign_ownership_intro =>
-      'Transfer a listing, gig service (offer), or gig task (request) from a placeholder account to the real user. Uses database user ids (same as Telegram import owner id).';
-
-  @override
-  String get admin_reassign_ownership_entity_type_label => 'Entity type';
-
-  @override
-  String get admin_reassign_ownership_type_listing => 'Listing';
-
-  @override
-  String get admin_reassign_ownership_type_gig_offer => 'Gig service (offer)';
-
-  @override
-  String get admin_reassign_ownership_type_gig_request => 'Gig task (request)';
-
-  @override
-  String get admin_reassign_ownership_entity_id_label => 'Entity id';
-
-  @override
-  String get admin_reassign_ownership_from_user_label =>
-      'Current owner user id (optional)';
-
-  @override
-  String get admin_reassign_ownership_from_user_hint =>
-      'If set, must match the current owner or the request fails (e.g. 86).';
-
-  @override
-  String get admin_reassign_ownership_to_user_label => 'New owner user id';
-
-  @override
   String get admin_reassign_ownership_submit => 'Reassign';
 
   @override
   String get admin_reassign_ownership_success => 'Ownership updated';
+
+  @override
+  String get admin_reassign_owner_menu => 'Reassign owner';
+
+  @override
+  String get admin_reassign_owner_dialog_title => 'Reassign owner';
+
+  @override
+  String get admin_reassign_owner_search_placeholder =>
+      'Search by id, email, or name';
+
+  @override
+  String admin_reassign_owner_from_user(Object id) {
+    return 'Current owner user id: $id';
+  }
+
+  @override
+  String admin_reassign_owner_entity_label(Object entity, Object id) {
+    return 'Entity: $entity · id $id';
+  }
+
+  @override
+  String get admin_reassign_owner_empty => 'No users match this search.';
 
   @override
   String get admin_panel_section_support_chat => 'Support chat';

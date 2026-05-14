@@ -3202,72 +3202,6 @@ abstract class AppLocalizations {
   /// **'Users'**
   String get admin_panel_section_users;
 
-  /// No description provided for @admin_panel_section_reassign_ownership.
-  ///
-  /// In en, this message translates to:
-  /// **'Reassign ownership'**
-  String get admin_panel_section_reassign_ownership;
-
-  /// No description provided for @admin_reassign_ownership_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Reassign ownership'**
-  String get admin_reassign_ownership_title;
-
-  /// No description provided for @admin_reassign_ownership_intro.
-  ///
-  /// In en, this message translates to:
-  /// **'Transfer a listing, gig service (offer), or gig task (request) from a placeholder account to the real user. Uses database user ids (same as Telegram import owner id).'**
-  String get admin_reassign_ownership_intro;
-
-  /// No description provided for @admin_reassign_ownership_entity_type_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Entity type'**
-  String get admin_reassign_ownership_entity_type_label;
-
-  /// No description provided for @admin_reassign_ownership_type_listing.
-  ///
-  /// In en, this message translates to:
-  /// **'Listing'**
-  String get admin_reassign_ownership_type_listing;
-
-  /// No description provided for @admin_reassign_ownership_type_gig_offer.
-  ///
-  /// In en, this message translates to:
-  /// **'Gig service (offer)'**
-  String get admin_reassign_ownership_type_gig_offer;
-
-  /// No description provided for @admin_reassign_ownership_type_gig_request.
-  ///
-  /// In en, this message translates to:
-  /// **'Gig task (request)'**
-  String get admin_reassign_ownership_type_gig_request;
-
-  /// No description provided for @admin_reassign_ownership_entity_id_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Entity id'**
-  String get admin_reassign_ownership_entity_id_label;
-
-  /// No description provided for @admin_reassign_ownership_from_user_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Current owner user id (optional)'**
-  String get admin_reassign_ownership_from_user_label;
-
-  /// No description provided for @admin_reassign_ownership_from_user_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'If set, must match the current owner or the request fails (e.g. 86).'**
-  String get admin_reassign_ownership_from_user_hint;
-
-  /// No description provided for @admin_reassign_ownership_to_user_label.
-  ///
-  /// In en, this message translates to:
-  /// **'New owner user id'**
-  String get admin_reassign_ownership_to_user_label;
-
   /// No description provided for @admin_reassign_ownership_submit.
   ///
   /// In en, this message translates to:
@@ -3279,6 +3213,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ownership updated'**
   String get admin_reassign_ownership_success;
+
+  /// No description provided for @admin_reassign_owner_menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Reassign owner'**
+  String get admin_reassign_owner_menu;
+
+  /// No description provided for @admin_reassign_owner_dialog_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reassign owner'**
+  String get admin_reassign_owner_dialog_title;
+
+  /// No description provided for @admin_reassign_owner_search_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by id, email, or name'**
+  String get admin_reassign_owner_search_placeholder;
+
+  /// No description provided for @admin_reassign_owner_from_user.
+  ///
+  /// In en, this message translates to:
+  /// **'Current owner user id: {id}'**
+  String admin_reassign_owner_from_user(Object id);
+
+  /// No description provided for @admin_reassign_owner_entity_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Entity: {entity} · id {id}'**
+  String admin_reassign_owner_entity_label(Object entity, Object id);
+
+  /// No description provided for @admin_reassign_owner_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No users match this search.'**
+  String get admin_reassign_owner_empty;
 
   /// No description provided for @admin_panel_section_support_chat.
   ///

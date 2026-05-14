@@ -10,7 +10,6 @@ import "package:uy_dosh/presentation/screens/admin/admin_listing_creation_analyt
 import "package:uy_dosh/presentation/screens/admin/admin_gig_moderation_queue_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listing_moderation_queue_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_reassign_ownership_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
@@ -110,19 +109,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => const AdminUsersScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _AdminMenuRow(
-                      icon: Icons.swap_horiz,
-                      titleKey: "admin_panel_section_reassign_ownership",
-                      iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminReassignOwnershipScreen(),
                           ),
                         );
                       },

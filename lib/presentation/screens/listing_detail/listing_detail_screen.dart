@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
@@ -45,6 +47,7 @@ import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -59,6 +62,7 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
+import "package:uy_dosh/presentation/widgets/admin/reassign_owner_dialog.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
@@ -1245,6 +1249,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
     }
 
+    if (isListingStaff) {
+      items.add(
+        ActionMenuItem(
+          value: "reassign_owner",
+          icon: Icons.swap_horiz,
+          textKey: "admin_reassign_owner_menu",
+          onPressed: () {
+            unawaited(_reassignListingOwner(listingDetail));
+          },
+        ),
+      );
+    }
+
     // Admin-only: remove listing from top (unfeature).
     //
     // The owner already has a dedicated "Promote/Remove from top" pill
@@ -1332,6 +1349,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
             AdminListingOwnerConversationsScreen(listingDetail: listingDetail),
       ),
     );
+  }
+
+  Future<void> _reassignListingOwner(ListingDetail listingDetail) async {
+    final ok = await showReassignOwnerDialog(
+      context,
+      entityType: AdminEntityOwnershipType.listing,
+      entityId: listingDetail.id,
+      fromUserId: listingDetail.user.id,
+    );
+    if (!ok || !mounted) return;
+    context.read<ListingDetailBloc>().add(
+          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+        );
   }
 
   Future<void> _startConversation(ListingDetail listingDetail) async {

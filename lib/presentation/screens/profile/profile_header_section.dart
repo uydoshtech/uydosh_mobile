@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -559,6 +560,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   );
@@ -848,7 +850,6 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
     const hPad = 16.0;
     const vPad = 14.0;
     const titleSize = 16.0;
-    const checkSize = 22.0;
 
     return PressableTransform(
       feedback: PressableFeedback.selection,
@@ -880,8 +881,6 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
                 ),
               ),
             ),
-            if (isCurrent)
-              ThemeIcon(Icons.check, color: scheme.onSurface, size: checkSize),
           ],
         ),
       ),
@@ -917,43 +916,33 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
             boxShadow: isCurrent
                 ? ThreeDSurfaceStyle.insetRecessedShadows(context)
                 : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+            border: Border.all(
+              color: isCurrent
+                  ? preferenceSegmentSelectedBorderColor(context)
+                  : scheme.outline.withValues(alpha: 0.4),
+              width: isCurrent ? 2 : 1,
+            ),
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _segmentLeading(scheme.onSurface),
-                    const SizedBox(width: 6),
-                    Text(
-                      shortCode,
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1,
-                        fontWeight:
-                            isCurrent ? FontWeight.w700 : FontWeight.w600,
-                        letterSpacing: 0.2,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isCurrent)
-                Positioned(
-                  top: -1,
-                  right: -1,
-                  child: ThemeIcon(
-                    Icons.check_circle,
-                    color: scheme.primary,
-                    size: 16,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _segmentLeading(scheme.onSurface),
+                const SizedBox(width: 6),
+                Text(
+                  shortCode,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1,
+                    fontWeight:
+                        isCurrent ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.2,
+                    color: scheme.onSurface,
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

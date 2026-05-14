@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -440,7 +441,6 @@ class LanguagePickerOptionTile extends StatelessWidget {
     final flagGap = dense ? 10.0 : 14.0;
     final flagSize = dense ? 20.0 : 26.0;
     final titleSize = dense ? 14.0 : 16.0;
-    final checkSize = dense ? 18.0 : 22.0;
 
     final flagWidget = Text(
       languageFlagForCode(code),
@@ -496,8 +496,6 @@ class LanguagePickerOptionTile extends StatelessWidget {
                 ),
               ),
             ),
-            if (isCurrent)
-              ThemeIcon(Icons.check, color: scheme.onSurface, size: checkSize),
           ],
         ),
       ),
@@ -537,46 +535,36 @@ class LanguagePickerOptionTile extends StatelessWidget {
             boxShadow: isCurrent
                 ? ThreeDSurfaceStyle.insetRecessedShadows(context)
                 : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+            border: Border.all(
+              color: isCurrent
+                  ? preferenceSegmentSelectedBorderColor(context)
+                  : scheme.outline.withValues(alpha: 0.4),
+              width: isCurrent ? 2 : 1,
+            ),
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      languageFlagForCode(code),
-                      style: const TextStyle(fontSize: 18, height: 1),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      code.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1,
-                        fontWeight:
-                            isCurrent ? FontWeight.w700 : FontWeight.w600,
-                        letterSpacing: 0.2,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                  ],
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  languageFlagForCode(code),
+                  style: const TextStyle(fontSize: 18, height: 1),
                 ),
-              ),
-              if (isCurrent)
-                Positioned(
-                  top: -1,
-                  right: -1,
-                  child: ThemeIcon(
-                    Icons.check_circle,
-                    color: scheme.primary,
-                    size: 16,
+                const SizedBox(width: 6),
+                Text(
+                  code.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1,
+                    fontWeight:
+                        isCurrent ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.2,
+                    color: scheme.onSurface,
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

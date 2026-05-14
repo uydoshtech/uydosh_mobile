@@ -1700,47 +1700,33 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_panel_section_users => 'Пользователи';
 
   @override
-  String get admin_panel_section_reassign_ownership => 'Смена владельца';
-
-  @override
-  String get admin_reassign_ownership_title => 'Смена владельца';
-
-  @override
-  String get admin_reassign_ownership_intro =>
-      'Перенесите объявление, услугу (оффер) или задачу (запрос) с технического аккаунта на реального пользователя. Указывайте id пользователя в БД (как у владельца после импорта).';
-
-  @override
-  String get admin_reassign_ownership_entity_type_label => 'Тип сущности';
-
-  @override
-  String get admin_reassign_ownership_type_listing => 'Объявление';
-
-  @override
-  String get admin_reassign_ownership_type_gig_offer => 'Услуга (оффер)';
-
-  @override
-  String get admin_reassign_ownership_type_gig_request => 'Задача (запрос)';
-
-  @override
-  String get admin_reassign_ownership_entity_id_label => 'Id сущности';
-
-  @override
-  String get admin_reassign_ownership_from_user_label =>
-      'Текущий владелец (id), необязательно';
-
-  @override
-  String get admin_reassign_ownership_from_user_hint =>
-      'Если указано, должно совпадать с текущим владельцем (например, 86).';
-
-  @override
-  String get admin_reassign_ownership_to_user_label =>
-      'Новый владелец (id пользователя)';
-
-  @override
   String get admin_reassign_ownership_submit => 'Перенести';
 
   @override
   String get admin_reassign_ownership_success => 'Владелец обновлён';
+
+  @override
+  String get admin_reassign_owner_menu => 'Сменить владельца';
+
+  @override
+  String get admin_reassign_owner_dialog_title => 'Смена владельца';
+
+  @override
+  String get admin_reassign_owner_search_placeholder =>
+      'Поиск по id, email или имени';
+
+  @override
+  String admin_reassign_owner_from_user(Object id) {
+    return 'Текущий владелец (id): $id';
+  }
+
+  @override
+  String admin_reassign_owner_entity_label(Object entity, Object id) {
+    return 'Сущность: $entity · id $id';
+  }
+
+  @override
+  String get admin_reassign_owner_empty => 'Пользователи не найдены.';
 
   @override
   String get admin_panel_section_support_chat => 'Поддержка';

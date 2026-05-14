@@ -42,6 +42,18 @@ Color liquidGlassAppBarMaterialColor(BuildContext context) {
   return theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
 }
 
+/// Selected-state outline for compact preference chips (language/currency rows).
+///
+/// Dark themes use a near-white ring; light themes use [ColorScheme.primary] so
+/// the stroke stays visible on pale chip surfaces (pure white would disappear).
+Color preferenceSegmentSelectedBorderColor(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
+  if (scheme.brightness == Brightness.dark) {
+    return Colors.white.withValues(alpha: 0.9);
+  }
+  return scheme.primary;
+}
+
 /// Extension on [ThemeState] providing theme-aware color helpers.
 /// Use these instead of duplicating _getThemeAware* logic across screens and widgets.
 extension ThemeHelper on ThemeState {

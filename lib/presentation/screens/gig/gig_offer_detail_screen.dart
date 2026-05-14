@@ -26,6 +26,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
@@ -49,6 +50,7 @@ import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_control
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/admin/reassign_owner_dialog.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class GigOfferDetailScreen extends StatefulWidget {
@@ -128,6 +130,17 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
     );
   }
 
+  Future<void> _reassignOfferOwner(GigOffer offer) async {
+    final ok = await showReassignOwnerDialog(
+      context,
+      entityType: AdminEntityOwnershipType.gigOffer,
+      entityId: offer.id,
+      fromUserId: offer.providerUserId,
+    );
+    if (!ok || !mounted) return;
+    context.read<GigOfferDetailBloc>().add(FetchGigOfferDetail(offer.id));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -162,6 +175,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
               final showOwnerActions = offerForMenu != null &&
                   (UserListingState().isOwner(offerForMenu.providerUserId) ||
                       ModerationStaffUtils.isModerationStaff(_sessionRole));
+              final staff = ModerationStaffUtils.isModerationStaff(_sessionRole);
               final canFavoriteOffer = offerForMenu != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: offerForMenu.providerUserId,
@@ -230,6 +244,14 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                             iconColor: Colors.red,
                             textColor: Colors.red,
                           ),
+                          if (staff)
+                            ActionMenuItem(
+                              value: "reassign_offer",
+                              icon: Icons.swap_horiz,
+                              textKey: "admin_reassign_owner_menu",
+                              onPressed: () =>
+                                  unawaited(_reassignOfferOwner(offerForMenu)),
+                            ),
                         ],
                       ),
                   ],

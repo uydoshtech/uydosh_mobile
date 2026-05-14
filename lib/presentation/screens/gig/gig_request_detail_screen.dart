@@ -19,6 +19,7 @@ import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
@@ -37,6 +38,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/admin/reassign_owner_dialog.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Detail view for a `GigRequest` (open task posted by a client).
@@ -164,30 +166,65 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
   List<Widget> _ownerOverflowMenu(BuildContext context, GigRequest request) {
     final open = request.status == GigRequestStatus.open;
     final isOwner = _isTaskOwner(request);
-    final allowMenu = open && (isOwner || _staffMayModerate());
-    if (!allowMenu) return const <Widget>[];
+    final staff = _staffMayModerate();
+    final items = <ActionMenuItem>[];
+    if (staff) {
+      items.add(
+        ActionMenuItem(
+          value: "reassign_request",
+          icon: Icons.swap_horiz,
+          textKey: "admin_reassign_owner_menu",
+          enabled: !_deleteInFlight,
+          onPressed: () => unawaited(_reassignRequestOwner(request)),
+        ),
+      );
+    }
+    if (open && (isOwner || staff)) {
+      items.add(
+        ActionMenuItem(
+          value: "edit_task",
+          icon: Icons.edit_outlined,
+          textKey: "gigs_request_edit_cta",
+          enabled: !_deleteInFlight,
+          onPressed: () => unawaited(_editRequest(request)),
+        ),
+      );
+      items.add(
+        ActionMenuItem(
+          value: "delete_task",
+          icon: Icons.delete_outline_rounded,
+          textKey: "gigs_request_delete_menu",
+          iconColor: Colors.red,
+          textColor: Colors.red,
+          enabled: !_deleteInFlight,
+          onPressed: () => unawaited(_confirmAndDeleteTask(request)),
+        ),
+      );
+    }
+    if (items.isEmpty) return const <Widget>[];
     return [
       ActionDropdownMenu(
-        items: [
-          ActionMenuItem(
-            value: "edit_task",
-            icon: Icons.edit_outlined,
-            textKey: "gigs_request_edit_cta",
-            enabled: !_deleteInFlight,
-            onPressed: () => unawaited(_editRequest(request)),
-          ),
-          ActionMenuItem(
-            value: "delete_task",
-            icon: Icons.delete_outline_rounded,
-            textKey: "gigs_request_delete_menu",
-            iconColor: Colors.red,
-            textColor: Colors.red,
-            enabled: !_deleteInFlight,
-            onPressed: () => unawaited(_confirmAndDeleteTask(request)),
-          ),
-        ],
+        items: items,
       ),
     ];
+  }
+
+  Future<void> _reassignRequestOwner(GigRequest request) async {
+    final ok = await showReassignOwnerDialog(
+      context,
+      entityType: AdminEntityOwnershipType.gigRequest,
+      entityId: request.id,
+      fromUserId: request.clientUserId,
+    );
+    if (!ok || !mounted) return;
+    setState(() {
+      _future = getIt<IGigService>().getRequest(widget.requestId);
+    });
+    unawaited(
+      _future.then((r) {
+        GigFavoritesState().syncFromRequests([r]);
+      }),
+    );
   }
 
   void _openTaskChats(GigRequest? loaded) {
@@ -240,9 +277,12 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
             builder: (context, snap) {
               final request = snap.data;
               final staff = _staffMayModerate();
+              final isOwner =
+                  request != null && _isTaskOwner(request);
+              final open =
+                  request != null && request.status == GigRequestStatus.open;
               final showOwnerMenu = request != null &&
-                  request.status == GigRequestStatus.open &&
-                  (_isTaskOwner(request) || staff);
+                  (staff || (open && isOwner));
               final canFavoriteTask = request != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: request.clientUserId,
