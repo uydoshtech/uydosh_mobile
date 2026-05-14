@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessageBubble extends StatefulWidget {
@@ -87,6 +88,11 @@ class _MessageBubbleState extends State<MessageBubble>
   Timer? _startupFadeTimer;
   Timer? _startupCompleteTimer;
   final GlobalKey _bubbleAnchorKey = GlobalKey();
+
+  /// Reactions are only on the other participant's messages (see [ChatScreen]).
+  bool get _reactionsEnabled =>
+      !widget.isCurrentUser &&
+      (widget.onSetReaction != null || widget.onClearReaction != null);
 
   @override
   void initState() {
@@ -183,21 +189,25 @@ class _MessageBubbleState extends State<MessageBubble>
                       : CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onLongPress:
-                          (widget.onSetReaction == null &&
-                                  widget.onClearReaction == null)
-                              ? null
-                              : () => _openReactionToolbar(context),
+                      onLongPress: _reactionsEnabled
+                          ? () => _openReactionToolbar(context)
+                          : null,
+                      onSecondaryTap: _reactionsEnabled
+                          ? () => _openReactionToolbar(context)
+                          : null,
+                      onDoubleTap: _reactionsEnabled
+                          ? () => _onBubbleDoubleTapHeart()
+                          : null,
                       behavior: HitTestBehavior.deferToChild,
-                      child: KeyedSubtree(
-                        key: _bubbleAnchorKey,
-                        child: ChatMessageRow(
-                          isFromCurrentUser: widget.isCurrentUser,
-                          leftAvatarInitials: _getOtherUserInitials(),
-                          rightAvatarInitials: _getCurrentUserInitials(),
-                          leftAvatarUrl: _getOtherUserAvatarUrl(),
-                          rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
-                          bubbleChild: Stack(
+                      child: ChatMessageRow(
+                        isFromCurrentUser: widget.isCurrentUser,
+                        leftAvatarInitials: _getOtherUserInitials(),
+                        rightAvatarInitials: _getCurrentUserInitials(),
+                        leftAvatarUrl: _getOtherUserAvatarUrl(),
+                        rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
+                        bubbleChild: KeyedSubtree(
+                          key: _bubbleAnchorKey,
+                          child: Stack(
                             clipBehavior: Clip.none,
                             children: [
                               Column(
@@ -243,6 +253,31 @@ class _MessageBubbleState extends State<MessageBubble>
                                           ),
                                         ),
                                       ),
+                                      if (_reactionsEnabled) ...[
+                                        const SizedBox(width: 6),
+                                        IconButton(
+                                          onPressed: () =>
+                                              _openReactionToolbar(context),
+                                          style: IconButton.styleFrom(
+                                            minimumSize: Size.zero,
+                                            tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
+                                            padding: const EdgeInsets.all(2),
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                          tooltip: L10n.get(
+                                            "reaction_add",
+                                            fallback: "Add reaction",
+                                          ),
+                                          icon: Icon(
+                                            Icons.add_reaction_outlined,
+                                            size: 16,
+                                            color: textColor.withValues(
+                                              alpha: 0.65,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                       if (widget.isCurrentUser) ...[
                                         const SizedBox(width: 4),
                                         _buildCheckmarks(textColor),
@@ -264,6 +299,35 @@ class _MessageBubbleState extends State<MessageBubble>
                                     onTap: widget.onRiskBadgeTap,
                                     behavior: HitTestBehavior.opaque,
                                     child: _RiskBadge(level: widget.riskLevel!),
+                                  ),
+                                ),
+                              if (_reactionsEnabled &&
+                                  widget.message.myReaction == 'heart')
+                                PositionedDirectional(
+                                  bottom: -6,
+                                  end: -6,
+                                  child: GestureDetector(
+                                    onTap: widget.onClearReaction != null
+                                        ? () {
+                                            HapticFeedback.lightImpact();
+                                            widget.onClearReaction?.call();
+                                          }
+                                        : null,
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Icon(
+                                      Icons.favorite,
+                                      size: 22,
+                                      color: Colors.red.shade500,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.35,
+                                          ),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                             ],
@@ -288,12 +352,13 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   void _openReactionToolbar(BuildContext context) {
-    if (widget.onSetReaction == null && widget.onClearReaction == null) {
+    if (!_reactionsEnabled) {
       return;
     }
     HapticFeedback.mediumImpact();
-    final overlay = Overlay.maybeOf(context);
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) {
+      _openReactionDialog(context);
       return;
     }
     final box =
@@ -304,12 +369,29 @@ class _MessageBubbleState extends State<MessageBubble>
         final mq = MediaQuery.of(ctx);
         final w = mq.size.width;
         final h = mq.size.height;
+        final padTop = mq.padding.top;
+        final padBottom = mq.padding.bottom;
         var left = 16.0;
         var top = 100.0;
+        const toolbarGap = 6.0;
+        const toolbarHeightEstimate = 40.0;
+        const toolbarWidthEstimate = 96.0;
+        final pickerIds = MessageReactionCatalog.ids
+            .where((id) => id != 'heart')
+            .toList(growable: false);
+        final iconColor =
+            Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.88);
         if (box != null) {
           final o = box.localToGlobal(Offset.zero);
-          top = (o.dy - 52).clamp(8.0, h - 120);
-          left = (o.dx + box.size.width / 2 - 88).clamp(8.0, w - 184);
+          final bubbleBottom = o.dy + box.size.height;
+          top = (bubbleBottom + toolbarGap).clamp(
+            padTop + 8,
+            h - padBottom - toolbarHeightEstimate - 8,
+          );
+          left = (o.dx + box.size.width / 2 - toolbarWidthEstimate / 2).clamp(
+            8.0,
+            w - toolbarWidthEstimate - 8,
+          );
         }
         return Stack(
           children: [
@@ -327,33 +409,38 @@ class _MessageBubbleState extends State<MessageBubble>
             Positioned(
               left: left,
               top: top,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(24),
-                clipBehavior: Clip.antiAlias,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final id in MessageReactionCatalog.ids)
-                      IconButton(
-                        padding: const EdgeInsets.all(8),
-                        constraints: const BoxConstraints(
-                          minWidth: 40,
-                          minHeight: 40,
+              child: LiquidGlassPlate(
+                borderRadius: BorderRadius.circular(18),
+                sigma: 12,
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final id in pickerIds)
+                        IconButton(
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 30,
+                            minHeight: 30,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () async {
+                            entry.remove();
+                            await _applyReactionChoice(id);
+                          },
+                          icon: Icon(
+                            MessageReactionCatalog.iconFor(id),
+                            size: 18,
+                            color: iconColor,
+                          ),
                         ),
-                        visualDensity: VisualDensity.compact,
-                        onPressed: () async {
-                          entry.remove();
-                          final mine = widget.message.myReaction == id;
-                          if (mine) {
-                            await widget.onClearReaction?.call();
-                          } else {
-                            await widget.onSetReaction?.call(id);
-                          }
-                        },
-                        icon: Icon(MessageReactionCatalog.iconFor(id)),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -362,6 +449,52 @@ class _MessageBubbleState extends State<MessageBubble>
       },
     );
     overlay.insert(entry);
+  }
+
+  void _openReactionDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+          content: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final id in MessageReactionCatalog.ids
+                  .where((x) => x != 'heart'))
+                IconButton(
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    await _applyReactionChoice(id);
+                  },
+                  icon: Icon(MessageReactionCatalog.iconFor(id), size: 28),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _applyReactionChoice(String reactionId) async {
+    final mine = widget.message.myReaction == reactionId;
+    if (mine) {
+      await widget.onClearReaction?.call();
+    } else {
+      await widget.onSetReaction?.call(reactionId);
+    }
+  }
+
+  Future<void> _onBubbleDoubleTapHeart() async {
+    HapticFeedback.mediumImpact();
+    await _applyReactionChoice('heart');
   }
 
   Widget _buildReactionStrip(BuildContext context, Color textColor) {

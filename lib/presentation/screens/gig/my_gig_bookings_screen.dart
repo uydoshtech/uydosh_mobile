@@ -7,7 +7,6 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
@@ -121,40 +120,33 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: ListenableBuilder(
-              listenable: ThemeState(),
-              builder: (context, _) {
-                final themeState = ThemeState();
-                return NeumorphicSegmentedSwitch<_BookingRole>(
-                  liquidGlass:
-                      themeState.isBlueTheme || themeState.isLightTheme,
-                  value: _role,
-                  onChanged: _onRoleChanged,
-                  intrinsicWidthFirstSegment: true,
-                  firstSegmentWidthScale: 1.2,
-                  // Short "All" label is still much narrower than the other tabs by
-                  // intrinsic measure; keep a minimum share of the bar so the thumb
-                  // does not look like a tiny sliver.
-                  firstSegmentMinFractionOfBar: 0.26,
-                  entries: [
-                    SegmentedSwitchEntry(
-                      value: _BookingRole.all,
-                      label: L10n.get("gigs_my_bookings_tab_all"),
-                      icon: Icons.list_alt_rounded,
-                    ),
-                    SegmentedSwitchEntry(
-                      value: _BookingRole.client,
-                      label: L10n.get("gigs_my_bookings_tab_client"),
-                      icon: Icons.person_outline_rounded,
-                    ),
-                    SegmentedSwitchEntry(
-                      value: _BookingRole.provider,
-                      label: L10n.get("gigs_my_bookings_tab_provider"),
-                      icon: Icons.handyman_outlined,
-                    ),
-                  ],
-                );
-              },
+            child: NeumorphicSegmentedSwitch<_BookingRole>(
+              style: NeumorphicSegmentedSwitchStyle.ordersToolbar,
+              value: _role,
+              onChanged: _onRoleChanged,
+              intrinsicWidthFirstSegment: true,
+              firstSegmentWidthScale: 1.2,
+              // Short "All" label is still much narrower than the other tabs by
+              // intrinsic measure; keep a minimum share of the bar so the thumb
+              // does not look like a tiny sliver.
+              firstSegmentMinFractionOfBar: 0.26,
+              entries: [
+                SegmentedSwitchEntry(
+                  value: _BookingRole.all,
+                  label: L10n.get("gigs_my_bookings_tab_all"),
+                  icon: Icons.list_alt_rounded,
+                ),
+                SegmentedSwitchEntry(
+                  value: _BookingRole.client,
+                  label: L10n.get("gigs_my_bookings_tab_client"),
+                  icon: Icons.person_outline_rounded,
+                ),
+                SegmentedSwitchEntry(
+                  value: _BookingRole.provider,
+                  label: L10n.get("gigs_my_bookings_tab_provider"),
+                  icon: Icons.handyman_outlined,
+                ),
+              ],
             ),
           ),
           Expanded(

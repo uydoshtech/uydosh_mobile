@@ -1377,9 +1377,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         }
                       });
                     },
-              onSetReaction: (reactionId) =>
-                  _setMessageReaction(message, reactionId),
-              onClearReaction: () => _clearMessageReaction(message),
+              onSetReaction: isCurrentUser
+                  ? null
+                  : (reactionId) =>
+                        _setMessageReaction(message, reactionId),
+              onClearReaction: isCurrentUser
+                  ? null
+                  : () => _clearMessageReaction(message),
             ),
         };
       },
