@@ -51,10 +51,15 @@ class ActionDropdownMenu extends StatelessWidget {
                 enabled: item.enabled,
               ) ??
               Theme.of(context).popupMenuTheme.textStyle;
-          final effectiveTextStyle =
+          var effectiveTextStyle =
               (baseTextStyle ?? const TextStyle()).copyWith(
                 color: effectiveTextColor,
               );
+          if (item.labelFontWeight != null) {
+            effectiveTextStyle = effectiveTextStyle.copyWith(
+              fontWeight: item.labelFontWeight,
+            );
+          }
 
           final effectiveIconColor =
               item.enabled
@@ -111,6 +116,7 @@ class ActionMenuItem {
     this.textColor,
     this.enabled = true,
     this.iconWidget,
+    this.labelFontWeight,
   });
 
   final String value;
@@ -122,4 +128,6 @@ class ActionMenuItem {
   final bool enabled;
   /// When provided, used instead of ThemeIcon(icon) for the menu item leading widget.
   final Widget? iconWidget;
+  /// Heavier label for staff / elevated actions (e.g. moderation and admin tools).
+  final FontWeight? labelFontWeight;
 }

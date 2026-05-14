@@ -38,14 +38,24 @@ class PendingModerationListing {
     required this.price,
     required this.createdAt,
     this.userEmail,
+    this.userName,
+    this.userAvatarUrl,
     this.listingTypeLabel,
   });
 
   factory PendingModerationListing.fromJson(Map<String, dynamic> json) {
     final user = json["user"];
     String? email;
+    String? name;
+    String? avatarUrl;
     if (user is Map<String, dynamic>) {
       email = user["email"] as String?;
+      final profile = user["profile"];
+      if (profile is Map<String, dynamic>) {
+        name = profile["name"] as String?;
+        avatarUrl = profile["avatar_url"] as String? ??
+            profile["avatarUrl"] as String?;
+      }
     }
     final lt = json["listing_type"];
     String? typeLabel;
@@ -63,6 +73,8 @@ class PendingModerationListing {
       price: (json["price"] as num?)?.toInt() ?? 0,
       createdAt: created,
       userEmail: email,
+      userName: name,
+      userAvatarUrl: avatarUrl,
       listingTypeLabel: typeLabel,
     );
   }
@@ -73,6 +85,8 @@ class PendingModerationListing {
   final int price;
   final String createdAt;
   final String? userEmail;
+  final String? userName;
+  final String? userAvatarUrl;
   final String? listingTypeLabel;
 }
 

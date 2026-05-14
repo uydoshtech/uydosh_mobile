@@ -385,7 +385,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
           ),
           alignment: Alignment.center,
           child: ThemeIcon(
-            Icons.shield_outlined,
+            Icons.shield,
             size: 18,
             color: scheme.onSurfaceVariant.withValues(alpha: 0.88),
           ),
@@ -398,6 +398,11 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final bg = theme.cardTheme.color ?? scheme.surface;
+    final lang = LanguageState().currentLanguage;
+    final currencyShort =
+        PriceDisplaySettingsState().currency == PriceDisplayCurrency.usd
+            ? "USD"
+            : "UZS";
 
     return Tooltip(
       message: L10n.get("settings_section_preferences"),
@@ -418,19 +423,38 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ThemeIcon(
-                  Icons.tune,
-                  size: 18,
-                  color: scheme.onSurface.withValues(alpha: 0.85),
-                ),
-                const SizedBox(width: 6),
                 Text(
-                  L10n.get("settings_section_preferences"),
+                  languageFlagForCode(lang),
+                  style: const TextStyle(fontSize: 16, height: 1),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  lang.toUpperCase(),
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     height: 1.25,
-                    letterSpacing: 0.15,
+                    letterSpacing: 0.2,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: scheme.onSurface.withValues(alpha: 0.42),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  currencyShort,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                    letterSpacing: 0.2,
                     color: scheme.onSurface,
                   ),
                 ),
@@ -529,7 +553,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 20),
                         Text(
                           L10n.get("price_display_currency"),
                           style: TextStyle(

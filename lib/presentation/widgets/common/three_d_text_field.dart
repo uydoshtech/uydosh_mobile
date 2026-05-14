@@ -35,6 +35,10 @@ class ThreeDTextField extends StatefulWidget {
     this.hintStyle,
     this.cursorColor,
     this.showErrorBorder = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.prefixIconConstraints,
+    this.suffixIconConstraints,
   });
 
   final TextEditingController controller;
@@ -70,6 +74,11 @@ class ThreeDTextField extends StatefulWidget {
   /// signal a failed validation pass. The border is an overlay (see
   /// [ErrorBorderPulse]) and does not change the field's intrinsic size.
   final bool showErrorBorder;
+
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final BoxConstraints? prefixIconConstraints;
+  final BoxConstraints? suffixIconConstraints;
 
   @override
   State<ThreeDTextField> createState() => _ThreeDTextFieldState();
@@ -222,6 +231,10 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
                   decoration: InputDecoration(
                     hintText: widget.hintText,
                     hintStyle: effectiveHintStyle,
+                    prefixIcon: widget.prefixIcon,
+                    suffixIcon: widget.suffixIcon,
+                    prefixIconConstraints: widget.prefixIconConstraints,
+                    suffixIconConstraints: widget.suffixIconConstraints,
                     // Blue theme sets [InputDecorationTheme.fillColor] to white; without
                     // an explicit fill here the TextField paints over our plate background.
                     filled: true,

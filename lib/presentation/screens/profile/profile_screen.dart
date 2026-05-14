@@ -586,8 +586,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       FirebaseAuth.instance.currentUser?.email;
                   final currentEmail =
                       (firebaseEmail ?? _cachedUserEmail)?.trim().toLowerCase();
+                  // Email allowlist + any admin: moderators often sign in with a
+                  // non-founder Google account, so the founder email check alone
+                  // is not enough to keep staff from self-deleting.
                   final deleteProtected =
-                      currentEmail == _kProtectedDeleteAccountEmail;
+                      currentEmail == _kProtectedDeleteAccountEmail ||
+                      (_userRole?.toLowerCase().trim() == "admin");
 
                   return ProfileSettingsSection(
                     onLogout: () => _showLogoutDialog(context),

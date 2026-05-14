@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
+import "package:uy_dosh/base/util/push_banner_where_browser.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -101,16 +102,29 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     }
   }
 
-  String _platformPushLabel() {
-    if (kIsWeb) return "iOS/Android";
+  String _notificationsPushOffWherePhraseKey() {
+    if (kIsWeb) {
+      switch (detectPushBannerWebBrowser()) {
+        case PushBannerWebBrowser.chrome:
+          return "notifications_push_off_where_chrome";
+        case PushBannerWebBrowser.safari:
+          return "notifications_push_off_where_safari";
+        case PushBannerWebBrowser.firefox:
+          return "notifications_push_off_where_firefox";
+        case PushBannerWebBrowser.edge:
+          return "notifications_push_off_where_edge";
+        case PushBannerWebBrowser.unknown:
+          return "notifications_push_off_where_browser";
+      }
+    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        return "iOS";
+        return "notifications_push_off_where_ios";
       case TargetPlatform.android:
-        return "Android";
+        return "notifications_push_off_where_android";
       default:
-        return "iOS/Android";
+        return "notifications_push_off_where_device";
     }
   }
 
@@ -139,7 +153,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final buttonFg = Color(0xFF1F1300);
     final buttonBg = Colors.white.withValues(alpha: 0.18);
 
-    final platformLabel = _platformPushLabel();
+    final pushOffWhereKey = _notificationsPushOffWherePhraseKey();
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -169,7 +183,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   child: Text(
                     L10n.getWithParams(
                       "notifications_push_off_title",
-                      params: {"platform": platformLabel},
+                      params: {
+                        "where": L10n.get(pushOffWhereKey),
+                      },
                     ),
                     style: const TextStyle(
                       color: fg,
@@ -1335,7 +1351,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                                             "notifications_alert_match_header_paused",
                                                           ),
                                                     style: TextStyle(
-                                                      fontSize: 13.5,
+                                                      fontSize: 14.5,
                                                       height: 1.2,
                                                       fontWeight:
                                                           FontWeight.w600,
@@ -1345,7 +1361,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                                           .onSurfaceVariant,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 8),
+                                                  const SizedBox(height: 14),
                                                   _summaryWidget(a, theme),
                                                 ],
                                               ),

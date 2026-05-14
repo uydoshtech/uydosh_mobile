@@ -1799,6 +1799,7 @@ class _ChatScreenState extends State<ChatScreen> {
           iconColor: Colors.red,
           textColor: Colors.red,
           enabled: !_adminDeleteBusy,
+          labelFontWeight: FontWeight.w600,
         ),
       );
     }

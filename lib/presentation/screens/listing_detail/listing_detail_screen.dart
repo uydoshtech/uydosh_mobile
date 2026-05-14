@@ -1215,6 +1215,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           icon: Icons.edit,
           textKey: "edit",
           onPressed: _editListing,
+          labelFontWeight:
+              isListingStaff && !isOwner ? FontWeight.w600 : null,
         ),
       );
     }
@@ -1245,6 +1247,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           onPressed: () => _showDeleteConfirmation(listingDetail.id),
           iconColor: Colors.red,
           textColor: Colors.red,
+          labelFontWeight:
+              isListingStaff && !isOwner ? FontWeight.w600 : null,
         ),
       );
     }
@@ -1258,6 +1262,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           onPressed: () {
             unawaited(_reassignListingOwner(listingDetail));
           },
+          labelFontWeight: FontWeight.w600,
         ),
       );
     }
@@ -1281,6 +1286,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           onPressed: _toggleFeatureListing,
           iconColor: Colors.red,
           textColor: Colors.red,
+          labelFontWeight: FontWeight.w600,
         ),
       );
     }

@@ -172,10 +172,12 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
             builder: (context, state) {
               final offerForMenu =
                   state is GigOfferDetailLoaded ? state.offer : null;
-              final showOwnerActions = offerForMenu != null &&
-                  (UserListingState().isOwner(offerForMenu.providerUserId) ||
-                      ModerationStaffUtils.isModerationStaff(_sessionRole));
               final staff = ModerationStaffUtils.isModerationStaff(_sessionRole);
+              final isOfferOwner = offerForMenu != null &&
+                  UserListingState().isOwner(offerForMenu.providerUserId);
+              final staffActingOnOther = staff && !isOfferOwner;
+              final showOwnerActions = offerForMenu != null &&
+                  (isOfferOwner || staff);
               final canFavoriteOffer = offerForMenu != null &&
                   PeerInteractionEligibility.mayInteractWithPublisher(
                     publisherUserId: offerForMenu.providerUserId,
@@ -234,6 +236,8 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                             textKey: "gigs_offer_edit_cta",
                             onPressed: () =>
                                 unawaited(_editOffer(offerForMenu)),
+                            labelFontWeight:
+                                staffActingOnOther ? FontWeight.w600 : null,
                           ),
                           ActionMenuItem(
                             value: "delete_offer",
@@ -243,6 +247,8 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                                 unawaited(_deleteOffer(offerForMenu)),
                             iconColor: Colors.red,
                             textColor: Colors.red,
+                            labelFontWeight:
+                                staffActingOnOther ? FontWeight.w600 : null,
                           ),
                           if (staff)
                             ActionMenuItem(
@@ -251,6 +257,7 @@ class _GigOfferDetailScreenState extends State<GigOfferDetailScreen> {
                               textKey: "admin_reassign_owner_menu",
                               onPressed: () =>
                                   unawaited(_reassignOfferOwner(offerForMenu)),
+                              labelFontWeight: FontWeight.w600,
                             ),
                         ],
                       ),

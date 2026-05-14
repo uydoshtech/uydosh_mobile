@@ -168,6 +168,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
     final isOwner = _isTaskOwner(request);
     final staff = _staffMayModerate();
     final items = <ActionMenuItem>[];
+    final staffActingOnOther = staff && !isOwner;
     if (staff) {
       items.add(
         ActionMenuItem(
@@ -176,6 +177,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
           textKey: "admin_reassign_owner_menu",
           enabled: !_deleteInFlight,
           onPressed: () => unawaited(_reassignRequestOwner(request)),
+          labelFontWeight: FontWeight.w600,
         ),
       );
     }
@@ -187,6 +189,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
           textKey: "gigs_request_edit_cta",
           enabled: !_deleteInFlight,
           onPressed: () => unawaited(_editRequest(request)),
+          labelFontWeight: staffActingOnOther ? FontWeight.w600 : null,
         ),
       );
       items.add(
@@ -198,6 +201,7 @@ class _GigRequestDetailScreenState extends State<GigRequestDetailScreen> {
           textColor: Colors.red,
           enabled: !_deleteInFlight,
           onPressed: () => unawaited(_confirmAndDeleteTask(request)),
+          labelFontWeight: staffActingOnOther ? FontWeight.w600 : null,
         ),
       );
     }

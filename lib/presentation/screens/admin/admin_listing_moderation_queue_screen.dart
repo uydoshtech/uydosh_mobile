@@ -1,11 +1,14 @@
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -50,6 +53,7 @@ class _AdminListingModerationQueueScreenState
   final IListingModerationAdminService _service =
       getIt<IListingModerationAdminService>();
 
+  static const double _ownerAvatarSize = 36;
   static const int _pageSize = 20;
 
   bool _isLoading = false;
@@ -348,6 +352,61 @@ class _AdminListingModerationQueueScreenState
     );
   }
 
+  Widget _ownerAvatarForListing(
+    BuildContext context,
+    PendingModerationListing item, {
+    required Color avatarColor,
+    required Color avatarIconColor,
+  }) {
+    final name = item.userName?.trim();
+    final email = item.userEmail?.trim();
+    final fallbackLabel =
+        (name != null && name.isNotEmpty)
+            ? name
+            : (email != null && email.isNotEmpty)
+            ? email
+            : "?";
+
+    final url = resolveAvatarUrl(item.userAvatarUrl);
+    final cachePx =
+        (_ownerAvatarSize * MediaQuery.devicePixelRatioOf(context)).round();
+
+    Widget fallback() {
+      final initials = StringUtils.extractInitials(fallbackLabel);
+      return CircleAvatar(
+        radius: _ownerAvatarSize / 2,
+        backgroundColor: avatarColor,
+        child:
+            initials.isNotEmpty
+                ? Text(
+                  initials,
+                  style: TextStyle(
+                    color: avatarIconColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                )
+                : ThemeIcon(Icons.person, color: avatarIconColor, size: 18),
+      );
+    }
+
+    if (url != null) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: _ownerAvatarSize,
+          height: _ownerAvatarSize,
+          fit: BoxFit.cover,
+          memCacheWidth: cachePx,
+          memCacheHeight: cachePx,
+          placeholder: (_, __) => fallback(),
+          errorWidget: (_, __, ___) => fallback(),
+        ),
+      );
+    }
+    return fallback();
+  }
+
   List<_QueueListItem> _buildGroupedItems() {
     final items = <_QueueListItem>[];
     String? lastMonthKey;
@@ -375,12 +434,16 @@ class _AdminListingModerationQueueScreenState
     final expanded = _expandedById[item.id] ?? false;
     final busy = _approvingId == item.id;
 
-    final subtitleParts = <String>[
+    final metaParts = <String>[
       _formatIsoDate(item.createdAt),
       "${L10n.get("admin_listing_moderation_id")}: ${item.id}",
-      if (item.userEmail != null && item.userEmail!.isNotEmpty)
-        "${L10n.get("admin_listing_moderation_user")}: ${item.userEmail}",
     ];
+
+    final ownerNameTrimmed = item.userName?.trim();
+    final hasOwnerName =
+        ownerNameTrimmed != null && ownerNameTrimmed.isNotEmpty;
+    final hasEmail =
+        item.userEmail != null && item.userEmail!.trim().isNotEmpty;
 
     final titleText = item.title.isEmpty
         ? "${L10n.get("admin_listing_moderation_id")} #${item.id}"
@@ -394,6 +457,8 @@ class _AdminListingModerationQueueScreenState
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;
         final iconColor = themeState.cardIconColor;
+        final avatarColor = themeState.avatarColor;
+        final avatarIconColor = themeState.avatarIconColor;
 
         return ThreeDElevatedSurface(
           baseColor: cardColor,
@@ -442,14 +507,66 @@ class _AdminListingModerationQueueScreenState
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              subtitleParts.join(" · "),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: secondaryTextColor,
-                              ),
-                              maxLines: 3,
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _ownerAvatarForListing(
+                                  context,
+                                  item,
+                                  avatarColor: avatarColor,
+                                  avatarIconColor: avatarIconColor,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (hasOwnerName)
+                                        Text(
+                                          ownerNameTrimmed,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
+                                      else if (hasEmail)
+                                        Text(
+                                          item.userEmail!,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      Text(
+                                        metaParts.join(" · "),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: secondaryTextColor,
+                                        ),
+                                      ),
+                                      if (hasOwnerName && hasEmail)
+                                        Text(
+                                          "${L10n.get("admin_listing_moderation_user")}: ${item.userEmail}",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: secondaryTextColor,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

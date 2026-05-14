@@ -167,9 +167,19 @@ class AppStrings {
       "menu_messages": "Messages",
       "menu_notifications": "Notifications",
       "menu_enable_notifications": "Enable notifications",
-      "notifications_alert_match_header": "Notify me when there's a match for:",
-      "notifications_alert_match_header_paused": "Paused — would notify on match for:",
-      "notifications_push_off_title": "Your {platform} push alerts are turned off",
+      "notifications_alert_match_header":
+          "We'll send you a push notification for:",
+      "notifications_alert_match_header_paused":
+          "Paused — no push notifications for:",
+      "notifications_push_off_title": "Push alerts are turned off {where}.",
+      "notifications_push_off_where_ios": "on iOS",
+      "notifications_push_off_where_android": "on Android",
+      "notifications_push_off_where_chrome": "in Chrome",
+      "notifications_push_off_where_safari": "in Safari",
+      "notifications_push_off_where_firefox": "in Firefox",
+      "notifications_push_off_where_edge": "in Edge",
+      "notifications_push_off_where_browser": "in this browser",
+      "notifications_push_off_where_device": "on this device",
       "inbox_push_off_banner_title":
           "Turn on notifications so you don't miss new messages",
       "notifications_enabled": "Notifications enabled",
@@ -1672,11 +1682,19 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
-      "notifications_alert_match_header": "Уведомить, когда появится:",
+      "notifications_alert_match_header":
+          "Мы пришлем вам пуш-уведомление на:",
       "notifications_alert_match_header_paused":
-          "Приостановлено — уведомили бы при совпадении:",
-      "notifications_push_off_title":
-          "Ваши push-уведомления {platform} отключены",
+          "Приостановлено — без пуш-уведомлений для:",
+      "notifications_push_off_title": "Push-уведомления {where} отключены",
+      "notifications_push_off_where_ios": "на iOS",
+      "notifications_push_off_where_android": "на Android",
+      "notifications_push_off_where_chrome": "в Chrome",
+      "notifications_push_off_where_safari": "в Safari",
+      "notifications_push_off_where_firefox": "в Firefox",
+      "notifications_push_off_where_edge": "в Edge",
+      "notifications_push_off_where_browser": "в браузере",
+      "notifications_push_off_where_device": "на устройстве",
       "inbox_push_off_banner_title":
           "Включите уведомления, чтобы не пропустить сообщения",
       "notifications_enabled": "Уведомления включены",
@@ -3208,11 +3226,20 @@ class AppStrings {
       "menu_messages": "Xabarlar",
       "menu_notifications": "Bildirishnomalar",
       "menu_enable_notifications": "Bildirishnomalarni yoqish",
-      "notifications_alert_match_header": "Mos kelganida xabar berish:",
+      "notifications_alert_match_header":
+          "Quyidagilar bo‘yicha sizga push-bildirishnoma yuboramiz:",
       "notifications_alert_match_header_paused":
-          "Vaqtincha to‘xtatilgan — moslik uchun xabar berilardi:",
+          "Vaqtincha to‘xtatilgan — quyidagilar bo‘yicha push-bildirishnoma yuborilmaydi:",
       "notifications_push_off_title":
-          "{platform} push-bildirishnomalaringiz o'chirilgan",
+          "Push-bildirishnomalar {where} o‘chirilgan",
+      "notifications_push_off_where_ios": "iOS’da",
+      "notifications_push_off_where_android": "Android’da",
+      "notifications_push_off_where_chrome": "Chrome’da",
+      "notifications_push_off_where_safari": "Safari’da",
+      "notifications_push_off_where_firefox": "Firefox’da",
+      "notifications_push_off_where_edge": "Edge’da",
+      "notifications_push_off_where_browser": "brauzerda",
+      "notifications_push_off_where_device": "bu qurilmada",
       "inbox_push_off_banner_title":
           "Yangi xabarlarni o'tkazib yubormaslik uchun bildirishnomalarni yoqing",
       "notifications_enabled": "Bildirishnomalar yoqildi",
