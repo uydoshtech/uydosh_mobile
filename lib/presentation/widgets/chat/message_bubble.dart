@@ -100,8 +100,10 @@ class _MessageBubbleState extends State<MessageBubble>
 
   late AnimationController _scaleAnimationController;
   late AnimationController _fadeAnimationController;
+  late AnimationController _reactionAppearPulseController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _reactionAppearPulseScale;
   Timer? _startupFadeTimer;
   Timer? _startupCompleteTimer;
   final GlobalKey _bubbleAnchorKey = GlobalKey();
@@ -143,6 +145,45 @@ class _MessageBubbleState extends State<MessageBubble>
       ),
     );
 
+    _reactionAppearPulseController = AnimationController(
+      duration: const Duration(milliseconds: 700),
+      vsync: this,
+    );
+    _reactionAppearPulseScale = TweenSequence<double>(
+      [
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.14).chain(
+            CurveTween(curve: Curves.easeOutCubic),
+          ),
+          weight: 23,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.14, end: 1.0).chain(
+            CurveTween(curve: Curves.easeInCubic),
+          ),
+          weight: 23,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.11).chain(
+            CurveTween(curve: Curves.easeOutCubic),
+          ),
+          weight: 21,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.11, end: 1.0).chain(
+            CurveTween(curve: Curves.easeInOut),
+          ),
+          weight: 33,
+        ),
+      ],
+    ).animate(
+      CurvedAnimation(
+        parent: _reactionAppearPulseController,
+        curve: Curves.linear,
+      ),
+    );
+    _reactionAppearPulseController.value = 1.0;
+
     // Only start the animation if this is the latest message
     if (widget.isLatest) {
       // Start scale animation immediately
@@ -172,7 +213,18 @@ class _MessageBubbleState extends State<MessageBubble>
     _startupCompleteTimer?.cancel();
     _scaleAnimationController.dispose();
     _fadeAnimationController.dispose();
+    _reactionAppearPulseController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant MessageBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = widget.message.myReaction;
+    final prev = oldWidget.message.myReaction;
+    if (_reactionsEnabled && next != null && next != prev && mounted) {
+      _reactionAppearPulseController.forward(from: 0);
+    }
   }
 
   @override
@@ -344,8 +396,12 @@ class _MessageBubbleState extends State<MessageBubble>
                                       bottom: -_reactionBadgeHoverHeight / 2 -
                                           _reactionBadgeOutsideShift,
                                       end: reactionEndInset,
-                                      child: _buildMyReactionCornerBadge(
-                                        textColor,
+                                      child: ScaleTransition(
+                                        scale: _reactionAppearPulseScale,
+                                        alignment: Alignment.center,
+                                        child: _buildMyReactionCornerBadge(
+                                          textColor,
+                                        ),
                                       ),
                                     ),
                                 ],
