@@ -23,4 +23,20 @@ abstract final class MessageReactionCatalog {
         return Icons.emoji_emotions_outlined;
     }
   }
+
+  /// Filled icons for the overlapping bubble badge (active reaction).
+  static IconData iconForBubbleBadge(String reaction) {
+    switch (reaction) {
+      case "thumbs_up":
+        return Icons.thumb_up;
+      case "thumbs_down":
+        return Icons.thumb_down;
+      case "heart":
+        return Icons.favorite;
+      case "lightning":
+        return Icons.bolt;
+      default:
+        return Icons.emoji_emotions_outlined;
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -9,6 +10,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_bubble_with_tail.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -81,6 +83,8 @@ class MessageBubble extends StatefulWidget {
 
 class _MessageBubbleState extends State<MessageBubble>
     with TickerProviderStateMixin {
+  static const double _reactionBadgeHoverHeight = 30;
+
   late AnimationController _scaleAnimationController;
   late AnimationController _fadeAnimationController;
   late Animation<double> _scaleAnimation;
@@ -195,9 +199,6 @@ class _MessageBubbleState extends State<MessageBubble>
                       onSecondaryTap: _reactionsEnabled
                           ? () => _openReactionToolbar(context)
                           : null,
-                      onDoubleTap: _reactionsEnabled
-                          ? () => _onBubbleDoubleTapHeart()
-                          : null,
                       behavior: HitTestBehavior.deferToChild,
                       child: ChatMessageRow(
                         isFromCurrentUser: widget.isCurrentUser,
@@ -207,130 +208,137 @@ class _MessageBubbleState extends State<MessageBubble>
                         rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
                         bubbleChild: KeyedSubtree(
                           key: _bubbleAnchorKey,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final bubbleInnerW = constraints.maxWidth;
+                              final myId = widget.message.myReaction;
+                              final aggCount = myId != null
+                                  ? _aggregateCountForReaction(myId)
+                                  : 1;
+                              final reactionEndInset =
+                                  (_reactionsEnabled && myId != null)
+                                  ? _reactionBadgeTrailingEndInset(
+                                      bubbleInnerWidth: bubbleInnerW,
+                                      aggregateCount: aggCount,
+                                    )
+                                  : 0.0;
+
+                              return Stack(
+                                clipBehavior: Clip.none,
                                 children: [
-                                  _buildMessageContent(
-                                    _displayText(),
-                                    textColor,
-                                  ),
-                                  if (widget.translation == null &&
-                                      widget.isTranslating) ...[
-                                    const SizedBox(height: 6),
-                                    _TranslationSkeleton(textColor: textColor),
-                                  ],
-                                  if (widget.translation != null) ...[
-                                    const SizedBox(height: 4),
-                                    _TranslationToggleRow(
-                                      translation: widget.translation!,
-                                      isShowingOriginal: widget.showOriginal,
-                                      textColor: textColor,
-                                      onTap: widget.onToggleTranslation,
-                                    ),
-                                  ],
-                                  const SizedBox(height: 4),
-                                  Row(
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      ThemeIcon(
-                                        Icons.access_time,
-                                        size: 10,
-                                        color: textColor.withValues(
-                                          alpha: 0.7,
-                                        ),
+                                      _buildMessageContent(
+                                        _displayText(),
+                                        textColor,
                                       ),
-                                      const SizedBox(width: 2),
-                                      Text(
-                                        _formatTime(widget.message.createdAt),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: textColor.withValues(
-                                            alpha: 0.7,
-                                          ),
+                                      if (widget.translation == null &&
+                                          widget.isTranslating) ...[
+                                        const SizedBox(height: 6),
+                                        _TranslationSkeleton(
+                                          textColor: textColor,
                                         ),
-                                      ),
-                                      if (_reactionsEnabled) ...[
-                                        const SizedBox(width: 6),
-                                        IconButton(
-                                          onPressed: () =>
-                                              _openReactionToolbar(context),
-                                          style: IconButton.styleFrom(
-                                            minimumSize: Size.zero,
-                                            tapTargetSize:
-                                                MaterialTapTargetSize.shrinkWrap,
-                                            padding: const EdgeInsets.all(2),
-                                            visualDensity: VisualDensity.compact,
-                                          ),
-                                          tooltip: L10n.get(
-                                            "reaction_add",
-                                            fallback: "Add reaction",
-                                          ),
-                                          icon: Icon(
-                                            Icons.add_reaction_outlined,
-                                            size: 16,
+                                      ],
+                                      if (widget.translation != null) ...[
+                                        const SizedBox(height: 4),
+                                        _TranslationToggleRow(
+                                          translation: widget.translation!,
+                                          isShowingOriginal:
+                                              widget.showOriginal,
+                                          textColor: textColor,
+                                          onTap: widget.onToggleTranslation,
+                                        ),
+                                      ],
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ThemeIcon(
+                                            Icons.access_time,
+                                            size: 10,
                                             color: textColor.withValues(
-                                              alpha: 0.65,
+                                              alpha: 0.7,
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                      if (widget.isCurrentUser) ...[
-                                        const SizedBox(width: 4),
-                                        _buildCheckmarks(textColor),
-                                      ],
+                                          const SizedBox(width: 2),
+                                          Text(
+                                            _formatTime(
+                                              widget.message.createdAt,
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: textColor.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                            ),
+                                          ),
+                                          if (_reactionsEnabled) ...[
+                                            const SizedBox(width: 6),
+                                            IconButton(
+                                              onPressed: () =>
+                                                  _openReactionToolbar(
+                                                    context,
+                                                  ),
+                                              style: IconButton.styleFrom(
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                padding:
+                                                    const EdgeInsets.all(2),
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                              ),
+                                              tooltip: L10n.get(
+                                                "reaction_add",
+                                                fallback: "Add reaction",
+                                              ),
+                                              icon: Icon(
+                                                Icons.add_reaction_outlined,
+                                                size: 16,
+                                                color: textColor.withValues(
+                                                  alpha: 0.65,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                          if (widget.isCurrentUser) ...[
+                                            const SizedBox(width: 4),
+                                            _buildCheckmarks(textColor),
+                                          ],
+                                        ],
+                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
-                              if (!widget.isCurrentUser &&
-                                  (widget.riskLevel == 'medium' ||
-                                      widget.riskLevel == 'high'))
-                                PositionedDirectional(
-                                  // Badge-style: overlap the bubble in the top-right.
-                                  // Negative offsets keep it outside (hovering above).
-                                  // Roughly half outside the bubble.
-                                  top: -22,
-                                  end: -22,
-                                  child: GestureDetector(
-                                    onTap: widget.onRiskBadgeTap,
-                                    behavior: HitTestBehavior.opaque,
-                                    child: _RiskBadge(level: widget.riskLevel!),
-                                  ),
-                                ),
-                              if (_reactionsEnabled &&
-                                  widget.message.myReaction == 'heart')
-                                PositionedDirectional(
-                                  bottom: -6,
-                                  end: -6,
-                                  child: GestureDetector(
-                                    onTap: widget.onClearReaction != null
-                                        ? () {
-                                            HapticFeedback.lightImpact();
-                                            widget.onClearReaction?.call();
-                                          }
-                                        : null,
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Icon(
-                                      Icons.favorite,
-                                      size: 22,
-                                      color: Colors.red.shade500,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.35,
-                                          ),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 1),
+                                  if (!widget.isCurrentUser &&
+                                      (widget.riskLevel == 'medium' ||
+                                          widget.riskLevel == 'high'))
+                                    PositionedDirectional(
+                                      top: -22,
+                                      end: -22,
+                                      child: GestureDetector(
+                                        onTap: widget.onRiskBadgeTap,
+                                        behavior: HitTestBehavior.opaque,
+                                        child: _RiskBadge(
+                                          level: widget.riskLevel!,
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                            ],
+                                  if (_reactionsEnabled && myId != null)
+                                    PositionedDirectional(
+                                      bottom:
+                                          -_reactionBadgeHoverHeight / 2,
+                                      end: reactionEndInset,
+                                      child: _buildMyReactionCornerBadge(
+                                        textColor,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -346,9 +354,113 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
-  bool get _hasReactionRow {
-    final r = widget.message.reactions;
-    return (r != null && r.isNotEmpty);
+  bool get _hasReactionRow => _reactionStripEntries().isNotEmpty;
+
+  /// Strip lists reactions after removing the viewer's own count so their
+  /// reaction is only shown on the overlapping corner badge.
+  List<MessageReactionCount> _reactionStripEntries() {
+    final all = widget.message.reactions ?? [];
+    if (!_reactionsEnabled) return all;
+    final mine = widget.message.myReaction;
+    if (mine == null) return all;
+
+    return all
+        .map((e) {
+          if (e.reaction != mine) return e;
+          final adjusted = e.count - 1;
+          if (adjusted <= 0) return null;
+          return MessageReactionCount(reaction: e.reaction, count: adjusted);
+        })
+        .whereType<MessageReactionCount>()
+        .toList();
+  }
+
+  int _aggregateCountForReaction(String reactionId) {
+    final entries = widget.message.reactions ?? [];
+    for (final e in entries) {
+      if (e.reaction == reactionId) return e.count;
+    }
+    return 1;
+  }
+
+  /// Logical inset from the bubble content's trailing edge: hugs the rounded
+  /// corner using [ChatBubbleWithTail.cornerRadius], but clamps using measured
+  /// [bubbleInnerWidth] so the badge stays inside short bubbles.
+  double _reactionBadgeTrailingEndInset({
+    required double bubbleInnerWidth,
+    required int aggregateCount,
+  }) {
+    final R = ChatBubbleWithTail.cornerRadius;
+    final badgeR = _reactionBadgeHoverHeight / 2;
+    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.55;
+    final approxBadgeW =
+        aggregateCount > 1 ? 56.0 : _reactionBadgeHoverHeight.toDouble();
+    const minGapFromStart = 8.0;
+    final maxPermittedEndInset =
+        (bubbleInnerWidth - approxBadgeW - minGapFromStart).clamp(
+      0.0,
+      double.infinity,
+    );
+    return math.min(hugCorner, maxPermittedEndInset);
+  }
+
+  Widget _buildMyReactionCornerBadge(Color textColor) {
+    final id = widget.message.myReaction!;
+    final count = _aggregateCountForReaction(id);
+    final isHeart = id == 'heart';
+    final iconColor = isHeart ? Colors.red.shade500 : textColor.withValues(alpha: 0.95);
+    final isRoundCapsule = count <= 1;
+    final bubbleRadius = isRoundCapsule
+        ? _reactionBadgeHoverHeight / 2
+        : 15.0;
+
+    return GestureDetector(
+      onTap: widget.onClearReaction != null
+          ? () {
+              HapticFeedback.lightImpact();
+              widget.onClearReaction?.call();
+            }
+          : null,
+      behavior: HitTestBehavior.opaque,
+      child: LiquidGlassPlate(
+        height: _reactionBadgeHoverHeight,
+        borderRadius: BorderRadius.circular(bubbleRadius),
+        sigma: 10,
+        padding: EdgeInsetsDirectional.only(
+          start: count > 1 ? 8 : 10,
+          end: count > 1 ? 8 : 10,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              MessageReactionCatalog.iconForBubbleBadge(id),
+              size: 17,
+              color: iconColor,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            if (count > 1) ...[
+              const SizedBox(width: 4),
+              Text(
+                "$count",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: textColor.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   void _openReactionToolbar(BuildContext context) {
@@ -375,10 +487,7 @@ class _MessageBubbleState extends State<MessageBubble>
         var top = 100.0;
         const toolbarGap = 6.0;
         const toolbarHeightEstimate = 40.0;
-        const toolbarWidthEstimate = 96.0;
-        final pickerIds = MessageReactionCatalog.ids
-            .where((id) => id != 'heart')
-            .toList(growable: false);
+        const toolbarWidthEstimate = 132.0;
         final iconColor =
             Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.88);
         if (box != null) {
@@ -418,7 +527,7 @@ class _MessageBubbleState extends State<MessageBubble>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (final id in pickerIds)
+                      for (final id in MessageReactionCatalog.ids)
                         IconButton(
                           padding: const EdgeInsets.all(4),
                           constraints: const BoxConstraints(
@@ -463,8 +572,7 @@ class _MessageBubbleState extends State<MessageBubble>
             spacing: 8,
             runSpacing: 4,
             children: [
-              for (final id in MessageReactionCatalog.ids
-                  .where((x) => x != 'heart'))
+              for (final id in MessageReactionCatalog.ids)
                 IconButton(
                   constraints: const BoxConstraints(
                     minWidth: 48,
@@ -492,13 +600,8 @@ class _MessageBubbleState extends State<MessageBubble>
     }
   }
 
-  Future<void> _onBubbleDoubleTapHeart() async {
-    HapticFeedback.mediumImpact();
-    await _applyReactionChoice('heart');
-  }
-
   Widget _buildReactionStrip(BuildContext context, Color textColor) {
-    final entries = widget.message.reactions ?? [];
+    final entries = _reactionStripEntries();
     final scheme = Theme.of(context).colorScheme;
     final mine = widget.message.myReaction;
 
@@ -517,19 +620,21 @@ class _MessageBubbleState extends State<MessageBubble>
         children: [
           for (final e in entries)
             Material(
-              color: mine == e.reaction
+              color:
+                  (!_reactionsEnabled && mine == e.reaction)
                   ? scheme.primaryContainer.withValues(alpha: 0.85)
                   : scheme.surfaceContainerHighest.withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap:
-                    (mine == e.reaction &&
-                        widget.onClearReaction != null)
-                    ? () {
-                        HapticFeedback.lightImpact();
-                        widget.onClearReaction?.call();
-                      }
-                    : null,
+                    (!_reactionsEnabled &&
+                            mine == e.reaction &&
+                            widget.onClearReaction != null)
+                        ? () {
+                            HapticFeedback.lightImpact();
+                            widget.onClearReaction?.call();
+                          }
+                        : null,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

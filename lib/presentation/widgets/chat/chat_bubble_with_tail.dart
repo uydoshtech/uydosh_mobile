@@ -21,7 +21,9 @@ class ChatBubbleWithTail extends StatelessWidget {
   /// Content to display inside the bubble.
   final Widget child;
 
-  static const double _radius = 18;
+  /// Corner radius of the bubble body (must stay in sync with painter path).
+  static const double cornerRadius = 18;
+
   static const double _tailWidth = 10;
   static const double _tailHeight = 16;
 
@@ -76,7 +78,7 @@ class ChatBubbleWithTail extends StatelessWidget {
           elevationShadows: elevationShadows,
           tailPointsRight: isFromCurrentUser,
           hasBorder: isFromCurrentUser || useGlass,
-          radius: _radius,
+          radius: cornerRadius,
         );
 
         final content = Container(
@@ -98,7 +100,7 @@ class ChatBubbleWithTail extends StatelessWidget {
 
         return _GlassBubble(
           tailPointsRight: isFromCurrentUser,
-          radius: _radius,
+          radius: cornerRadius,
           tailWidth: _tailWidth,
           tailHeight: _tailHeight,
           painter: painter,
