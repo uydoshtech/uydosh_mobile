@@ -17,6 +17,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/theme_helper.dart"
     show ThemeHelper, liquidGlassAppBarMaterialColor;
@@ -104,6 +105,25 @@ String? _listingAuthorNameFromProfile(UserProfile profile) {
     return telegram.startsWith("@") ? telegram : "@$telegram";
   }
   return null;
+}
+
+/// Owner label for listing UI / chat entry: use [ListingDetailPageBloc] cache only
+/// when it matches [ListingDetail.user], otherwise listing payload email (always
+/// tied to the current owner row).
+String _resolvedListingOwnerDisplayLabel(
+  ListingDetail listingDetail,
+  ListingDetailPageState pageState,
+) {
+  final ownerId = listingDetail.user.id;
+  final cached = pageState.ownerName?.trim();
+  if (cached != null &&
+      cached.isNotEmpty &&
+      pageState.ownerNameListingUserId == ownerId) {
+    return cached;
+  }
+  final email = listingDetail.user.email?.trim();
+  if (email != null && email.isNotEmpty) return email;
+  return "";
 }
 
 // Data classes for BlocSelector to reduce unnecessary rebuilds
@@ -414,6 +434,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     await UserListingState().initialize();
     if (!mounted) return;
 
+    context.read<ListingDetailPageBloc>().invalidateStaleListingOwnerPresentation(
+          listingDetail.user.id,
+        );
+
     final isOwner = UserListingState().isOwner(listingDetail.user.id);
     if (isOwner) {
       _loadViewCount(listingDetail.id);
@@ -492,6 +516,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       final profile =
           await getIt<IUserProfileService>().getUserProfile(listingUserId);
       if (!mounted) return;
+      if (_getCurrentListingUserId() != listingUserId) return;
       pageBloc.setOwnerName(
         listingUserId,
         _listingAuthorNameFromProfile(profile),
@@ -528,6 +553,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       );
 
       if (!mounted) return;
+      if (_getCurrentListingUserId() != listingUserId) return;
       pageBloc.setCompatibilityResult(
         listingUserId: listingUserId,
         percent: result.percent,
@@ -1373,9 +1399,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   Future<void> _startConversation(ListingDetail listingDetail) async {
     final pageState = context.read<ListingDetailPageBloc>().state;
     final displayName =
-        (pageState.ownerName != null && pageState.ownerName!.trim().isNotEmpty)
-            ? pageState.ownerName!
-            : listingDetail.user.email ?? "";
+        _resolvedListingOwnerDisplayLabel(listingDetail, pageState);
 
     await ConversationEntryFlow.openListingThread(
       context: context,
@@ -1798,9 +1822,24 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                   );
                 }
 
-                return ListingDetailContactActionBar(
-                  onMessage: () => _startConversation(listingDetail),
-                  onTelegram: onTelegram,
+                return BlocSelector<ListingDetailPageBloc,
+                    ListingDetailPageState, String>(
+                  selector: (pageState) =>
+                      _resolvedListingOwnerDisplayLabel(
+                    listingDetail,
+                    pageState,
+                  ),
+                  builder: (context, ownerResolved) {
+                    final l10n = context.l10n;
+                    final chatCtaLabel = ownerResolved.isNotEmpty
+                        ? l10n.chat_with(ownerResolved)
+                        : l10n.uydosh_chat;
+                    return ListingDetailContactActionBar(
+                      onMessage: () => _startConversation(listingDetail),
+                      onTelegram: onTelegram,
+                      inAppChatCtaLabel: chatCtaLabel,
+                    );
+                  },
                 );
               },
             );

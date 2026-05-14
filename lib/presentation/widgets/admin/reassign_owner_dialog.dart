@@ -1,13 +1,13 @@
 import "dart:async";
 
 import "package:cached_network_image/cached_network_image.dart";
-import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_moderation_user_picker_service.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -34,7 +34,7 @@ Future<bool> showReassignOwnerDialog(
   );
   final success = ok == true;
   if (success && context.mounted) {
-    ToastTheme.showSuccessSimple(
+    ToastTheme.showSuccess(
       context,
       message: L10n.get("admin_reassign_ownership_success"),
     );
@@ -70,6 +70,7 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
   bool _submitting = false;
   String? _loadError;
   Timer? _debounce;
+  int _searchRequestId = 0;
 
   @override
   void initState() {
@@ -85,17 +86,20 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
   }
 
   Future<void> _loadUsers(String q) async {
+    final requestId = ++_searchRequestId;
     setState(() {
       _loading = true;
       _loadError = null;
     });
     try {
-      final list = await _picker.search(q: q.isEmpty ? null : q, limit: 40);
-      final filtered =
-          list.where((u) => u.id != widget.fromUserId).toList(growable: false);
-      if (!mounted) return;
+      final list = await _picker.search(
+        q: q.isEmpty ? null : q,
+        limit: 40,
+        excludeUserId: widget.fromUserId,
+      );
+      if (!mounted || requestId != _searchRequestId) return;
       setState(() {
-        _users = filtered;
+        _users = list;
         _loading = false;
         if (_selected != null &&
             !_users.any((u) => u.id == _selected!.id)) {
@@ -103,16 +107,9 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
         }
       });
     } catch (e) {
-      if (!mounted) return;
-      var msg = e.toString();
-      if (e is DioException) {
-        final data = e.response?.data;
-        if (data is Map && data["error"] is String) {
-          msg = data["error"] as String;
-        }
-      }
+      if (!mounted || requestId != _searchRequestId) return;
       setState(() {
-        _loadError = msg;
+        _loadError = throwableUserMessage(e);
         _loading = false;
       });
     }
@@ -140,11 +137,7 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      var msg = e.toString();
-      if (msg.startsWith("Exception: ")) {
-        msg = msg.substring("Exception: ".length);
-      }
-      ToastTheme.showErrorSimple(context, message: msg);
+      ToastTheme.showErrorSimple(context, message: throwableUserMessage(e));
       setState(() => _submitting = false);
     }
   }
@@ -328,16 +321,17 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
                       },
                     ),
             ),
+            const SizedBox(height: 16),
+            PrimaryButtonFactory.iconTextCentered(
+              onPressed: (_selected == null || _submitting) ? null : _submit,
+              icon: Icons.swap_horiz,
+              text: L10n.get("admin_reassign_ownership_submit"),
+              isLoading: _submitting,
+              width: double.infinity,
+            ),
           ],
         ),
       ),
-      actions: [
-        PrimaryButtonFactory.text(
-          onPressed: (_selected == null || _submitting) ? null : _submit,
-          text: L10n.get("admin_reassign_ownership_submit"),
-          isLoading: _submitting,
-        ),
-      ],
     );
   }
 }

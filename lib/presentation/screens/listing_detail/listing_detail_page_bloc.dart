@@ -165,6 +165,35 @@ class ListingDetailPageState {
 class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
   ListingDetailPageBloc() : super(const ListingDetailPageState());
 
+  /// Drops owner-facing presentation cached from a **different** listing owner
+  /// (e.g. after admin reassignment). Without this, async profile/compatibility
+  /// loads for the previous owner can finish later and keep the UI stale.
+  void invalidateStaleListingOwnerPresentation(int listingOwnerUserId) {
+    final s = state;
+    final stale =
+        (s.ownerNameListingUserId != null &&
+            s.ownerNameListingUserId != listingOwnerUserId) ||
+        (s.compatibilityListingUserId != null &&
+            s.compatibilityListingUserId != listingOwnerUserId);
+    if (!stale) return;
+
+    emit(
+      ListingDetailPageState(
+        isToggling: s.isToggling,
+        isDeleting: s.isDeleting,
+        complaintsCount: s.complaintsCount,
+        complaintsCountListingId: s.complaintsCountListingId,
+        isLoadingComplaintsCount: s.isLoadingComplaintsCount,
+        viewCount: s.viewCount,
+        viewCountListingId: s.viewCountListingId,
+        isLoadingViewCount: s.isLoadingViewCount,
+        similarListingsCount: s.similarListingsCount,
+        similarListingsCountListingId: s.similarListingsCountListingId,
+        isLoadingSimilarListingsCount: s.isLoadingSimilarListingsCount,
+      ),
+    );
+  }
+
   void setToggling(bool value) =>
       emit(state.copyWith(isToggling: value));
 

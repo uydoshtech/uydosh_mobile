@@ -2,6 +2,7 @@ import "package:dio/dio.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
 /// Backend `entityType` for [IAdminEntityOwnershipService.reassignOwnership].
@@ -84,14 +85,6 @@ class AdminEntityOwnershipService implements IAdminEntityOwnershipService {
     return Map<String, dynamic>.from(response);
   }
 
-  static String _messageFromDio(DioException e) {
-    final data = e.response?.data;
-    if (data is Map && data["error"] is String) {
-      return data["error"] as String;
-    }
-    return e.message ?? e.toString();
-  }
-
   @override
   Future<AdminEntityOwnershipReassignResult> reassignOwnership({
     required AdminEntityOwnershipType entityType,
@@ -115,7 +108,7 @@ class AdminEntityOwnershipService implements IAdminEntityOwnershipService {
       return AdminEntityOwnershipReassignResult.fromJson(response);
     } on DioException catch (e) {
       logger.d("Admin reassign ownership: $e");
-      throw Exception(_messageFromDio(e));
+      throw Exception(dioApiErrorMessage(e));
     }
   }
 }

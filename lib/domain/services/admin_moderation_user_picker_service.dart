@@ -36,7 +36,12 @@ class ModerationUserPickerUser {
 }
 
 abstract class IAdminModerationUserPickerService {
-  Future<List<ModerationUserPickerUser>> search({String? q, int limit = 30});
+  /// [excludeUserId] omits the current owner so they never appear as a transfer target.
+  Future<List<ModerationUserPickerUser>> search({
+    String? q,
+    int limit = 30,
+    int? excludeUserId,
+  });
 }
 
 class AdminModerationUserPickerService
@@ -49,6 +54,7 @@ class AdminModerationUserPickerService
   Future<List<ModerationUserPickerUser>> search({
     String? q,
     int limit = 30,
+    int? excludeUserId,
   }) async {
     try {
       final trimmed = q?.trim();
@@ -59,6 +65,8 @@ class AdminModerationUserPickerService
         queryParameters: <String, dynamic>{
           "limit": limit,
           if (trimmed != null && trimmed.isNotEmpty) "q": trimmed,
+          if (excludeUserId != null && excludeUserId > 0)
+            "exclude_user_id": excludeUserId,
         },
       );
       if (response is! Map) {

@@ -148,7 +148,11 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                     Brightness.dark
                 ? Colors.white
                 : Colors.black;
-        final unselectedTextColor = themeState.unselectedTabTextColor;
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        final unselectedTextColor = liquidGlass && isDark
+            ? Colors.white.withValues(alpha: 0.78)
+            : themeState.unselectedTabTextColor;
 
         final selectedIndex = entries.indexWhere((e) => e.value == value);
         // Anchor the thumb to index 0 if no match (defensive — keeps the
@@ -164,37 +168,8 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
               totalInner,
             );
 
-            final theme = Theme.of(context);
-            final isDark = theme.brightness == Brightness.dark;
-
             final thumbDecoration = liquidGlass
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(_innerRadius()),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        primaryColor.withValues(alpha: isDark ? 0.38 : 0.44),
-                        primaryColor.withValues(alpha: isDark ? 0.58 : 0.64),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: (isDark ? Colors.white : Colors.black).withValues(
-                        alpha: isDark ? 0.20 : 0.12,
-                      ),
-                      width: 0.6,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: isDark ? 0.28 : 0.10,
-                        ),
-                        blurRadius: isDark ? 12 : 10,
-                        spreadRadius: isDark ? 0.4 : 0.2,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  )
+                ? null
                 : BoxDecoration(
                     borderRadius: BorderRadius.circular(_innerRadius()),
                     gradient: ThreeDSurfaceStyle.surfaceGradient(
@@ -204,6 +179,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                     boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
                   );
 
+            final innerR = BorderRadius.circular(_innerRadius());
             final stack = Stack(
               children: [
                 AnimatedPositioned(
@@ -216,9 +192,15 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                   top: _thumbInset,
                   bottom: _thumbInset,
                   width: segmentWidths[activeIndex],
-                  child: DecoratedBox(
-                    decoration: thumbDecoration,
-                  ),
+                  child: liquidGlass
+                      ? _LiquidGlassThumb(
+                          borderRadius: innerR,
+                          primaryColor: primaryColor,
+                          isDark: isDark,
+                        )
+                      : DecoratedBox(
+                          decoration: thumbDecoration!,
+                        ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -236,6 +218,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                                   entry: entries[i],
                                   isSelected: i == activeIndex,
                                   height: height,
+                                  liquidGlass: liquidGlass,
                                   selectedTextColor: selectedTextColor,
                                   unselectedTextColor: unselectedTextColor,
                                   onTap: () {
@@ -250,6 +233,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                                   entry: entries[i],
                                   isSelected: i == activeIndex,
                                   height: height,
+                                  liquidGlass: liquidGlass,
                                   selectedTextColor: selectedTextColor,
                                   unselectedTextColor: unselectedTextColor,
                                   onTap: () {
@@ -270,6 +254,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
                 height: height,
                 borderRadius: BorderRadius.circular(_outerRadius()),
                 padding: EdgeInsets.zero,
+                variant: LiquidGlassPlateVariant.segmentedTrack,
                 child: stack,
               );
             }
@@ -293,11 +278,95 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
   }
 }
 
+/// Sliding thumb for [NeumorphicSegmentedSwitch] when [liquidGlass] is true:
+/// vertical blue gradient, specular top edge, and layered shadow.
+class _LiquidGlassThumb extends StatelessWidget {
+  const _LiquidGlassThumb({
+    required this.borderRadius,
+    required this.primaryColor,
+    required this.isDark,
+  });
+
+  final BorderRadius borderRadius;
+  final Color primaryColor;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = Color.lerp(primaryColor, Colors.white, isDark ? 0.15 : 0.22)!;
+    final mid = primaryColor;
+    final bottom = Color.lerp(primaryColor, Colors.black, isDark ? 0.36 : 0.20)!;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.44 : 0.12),
+            blurRadius: isDark ? 14 : 11,
+            spreadRadius: isDark ? 0.12 : 0.04,
+            offset: Offset(0, isDark ? 5.5 : 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.07),
+            blurRadius: isDark ? 6 : 4,
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [top, mid, bottom],
+                  stops: const [0.0, 0.42, 1.0],
+                ),
+                border: Border.all(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: isDark ? 0.26 : 0.11,
+                  ),
+                  width: 0.65,
+                ),
+              ),
+            ),
+            Positioned(
+              left: 4,
+              right: 4,
+              top: 0,
+              height: 1.25,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: isDark ? 0.40 : 0.52),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SegmentedSwitchTab<T> extends StatelessWidget {
   const _SegmentedSwitchTab({
     required this.entry,
     required this.isSelected,
     required this.height,
+    required this.liquidGlass,
     required this.selectedTextColor,
     required this.unselectedTextColor,
     required this.onTap,
@@ -306,6 +375,7 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
   final SegmentedSwitchEntry<T> entry;
   final bool isSelected;
   final double height;
+  final bool liquidGlass;
   final Color selectedTextColor;
   final Color unselectedTextColor;
   final VoidCallback onTap;
@@ -332,7 +402,8 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              fontWeight:
+                  (isSelected || liquidGlass) ? FontWeight.w700 : FontWeight.w600,
               color: color,
             ),
           ),
@@ -372,7 +443,7 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeInOut,
-          opacity: isSelected ? 1.0 : 0.82,
+          opacity: isSelected ? 1.0 : (liquidGlass ? 0.9 : 0.82),
           child: AnimatedScale(
             duration: const Duration(milliseconds: 240),
             curve: Curves.easeOutCubic,

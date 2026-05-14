@@ -30,10 +30,14 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 /// width. When [onMessage] is null (e.g. admin viewing a listing they own
 /// — you can't chat with yourself), the in-app chat CTA is hidden and
 /// Telegram takes the full width.
+/// When [onMessage] is non-null, [inAppChatCtaLabel] should describe the chat
+/// action for the **current listing owner** (e.g. ARB `chat_with`). When null,
+/// falls back to [AppLocalizations.uydosh_chat].
 class ListingDetailContactActionBar extends StatelessWidget {
   const ListingDetailContactActionBar({
     this.onMessage,
     this.onTelegram,
+    this.inAppChatCtaLabel,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -42,6 +46,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
 
   final VoidCallback? onMessage;
   final VoidCallback? onTelegram;
+  final String? inAppChatCtaLabel;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -78,7 +83,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   Widget _chatButton(BuildContext context) {
     return GlassGreenChatCtaButton(
       onPressed: () => onMessage!.call(),
-      label: context.l10n.uydosh_chat,
+      label: inAppChatCtaLabel ?? context.l10n.uydosh_chat,
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       height: 48,
     );

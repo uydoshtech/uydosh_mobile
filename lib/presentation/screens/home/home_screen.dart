@@ -342,6 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _bootstrapHomeSearchFilters() async {
+    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
     await _searchFiltersState.initialize();
     if (!mounted) return;
     if (await SessionManager.isAuthenticated()) {
@@ -353,6 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final restored = await _restoreInlineSearchModeFromPrefs();
     if (restored) return;
     if (!mounted) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) return;
     // Fallback for the fresh-mount-after-login path: the auth wizard's
     // [_navigateToMainNavigation] uses `pushAndRemoveUntil` whenever the
     // existing `MainNavigation` was disposed (e.g. when the user reached
@@ -395,6 +397,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
     if (!mounted) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) {
+      _postLoginActivationDeadline = null;
+      return;
+    }
     if (_hasUserAppliedSearchCriteria()) {
       _postLoginActivationDeadline = null;
       _activateInlineSearch(persistActiveFlag: true);
@@ -451,6 +457,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchSpacerExpanded = true;
     });
     HomeInlineSearchState().setActive(true);
+    unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
     if (persistActiveFlag) {
       unawaited(() async {
         try {
@@ -520,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // with the previous user's chips cached on the outgoing child.
     _postLoginActivationDeadline = null;
     if (_inlineSearchActive) {
-      _exitInlineSearch(animated: false);
+      _exitInlineSearch(animated: false, recordRibbonDismissed: false);
     } else {
       setState(() {});
     }
@@ -553,6 +560,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!AuthenticationState().isAuthenticated) return;
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) return;
     if (!_hasUserAppliedSearchCriteria()) return;
     _postLoginActivationDeadline = null;
     _activateInlineSearch(persistActiveFlag: true);
@@ -1430,7 +1438,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       }
       return;
     }
-    _exitInlineSearch();
+    _exitInlineSearch(recordRibbonDismissed: false);
   }
 
   void _maybeShowNoResultsAlertBellTutorial() {
@@ -1912,6 +1920,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchSpacerExpanded = true;
     });
     HomeInlineSearchState().setActive(true);
+    await HomeInlineSearchState().setRibbonDismissedByUser(false);
     final p = await SharedPreferences.getInstance();
     await p.setBool(HomeInlineSearchState.activePrefsKey, true);
     if (!mounted) return;
@@ -1927,7 +1936,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // sheet to keep their current selections. Filter reset is handled explicitly
   // via "clear" actions (e.g. empty state CTA).
 
-  void _exitInlineSearch({bool animated = true}) {
+  void _exitInlineSearch({
+    bool animated = true,
+    bool recordRibbonDismissed = true,
+  }) {
     final refreshToken = ++_inlineSearchExitRefreshToken;
     if (mounted) {
       setState(() {
@@ -1942,6 +1954,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       });
     }
     HomeInlineSearchState().setActive(false);
+    if (recordRibbonDismissed) {
+      unawaited(HomeInlineSearchState().setRibbonDismissedByUser(true));
+    }
     SharedPreferences.getInstance().then((p) async {
       await p.setBool(HomeInlineSearchState.activePrefsKey, false);
     });
