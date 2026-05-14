@@ -30,6 +30,9 @@ class $AssetsIconGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/google_g_logo.svg
+  String get googleGLogo => 'assets/images/google_g_logo.svg';
+
   /// File path: assets/images/ios_dark_rd_ctn.svg
   String get iosDarkRdCtn => 'assets/images/ios_dark_rd_ctn.svg';
 
@@ -46,7 +49,8 @@ class $AssetsImagesGen {
   String get vectorOrig => 'assets/images/vector_orig.svg';
 
   /// List of all assets
-  List<String> get values => [iosDarkRdCtn, iosNeutralRdCtn, tashkentSubwayMapSimple, vectorOrig];
+  List<String> get values =>
+      [googleGLogo, iosDarkRdCtn, iosNeutralRdCtn, tashkentSubwayMapSimple, vectorOrig];
 }
 
 class $AssetsMapElementsGen {

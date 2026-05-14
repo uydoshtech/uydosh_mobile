@@ -122,6 +122,16 @@ abstract class IMessagingService {
   });
 
   Future<void> deleteAttachment(int attachmentId);
+
+  /// Sets or replaces the current user's reaction on a message (same push /
+  /// inbox behavior as a new text message for the peer).
+  Future<Message> setMessageReaction({
+    required int messageId,
+    required String reaction,
+  });
+
+  /// Removes the current user's reaction from a message.
+  Future<Message> removeMessageReaction({required int messageId});
 }
 
 class MessagingService implements IMessagingService {
@@ -803,6 +813,77 @@ class MessagingService implements IMessagingService {
       return "document";
     }
   }
+
+  @override
+  Future<Message> setMessageReaction({
+    required int messageId,
+    required String reaction,
+  }) async {
+    await _checkAuthentication();
+    try {
+      final response =
+          await _apiClient.post<Map<String, dynamic>, _MessageReactionBody>(
+            "/messages/$messageId/reactions",
+            (json) => json as Map<String, dynamic>,
+            data: _MessageReactionBody(reaction: reaction),
+          );
+      final messageData = response["data"] as Map<String, dynamic>?;
+      if (messageData == null) {
+        throw Exception("No message data found in response");
+      }
+      return Message.fromJson(messageData);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
+        }
+      }
+      throw Exception("Failed to set reaction");
+    } catch (e) {
+      throw Exception("Failed to set reaction");
+    }
+  }
+
+  @override
+  Future<Message> removeMessageReaction({required int messageId}) async {
+    await _checkAuthentication();
+    try {
+      final response =
+          await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
+            "/messages/$messageId/reactions",
+            (json) => json as Map<String, dynamic>,
+            data: _EmptyRequest(),
+          );
+      final messageData = response["data"] as Map<String, dynamic>?;
+      if (messageData == null) {
+        throw Exception("No message data found in response");
+      }
+      return Message.fromJson(messageData);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
+        }
+      }
+      throw Exception("Failed to remove reaction");
+    } catch (e) {
+      throw Exception("Failed to remove reaction");
+    }
+  }
+}
+
+class _MessageReactionBody implements IJsonEncodable {
+  _MessageReactionBody({required this.reaction});
+  final String reaction;
+
+  @override
+  Map<String, dynamic> toJson() => {"reaction": reaction};
 }
 
 /// Monthly Gemini chat translation quota exceeded (`403` `gemini_quota_exceeded`).

@@ -50,6 +50,14 @@ mixin _$Message {
   bool? get isReadByCurrentUser => throw _privateConstructorUsedError;
   @JsonKey(name: "is_read_by_recipient")
   bool? get isReadByRecipient => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: "reactions",
+      fromJson: _messageReactionsFromJson,
+      toJson: _messageReactionsToJson)
+  List<MessageReactionCount>? get reactions =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: "my_reaction")
+  String? get myReaction => throw _privateConstructorUsedError;
 
   /// Serializes this Message to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -82,7 +90,13 @@ abstract class $MessageCopyWith<$Res> {
       List<MessageAttachment>? attachments,
       Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
-      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient});
+      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
+      @JsonKey(
+          name: "reactions",
+          fromJson: _messageReactionsFromJson,
+          toJson: _messageReactionsToJson)
+      List<MessageReactionCount>? reactions,
+      @JsonKey(name: "my_reaction") String? myReaction});
 
   $MessageSenderCopyWith<$Res>? get sender;
   $MessageCopyWith<$Res>? get replyToMessage;
@@ -120,6 +134,8 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? replyToMessage = freezed,
     Object? isReadByCurrentUser = freezed,
     Object? isReadByRecipient = freezed,
+    Object? reactions = freezed,
+    Object? myReaction = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -190,6 +206,14 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
           ? _value.isReadByRecipient
           : isReadByRecipient // ignore: cast_nullable_to_non_nullable
               as bool?,
+      reactions: freezed == reactions
+          ? _value.reactions
+          : reactions // ignore: cast_nullable_to_non_nullable
+              as List<MessageReactionCount>?,
+      myReaction: freezed == myReaction
+          ? _value.myReaction
+          : myReaction // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -246,7 +270,13 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
       List<MessageAttachment>? attachments,
       Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
-      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient});
+      @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
+      @JsonKey(
+          name: "reactions",
+          fromJson: _messageReactionsFromJson,
+          toJson: _messageReactionsToJson)
+      List<MessageReactionCount>? reactions,
+      @JsonKey(name: "my_reaction") String? myReaction});
 
   @override
   $MessageSenderCopyWith<$Res>? get sender;
@@ -284,6 +314,8 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? replyToMessage = freezed,
     Object? isReadByCurrentUser = freezed,
     Object? isReadByRecipient = freezed,
+    Object? reactions = freezed,
+    Object? myReaction = freezed,
   }) {
     return _then(_$MessageImpl(
       id: null == id
@@ -354,6 +386,14 @@ class __$$MessageImplCopyWithImpl<$Res>
           ? _value.isReadByRecipient
           : isReadByRecipient // ignore: cast_nullable_to_non_nullable
               as bool?,
+      reactions: freezed == reactions
+          ? _value._reactions
+          : reactions // ignore: cast_nullable_to_non_nullable
+              as List<MessageReactionCount>?,
+      myReaction: freezed == myReaction
+          ? _value.myReaction
+          : myReaction // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -378,8 +418,15 @@ class _$MessageImpl implements _Message {
       final List<MessageAttachment>? attachments,
       this.replyToMessage,
       @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
-      @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient})
-      : _attachments = attachments;
+      @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient,
+      @JsonKey(
+          name: "reactions",
+          fromJson: _messageReactionsFromJson,
+          toJson: _messageReactionsToJson)
+      final List<MessageReactionCount>? reactions,
+      @JsonKey(name: "my_reaction") this.myReaction})
+      : _attachments = attachments,
+        _reactions = reactions;
 
   factory _$MessageImpl.fromJson(Map<String, dynamic> json) =>
       _$$MessageImplFromJson(json);
@@ -439,10 +486,27 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey(name: "is_read_by_recipient")
   final bool? isReadByRecipient;
+  final List<MessageReactionCount>? _reactions;
+  @override
+  @JsonKey(
+      name: "reactions",
+      fromJson: _messageReactionsFromJson,
+      toJson: _messageReactionsToJson)
+  List<MessageReactionCount>? get reactions {
+    final value = _reactions;
+    if (value == null) return null;
+    if (_reactions is EqualUnmodifiableListView) return _reactions;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  @JsonKey(name: "my_reaction")
+  final String? myReaction;
 
   @override
   String toString() {
-    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient)';
+    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient, reactions: $reactions, myReaction: $myReaction)';
   }
 
   @override
@@ -480,30 +544,37 @@ class _$MessageImpl implements _Message {
             (identical(other.isReadByCurrentUser, isReadByCurrentUser) ||
                 other.isReadByCurrentUser == isReadByCurrentUser) &&
             (identical(other.isReadByRecipient, isReadByRecipient) ||
-                other.isReadByRecipient == isReadByRecipient));
+                other.isReadByRecipient == isReadByRecipient) &&
+            const DeepCollectionEquality()
+                .equals(other._reactions, _reactions) &&
+            (identical(other.myReaction, myReaction) ||
+                other.myReaction == myReaction));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      conversationId,
-      senderId,
-      content,
-      messageType,
-      createdAt,
-      updatedAt,
-      replyToMessageId,
-      isEdited,
-      editedAt,
-      isDeleted,
-      deletedAt,
-      sender,
-      const DeepCollectionEquality().hash(_attachments),
-      replyToMessage,
-      isReadByCurrentUser,
-      isReadByRecipient);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        conversationId,
+        senderId,
+        content,
+        messageType,
+        createdAt,
+        updatedAt,
+        replyToMessageId,
+        isEdited,
+        editedAt,
+        isDeleted,
+        deletedAt,
+        sender,
+        const DeepCollectionEquality().hash(_attachments),
+        replyToMessage,
+        isReadByCurrentUser,
+        isReadByRecipient,
+        const DeepCollectionEquality().hash(_reactions),
+        myReaction
+      ]);
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.
@@ -539,8 +610,13 @@ abstract class _Message implements Message {
       final List<MessageAttachment>? attachments,
       final Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
-      @JsonKey(name: "is_read_by_recipient")
-      final bool? isReadByRecipient}) = _$MessageImpl;
+      @JsonKey(name: "is_read_by_recipient") final bool? isReadByRecipient,
+      @JsonKey(
+          name: "reactions",
+          fromJson: _messageReactionsFromJson,
+          toJson: _messageReactionsToJson)
+      final List<MessageReactionCount>? reactions,
+      @JsonKey(name: "my_reaction") final String? myReaction}) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
 
@@ -590,6 +666,15 @@ abstract class _Message implements Message {
   @override
   @JsonKey(name: "is_read_by_recipient")
   bool? get isReadByRecipient;
+  @override
+  @JsonKey(
+      name: "reactions",
+      fromJson: _messageReactionsFromJson,
+      toJson: _messageReactionsToJson)
+  List<MessageReactionCount>? get reactions;
+  @override
+  @JsonKey(name: "my_reaction")
+  String? get myReaction;
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.

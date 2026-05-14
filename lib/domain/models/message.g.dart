@@ -31,6 +31,8 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
           : Message.fromJson(json['replyToMessage'] as Map<String, dynamic>),
       isReadByCurrentUser: json['is_read_by_current_user'] as bool?,
       isReadByRecipient: json['is_read_by_recipient'] as bool?,
+      reactions: _messageReactionsFromJson(json['reactions']),
+      myReaction: json['my_reaction'] as String?,
     );
 
 Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
@@ -52,4 +54,6 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'replyToMessage': instance.replyToMessage,
       'is_read_by_current_user': instance.isReadByCurrentUser,
       'is_read_by_recipient': instance.isReadByRecipient,
+      'reactions': _messageReactionsToJson(instance.reactions),
+      'my_reaction': instance.myReaction,
     };

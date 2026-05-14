@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -9,6 +10,7 @@ import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
+import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class MessageBubble extends StatefulWidget {
@@ -27,6 +29,8 @@ class MessageBubble extends StatefulWidget {
     this.isTranslating = false,
     this.showOriginal = false,
     this.onToggleTranslation,
+    this.onSetReaction,
+    this.onClearReaction,
   });
   final Message message;
   final bool isCurrentUser;
@@ -63,6 +67,13 @@ class MessageBubble extends StatefulWidget {
   /// to flip [showOriginal]. No-op when [translation] is null.
   final VoidCallback? onToggleTranslation;
 
+  /// Long-press reaction picker: set or replace the viewer's reaction (server
+  /// treats this like a new message for the peer — push + inbox preview).
+  final Future<void> Function(String reactionId)? onSetReaction;
+
+  /// Clear the viewer's reaction (optional; used when picking the same emoji).
+  final Future<void> Function()? onClearReaction;
+
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
 }
@@ -75,6 +86,7 @@ class _MessageBubbleState extends State<MessageBubble>
   late Animation<double> _fadeAnimation;
   Timer? _startupFadeTimer;
   Timer? _startupCompleteTimer;
+  final GlobalKey _bubbleAnchorKey = GlobalKey();
 
   @override
   void initState() {
@@ -164,85 +176,259 @@ class _MessageBubbleState extends State<MessageBubble>
               scale: _scaleAnimation.value,
               child: Opacity(
                 opacity: _fadeAnimation.value,
-                child: ChatMessageRow(
-                  isFromCurrentUser: widget.isCurrentUser,
-                  leftAvatarInitials: _getOtherUserInitials(),
-                  rightAvatarInitials: _getCurrentUserInitials(),
-                  leftAvatarUrl: _getOtherUserAvatarUrl(),
-                  rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
-                  bubbleChild: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildMessageContent(
-                            _displayText(),
-                            textColor,
-                          ),
-                          if (widget.translation == null &&
-                              widget.isTranslating) ...[
-                            const SizedBox(height: 6),
-                            _TranslationSkeleton(textColor: textColor),
-                          ],
-                          if (widget.translation != null) ...[
-                            const SizedBox(height: 4),
-                            _TranslationToggleRow(
-                              translation: widget.translation!,
-                              isShowingOriginal: widget.showOriginal,
-                              textColor: textColor,
-                              onTap: widget.onToggleTranslation,
-                            ),
-                          ],
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: widget.isCurrentUser
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onLongPress:
+                          (widget.onSetReaction == null &&
+                                  widget.onClearReaction == null)
+                              ? null
+                              : () => _openReactionToolbar(context),
+                      behavior: HitTestBehavior.deferToChild,
+                      child: KeyedSubtree(
+                        key: _bubbleAnchorKey,
+                        child: ChatMessageRow(
+                          isFromCurrentUser: widget.isCurrentUser,
+                          leftAvatarInitials: _getOtherUserInitials(),
+                          rightAvatarInitials: _getCurrentUserInitials(),
+                          leftAvatarUrl: _getOtherUserAvatarUrl(),
+                          rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
+                          bubbleChild: Stack(
+                            clipBehavior: Clip.none,
                             children: [
-                              ThemeIcon(
-                                Icons.access_time,
-                                size: 10,
-                                color: textColor.withValues(alpha: 0.7),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildMessageContent(
+                                    _displayText(),
+                                    textColor,
+                                  ),
+                                  if (widget.translation == null &&
+                                      widget.isTranslating) ...[
+                                    const SizedBox(height: 6),
+                                    _TranslationSkeleton(textColor: textColor),
+                                  ],
+                                  if (widget.translation != null) ...[
+                                    const SizedBox(height: 4),
+                                    _TranslationToggleRow(
+                                      translation: widget.translation!,
+                                      isShowingOriginal: widget.showOriginal,
+                                      textColor: textColor,
+                                      onTap: widget.onToggleTranslation,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ThemeIcon(
+                                        Icons.access_time,
+                                        size: 10,
+                                        color: textColor.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        _formatTime(widget.message.createdAt),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: textColor.withValues(
+                                            alpha: 0.7,
+                                          ),
+                                        ),
+                                      ),
+                                      if (widget.isCurrentUser) ...[
+                                        const SizedBox(width: 4),
+                                        _buildCheckmarks(textColor),
+                                      ],
+                                    ],
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                _formatTime(widget.message.createdAt),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: textColor.withValues(alpha: 0.7),
+                              if (!widget.isCurrentUser &&
+                                  (widget.riskLevel == 'medium' ||
+                                      widget.riskLevel == 'high'))
+                                PositionedDirectional(
+                                  // Badge-style: overlap the bubble in the top-right.
+                                  // Negative offsets keep it outside (hovering above).
+                                  // Roughly half outside the bubble.
+                                  top: -22,
+                                  end: -22,
+                                  child: GestureDetector(
+                                    onTap: widget.onRiskBadgeTap,
+                                    behavior: HitTestBehavior.opaque,
+                                    child: _RiskBadge(level: widget.riskLevel!),
+                                  ),
                                 ),
-                              ),
-                              if (widget.isCurrentUser) ...[
-                                const SizedBox(width: 4),
-                                _buildCheckmarks(textColor),
-                              ],
                             ],
                           ),
-                        ],
-                      ),
-                      if (!widget.isCurrentUser &&
-                          (widget.riskLevel == 'medium' ||
-                              widget.riskLevel == 'high'))
-                        PositionedDirectional(
-                          // Badge-style: overlap the bubble in the top-right.
-                          // Negative offsets keep it outside (hovering above).
-                          // Roughly half outside the bubble.
-                          top: -22,
-                          end: -22,
-                          child: GestureDetector(
-                            onTap: widget.onRiskBadgeTap,
-                            behavior: HitTestBehavior.opaque,
-                            child: _RiskBadge(level: widget.riskLevel!),
-                          ),
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                    if (_hasReactionRow) _buildReactionStrip(context, textColor),
+                  ],
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  bool get _hasReactionRow {
+    final r = widget.message.reactions;
+    return (r != null && r.isNotEmpty);
+  }
+
+  void _openReactionToolbar(BuildContext context) {
+    if (widget.onSetReaction == null && widget.onClearReaction == null) {
+      return;
+    }
+    HapticFeedback.mediumImpact();
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) {
+      return;
+    }
+    final box =
+        _bubbleAnchorKey.currentContext?.findRenderObject() as RenderBox?;
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) {
+        final mq = MediaQuery.of(ctx);
+        final w = mq.size.width;
+        final h = mq.size.height;
+        var left = 16.0;
+        var top = 100.0;
+        if (box != null) {
+          final o = box.localToGlobal(Offset.zero);
+          top = (o.dy - 52).clamp(8.0, h - 120);
+          left = (o.dx + box.size.width / 2 - 88).clamp(8.0, w - 184);
+        }
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  entry.remove();
+                },
+                behavior: HitTestBehavior.opaque,
+                child: ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.2),
+                ),
+              ),
+            ),
+            Positioned(
+              left: left,
+              top: top,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(24),
+                clipBehavior: Clip.antiAlias,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final id in MessageReactionCatalog.ids)
+                      IconButton(
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () async {
+                          entry.remove();
+                          final mine = widget.message.myReaction == id;
+                          if (mine) {
+                            await widget.onClearReaction?.call();
+                          } else {
+                            await widget.onSetReaction?.call(id);
+                          }
+                        },
+                        icon: Icon(MessageReactionCatalog.iconFor(id)),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    overlay.insert(entry);
+  }
+
+  Widget _buildReactionStrip(BuildContext context, Color textColor) {
+    final entries = widget.message.reactions ?? [];
+    final scheme = Theme.of(context).colorScheme;
+    final mine = widget.message.myReaction;
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: 2,
+        left: 4,
+        right: 4,
+      ),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 2,
+        alignment: widget.isCurrentUser
+            ? WrapAlignment.end
+            : WrapAlignment.start,
+        children: [
+          for (final e in entries)
+            Material(
+              color: mine == e.reaction
+                  ? scheme.primaryContainer.withValues(alpha: 0.85)
+                  : scheme.surfaceContainerHighest.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap:
+                    (mine == e.reaction &&
+                        widget.onClearReaction != null)
+                    ? () {
+                        HapticFeedback.lightImpact();
+                        widget.onClearReaction?.call();
+                      }
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 3,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        MessageReactionCatalog.iconFor(e.reaction),
+                        size: 14,
+                        color: textColor.withValues(alpha: 0.95),
+                      ),
+                      if (e.count > 1) ...[
+                        const SizedBox(width: 3),
+                        Text(
+                          "${e.count}",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: textColor.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

@@ -5,6 +5,46 @@ import "package:uy_dosh/domain/models/message_sender.dart";
 part "message.freezed.dart";
 part "message.g.dart";
 
+/// Aggregated reaction counts for a chat message (from API `reactions` array).
+class MessageReactionCount {
+  const MessageReactionCount({required this.reaction, required this.count});
+  final String reaction;
+  final int count;
+  factory MessageReactionCount.fromJson(Map<String, dynamic> json) {
+    return MessageReactionCount(
+      reaction: json["reaction"] as String,
+      count: (json["count"] as num).toInt(),
+    );
+  }
+}
+
+List<MessageReactionCount>? _messageReactionsFromJson(dynamic value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is! List) {
+    return null;
+  }
+  return value
+      .map(
+        (e) => MessageReactionCount.fromJson(e as Map<String, dynamic>),
+      )
+      .toList();
+}
+
+List<Map<String, dynamic>>? _messageReactionsToJson(
+  List<MessageReactionCount>? value,
+) {
+  if (value == null) {
+    return null;
+  }
+  return value
+      .map(
+        (e) => <String, dynamic>{"reaction": e.reaction, "count": e.count},
+      )
+      .toList();
+}
+
 @freezed
 class Message with _$Message {
   const factory Message({
@@ -24,6 +64,13 @@ class Message with _$Message {
     Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
     @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
+    @JsonKey(
+      name: "reactions",
+      fromJson: _messageReactionsFromJson,
+      toJson: _messageReactionsToJson,
+    )
+    List<MessageReactionCount>? reactions,
+    @JsonKey(name: "my_reaction") String? myReaction,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) =>

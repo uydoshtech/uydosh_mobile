@@ -1377,6 +1377,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         }
                       });
                     },
+              onSetReaction: (reactionId) =>
+                  _setMessageReaction(message, reactionId),
+              onClearReaction: () => _clearMessageReaction(message),
             ),
         };
       },
@@ -1459,6 +1462,65 @@ class _ChatScreenState extends State<ChatScreen> {
     context.read<MessagingBloc>().add(
           SendMessage(conversationId: widget.conversationId, content: content),
         );
+  }
+
+  Future<void> _setMessageReaction(Message message, String reactionId) async {
+    try {
+      await getIt<IMessagingService>().setMessageReaction(
+        messageId: message.id,
+        reaction: reactionId,
+      );
+      if (!mounted) {
+        return;
+      }
+      context.read<MessagingBloc>().add(
+            RefreshMessages(conversationId: widget.conversationId),
+          );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      if (e.toString().contains("USER_BLOCKED")) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("user_blocked_violation_message"),
+        );
+        return;
+      }
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic"),
+      );
+    }
+  }
+
+  Future<void> _clearMessageReaction(Message message) async {
+    try {
+      await getIt<IMessagingService>().removeMessageReaction(
+        messageId: message.id,
+      );
+      if (!mounted) {
+        return;
+      }
+      context.read<MessagingBloc>().add(
+            RefreshMessages(conversationId: widget.conversationId),
+          );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      if (e.toString().contains("USER_BLOCKED")) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("user_blocked_violation_message"),
+        );
+        return;
+      }
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic"),
+      );
+    }
   }
 
   void _scrollToBottom() {
