@@ -19,7 +19,14 @@ class MainActivity : FlutterActivity() {
               result.error("bad_args", "Expected languageCode", null)
               return@setMethodCallHandler
             }
-            MapKitFactory.setLocale(MainApplication.localeTagForLanguageCode(code))
+            val localeTag = MainApplication.localeTagForLanguageCode(code)
+            try {
+              MapKitFactory.setLocale(localeTag)
+            } catch (_: AssertionError) {
+              // yandex_mapkit calls MapKitFactory.initialize() when the first map is created;
+              // setLocale is only valid before that. Cold start locale is already applied in
+              // [MainApplication.onCreate]; in-app changes match iOS (effective after restart).
+            }
             result.success(true)
           }
           else -> result.notImplemented()
