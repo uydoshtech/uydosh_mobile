@@ -45,6 +45,7 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
@@ -1290,6 +1291,27 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersRibbon() {
+    final isBlue = ThemeState().isBlueTheme;
+    final scheme = Theme.of(context).colorScheme;
+    final orbDecoration = isBlue
+        ? BoxDecoration(
+            color: BlueThemeColors.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.22),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          )
+        : BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          );
+    final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
+
     return LiquidGlassPlate(
       height: _inlineSearchRibbonHeight,
       borderRadius: BorderRadius.circular(16),
@@ -1309,20 +1331,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 icon: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: BlueThemeColors.primary,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Icon(Icons.close, size: 16, color: Colors.white),
+                  decoration: orbDecoration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.close, size: 16, color: orbIconColor),
                   ),
                 ),
                 onPressed: () {
@@ -1340,20 +1352,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             child: IgnorePointer(
               child: Center(
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: BlueThemeColors.primary,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Icon(Icons.tune, size: 16, color: Colors.white),
+                  decoration: orbDecoration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.tune, size: 16, color: orbIconColor),
                   ),
                 ),
               ),

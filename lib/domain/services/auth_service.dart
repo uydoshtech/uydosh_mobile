@@ -36,6 +36,12 @@ abstract class IAuthService {
   /// which the user can still do manually via Settings → Apple ID.
   Future<void> appleBind({required String authorizationCode});
 
+  /// Current session + profile flags (Bearer = stored session token).
+  Future<Map<String, dynamic>> verifySession();
+
+  /// Telegram OIDC: GET `/users/telegram-oauth/start` (public).
+  Future<String> fetchTelegramOAuthAuthorizationUrl({String? languageCode});
+
   Future<bool> refreshToken();
   Future<void> logout();
 }
@@ -48,6 +54,12 @@ class _AppleBindRequest implements IJsonEncodable {
   Map<String, dynamic> toJson() => {
         "authorization_code": authorizationCode,
       };
+}
+
+class _EmptyJson implements IJsonEncodable {
+  const _EmptyJson();
+  @override
+  Map<String, dynamic> toJson() => {};
 }
 
 class AuthService implements IAuthService {
@@ -169,6 +181,41 @@ class AuthService implements IAuthService {
       );
     } catch (e) {
       logger.d("Apple bind (non-fatal): $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifySession() async {
+    try {
+      return await _oauthApiClient.post<Map<String, dynamic>, _EmptyJson>(
+        "/users/verify-session",
+        (json) => json as Map<String, dynamic>,
+        data: const _EmptyJson(),
+      );
+    } catch (e) {
+      throw Exception("verify-session failed: $e");
+    }
+  }
+
+  @override
+  Future<String> fetchTelegramOAuthAuthorizationUrl({
+    String? languageCode,
+  }) async {
+    try {
+      final lang = languageCode?.trim();
+      final map = await _apiClient.get<Map<String, dynamic>>(
+        "/users/telegram-oauth/start",
+        (json) => json as Map<String, dynamic>,
+        queryParameters:
+            lang != null && lang.isNotEmpty ? {"lang": lang} : null,
+      );
+      final url = map["authorizationUrl"];
+      if (url is! String || url.isEmpty) {
+        throw Exception("Telegram OAuth URL missing");
+      }
+      return url;
+    } catch (e) {
+      throw Exception("Telegram OAuth start failed: $e");
     }
   }
 

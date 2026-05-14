@@ -1023,7 +1023,11 @@
   },
   "popup_closed": "Sign-in popup was closed",
   "sign_in_with_apple": "Sign in with Apple",
+  "sign_in_with_telegram": "Continue with Telegram",
+  "telegram_login_continue_in_browser": "Finish signing in in the browser, then return here.",
+  "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
   "successfully_signed_in_apple": "Successfully signed in with Apple!",
+  "successfully_signed_in_telegram": "Successfully signed in with Telegram!",
   "apple_sign_in_failed": "Apple Sign-In failed: {error}",
   "@apple_sign_in_failed": {
     "placeholders": {

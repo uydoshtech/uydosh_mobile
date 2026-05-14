@@ -357,6 +357,7 @@ class AppStrings {
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
+      "successfully_signed_in_telegram": "Successfully signed in with Telegram!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "You haven't created any listings yet.",
@@ -1440,6 +1441,11 @@ class AppStrings {
       // ===== APPLE AUTHENTICATION (iOS only — required by App Store
       //                            Review Guideline 4.8 alongside Google) =====
       "sign_in_with_apple": "Sign in with Apple",
+      "sign_in_with_telegram": "Continue with Telegram",
+      "telegram_login_continue_in_browser":
+          "Finish signing in in the browser, then return here.",
+      "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
+      "could_not_open_telegram": "Could not open Telegram",
       "apple_sign_in_failed": "Apple Sign-In failed: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -1854,6 +1860,7 @@ class AppStrings {
 
       "successfully_signed_in_google": "Успешный вход через Google!",
       "successfully_signed_in_apple": "Успешный вход через Apple!",
+      "successfully_signed_in_telegram": "Успешный вход через Telegram!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "Вы еще не создали ни одного объявления.",
@@ -2957,6 +2964,11 @@ class AppStrings {
 
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Войти через Apple",
+      "sign_in_with_telegram": "Продолжить через Telegram",
+      "telegram_login_continue_in_browser":
+          "Завершите вход в браузере, затем вернитесь в приложение.",
+      "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
+      "could_not_open_telegram": "Не удалось открыть Telegram",
       "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -3382,6 +3394,8 @@ class AppStrings {
           "Google orqali muvaffaqiyatli kirdingiz!",
       "successfully_signed_in_apple":
           "Apple orqali muvaffaqiyatli kirdingiz!",
+      "successfully_signed_in_telegram":
+          "Telegram orqali muvaffaqiyatli kirdingiz!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "Siz hali hech qanday e'lon yaratmagansiz.",
@@ -4480,6 +4494,11 @@ class AppStrings {
 
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Apple orqali kirish",
+      "sign_in_with_telegram": "Telegram orqali davom etish",
+      "telegram_login_continue_in_browser":
+          "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
+      "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",
+      "could_not_open_telegram": "Telegramni ochib bo‘lmadi",
       "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
 
       // ===== PHONE AUTHENTICATION =====

@@ -2712,8 +2712,24 @@ class AppLocalizationsUz extends AppLocalizations {
   String get sign_in_with_apple => 'Apple orqali kirish';
 
   @override
+  String get sign_in_with_telegram => 'Telegram orqali davom etish';
+
+  @override
+  String get telegram_login_continue_in_browser =>
+      'Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.';
+
+  @override
+  String telegram_sign_in_failed(Object error) {
+    return 'Telegram orqali kirish amalga oshmadi: $error';
+  }
+
+  @override
   String get successfully_signed_in_apple =>
       'Apple orqali muvaffaqiyatli kirdingiz!';
+
+  @override
+  String get successfully_signed_in_telegram =>
+      'Telegram orqali muvaffaqiyatli kirdingiz!';
 
   @override
   String apple_sign_in_failed(String error) {

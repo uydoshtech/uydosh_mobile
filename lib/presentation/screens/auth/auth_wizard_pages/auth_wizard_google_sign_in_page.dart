@@ -27,6 +27,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
     required this.onSignInWithGoogle,
     required this.onSignInWithApple,
     required this.onSignInWithPhone,
+    required this.onSignInWithTelegram,
     this.delayAppleAvatarReveal = false,
     this.backendResolvedAvatarUrl,
     super.key,
@@ -50,6 +51,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
   /// does not call this.
   final VoidCallback onSignInWithApple;
   final VoidCallback onSignInWithPhone;
+  final VoidCallback onSignInWithTelegram;
 
   /// When false, the phone option is visually subdued but still explains itself via toast on tap.
   final bool phoneSignInEnabled;
@@ -153,6 +155,45 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (!kIsWeb) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: GhostButton(
+                          onPressed: enabled
+                              ? () {
+                                  HapticFeedbackUtils.impact();
+                                  onSignInWithTelegram();
+                                }
+                              : null,
+                          width: buttonWidth,
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          borderRadius: BorderRadius.circular(22),
+                          textColor: _getOnboardingTextColor(context),
+                          iconColor: _getOnboardingTextColor(context),
+                          neumorphicSoftUi: true,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ThemeIcon(
+                                Icons.chat_bubble_outline,
+                                color: _getOnboardingTextColor(context),
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                L10n.get("sign_in_with_telegram"),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     Row(
                       children: [

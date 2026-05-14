@@ -7,6 +7,27 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 
+/// Payload for `uydosh://auth/telegram` after Telegram OAuth completes in the browser.
+class TelegramAuthDeepLink {
+  const TelegramAuthDeepLink.ok({
+    required this.sessionToken,
+    required this.userId,
+    required this.profileExists,
+  }) : errorMessage = null;
+
+  const TelegramAuthDeepLink.error(this.errorMessage)
+    : sessionToken = null,
+      userId = null,
+      profileExists = false;
+
+  final String? errorMessage;
+  final String? sessionToken;
+  final int? userId;
+  final bool profileExists;
+
+  bool get isError => errorMessage != null && errorMessage!.isNotEmpty;
+}
+
 /// Handles deep links for sharing listings.
 /// Uses https:// URLs so messengers (Telegram, WhatsApp) make them clickable.
 /// Custom scheme uydosh:// is not recognized by most messengers.
@@ -15,10 +36,39 @@ class DeepLinkService {
 
   final GlobalKey<NavigatorState> navigatorKey;
   int? _pendingListingId;
+  TelegramAuthDeepLink? _pendingTelegramAuth;
   StreamSubscription<Uri>? _linkSubscription;
+
+  /// Optional listener for Telegram Login (browser OAuth → app deep link).
+  void Function(TelegramAuthDeepLink link)? onTelegramAuthLink;
 
   static const String _scheme = "uydosh";
   static const String _host = "listing";
+  static const String _authHost = "auth";
+  static const String _telegramSegment = "telegram";
+
+  /// Parses `uydosh://auth/telegram?...` returned after OIDC callback.
+  static TelegramAuthDeepLink? tryParseTelegramAuth(Uri uri) {
+    if (uri.scheme != _scheme || uri.host != _authHost) return null;
+    if (uri.pathSegments.length != 1 || uri.pathSegments.first != _telegramSegment) {
+      return null;
+    }
+    final err = uri.queryParameters["error"];
+    if (err != null && err.isNotEmpty) {
+      return TelegramAuthDeepLink.error(err);
+    }
+    final token = uri.queryParameters["session_token"];
+    final uid = int.tryParse(uri.queryParameters["user_id"] ?? "");
+    final pe = uri.queryParameters["profile_exists"] == "1";
+    if (token == null || token.isEmpty || uid == null) {
+      return null;
+    }
+    return TelegramAuthDeepLink.ok(
+      sessionToken: token,
+      userId: uid,
+      profileExists: pe,
+    );
+  }
 
   /// Builds a shareable URL for a listing. Uses https:// so messengers
   /// (Telegram, WhatsApp) make it clickable. Falls back to custom scheme
@@ -55,10 +105,19 @@ class DeepLinkService {
       if (id != null) {
         _pendingListingId = id;
       }
+      final tg = tryParseTelegramAuth(initialUri);
+      if (tg != null) {
+        _pendingTelegramAuth = tg;
+      }
     }
 
     // Handle app resumed from background with link
     _linkSubscription = appLinks.uriLinkStream.listen((uri) {
+      final tg = tryParseTelegramAuth(uri);
+      if (tg != null) {
+        onTelegramAuthLink?.call(tg);
+        return;
+      }
       final id = parseListingId(uri);
       if (id != null) {
         getIt<AppAnalyticsService>().logDeepLinkOpened(
@@ -79,6 +138,13 @@ class DeepLinkService {
     final id = _pendingListingId;
     _pendingListingId = null;
     return id;
+  }
+
+  /// Returns and clears pending Telegram auth deep link (cold start).
+  TelegramAuthDeepLink? consumePendingTelegramAuth() {
+    final p = _pendingTelegramAuth;
+    _pendingTelegramAuth = null;
+    return p;
   }
 
   /// Navigate to listing detail screen.

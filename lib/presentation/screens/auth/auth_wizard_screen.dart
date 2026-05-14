@@ -15,6 +15,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -52,9 +53,10 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
-enum _AuthMethod { google, apple, phone }
+enum _AuthMethod { google, apple, phone, telegram }
 
 class AuthWizardScreen extends StatefulWidget {
   const AuthWizardScreen({
@@ -253,6 +255,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     _loadRegions();
     _loadCountries();
 
+    final deepLinks = getIt<DeepLinkService>();
+    deepLinks.onTelegramAuthLink = _handleTelegramAuthDeepLink;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final pending = deepLinks.consumePendingTelegramAuth();
+      if (pending != null) {
+        unawaited(_handleTelegramAuthDeepLink(pending));
+      }
+    });
+
     // Note: GoogleSignIn warm-up is now centralized in
     // [GoogleSignInWarmup], kicked off from main.dart's post-frame
     // callback so it has the entire splash duration to complete.
@@ -285,6 +297,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   @override
   void dispose() {
+    getIt<DeepLinkService>().onTelegramAuthLink = null;
     unawaited(_firebaseAuthStateSub?.cancel());
     _firebaseAuthStateSub = null;
     _nameDebounceTimer?.cancel();
@@ -933,6 +946,108 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       return code.isEmpty ? null : "platform:$code";
     }
     return null;
+  }
+
+  Future<void> _signInWithTelegram() async {
+    if (!mounted || kIsWeb) return;
+    try {
+      final url = await _authService.fetchTelegramOAuthAuthorizationUrl(
+        languageCode: _selectedLanguage,
+      );
+      final uri = Uri.parse(url);
+      final ok =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      if (!ok) {
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("could_not_open_telegram"),
+        );
+        return;
+      }
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("telegram_login_continue_in_browser"),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "telegram",
+        stage: "oauth_start",
+        errorCode: _extractAuthErrorCode(e),
+        errorType: e.toString().length > 100
+            ? e.toString().substring(0, 100)
+            : e.toString(),
+      );
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+      );
+    }
+  }
+
+  Future<void> _handleTelegramAuthDeepLink(TelegramAuthDeepLink link) async {
+    if (!mounted) return;
+    if (link.isError) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_sign_in_failed")
+            .replaceAll("{error}", link.errorMessage ?? "unknown"),
+      );
+      return;
+    }
+    setStateIfMounted(() {
+      _isAuthenticating = true;
+      _authMethod = _AuthMethod.telegram;
+    });
+    final token = link.sessionToken!;
+    final userId = link.userId!;
+    try {
+      await SessionManager.storeSessionToken(token);
+      await SessionManager.storeBackendUserId(userId);
+      final response = await _authService.verifySession();
+      await _storeBackendSession(response);
+      final isBlocked = response["user"]?["is_blocked"] == true;
+      String? violationDialogResult;
+      if (mounted && isBlocked) {
+        violationDialogResult = await _showViolationDialog();
+      }
+      final hasProfile = response["profileExists"] == true;
+      if (hasProfile) {
+        await _pauseThenNavigateHomeForReturningUser(
+          response: response,
+          violationDialogResult: violationDialogResult,
+        );
+      } else if (mounted) {
+        setState(() {
+          _currentPage = 2;
+        });
+        await _pageController.animateToPage(
+          2,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      if (mounted) {
+        getIt<AppAnalyticsService>().logSignInSuccess(method: "telegram");
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("successfully_signed_in_telegram"),
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e, st) {
+      logger.d("Telegram deep link auth failed: $e\n$st");
+      if (mounted) {
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+        );
+      }
+    } finally {
+      setStateIfMounted(() => _isAuthenticating = false);
+    }
   }
 
   // Authenticate with your backend after Firebase Sign-In - FIRST OCCURRENCE
@@ -1855,29 +1970,44 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     top: 16,
                     bottom: 12,
                   ),
-                  child: Row(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      ThreeDAppBarIconButton(
-                        iconData: Icons.close,
-                        iconWidget: ThemeIcon(
-                          Icons.close,
-                          color: _getOnboardingTextColor(context),
-                          size: 26,
-                        ),
-                        semanticsLabel: L10n.get("close"),
-                        onPressed: () {
-                          if (Navigator.of(context).canPop()) {
-                            Navigator.of(context).pop();
-                            return;
-                          }
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ThreeDAppBarIconButton(
+                            iconData: Icons.close,
+                            iconWidget: ThemeIcon(
+                              Icons.close,
+                              color: _getOnboardingTextColor(context),
+                              size: 26,
+                            ),
+                            semanticsLabel: L10n.get("close"),
+                            onPressed: () {
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.of(context).pop();
+                                return;
+                              }
 
-                          _navigateToMainNavigation();
-                        },
-                        padding: EdgeInsets.zero,
-                        contentSlotSize: 32,
+                              _navigateToMainNavigation();
+                            },
+                            padding: EdgeInsets.zero,
+                            contentSlotSize: 32,
+                          ),
+                          // Theme toggle (sun = light, moon = dark/blue)
+                          Tooltip(
+                            message: L10n.get("switch_theme"),
+                            child: ThemeToggleSunMoon(
+                              iconColor: _getOnboardingTextColor(context),
+                              size: 36,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 48),
                         child: Text(
                           _currentPage == 0
                               ? L10n.get("select_language")
@@ -1888,19 +2018,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                       : "UyDosh",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
                             color: _getOnboardingTextColor(context),
                           ),
-                        ),
-                      ),
-                      // Theme toggle (sun = light, moon = dark/blue)
-                      Tooltip(
-                        message: L10n.get("switch_theme"),
-                        child: ThemeToggleSunMoon(
-                          iconColor: _getOnboardingTextColor(context),
-                          size: 36,
                         ),
                       ),
                     ],
@@ -1988,6 +2111,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               onSignInWithGoogle: _signInWithGoogle,
                               onSignInWithApple: _signInWithApple,
                               onSignInWithPhone: _signInWithPhone,
+                              onSignInWithTelegram: _signInWithTelegram,
                               delayAppleAvatarReveal:
                                   _authMethod == _AuthMethod.apple,
                               backendResolvedAvatarUrl: _oauthSummaryAvatarUrl,

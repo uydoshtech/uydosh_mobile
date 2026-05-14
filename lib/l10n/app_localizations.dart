@@ -5051,11 +5051,35 @@ abstract class AppLocalizations {
   /// **'Sign in with Apple'**
   String get sign_in_with_apple;
 
+  /// No description provided for @sign_in_with_telegram.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Telegram'**
+  String get sign_in_with_telegram;
+
+  /// No description provided for @telegram_login_continue_in_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish signing in in the browser, then return here.'**
+  String get telegram_login_continue_in_browser;
+
+  /// No description provided for @telegram_sign_in_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram sign-in failed: {error}'**
+  String telegram_sign_in_failed(Object error);
+
   /// No description provided for @successfully_signed_in_apple.
   ///
   /// In en, this message translates to:
   /// **'Successfully signed in with Apple!'**
   String get successfully_signed_in_apple;
+
+  /// No description provided for @successfully_signed_in_telegram.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully signed in with Telegram!'**
+  String get successfully_signed_in_telegram;
 
   /// No description provided for @apple_sign_in_failed.
   ///

@@ -2682,7 +2682,22 @@ class AppLocalizationsRu extends AppLocalizations {
   String get sign_in_with_apple => 'Войти через Apple';
 
   @override
+  String get sign_in_with_telegram => 'Продолжить через Telegram';
+
+  @override
+  String get telegram_login_continue_in_browser =>
+      'Завершите вход в браузере, затем вернитесь в приложение.';
+
+  @override
+  String telegram_sign_in_failed(Object error) {
+    return 'Вход через Telegram не удался: $error';
+  }
+
+  @override
   String get successfully_signed_in_apple => 'Успешный вход через Apple!';
+
+  @override
+  String get successfully_signed_in_telegram => 'Успешный вход через Telegram!';
 
   @override
   String apple_sign_in_failed(String error) {

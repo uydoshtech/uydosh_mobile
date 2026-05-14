@@ -2669,8 +2669,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sign_in_with_apple => 'Sign in with Apple';
 
   @override
+  String get sign_in_with_telegram => 'Continue with Telegram';
+
+  @override
+  String get telegram_login_continue_in_browser =>
+      'Finish signing in in the browser, then return here.';
+
+  @override
+  String telegram_sign_in_failed(Object error) {
+    return 'Telegram sign-in failed: $error';
+  }
+
+  @override
   String get successfully_signed_in_apple =>
       'Successfully signed in with Apple!';
+
+  @override
+  String get successfully_signed_in_telegram =>
+      'Successfully signed in with Telegram!';
 
   @override
   String apple_sign_in_failed(String error) {

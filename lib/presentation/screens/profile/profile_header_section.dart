@@ -195,12 +195,31 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                       "")
                   .isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(
-                  widget.profile.name ?? widget.cachedGoogleDisplayName ?? "",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "#${widget.profile.userId} ",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant
+                              .withValues(alpha: 0.72),
+                        ),
+                      ),
+                      TextSpan(
+                        text: widget.profile.name ??
+                            widget.cachedGoogleDisplayName ??
+                            "",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
                   textAlign: TextAlign.center,
                 ),
