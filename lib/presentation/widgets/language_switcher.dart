@@ -530,7 +530,7 @@ class LanguagePickerOptionTile extends StatelessWidget {
         borderRadius: borderRadius,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           decoration: BoxDecoration(
             borderRadius: borderRadius,
             gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
@@ -542,37 +542,38 @@ class LanguagePickerOptionTile extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    languageFlagForCode(code),
-                    style: const TextStyle(fontSize: 24, height: 1.05),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    code.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.1,
-                      fontWeight:
-                          isCurrent ? FontWeight.w700 : FontWeight.w600,
-                      letterSpacing: 0.2,
-                      color: scheme.onSurface,
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      languageFlagForCode(code),
+                      style: const TextStyle(fontSize: 18, height: 1),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Text(
+                      code.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1,
+                        fontWeight:
+                            isCurrent ? FontWeight.w700 : FontWeight.w600,
+                        letterSpacing: 0.2,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               if (isCurrent)
                 Positioned(
-                  top: -2,
-                  right: -2,
+                  top: -1,
+                  right: -1,
                   child: ThemeIcon(
                     Icons.check_circle,
                     color: scheme.primary,
-                    size: 18,
+                    size: 16,
                   ),
                 ),
             ],

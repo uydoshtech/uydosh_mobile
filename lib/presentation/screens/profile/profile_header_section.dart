@@ -493,10 +493,10 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                         Text(
                           L10n.get("language"),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            letterSpacing: 0.15,
-                            height: 1.2,
+                            letterSpacing: 0.12,
+                            height: 1.25,
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
@@ -532,10 +532,10 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                         Text(
                           L10n.get("price_display_currency"),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            letterSpacing: 0.15,
-                            height: 1.2,
+                            letterSpacing: 0.12,
+                            height: 1.25,
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
@@ -910,7 +910,7 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
         borderRadius: borderRadius,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           decoration: BoxDecoration(
             borderRadius: borderRadius,
             gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
@@ -922,33 +922,35 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _segmentLeading(scheme.onSurface),
-                  const SizedBox(height: 6),
-                  Text(
-                    shortCode,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.1,
-                      fontWeight:
-                          isCurrent ? FontWeight.w700 : FontWeight.w600,
-                      letterSpacing: 0.2,
-                      color: scheme.onSurface,
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _segmentLeading(scheme.onSurface),
+                    const SizedBox(width: 6),
+                    Text(
+                      shortCode,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1,
+                        fontWeight:
+                            isCurrent ? FontWeight.w700 : FontWeight.w600,
+                        letterSpacing: 0.2,
+                        color: scheme.onSurface,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               if (isCurrent)
                 Positioned(
-                  top: -2,
-                  right: -2,
+                  top: -1,
+                  right: -1,
                   child: ThemeIcon(
                     Icons.check_circle,
                     color: scheme.primary,
-                    size: 18,
+                    size: 16,
                   ),
                 ),
             ],
@@ -963,16 +965,15 @@ class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
       PriceDisplayCurrency.usd => Text(
         r"$",
         style: TextStyle(
-          fontSize: 26,
-          height: 1.05,
+          fontSize: 18,
+          height: 1,
           fontWeight: FontWeight.w700,
           color: onSurface,
         ),
       ),
       PriceDisplayCurrency.national => const Text(
         "🇺🇿",
-        style: TextStyle(fontSize: 26, height: 1.05),
-        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 18, height: 1),
       ),
     };
   }
