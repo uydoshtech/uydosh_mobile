@@ -1508,6 +1508,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menu_admin_panel => 'Admin Panel';
 
   @override
+  String get profile_menu_collapsible_listings_group => 'Listings & chats';
+
+  @override
+  String get profile_menu_collapsible_services_group =>
+      'Notifications & support';
+
+  @override
   String get manage_property => 'Manage Property';
 
   @override

@@ -160,7 +160,7 @@ final class MapKitLocalePlugin: NSObject, FlutterPlugin {
     }
 
     // Yandex MapKit on iOS allows [YMKMapKit.setLocale] only once per process,
-    // strictly before any map/shared instance use ("Locale is already set!" otherwise).
+    // strictly before any map/sharedR instance use ("Locale is already set!" otherwise).
     // We already set locale synchronously in AppDelegate.didFinishLaunchingWithOptions
     // from [flutter.selected_language] / device preference — matching Flutter startup order.
     // In-app language changes cannot remap MapKit labels until the next cold start.

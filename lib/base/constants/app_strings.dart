@@ -934,6 +934,8 @@ class AppStrings {
       "menu_registration": "Sign in",
       "menu_logout": "Logout",
       "menu_admin_panel": "Admin Panel",
+      "profile_menu_collapsible_listings_group": "Listings & chats",
+      "profile_menu_collapsible_services_group": "Notifications & support",
       "manage_property": "Manage Property",
 
       "admin_panel_title": "Admin Panel",
@@ -2449,6 +2451,8 @@ class AppStrings {
       "menu_registration": "Вход",
       "menu_logout": "Выйти",
       "menu_admin_panel": "Админ-панель",
+      "profile_menu_collapsible_listings_group": "Объявления и чаты",
+      "profile_menu_collapsible_services_group": "Уведомления и поддержка",
       "manage_property": "Управление жильём",
 
       "admin_panel_title": "Админ-панель",
@@ -3979,6 +3983,8 @@ class AppStrings {
       "menu_registration": "Kirish",
       "menu_logout": "Chiqish",
       "menu_admin_panel": "Admin paneli",
+      "profile_menu_collapsible_listings_group": "E'lonlar va suhbatlar",
+      "profile_menu_collapsible_services_group": "Bildirishnomalar va yordam",
       "manage_property": "Uyni boshqarish",
 
       "admin_panel_title": "Admin paneli",

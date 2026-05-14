@@ -93,6 +93,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
   int?
       _expandedSectionIndex; // 0 = Profile, 1 = Lifestyle Preferences (mutually exclusive)
+  int?
+      _expandedProfileMenuGroupIndex; // 0 = Listings & chats, 1 = Notifications & support
   bool _userRoleLoaded = false;
   bool _refreshingRole = false;
   bool _userBlocked = false;
@@ -359,25 +361,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
 
               if (effectiveProfile == null && data.hasError) {
-                return Scaffold(
-                  appBar: UydoshAppBar(
-                    leading: ThreeDAppBarIconButton.backLeading(
-                      context,
-                      onPressed: () {
-                        if (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    ),
-                    title: Text(
-                      L10n.get("profile"),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                final footerFill = Theme.of(context).scaffoldBackgroundColor;
+                return ColoredBox(
+                  color: footerFill,
+                  child: Transform.translate(
+                    offset: const Offset(0, -20),
+                    child: Scaffold(
+                      backgroundColor: footerFill,
+                      appBar: UydoshAppBar(
+                        leading: ThreeDAppBarIconButton.backLeading(
+                          context,
+                          onPressed: () {
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                        ),
+                        title: Text(
+                          L10n.get("profile"),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
+                      body: _buildErrorState(data.errorMessage, context),
                     ),
                   ),
-                  body: _buildErrorState(data.errorMessage, context),
                 );
               }
 
@@ -394,43 +404,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   () => _checkAndUnlockAchievements(profile, context),
                 );
               }
-              return Scaffold(
-                appBar: UydoshAppBar(
-                  leading: ThreeDAppBarIconButton.backLeading(
-                    context,
-                    onPressed: () {
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                  ),
-                  title: Text(
-                    L10n.get("profile"),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  actions: [
-                    ActionDropdownMenu(
-                      items: buildProfileActionMenuItems(
-                        context: context,
-                        userBlocked: _userBlocked,
-                        userRole: _userRole,
-                        cachedUserProfile: _cachedUserProfile,
-                        onEditProfile: (profile) =>
-                            _openEditProfileScreen(context, profile),
-                        onLogout: () => _showLogoutDialog(context),
+              final footerFill = Theme.of(context).scaffoldBackgroundColor;
+              return ColoredBox(
+                color: footerFill,
+                child: Transform.translate(
+                  offset: const Offset(0, -20),
+                  child: Scaffold(
+                    backgroundColor: footerFill,
+                    appBar: UydoshAppBar(
+                      leading: ThreeDAppBarIconButton.backLeading(
+                        context,
+                        onPressed: () {
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          }
+                        },
                       ),
-                      icon: Icons.more_vert,
-                      tooltip: L10n.get("menu_settings"),
-                      padding: const EdgeInsets.only(right: 16.0),
+                      title: Text(
+                        L10n.get("profile"),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      actions: [
+                        ActionDropdownMenu(
+                          items: buildProfileActionMenuItems(
+                            context: context,
+                            userBlocked: _userBlocked,
+                            userRole: _userRole,
+                            cachedUserProfile: _cachedUserProfile,
+                            onEditProfile: (profile) =>
+                                _openEditProfileScreen(context, profile),
+                            onLogout: () => _showLogoutDialog(context),
+                          ),
+                          icon: Icons.more_vert,
+                          tooltip: L10n.get("menu_settings"),
+                          padding: const EdgeInsets.only(right: 16.0),
+                        ),
+                      ],
                     ),
-                  ],
+                    body: data.hasError
+                        ? _buildErrorState(data.errorMessage, context)
+                        : _buildProfileContent(profile),
+                  ),
                 ),
-                body: data.hasError
-                    ? _buildErrorState(data.errorMessage, context)
-                    : _buildProfileContent(profile),
               );
             },
           );
@@ -478,6 +496,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               ProfileListingsSection(
                 userRole: _userRole,
+                expandedMenuGroupIndex: _expandedProfileMenuGroupIndex,
+                onExpandedMenuGroupChanged: (index) {
+                  setState(() => _expandedProfileMenuGroupIndex = index);
+                },
                 onAchievementsOpened: () => setState(() {}),
               ),
               const SizedBox(height: 24),

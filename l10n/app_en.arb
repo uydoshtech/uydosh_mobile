@@ -639,6 +639,8 @@
   "menu_registration": "Sign in",
   "menu_logout": "Logout",
   "menu_admin_panel": "Admin Panel",
+  "profile_menu_collapsible_listings_group": "Listings & chats",
+  "profile_menu_collapsible_services_group": "Notifications & support",
   "manage_property": "Manage Property",
   "admin_panel_title": "Admin Panel",
   "admin_panel_category_management": "Users & moderation",

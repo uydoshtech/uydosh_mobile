@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/services/listing_photo_cropper.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -11,6 +12,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_blinking_dot.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_role_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -199,14 +201,33 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: "#${widget.profile.userId} ",
+                        text: "#${widget.profile.userId}",
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: Theme.of(context)
                               .colorScheme
                               .onSurfaceVariant
                               .withValues(alpha: 0.72),
+                        ),
+                      ),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: SizedBox(
+                            width: 4,
+                            height: 4,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.45),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       TextSpan(
@@ -226,20 +247,32 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
               ],
               if (widget.userRoleLoaded) ...[
                 const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ProfileRoleNeumorphicBadge(
-                      label: widget.getRoleLabel(widget.userRole),
+                Align(
+                  alignment: Alignment.center,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ProfileRoleNeumorphicBadge(
+                          label: widget.getRoleLabel(widget.userRole),
+                        ),
+                        const SizedBox(width: 8),
+                        ListenableBuilder(
+                          listenable: LanguageState(),
+                          builder: (context, _) =>
+                              _buildLanguageFlagChip(context),
+                        ),
+                        const SizedBox(width: 8),
+                        ListenableBuilder(
+                          listenable: PriceDisplaySettingsState(),
+                          builder: (context, _) =>
+                              _buildCurrencyFlagChip(context),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    ListenableBuilder(
-                      listenable: LanguageState(),
-                      builder: (context, _) =>
-                          _buildLanguageFlagChip(context),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ],
@@ -372,12 +405,109 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                     color: scheme.onSurface,
                   ),
                 ),
+                const SizedBox(width: 2),
+                ThemeIcon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildCurrencyFlagChip(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bg = theme.cardTheme.color ?? scheme.surface;
+    final currency = PriceDisplaySettingsState().currency;
+    final leading = _currencyChipLeading(currency, scheme.onSurface);
+    final code = _currencyChipCode(currency);
+    final tooltipKey = currency == PriceDisplayCurrency.usd
+        ? "price_display_currency_usd"
+        : "price_display_currency_national";
+
+    return Tooltip(
+      message: L10n.get(tooltipKey),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          _showPriceDisplayCurrencyPickerDialog(context);
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, bg),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                leading,
+                const SizedBox(width: 6),
+                Text(
+                  code,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                    letterSpacing: 0.15,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                ThemeIcon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showPriceDisplayCurrencyPickerDialog(
+    BuildContext context,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.55),
+      builder: (dialogContext) => const _PriceDisplayCurrencyPickerDialog(),
+    );
+  }
+
+  static Widget _currencyChipLeading(PriceDisplayCurrency currency, Color color) {
+    return switch (currency) {
+      PriceDisplayCurrency.usd => Text(
+        r"$",
+        style: TextStyle(
+          fontSize: 16,
+          height: 1.25,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+      PriceDisplayCurrency.national => const Text(
+        "🇺🇿",
+        style: TextStyle(fontSize: 16, height: 1.25),
+      ),
+    };
+  }
+
+  static String _currencyChipCode(PriceDisplayCurrency currency) {
+    return switch (currency) {
+      PriceDisplayCurrency.usd => "USD",
+      PriceDisplayCurrency.national => "UZS",
+    };
   }
 
   Widget _buildProfilePicture(BuildContext context) {
@@ -623,5 +753,108 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
       return ra.compareTo(rb);
     });
     return sorted;
+  }
+}
+
+class _PriceDisplayCurrencyPickerDialog extends StatelessWidget {
+  const _PriceDisplayCurrencyPickerDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    const borderRadius = BorderRadius.all(Radius.circular(24));
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                L10n.get("price_display_currency"),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const _PriceDisplayCurrencyPickerOption(
+                currency: PriceDisplayCurrency.national,
+              ),
+              const SizedBox(height: 12),
+              const _PriceDisplayCurrencyPickerOption(
+                currency: PriceDisplayCurrency.usd,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PriceDisplayCurrencyPickerOption extends StatelessWidget {
+  const _PriceDisplayCurrencyPickerOption({required this.currency});
+
+  final PriceDisplayCurrency currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent = PriceDisplaySettingsState().currency == currency;
+    final scheme = Theme.of(context).colorScheme;
+    final surface = scheme.surface;
+    final labelKey = currency == PriceDisplayCurrency.usd
+        ? "price_display_currency_usd"
+        : "price_display_currency_national";
+    const borderRadius = BorderRadius.all(Radius.circular(14));
+
+    return PressableTransform(
+      feedback: PressableFeedback.selection,
+      onTap: () {
+        Navigator.pop(context);
+        PriceDisplaySettingsState().setCurrency(currency);
+      },
+      borderRadius: borderRadius,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
+          boxShadow: isCurrent
+              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                L10n.get(labelKey),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            if (isCurrent)
+              ThemeIcon(Icons.check, color: scheme.onSurface, size: 22),
+          ],
+        ),
+      ),
+    );
   }
 }

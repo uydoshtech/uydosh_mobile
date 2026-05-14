@@ -21,11 +21,15 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 class ProfileListingsSection extends StatelessWidget {
   const ProfileListingsSection({
     required this.userRole,
+    required this.expandedMenuGroupIndex,
+    required this.onExpandedMenuGroupChanged,
     required this.onAchievementsOpened,
     super.key,
   });
 
   final String? userRole;
+  final int? expandedMenuGroupIndex;
+  final void Function(int? index) onExpandedMenuGroupChanged;
   final VoidCallback? onAchievementsOpened;
 
   Widget _threeDProfileTile(BuildContext context, {required Widget child}) {
@@ -69,102 +73,213 @@ class ProfileListingsSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.list_alt,
-            title: L10n.get("menu_my_listings"),
+          _buildCollapsibleGroupHeader(
+            context,
+            icon: Icons.dynamic_feed,
+            title: L10n.get("profile_menu_collapsible_listings_group"),
+            expanded: expandedMenuGroupIndex == 0,
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (context) => ListingsBloc(getIt<IListingService>()),
-                    child: const UserListingsScreen(),
-                  ),
-                ),
+              HapticFeedbackUtils.impact();
+              onExpandedMenuGroupChanged(
+                expandedMenuGroupIndex == 0 ? null : 0,
               );
             },
           ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: CupertinoIcons.suit_heart,
-            title: L10n.get("menu_favorites"),
-            onTap: () => _openFavoritesTab(context),
-          ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.chat_bubble_outline,
-            title: L10n.get("menu_messages"),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const PushedMessagesInboxScaffold(),
-                ),
-              );
-            },
-          ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.history,
-            title: L10n.get("menu_history"),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ViewHistoryScreen(),
-                ),
-              );
-            },
-          ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.notifications_none,
-            title: L10n.get("menu_notifications"),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsScreen(),
-                ),
-              );
-            },
-          ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.emoji_events,
-            title: L10n.get("menu_achievements"),
-            onTap: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AchievementsScreen(),
-                ),
-              );
-              onAchievementsOpened?.call();
-            },
-          ),
-          _buildGroupedMenuItem(
-            context: context,
-            icon: Icons.support_agent,
-            title: L10n.get("menu_contact_support"),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SupportChatScreen(),
-                ),
-              );
-            },
-          ),
-          if (userRole == "admin")
-            _buildGroupedMenuItem(
-              context: context,
-              icon: Icons.admin_panel_settings,
-              title: L10n.get("menu_admin_panel"),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AdminPanelScreen(),
-                  ),
-                );
-              },
+          ClipRect(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: expandedMenuGroupIndex == 0
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.list_alt,
+                          title: L10n.get("menu_my_listings"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider(
+                                  create: (context) =>
+                                      ListingsBloc(getIt<IListingService>()),
+                                  child: const UserListingsScreen(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: CupertinoIcons.suit_heart,
+                          title: L10n.get("menu_favorites"),
+                          onTap: () => _openFavoritesTab(context),
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.chat_bubble_outline,
+                          title: L10n.get("menu_messages"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PushedMessagesInboxScaffold(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.history,
+                          title: L10n.get("menu_history"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ViewHistoryScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context)
+                .colorScheme
+                .onSurfaceVariant
+                .withValues(alpha: 0.3),
+          ),
+          _buildCollapsibleGroupHeader(
+            context,
+            icon: Icons.miscellaneous_services,
+            title: L10n.get("profile_menu_collapsible_services_group"),
+            expanded: expandedMenuGroupIndex == 1,
+            onTap: () {
+              HapticFeedbackUtils.impact();
+              onExpandedMenuGroupChanged(
+                expandedMenuGroupIndex == 1 ? null : 1,
+              );
+            },
+          ),
+          ClipRect(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: expandedMenuGroupIndex == 1
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.notifications_none,
+                          title: L10n.get("menu_notifications"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const NotificationsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.emoji_events,
+                          title: L10n.get("menu_achievements"),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AchievementsScreen(),
+                              ),
+                            );
+                            onAchievementsOpened?.call();
+                          },
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
+                          icon: Icons.support_agent,
+                          title: L10n.get("menu_contact_support"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SupportChatScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        if (userRole == "admin")
+                          _buildGroupedMenuItem(
+                            context: context,
+                            icon: Icons.admin_panel_settings,
+                            title: L10n.get("menu_admin_panel"),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const AdminPanelScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCollapsibleGroupHeader(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required bool expanded,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 12, 16.0, 12),
+        child: Row(
+          children: [
+            ThemeIcon(
+              icon,
+              size: 24,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            AnimatedRotation(
+              turns: expanded ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: ThemeIcon(
+                Icons.keyboard_arrow_down,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

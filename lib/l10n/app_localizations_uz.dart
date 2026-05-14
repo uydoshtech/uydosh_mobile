@@ -1526,6 +1526,14 @@ class AppLocalizationsUz extends AppLocalizations {
   String get menu_admin_panel => 'Admin paneli';
 
   @override
+  String get profile_menu_collapsible_listings_group =>
+      'E\'lonlar va suhbatlar';
+
+  @override
+  String get profile_menu_collapsible_services_group =>
+      'Bildirishnomalar va yordam';
+
+  @override
   String get manage_property => 'Uyni boshqarish';
 
   @override

@@ -639,6 +639,8 @@
   "menu_registration": "Kirish",
   "menu_logout": "Chiqish",
   "menu_admin_panel": "Admin paneli",
+  "profile_menu_collapsible_listings_group": "E'lonlar va suhbatlar",
+  "profile_menu_collapsible_services_group": "Bildirishnomalar va yordam",
   "manage_property": "Uyni boshqarish",
   "admin_panel_title": "Admin paneli",
   "admin_panel_category_management": "Foydalanuvchilar va moderatsiya",

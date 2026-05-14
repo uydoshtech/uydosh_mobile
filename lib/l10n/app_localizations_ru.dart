@@ -1511,6 +1511,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get menu_admin_panel => 'Админ-панель';
 
   @override
+  String get profile_menu_collapsible_listings_group => 'Объявления и чаты';
+
+  @override
+  String get profile_menu_collapsible_services_group =>
+      'Уведомления и поддержка';
+
+  @override
   String get manage_property => 'Управление жильём';
 
   @override

@@ -2878,6 +2878,18 @@ abstract class AppLocalizations {
   /// **'Admin Panel'**
   String get menu_admin_panel;
 
+  /// No description provided for @profile_menu_collapsible_listings_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Listings & chats'**
+  String get profile_menu_collapsible_listings_group;
+
+  /// No description provided for @profile_menu_collapsible_services_group.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications & support'**
+  String get profile_menu_collapsible_services_group;
+
   /// No description provided for @manage_property.
   ///
   /// In en, this message translates to:
