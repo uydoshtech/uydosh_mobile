@@ -1009,7 +1009,11 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get chat_edit_message_once_only =>
-      'Bu xabar allaqachon tahrirlangan. Har bir xabar faqat bir marta tahrirlanishi mumkin.';
+      'Bu xabar uchun bitta tahriringizni allaqachon ishlatgansiz.';
+
+  @override
+  String get chat_edit_hold_already_edited_toast =>
+      'Har bir xabarni faqat bir marta o‘zgartirish mumkin — tahriringiz allaqachon saqlangan.';
 
   @override
   String get view_similar_results => 'O‘xshash e\'lonlar';

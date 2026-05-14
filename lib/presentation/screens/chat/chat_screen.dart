@@ -168,6 +168,10 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
+  /// Bumps to replay the composer’s green “edit here” border cue.
+  final ValueNotifier<int> _composerEditPulseTick = ValueNotifier<int>(0);
+  /// When non-null, send submits an [EditMessage] for this id instead of posting.
+  int? _editingMessageId;
   bool _hasLoadedMessagesForConversation =
       false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
   final Set<int> _newMessageIds =
@@ -327,6 +331,7 @@ class _ChatScreenState extends State<ChatScreen> {
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     _incomingRefreshDebounce?.cancel();
     _messageController.dispose();
+    _composerEditPulseTick.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
     // Surface any achievement that was unlocked while the user was inside
@@ -673,20 +678,29 @@ class _ChatScreenState extends State<ChatScreen> {
       showDragHandle: true,
       cardColor: Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
+        final scheme = Theme.of(sheetContext).colorScheme;
         return SafeArea(
+          top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                Center(
                   child: Text(
                     L10n.get("chat_translate_picker_title"),
-                    style: Theme.of(sheetContext).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      height: 1.25,
+                      leadingDistribution: TextLeadingDistribution.even,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
+                const SizedBox(height: 14),
                 _buildTranslateLanguageTile(
                   sheetContext: sheetContext,
                   label: L10n.get("chat_translate_picker_auto"),
@@ -946,7 +960,15 @@ class _ChatScreenState extends State<ChatScreen> {
             });
             HapticFeedbackUtils.impact();
           },
-          messageEdited: (message) {},
+          messageEdited: (message) {
+            setState(() {
+              _isSendingMessage = false;
+              if (_editingMessageId == message.id) {
+                _messageController.clear();
+                _editingMessageId = null;
+              }
+            });
+          },
           messagesMarkedAsRead: (conversationId, markedCount) {},
           error: (message) {
             setState(() {
@@ -963,6 +985,7 @@ class _ChatScreenState extends State<ChatScreen> {
         onSend: _sendMessage,
         isSendingMessage: _isSendingMessage,
         blendWithGlassBackdrop: blendWithGlassBackdrop,
+        composerEditPulseTrigger: _composerEditPulseTick,
       ),
     );
   }
@@ -1399,8 +1422,8 @@ class _ChatScreenState extends State<ChatScreen> {
               onClearReaction:
                   isCurrentUser ? null : () => _clearMessageReaction(message),
               onLongPressEditOwnMessage: isCurrentUser &&
-                      _messageIsEditable(message)
-                  ? () => unawaited(_openEditMessageDialog(message))
+                      _isOwnTextBubbleForLongPressEdit(message)
+                  ? () => _onLongPressOwnMessageForEdit(message)
                   : null,
             ),
         };
@@ -1460,6 +1483,52 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  bool _isOwnTextBubbleForLongPressEdit(Message message) {
+    if (message.isDeleted == true) return false;
+    if (message.messageType.toLowerCase() != 'text') return false;
+    final atts = message.attachments;
+    if (atts != null && atts.isNotEmpty) return false;
+    return true;
+  }
+
+  /// Opens composer edit mode, or explains that this bubble was already revised.
+  void _onLongPressOwnMessageForEdit(Message message) {
+    if (!_isOwnTextBubbleForLongPressEdit(message) || !mounted) return;
+    if (_messageIsEditable(message)) {
+      _startComposerEditFromMessage(message);
+      return;
+    }
+    if (message.isEdited == true) {
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("chat_edit_hold_already_edited_toast"),
+      );
+    }
+  }
+
+  void _startComposerEditFromMessage(Message message) {
+    if (!_messageIsEditable(message) || !mounted) return;
+    setState(() {
+      _editingMessageId = message.id;
+      _messageController.value = TextEditingValue(
+        text: message.content,
+        selection: TextSelection.collapsed(offset: message.content.length),
+      );
+    });
+    _composerEditPulseTick.value++;
+    _messageFocusNode.requestFocus();
+    HapticFeedbackUtils.lightImpact();
+    _scrollToBottom();
+  }
+
+  void _clearComposerEditMode() {
+    if (_editingMessageId == null && _messageController.text.isEmpty) return;
+    setState(() {
+      _editingMessageId = null;
+      _messageController.clear();
+    });
+  }
+
   bool _messageIsEditable(Message message) {
     if (message.isDeleted == true) return false;
     if (message.isEdited == true) return false;
@@ -1469,62 +1538,30 @@ class _ChatScreenState extends State<ChatScreen> {
     return true;
   }
 
-  Future<void> _openEditMessageDialog(Message message) async {
-    if (!_messageIsEditable(message) || !mounted) return;
-    final controller = TextEditingController(text: message.content);
-    final focusNode = FocusNode();
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) {
-          return UydoshAlertDialog(
-            scrollable: true,
-            title: Text(L10n.get("chat_edit_message_title")),
-            content: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              autofocus: true,
-              maxLength: 2000,
-              maxLines: 8,
-              minLines: 3,
-              keyboardType: TextInputType.multiline,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(L10n.get("chat_edit_message_cancel")),
-              ),
-              TextButton(
-                onPressed: () {
-                  final next = controller.text.trim();
-                  if (next.isEmpty) return;
-                  if (next == message.content.trim()) {
-                    Navigator.of(ctx).pop();
-                    return;
-                  }
-                  Navigator.of(ctx).pop();
-                  context.read<MessagingBloc>().add(
-                        EditMessage(
-                          messageId: message.id,
-                          newContent: next,
-                        ),
-                      );
-                },
-                child: Text(L10n.get("chat_edit_message_save")),
-              ),
-            ],
-          );
-        },
-      );
-    } finally {
-      focusNode.dispose();
-      controller.dispose();
-    }
-  }
-
   void _sendMessage() {
     final content = _messageController.text.trim();
     if (content.isEmpty || _isSendingMessage) return;
+
+    final editingId = _editingMessageId;
+    if (editingId != null) {
+      final idx = _messages.indexWhere((m) => m.id == editingId);
+      if (idx < 0) {
+        setState(() => _editingMessageId = null);
+        return;
+      }
+      final original = _messages[idx].content.trim();
+      if (content == original) {
+        _messageFocusNode.unfocus();
+        _clearComposerEditMode();
+        return;
+      }
+      setState(() => _isSendingMessage = true);
+      _messageFocusNode.unfocus();
+      context.read<MessagingBloc>().add(
+            EditMessage(messageId: editingId, newContent: content),
+          );
+      return;
+    }
 
     setState(() {
       _isSendingMessage = true;
@@ -1633,6 +1670,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ? question
         : question[0].toLowerCase() + question.substring(1);
     _messageController.text = "$greeting $lowercasedQuestion";
+    setState(() => _editingMessageId = null);
     // Don't steal focus / open keyboard when tapping a quick question.
     // If keyboard is already open, tapping a chip should dismiss it.
     FocusScope.of(context).unfocus();

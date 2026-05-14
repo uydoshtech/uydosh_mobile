@@ -994,7 +994,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chat_edit_message_once_only =>
-      'This message was already edited. You can only edit each message once.';
+      'You’ve already used your one edit on this message.';
+
+  @override
+  String get chat_edit_hold_already_edited_toast =>
+      'You can only change a message once—and you’ve already saved your edit.';
 
   @override
   String get view_similar_results => 'View similar';

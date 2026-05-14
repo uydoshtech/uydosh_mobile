@@ -125,6 +125,13 @@ class _MessageBubbleState extends State<MessageBubble>
       (widget.message.attachments == null ||
           widget.message.attachments!.isEmpty);
 
+  /// Vertical gap under the bubble body so the corner reaction control stays
+  /// inside the [Stack]'s layout bounds. [Positioned] with a negative `bottom`
+  /// drew the badge visually correct but placed it outside [RenderBox.hitTest],
+  /// so taps never reached the smile+ [GestureDetector].
+  double get _reactionBadgeHitReserve =>
+      _reactionBadgeHoverHeight / 2 + _reactionBadgeOutsideShift;
+
   /// Server / JSON may vary casing; keeps ribbon toggle vs [Message.myReaction] stable.
   static bool _reactionKeysEqual(String a, String b) =>
       a.trim().toLowerCase() == b.trim().toLowerCase();
@@ -281,7 +288,7 @@ class _MessageBubbleState extends State<MessageBubble>
                       onLongPress: _canLongPressEditOwnMessage
                           ? widget.onLongPressEditOwnMessage
                           : null,
-                      behavior: HitTestBehavior.deferToChild,
+                      behavior: HitTestBehavior.translucent,
                       child: ChatMessageRow(
                         isFromCurrentUser: widget.isCurrentUser,
                         leftAvatarInitials: _getOtherUserInitials(),
@@ -362,6 +369,8 @@ class _MessageBubbleState extends State<MessageBubble>
                                           ],
                                         ],
                                       ),
+                                      if (_reactionsEnabled)
+                                        SizedBox(height: _reactionBadgeHitReserve),
                                     ],
                                   ),
                                   if (!widget.isCurrentUser &&
@@ -380,8 +389,7 @@ class _MessageBubbleState extends State<MessageBubble>
                                     ),
                                   if (_reactionsEnabled)
                                     PositionedDirectional(
-                                      bottom: -_reactionBadgeHoverHeight / 2 -
-                                          _reactionBadgeOutsideShift,
+                                      bottom: 0,
                                       end: reactionEndInset,
                                       child: myId != null
                                           ? ScaleTransition(

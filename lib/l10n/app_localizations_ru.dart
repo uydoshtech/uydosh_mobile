@@ -994,7 +994,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get chat_edit_message_once_only =>
-      'Сообщение уже было отредактировано. Редактировать можно только один раз.';
+      'Вы уже использовали единственное редактирование для этого сообщения.';
+
+  @override
+  String get chat_edit_hold_already_edited_toast =>
+      'Каждое сообщение можно изменить только один раз — вы уже сохранили правку.';
 
   @override
   String get view_similar_results => 'Похожие объявления';

@@ -1,8 +1,10 @@
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/chat/composer_edit_invite_pulse.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -16,12 +18,17 @@ class ChatMessageInput extends StatelessWidget {
     required this.isSendingMessage,
     this.focusNode,
     this.blendWithGlassBackdrop = false,
+    this.composerEditPulseTrigger,
     super.key,
   });
   final TextEditingController controller;
   final FocusNode? focusNode;
   final VoidCallback onSend;
   final bool isSendingMessage;
+
+  /// Increment (e.g. `value++`) to play the green “edit here” border blink on
+  /// the text field.
+  final ValueListenable<int>? composerEditPulseTrigger;
 
   /// When true, no bar fill (used with a parent [BackdropFilter] glass panel).
   final bool blendWithGlassBackdrop;
@@ -59,13 +66,12 @@ class ChatMessageInput extends StatelessWidget {
                   color: themeState.chatInputBarBackgroundColor,
                   border: Border(top: BorderSide(color: borderColor)),
                 );
-        return Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          decoration: barDecoration,
-          child: Row(
-            children: [
-              Expanded(
-                child: ThreeDTextField(
+        final fieldRadius =
+            themeState.isBlueTheme
+                ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                : const BorderRadius.all(Radius.circular(24));
+
+        Widget textField = ThreeDTextField(
                   controller: controller,
                   focusNode: focusNode,
                   hintText: L10n.get("type_message"),
@@ -73,14 +79,27 @@ class ChatMessageInput extends StatelessWidget {
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
-                  borderRadius:
-                      themeState.isBlueTheme
-                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
-                          : const BorderRadius.all(Radius.circular(24)),
+                  borderRadius: fieldRadius,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
-                ),
+                );
+        final pulseTrigger = composerEditPulseTrigger;
+        if (pulseTrigger != null) {
+          textField = ComposerEditInvitePulse(
+            pulseTrigger: pulseTrigger,
+            borderRadius: fieldRadius,
+            child: textField,
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          decoration: barDecoration,
+          child: Row(
+            children: [
+              Expanded(
+                child: textField,
               ),
               const SizedBox(width: 8),
               ThreeDPillButton(

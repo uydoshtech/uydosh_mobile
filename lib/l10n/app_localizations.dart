@@ -1897,8 +1897,14 @@ abstract class AppLocalizations {
   /// No description provided for @chat_edit_message_once_only.
   ///
   /// In en, this message translates to:
-  /// **'This message was already edited. You can only edit each message once.'**
+  /// **'You’ve already used your one edit on this message.'**
   String get chat_edit_message_once_only;
+
+  /// No description provided for @chat_edit_hold_already_edited_toast.
+  ///
+  /// In en, this message translates to:
+  /// **'You can only change a message once—and you’ve already saved your edit.'**
+  String get chat_edit_hold_already_edited_toast;
 
   /// No description provided for @view_similar_results.
   ///
