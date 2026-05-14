@@ -946,6 +946,7 @@ class _ChatScreenState extends State<ChatScreen> {
             });
             HapticFeedbackUtils.impact();
           },
+          messageEdited: (message) {},
           messagesMarkedAsRead: (conversationId, markedCount) {},
           error: (message) {
             setState(() {
@@ -1112,6 +1113,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       _scrollToBottom();
                       HapticFeedbackUtils.impact();
                     },
+                    messageEdited: (message) {
+                      setState(() {
+                        final i = _messages.indexWhere((m) => m.id == message.id);
+                        if (i >= 0) {
+                          _messages = List<Message>.from(_messages)
+                            ..[i] = message;
+                        }
+                        _translationsById.remove(message.id);
+                        _showOriginalMessageIds.remove(message.id);
+                      });
+                      HapticFeedbackUtils.impact();
+                    },
                     messagesMarkedAsRead: (conversationId, markedCount) {},
                     error: (message) {
                       _finishRefreshSkeletonIfNeeded();
@@ -1173,6 +1186,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           ? _buildMessagesList(_messages)
                           : _buildLoadingState(),
                   messageSent: (message) => _buildEmptyState(),
+                  messageEdited: (message) => _messages.isNotEmpty
+                      ? _buildMessagesList(_messages)
+                      : _buildEmptyState(),
                   messagesMarkedAsRead: (conversationId, markedCount) =>
                       _buildEmptyState(),
                   error: _buildErrorState,
@@ -1382,6 +1398,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   : (reactionId) => _setMessageReaction(message, reactionId),
               onClearReaction:
                   isCurrentUser ? null : () => _clearMessageReaction(message),
+              onLongPressEditOwnMessage: isCurrentUser &&
+                      _messageIsEditable(message)
+                  ? () => unawaited(_openEditMessageDialog(message))
+                  : null,
             ),
         };
       },
@@ -1438,6 +1458,68 @@ class _ChatScreenState extends State<ChatScreen> {
       subtitle: L10n.get("send_first_message"),
       fillViewportForRefresh: true,
     );
+  }
+
+  bool _messageIsEditable(Message message) {
+    if (message.isDeleted == true) return false;
+    if (message.isEdited == true) return false;
+    if (message.messageType.toLowerCase() != 'text') return false;
+    final atts = message.attachments;
+    if (atts != null && atts.isNotEmpty) return false;
+    return true;
+  }
+
+  Future<void> _openEditMessageDialog(Message message) async {
+    if (!_messageIsEditable(message) || !mounted) return;
+    final controller = TextEditingController(text: message.content);
+    final focusNode = FocusNode();
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return UydoshAlertDialog(
+            scrollable: true,
+            title: Text(L10n.get("chat_edit_message_title")),
+            content: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              autofocus: true,
+              maxLength: 2000,
+              maxLines: 8,
+              minLines: 3,
+              keyboardType: TextInputType.multiline,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(L10n.get("chat_edit_message_cancel")),
+              ),
+              TextButton(
+                onPressed: () {
+                  final next = controller.text.trim();
+                  if (next.isEmpty) return;
+                  if (next == message.content.trim()) {
+                    Navigator.of(ctx).pop();
+                    return;
+                  }
+                  Navigator.of(ctx).pop();
+                  context.read<MessagingBloc>().add(
+                        EditMessage(
+                          messageId: message.id,
+                          newContent: next,
+                        ),
+                      );
+                },
+                child: Text(L10n.get("chat_edit_message_save")),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      focusNode.dispose();
+      controller.dispose();
+    }
   }
 
   void _sendMessage() {

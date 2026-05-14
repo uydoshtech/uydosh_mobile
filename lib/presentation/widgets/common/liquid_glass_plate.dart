@@ -11,6 +11,7 @@ class LiquidGlassPlate extends StatelessWidget {
     required this.child,
     super.key,
     this.height,
+    this.width,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
     this.sigma = 14,
     this.padding,
@@ -19,6 +20,7 @@ class LiquidGlassPlate extends StatelessWidget {
 
   final Widget child;
   final double? height;
+  final double? width;
   final BorderRadius borderRadius;
   final double sigma;
   final EdgeInsetsGeometry? padding;
@@ -42,6 +44,7 @@ class LiquidGlassPlate extends StatelessWidget {
     );
 
     return SizedBox(
+      width: width,
       height: height,
       child: ClipRRect(
         borderRadius: borderRadius,

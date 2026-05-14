@@ -181,6 +181,15 @@ class ErrorMessageHelper {
   }) {
     final errorString = error.toString();
 
+    if (errorString.contains("MESSAGE_EDIT_ONCE")) {
+      return _t(
+        context,
+        "chat_edit_message_once_only",
+        fallback:
+            "This message was already edited. You can only edit each message once.",
+      );
+    }
+
     // Filter out technical exception details
     if (errorString.contains("Exception") &&
         (errorString.contains("bad response") ||

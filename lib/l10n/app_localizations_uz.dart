@@ -999,6 +999,19 @@ class AppLocalizationsUz extends AppLocalizations {
   String get chat_show_translation => 'Tarjimani ko‘rsatish';
 
   @override
+  String get chat_edit_message_title => 'Xabarni tahrirlash';
+
+  @override
+  String get chat_edit_message_save => 'Saqlash';
+
+  @override
+  String get chat_edit_message_cancel => 'Bekor qilish';
+
+  @override
+  String get chat_edit_message_once_only =>
+      'Bu xabar allaqachon tahrirlangan. Har bir xabar faqat bir marta tahrirlanishi mumkin.';
+
+  @override
   String get view_similar_results => 'O‘xshash e\'lonlar';
 
   @override

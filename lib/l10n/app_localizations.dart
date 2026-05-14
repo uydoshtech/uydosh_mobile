@@ -1876,6 +1876,30 @@ abstract class AppLocalizations {
   /// **'Show translation'**
   String get chat_show_translation;
 
+  /// No description provided for @chat_edit_message_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit message'**
+  String get chat_edit_message_title;
+
+  /// No description provided for @chat_edit_message_save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get chat_edit_message_save;
+
+  /// No description provided for @chat_edit_message_cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get chat_edit_message_cancel;
+
+  /// No description provided for @chat_edit_message_once_only.
+  ///
+  /// In en, this message translates to:
+  /// **'This message was already edited. You can only edit each message once.'**
+  String get chat_edit_message_once_only;
+
   /// No description provided for @view_similar_results.
   ///
   /// In en, this message translates to:

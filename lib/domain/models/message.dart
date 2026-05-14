@@ -58,6 +58,7 @@ class Message with _$Message {
     @JsonKey(name: "edited_at") String? editedAt,
     @JsonKey(name: "is_deleted") bool? isDeleted,
     @JsonKey(name: "deleted_at") String? deletedAt,
+    @JsonKey(name: "previous_content") String? previousContent,
     // Related data
     MessageSender? sender,
     List<MessageAttachment>? attachments,

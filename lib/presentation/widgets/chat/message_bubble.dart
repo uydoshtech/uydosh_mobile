@@ -35,6 +35,7 @@ class MessageBubble extends StatefulWidget {
     this.onToggleTranslation,
     this.onSetReaction,
     this.onClearReaction,
+    this.onLongPressEditOwnMessage,
   });
   final Message message;
   final bool isCurrentUser;
@@ -78,6 +79,9 @@ class MessageBubble extends StatefulWidget {
   /// Clear the viewer's reaction (optional; used when picking the same emoji).
   final Future<void> Function()? onClearReaction;
 
+  /// Long-press on **own** text bubbles opens edit in the parent.
+  final VoidCallback? onLongPressEditOwnMessage;
+
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
 }
@@ -112,6 +116,23 @@ class _MessageBubbleState extends State<MessageBubble>
   bool get _reactionsEnabled =>
       !widget.isCurrentUser &&
       (widget.onSetReaction != null || widget.onClearReaction != null);
+
+  bool get _canLongPressEditOwnMessage =>
+      widget.isCurrentUser &&
+      widget.onLongPressEditOwnMessage != null &&
+      widget.message.messageType.toLowerCase() == 'text' &&
+      widget.message.isDeleted != true &&
+      (widget.message.attachments == null ||
+          widget.message.attachments!.isEmpty);
+
+  /// Server / JSON may vary casing; keeps ribbon toggle vs [Message.myReaction] stable.
+  static bool _reactionKeysEqual(String a, String b) =>
+      a.trim().toLowerCase() == b.trim().toLowerCase();
+
+  static bool _reactionKeysEqualNullable(String? a, String b) {
+    if (a == null || a.trim().isEmpty) return false;
+    return _reactionKeysEqual(a, b);
+  }
 
   @override
   void initState() {
@@ -257,11 +278,8 @@ class _MessageBubbleState extends State<MessageBubble>
                       : CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onLongPress: _reactionsEnabled
-                          ? () => _openReactionToolbar(context)
-                          : null,
-                      onSecondaryTap: _reactionsEnabled
-                          ? () => _openReactionToolbar(context)
+                      onLongPress: _canLongPressEditOwnMessage
+                          ? widget.onLongPressEditOwnMessage
                           : null,
                       behavior: HitTestBehavior.deferToChild,
                       child: ChatMessageRow(
@@ -279,13 +297,12 @@ class _MessageBubbleState extends State<MessageBubble>
                               final aggCount = myId != null
                                   ? _aggregateCountForReaction(myId)
                                   : 1;
-                              final reactionEndInset =
-                                  (_reactionsEnabled && myId != null)
-                                      ? _reactionBadgeTrailingEndInset(
-                                          bubbleInnerWidth: bubbleInnerW,
-                                          aggregateCount: aggCount,
-                                        )
-                                      : 0.0;
+                              final reactionEndInset = _reactionsEnabled
+                                  ? _reactionBadgeTrailingEndInset(
+                                      bubbleInnerWidth: bubbleInnerW,
+                                      aggregateCount: aggCount,
+                                    )
+                                  : 0.0;
 
                               return Stack(
                                 clipBehavior: Clip.none,
@@ -339,36 +356,6 @@ class _MessageBubbleState extends State<MessageBubble>
                                               ),
                                             ),
                                           ),
-                                          if (_reactionsEnabled) ...[
-                                            const SizedBox(width: 6),
-                                            IconButton(
-                                              onPressed: () =>
-                                                  _openReactionToolbar(
-                                                context,
-                                              ),
-                                              style: IconButton.styleFrom(
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                              ),
-                                              tooltip: L10n.get(
-                                                "reaction_add",
-                                                fallback: "Add reaction",
-                                              ),
-                                              icon: Icon(
-                                                Icons.add_reaction_outlined,
-                                                size: 16,
-                                                color: textColor.withValues(
-                                                  alpha: 0.65,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
                                           if (widget.isCurrentUser) ...[
                                             const SizedBox(width: 4),
                                             _buildCheckmarks(textColor),
@@ -391,18 +378,25 @@ class _MessageBubbleState extends State<MessageBubble>
                                         ),
                                       ),
                                     ),
-                                  if (_reactionsEnabled && myId != null)
+                                  if (_reactionsEnabled)
                                     PositionedDirectional(
                                       bottom: -_reactionBadgeHoverHeight / 2 -
                                           _reactionBadgeOutsideShift,
                                       end: reactionEndInset,
-                                      child: ScaleTransition(
-                                        scale: _reactionAppearPulseScale,
-                                        alignment: Alignment.center,
-                                        child: _buildMyReactionCornerBadge(
-                                          textColor,
-                                        ),
-                                      ),
+                                      child: myId != null
+                                          ? ScaleTransition(
+                                              scale: _reactionAppearPulseScale,
+                                              alignment: Alignment.center,
+                                              child:
+                                                  _buildMyReactionCornerBadge(
+                                                context,
+                                                textColor,
+                                              ),
+                                            )
+                                          : _buildAddReactionCornerBadge(
+                                              context,
+                                              textColor,
+                                            ),
                                     ),
                                 ],
                               );
@@ -483,56 +477,118 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
-  Widget _buildMyReactionCornerBadge(Color textColor) {
+  /// “Smile +” in the same corner slot when the viewer has not reacted yet.
+  Widget _buildAddReactionCornerBadge(
+    BuildContext context,
+    Color textColor,
+  ) {
+    return Tooltip(
+      message: L10n.get(
+        "reaction_add",
+        fallback: "Add reaction",
+      ),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          _openReactionToolbar(context);
+        },
+        behavior: HitTestBehavior.opaque,
+        child: LiquidGlassPlate(
+          width: _reactionBadgeHoverHeight,
+          height: _reactionBadgeHoverHeight,
+          borderRadius:
+              BorderRadius.circular(_reactionBadgeHoverHeight / 2),
+          sigma: 10,
+          padding: const EdgeInsets.all(2),
+          child: Icon(
+            Icons.add_reaction_outlined,
+            size: 17,
+            color: textColor.withValues(alpha: 0.72),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMyReactionCornerBadge(
+    BuildContext context,
+    Color textColor,
+  ) {
     final id = widget.message.myReaction!;
     final count = _aggregateCountForReaction(id);
     final isRoundCapsule = count <= 1;
     final bubbleRadius = isRoundCapsule ? _reactionBadgeHoverHeight / 2 : 15.0;
 
     return GestureDetector(
-      onTap: widget.onClearReaction != null
-          ? () {
-              HapticFeedback.lightImpact();
-              widget.onClearReaction?.call();
-            }
-          : null,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _openReactionToolbar(context);
+      },
       behavior: HitTestBehavior.opaque,
       child: LiquidGlassPlate(
+        width: isRoundCapsule ? _reactionBadgeHoverHeight : null,
         height: _reactionBadgeHoverHeight,
         borderRadius: BorderRadius.circular(bubbleRadius),
         sigma: 10,
         padding: const EdgeInsets.all(2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              MessageReactionCatalog.emojiFor(id),
-              textAlign: TextAlign.center,
-              style: MessageReactionCatalog.textStyleForReactionEmoji(
-                17,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.35),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
+        child: isRoundCapsule
+            ? SizedBox.square(
+                dimension:
+                    _reactionBadgeHoverHeight - 4, // plate padding EdgeInsets.all(2)
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                  child: Text(
+                    MessageReactionCatalog.emojiFor(id),
+                    textAlign: TextAlign.center,
+                    textHeightBehavior: const TextHeightBehavior(
+                      applyHeightToFirstAscent: false,
+                      applyHeightToLastDescent: false,
+                    ),
+                    style: MessageReactionCatalog.textStyleForReactionEmoji(
+                      26,
+                      height: 1,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.28),
+                          blurRadius: 4,
+                          offset: Offset.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    MessageReactionCatalog.emojiFor(id),
+                    textAlign: TextAlign.center,
+                    style: MessageReactionCatalog.textStyleForReactionEmoji(
+                      17,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$count",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: textColor.withValues(alpha: 0.9),
+                    ),
                   ),
                 ],
               ),
-            ),
-            if (count > 1) ...[
-              const SizedBox(width: 4),
-              Text(
-                "$count",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textColor.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -605,8 +661,13 @@ class _MessageBubbleState extends State<MessageBubble>
       builder: (ctx) => _ReactionToolbarOverlayAnimated(
         left: placement.left,
         top: placement.top,
+        selectedReactionId: widget.message.myReaction,
         onRemoved: entry.remove,
-        onEmojiChosen: _applyReactionChoice,
+        onEmojiChosen: (reactionId, {required matchesOpeningSelection}) =>
+            _applyReactionChoice(
+              reactionId,
+              matchesOpeningSelection: matchesOpeningSelection,
+            ),
       ),
     );
     overlay.insert(entry);
@@ -634,13 +695,15 @@ class _MessageBubbleState extends State<MessageBubble>
                     },
                     borderRadius: BorderRadius.circular(26),
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        MessageReactionCatalog.emojiFor(id),
-                        style:
-                            MessageReactionCatalog.textStyleForReactionEmoji(
-                          28,
+                      padding: const EdgeInsets.all(8),
+                      child: _reactionRibbonEmojiBody(
+                        reactionId: id,
+                        emojiSize: 28,
+                        selected: _reactionKeysEqualNullable(
+                          widget.message.myReaction,
+                          id,
                         ),
+                        onGlassBackground: false,
                       ),
                     ),
                   ),
@@ -652,13 +715,57 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
-  Future<void> _applyReactionChoice(String reactionId) async {
-    final mine = widget.message.myReaction == reactionId;
-    if (mine) {
+  /// Clears when the user picks their current reaction, or re-taps the emoji
+  /// that was highlighted when the ribbon opened ([matchesOpeningSelection]).
+  Future<void> _applyReactionChoice(
+    String reactionId, {
+    bool matchesOpeningSelection = false,
+  }) async {
+    final mine = _reactionKeysEqualNullable(widget.message.myReaction, reactionId);
+    if (mine || matchesOpeningSelection) {
       await widget.onClearReaction?.call();
     } else {
       await widget.onSetReaction?.call(reactionId);
     }
+  }
+
+  /// Shared emoji cell for reaction picker: optional circular ring when
+  /// [selected] matches the corner badge state.
+  static Widget _reactionRibbonEmojiBody({
+    required String reactionId,
+    required double emojiSize,
+    required bool selected,
+    required bool onGlassBackground,
+  }) {
+    final emoji = Text(
+      MessageReactionCatalog.emojiFor(reactionId),
+      textAlign: TextAlign.center,
+      style: MessageReactionCatalog.textStyleForReactionEmoji(emojiSize),
+    );
+    if (!selected) {
+      return emoji;
+    }
+    final borderColor = onGlassBackground
+        ? Colors.white.withValues(alpha: 0.42)
+        : Colors.black.withValues(alpha: 0.22);
+    final fillColor = onGlassBackground
+        ? Colors.white.withValues(alpha: 0.14)
+        : Colors.black.withValues(alpha: 0.07);
+    final diameter = emojiSize + 16;
+    return Container(
+      width: diameter,
+      height: diameter,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: fillColor,
+        border: Border.all(
+          color: borderColor,
+          width: onGlassBackground ? 1 : 1.2,
+        ),
+      ),
+      child: emoji,
+    );
   }
 
   Widget _buildReactionStrip(BuildContext context, Color textColor) {
@@ -1039,14 +1146,24 @@ class _ReactionToolbarOverlayAnimated extends StatefulWidget {
     required this.top,
     required this.onRemoved,
     required this.onEmojiChosen,
+    this.selectedReactionId,
   });
 
   final double left;
   final double top;
   final VoidCallback onRemoved;
 
+  /// Viewer’s active reaction on this message, if any — highlighted in the ribbon.
+  final String? selectedReactionId;
+
   /// Invoked **after** the overlay entry is removed.
-  final Future<void> Function(String reactionId) onEmojiChosen;
+  /// [matchesOpeningSelection] is true when this [reactionId] was the viewer’s
+  /// reaction at ribbon open — re-tap removes even if live [Message.myReaction]
+  /// was out of sync with strict string equality.
+  final Future<void> Function(
+    String reactionId, {
+    required bool matchesOpeningSelection,
+  }) onEmojiChosen;
 
   @override
   State<_ReactionToolbarOverlayAnimated> createState() =>
@@ -1144,22 +1261,35 @@ class _ReactionToolbarOverlayAnimatedState
                               onTap: () {
                                 final applyReaction = widget.onEmojiChosen;
                                 final reactionId = id;
+                                final matchesOpening =
+                                    _MessageBubbleState._reactionKeysEqualNullable(
+                                  widget.selectedReactionId,
+                                  reactionId,
+                                );
                                 _animateOut(
-                                  afterOverlayRemoved: () =>
-                                      applyReaction(reactionId),
+                                  afterOverlayRemoved: () => applyReaction(
+                                    reactionId,
+                                    matchesOpeningSelection: matchesOpening,
+                                  ),
                                 );
                               },
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(22),
                               customBorder: const CircleBorder(),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 6,
+                                  horizontal: 6,
+                                  vertical: 4,
                                 ),
-                                child: Text(
-                                  MessageReactionCatalog.emojiFor(id),
-                                  style: MessageReactionCatalog
-                                      .textStyleForReactionEmoji(20),
+                                child:
+                                    _MessageBubbleState._reactionRibbonEmojiBody(
+                                  reactionId: id,
+                                  emojiSize: 20,
+                                  selected:
+                                      _MessageBubbleState._reactionKeysEqualNullable(
+                                    widget.selectedReactionId,
+                                    id,
+                                  ),
+                                  onGlassBackground: true,
                                 ),
                               ),
                             ),

@@ -305,6 +305,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
     conversation_id integer NOT NULL,
     sender_id integer NOT NULL,
     content text NOT NULL,
+    previous_content text,
     message_type enum_message_type DEFAULT 'text' NOT NULL,
     reply_to_message_id integer,
     is_edited boolean DEFAULT false NOT NULL,

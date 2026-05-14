@@ -984,6 +984,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_show_translation => 'Show translation';
 
   @override
+  String get chat_edit_message_title => 'Edit message';
+
+  @override
+  String get chat_edit_message_save => 'Save';
+
+  @override
+  String get chat_edit_message_cancel => 'Cancel';
+
+  @override
+  String get chat_edit_message_once_only =>
+      'This message was already edited. You can only edit each message once.';
+
+  @override
   String get view_similar_results => 'View similar';
 
   @override

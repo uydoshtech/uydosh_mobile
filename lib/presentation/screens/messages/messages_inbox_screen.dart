@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math" as math;
 import "dart:ui" show ImageFilter;
 
 import "package:firebase_messaging/firebase_messaging.dart"
@@ -159,6 +160,13 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// enough to feel respectful, short enough to recover users who change
   /// their mind silently.
   static const Duration _pushBannerDismissCooldown = Duration(days: 14);
+
+  /// Matches [HomeScreen] / [GigHubScreen] curved bar height when the shell uses
+  /// [Scaffold.extendBody] and the list draws behind [CustomCurvedNavigationBar].
+  static const double _kCurvedBottomBarHeight = 70.0;
+
+  /// Extra gap after the last inbox row so content does not sit flush on the nav.
+  static const double _kInboxListBottomBreathingRoom = 20.0;
 
   @override
   void initState() {
@@ -802,6 +810,23 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       ? AppColors.textLight
       : AppColors.textGrey400;
 
+  /// Bottom padding for inbox scroll content: safe area, plus curved nav overlap
+  /// on the Messages main tab (blue shell + [extendBody]), plus
+  /// [_kInboxListBottomBreathingRoom].
+  double _inboxListBottomPadding(BuildContext context) {
+    const baseMinimum = 16.0;
+    final double inset;
+    if (ThemeState().isBlueTheme && widget.mainTabSelected == true) {
+      final mq = MediaQuery.of(context);
+      final fromView = math.max(mq.padding.bottom, mq.viewPadding.bottom);
+      final shellInset = math.max(_kCurvedBottomBarHeight, fromView);
+      inset = math.max(baseMinimum, shellInset);
+    } else {
+      inset = math.max(baseMinimum, MediaQuery.paddingOf(context).bottom);
+    }
+    return inset + _kInboxListBottomBreathingRoom;
+  }
+
   Widget _buildTabbedConversationsList(
     List<ConversationSummary> conversations,
   ) {
@@ -964,7 +989,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             conversations: sorted,
             currentUserId: _currentUserId,
             embedInParentScrollView: true,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            padding: EdgeInsets.fromLTRB(16, 8, 16, _inboxListBottomPadding(context)),
             itemSpacing: 12,
             showActivityTimeOnly: true,
             useOutgoingInnerTiles: false,
@@ -1561,7 +1586,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       ),
     ];
     return CommonListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: EdgeInsets.fromLTRB(16, 0, 16, _inboxListBottomPadding(context)),
       physics: const AlwaysScrollableScrollPhysics(),
       itemSpacing: 12,
       itemCount: entries.length,

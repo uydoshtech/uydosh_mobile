@@ -984,6 +984,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chat_show_translation => 'Показать перевод';
 
   @override
+  String get chat_edit_message_title => 'Редактировать сообщение';
+
+  @override
+  String get chat_edit_message_save => 'Сохранить';
+
+  @override
+  String get chat_edit_message_cancel => 'Отмена';
+
+  @override
+  String get chat_edit_message_once_only =>
+      'Сообщение уже было отредактировано. Редактировать можно только один раз.';
+
+  @override
   String get view_similar_results => 'Похожие объявления';
 
   @override

@@ -90,6 +90,12 @@ class RefreshMessages extends MessagingEvent {
   final int conversationId;
 }
 
+class EditMessage extends MessagingEvent {
+  EditMessage({required this.messageId, required this.newContent});
+  final int messageId;
+  final String newContent;
+}
+
 class ClearConversations extends MessagingEvent {}
 
 // States
@@ -115,6 +121,8 @@ class MessagingState with _$MessagingState {
   }) = ConversationCreated;
   const factory MessagingState.messageSent({required Message message}) =
       MessageSent;
+  const factory MessagingState.messageEdited({required Message message}) =
+      MessageEdited;
   const factory MessagingState.messagesMarkedAsRead({
     required int conversationId,
     required int markedCount,
@@ -136,6 +144,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<MarkMessagesAsRead>(_onMarkMessagesAsRead);
     on<RefreshConversations>(_onRefreshConversations);
     on<RefreshMessages>(_onRefreshMessages);
+    on<EditMessage>(_onEditMessage);
     on<ClearConversations>(_onClearConversations);
     on<ArchiveConversation>(_onArchiveConversation);
     on<UnarchiveConversation>(_onUnarchiveConversation);
@@ -413,6 +422,21 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     add(FetchMessages(conversationId: event.conversationId, page: 1));
+  }
+
+  Future<void> _onEditMessage(
+    EditMessage event,
+    Emitter<MessagingState> emit,
+  ) async {
+    try {
+      final message = await _messagingService.editMessage(
+        messageId: event.messageId,
+        newContent: event.newContent,
+      );
+      emit(MessagingState.messageEdited(message: message));
+    } catch (e) {
+      emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
+    }
   }
 
   Future<void> _onClearConversations(

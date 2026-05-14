@@ -29,6 +29,7 @@ mixin _$MessagingState {
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -47,6 +48,7 @@ mixin _$MessagingState {
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -65,6 +67,7 @@ mixin _$MessagingState {
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -81,6 +84,7 @@ mixin _$MessagingState {
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) =>
@@ -95,6 +99,7 @@ mixin _$MessagingState {
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) =>
@@ -108,6 +113,7 @@ mixin _$MessagingState {
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -196,6 +202,7 @@ class _$MessagingInitialImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -217,6 +224,7 @@ class _$MessagingInitialImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -238,6 +246,7 @@ class _$MessagingInitialImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -260,6 +269,7 @@ class _$MessagingInitialImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -277,6 +287,7 @@ class _$MessagingInitialImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -293,6 +304,7 @@ class _$MessagingInitialImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -368,6 +380,7 @@ class _$MessagingLoadingImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -389,6 +402,7 @@ class _$MessagingLoadingImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -410,6 +424,7 @@ class _$MessagingLoadingImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -432,6 +447,7 @@ class _$MessagingLoadingImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -449,6 +465,7 @@ class _$MessagingLoadingImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -465,6 +482,7 @@ class _$MessagingLoadingImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -609,6 +627,7 @@ class _$MessagingConversationsLoadedImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -630,6 +649,7 @@ class _$MessagingConversationsLoadedImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -651,6 +671,7 @@ class _$MessagingConversationsLoadedImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -673,6 +694,7 @@ class _$MessagingConversationsLoadedImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -690,6 +712,7 @@ class _$MessagingConversationsLoadedImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -706,6 +729,7 @@ class _$MessagingConversationsLoadedImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -800,6 +824,7 @@ class _$MessagingConversationsClearedImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -821,6 +846,7 @@ class _$MessagingConversationsClearedImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -842,6 +868,7 @@ class _$MessagingConversationsClearedImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -864,6 +891,7 @@ class _$MessagingConversationsClearedImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -881,6 +909,7 @@ class _$MessagingConversationsClearedImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -897,6 +926,7 @@ class _$MessagingConversationsClearedImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -1052,6 +1082,7 @@ class _$MessagesLoadedImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -1073,6 +1104,7 @@ class _$MessagesLoadedImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -1094,6 +1126,7 @@ class _$MessagesLoadedImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1116,6 +1149,7 @@ class _$MessagesLoadedImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -1133,6 +1167,7 @@ class _$MessagesLoadedImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -1149,6 +1184,7 @@ class _$MessagesLoadedImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -1282,6 +1318,7 @@ class _$ConversationCreatedImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -1303,6 +1340,7 @@ class _$ConversationCreatedImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -1324,6 +1362,7 @@ class _$ConversationCreatedImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1346,6 +1385,7 @@ class _$ConversationCreatedImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -1363,6 +1403,7 @@ class _$ConversationCreatedImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -1379,6 +1420,7 @@ class _$ConversationCreatedImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -1502,6 +1544,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -1523,6 +1566,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -1544,6 +1588,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1566,6 +1611,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -1583,6 +1629,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -1599,6 +1646,7 @@ class _$MessageSentImpl with DiagnosticableTreeMixin implements MessageSent {
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -1620,6 +1668,234 @@ abstract class MessageSent implements MessagingState {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MessageSentImplCopyWith<_$MessageSentImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$MessageEditedImplCopyWith<$Res> {
+  factory _$$MessageEditedImplCopyWith(
+          _$MessageEditedImpl value, $Res Function(_$MessageEditedImpl) then) =
+      __$$MessageEditedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({Message message});
+
+  $MessageCopyWith<$Res> get message;
+}
+
+/// @nodoc
+class __$$MessageEditedImplCopyWithImpl<$Res>
+    extends _$MessagingStateCopyWithImpl<$Res, _$MessageEditedImpl>
+    implements _$$MessageEditedImplCopyWith<$Res> {
+  __$$MessageEditedImplCopyWithImpl(
+      _$MessageEditedImpl _value, $Res Function(_$MessageEditedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of MessagingState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$MessageEditedImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as Message,
+    ));
+  }
+
+  /// Create a copy of MessagingState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $MessageCopyWith<$Res> get message {
+    return $MessageCopyWith<$Res>(_value.message, (value) {
+      return _then(_value.copyWith(message: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$MessageEditedImpl
+    with DiagnosticableTreeMixin
+    implements MessageEdited {
+  const _$MessageEditedImpl({required this.message});
+
+  @override
+  final Message message;
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'MessagingState.messageEdited(message: $message)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'MessagingState.messageEdited'))
+      ..add(DiagnosticsProperty('message', message));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MessageEditedImpl &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, message);
+
+  /// Create a copy of MessagingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MessageEditedImplCopyWith<_$MessageEditedImpl> get copyWith =>
+      __$$MessageEditedImplCopyWithImpl<_$MessageEditedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<ConversationSummary> conversations,
+            bool hasMore, int currentPage)
+        conversationsLoaded,
+    required TResult Function() conversationsCleared,
+    required TResult Function(List<Message> messages, bool hasMore,
+            int currentPage, int conversationId)
+        messagesLoaded,
+    required TResult Function(Conversation conversation) conversationCreated,
+    required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
+    required TResult Function(int conversationId, int markedCount)
+        messagesMarkedAsRead,
+    required TResult Function(String message) error,
+  }) {
+    return messageEdited(message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
+    TResult? Function()? conversationsCleared,
+    TResult? Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
+    TResult? Function(Conversation conversation)? conversationCreated,
+    TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
+    TResult? Function(int conversationId, int markedCount)?
+        messagesMarkedAsRead,
+    TResult? Function(String message)? error,
+  }) {
+    return messageEdited?.call(message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<ConversationSummary> conversations, bool hasMore,
+            int currentPage)?
+        conversationsLoaded,
+    TResult Function()? conversationsCleared,
+    TResult Function(List<Message> messages, bool hasMore, int currentPage,
+            int conversationId)?
+        messagesLoaded,
+    TResult Function(Conversation conversation)? conversationCreated,
+    TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
+    TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (messageEdited != null) {
+      return messageEdited(message);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(MessagingInitial value) initial,
+    required TResult Function(MessagingLoading value) loading,
+    required TResult Function(MessagingConversationsLoaded value)
+        conversationsLoaded,
+    required TResult Function(MessagingConversationsCleared value)
+        conversationsCleared,
+    required TResult Function(MessagesLoaded value) messagesLoaded,
+    required TResult Function(ConversationCreated value) conversationCreated,
+    required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
+    required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
+    required TResult Function(MessagingError value) error,
+  }) {
+    return messageEdited(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(MessagingInitial value)? initial,
+    TResult? Function(MessagingLoading value)? loading,
+    TResult? Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult? Function(MessagingConversationsCleared value)?
+        conversationsCleared,
+    TResult? Function(MessagesLoaded value)? messagesLoaded,
+    TResult? Function(ConversationCreated value)? conversationCreated,
+    TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
+    TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
+    TResult? Function(MessagingError value)? error,
+  }) {
+    return messageEdited?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(MessagingInitial value)? initial,
+    TResult Function(MessagingLoading value)? loading,
+    TResult Function(MessagingConversationsLoaded value)? conversationsLoaded,
+    TResult Function(MessagingConversationsCleared value)? conversationsCleared,
+    TResult Function(MessagesLoaded value)? messagesLoaded,
+    TResult Function(ConversationCreated value)? conversationCreated,
+    TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
+    TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
+    TResult Function(MessagingError value)? error,
+    required TResult orElse(),
+  }) {
+    if (messageEdited != null) {
+      return messageEdited(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class MessageEdited implements MessagingState {
+  const factory MessageEdited({required final Message message}) =
+      _$MessageEditedImpl;
+
+  Message get message;
+
+  /// Create a copy of MessagingState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MessageEditedImplCopyWith<_$MessageEditedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1726,6 +2002,7 @@ class _$MessagesMarkedAsReadImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -1747,6 +2024,7 @@ class _$MessagesMarkedAsReadImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -1768,6 +2046,7 @@ class _$MessagesMarkedAsReadImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -1790,6 +2069,7 @@ class _$MessagesMarkedAsReadImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -1807,6 +2087,7 @@ class _$MessagesMarkedAsReadImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -1823,6 +2104,7 @@ class _$MessagesMarkedAsReadImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),
@@ -1939,6 +2221,7 @@ class _$MessagingErrorImpl
         messagesLoaded,
     required TResult Function(Conversation conversation) conversationCreated,
     required TResult Function(Message message) messageSent,
+    required TResult Function(Message message) messageEdited,
     required TResult Function(int conversationId, int markedCount)
         messagesMarkedAsRead,
     required TResult Function(String message) error,
@@ -1960,6 +2243,7 @@ class _$MessagingErrorImpl
         messagesLoaded,
     TResult? Function(Conversation conversation)? conversationCreated,
     TResult? Function(Message message)? messageSent,
+    TResult? Function(Message message)? messageEdited,
     TResult? Function(int conversationId, int markedCount)?
         messagesMarkedAsRead,
     TResult? Function(String message)? error,
@@ -1981,6 +2265,7 @@ class _$MessagingErrorImpl
         messagesLoaded,
     TResult Function(Conversation conversation)? conversationCreated,
     TResult Function(Message message)? messageSent,
+    TResult Function(Message message)? messageEdited,
     TResult Function(int conversationId, int markedCount)? messagesMarkedAsRead,
     TResult Function(String message)? error,
     required TResult orElse(),
@@ -2003,6 +2288,7 @@ class _$MessagingErrorImpl
     required TResult Function(MessagesLoaded value) messagesLoaded,
     required TResult Function(ConversationCreated value) conversationCreated,
     required TResult Function(MessageSent value) messageSent,
+    required TResult Function(MessageEdited value) messageEdited,
     required TResult Function(MessagesMarkedAsRead value) messagesMarkedAsRead,
     required TResult Function(MessagingError value) error,
   }) {
@@ -2020,6 +2306,7 @@ class _$MessagingErrorImpl
     TResult? Function(MessagesLoaded value)? messagesLoaded,
     TResult? Function(ConversationCreated value)? conversationCreated,
     TResult? Function(MessageSent value)? messageSent,
+    TResult? Function(MessageEdited value)? messageEdited,
     TResult? Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult? Function(MessagingError value)? error,
   }) {
@@ -2036,6 +2323,7 @@ class _$MessagingErrorImpl
     TResult Function(MessagesLoaded value)? messagesLoaded,
     TResult Function(ConversationCreated value)? conversationCreated,
     TResult Function(MessageSent value)? messageSent,
+    TResult Function(MessageEdited value)? messageEdited,
     TResult Function(MessagesMarkedAsRead value)? messagesMarkedAsRead,
     TResult Function(MessagingError value)? error,
     required TResult orElse(),

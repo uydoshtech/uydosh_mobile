@@ -20,6 +20,7 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
       editedAt: json['edited_at'] as String?,
       isDeleted: json['is_deleted'] as bool?,
       deletedAt: json['deleted_at'] as String?,
+      previousContent: json['previous_content'] as String?,
       sender: json['sender'] == null
           ? null
           : MessageSender.fromJson(json['sender'] as Map<String, dynamic>),
@@ -49,6 +50,7 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'edited_at': instance.editedAt,
       'is_deleted': instance.isDeleted,
       'deleted_at': instance.deletedAt,
+      'previous_content': instance.previousContent,
       'sender': instance.sender,
       'attachments': instance.attachments,
       'replyToMessage': instance.replyToMessage,

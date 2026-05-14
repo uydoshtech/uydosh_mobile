@@ -41,7 +41,10 @@ mixin _$Message {
   @JsonKey(name: "is_deleted")
   bool? get isDeleted => throw _privateConstructorUsedError;
   @JsonKey(name: "deleted_at")
-  String? get deletedAt => throw _privateConstructorUsedError; // Related data
+  String? get deletedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "previous_content")
+  String? get previousContent =>
+      throw _privateConstructorUsedError; // Related data
   MessageSender? get sender => throw _privateConstructorUsedError;
   List<MessageAttachment>? get attachments =>
       throw _privateConstructorUsedError;
@@ -86,6 +89,7 @@ abstract class $MessageCopyWith<$Res> {
       @JsonKey(name: "edited_at") String? editedAt,
       @JsonKey(name: "is_deleted") bool? isDeleted,
       @JsonKey(name: "deleted_at") String? deletedAt,
+      @JsonKey(name: "previous_content") String? previousContent,
       MessageSender? sender,
       List<MessageAttachment>? attachments,
       Message? replyToMessage,
@@ -129,6 +133,7 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? editedAt = freezed,
     Object? isDeleted = freezed,
     Object? deletedAt = freezed,
+    Object? previousContent = freezed,
     Object? sender = freezed,
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
@@ -185,6 +190,10 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
       deletedAt: freezed == deletedAt
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      previousContent: freezed == previousContent
+          ? _value.previousContent
+          : previousContent // ignore: cast_nullable_to_non_nullable
               as String?,
       sender: freezed == sender
           ? _value.sender
@@ -266,6 +275,7 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
       @JsonKey(name: "edited_at") String? editedAt,
       @JsonKey(name: "is_deleted") bool? isDeleted,
       @JsonKey(name: "deleted_at") String? deletedAt,
+      @JsonKey(name: "previous_content") String? previousContent,
       MessageSender? sender,
       List<MessageAttachment>? attachments,
       Message? replyToMessage,
@@ -309,6 +319,7 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? editedAt = freezed,
     Object? isDeleted = freezed,
     Object? deletedAt = freezed,
+    Object? previousContent = freezed,
     Object? sender = freezed,
     Object? attachments = freezed,
     Object? replyToMessage = freezed,
@@ -366,6 +377,10 @@ class __$$MessageImplCopyWithImpl<$Res>
           ? _value.deletedAt
           : deletedAt // ignore: cast_nullable_to_non_nullable
               as String?,
+      previousContent: freezed == previousContent
+          ? _value.previousContent
+          : previousContent // ignore: cast_nullable_to_non_nullable
+              as String?,
       sender: freezed == sender
           ? _value.sender
           : sender // ignore: cast_nullable_to_non_nullable
@@ -414,6 +429,7 @@ class _$MessageImpl implements _Message {
       @JsonKey(name: "edited_at") this.editedAt,
       @JsonKey(name: "is_deleted") this.isDeleted,
       @JsonKey(name: "deleted_at") this.deletedAt,
+      @JsonKey(name: "previous_content") this.previousContent,
       this.sender,
       final List<MessageAttachment>? attachments,
       this.replyToMessage,
@@ -465,6 +481,9 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey(name: "deleted_at")
   final String? deletedAt;
+  @override
+  @JsonKey(name: "previous_content")
+  final String? previousContent;
 // Related data
   @override
   final MessageSender? sender;
@@ -506,7 +525,7 @@ class _$MessageImpl implements _Message {
 
   @override
   String toString() {
-    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient, reactions: $reactions, myReaction: $myReaction)';
+    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, previousContent: $previousContent, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient, reactions: $reactions, myReaction: $myReaction)';
   }
 
   @override
@@ -536,6 +555,8 @@ class _$MessageImpl implements _Message {
                 other.isDeleted == isDeleted) &&
             (identical(other.deletedAt, deletedAt) ||
                 other.deletedAt == deletedAt) &&
+            (identical(other.previousContent, previousContent) ||
+                other.previousContent == previousContent) &&
             (identical(other.sender, sender) || other.sender == sender) &&
             const DeepCollectionEquality()
                 .equals(other._attachments, _attachments) &&
@@ -567,6 +588,7 @@ class _$MessageImpl implements _Message {
         editedAt,
         isDeleted,
         deletedAt,
+        previousContent,
         sender,
         const DeepCollectionEquality().hash(_attachments),
         replyToMessage,
@@ -606,6 +628,7 @@ abstract class _Message implements Message {
       @JsonKey(name: "edited_at") final String? editedAt,
       @JsonKey(name: "is_deleted") final bool? isDeleted,
       @JsonKey(name: "deleted_at") final String? deletedAt,
+      @JsonKey(name: "previous_content") final String? previousContent,
       final MessageSender? sender,
       final List<MessageAttachment>? attachments,
       final Message? replyToMessage,
@@ -653,7 +676,10 @@ abstract class _Message implements Message {
   bool? get isDeleted;
   @override
   @JsonKey(name: "deleted_at")
-  String? get deletedAt; // Related data
+  String? get deletedAt;
+  @override
+  @JsonKey(name: "previous_content")
+  String? get previousContent; // Related data
   @override
   MessageSender? get sender;
   @override

@@ -612,6 +612,12 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
+      if (e.response?.statusCode == 400) {
+        final data = e.response?.data;
+        if (data is Map && data["code"] == "MESSAGE_EDIT_ONCE") {
+          throw Exception("MESSAGE_EDIT_ONCE");
+        }
+      }
       throw Exception("Failed to edit message");
     } catch (e) {
       throw Exception("Failed to edit message");
