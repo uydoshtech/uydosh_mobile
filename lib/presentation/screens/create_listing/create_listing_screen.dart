@@ -12,6 +12,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -1331,14 +1332,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           mounted &&
           listingTypeId != 1 &&
           !ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) {
-        await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => RoomPlanScanScreen(
-              listingId: createdListing.id,
+        final canScan = await RoomPlanCapability.isSupportedOnDevice();
+        if (canScan && mounted) {
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (context) => RoomPlanScanScreen(
+                listingId: createdListing.id,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
       // Clear form

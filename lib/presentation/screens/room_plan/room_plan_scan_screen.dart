@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
@@ -6,6 +8,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/room_scan_bounds_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -42,6 +45,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   bool _registeredRoomCaptureCallback = false;
   bool _uploading = false;
   bool _starting = false;
+  /// Null until [RoomPlanCapability.isSupportedOnDevice] resolves on iOS; unused on web.
+  bool? _roomPlanSupported;
 
   late final AnimationController _iconRotationController;
   late final Animation<double> _iconRotationAnimation;
@@ -75,6 +80,19 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
+    unawaited(_resolveSupportAndRegisterCapture());
+  }
+
+  Future<void> _resolveSupportAndRegisterCapture() async {
+    final supported = await RoomPlanCapability.isSupportedOnDevice();
+    if (!mounted) return;
+    setState(() => _roomPlanSupported = supported);
+    if (!supported) return;
+    _registerRoomCaptureCallback();
+  }
+
+  void _registerRoomCaptureCallback() {
+    if (_registeredRoomCaptureCallback) return;
     _registeredRoomCaptureCallback = true;
     _roomPlan.onRoomCaptureFinished(() {
       Future<void> run() async {
@@ -271,6 +289,35 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
               ),
             ),
           );
+        }
+
+        if (isIOSDevice) {
+          if (_roomPlanSupported == null) {
+            return Scaffold(
+              appBar: UydoshAppBar(
+                leading: ThreeDAppBarIconButton.backLeading(context),
+                title: Text(L10n.get("room_scan_title")),
+              ),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (_roomPlanSupported == false) {
+            return Scaffold(
+              appBar: UydoshAppBar(
+                leading: ThreeDAppBarIconButton.backLeading(context),
+                title: Text(L10n.get("room_scan_title")),
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    L10n.get("room_scan_not_supported"),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            );
+          }
         }
 
         final loading = _uploading || _starting;

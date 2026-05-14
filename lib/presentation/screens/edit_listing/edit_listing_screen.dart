@@ -9,6 +9,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -1325,25 +1326,33 @@ class _EditListingScreenState extends State<EditListingScreen>
                           valueListenable:
                               ClientLidarRoomScanConfig.lidarRoomScanDisabled,
                           builder: (context, lidarDisabled, _) {
-                            // For testing: show this on Chrome/Web and iOS.
-                            // On web, the scan screen still won't start scanning,
-                            // but the UI flow can be exercised end-to-end.
-                            final canShowOnThisDevice = isIOSDevice || kIsWeb;
-                            if (!canShowOnThisDevice ||
-                                (lidarDisabled && !kIsWeb) ||
-                                _selectedListingTypeId == 1) {
-                              return const SizedBox.shrink();
-                            }
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: _buildNeumorphicRoomScanButton(),
-                                ),
-                              ],
+                            return FutureBuilder<bool>(
+                              future: RoomPlanCapability.isSupportedOnDevice(),
+                              builder: (context, snap) {
+                                // For testing: show this on Chrome/Web and on iOS
+                                // only when RoomPlan / LiDAR is available.
+                                final canShowOnThisDevice =
+                                    (isIOSDevice && snap.data == true) ||
+                                        kIsWeb;
+                                if (!canShowOnThisDevice ||
+                                    (lidarDisabled && !kIsWeb) ||
+                                    _selectedListingTypeId == 1) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child:
+                                          _buildNeumorphicRoomScanButton(),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         ),
