@@ -87,8 +87,16 @@ class _MessageBubbleState extends State<MessageBubble>
   static const double _reactionBadgeHoverHeight = 30;
   static const double _reactionBadgeOutsideShift = 10;
 
-  /// Space between the bubble top edge and the reaction picker when shown above.
-  static const double _reactionBubbleGap = 6;
+  /// How far the picker extends **below** the bubble top (positive = overlaps glass).
+  static const double _reactionToolbarOverlapIntoBubble = 12;
+
+  /// Picker uses a slightly smaller inward trailing inset than the corner badge
+  /// so the strip sits nearer the bubble edge.
+  static const double _reactionToolbarTowardTrailingEdgePx = 14;
+
+  /// Extra horizontal offset **toward the bubble’s trailing edge** (LTR: right).
+  /// Lets the pill sit further right when badge inset is already clamped to 0.
+  static const double _reactionToolbarShiftTowardTrailingEndPx = 52;
 
   late AnimationController _scaleAnimationController;
   late AnimationController _fadeAnimationController;
@@ -409,10 +417,19 @@ class _MessageBubbleState extends State<MessageBubble>
     return math.min(hugCorner, maxPermittedEndInset);
   }
 
+  /// Same horizontal inset as the posted reaction badge (even before a reaction exists).
+  double _reactionToolbarTrailingEndInset(double bubbleInnerWidth) {
+    final myId = widget.message.myReaction;
+    final agg = myId != null ? _aggregateCountForReaction(myId) : 1;
+    return _reactionBadgeTrailingEndInset(
+      bubbleInnerWidth: bubbleInnerWidth,
+      aggregateCount: agg,
+    );
+  }
+
   Widget _buildMyReactionCornerBadge(Color textColor) {
     final id = widget.message.myReaction!;
     final count = _aggregateCountForReaction(id);
-    final iconColor = MessageReactionCatalog.accentIconColor(id, textColor);
     final isRoundCapsule = count <= 1;
     final bubbleRadius = isRoundCapsule ? _reactionBadgeHoverHeight / 2 : 15.0;
 
@@ -428,25 +445,24 @@ class _MessageBubbleState extends State<MessageBubble>
         height: _reactionBadgeHoverHeight,
         borderRadius: BorderRadius.circular(bubbleRadius),
         sigma: 10,
-        padding: EdgeInsetsDirectional.only(
-          start: count > 1 ? 8 : 10,
-          end: count > 1 ? 8 : 10,
-        ),
+        padding: const EdgeInsets.all(2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              MessageReactionCatalog.iconForBubbleBadge(id),
-              size: 17,
-              color: iconColor,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+            Text(
+              MessageReactionCatalog.emojiFor(id),
+              textAlign: TextAlign.center,
+              style: MessageReactionCatalog.textStyleForReactionEmoji(
+                17,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
             ),
             if (count > 1) ...[
               const SizedBox(width: 4),
@@ -465,6 +481,53 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
+  /// Layout for the long-press reaction toolbar (matches toolbar width estimate).
+  ({double left, double top}) _reactionToolbarOverlayPosition(
+    MediaQueryData mq,
+    RenderBox? bubbleBox,
+    TextDirection textDir,
+  ) {
+    const toolbarHeightEstimate = 52.0;
+    const toolbarWidthEstimate = 248.0;
+    final w = mq.size.width;
+    final h = mq.size.height;
+    final padTop = mq.padding.top;
+    final padBottom = mq.padding.bottom;
+    var left = 16.0;
+    var top = 100.0;
+    if (bubbleBox != null) {
+      final o = bubbleBox.localToGlobal(Offset.zero);
+      final bubbleTop = o.dy;
+      final bubbleW = bubbleBox.size.width;
+      final badgeEndInset = _reactionToolbarTrailingEndInset(bubbleW);
+      final toolbarEndInset = math.max(
+        0.0,
+        badgeEndInset - _reactionToolbarTowardTrailingEdgePx,
+      );
+      top = (bubbleTop +
+              _reactionToolbarOverlapIntoBubble -
+              toolbarHeightEstimate)
+          .clamp(
+        padTop + 8,
+        h - padBottom - toolbarHeightEstimate - 8,
+      );
+      if (textDir == TextDirection.ltr) {
+        left = o.dx +
+            bubbleW -
+            toolbarEndInset -
+            toolbarWidthEstimate +
+            _reactionToolbarShiftTowardTrailingEndPx;
+      } else {
+        left = o.dx +
+            toolbarEndInset -
+            toolbarWidthEstimate -
+            _reactionToolbarShiftTowardTrailingEndPx;
+      }
+      left = left.clamp(8.0, w - toolbarWidthEstimate - 8);
+    }
+    return (left: left, top: top);
+  }
+
   void _openReactionToolbar(BuildContext context) {
     if (!_reactionsEnabled) {
       return;
@@ -477,89 +540,18 @@ class _MessageBubbleState extends State<MessageBubble>
     }
     final box =
         _bubbleAnchorKey.currentContext?.findRenderObject() as RenderBox?;
+    final textDir = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final mq = MediaQuery.of(context);
+    final placement = _reactionToolbarOverlayPosition(mq, box, textDir);
+
     late OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (ctx) {
-        final mq = MediaQuery.of(ctx);
-        final w = mq.size.width;
-        final h = mq.size.height;
-        final padTop = mq.padding.top;
-        final padBottom = mq.padding.bottom;
-        final scheme = Theme.of(ctx).colorScheme;
-        final fallbackIcon = scheme.onSurface.withValues(alpha: 0.88);
-        var left = 16.0;
-        var top = 100.0;
-        const toolbarHeightEstimate = 40.0;
-        const toolbarWidthEstimate = 132.0;
-        if (box != null) {
-          final o = box.localToGlobal(Offset.zero);
-          final bubbleTop = o.dy;
-          top = (bubbleTop - _reactionBubbleGap - toolbarHeightEstimate).clamp(
-            padTop + 8,
-            h - padBottom - toolbarHeightEstimate - 8,
-          );
-          left = (o.dx + box.size.width / 2 - toolbarWidthEstimate / 2).clamp(
-            8.0,
-            w - toolbarWidthEstimate - 8,
-          );
-        }
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  entry.remove();
-                },
-                behavior: HitTestBehavior.opaque,
-                child: ColoredBox(
-                  color: Colors.black.withValues(alpha: 0.2),
-                ),
-              ),
-            ),
-            Positioned(
-              left: left,
-              top: top,
-              child: LiquidGlassPlate(
-                borderRadius: BorderRadius.circular(18),
-                sigma: 12,
-                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-                child: Material(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final id in MessageReactionCatalog.ids)
-                        IconButton(
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(
-                            minWidth: 30,
-                            minHeight: 30,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          style: IconButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () async {
-                            entry.remove();
-                            await _applyReactionChoice(id);
-                          },
-                          icon: Icon(
-                            MessageReactionCatalog.iconForBubbleBadge(id),
-                            size: 18,
-                            color: MessageReactionCatalog.accentIconColor(
-                              id,
-                              fallbackIcon,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+      builder: (ctx) => _ReactionToolbarOverlayAnimated(
+        left: placement.left,
+        top: placement.top,
+        onRemoved: entry.remove,
+        onEmojiChosen: _applyReactionChoice,
+      ),
     );
     overlay.insert(entry);
   }
@@ -569,8 +561,6 @@ class _MessageBubbleState extends State<MessageBubble>
       context: context,
       barrierDismissible: true,
       builder: (ctx) {
-        final fallback =
-            Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.88);
         return AlertDialog(
           contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
           content: Wrap(
@@ -579,19 +569,24 @@ class _MessageBubbleState extends State<MessageBubble>
             runSpacing: 4,
             children: [
               for (final id in MessageReactionCatalog.ids)
-                IconButton(
-                  constraints: const BoxConstraints(
-                    minWidth: 48,
-                    minHeight: 48,
-                  ),
-                  onPressed: () async {
-                    Navigator.of(ctx).pop();
-                    await _applyReactionChoice(id);
-                  },
-                  icon: Icon(
-                    MessageReactionCatalog.iconForBubbleBadge(id),
-                    size: 28,
-                    color: MessageReactionCatalog.accentIconColor(id, fallback),
+                Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      await _applyReactionChoice(id);
+                    },
+                    borderRadius: BorderRadius.circular(26),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        MessageReactionCatalog.emojiFor(id),
+                        style:
+                            MessageReactionCatalog.textStyleForReactionEmoji(
+                          28,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -651,12 +646,17 @@ class _MessageBubbleState extends State<MessageBubble>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        MessageReactionCatalog.iconForBubbleBadge(e.reaction),
-                        size: 14,
-                        color: MessageReactionCatalog.accentIconColor(
-                          e.reaction,
-                          textColor,
+                      Text(
+                        MessageReactionCatalog.emojiFor(e.reaction),
+                        style: MessageReactionCatalog.textStyleForReactionEmoji(
+                          14,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 2,
+                              offset: const Offset(0, 0.5),
+                            ),
+                          ],
                         ),
                       ),
                       if (e.count > 1) ...[
@@ -971,6 +971,153 @@ class _TranslationToggleRow extends StatelessWidget {
       default:
         return null;
     }
+  }
+}
+
+const Duration _kReactionToolbarOverlayAnimDuration =
+    Duration(milliseconds: 220);
+
+class _ReactionToolbarOverlayAnimated extends StatefulWidget {
+  const _ReactionToolbarOverlayAnimated({
+    required this.left,
+    required this.top,
+    required this.onRemoved,
+    required this.onEmojiChosen,
+  });
+
+  final double left;
+  final double top;
+  final VoidCallback onRemoved;
+
+  /// Invoked **after** the overlay entry is removed.
+  final Future<void> Function(String reactionId) onEmojiChosen;
+
+  @override
+  State<_ReactionToolbarOverlayAnimated> createState() =>
+      _ReactionToolbarOverlayAnimatedState();
+}
+
+class _ReactionToolbarOverlayAnimatedState
+    extends State<_ReactionToolbarOverlayAnimated>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _curve;
+  bool _closing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: _kReactionToolbarOverlayAnimDuration,
+      vsync: this,
+    );
+    _curve = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _animateOut({
+    Future<void> Function()? afterOverlayRemoved,
+  }) async {
+    if (_closing) return;
+    _closing = true;
+    final detach = widget.onRemoved;
+    await _controller.reverse();
+    final followUp = afterOverlayRemoved;
+    detach();
+    await followUp?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = _curve;
+    final slideTween = Tween<Offset>(
+      begin: const Offset(0, 0.065),
+      end: Offset.zero,
+    ).animate(curved);
+    final scaleTween = Tween<double>(begin: 0.91, end: 1).animate(curved);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () => _animateOut(),
+            behavior: HitTestBehavior.opaque,
+            child: FadeTransition(
+              opacity: curved,
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.2),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: widget.left,
+          top: widget.top,
+          child: FadeTransition(
+            opacity: curved,
+            child: SlideTransition(
+              position: slideTween,
+              child: ScaleTransition(
+                scale: scaleTween,
+                alignment: Alignment.bottomCenter,
+                child: LiquidGlassPlate(
+                  borderRadius: BorderRadius.circular(18),
+                  sigma: 12,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final id in MessageReactionCatalog.ids)
+                          Material(
+                            type: MaterialType.transparency,
+                            child: InkWell(
+                              onTap: () {
+                                final applyReaction = widget.onEmojiChosen;
+                                final reactionId = id;
+                                _animateOut(
+                                  afterOverlayRemoved: () =>
+                                      applyReaction(reactionId),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              customBorder: const CircleBorder(),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
+                                ),
+                                child: Text(
+                                  MessageReactionCatalog.emojiFor(id),
+                                  style: MessageReactionCatalog
+                                      .textStyleForReactionEmoji(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
