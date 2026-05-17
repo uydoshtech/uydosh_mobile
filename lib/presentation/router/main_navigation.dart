@@ -100,6 +100,7 @@ class MainNavigationState extends State<MainNavigation>
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    getIt<IPushNotificationService>().markNavigationShellReady();
 
     // Handle deep link and push notification tap from cold start
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -185,6 +186,7 @@ class MainNavigationState extends State<MainNavigation>
 
   @override
   void dispose() {
+    getIt<IPushNotificationService>().markNavigationShellNotReady();
     AuthenticationState().removeListener(_authStateListener);
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     ActiveSearchAlertsState().removeListener(_maybeShowNotificationsBellTutorial);

@@ -49,6 +49,12 @@ abstract class IPushNotificationService {
   /// Handle pending notification tap (call when app is ready, e.g. from MainNavigation).
   void handlePendingNotificationTap();
 
+  /// Call from [MainNavigation.initState] when the tab shell has replaced splash.
+  void markNavigationShellReady();
+
+  /// Call from [MainNavigation.dispose] so taps while on auth / splash buffer safely.
+  void markNavigationShellNotReady();
+
   /// Check if push notifications are supported on this platform.
   bool get isSupported;
 
@@ -84,6 +90,13 @@ class PushNotificationService implements IPushNotificationService {
   final IOAuthApiClient _oauthApiClient;
   bool _handlersSetup = false;
   RemoteMessage? _pendingNotificationTap;
+  /// When false, [FirebaseMessaging.onMessageOpenedApp] must not push routes yet —
+  /// the root [Navigator] may still be showing splash; pushing chat first makes
+  /// `QuickSplashScreen`'s `pushReplacement` replace the chat route (user bounces
+  /// to home).
+  bool _navigationShellReady = false;
+  String? _lastRoutedTapKey;
+  DateTime? _lastRoutedTapAt;
   bool _registerInFlight = false;
   int _registerRetryAttempt = 0;
 
@@ -196,6 +209,10 @@ class PushNotificationService implements IPushNotificationService {
 
   void _handleNotificationTap(RemoteMessage message) {
     logger.d("📲 FCM notification tapped: ${message.data}");
+    if (!_navigationShellReady) {
+      _pendingNotificationTap = message;
+      return;
+    }
     _routeFromNotification(message);
   }
 
@@ -213,7 +230,29 @@ class PushNotificationService implements IPushNotificationService {
     SoundService().playIncomingMessage();
   }
 
+  String _notificationTapDedupeKey(RemoteMessage message) {
+    final mid = message.messageId;
+    if (mid != null && mid.isNotEmpty) return mid;
+    final data = message.data;
+    final type = "${data["type"] ?? ""}";
+    return switch (type) {
+      "search_match" => "$type:${data["listingId"] ?? ""}",
+      "gig_bid_accepted" => type,
+      _ => "$type:${data["conversationId"] ?? ""}",
+    };
+  }
+
   void _routeFromNotification(RemoteMessage message) {
+    final dedupeKey = _notificationTapDedupeKey(message);
+    final now = DateTime.now();
+    if (_lastRoutedTapKey == dedupeKey &&
+        _lastRoutedTapAt != null &&
+        now.difference(_lastRoutedTapAt!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastRoutedTapKey = dedupeKey;
+    _lastRoutedTapAt = now;
+
     final type = message.data["type"] ?? "";
     if (type == "new_message") {
       _navigateToMessageIfApplicable(message);
@@ -343,6 +382,16 @@ class PushNotificationService implements IPushNotificationService {
     if (pending != null) {
       _routeFromNotification(pending);
     }
+  }
+
+  @override
+  void markNavigationShellReady() {
+    _navigationShellReady = true;
+  }
+
+  @override
+  void markNavigationShellNotReady() {
+    _navigationShellReady = false;
   }
 
   @override

@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -16,6 +15,7 @@ import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
@@ -35,6 +35,9 @@ class AdminComplaintsScreen extends StatefulWidget {
 }
 
 class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
+  /// Matches [GigHubPinnedHeaderDelegate] segmented switch height for visual parity.
+  static const double _filterSwitchHeight = 135 * 60 / 145;
+
   final List<Complaint> _complaints = [];
   final ScrollController _scrollController = ScrollController();
 
@@ -147,7 +150,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     ]);
   }
 
-  void _onStatusFilterChanged(String? status) {
+  void _onStatusFilterChanged(String status) {
     setState(() {
       _statusFilter = status;
     });
@@ -208,91 +211,52 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
   }
 
   Widget _buildFilterRow(BuildContext context) {
+    final status = _statusFilter ?? "pending";
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip(
-              context,
-              "pending",
-              _buildStatusFilterLabel(
-                context,
-                "pending",
-                "admin_complaints_filter_pending",
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) {
+          final themeState = ThemeState();
+          return NeumorphicSegmentedSwitch<String>(
+            liquidGlass: themeState.isBlueTheme || themeState.isLightTheme,
+            height: _filterSwitchHeight,
+            value: status,
+            onChanged: (next) {
+              UiFeedbackUtils.selection();
+              _onStatusFilterChanged(next);
+            },
+            entries: [
+              SegmentedSwitchEntry(
+                value: "pending",
+                label: _buildStatusFilterLabel(
+                  context,
+                  "pending",
+                  "admin_complaints_filter_pending",
+                ),
+                icon: Icons.pending_actions_outlined,
               ),
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              context,
-              "resolved",
-              _buildStatusFilterLabel(
-                context,
-                "resolved",
-                "admin_complaints_filter_resolved",
+              SegmentedSwitchEntry(
+                value: "resolved",
+                label: _buildStatusFilterLabel(
+                  context,
+                  "resolved",
+                  "admin_complaints_filter_resolved",
+                ),
+                icon: Icons.check_circle_outline_rounded,
               ),
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              context,
-              "dismissed",
-              _buildStatusFilterLabel(
-                context,
-                "dismissed",
-                "admin_complaints_filter_dismissed",
+              SegmentedSwitchEntry(
+                value: "dismissed",
+                label: _buildStatusFilterLabel(
+                  context,
+                  "dismissed",
+                  "admin_complaints_filter_dismissed",
+                ),
+                icon: Icons.block_outlined,
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(
-    BuildContext context,
-    String? status,
-    String label,
-  ) {
-    final isSelected = _statusFilter == status;
-    final selectedColor = _getFilterSelectedColor();
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final backgroundColor = isSelected
-        ? selectedColor
-        : (isBlueTheme ? BlueThemeColors.card : Colors.grey[200]);
-    final borderColor = isSelected
-        ? selectedColor
-        : (isBlueTheme ? BlueThemeColors.cardBorder : Colors.grey[400]!);
-    final textColor = isSelected
-        ? Colors.white
-        : (isBlueTheme ? BlueThemeColors.textPrimary : Colors.grey[700]!);
-    return InkWell(
-      onTap: () {
-        UiFeedbackUtils.selection();
-        _onStatusFilterChanged(status);
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: backgroundColor,
-          border: Border.all(
-            color: borderColor,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: textColor,
-          ),
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -324,16 +288,6 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         };
       });
     } catch (_) {}
-  }
-
-  Color _getFilterSelectedColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary;
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black;
-    } else {
-      return Colors.black;
-    }
   }
 
   Widget _buildErrorState(BuildContext context) {

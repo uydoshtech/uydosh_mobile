@@ -7,6 +7,7 @@ import "package:flutter/services.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
@@ -90,7 +91,21 @@ class MessageBubble extends StatefulWidget {
 class _MessageBubbleState extends State<MessageBubble>
     with TickerProviderStateMixin {
   static const double _reactionBadgeHoverHeight = 30;
-  static const double _reactionBadgeOutsideShift = 10;
+
+  /// Vertical paint offset so **half** the on-bubble reaction sits on the bubble
+  /// and half below — badge center on the bubble’s bottom edge.
+  static const double _reactionBubbleOverlapTranslateY =
+      _reactionBadgeHoverHeight / 2;
+
+  /// Emoji size for reactions on the bubble (corner + strip); picker ribbon unchanged.
+  static const double _reactionBubbleEmojiSize = 14;
+
+  /// Incoming (peer) bubble: nudge the **corner badge** slightly toward the
+  /// bubble center and further onto the glass so it matches outgoing placement.
+  static const double _peerBubbleReactionExtraEndInset = 14;
+
+  /// Outgoing bubble: same nudge on the **leading** bottom corner (opposite tail).
+  static const double _outgoingBubbleReactionExtraStartInset = 14;
 
   /// How far the picker extends **below** the painted bubble top (positive =
   /// overlaps glass). Tuned so most of the pill sits on the bubble like legacy UX.
@@ -134,6 +149,12 @@ class _MessageBubbleState extends State<MessageBubble>
   static bool _reactionKeysEqualNullable(String? a, String b) {
     if (a == null || a.trim().isEmpty) return false;
     return _reactionKeysEqual(a, b);
+  }
+
+  static int _totalReactionCount(Message m) {
+    final r = m.reactions;
+    if (r == null || r.isEmpty) return 0;
+    return r.fold<int>(0, (sum, e) => sum + e.count);
   }
 
   @override
@@ -245,7 +266,19 @@ class _MessageBubbleState extends State<MessageBubble>
     super.didUpdateWidget(oldWidget);
     final next = widget.message.myReaction;
     final prev = oldWidget.message.myReaction;
-    if (_reactionsEnabled && next != null && next != prev && mounted) {
+    final myReactionAppeared =
+        _reactionsEnabled && next != null && next != prev;
+    final totalIncreased = _totalReactionCount(widget.message) >
+        _totalReactionCount(oldWidget.message);
+    final shouldFeedback = myReactionAppeared ||
+        (totalIncreased &&
+            (widget.isCurrentUser || !myReactionAppeared));
+    if (!mounted) return;
+    if (shouldFeedback) {
+      HapticFeedback.mediumImpact();
+      SendSoundUtils.playSendSound();
+    }
+    if (_reactionsEnabled && next != null && next != prev) {
       _reactionAppearPulseController.forward(from: 0);
     }
   }
@@ -265,6 +298,8 @@ class _MessageBubbleState extends State<MessageBubble>
 
         final textColor =
             widget.isCurrentUser ? ownMessageTextColor : otherMessageTextColor;
+        final embedOutgoingReactionsUnderBubble =
+            widget.isCurrentUser && _hasReactionRow;
 
         return AnimatedBuilder(
           animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
@@ -345,6 +380,14 @@ class _MessageBubbleState extends State<MessageBubble>
                                       ),
                                       if (widget.message.isVisiblyEdited) ...[
                                         const SizedBox(width: 6),
+                                        ThemeIcon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: textColor.withValues(
+                                            alpha: 0.55,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
                                         Text(
                                           context.l10n.chat_message_edited_label,
                                           style: TextStyle(
@@ -387,10 +430,17 @@ class _MessageBubbleState extends State<MessageBubble>
                                   maxWidth,
                                   textColor,
                                 )
-                            : null,
+                            : embedOutgoingReactionsUnderBubble
+                                ? (ctx, maxWidth) =>
+                                    _buildOutgoingOverlappingReactionRow(
+                                      ctx,
+                                      maxWidth,
+                                      textColor,
+                                    )
+                                : null,
                       ),
                     ),
-                    if (_hasReactionRow)
+                    if (_hasReactionRow && !embedOutgoingReactionsUnderBubble)
                       _buildReactionStrip(context, textColor),
                   ],
                 ),
@@ -437,6 +487,7 @@ class _MessageBubbleState extends State<MessageBubble>
   double _reactionBadgeTrailingEndInset({
     required double bubbleInnerWidth,
     required int aggregateCount,
+    double extraEndInset = 0,
   }) {
     final R = ChatBubbleWithTail.cornerRadius;
     final badgeR = _reactionBadgeHoverHeight / 2;
@@ -449,7 +500,28 @@ class _MessageBubbleState extends State<MessageBubble>
       0.0,
       double.infinity,
     );
-    return math.min(hugCorner, maxPermittedEndInset);
+    final base = math.min(hugCorner, maxPermittedEndInset);
+    return math.min(base + extraEndInset, maxPermittedEndInset);
+  }
+
+  /// Bottom-**leading** inset (LTR: left): mirrors [_reactionBadgeTrailingEndInset]
+  /// so badges hug the corner opposite the outgoing tail.
+  double _reactionBadgeLeadingStartInset({
+    required double bubbleInnerWidth,
+    required double approxStripWidth,
+    double extraStartInset = 0,
+  }) {
+    final R = ChatBubbleWithTail.cornerRadius;
+    final badgeR = _reactionBadgeHoverHeight / 2;
+    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.55;
+    const minGapFromEnd = 8.0;
+    final maxPermittedStartInset =
+        (bubbleInnerWidth - approxStripWidth - minGapFromEnd).clamp(
+      0.0,
+      double.infinity,
+    );
+    final base = math.min(hugCorner, maxPermittedStartInset);
+    return math.min(base + extraStartInset, maxPermittedStartInset);
   }
 
   /// Same horizontal inset as the posted reaction badge (even before a reaction exists).
@@ -475,13 +547,13 @@ class _MessageBubbleState extends State<MessageBubble>
     final reactionEndInset = _reactionBadgeTrailingEndInset(
       bubbleInnerWidth: maxWidth,
       aggregateCount: aggCount,
+      extraEndInset: _peerBubbleReactionExtraEndInset,
     );
-    final overlapY =
-        _reactionBadgeHoverHeight / 2 + _reactionBadgeOutsideShift;
+    final overlapY = _reactionBubbleOverlapTranslateY;
     return Transform.translate(
       offset: Offset(0, -overlapY),
       child: SizedBox(
-        height: overlapY + 8,
+        height: _reactionBadgeHoverHeight,
         child: Align(
           alignment: AlignmentDirectional.bottomEnd,
           child: Padding(
@@ -489,7 +561,9 @@ class _MessageBubbleState extends State<MessageBubble>
             child: myId != null
                 ? ScaleTransition(
                     scale: _reactionAppearPulseScale,
-                    alignment: Alignment.center,
+                    alignment: AlignmentDirectional.bottomEnd.resolve(
+                      Directionality.of(context),
+                    ),
                     child: _buildMyReactionCornerBadge(context, textColor),
                   )
                 : _buildAddReactionCornerBadge(context, textColor),
@@ -497,6 +571,52 @@ class _MessageBubbleState extends State<MessageBubble>
         ),
       ),
     );
+  }
+
+  /// Other users’ reactions on **own** messages: overlap the bottom-leading
+  /// corner (tail is on the trailing side for outgoing bubbles).
+  Widget _buildOutgoingOverlappingReactionRow(
+    BuildContext context,
+    double maxWidth,
+    Color textColor,
+  ) {
+    final entries = _reactionStripEntries();
+    final stripW = _approxOutgoingReactionWidth(entries);
+    final reactionStartInset = _reactionBadgeLeadingStartInset(
+      bubbleInnerWidth: maxWidth,
+      approxStripWidth: stripW,
+      extraStartInset: _outgoingBubbleReactionExtraStartInset,
+    );
+    final overlapY = _reactionBubbleOverlapTranslateY;
+    return Transform.translate(
+      offset: Offset(0, -overlapY),
+      child: SizedBox(
+        height: _reactionBadgeHoverHeight,
+        child: Align(
+          alignment: AlignmentDirectional.bottomStart,
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(start: reactionStartInset),
+            child: _buildReactionStrip(
+              context,
+              textColor,
+              outerPadding: const EdgeInsets.only(top: 2),
+              wrapAlignment: WrapAlignment.start,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _approxOutgoingReactionWidth(List<MessageReactionCount> entries) {
+    if (entries.isEmpty) return _reactionBadgeHoverHeight.toDouble();
+    double w = 0;
+    for (var i = 0; i < entries.length; i++) {
+      final e = entries[i];
+      w += 12 + 14 + (e.count > 1 ? 22 : 0);
+      if (i > 0) w += 4;
+    }
+    return math.max(w, _reactionBadgeHoverHeight);
   }
 
   /// “Smile +” in the same corner slot when the viewer has not reacted yet.
@@ -524,7 +644,7 @@ class _MessageBubbleState extends State<MessageBubble>
           padding: const EdgeInsets.all(2),
           child: Icon(
             Icons.add_reaction_outlined,
-            size: 17,
+            size: _reactionBubbleEmojiSize,
             color: textColor.withValues(alpha: 0.72),
           ),
         ),
@@ -538,8 +658,15 @@ class _MessageBubbleState extends State<MessageBubble>
   ) {
     final id = widget.message.myReaction!;
     final count = _aggregateCountForReaction(id);
-    final isRoundCapsule = count <= 1;
-    final bubbleRadius = isRoundCapsule ? _reactionBadgeHoverHeight / 2 : 15.0;
+    final isSingle = count <= 1;
+
+    final emojiShadows = [
+      Shadow(
+        color: Colors.black.withValues(alpha: 0.2),
+        blurRadius: 2,
+        offset: const Offset(0, 0.5),
+      ),
+    ];
 
     return GestureDetector(
       onTap: () {
@@ -547,41 +674,36 @@ class _MessageBubbleState extends State<MessageBubble>
         _openReactionToolbar(context);
       },
       behavior: HitTestBehavior.opaque,
-      child: LiquidGlassPlate(
-        width: isRoundCapsule ? _reactionBadgeHoverHeight : null,
-        height: _reactionBadgeHoverHeight,
-        borderRadius: BorderRadius.circular(bubbleRadius),
-        sigma: 10,
-        padding: const EdgeInsets.all(2),
-        child: isRoundCapsule
-            ? SizedBox.square(
-                dimension:
-                    _reactionBadgeHoverHeight - 4, // plate padding EdgeInsets.all(2)
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  alignment: Alignment.center,
-                  child: Text(
-                    MessageReactionCatalog.emojiFor(id),
-                    textAlign: TextAlign.center,
-                    textHeightBehavior: const TextHeightBehavior(
-                      applyHeightToFirstAscent: false,
-                      applyHeightToLastDescent: false,
-                    ),
-                    style: MessageReactionCatalog.textStyleForReactionEmoji(
-                      26,
-                      height: 1,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.28),
-                          blurRadius: 4,
-                          offset: Offset.zero,
-                        ),
-                      ],
-                    ),
+      child: isSingle
+          ? LiquidGlassPlate(
+              width: _reactionBadgeHoverHeight,
+              height: _reactionBadgeHoverHeight,
+              borderRadius:
+                  BorderRadius.circular(_reactionBadgeHoverHeight / 2),
+              sigma: 10,
+              padding: const EdgeInsets.all(2),
+              child: Center(
+                child: Text(
+                  MessageReactionCatalog.emojiFor(id),
+                  textAlign: TextAlign.center,
+                  textHeightBehavior: const TextHeightBehavior(
+                    applyHeightToFirstAscent: false,
+                    applyHeightToLastDescent: false,
+                  ),
+                  style: MessageReactionCatalog.textStyleForReactionEmoji(
+                    _reactionBubbleEmojiSize,
+                    height: 1,
+                    shadows: emojiShadows,
                   ),
                 ),
-              )
-            : Row(
+              ),
+            )
+          : LiquidGlassPlate(
+              height: _reactionBadgeHoverHeight,
+              borderRadius: BorderRadius.circular(15),
+              sigma: 10,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -590,7 +712,7 @@ class _MessageBubbleState extends State<MessageBubble>
                     MessageReactionCatalog.emojiFor(id),
                     textAlign: TextAlign.center,
                     style: MessageReactionCatalog.textStyleForReactionEmoji(
-                      17,
+                      _reactionBubbleEmojiSize,
                       shadows: [
                         Shadow(
                           color: Colors.black.withValues(alpha: 0.35),
@@ -611,7 +733,7 @@ class _MessageBubbleState extends State<MessageBubble>
                   ),
                 ],
               ),
-      ),
+            ),
     );
   }
 
@@ -794,22 +916,29 @@ class _MessageBubbleState extends State<MessageBubble>
     );
   }
 
-  Widget _buildReactionStrip(BuildContext context, Color textColor) {
+  Widget _buildReactionStrip(
+    BuildContext context,
+    Color textColor, {
+    EdgeInsetsGeometry outerPadding = const EdgeInsets.only(
+      top: 2,
+      left: 4,
+      right: 4,
+    ),
+    WrapAlignment? wrapAlignment,
+  }) {
     final entries = _reactionStripEntries();
     final scheme = Theme.of(context).colorScheme;
     final mine = widget.message.myReaction;
 
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 2,
-        left: 4,
-        right: 4,
-      ),
+      padding: outerPadding,
       child: Wrap(
         spacing: 4,
         runSpacing: 2,
-        alignment:
-            widget.isCurrentUser ? WrapAlignment.end : WrapAlignment.start,
+        alignment: wrapAlignment ??
+            (widget.isCurrentUser
+                ? WrapAlignment.end
+                : WrapAlignment.start),
         children: [
           for (final e in entries)
             Material(
@@ -838,7 +967,7 @@ class _MessageBubbleState extends State<MessageBubble>
                       Text(
                         MessageReactionCatalog.emojiFor(e.reaction),
                         style: MessageReactionCatalog.textStyleForReactionEmoji(
-                          14,
+                          _reactionBubbleEmojiSize,
                           shadows: [
                             Shadow(
                               color: Colors.black.withValues(alpha: 0.2),

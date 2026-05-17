@@ -1274,7 +1274,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                 borderRadius: BorderRadius.circular(14),
                                 onTap: _bulkWorking
                                     ? null
-                                    : () => _openAlertResults(a),
+                                    : () {
+                                        HapticFeedbackUtils.selectionClick();
+                                        _openAlertResults(a);
+                                      },
                                 child: Padding(
                                   padding: const EdgeInsets.all(14),
                                   child: Stack(
