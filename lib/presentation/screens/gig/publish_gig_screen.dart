@@ -18,6 +18,9 @@ import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
+import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
+import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_request_bloc.dart";
@@ -101,6 +104,15 @@ Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
 ///   and clients book them. Backed by [GigPostOfferBloc] →
 ///   `POST /gigs/offers`.
 enum GigPublishMode { task, service }
+
+/// Blocs required by [PublishGigScreen] (submit + optional geo pickers).
+/// Also used by [GigNavigatorExtensions.pushPublishGig].
+List<BlocProvider> publishGigBlocProviders() => [
+      BlocProvider(create: (_) => GigPostRequestBloc(getIt<IGigService>())),
+      BlocProvider(create: (_) => GigPostOfferBloc(getIt<IGigService>())),
+      BlocProvider(create: (_) => SubwayStationsBloc()),
+      BlocProvider(create: (_) => LocationsBloc(getIt<ILocationService>())),
+    ];
 
 /// Single screen that subsumes the legacy `PostGigRequestScreen` /
 /// `PostGigOfferScreen` pair. A segmented toggle at the top swaps the
@@ -689,6 +701,15 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Self-contained providers so any route that pushes [PublishGigScreen]
+    // directly (without [publishGigBlocProviders]) still works after hot reload.
+    return MultiBlocProvider(
+      providers: publishGigBlocProviders(),
+      child: Builder(builder: _buildWithProviders),
+    );
+  }
+
+  Widget _buildWithProviders(BuildContext context) {
     final language = LanguageState().currentLanguage;
     return PopScope(
       canPop: _allowPopWithoutConfirm || !_isFormDirty(),

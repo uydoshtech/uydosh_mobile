@@ -4,6 +4,14 @@ import "package:uy_dosh/base/state/theme_state.dart";
 class ListingTileSkeleton extends StatelessWidget {
   const ListingTileSkeleton({super.key});
 
+  /// Each text-line skeleton is [ _skeletonLineStep ] narrower than the one
+  /// above so the right edges line up on a diagonal (see listing tile layout).
+  static const _skeletonLineStep = 24.0;
+  static const _skeletonLine3Width = 216.0;
+  static const _skeletonLine2Width = 240.0;
+  static const _skeletonLine1Width =
+      _skeletonLine2Width + _skeletonLineStep; // 264
+
   @override
   Widget build(BuildContext context) {
     final baseColor = _getBaseSkeletonColor(context);
@@ -89,21 +97,21 @@ class ListingTileSkeleton extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   _SkeletonBox(
-                    width: double.infinity,
+                    width: _skeletonLine1Width,
                     height: 14,
                     radius: 7,
                     color: baseColor,
                   ),
                   const SizedBox(height: 8),
                   _SkeletonBox(
-                    width: 240,
+                    width: _skeletonLine2Width,
                     height: 12,
                     radius: 6,
                     color: baseColor,
                   ),
                   const SizedBox(height: 10),
                   _SkeletonBox(
-                    width: 216,
+                    width: _skeletonLine3Width,
                     height: 12,
                     radius: 6,
                     color: baseColor,

@@ -5,9 +5,6 @@ import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offer_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
@@ -22,18 +19,12 @@ import "package:uy_dosh/presentation/screens/gig/my_gig_bookings_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/my_published_gigs_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_offer_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
-import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart";
+import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
+    show GigPublishMode, PublishGigScreen, publishGigBlocProviders;
 
 /// Navigation helpers for the gig module. Mirrors the listing pattern in
 /// `navigation_extensions.dart`: each push wires the BLoCs the destination
 /// screen needs from `getIt`.
-List<BlocProvider> _publishGigBlocProviders() => [
-      BlocProvider(create: (_) => GigPostRequestBloc(getIt<IGigService>())),
-      BlocProvider(create: (_) => GigPostOfferBloc(getIt<IGigService>())),
-      BlocProvider(create: (_) => SubwayStationsBloc()),
-      BlocProvider(create: (_) => LocationsBloc(getIt<ILocationService>())),
-    ];
-
 extension GigNavigatorExtensions on BuildContext {
   void pushGigHub() {
     Navigator.of(this).push(
@@ -93,7 +84,7 @@ extension GigNavigatorExtensions on BuildContext {
     return Navigator.of(this).push<GigOffer>(
       MaterialPageRoute<GigOffer>(
         builder: (_) => MultiBlocProvider(
-          providers: _publishGigBlocProviders(),
+          providers: publishGigBlocProviders(),
           child: PublishGigScreen(
             initialMode: GigPublishMode.service,
             editingOffer: offer,
@@ -109,7 +100,7 @@ extension GigNavigatorExtensions on BuildContext {
     return Navigator.of(this).push<GigRequest>(
       MaterialPageRoute<GigRequest>(
         builder: (_) => MultiBlocProvider(
-          providers: _publishGigBlocProviders(),
+          providers: publishGigBlocProviders(),
           child: PublishGigScreen(
             initialMode: GigPublishMode.task,
             editingRequest: request,
@@ -132,7 +123,7 @@ extension GigNavigatorExtensions on BuildContext {
     await Navigator.of(this).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
-          providers: _publishGigBlocProviders(),
+          providers: publishGigBlocProviders(),
           child: PublishGigScreen(initialMode: initialMode),
         ),
       ),
