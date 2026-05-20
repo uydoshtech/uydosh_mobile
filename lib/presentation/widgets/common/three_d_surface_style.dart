@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Neumorphic-style elevation shared by [ThreeDPillButton] and listing-detail tiles.
 abstract final class ThreeDSurfaceStyle {
@@ -8,8 +9,9 @@ abstract final class ThreeDSurfaceStyle {
         alpha: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
       );
 
-  static Color _lightShadowColor(BuildContext context) => Colors.white.withValues(
-        alpha: Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.65,
+  static Color _lightShadowColor(BuildContext context) =>
+      Colors.white.withValues(
+        alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
       );
 
   static List<BoxShadow> elevatedShadows(BuildContext context) => [

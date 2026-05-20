@@ -26,6 +26,7 @@ import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -273,7 +274,7 @@ class _ListingTileState extends State<ListingTile> {
       alpha: isDark ? 0.45 : 0.20,
     );
     final lightShadow = Colors.white.withValues(
-      alpha: isDark ? 0.06 : 0.65,
+      alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
     );
 
     final cardWidget = RepaintBoundary(

@@ -1,7 +1,5 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// A reusable "liquid glass" surface for modal bottom sheets.
 ///
@@ -23,79 +21,53 @@ class GlassBottomSheetSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: AnimationSettingsState(),
-      builder: (context, _) {
-        final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
-        final scheme = theme.colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final decoration = BoxDecoration(
+      borderRadius: borderRadius,
+      gradient: LiquidGlassRendering.panelGradient(
+        scheme: scheme,
+        isDark: isDark,
+      ),
+      border: Border(
+        top: BorderSide(
+          color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.55),
+          width: 0.6,
+        ),
+      ),
+    );
 
-        // Keep the "glass" readable in light theme by staying closer to surfaces.
-        // In dark theme, bias to a darker tint to get the black/dark glass request.
-        final baseSurface = isDark ? Colors.black : scheme.surface;
-        final surfaceTint =
-            Color.lerp(baseSurface, scheme.primary, isDark ? 0.06 : 0.08) ??
-                baseSurface;
+    final content =
+        padding != null ? Padding(padding: padding!, child: child) : child;
 
-        final decoration = BoxDecoration(
-          borderRadius: borderRadius,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white.withValues(alpha: isDark ? 0.05 : 0.22),
-              surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
-              baseSurface.withValues(alpha: isDark ? 0.22 : 0.28),
-            ],
-            stops: const [0.0, 0.5, 1.0],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+            blurRadius: isDark ? 30 : 22,
+            spreadRadius: isDark ? 2 : 1,
+            offset: const Offset(0, -10),
           ),
-          border: Border(
-            top: BorderSide(
-              color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.55),
-              width: 0.6,
-            ),
-          ),
-        );
-
-        final content =
-            padding != null ? Padding(padding: padding!, child: child) : child;
-
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
-                blurRadius: isDark ? 30 : 22,
-                spreadRadius: isDark ? 2 : 1,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: borderRadius,
-            child: enableGlass
-                ? BackdropFilter(
-                    filter: ColorFilter.matrix(
-                      _glassSaturationMatrix(saturation: isDark ? 1.6 : 1.8),
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: isDark ? 34 : 40,
-                        sigmaY: isDark ? 34 : 40,
-                      ),
-                      child: DecoratedBox(decoration: decoration, child: content),
-                    ),
-                  )
-                : DecoratedBox(decoration: decoration, child: content),
-          ),
-        );
-      },
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: enableGlass
+            ? LiquidGlassRendering.backdropSaturationAndBlur(
+                enabled: true,
+                sigma: isDark ? 34 : 40,
+                saturationMatrix: _glassSaturationMatrix(
+                  saturation: isDark ? 1.6 : 1.8,
+                ),
+                child: DecoratedBox(decoration: decoration, child: content),
+              )
+            : DecoratedBox(decoration: decoration, child: content),
+      ),
     );
   }
 }
@@ -115,4 +87,3 @@ List<double> _glassSaturationMatrix({required double saturation}) {
     0, 0, 0, 1, 0,
   ];
 }
-

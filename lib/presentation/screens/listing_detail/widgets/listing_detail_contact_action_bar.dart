@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -140,66 +141,68 @@ class ListingDetailContactActionBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final scheme = theme.colorScheme;
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     // Keep the frosted tint anchored to the themed surface so the footer
     // reads the same regardless of what's scrolling past behind it.
     final baseTint = isDark ? BlueThemeColors.background : scheme.surface;
 
     // Matched to [LiquidGlassAppBarFlexibleSpace] so the header and
     // footer have identical frost characteristics.
-    final blurSigma = enableGlass ? (isDark ? 18.0 : 22.0) : 0.0;
-    final tintAlpha = isDark ? 0.44 : 0.32;
-    final sheenHigh = isDark ? 0.08 : 0.05;
+    final tintColor = LiquidGlassRendering.chromeFillColor(
+      baseTint,
+      isDark: isDark,
+    );
+    final sheenHigh = LiquidGlassRendering.chromeSheenAlpha(isDark: isDark);
     final borderColor = (isDark ? Colors.white : Colors.black).withValues(
       alpha: isDark ? 0.10 : 0.08,
     );
 
+    final chrome = Stack(
+      children: [
+        // Tint + top divider.
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: _topRadius,
+              color: tintColor,
+              border: Border(
+                top: BorderSide(color: borderColor, width: 0.5),
+              ),
+            ),
+          ),
+        ),
+        // Soft sheen falling from the curved top edge.
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: _topRadius,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: sheenHigh),
+                  Colors.white.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: _buildActions(),
+          ),
+        ),
+      ],
+    );
+
     return ClipRRect(
       borderRadius: _topRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: Stack(
-          children: [
-            // Tint + top divider.
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: _topRadius,
-                  color: baseTint.withValues(alpha: tintAlpha),
-                  border: Border(
-                    top: BorderSide(color: borderColor, width: 0.5),
-                  ),
-                ),
-              ),
-            ),
-            // Soft sheen falling from the curved top edge.
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: _topRadius,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: sheenHigh),
-                      Colors.white.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                child: _buildActions(),
-              ),
-            ),
-          ],
-        ),
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: enableGlass,
+        sigma: isDark ? 18.0 : 22.0,
+        child: chrome,
       ),
     );
   }

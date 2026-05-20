@@ -250,9 +250,10 @@ class AppTheme {
       ),
 
       // Drawer theme — match chat / card tiles (ThemePalette.cardColor)
-      drawerTheme: const DrawerThemeData(
+      drawerTheme: DrawerThemeData(
         backgroundColor: BlueThemeColors.card,
         surfaceTintColor: Colors.transparent,
+        scrimColor: Colors.black.withValues(alpha: 0.12),
       ),
 
       // Text theme
@@ -454,9 +455,10 @@ class AppTheme {
       ),
 
       // Drawer theme
-      drawerTheme: const DrawerThemeData(
+      drawerTheme: DrawerThemeData(
         backgroundColor: LightThemeColors.surface,
         surfaceTintColor: LightThemeColors.primary,
+        scrimColor: Colors.black.withValues(alpha: 0.10),
       ),
 
       // Text theme

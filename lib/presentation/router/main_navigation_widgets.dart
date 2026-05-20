@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart"
     show LanguageState;
@@ -245,8 +246,11 @@ class CreateChoiceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Material(
-      color: theme.colorScheme.surface.withValues(alpha: 0.55),
+      color: theme.colorScheme.surface.withValues(
+        alpha: LiquidGlassRendering.nestedTileFillAlpha(isDark: isDark),
+      ),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,

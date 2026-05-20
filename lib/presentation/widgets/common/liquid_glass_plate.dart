@@ -1,7 +1,5 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Lightweight “glass” plate for controls that sit on top of a blurred sheet.
 ///
@@ -13,7 +11,7 @@ class LiquidGlassPlate extends StatelessWidget {
     this.height,
     this.width,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
-    this.sigma = 14,
+    this.sigma = LiquidGlassRendering.plateBlurSigma,
     this.padding,
     this.clipBehavior = Clip.antiAlias,
   });
@@ -30,13 +28,7 @@ class LiquidGlassPlate extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
-    final surfaceTint =
-        Color.lerp(theme.colorScheme.surface, theme.colorScheme.primary, 0.10) ??
-        theme.colorScheme.surface;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
     final content = Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -49,25 +41,15 @@ class LiquidGlassPlate extends StatelessWidget {
       child: ClipRRect(
         borderRadius: borderRadius,
         clipBehavior: clipBehavior,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: enableGlass ? (isDark ? sigma : (sigma + 4)) : 0,
-            sigmaY: enableGlass ? (isDark ? sigma : (sigma + 4)) : 0,
-          ),
+        child: LiquidGlassRendering.backdropBlur(
+          enabled: enableGlass,
+          sigma: isDark ? sigma : (sigma + 4),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: isDark ? 0.08 : 0.46),
-                  surfaceTint.withValues(alpha: isDark ? 0.28 : 0.74),
-                  theme.colorScheme.surface.withValues(
-                    alpha: isDark ? 0.18 : 0.64,
-                  ),
-                ],
-                stops: const [0.0, 0.55, 1.0],
+              gradient: LiquidGlassRendering.plateGradient(
+                context: context,
+                isDark: isDark,
               ),
               border: Border.all(
                 color: (isDark ? Colors.white : Colors.black).withValues(
@@ -91,4 +73,3 @@ class LiquidGlassPlate extends StatelessWidget {
     );
   }
 }
-

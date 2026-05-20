@@ -1,5 +1,3 @@
-import "dart:ui";
-
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -13,7 +11,6 @@ import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/version_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -35,6 +32,7 @@ import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 // import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
@@ -131,6 +129,11 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     return Drawer(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(
+          right: Radius.circular(20),
+        ),
+      ),
       child: ListenableBuilder(
         listenable: ThemeState(),
         builder: (context, _) {
@@ -453,9 +456,11 @@ final class _DrawerColors {
   static Color glassTint(BuildContext context) {
     final base = ThemeState().backgroundColor;
     final brightness = ThemeData.estimateBrightnessForColor(base);
-    if (brightness == Brightness.dark) return base.withValues(alpha: 0.32);
-    return base.withValues(alpha: 0.48);
+    final isDark = brightness == Brightness.dark;
+    return LiquidGlassRendering.panelFillColor(base, isDark: isDark);
   }
+  static Color glassBorder(BuildContext context) =>
+      LiquidGlassRendering.panelBorderColor(glassTint(context));
 }
 
 class _DrawerGlassSurface extends StatelessWidget {
@@ -464,19 +469,23 @@ class _DrawerGlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final tint = _DrawerColors.glassTint(context);
     return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: enableGlass ? 18 : 0,
-          sigmaY: enableGlass ? 18 : 0,
-        ),
+      borderRadius: const BorderRadius.horizontal(
+        right: Radius.circular(20),
+      ),
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: LiquidGlassRendering.effectsEnabled(context),
+        sigma: LiquidGlassRendering.panelBlurSigma,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: _DrawerColors.glassTint(context),
+            color: tint,
+            border: Border(
+              right: BorderSide(
+                color: _DrawerColors.glassBorder(context),
+                width: 1,
+              ),
+            ),
           ),
           child: child,
         ),

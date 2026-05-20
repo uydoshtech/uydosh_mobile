@@ -6,6 +6,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/curved_nav_active_orb.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -65,11 +66,12 @@ class _NavPalette {
 
   factory _NavPalette.fromTheme(ThemeState theme) {
     if (theme.isBlueTheme) {
+      final barAlpha = LiquidGlassRendering.navigationBarAlpha(0.75);
       return _NavPalette(
         curvedBarColor:
-            BlueThemeColors.navigationBackground.withValues(alpha: 0.75),
+            BlueThemeColors.navigationBackground.withValues(alpha: barAlpha),
         activeOrbBase: BlueThemeColors.primaryLight,
-        notchBackground: BlueThemeColors.primary.withValues(alpha: 0.75),
+        notchBackground: BlueThemeColors.primary.withValues(alpha: barAlpha),
         unselectedLabelText: AppColors.textLight,
         disabled: AppColors.textLight.withValues(alpha: 0.4),
       );
