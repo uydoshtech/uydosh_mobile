@@ -125,21 +125,26 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  /// Refetch both feeds (e.g. after [GigNavigatorExtensions.pushPublishGig] pops).
+  /// Refetch feeds after a publish flow closes (see [GigHubFeedsRefreshSignal]).
   void _onPublishFlowClosed() {
     if (!mounted) return;
-    context.read<GigOffersBloc>().add(
-          FetchGigOffers(
-            refresh: true,
-            categoryId: _selectedCategoryId,
-          ),
-        );
-    context.read<GigRequestsBloc>().add(
-          FetchGigRequests(
-            refresh: true,
-            categoryId: _selectedCategoryId,
-          ),
-        );
+    final signal = getIt<GigHubFeedsRefreshNotifier>().lastSignal;
+    if (signal.refreshServices) {
+      context.read<GigOffersBloc>().add(
+            FetchGigOffers(
+              refresh: true,
+              categoryId: _selectedCategoryId,
+            ),
+          );
+    }
+    if (signal.refreshTasks) {
+      context.read<GigRequestsBloc>().add(
+            FetchGigRequests(
+              refresh: true,
+              categoryId: _selectedCategoryId,
+            ),
+          );
+    }
     unawaited(PendingGigBookingsState().refresh());
   }
 

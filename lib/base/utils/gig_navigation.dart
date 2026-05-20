@@ -84,7 +84,7 @@ extension GigNavigatorExtensions on BuildContext {
     return Navigator.of(this).push<GigOffer>(
       MaterialPageRoute<GigOffer>(
         builder: (_) => MultiBlocProvider(
-          providers: publishGigBlocProviders(),
+          providers: publishGigBlocProviders(includeRequestBloc: false),
           child: PublishGigScreen(
             initialMode: GigPublishMode.service,
             editingOffer: offer,
@@ -100,7 +100,7 @@ extension GigNavigatorExtensions on BuildContext {
     return Navigator.of(this).push<GigRequest>(
       MaterialPageRoute<GigRequest>(
         builder: (_) => MultiBlocProvider(
-          providers: publishGigBlocProviders(),
+          providers: publishGigBlocProviders(includeOfferBloc: false),
           child: PublishGigScreen(
             initialMode: GigPublishMode.task,
             editingRequest: request,
@@ -115,20 +115,25 @@ extension GigNavigatorExtensions on BuildContext {
   /// switch flavors without re-pushing a route. The hub uses this in place
   /// of the legacy [pushPostGigRequest] / [pushPostGigOffer] entry points.
   ///
-  /// When this route pops (submit success, back, or dismiss), gig hub feeds
-  /// are signaled to refetch so new tasks/services appear immediately.
+  /// When this route pops after a successful publish, the matching hub feed
+  /// is signaled to refetch. Cancel / back without submit does nothing.
   Future<void> pushPublishGig({
     GigPublishMode initialMode = GigPublishMode.task,
   }) async {
-    await Navigator.of(this).push<void>(
-      MaterialPageRoute<void>(
+    final published = await Navigator.of(this).push<GigPublishMode>(
+      MaterialPageRoute<GigPublishMode>(
         builder: (_) => MultiBlocProvider(
           providers: publishGigBlocProviders(),
           child: PublishGigScreen(initialMode: initialMode),
         ),
       ),
     );
-    getIt<GigHubFeedsRefreshNotifier>().requestRefresh();
+    if (published == null) return;
+    getIt<GigHubFeedsRefreshNotifier>().requestRefresh(
+      published == GigPublishMode.task
+          ? GigHubFeedsRefreshSignal.tasksOnly
+          : GigHubFeedsRefreshSignal.servicesOnly,
+    );
   }
 
   void pushMyGigBookings({String initialRoleFilter = 'all'}) {

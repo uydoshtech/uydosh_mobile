@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
@@ -18,8 +20,6 @@ import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_post_offer_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -63,28 +63,6 @@ int _snapGigMinDurationMinutes(int? rawMinutes) {
       _gigMinDurationFloorMinutes, _gigMinDurationCeilingMinutes);
 }
 
-bool _shouldRebuildGigPostRequestUI(
-  GigPostRequestState previous,
-  GigPostRequestState current,
-) {
-  if (previous.runtimeType != current.runtimeType) return true;
-  if (previous is GigPostRequestIdle && current is GigPostRequestIdle) {
-    return !identical(previous.categories, current.categories);
-  }
-  return true;
-}
-
-bool _shouldRebuildGigPostOfferUI(
-  GigPostOfferState previous,
-  GigPostOfferState current,
-) {
-  if (previous.runtimeType != current.runtimeType) return true;
-  if (previous is GigPostOfferIdle && current is GigPostOfferIdle) {
-    return !identical(previous.categories, current.categories);
-  }
-  return true;
-}
-
 Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
   return Photo(
     id: p.id,
@@ -105,14 +83,33 @@ Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
 ///   `POST /gigs/offers`.
 enum GigPublishMode { task, service }
 
-/// Blocs required by [PublishGigScreen] (submit + optional geo pickers).
+/// Blocs required by [PublishGigScreen] (submit + geo pickers).
 /// Also used by [GigNavigatorExtensions.pushPublishGig].
-List<BlocProvider> publishGigBlocProviders() => [
-      BlocProvider(create: (_) => GigPostRequestBloc(getIt<IGigService>())),
-      BlocProvider(create: (_) => GigPostOfferBloc(getIt<IGigService>())),
-      BlocProvider(create: (_) => SubwayStationsBloc()),
-      BlocProvider(create: (_) => LocationsBloc(getIt<ILocationService>())),
-    ];
+///
+/// Callers must wrap [PublishGigScreen] — the screen does not create its own
+/// providers (avoids duplicate bloc trees when pushed via navigation helpers).
+List<BlocProvider> publishGigBlocProviders({
+  bool includeRequestBloc = true,
+  bool includeOfferBloc = true,
+}) {
+  final providers = <BlocProvider>[];
+  if (includeRequestBloc) {
+    providers.add(
+      BlocProvider(
+        create: (_) => GigPostRequestBloc(getIt<IGigService>()),
+      ),
+    );
+  }
+  if (includeOfferBloc) {
+    providers.add(
+      BlocProvider(
+        create: (_) => GigPostOfferBloc(getIt<IGigService>()),
+      ),
+    );
+  }
+  providers.add(BlocProvider(create: (_) => SubwayStationsBloc()));
+  return providers;
+}
 
 /// Single screen that subsumes the legacy `PostGigRequestScreen` /
 /// `PostGigOfferScreen` pair. A segmented toggle at the top swaps the
@@ -215,6 +212,16 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   /// Mirrors [_isFormDirty] after each form [setState] so text-field listeners
   /// can skip rebuilding while the form stays dirty (see [_onFormTextChangedForChrome]).
   late bool _lastFormDirtyChrome;
+  late bool _cachedFormDirty;
+  late final ValueNotifier<GigPublishMode> _modeNotifier;
+  late final ValueNotifier<bool> _dirtyChromeNotifier;
+  final ScrollController _scrollController = ScrollController();
+  bool _geoSectionMounted = false;
+  Timer? _geoMountFallbackTimer;
+
+  bool get _hasRequestBloc => !_isEditingOffer;
+
+  bool get _hasOfferBloc => !_isEditingRequest;
 
   GigPublishMode _baselineMode = GigPublishMode.task;
   String _baselineTitle = "";
@@ -306,7 +313,25 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _subwayLineId = editingReq.subwayLineId;
     }
     _captureBaseline();
-    _lastFormDirtyChrome = _isFormDirty();
+    _cachedFormDirty = _isFormDirty();
+    _lastFormDirtyChrome = _cachedFormDirty;
+    _modeNotifier = ValueNotifier(_mode);
+    _dirtyChromeNotifier = ValueNotifier(_cachedFormDirty);
+    if (_locationId != null ||
+        _subwayStationId != null ||
+        _subwayLineId != null) {
+      _geoSectionMounted = true;
+    } else {
+      _scrollController.addListener(_maybeMountGeoSection);
+      _geoMountFallbackTimer = Timer(
+        const Duration(milliseconds: 500),
+        () {
+          if (mounted && !_geoSectionMounted) {
+            setState(() => _geoSectionMounted = true);
+          }
+        },
+      );
+    }
     // [PopScope.canPop] is evaluated when this widget rebuilds. Plain
     // [TextEditingController] edits do not rebuild the parent — same fix as
     // [EditListingScreen], but only schedule a rebuild when dirty toggles so
@@ -319,7 +344,19 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   }
 
   void _snapshotFormChrome() {
-    _lastFormDirtyChrome = _isFormDirty();
+    final dirty = _isFormDirty();
+    _lastFormDirtyChrome = dirty;
+    if (_cachedFormDirty != dirty) {
+      _cachedFormDirty = dirty;
+      _dirtyChromeNotifier.value = dirty;
+    }
+  }
+
+  void _maybeMountGeoSection() {
+    if (_geoSectionMounted || !_scrollController.hasClients) return;
+    if (_scrollController.position.pixels > 180) {
+      setState(() => _geoSectionMounted = true);
+    }
   }
 
   void _mutateForm(VoidCallback fn) {
@@ -331,7 +368,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     if (!mounted) return;
     final dirty = _isFormDirty();
     if (dirty == _lastFormDirtyChrome) return;
-    _lastFormDirtyChrome = dirty;
+    _snapshotFormChrome();
     setState(() {});
   }
 
@@ -503,6 +540,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
   @override
   void dispose() {
+    _geoMountFallbackTimer?.cancel();
+    _scrollController.removeListener(_maybeMountGeoSection);
+    _scrollController.dispose();
+    _modeNotifier.dispose();
+    _dirtyChromeNotifier.dispose();
     _titleController.removeListener(_onFormTextChangedForChrome);
     _descriptionController.removeListener(_onFormTextChangedForChrome);
     _budgetController.removeListener(_onFormTextChangedForChrome);
@@ -521,17 +563,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       return;
     }
     if (next == _mode) return;
-    _mutateForm(() {
-      _mode = next;
-      // A category selected for one flavor is meaningful for the other
-      // (same [GigCategoryCache] source), so we keep it. We do clear the
-      // category-missing error indicator though; it'll be re-set on next
-      // submit if still missing.
-      _showCategoryError = false;
-      // Mode swap may move the relevant amount field (budget ↔ price), so
-      // drop any stale error indicator until the user re-submits.
-      _showAmountError = false;
-    });
+    _mode = next;
+    _modeNotifier.value = next;
+    _showCategoryError = false;
+    _showAmountError = false;
+    _snapshotFormChrome();
   }
 
   bool _isAmountMissing() {
@@ -699,284 +735,348 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Self-contained providers so any route that pushes [PublishGigScreen]
-    // directly (without [publishGigBlocProviders]) still works after hot reload.
-    return MultiBlocProvider(
-      providers: publishGigBlocProviders(),
-      child: Builder(builder: _buildWithProviders),
+  List<BlocListener<dynamic, dynamic>> _buildBlocListeners() {
+    return <BlocListener<dynamic, dynamic>>[
+      if (_hasRequestBloc)
+        BlocListener<GigPostRequestBloc, GigPostRequestState>(
+          listener: (context, state) {
+            if (state is GigPostRequestSuccess) {
+              ToastTheme.showSuccess(
+                context,
+                message: L10n.get("gigs_post_request_success_toast"),
+              );
+              _allowPopWithoutConfirm = true;
+              Navigator.of(context).pop(GigPublishMode.task);
+            } else if (state is GigRequestEditSuccess) {
+              ToastTheme.showSuccess(
+                context,
+                message: L10n.get("gigs_edit_request_success_toast"),
+              );
+              _allowPopWithoutConfirm = true;
+              Navigator.of(context).pop<GigRequest>(state.updated);
+            } else if (state is GigPostRequestError) {
+              ToastTheme.showError(
+                context,
+                message: state.message,
+              );
+            }
+          },
+        ),
+      if (_hasOfferBloc)
+        BlocListener<GigPostOfferBloc, GigPostOfferState>(
+          listener: (context, state) {
+            if (state is GigPostOfferSuccess) {
+              ToastTheme.showSuccess(
+                context,
+                message: L10n.get("gigs_post_offer_success_toast"),
+              );
+              _allowPopWithoutConfirm = true;
+              Navigator.of(context).pop(GigPublishMode.service);
+            } else if (state is GigOfferEditSuccess) {
+              ToastTheme.showSuccess(
+                context,
+                message: L10n.get("gigs_edit_offer_success_toast"),
+              );
+              _allowPopWithoutConfirm = true;
+              Navigator.of(context).pop<GigOffer>(state.updated);
+            } else if (state is GigPostOfferError) {
+              ToastTheme.showError(
+                context,
+                message: state.message,
+              );
+            }
+          },
+        ),
+    ];
+  }
+
+  Widget _buildSubmitButton({
+    required String label,
+    required IconData icon,
+    required TextStyle textStyle,
+  }) {
+    Widget buildButton(bool submitting) {
+      return PrimaryButtonFactory.iconTextCentered(
+        onPressed: submitting ? null : _submit,
+        isLoading: submitting,
+        height: 54,
+        width: double.infinity,
+        borderRadius: BorderRadius.circular(16),
+        icon: icon,
+        text: label,
+        textStyle: textStyle,
+      );
+    }
+
+    if (_hasRequestBloc && !_hasOfferBloc) {
+      return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+        selector: (state) => state is GigPostRequestSubmitting,
+        builder: (context, submitting) => buildButton(submitting),
+      );
+    }
+    if (_hasOfferBloc && !_hasRequestBloc) {
+      return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+        selector: (state) => state is GigPostOfferSubmitting,
+        builder: (context, submitting) => buildButton(submitting),
+      );
+    }
+
+    return ListenableBuilder(
+      listenable: _modeNotifier,
+      builder: (context, _) {
+        if (_modeNotifier.value == GigPublishMode.task) {
+          return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+            selector: (state) => state is GigPostRequestSubmitting,
+            builder: (context, submitting) => buildButton(submitting),
+          );
+        }
+        return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+          selector: (state) => state is GigPostOfferSubmitting,
+          builder: (context, submitting) => buildButton(submitting),
+        );
+      },
     );
   }
 
-  Widget _buildWithProviders(BuildContext context) {
-    final language = LanguageState().currentLanguage;
-    return PopScope(
-      canPop: _allowPopWithoutConfirm || !_isFormDirty(),
-      onPopInvokedWithResult: _onPopInvoked,
-      child: BlocBuilder<GigPostRequestBloc, GigPostRequestState>(
-        buildWhen: _shouldRebuildGigPostRequestUI,
-        builder: (context, requestState) {
-          return BlocBuilder<GigPostOfferBloc, GigPostOfferState>(
-            buildWhen: _shouldRebuildGigPostOfferUI,
-            builder: (context, offerState) {
-              final theme = Theme.of(context);
+  Widget _buildAppBarSaveAction(ThemeData theme) {
+    Widget buildAction(bool submitting) {
+      if (!submitting && !_cachedFormDirty) {
+        return const SizedBox.shrink();
+      }
+      return _buildEditGigAppBarTrailingAction(
+        theme,
+        submitting: submitting,
+      );
+    }
 
-              // Both blocs are seeded from the same [GigCategoryCache], so
-              // the picker can read either one — but we still pull from
-              // whichever matches the current mode in case future cache
-              // semantics diverge per-flavor (e.g. service-only categories).
-              final List<GigCategory> categories;
-              if (_mode == GigPublishMode.task) {
-                final idle =
-                    requestState is GigPostRequestIdle ? requestState : null;
-                categories = idle?.categories ?? const <GigCategory>[];
-              } else {
-                final idle = offerState is GigPostOfferIdle ? offerState : null;
-                categories = idle?.categories ?? const <GigCategory>[];
-              }
+    return ListenableBuilder(
+      listenable: _dirtyChromeNotifier,
+      builder: (context, _) {
+        if (_hasRequestBloc && !_hasOfferBloc) {
+          return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+            selector: (state) => state is GigPostRequestSubmitting,
+            builder: (context, submitting) => buildAction(submitting),
+          );
+        }
+        if (_hasOfferBloc && !_hasRequestBloc) {
+          return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+            selector: (state) => state is GigPostOfferSubmitting,
+            builder: (context, submitting) => buildAction(submitting),
+          );
+        }
 
-              final submitting = (_mode == GigPublishMode.task &&
-                      requestState is GigPostRequestSubmitting) ||
-                  (_mode == GigPublishMode.service &&
-                      offerState is GigPostOfferSubmitting);
-
-              final isEditMode = _isEditingOffer || _isEditingRequest;
-              final showAppBarSave =
-                  isEditMode && (submitting || _isFormDirty());
-
-              Color? dirtyOutline(bool fieldChanged) =>
-                  isEditMode && fieldChanged
-                      ? formDirtyFieldOutlineColor(context)
-                      : null;
-
-              final submitLabel = isEditMode
-                  ? L10n.get("gigs_edit_offer_submit")
-                  : (_mode == GigPublishMode.task
-                      ? L10n.get("gigs_post_request_submit")
-                      : L10n.get("gigs_post_offer_submit"));
-              const submitTextStyle = TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+        return ListenableBuilder(
+          listenable: _modeNotifier,
+          builder: (context, _) {
+            if (_modeNotifier.value == GigPublishMode.task) {
+              return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+                selector: (state) => state is GigPostRequestSubmitting,
+                builder: (context, submitting) => buildAction(submitting),
               );
+            }
+            return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+              selector: (state) => state is GigPostOfferSubmitting,
+              builder: (context, submitting) => buildAction(submitting),
+            );
+          },
+        );
+      },
+    );
+  }
 
-              return Scaffold(
-                appBar: AppBar(
-                  leading: ThreeDAppBarIconButton.backLeading(
-                    context,
-                    onPressed: () {
-                      Navigator.of(context).maybePop();
-                    },
+  @override
+  Widget build(BuildContext context) {
+    return _buildScreen(context);
+  }
+
+  Widget _buildScreen(BuildContext context) {
+    final language = LanguageState().currentLanguage;
+    final categories = GigCategoryCache.getOrdered();
+    final isEditMode = _isEditingOffer || _isEditingRequest;
+    final theme = Theme.of(context);
+
+    Color? dirtyOutline(bool fieldChanged) =>
+        isEditMode && fieldChanged
+            ? formDirtyFieldOutlineColor(context)
+            : null;
+
+    final submitLabel = isEditMode
+        ? L10n.get("gigs_edit_offer_submit")
+        : null;
+    const submitTextStyle = TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 16,
+    );
+
+    return ListenableBuilder(
+      listenable: _dirtyChromeNotifier,
+      builder: (context, _) {
+        return PopScope(
+          canPop: _allowPopWithoutConfirm || !_cachedFormDirty,
+          onPopInvokedWithResult: _onPopInvoked,
+          child: Scaffold(
+            appBar: AppBar(
+              leading: ThreeDAppBarIconButton.backLeading(
+                context,
+                onPressed: () {
+                  Navigator.of(context).maybePop();
+                },
+              ),
+              title: Text(
+                _isEditingOffer
+                    ? L10n.get("gigs_edit_offer_title")
+                    : _isEditingRequest
+                        ? L10n.get("gigs_edit_request_title")
+                        : L10n.get("gigs_publish_screen_title"),
+              ),
+              actions: [
+                if (isEditMode)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: _buildAppBarSaveAction(theme),
                   ),
-                  title: Text(
-                    _isEditingOffer
-                        ? L10n.get("gigs_edit_offer_title")
-                        : _isEditingRequest
-                            ? L10n.get("gigs_edit_request_title")
-                            : L10n.get("gigs_publish_screen_title"),
-                  ),
-                  actions: [
-                    if (showAppBarSave)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: _buildEditGigAppBarTrailingAction(
-                          theme,
-                          submitting: submitting,
+              ],
+            ),
+            body: KeyboardDismissScope(
+              child: MultiBlocListener(
+                listeners: _buildBlocListeners(),
+                child: Form(
+                  key: _formKey,
+                  child: ListView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                    keyboardDismissBehavior:
+                        KeyboardDismissScope.scrollBehavior,
+                    children: [
+                      if (!_isEditingOffer && !_isEditingRequest) ...[
+                        ListenableBuilder(
+                          listenable: _modeNotifier,
+                          builder: (context, _) {
+                            return _PublishModeToggle(
+                              value: _modeNotifier.value,
+                              onChanged: _setMode,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                      ],
+                      _FieldLabel(
+                        L10n.get("gigs_post_request_field_category"),
+                      ),
+                      _CategoryPlate(
+                        categories: categories,
+                        selected: _selectedCategory,
+                        language: language,
+                        showError: _showCategoryError,
+                        dirtyOutlineColor: dirtyOutline(
+                          _selectedCategory?.id != _baselineCategoryId,
+                        ),
+                        onChanged: (c) {
+                          _mutateForm(() {
+                            _selectedCategory = c;
+                            if (c != null) _showCategoryError = false;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      _FieldLabel(
+                        L10n.get("gigs_post_request_field_title"),
+                      ),
+                      UydoshPlateTextFormField(
+                        hintText: L10n.get("gigs_post_request_field_title"),
+                        decoration: UydoshPlateFieldDecoration.gigPostField(
+                          context,
+                          hintText: L10n.get("gigs_post_request_field_title"),
+                        ),
+                        showErrorBorder: _showTitleError,
+                        dirtyOutlineColor: dirtyOutline(
+                          _titleController.text != _baselineTitle,
+                        ),
+                        controller: _titleController,
+                        textInputAction: TextInputAction.next,
+                        maxLength: _titleMaxLength,
+                        maxLines: 1,
+                        onChanged: (_) {
+                          if (_showTitleError) {
+                            _mutateForm(() => _showTitleError = false);
+                          }
+                        },
+                        buildCounter: (
+                          context, {
+                          required currentLength,
+                          required isFocused,
+                          maxLength,
+                        }) =>
+                            _buildSubtleCounter(
+                          context,
+                          currentLength: currentLength,
+                          maxLength: maxLength ?? _titleMaxLength,
+                          visibleAt: _titleCounterVisibleAt,
                         ),
                       ),
-                  ],
-                ),
-                // Two listeners — one per bloc — handle the success/error toasts.
-                body: KeyboardDismissScope(
-                  child: MultiBlocListener(
-                    listeners: [
-                      BlocListener<GigPostRequestBloc, GigPostRequestState>(
-                        listener: (context, state) {
-                          if (state is GigPostRequestSuccess) {
-                            ToastTheme.showSuccess(
-                              context,
-                              message: L10n.get(
-                                "gigs_post_request_success_toast",
-                              ),
-                            );
-                            _allowPopWithoutConfirm = true;
-                            Navigator.of(context).pop();
-                          } else if (state is GigRequestEditSuccess) {
-                            ToastTheme.showSuccess(
-                              context,
-                              message: L10n.get(
-                                "gigs_edit_request_success_toast",
-                              ),
-                            );
-                            _allowPopWithoutConfirm = true;
-                            Navigator.of(context)
-                                .pop<GigRequest>(state.updated);
-                          } else if (state is GigPostRequestError) {
-                            ToastTheme.showError(
-                              context,
-                              message: state.message,
-                            );
-                          }
-                        },
+                      const SizedBox(height: 14),
+                      _FieldLabel(
+                        L10n.get("gigs_post_request_field_description"),
                       ),
-                      BlocListener<GigPostOfferBloc, GigPostOfferState>(
-                        listener: (context, state) {
-                          if (state is GigPostOfferSuccess) {
-                            ToastTheme.showSuccess(
-                              context,
-                              message:
-                                  L10n.get("gigs_post_offer_success_toast"),
-                            );
-                            _allowPopWithoutConfirm = true;
-                            Navigator.of(context).pop();
-                          } else if (state is GigOfferEditSuccess) {
-                            ToastTheme.showSuccess(
-                              context,
-                              message:
-                                  L10n.get("gigs_edit_offer_success_toast"),
-                            );
-                            _allowPopWithoutConfirm = true;
-                            Navigator.of(context).pop<GigOffer>(state.updated);
-                          } else if (state is GigPostOfferError) {
-                            ToastTheme.showError(
-                              context,
-                              message: state.message,
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                    child: Form(
-                      key: _formKey,
-                      child: ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                        keyboardDismissBehavior:
-                            KeyboardDismissScope.scrollBehavior,
-                        children: [
-                          if (!_isEditingOffer && !_isEditingRequest) ...[
-                            _PublishModeToggle(
-                              value: _mode,
-                              onChanged: _setMode,
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 320),
+                        reverseDuration: const Duration(milliseconds: 320),
+                        curve: Curves.easeInOut,
+                        alignment: Alignment.topCenter,
+                        clipBehavior: Clip.none,
+                        child: UydoshPlateTextFormField(
+                          hintText:
+                              L10n.get("gigs_post_request_field_description"),
+                          style: _descriptionTextStyle(context),
+                          decoration: UydoshPlateFieldDecoration.forHint(
+                            context,
+                            hintText: L10n.get(
+                              "gigs_post_request_field_description",
+                            ).replaceAll(RegExp(r"\s*\([^)]*\)"), "").trim(),
+                            hintStyle: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.7)
+                                  : Colors.grey[400],
                             ),
-                            const SizedBox(height: 22),
-                          ],
-                          _FieldLabel(
-                            L10n.get("gigs_post_request_field_category"),
-                          ),
-                          _CategoryPlate(
-                            categories: categories,
-                            selected: _selectedCategory,
-                            language: language,
-                            showError: _showCategoryError,
-                            dirtyOutlineColor: dirtyOutline(
-                              _selectedCategory?.id != _baselineCategoryId,
-                            ),
-                            onChanged: (c) {
-                              _mutateForm(() {
-                                _selectedCategory = c;
-                                if (c != null) _showCategoryError = false;
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 14),
-                          _FieldLabel(
-                            L10n.get("gigs_post_request_field_title"),
-                          ),
-                          UydoshPlateTextFormField(
-                            hintText: L10n.get("gigs_post_request_field_title"),
-                            decoration: UydoshPlateFieldDecoration.gigPostField(
-                              context,
-                              hintText:
-                                  L10n.get("gigs_post_request_field_title"),
-                            ),
-                            showErrorBorder: _showTitleError,
-                            dirtyOutlineColor: dirtyOutline(
-                              _titleController.text != _baselineTitle,
-                            ),
-                            controller: _titleController,
-                            textInputAction: TextInputAction.next,
-                            maxLength: _titleMaxLength,
-                            maxLines: 1,
-                            onChanged: (_) {
-                              if (_showTitleError) {
-                                _mutateForm(() => _showTitleError = false);
-                              }
-                            },
-                            buildCounter: (
-                              context, {
-                              required currentLength,
-                              required isFocused,
-                              maxLength,
-                            }) =>
-                                _buildSubtleCounter(
-                              context,
-                              currentLength: currentLength,
-                              maxLength: maxLength ?? _titleMaxLength,
-                              visibleAt: _titleCounterVisibleAt,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
                             ),
                           ),
-                          const SizedBox(height: 14),
-                          _FieldLabel(
-                            L10n.get("gigs_post_request_field_description"),
+                          dirtyOutlineColor: dirtyOutline(
+                            _descriptionController.text != _baselineDescription,
                           ),
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 320),
-                            reverseDuration:
-                                const Duration(milliseconds: 320),
-                            curve: Curves.easeInOut,
-                            alignment: Alignment.topCenter,
-                            clipBehavior: Clip.none,
-                            child: UydoshPlateTextFormField(
-                              hintText:
-                                  L10n.get("gigs_post_request_field_description"),
-                              style: _descriptionTextStyle(context),
-                              decoration: UydoshPlateFieldDecoration.forHint(
-                                context,
-                                hintText: L10n.get(
-                                  "gigs_post_request_field_description",
-                                ).replaceAll(RegExp(r"\s*\([^)]*\)"), "").trim(),
-                                hintStyle: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant
-                                          .withOpacity(0.7)
-                                      : Colors.grey[400],
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                              ),
-                              dirtyOutlineColor: dirtyOutline(
-                                _descriptionController.text !=
-                                    _baselineDescription,
-                              ),
-                              controller: _descriptionController,
-                              minLines: _descriptionBaseLines +
-                                  (_isDescriptionExpanded
-                                      ? _descriptionExpandedExtraLines
-                                      : 0),
-                              maxLines: _descriptionBaseLines +
-                                  (_isDescriptionExpanded
-                                      ? _descriptionExpandedExtraLines
-                                      : 0),
-                              maxLength: _descriptionMaxLength,
-                              buildCounter: (
-                                context, {
-                                required currentLength,
-                                required isFocused,
-                                maxLength,
-                              }) {
+                          controller: _descriptionController,
+                          minLines: _descriptionBaseLines +
+                              (_isDescriptionExpanded
+                                  ? _descriptionExpandedExtraLines
+                                  : 0),
+                          maxLines: _descriptionBaseLines +
+                              (_isDescriptionExpanded
+                                  ? _descriptionExpandedExtraLines
+                                  : 0),
+                          maxLength: _descriptionMaxLength,
+                          buildCounter: (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) {
+                            return ListenableBuilder(
+                              listenable: _modeNotifier,
+                              builder: (context, _) {
                                 return _GigDescriptionToolbar(
                                   controller: _descriptionController,
-                                  isOffer: _mode == GigPublishMode.service,
+                                  isOffer: _modeNotifier.value ==
+                                      GigPublishMode.service,
                                   currentLength: currentLength,
-                                  maxLength:
-                                      maxLength ?? _descriptionMaxLength,
+                                  maxLength: maxLength ?? _descriptionMaxLength,
                                   visibleAt: _descriptionCounterVisibleAt,
                                   isExpanded: _isDescriptionExpanded,
                                   maxDescriptionLength: _descriptionMaxLength,
@@ -986,50 +1086,58 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                                   }),
                                 );
                               },
-                            ),
-                          ),
-                          const SizedBox(height: 22),
-                          if (_mode == GigPublishMode.task)
-                            ..._buildTaskFields(dirtyOutline)
-                          else
-                            ..._buildServiceFields(dirtyOutline),
-                          const SizedBox(height: 24),
-                          if (_isEditingOffer || _isEditingRequest)
-                            PrimaryButtonFactory.iconTextCentered(
-                              onPressed: submitting ? null : _submit,
-                              isLoading: submitting,
-                              height: 54,
-                              width: double.infinity,
-                              borderRadius: BorderRadius.circular(16),
-                              icon: Icons.save_outlined,
-                              text: submitLabel,
-                              textStyle: submitTextStyle,
-                            )
-                          else
-                            PrimaryButtonFactory.iconTextCentered(
-                              onPressed: submitting ? null : _submit,
-                              isLoading: submitting,
-                              height: 54,
-                              width: double.infinity,
-                              borderRadius: BorderRadius.circular(16),
-                              icon: Icons.add_rounded,
-                              text: submitLabel,
-                              textStyle: submitTextStyle,
-                            ),
-                        ],
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 22),
+                      ListenableBuilder(
+                        listenable: _modeNotifier,
+                        builder: (context, _) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: _modeNotifier.value ==
+                                    GigPublishMode.task
+                                ? _buildTaskFields(dirtyOutline)
+                                : _buildServiceFields(dirtyOutline),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      ListenableBuilder(
+                        listenable: _modeNotifier,
+                        builder: (context, _) {
+                          final label = submitLabel ??
+                              (_modeNotifier.value == GigPublishMode.task
+                                  ? L10n.get("gigs_post_request_submit")
+                                  : L10n.get("gigs_post_offer_submit"));
+                          return _buildSubmitButton(
+                            label: label,
+                            icon: isEditMode
+                                ? Icons.save_outlined
+                                : Icons.add_rounded,
+                            textStyle: submitTextStyle,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   List<Widget> _buildGeoFields(Color? Function(bool) dirtyOutline) {
+    if (!_geoSectionMounted) {
+      return const [
+        SizedBox(height: 120),
+      ];
+    }
     final geoDirty = _locationId != _baselineLocationId ||
         _subwayStationId != _baselineSubwayStationId ||
         _subwayLineId != _baselineSubwayLineId;

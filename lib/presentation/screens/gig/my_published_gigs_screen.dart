@@ -138,18 +138,23 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
 
   void _onHubFeedsRefreshSignal() {
     if (!mounted) return;
-    context.read<GigOffersBloc>().add(
-          FetchGigOffers(
-            refresh: true,
-            providerUserId: widget.userId,
-          ),
-        );
-    context.read<GigRequestsBloc>().add(
-          FetchGigRequests(
-            refresh: true,
-            clientUserId: widget.userId,
-          ),
-        );
+    final signal = getIt<GigHubFeedsRefreshNotifier>().lastSignal;
+    if (signal.refreshServices) {
+      context.read<GigOffersBloc>().add(
+            FetchGigOffers(
+              refresh: true,
+              providerUserId: widget.userId,
+            ),
+          );
+    }
+    if (signal.refreshTasks) {
+      context.read<GigRequestsBloc>().add(
+            FetchGigRequests(
+              refresh: true,
+              clientUserId: widget.userId,
+            ),
+          );
+    }
   }
 
   void _onServicesScroll() {

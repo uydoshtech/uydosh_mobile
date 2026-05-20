@@ -1,10 +1,10 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
@@ -47,7 +47,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
   List<SubwayStation> _currentStations = [];
   List<Location> _currentLocations = [];
   bool _isLoadingStations = false;
-  bool _isLoadingLocations = true;
+  bool _isLoadingLocations = false;
 
   int? _pendingSubwayStationId;
   int? _pendingSubwayLineId;
@@ -68,11 +68,12 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
       initialItem: _selectedStationIndex,
     );
 
+    _bootstrapLocationsFromCache();
     _bootstrapMetroFromPending();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      context.read<LocationsBloc>().add(const LocationsEvent.fetchLocations());
-    });
+  }
+
+  void _bootstrapLocationsFromCache() {
+    _applyLocations(LocationCache.getAllLocations(), notifyParent: false);
   }
 
   void _bootstrapMetroFromPending() {
@@ -164,7 +165,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     _notifyParent();
   }
 
-  void _onLocationsLoaded(List<Location> locations) {
+  List<Location> _sortedLocations(List<Location> locations) {
     final sorted = List<Location>.from(locations)
       ..sort((a, b) {
         String name(Location l) {
@@ -181,6 +182,11 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
 
         return name(a).compareTo(name(b));
       });
+    return sorted;
+  }
+
+  void _applyLocations(List<Location> locations, {required bool notifyParent}) {
+    final sorted = _sortedLocations(locations);
 
     var locationIndex = -1;
     final pendingLoc = _pendingLocationId;
@@ -205,7 +211,13 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
         );
       });
     }
-    _notifyParent();
+    if (notifyParent) {
+      _notifyParent();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _notifyParent();
+      });
+    }
   }
 
   void _syncLocationWithStation() {
@@ -254,23 +266,12 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<SubwayStationsBloc, SubwayStationsState>(
-          listener: (context, state) {
-            state.mapOrNull(
-              loaded: (s) => _onStationsLoaded(s.stations),
-            );
-          },
-        ),
-        BlocListener<LocationsBloc, LocationsState>(
-          listener: (context, state) {
-            state.mapOrNull(
-              loaded: (s) => _onLocationsLoaded(s.locations),
-            );
-          },
-        ),
-      ],
+    return BlocListener<SubwayStationsBloc, SubwayStationsState>(
+      listener: (context, state) {
+        state.mapOrNull(
+          loaded: (s) => _onStationsLoaded(s.stations),
+        );
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
