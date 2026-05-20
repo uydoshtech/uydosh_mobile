@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/gig_description_template_button.dart";
+import "package:uy_dosh/presentation/widgets/gig/gig_publish_geo_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
@@ -215,6 +216,12 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   int _baselineMinDurationMinutes = _gigMinDurationFallbackMinutes;
   bool _baselineRemote = false;
   String _baselineCurrency = "UZS";
+  int? _locationId;
+  int? _subwayStationId;
+  int? _subwayLineId;
+  int? _baselineLocationId;
+  int? _baselineSubwayStationId;
+  int? _baselineSubwayLineId;
   bool _baselineDescriptionExpanded = false;
   List<String> _baselineSelectedPhotos = const <String>[];
   int? _baselinePrimaryPhotoIndex;
@@ -263,6 +270,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           _snapGigMinDurationMinutes(offer.minDurationMinutes);
       _isRemote = offer.isRemote;
       _currency = offer.currencyCode;
+      _locationId = offer.locationId;
+      _subwayStationId = offer.subwayStationId;
+      _subwayLineId = offer.subwayLineId;
       _existingOfferPhotos = [
         for (final p in offer.photos) _photoFromGigOfferPhoto(p),
       ];
@@ -279,6 +289,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       _addressController.text = editingReq.addressText ?? "";
       _isRemote = editingReq.isRemote;
       _currency = editingReq.currencyCode;
+      _locationId = editingReq.locationId;
+      _subwayStationId = editingReq.subwayStationId;
+      _subwayLineId = editingReq.subwayLineId;
     }
     _captureBaseline();
     _lastFormDirtyChrome = _isFormDirty();
@@ -323,6 +336,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     _baselineMinDurationMinutes = _minDurationMinutes;
     _baselineRemote = _isRemote;
     _baselineCurrency = _currency;
+    _baselineLocationId = _locationId;
+    _baselineSubwayStationId = _subwayStationId;
+    _baselineSubwayLineId = _subwayLineId;
     _baselineDescriptionExpanded = _isDescriptionExpanded;
     _baselineSelectedPhotos = List<String>.from(_selectedPhotos);
     _baselinePrimaryPhotoIndex = _primaryPhotoIndex;
@@ -358,6 +374,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     if (_isRemote != _baselineRemote) return true;
     if (_currency != _baselineCurrency) return true;
     if (_isDescriptionExpanded != _baselineDescriptionExpanded) return true;
+    if (_locationId != _baselineLocationId) return true;
+    if (_subwayStationId != _baselineSubwayStationId) return true;
+    if (_subwayLineId != _baselineSubwayLineId) return true;
 
     if (_mode == GigPublishMode.task) {
       if (_budgetType != _baselineBudgetType) return true;
@@ -404,6 +423,11 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     if (_isRemote != _baselineRemote) {
       addLabel("gigs_post_request_field_remote", fallback: "Remote");
     }
+    if (_locationId != _baselineLocationId ||
+        _subwayStationId != _baselineSubwayStationId ||
+        _subwayLineId != _baselineSubwayLineId) {
+      addLabel("gigs_post_field_district", fallback: "District");
+    }
 
     if (_mode == GigPublishMode.task) {
       if (_budgetType != _baselineBudgetType) {
@@ -417,7 +441,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         addLabel("gigs_post_request_field_amount", fallback: "Budget");
       }
       if (_addressController.text != _baselineAddressText) {
-        addLabel("gigs_post_request_field_address", fallback: "Address");
+        addLabel(
+          "gigs_post_field_address_detail",
+          fallback: "Detailed address",
+        );
       }
     } else {
       if (_pricingType != _baselinePricingType) {
@@ -545,6 +572,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 budgetAmount: budget,
                 currencyCode: _currency,
                 descriptionRu: desc,
+                locationId: _locationId,
+                subwayStationId: _subwayStationId,
+                subwayLineId: _subwayLineId,
                 addressText: addr,
                 isRemote: _isRemote,
               ),
@@ -558,6 +588,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 budgetAmount: budget,
                 currencyCode: _currency,
                 descriptionRu: desc,
+                locationId: _locationId,
+                subwayStationId: _subwayStationId,
+                subwayLineId: _subwayLineId,
                 addressText: addr,
                 isRemote: _isRemote,
               ),
@@ -588,6 +621,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 minDurationMinutes: _pricingType == GigPricingType.hourly
                     ? _minDurationMinutes
                     : null,
+                locationId: _locationId,
+                subwayStationId: _subwayStationId,
+                subwayLineId: _subwayLineId,
                 isRemote: _isRemote,
                 photoSlots: slots,
                 photoOrderDirty: _photoOrderDirty,
@@ -607,6 +643,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 minDurationMinutes: _pricingType == GigPricingType.hourly
                     ? _minDurationMinutes
                     : null,
+                locationId: _locationId,
+                subwayStationId: _subwayStationId,
+                subwayLineId: _subwayLineId,
                 isRemote: _isRemote,
                 photoPaths: List<String>.unmodifiable(_selectedPhotos),
                 primaryPhotoIndex: _primaryPhotoIndex,
@@ -969,6 +1008,28 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     );
   }
 
+  List<Widget> _buildGeoFields(Color? Function(bool) dirtyOutline) {
+    final geoDirty = _locationId != _baselineLocationId ||
+        _subwayStationId != _baselineSubwayStationId ||
+        _subwayLineId != _baselineSubwayLineId;
+    return [
+      GigPublishGeoSection(
+        initialLocationId: _locationId,
+        initialSubwayStationId: _subwayStationId,
+        initialSubwayLineId: _subwayLineId,
+        locationDirtyOutlineColor: dirtyOutline(geoDirty),
+        onGeoChanged: ({locationId, subwayStationId, subwayLineId}) {
+          _mutateForm(() {
+            _locationId = locationId;
+            _subwayStationId = subwayStationId;
+            _subwayLineId = subwayLineId;
+          });
+        },
+      ),
+      const SizedBox(height: 14),
+    ];
+  }
+
   List<Widget> _buildTaskFields(Color? Function(bool) dirtyOutline) {
     return [
       _FieldLabel(L10n.get("gigs_post_request_field_budget_type")),
@@ -1014,12 +1075,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           dirtyOutlineColor: dirtyOutline(_isRemote != _baselineRemote),
         ),
       const SizedBox(height: 14),
-      _FieldLabel(L10n.get("gigs_post_request_field_address")),
+      ..._buildGeoFields(dirtyOutline),
+      _FieldLabel(L10n.get("gigs_post_field_address_detail")),
       UydoshPlateTextFormField(
-        hintText: L10n.get("gigs_post_request_field_address"),
+        hintText: L10n.get("gigs_post_field_address_detail"),
         decoration: UydoshPlateFieldDecoration.gigPostField(
           context,
-          hintText: L10n.get("gigs_post_request_field_address"),
+          hintText: L10n.get("gigs_post_field_address_detail"),
         ),
         dirtyOutlineColor: dirtyOutline(
           _addressController.text != _baselineAddressText,
@@ -1142,6 +1204,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         ),
       ],
       const SizedBox(height: 14),
+      ..._buildGeoFields(dirtyOutline),
       // Same uploader as create/edit listing: pick, delete, drag to reorder.
       // Edit-offer hydrates existing [Photo] rows and deletes sync to the API
       // immediately; add/reorder run on Save (mirrors edit-listing semantics).

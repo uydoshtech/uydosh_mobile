@@ -17,6 +17,9 @@ class SubmitGigRequest extends GigPostRequestEvent {
     this.currencyCode = "UZS",
     this.descriptionRu,
     this.scheduledAt,
+    this.locationId,
+    this.subwayStationId,
+    this.subwayLineId,
     this.addressText,
     this.isRemote = false,
   });
@@ -27,6 +30,9 @@ class SubmitGigRequest extends GigPostRequestEvent {
   final String currencyCode;
   final String? descriptionRu;
   final DateTime? scheduledAt;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
   final String? addressText;
   final bool isRemote;
 }
@@ -40,6 +46,9 @@ class SubmitGigRequestEdit extends GigPostRequestEvent {
     this.budgetAmount,
     this.currencyCode = "UZS",
     this.descriptionRu,
+    this.locationId,
+    this.subwayStationId,
+    this.subwayLineId,
     this.addressText,
     this.isRemote = false,
   });
@@ -50,6 +59,9 @@ class SubmitGigRequestEdit extends GigPostRequestEvent {
   final int? budgetAmount;
   final String currencyCode;
   final String? descriptionRu;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
   final String? addressText;
   final bool isRemote;
 }
@@ -97,6 +109,9 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
           currencyCode: e.currencyCode,
           descriptionRu: e.descriptionRu,
           scheduledAt: e.scheduledAt,
+          locationId: e.locationId,
+          subwayStationId: e.subwayStationId,
+          subwayLineId: e.subwayLineId,
           addressText: e.addressText,
           isRemote: e.isRemote,
         );
@@ -115,6 +130,9 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
           "budget_type": gigBudgetTypeToString(e.budgetType),
           "currency_code": e.currencyCode,
           "description_ru": e.descriptionRu,
+          "location_id": e.locationId,
+          "subway_station_id": e.subwayStationId,
+          "subway_line_id": e.subwayLineId,
           "address_text": e.addressText,
           "is_remote": e.isRemote,
           "budget_amount": e.budgetType == GigRequestBudgetType.open

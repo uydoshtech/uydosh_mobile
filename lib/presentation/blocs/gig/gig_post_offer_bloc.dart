@@ -31,6 +31,9 @@ class SubmitGigOffer extends GigPostOfferEvent {
     this.currencyCode = "UZS",
     this.descriptionRu,
     this.minDurationMinutes,
+    this.locationId,
+    this.subwayStationId,
+    this.subwayLineId,
     this.isRemote = false,
     this.photoPaths = const <String>[],
     this.primaryPhotoIndex,
@@ -42,6 +45,9 @@ class SubmitGigOffer extends GigPostOfferEvent {
   final String currencyCode;
   final String? descriptionRu;
   final int? minDurationMinutes;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
   final bool isRemote;
 
   /// Local file paths for photos the user picked while filling out the form.
@@ -71,6 +77,9 @@ class SubmitGigOfferEdit extends GigPostOfferEvent {
     this.currencyCode = "UZS",
     this.descriptionRu,
     this.minDurationMinutes,
+    this.locationId,
+    this.subwayStationId,
+    this.subwayLineId,
     this.isRemote = false,
     this.photoSlots = const <GigOfferEditPhotoSlot>[],
     this.photoOrderDirty = false,
@@ -83,6 +92,9 @@ class SubmitGigOfferEdit extends GigPostOfferEvent {
   final String currencyCode;
   final String? descriptionRu;
   final int? minDurationMinutes;
+  final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
   final bool isRemote;
 
   /// Final gallery order after save (existing ids + new local paths). Empty
@@ -137,6 +149,9 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
           currencyCode: e.currencyCode,
           descriptionRu: e.descriptionRu,
           minDurationMinutes: e.minDurationMinutes,
+          locationId: e.locationId,
+          subwayStationId: e.subwayStationId,
+          subwayLineId: e.subwayLineId,
           isRemote: e.isRemote,
         );
 
@@ -186,6 +201,9 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
           "description_ru": e.descriptionRu,
           "min_duration_minutes":
               e.pricingType == GigPricingType.hourly ? e.minDurationMinutes : null,
+          "location_id": e.locationId,
+          "subway_station_id": e.subwayStationId,
+          "subway_line_id": e.subwayLineId,
           "is_remote": e.isRemote,
         };
         await _service.updateOffer(id: e.offerId, patch: patch);

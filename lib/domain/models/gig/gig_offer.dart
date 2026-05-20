@@ -79,6 +79,8 @@ class GigOffer {
     this.minDurationMinutes,
     this.cityId,
     this.locationId,
+    this.subwayStationId,
+    this.subwayLineId,
     this.latitude,
     this.longitude,
     this.serviceRadiusKm,
@@ -154,6 +156,8 @@ class GigOffer {
       minDurationMinutes: (json["min_duration_minutes"] as num?)?.toInt(),
       cityId: (json["city_id"] as num?)?.toInt(),
       locationId: (json["location_id"] as num?)?.toInt(),
+      subwayStationId: (json["subway_station_id"] as num?)?.toInt(),
+      subwayLineId: (json["subway_line_id"] as num?)?.toInt(),
       latitude: (json["latitude"] is num)
           ? (json["latitude"] as num).toDouble()
           : (json["latitude"] is String
@@ -196,6 +200,8 @@ class GigOffer {
   final int? minDurationMinutes;
   final int? cityId;
   final int? locationId;
+  final int? subwayStationId;
+  final int? subwayLineId;
   final double? latitude;
   final double? longitude;
   final int? serviceRadiusKm;
