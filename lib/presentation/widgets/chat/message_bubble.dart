@@ -97,15 +97,23 @@ class _MessageBubbleState extends State<MessageBubble>
   static const double _reactionBubbleOverlapTranslateY =
       _reactionBadgeHoverHeight / 2;
 
+  /// Pulls the badge a few px further **onto** the bubble so it meets the
+  /// bottom corner curve (still mirrored by tail side via alignment).
+  static const double _reactionCornerPullOntoBubblePx = 6;
+
+  /// Fine vertical position of overlapping bubble reactions (+ = downward).
+  static const double _reactionIconNudgeDownPx = 2;
+
   /// Emoji size for reactions on the bubble (corner + strip); picker ribbon unchanged.
-  static const double _reactionBubbleEmojiSize = 14;
+  static const double _reactionBubbleEmojiSize = 15;
 
-  /// Incoming (peer) bubble: nudge the **corner badge** slightly toward the
-  /// bubble center and further onto the glass so it matches outgoing placement.
-  static const double _peerBubbleReactionExtraEndInset = 14;
+  /// Incoming (peer) bubble: small inward nudge from the **trailing** bottom
+  /// corner so the badge does not clip the outer stroke; keep small to stay
+  /// tight to the corner (tail is on the leading side).
+  static const double _peerBubbleReactionExtraEndInset = 3;
 
-  /// Outgoing bubble: same nudge on the **leading** bottom corner (opposite tail).
-  static const double _outgoingBubbleReactionExtraStartInset = 14;
+  /// Outgoing bubble: same on the **leading** bottom corner (tail on trailing).
+  static const double _outgoingBubbleReactionExtraStartInset = 3;
 
   /// How far the picker extends **below** the painted bubble top (positive =
   /// overlaps glass). Tuned so most of the pill sits on the bubble like legacy UX.
@@ -491,10 +499,10 @@ class _MessageBubbleState extends State<MessageBubble>
   }) {
     final R = ChatBubbleWithTail.cornerRadius;
     final badgeR = _reactionBadgeHoverHeight / 2;
-    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.55;
+    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.38;
     final approxBadgeW =
         aggregateCount > 1 ? 56.0 : _reactionBadgeHoverHeight.toDouble();
-    const minGapFromStart = 8.0;
+    const minGapFromStart = 5.0;
     final maxPermittedEndInset =
         (bubbleInnerWidth - approxBadgeW - minGapFromStart).clamp(
       0.0,
@@ -513,8 +521,8 @@ class _MessageBubbleState extends State<MessageBubble>
   }) {
     final R = ChatBubbleWithTail.cornerRadius;
     final badgeR = _reactionBadgeHoverHeight / 2;
-    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.55;
-    const minGapFromEnd = 8.0;
+    final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.38;
+    const minGapFromEnd = 5.0;
     final maxPermittedStartInset =
         (bubbleInnerWidth - approxStripWidth - minGapFromEnd).clamp(
       0.0,
@@ -549,9 +557,10 @@ class _MessageBubbleState extends State<MessageBubble>
       aggregateCount: aggCount,
       extraEndInset: _peerBubbleReactionExtraEndInset,
     );
-    final overlapY = _reactionBubbleOverlapTranslateY;
+    final overlapY =
+        _reactionBubbleOverlapTranslateY + _reactionCornerPullOntoBubblePx;
     return Transform.translate(
-      offset: Offset(0, -overlapY),
+      offset: Offset(0, -overlapY + _reactionIconNudgeDownPx),
       child: SizedBox(
         height: _reactionBadgeHoverHeight,
         child: Align(
@@ -587,9 +596,10 @@ class _MessageBubbleState extends State<MessageBubble>
       approxStripWidth: stripW,
       extraStartInset: _outgoingBubbleReactionExtraStartInset,
     );
-    final overlapY = _reactionBubbleOverlapTranslateY;
+    final overlapY =
+        _reactionBubbleOverlapTranslateY + _reactionCornerPullOntoBubblePx;
     return Transform.translate(
-      offset: Offset(0, -overlapY),
+      offset: Offset(0, -overlapY + _reactionIconNudgeDownPx),
       child: SizedBox(
         height: _reactionBadgeHoverHeight,
         child: Align(
@@ -599,7 +609,7 @@ class _MessageBubbleState extends State<MessageBubble>
             child: _buildReactionStrip(
               context,
               textColor,
-              outerPadding: const EdgeInsets.only(top: 2),
+              outerPadding: EdgeInsets.zero,
               wrapAlignment: WrapAlignment.start,
             ),
           ),
@@ -613,7 +623,7 @@ class _MessageBubbleState extends State<MessageBubble>
     double w = 0;
     for (var i = 0; i < entries.length; i++) {
       final e = entries[i];
-      w += 12 + 14 + (e.count > 1 ? 22 : 0);
+      w += 12 + _reactionBubbleEmojiSize + (e.count > 1 ? 22 : 0);
       if (i > 0) w += 4;
     }
     return math.max(w, _reactionBadgeHoverHeight);
@@ -635,16 +645,12 @@ class _MessageBubbleState extends State<MessageBubble>
           _openReactionToolbar(context);
         },
         behavior: HitTestBehavior.opaque,
-        child: LiquidGlassPlate(
+        child: SizedBox(
           width: _reactionBadgeHoverHeight,
           height: _reactionBadgeHoverHeight,
-          borderRadius:
-              BorderRadius.circular(_reactionBadgeHoverHeight / 2),
-          sigma: 10,
-          padding: const EdgeInsets.all(2),
           child: Icon(
             Icons.add_reaction_outlined,
-            size: _reactionBubbleEmojiSize,
+            size: _reactionBubbleEmojiSize + 2,
             color: textColor.withValues(alpha: 0.72),
           ),
         ),
@@ -675,13 +681,9 @@ class _MessageBubbleState extends State<MessageBubble>
       },
       behavior: HitTestBehavior.opaque,
       child: isSingle
-          ? LiquidGlassPlate(
+          ? SizedBox(
               width: _reactionBadgeHoverHeight,
               height: _reactionBadgeHoverHeight,
-              borderRadius:
-                  BorderRadius.circular(_reactionBadgeHoverHeight / 2),
-              sigma: 10,
-              padding: const EdgeInsets.all(2),
               child: Center(
                 child: Text(
                   MessageReactionCatalog.emojiFor(id),
@@ -698,11 +700,8 @@ class _MessageBubbleState extends State<MessageBubble>
                 ),
               ),
             )
-          : LiquidGlassPlate(
-              height: _reactionBadgeHoverHeight,
-              borderRadius: BorderRadius.circular(15),
-              sigma: 10,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -920,20 +919,19 @@ class _MessageBubbleState extends State<MessageBubble>
     BuildContext context,
     Color textColor, {
     EdgeInsetsGeometry outerPadding = const EdgeInsets.only(
-      top: 2,
+      top: 4,
       left: 4,
       right: 4,
     ),
     WrapAlignment? wrapAlignment,
   }) {
     final entries = _reactionStripEntries();
-    final scheme = Theme.of(context).colorScheme;
     final mine = widget.message.myReaction;
 
     return Padding(
       padding: outerPadding,
       child: Wrap(
-        spacing: 4,
+        spacing: 6,
         runSpacing: 2,
         alignment: wrapAlignment ??
             (widget.isCurrentUser
@@ -941,55 +939,49 @@ class _MessageBubbleState extends State<MessageBubble>
                 : WrapAlignment.start),
         children: [
           for (final e in entries)
-            Material(
-              color: (!_reactionsEnabled && mine == e.reaction)
-                  ? scheme.primaryContainer.withValues(alpha: 0.85)
-                  : scheme.surfaceContainerHighest.withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                onTap: (!_reactionsEnabled &&
-                        mine == e.reaction &&
-                        widget.onClearReaction != null)
-                    ? () {
-                        HapticFeedback.lightImpact();
-                        widget.onClearReaction?.call();
-                      }
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+            GestureDetector(
+              onTap: (!_reactionsEnabled &&
+                      mine == e.reaction &&
+                      widget.onClearReaction != null)
+                  ? () {
+                      HapticFeedback.lightImpact();
+                      widget.onClearReaction?.call();
+                    }
+                  : null,
+              behavior: HitTestBehavior.translucent,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 2,
+                  vertical: 2,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      MessageReactionCatalog.emojiFor(e.reaction),
+                      style: MessageReactionCatalog.textStyleForReactionEmoji(
+                        _reactionBubbleEmojiSize,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 2,
+                            offset: const Offset(0, 0.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (e.count > 1) ...[
+                      const SizedBox(width: 3),
                       Text(
-                        MessageReactionCatalog.emojiFor(e.reaction),
-                        style: MessageReactionCatalog.textStyleForReactionEmoji(
-                          _reactionBubbleEmojiSize,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 2,
-                              offset: const Offset(0, 0.5),
-                            ),
-                          ],
+                        "${e.count}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: textColor.withValues(alpha: 0.85),
                         ),
                       ),
-                      if (e.count > 1) ...[
-                        const SizedBox(width: 3),
-                        Text(
-                          "${e.count}",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: textColor.withValues(alpha: 0.85),
-                          ),
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
