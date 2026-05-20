@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/gemini_config.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -24,7 +25,10 @@ import "package:uy_dosh/presentation/screens/gig/gig_category_icons.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
+import "package:uy_dosh/presentation/widgets/common/gig_description_template_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
@@ -861,7 +865,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                                 const Duration(milliseconds: 320),
                             curve: Curves.easeInOut,
                             alignment: Alignment.topCenter,
-                            clipBehavior: Clip.hardEdge,
+                            clipBehavior: Clip.none,
                             child: UydoshPlateTextFormField(
                               hintText:
                                   L10n.get("gigs_post_request_field_description"),
@@ -915,6 +919,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                                       maxLength ?? _descriptionMaxLength,
                                   visibleAt: _descriptionCounterVisibleAt,
                                   isExpanded: _isDescriptionExpanded,
+                                  maxDescriptionLength: _descriptionMaxLength,
                                   onToggleExpanded: () => _mutateForm(() {
                                     _isDescriptionExpanded =
                                         !_isDescriptionExpanded;
@@ -2014,10 +2019,10 @@ class _RemoteTogglePlate extends StatelessWidget {
 }
 
 /// Counter-row used as `TextField.buildCounter` for the description field.
-/// Shows the AI-enhance action on the left and a `currentLength/maxLength`
-/// + expand chevron on the right. Mirrors the listing screens' affordance
-/// — sans the "Template" button, which is housing-specific.
-class _GigDescriptionToolbar extends StatelessWidget {
+/// Shows AI-enhance, template, and dictate on the left; counter + expand
+/// chevron on the right. Mirrors listing description toolbar (gig uses
+/// service/task templates instead of listing type + gender).
+class _GigDescriptionToolbar extends StatefulWidget {
   const _GigDescriptionToolbar({
     required this.controller,
     required this.isOffer,
@@ -2026,6 +2031,7 @@ class _GigDescriptionToolbar extends StatelessWidget {
     required this.visibleAt,
     required this.isExpanded,
     required this.onToggleExpanded,
+    this.maxDescriptionLength = 1000,
   });
 
   final TextEditingController controller;
@@ -2035,15 +2041,52 @@ class _GigDescriptionToolbar extends StatelessWidget {
   final int visibleAt;
   final bool isExpanded;
   final VoidCallback onToggleExpanded;
+  final int maxDescriptionLength;
+
+  @override
+  State<_GigDescriptionToolbar> createState() => _GigDescriptionToolbarState();
+}
+
+class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
+  late final DictationMeterController _dictationMeter =
+      DictationMeterController();
+
+  static const double _actionSpacing = 6;
+  static const double _footerHeight = 22;
+  static const double _inlineActionsLeadingInset = 8;
+
+  void _onDictationMeterServerDisabled() {
+    if (ClientListingDictationMeterConfig.dictationMeterDisabled.value) {
+      _dictationMeter.end();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ClientListingDictationMeterConfig.dictationMeterDisabled.addListener(
+      _onDictationMeterServerDisabled,
+    );
+  }
+
+  @override
+  void dispose() {
+    ClientListingDictationMeterConfig.dictationMeterDisabled.removeListener(
+      _onDictationMeterServerDisabled,
+    );
+    _dictationMeter.dispose();
+    super.dispose();
+  }
 
   bool get _showCounterText {
-    if (visibleAt <= 0) return true;
-    if (maxLength <= 0) return true;
-    return currentLength >= visibleAt;
+    if (widget.visibleAt <= 0) return true;
+    if (widget.maxLength <= 0) return true;
+    return widget.currentLength >= widget.visibleAt;
   }
 
   Color _resolveCounterColor(BuildContext context) {
-    final isAtLimit = maxLength > 0 && currentLength >= maxLength;
+    final isAtLimit =
+        widget.maxLength > 0 && widget.currentLength >= widget.maxLength;
     if (isAtLimit) return Theme.of(context).colorScheme.error;
     final theme = Theme.of(context);
     return theme.brightness == Brightness.dark
@@ -2051,62 +2094,144 @@ class _GigDescriptionToolbar extends StatelessWidget {
         : Colors.black;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final color = _resolveCounterColor(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 2, bottom: 2),
+  Widget _buildActionsRow(DictationMeterController? dictationMeter) {
+    return Transform.translate(
+      offset: const Offset(-_inlineActionsLeadingInset, 0),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ListingDescriptionAiEnhanceButton(
-            controller: controller,
-            inlineWithCounter: true,
-            canEnhance: () => GeminiConfig.isConfigured,
-            enhance: (text) => getIt<GeminiService>()
-                .enhanceGigDescription(text: text, isOffer: isOffer),
-          ),
-          const Spacer(),
-          if (_showCounterText) ...[
-            Text(
-              "$currentLength/$maxLength",
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+          SizedBox(
+            height: _footerHeight,
+            child: ListingDescriptionAiEnhanceButton(
+              controller: widget.controller,
+              inlineWithCounter: true,
+              canEnhance: () => GeminiConfig.isConfigured,
+              enhance: (text) => getIt<GeminiService>().enhanceGigDescription(
+                text: text,
+                isOffer: widget.isOffer,
               ),
             ),
-            const SizedBox(width: 4),
-          ],
-          Semantics(
-            button: true,
-            label: isExpanded ? "Collapse description" : "Expand description",
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () {
-                UiFeedbackUtils.tap();
-                onToggleExpanded();
-              },
-              child: SizedBox(
-                width: 32,
-                height: 28,
-                child: Center(
-                  child: AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0.0,
-                    duration: const Duration(milliseconds: 240),
-                    curve: Curves.easeInOut,
-                    child: const Icon(
-                      Icons.expand_more,
-                      size: 20,
-                      color: Colors.white,
-                    ),
+          ),
+          const SizedBox(width: _actionSpacing),
+          SizedBox(
+            height: _footerHeight,
+            child: GigDescriptionTemplateButton(
+              controller: widget.controller,
+              isOffer: widget.isOffer,
+              inlineWithCounter: true,
+            ),
+          ),
+          const SizedBox(width: _actionSpacing),
+          SizedBox(
+            height: _footerHeight,
+            child: ListingDescriptionDictateButton(
+              controller: widget.controller,
+              inlineWithCounter: true,
+              maxDescriptionLength: widget.maxDescriptionLength,
+              dictationMeter: dictationMeter,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCounterColumn(Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (_showCounterText) ...[
+          Text(
+            "${widget.currentLength}/${widget.maxLength}",
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+        Semantics(
+          button: true,
+          label: widget.isExpanded
+              ? "Collapse description"
+              : "Expand description",
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              UiFeedbackUtils.tap();
+              widget.onToggleExpanded();
+            },
+            child: SizedBox(
+              width: 44,
+              height: _footerHeight,
+              child: Center(
+                child: AnimatedRotation(
+                  turns: widget.isExpanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOut,
+                  child: const Icon(
+                    Icons.expand_more,
+                    size: 18,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _resolveCounterColor(context);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientListingDictationMeterConfig.dictationMeterDisabled,
+      builder: (context, meterDisabled, _) {
+        final showMeterUi = !meterDisabled;
+        final slot = showMeterUi ? _dictationMeter : null;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showMeterUi)
+              ListenableBuilder(
+                listenable: _dictationMeter,
+                builder: (context, _) {
+                  if (!_dictationMeter.active) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 4, right: 4, top: 2),
+                    child: ListingDescriptionDictationMeterRow(
+                      controller: _dictationMeter,
+                    ),
+                  );
+                },
+              ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              child: SizedBox(
+                height: _footerHeight,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildActionsRow(slot),
+                    const Spacer(),
+                    _buildCounterColumn(color),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

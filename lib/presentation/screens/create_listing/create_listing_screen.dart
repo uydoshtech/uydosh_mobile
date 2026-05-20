@@ -1376,25 +1376,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // Force home screen to refresh since we created a new listing
       HomeRefreshState().forceRefreshNow();
 
-      // Navigate back to home screen after successful listing creation
+      // Return to the screen that opened create, then show housing feed.
       if (widget.showAppBar) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        Navigator.of(context).pop();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          if (mainNavigationKey.currentState != null) {
-            mainNavigationKey.currentState!.navigateToIndex(0);
-          } else {
-            context.pushMainNavigationAndRemoveUntil();
-          }
+          mainNavigationKey.currentState?.navigateToIndex(0);
         });
       } else {
-        // Use the global navigation key to switch to home tab
-        if (mainNavigationKey.currentState != null) {
-          mainNavigationKey.currentState!.navigateToIndex(0);
-        } else {
-          // Fallback: use pushAndRemoveUntil if navigation key is not available
-          context.pushMainNavigationAndRemoveUntil();
-        }
+        mainNavigationKey.currentState?.navigateToIndex(0);
       }
     } catch (e) {
       logger.d("Error creating listing: $e");

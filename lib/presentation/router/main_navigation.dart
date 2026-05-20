@@ -3,7 +3,6 @@ import "dart:async" show unawaited;
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -23,17 +22,14 @@ import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
     show GigPublishMode;
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
 import "package:uy_dosh/presentation/router/main_navigation_widgets.dart";
-import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
@@ -77,15 +73,6 @@ class MainNavigationState extends State<MainNavigation>
   bool _notificationsBellTutorialShownThisSession = false;
   bool _notificationsBellTutorialPending = false;
 
-  /// Tab the user was on before they entered a "create" flow via the bottom
-  /// bar's "+" chooser. Used so that picking Service after Housing doesn't
-  /// strand the half-filled Housing-create tab in the back stack — we
-  /// switch back to this tab before pushing the gig publish route, which
-  /// makes a single back press from the gig screen return the user to
-  /// where they actually came from. Cleared whenever the user manually
-  /// taps a tab in the bottom bar so it doesn't leak across flows.
-  int? _previousIndexBeforeCreate;
-
   late final VoidCallback _authStateListener;
   late final VoidCallback _unreadMessagesListener;
 
@@ -99,7 +86,12 @@ class MainNavigationState extends State<MainNavigation>
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+    final requestedIndex = widget.initialIndex;
+    if (requestedIndex == 3) {
+      _currentIndex = 0;
+    } else {
+      _currentIndex = requestedIndex.clamp(0, 2);
+    }
     getIt<IPushNotificationService>().markNavigationShellReady();
 
     // Handle deep link and push notification tap from cold start
@@ -107,6 +99,9 @@ class MainNavigationState extends State<MainNavigation>
       if (mounted) {
         getIt<DeepLinkService>().handlePendingLink();
         getIt<IPushNotificationService>().handlePendingNotificationTap();
+        if (requestedIndex == 3 && _isAuthenticated) {
+          context.pushCreateListing();
+        }
       }
     });
 
@@ -283,24 +278,15 @@ class MainNavigationState extends State<MainNavigation>
         unawaited(ActiveSearchAlertsState().refresh());
       }
 
-      // Auth-gate the protected tabs. Logical indices after the
-      // 2026-Q2 nav rework:
+      // Auth-gate the protected tabs. Logical indices:
       //   0 = Housing      (public)
       //   1 = Services hub (public — gates auth at each action boundary)
       //   2 = Messages     (auth required)
-      //   3 = Create       (auth required)
-      if (!_isAuthenticated && mounted) {
-        if (_currentIndex == 2) {
-          debugPrint(
-            "🔐 AppRouter: User on messages screen but not authenticated, redirecting to auth wizard",
-          );
-          _redirectToAuthWizard();
-        } else if (_currentIndex == 3) {
-          debugPrint(
-            "🔐 AppRouter: User on create listing screen but not authenticated, redirecting to auth wizard",
-          );
-          _redirectToAuthWizard();
-        }
+      if (!_isAuthenticated && mounted && _currentIndex == 2) {
+        debugPrint(
+          "🔐 AppRouter: User on messages screen but not authenticated, redirecting to auth wizard",
+        );
+        _redirectToAuthWizard();
       }
     } catch (e) {
       debugPrint("❌ Auth check error: $e");
@@ -621,34 +607,21 @@ class MainNavigationState extends State<MainNavigation>
   // `build()` of MainNavigation is called whenever `setState` fires — and
   // that happens for many reasons unrelated to the active tab (auth state
   // changes, profile-completion ticks, unread-badge pulses, etc.). Previously
-  // `_getScreens()` re-allocated all four tab widgets on every one of those
+  // `_getScreens()` re-allocated all three tab widgets on every one of those
   // rebuilds. The element tree reconciled them correctly, so blocs survived,
-  // but Flutter still had to hash + compare four fresh widget instances per
+  // but Flutter still had to hash + compare three fresh widget instances per
   // rebuild.
   //
   // Strategy:
-  //   - Tabs whose constructor args don't depend on mutable state (Services,
-  //     Create Listing) are built ONCE in initState and stored as `late final`
-  //     fields. Identity-stable, so Flutter's short-circuit on `oldWidget ==
-  //     newWidget` kicks in immediately.
+  //   - Tabs whose constructor args don't depend on mutable state (Services)
+  //     are built ONCE in initState and stored as `late final` fields.
   //   - Tabs whose args DO depend on `_currentIndex` (Home, Messages) must be
-  //     rebuilt so `isHomeTabActive` / `mainTabSelected` stay accurate — those
-  //     flags drive `didUpdateWidget` logic (tutorials, conversation refetch)
-  //     which breaks if we feed them stale values.
+  //     rebuilt so `isHomeTabActive` / `mainTabSelected` stay accurate.
   //
-  // Logical indices (post 2026-Q2 nav rework):
-  //   0=Housing, 1=Services, 2=Messages, 3=Create.
-  // Favorites was removed from the bottom bar and is now reachable from
-  // the burger menu / profile (which push [FavoritesScreen] as a route).
+  // Logical indices: 0=Housing, 1=Services, 2=Messages.
+  // Create flows (housing + gig) are pushed routes via "+" / drawer, not tabs.
   // ---------------------------------------------------------------------------
   late final Widget _servicesTab = const GigHubScreen(embedded: true);
-  late final Widget _createListingTab = BlocProvider(
-    create: (_) => SubwayStationsBloc(),
-    child: BlocProvider(
-      create: (_) => LocationsBloc(getIt<ILocationService>()),
-      child: const CreateListingScreen(),
-    ),
-  );
 
   List<Widget> _getScreens() {
     final screens = <Widget>[
@@ -660,7 +633,6 @@ class MainNavigationState extends State<MainNavigation>
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
       ),
-      _createListingTab,
     ];
     // IndexedStack keeps off-screen tabs mounted. Wrap each tab in TickerMode
     // so repeating animations/controllers do not burn CPU/GPU when hidden.
@@ -671,13 +643,11 @@ class MainNavigationState extends State<MainNavigation>
     );
   }
 
-  /// Open the chooser sheet for the bottom-bar "+" button. Lets the user
-  /// pick between creating a housing listing (existing tab flow) or posting
-  /// a gig service offer (pushed as a route).
+  /// Open the chooser sheet for the bottom-bar "+" button. Housing and gig
+  /// publish both open as pushed routes (no create tab in the shell).
   ///
   /// The bar's tap is intercepted by [CustomCurvedNavigationBar.onCreatePressed]
-  /// before the orb animates to "+", so dismissing the sheet without picking
-  /// leaves the active tab untouched.
+  /// so dismissing the sheet without picking leaves the active tab untouched.
   void _showCreateChoiceSheet() {
     HapticFeedbackUtils.impact();
     if (!_isAuthenticated) {
@@ -733,17 +703,7 @@ class MainNavigationState extends State<MainNavigation>
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
-                        // Remember where the user was *before* entering the
-                        // create-listing tab so a subsequent Service pick
-                        // can restore it; only set on first entry to avoid
-                        // overwriting it if the user re-opens the chooser
-                        // while already on tab 3.
-                        if (_currentIndex != 3) {
-                          _previousIndexBeforeCreate = _currentIndex;
-                        }
-                        setState(() {
-                          _currentIndex = 3;
-                        });
+                        context.pushCreateListing();
                       },
                     ),
                     const SizedBox(height: 8),
@@ -755,19 +715,6 @@ class MainNavigationState extends State<MainNavigation>
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
-                        // If the user came here via Housing first, hop the
-                        // visible tab back to where they originally were
-                        // before pushing the gig publish route. That way a
-                        // single back press from the gig screen returns
-                        // them to their starting point instead of leaving
-                        // an abandoned create-listing tab in the back stack.
-                        if (_currentIndex == 3) {
-                          final restoreIndex = _previousIndexBeforeCreate ?? 0;
-                          _previousIndexBeforeCreate = null;
-                          setState(() {
-                            _currentIndex = restoreIndex;
-                          });
-                        }
                         context.pushPublishGig(
                           initialMode: GigPublishMode.service,
                         );
@@ -784,23 +731,28 @@ class MainNavigationState extends State<MainNavigation>
   }
 
   /// Method to navigate to a specific index (can be called from outside).
+  /// Index 3 is legacy: opens the housing create listing route instead of a tab.
   void navigateToIndex(int index) {
     debugPrint("🧭 MainNavigation: navigateToIndex called with index $index");
-    if (mounted) {
-      debugPrint(
-        "🧭 MainNavigation: Setting _currentIndex from $_currentIndex to $index",
-      );
-      _previousIndexBeforeCreate = null;
-      setState(() {
-        _currentIndex = index;
-      });
-      _scheduleMaybeShowNotificationsBellTutorial();
-      debugPrint(
-        "🧭 MainNavigation: Navigation completed, new index: $_currentIndex",
-      );
-    } else {
+    if (!mounted) {
       debugPrint("❌ MainNavigation: Widget not mounted, navigation ignored");
+      return;
     }
+    if (index == 3) {
+      context.pushCreateListing();
+      return;
+    }
+    final tabIndex = index.clamp(0, 2);
+    debugPrint(
+      "🧭 MainNavigation: Setting _currentIndex from $_currentIndex to $tabIndex",
+    );
+    setState(() {
+      _currentIndex = tabIndex;
+    });
+    _scheduleMaybeShowNotificationsBellTutorial();
+    debugPrint(
+      "🧭 MainNavigation: Navigation completed, new index: $_currentIndex",
+    );
   }
 
   // Get the appropriate title for the current screen
@@ -822,8 +774,6 @@ class MainNavigationState extends State<MainNavigation>
         return L10n.text("menu_gigs", style: titleStyle);
       case 2:
         return L10n.text("conversations", style: titleStyle);
-      case 3:
-        return L10n.text("create_listing_title", style: titleStyle);
       default:
         return const SizedBox.shrink();
     }
@@ -1109,14 +1059,8 @@ class MainNavigationState extends State<MainNavigation>
                 onTap: (index) {
                   HapticFeedbackUtils.impact();
 
-                  // Messages (2) and Create (3) are gated inside
-                  // [CustomCurvedNavigationBar] for anonymous users; Services (1)
-                  // is intentionally public.
-
-                  // Manual tab change ends any in-progress create flow,
-                  // so the previous-index tracker shouldn't bleed into a
-                  // later "+" → Service pick.
-                  _previousIndexBeforeCreate = null;
+                  // Messages (2) is gated inside [CustomCurvedNavigationBar]
+                  // for anonymous users; Services (1) is intentionally public.
 
                   // Allow navigation to all tabs
                   setState(() {

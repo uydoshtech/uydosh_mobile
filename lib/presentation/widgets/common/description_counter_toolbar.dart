@@ -132,6 +132,10 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   static const double _actionSpacing = 6;
   static const double _footerHeight = 22;
 
+  /// Inline [TextButton]s use 8px horizontal padding; offset the actions row so
+  /// the first chip aligns with description [contentPadding], not padding+12.
+  static const double _inlineActionsLeadingInset = 8;
+
   Widget _wrapAction(Widget child) {
     if (!widget.debugShowTapBounds) return child;
     return DebugTapBounds(
@@ -141,7 +145,9 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   Widget _buildActionsRow(DictationMeterController? dictationMeter) {
-    return Row(
+    return Transform.translate(
+      offset: const Offset(-_inlineActionsLeadingInset, 0),
+      child: Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -179,6 +185,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
           ),
         ),
       ],
+      ),
     );
   }
 

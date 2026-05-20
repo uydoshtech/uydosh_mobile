@@ -6,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -237,21 +238,29 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: NeumorphicSegmentedSwitch<_PublishedTab>(
-              value: _tab,
-              onChanged: _onTabChanged,
-              entries: [
-                SegmentedSwitchEntry(
-                  value: _PublishedTab.services,
-                  label: L10n.get("gigs_my_published_tab_services"),
-                  icon: Icons.handyman_outlined,
-                ),
-                SegmentedSwitchEntry(
-                  value: _PublishedTab.tasks,
-                  label: L10n.get("gigs_my_published_tab_tasks"),
-                  icon: Icons.assignment_outlined,
-                ),
-              ],
+            child: ListenableBuilder(
+              listenable: ThemeState(),
+              builder: (context, _) {
+                final themeState = ThemeState();
+                return NeumorphicSegmentedSwitch<_PublishedTab>(
+                  liquidGlass:
+                      themeState.isBlueTheme || themeState.isLightTheme,
+                  value: _tab,
+                  onChanged: _onTabChanged,
+                  entries: [
+                    SegmentedSwitchEntry(
+                      value: _PublishedTab.services,
+                      label: L10n.get("gigs_my_published_tab_services"),
+                      icon: Icons.handyman_outlined,
+                    ),
+                    SegmentedSwitchEntry(
+                      value: _PublishedTab.tasks,
+                      label: L10n.get("gigs_my_published_tab_tasks"),
+                      icon: Icons.assignment_outlined,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           Expanded(

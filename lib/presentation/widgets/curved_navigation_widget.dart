@@ -140,11 +140,8 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
               // Tap-overlay over the trailing "+" item. The underlying
               // [CurvedNavigationBar] item count is fixed at 4, so the create
               // button is the right-most quarter of the bar. We capture taps
-              // here so the bar doesn't animate the orb across to "+" before
-              // the chooser sheet returns — if the user picks "Service" we
-              // never want to land on the create-listing tab. Housing-pick
-              // intentionally falls through to the standard tab switch via
-              // [widget.onTap] from the parent's setState.
+              // here so the bar doesn't animate the orb to "+" and neither
+              // create flow is tied to a shell tab index.
               if (widget.onCreatePressed != null)
                 Positioned(
                   right: 0,
@@ -231,13 +228,11 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     );
   }
 
-  // Build navigation items. Layout (post 2026-Q2 nav rework):
-  //   0 = Housing      (public)
-  //   1 = Services hub (public — gates auth at each action boundary)
-  //   2 = Messages     (auth required)
-  //   3 = Create       (auth required)
-  //
-  // Favorites was removed from the bar (still reachable from drawer/profile).
+  // Build navigation items. Layout:
+  //   0 = Housing      (public tab)
+  //   1 = Services hub (public tab)
+  //   2 = Messages     (auth required tab)
+  //   3 = "+" launcher (never a selected tab; overlay handles taps)
   List<Widget> _buildNavigationItems(
     _NavPalette palette,
     ThemeState themeState,
@@ -255,7 +250,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         palette,
         Icons.add,
         "create_listing",
-        widget.currentIndex == 3,
+        false,
       ),
     ];
   }
@@ -307,12 +302,8 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     );
   }
 
-  /// Handle a tap on a bar position. Logical indices match bar positions
-  /// 1-to-1 since the 2026-Q2 nav rework:
-  ///   0 = Housing  (public)
-  ///   1 = Services (public — auth gated per-action inside the hub)
-  ///   2 = Messages (auth required)
-  ///   3 = Create   (auth required)
+  /// Handle a tap on a bar position (when not caught by the "+" overlay).
+  ///   0 = Housing, 1 = Services, 2 = Messages, 3 = "+" create launcher.
   void _handleNavigationTap(int barIndex, bool isAuthenticated) {
     switch (barIndex) {
       case 0:
@@ -320,9 +311,15 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         widget.onTap(barIndex);
         return;
       case 2:
-      case 3:
         if (isAuthenticated) {
           widget.onTap(barIndex);
+        } else {
+          _launchAuthWizard(context);
+        }
+        return;
+      case 3:
+        if (isAuthenticated) {
+          widget.onCreatePressed?.call();
         } else {
           _launchAuthWizard(context);
         }

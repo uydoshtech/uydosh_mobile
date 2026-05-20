@@ -843,6 +843,10 @@ class AppStrings {
       "gigs_post_request_field_category": "Category",
       "gigs_post_request_field_title": "Title",
       "gigs_post_request_field_description": "Description (optional)",
+      "gig_description_template_service":
+          "What I offer:\n(Scope — what's included)\n\nWhere & when:\n(Area or remote) · (availability)\n\nNotes:\n(experience, materials, etc.)",
+      "gig_description_template_task":
+          "What I need:\n(Describe the job)\n\nWhere & when:\n(Location or remote) · (date/time)\n\nAccess / notes:\n(parking, tools, constraints)",
       "gigs_post_request_field_budget_type": "Budget type",
       "gigs_post_request_field_amount": "Amount",
       "gigs_post_request_field_address": "Address (optional)",
@@ -2381,6 +2385,10 @@ class AppStrings {
       "gigs_post_request_field_category": "Категория",
       "gigs_post_request_field_title": "Название",
       "gigs_post_request_field_description": "Описание (необязательно)",
+      "gig_description_template_service":
+          "Что предлагаю:\n(Объём — что входит)\n\nГде и когда:\n(Район или удалённо) · (сроки / доступность)\n\nПримечания:\n(опыт, материалы и т.д.)",
+      "gig_description_template_task":
+          "Что нужно сделать:\n(Опишите задачу)\n\nГде и когда:\n(Адрес или удалённо) · (дата/время)\n\nДоступ / примечания:\n(парковка, инструменты, ограничения)",
       "gigs_post_request_field_budget_type": "Тип бюджета",
       "gigs_post_request_field_amount": "Сумма",
       "gigs_post_request_field_address": "Адрес (необязательно)",
@@ -3937,6 +3945,10 @@ class AppStrings {
       "gigs_post_request_field_category": "Kategoriya",
       "gigs_post_request_field_title": "Sarlavha",
       "gigs_post_request_field_description": "Tavsif (ixtiyoriy)",
+      "gig_description_template_service":
+          "Taklif qilaman:\n(Qamrov — nima kiradi)\n\nQayer va qachon:\n(Hudud yoki masofadan) · (mavjudlik)\n\nIzoh:\n(tajriba, materiallar va h.k.)",
+      "gig_description_template_task":
+          "Kerak:\n(Vazifani tasvirlang)\n\nQayer va qachon:\n(Manzil yoki masofadan) · (sana/vaqt)\n\nKirish / izoh:\n(avtoturargoh, asboblar, cheklovlar)",
       "gigs_post_request_field_budget_type": "Byudjet turi",
       "gigs_post_request_field_amount": "Summa",
       "gigs_post_request_field_address": "Manzil (ixtiyoriy)",

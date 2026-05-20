@@ -24,16 +24,16 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
-import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
+// import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
-import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
+// import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -220,7 +220,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            _navigateToMainIndex(context, 3);
+            context.pushCreateListing();
           },
         ),
       );
@@ -262,36 +262,36 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
         ),
       );
 
-      addItem(
-        _DrawerItemSpec(
-          icon: Icons.history,
-          titleKey: "menu_history",
-          onTap: () {
-            Navigator.pop(context);
-            if (!context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => const ViewHistoryScreen()),
-            );
-          },
-        ),
-      );
+      // addItem(
+      //   _DrawerItemSpec(
+      //     icon: Icons.history,
+      //     titleKey: "menu_history",
+      //     onTap: () {
+      //       Navigator.pop(context);
+      //       if (!context.mounted) return;
+      //       Navigator.of(context).push(
+      //         MaterialPageRoute(
+      //             builder: (context) => const ViewHistoryScreen()),
+      //       );
+      //     },
+      //   ),
+      // );
 
-      addItem(
-        _DrawerItemSpec(
-          icon: Icons.mail_outline,
-          titleKey: "menu_messages",
-          onTap: () {
-            Navigator.pop(context);
-            if (!context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const PushedMessagesInboxScaffold(),
-              ),
-            );
-          },
-        ),
-      );
+      // addItem(
+      //   _DrawerItemSpec(
+      //     icon: Icons.mail_outline,
+      //     titleKey: "menu_messages",
+      //     onTap: () {
+      //       Navigator.pop(context);
+      //       if (!context.mounted) return;
+      //       Navigator.of(context).push(
+      //         MaterialPageRoute<void>(
+      //           builder: (context) => const PushedMessagesInboxScaffold(),
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // );
 
       addItem(
         _DrawerItemSpec(
@@ -386,20 +386,6 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     );
 
     return items;
-  }
-
-  void _navigateToMainIndex(BuildContext context, int index) {
-    final navState = mainNavigationKey.currentState;
-    if (navState != null) {
-      navState.navigateToIndex(index);
-      return;
-    }
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (context) =>
-            AppRouter.buildMainNavigation(initialIndex: index),
-      ),
-    );
   }
 
   void _showLogoutDialog(BuildContext context) {

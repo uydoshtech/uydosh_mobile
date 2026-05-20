@@ -10,13 +10,10 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
-import "package:uy_dosh/presentation/screens/create_listing/create_listing_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -282,24 +279,7 @@ class _UserListingsScreenState extends State<UserListingsScreen> {
                       fontWeight: FontWeight.w500,
                     );
                 return PrimaryButtonFactory.iconText(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (context) => BlocProvider(
-                              create:
-                                  (context) =>
-                                      SubwayStationsBloc(),
-                              child: BlocProvider(
-                                create:
-                                    (context) =>
-                                        LocationsBloc(getIt<ILocationService>()),
-                                child: const CreateListingScreen(showAppBar: true),
-                              ),
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => context.pushCreateListing(),
                   icon: Icons.add,
                   text: L10n.get("create_listing_button"),
                   width: double.infinity,
