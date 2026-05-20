@@ -22,8 +22,11 @@ abstract final class LiquidGlassRendering {
   static bool effectsEnabled(BuildContext context) =>
       !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
 
-  /// Drawer / bottom-sheet blur strength.
+  /// Drawer blur strength.
   static const double panelBlurSigma = 22;
+
+  /// Modal bottom sheets — lighter frost so content behind bleeds through.
+  static const double bottomSheetBlurSigma = 14;
 
   /// Smaller controls (filter ribbon, FAB) sitting on blurred surfaces.
   static const double plateBlurSigma = 14;
@@ -57,8 +60,9 @@ abstract final class LiquidGlassRendering {
     );
   }
 
-  /// Fully opaque fill for modal bottom sheets.
-  static Color bottomSheetFillColor(ColorScheme scheme) => scheme.surface;
+  /// Fallback fill when blur is off (reduce motion / accessibility).
+  static Color bottomSheetFillColor(ColorScheme scheme, {required bool isDark}) =>
+      scheme.surface.withValues(alpha: isDark ? 0.82 : 0.78);
 
   /// Gradient for large panels (bottom sheets).
   static LinearGradient panelGradient({
