@@ -57,6 +57,9 @@ abstract final class LiquidGlassRendering {
     );
   }
 
+  /// Fully opaque fill for modal bottom sheets.
+  static Color bottomSheetFillColor(ColorScheme scheme) => scheme.surface;
+
   /// Gradient for large panels (bottom sheets).
   static LinearGradient panelGradient({
     required ColorScheme scheme,

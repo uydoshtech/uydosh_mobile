@@ -408,7 +408,6 @@ class _ArchivedConversationsScreenState
     if (!mounted) return;
     await showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));

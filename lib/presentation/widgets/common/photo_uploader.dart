@@ -220,7 +220,6 @@ class _PhotoUploaderState extends State<PhotoUploader>
   void _showImageSourceDialog() {
     showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) {
         final theme = Theme.of(context);
         const radius = BorderRadius.vertical(top: Radius.circular(20));

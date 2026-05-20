@@ -22,7 +22,6 @@ class SuspiciousMessageBottomSheet {
 
     return showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         final scheme = Theme.of(sheetContext).colorScheme;
         final radius = BorderRadius.circular(18);

@@ -2197,7 +2197,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     showAppBottomSheet<void>(
       context: context,
       useSafeArea: false,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,
@@ -2278,7 +2277,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     showAppBottomSheet<void>(
       context: context,
       useSafeArea: false,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,
@@ -2327,7 +2325,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     showAppBottomSheet<void>(
       context: context,
       useSafeArea: false,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         return _buildPickerBottomSheet(
           sheetContext: sheetContext,

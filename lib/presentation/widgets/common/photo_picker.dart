@@ -279,7 +279,6 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
     showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       useSafeArea: false,
       builder: (context) {
         final theme = Theme.of(context);

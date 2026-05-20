@@ -43,9 +43,6 @@ class AchievementUnlockBottomSheet extends StatefulWidget {
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: Colors.transparent,
-      // Apple-style glass: only the faintest hint of dimming so the screen
-      // reads cleanly through the BackdropFilter.
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) => AchievementUnlockBottomSheet(
         achievement: achievement,
         onDismiss: onDismiss,

@@ -371,7 +371,6 @@ class MainNavigationState extends State<MainNavigation>
 
     showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         return Padding(
@@ -656,7 +655,6 @@ class MainNavigationState extends State<MainNavigation>
     }
     showAppBottomSheet<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         return Padding(

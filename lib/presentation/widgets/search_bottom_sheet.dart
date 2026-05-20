@@ -147,9 +147,6 @@ class SearchBottomSheetWidget {
       await showAppBottomSheet<void>(
       context: context,
       useSafeArea: false,
-      // Apple-style glass: only the faintest hint of dimming so the feed
-      // reads cleanly through the BackdropFilter.
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (context) => MultiBlocProvider(
         providers: [
           // Provide ListingsBloc - either existing or new one

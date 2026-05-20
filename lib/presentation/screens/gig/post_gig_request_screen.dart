@@ -297,7 +297,6 @@ class _CategoryPlate extends StatelessWidget {
     if (categories.isEmpty) return;
     final picked = await showAppBottomSheet<GigCategory>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.06),
       builder: (sheetCtx) {
         final scheme = Theme.of(sheetCtx).colorScheme;
         const radius = BorderRadius.vertical(top: Radius.circular(20));
