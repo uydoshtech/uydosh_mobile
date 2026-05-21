@@ -26,7 +26,7 @@ abstract class EnvironmentUtil {
   /// override it on the very first successful fetch.
   static const compileTimeBasePath = String.fromEnvironment(
     "API_BASE_PATH",
-    defaultValue: "http://3.128.76.53:3000",
+    defaultValue: "http://18.224.97.94:3000",
   );
 
   /// Compile-time default for the shareable https web base. See
@@ -69,6 +69,16 @@ abstract class EnvironmentUtil {
   static const compileTimeYandexMapsApiKey = String.fromEnvironment(
     "YANDEX_MAPS_API_KEY",
     defaultValue: "b7e30079-55fe-44d0-960c-50a03c3715e6",
+  );
+
+  /// Compile-time default for the Yandex Geosuggest API key (address
+  /// autocomplete). Separate from [compileTimeYandexMapsApiKey] — MapKit /
+  /// JS Maps keys are not accepted by `suggest-maps.yandex.ru` (HTTP 403).
+  /// Override via `--dart-define=YANDEX_GEOSUGGEST_API_KEY=…` or Firebase
+  /// Remote Config key `yandex_geosuggest_api_key`.
+  static const compileTimeYandexGeosuggestApiKey = String.fromEnvironment(
+    "YANDEX_GEOSUGGEST_API_KEY",
+    defaultValue: "",
   );
 
   /// Compile-time default for the primary Google Gemini API key. Last-resort
@@ -160,6 +170,13 @@ abstract class EnvironmentUtil {
   /// falling back to [compileTimeYandexMapsApiKey].
   static String get yandexMapsApiKey =>
       RemoteConfigService.yandexMapsApiKey;
+
+  /// Yandex Geosuggest API key for address autocomplete. Resolves from
+  /// Remote Config (`yandex_geosuggest_api_key`), then
+  /// [compileTimeYandexGeosuggestApiKey], then [yandexMapsApiKey] as a
+  /// last resort (usually still rejected by the suggest endpoint).
+  static String get yandexGeosuggestApiKey =>
+      RemoteConfigService.yandexGeosuggestApiKey;
 
   /// Primary Google Gemini API key. Resolves at runtime from Remote
   /// Config, falling back to [compileTimeGeminiApiKey] (empty by default;

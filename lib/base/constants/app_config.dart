@@ -27,6 +27,11 @@ class AppConfig {
   /// before Remote Config has fetched.
   static String get yandexMapsApiKey => EnvironmentUtil.yandexMapsApiKey;
 
+  /// Yandex Geosuggest API key (address autocomplete). See
+  /// [EnvironmentUtil.yandexGeosuggestApiKey].
+  static String get yandexGeosuggestApiKey =>
+      EnvironmentUtil.yandexGeosuggestApiKey;
+
   /// Max photos per listing, resolved at runtime from Firebase Remote
   /// Config (key: `max_photos_per_listing`). Falls back to
   /// [EnvironmentUtil.compileTimeMaxPhotosPerListing] (currently 5) when

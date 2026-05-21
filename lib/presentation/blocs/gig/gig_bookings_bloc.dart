@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 
@@ -73,7 +74,7 @@ class GigBookingsBloc extends Bloc<GigBookingsEvent, GigBookingsState> {
             ),
           );
         } else {
-          emit(GigBookingsError(err.toString()));
+          emit(GigBookingsError(ErrorMessageHelper.sanitizeErrorMessage(err)));
         }
       }
     });
@@ -96,7 +97,7 @@ class GigBookingsBloc extends Bloc<GigBookingsEvent, GigBookingsState> {
         );
         unawaited(PendingGigBookingsState().refresh());
       } catch (err) {
-        emit(GigBookingsError(err.toString()));
+        emit(GigBookingsError(ErrorMessageHelper.sanitizeErrorMessage(err)));
       }
     });
   }

@@ -1,12 +1,8 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
@@ -101,11 +97,8 @@ class ProfileListingsSection extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => BlocProvider(
-                                  create: (context) =>
-                                      ListingsBloc(getIt<IListingService>()),
-                                  child: const UserListingsScreen(),
-                                ),
+                                builder: (context) =>
+                                    const UserListingsScreen(),
                               ),
                             );
                           },
@@ -348,10 +341,7 @@ class ProfileListingsSection extends StatelessWidget {
           HapticFeedbackUtils.impact();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => BlocProvider(
-                create: (context) => ListingsBloc(getIt<IListingService>()),
-                child: const UserListingsScreen(),
-              ),
+              builder: (context) => const UserListingsScreen(),
             ),
           );
         },

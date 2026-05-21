@@ -5,7 +5,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/constants/app_version.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/logout_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -18,9 +17,7 @@ import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
-import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
@@ -237,12 +234,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
             if (!context.mounted) return;
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => BlocProvider(
-                  create: (context) {
-                    return ListingsBloc(getIt<IListingService>());
-                  },
-                  child: const UserListingsScreen(),
-                ),
+                builder: (context) => const UserListingsScreen(),
               ),
             );
           },

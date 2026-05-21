@@ -48,6 +48,7 @@ abstract class RemoteConfigService {
   static const _kPrivacyPolicyUrl = "privacy_policy_url";
   static const _kDeleteAccountUrl = "delete_account_url";
   static const _kYandexMapsApiKey = "yandex_maps_api_key";
+  static const _kYandexGeosuggestApiKey = "yandex_geosuggest_api_key";
   static const _kGeminiApiKey = "gemini_api_key";
   static const _kGeminiApiKey2 = "gemini_api_key_2";
   static const _kUzsPerUsd = "uzs_per_usd";
@@ -97,6 +98,7 @@ abstract class RemoteConfigService {
     _kPrivacyPolicyUrl: EnvironmentUtil.compileTimePrivacyPolicy,
     _kDeleteAccountUrl: EnvironmentUtil.compileTimeDeleteAccount,
     _kYandexMapsApiKey: EnvironmentUtil.compileTimeYandexMapsApiKey,
+    _kYandexGeosuggestApiKey: EnvironmentUtil.compileTimeYandexGeosuggestApiKey,
     _kGeminiApiKey: EnvironmentUtil.compileTimeGeminiApiKey,
     _kGeminiApiKey2: EnvironmentUtil.compileTimeGeminiApiKey2,
     _kUzsPerUsd: _kDefaultUzsPerUsd,
@@ -133,6 +135,18 @@ abstract class RemoteConfigService {
   /// Yandex Maps JS API key. Safe to call before [initialize] (returns the
   /// compile-time default until init completes / RC fetch lands).
   static String get yandexMapsApiKey => _values[_kYandexMapsApiKey]!;
+
+  /// Yandex Geosuggest API key for address autocomplete. When the dedicated
+  /// RC / `--dart-define` value is empty, falls back to [yandexMapsApiKey]
+  /// (that key is usually rejected by the suggest endpoint — enable the
+  /// Geosuggest product on a dedicated key in the Yandex developer console).
+  static String get yandexGeosuggestApiKey {
+    final dedicated = (_values[_kYandexGeosuggestApiKey] ?? "").trim();
+    if (dedicated.isNotEmpty) {
+      return dedicated;
+    }
+    return yandexMapsApiKey;
+  }
 
   /// Primary Google Gemini API key. Safe to call before [initialize]; will
   /// return `""` until the first RC fetch lands (unless overridden via

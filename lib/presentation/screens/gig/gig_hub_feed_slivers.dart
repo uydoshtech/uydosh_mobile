@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 
 class GigHubLoadingSliver extends StatelessWidget {
   const GigHubLoadingSliver({super.key});
@@ -67,25 +67,13 @@ class GigHubErrorSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Padding(
+      child: UydoshErrorRetryColumn(
+        icon: Icons.error_outline_rounded,
+        iconSize: 48,
+        message: message,
+        onRetry: onRetry,
+        retryLabel: L10n.get("gigs_retry"),
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.redAccent,
-            ),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            PrimaryButtonFactory.text(
-              onPressed: onRetry,
-              text: L10n.get("gigs_retry"),
-            ),
-          ],
-        ),
       ),
     );
   }

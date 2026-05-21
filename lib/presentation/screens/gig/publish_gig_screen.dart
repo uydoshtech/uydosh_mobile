@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:provider/single_child_widget.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/gemini_config.dart";
@@ -45,6 +46,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
+import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 const int _gigMinDurationStepMinutes = 5;
@@ -84,30 +86,29 @@ Photo _photoFromGigOfferPhoto(GigOfferPhoto p) {
 enum GigPublishMode { task, service }
 
 /// Blocs required by [PublishGigScreen] (submit + geo pickers).
-/// Also used by [GigNavigatorExtensions.pushPublishGig].
-///
-/// Callers must wrap [PublishGigScreen] — the screen does not create its own
-/// providers (avoids duplicate bloc trees when pushed via navigation helpers).
-List<BlocProvider> publishGigBlocProviders({
+/// Wired in [PublishGigScreen.build] so every route gets the correct scope.
+List<SingleChildWidget> publishGigBlocProviders({
   bool includeRequestBloc = true,
   bool includeOfferBloc = true,
 }) {
-  final providers = <BlocProvider>[];
+  final providers = <SingleChildWidget>[];
   if (includeRequestBloc) {
     providers.add(
-      BlocProvider(
+      BlocProvider<GigPostRequestBloc>(
         create: (_) => GigPostRequestBloc(getIt<IGigService>()),
       ),
     );
   }
   if (includeOfferBloc) {
     providers.add(
-      BlocProvider(
+      BlocProvider<GigPostOfferBloc>(
         create: (_) => GigPostOfferBloc(getIt<IGigService>()),
       ),
     );
   }
-  providers.add(BlocProvider(create: (_) => SubwayStationsBloc()));
+  providers.add(BlocProvider<SubwayStationsBloc>(
+    create: (_) => SubwayStationsBloc(),
+  ));
   return providers;
 }
 
@@ -222,6 +223,9 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
   bool get _hasRequestBloc => !_isEditingOffer;
 
   bool get _hasOfferBloc => !_isEditingRequest;
+
+  GigPostRequestBloc? _requestBloc;
+  GigPostOfferBloc? _offerBloc;
 
   GigPublishMode _baselineMode = GigPublishMode.task;
   String _baselineTitle = "";
@@ -611,7 +615,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           : _addressController.text.trim();
       final editingTask = widget.editingRequest;
       if (editingTask != null) {
-        context.read<GigPostRequestBloc>().add(
+        _requestBloc?.add(
               SubmitGigRequestEdit(
                 requestId: editingTask.id,
                 categoryId: _selectedCategory!.id,
@@ -628,7 +632,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               ),
             );
       } else {
-        context.read<GigPostRequestBloc>().add(
+        _requestBloc?.add(
               SubmitGigRequest(
                 categoryId: _selectedCategory!.id,
                 title: _titleController.text.trim(),
@@ -657,7 +661,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
             else if (item is NewPhotoItem)
               GigOfferEditPhotoNew(item.path),
         ];
-        context.read<GigPostOfferBloc>().add(
+        _offerBloc?.add(
               SubmitGigOfferEdit(
                 offerId: editing.id,
                 categoryId: _selectedCategory!.id,
@@ -678,7 +682,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               ),
             );
       } else {
-        context.read<GigPostOfferBloc>().add(
+        _offerBloc?.add(
               SubmitGigOffer(
                 categoryId: _selectedCategory!.id,
                 title: _titleController.text.trim(),
@@ -735,59 +739,67 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     );
   }
 
-  List<BlocListener<dynamic, dynamic>> _buildBlocListeners() {
-    return <BlocListener<dynamic, dynamic>>[
-      if (_hasRequestBloc)
-        BlocListener<GigPostRequestBloc, GigPostRequestState>(
-          listener: (context, state) {
-            if (state is GigPostRequestSuccess) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("gigs_post_request_success_toast"),
-              );
-              _allowPopWithoutConfirm = true;
-              Navigator.of(context).pop(GigPublishMode.task);
-            } else if (state is GigRequestEditSuccess) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("gigs_edit_request_success_toast"),
-              );
-              _allowPopWithoutConfirm = true;
-              Navigator.of(context).pop<GigRequest>(state.updated);
-            } else if (state is GigPostRequestError) {
-              ToastTheme.showError(
-                context,
-                message: state.message,
-              );
-            }
-          },
-        ),
-      if (_hasOfferBloc)
-        BlocListener<GigPostOfferBloc, GigPostOfferState>(
-          listener: (context, state) {
-            if (state is GigPostOfferSuccess) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("gigs_post_offer_success_toast"),
-              );
-              _allowPopWithoutConfirm = true;
-              Navigator.of(context).pop(GigPublishMode.service);
-            } else if (state is GigOfferEditSuccess) {
-              ToastTheme.showSuccess(
-                context,
-                message: L10n.get("gigs_edit_offer_success_toast"),
-              );
-              _allowPopWithoutConfirm = true;
-              Navigator.of(context).pop<GigOffer>(state.updated);
-            } else if (state is GigPostOfferError) {
-              ToastTheme.showError(
-                context,
-                message: state.message,
-              );
-            }
-          },
-        ),
-    ];
+  Widget _wrapWithBlocListeners(Widget child) {
+    Widget result = child;
+    final offerBloc = _offerBloc;
+    if (_hasOfferBloc && offerBloc != null) {
+      result = BlocListener<GigPostOfferBloc, GigPostOfferState>(
+        bloc: offerBloc,
+        listener: (context, state) {
+          if (state is GigPostOfferSuccess) {
+            ToastTheme.showSuccess(
+              context,
+              message: L10n.get("gigs_post_offer_success_toast"),
+            );
+            _allowPopWithoutConfirm = true;
+            Navigator.of(context).pop(GigPublishMode.service);
+          } else if (state is GigOfferEditSuccess) {
+            ToastTheme.showSuccess(
+              context,
+              message: L10n.get("gigs_edit_offer_success_toast"),
+            );
+            _allowPopWithoutConfirm = true;
+            Navigator.of(context).pop<GigOffer>(state.updated);
+          } else if (state is GigPostOfferError) {
+            ToastTheme.showError(
+              context,
+              message: state.message,
+            );
+          }
+        },
+        child: result,
+      );
+    }
+    final requestBloc = _requestBloc;
+    if (_hasRequestBloc && requestBloc != null) {
+      result = BlocListener<GigPostRequestBloc, GigPostRequestState>(
+        bloc: requestBloc,
+        listener: (context, state) {
+          if (state is GigPostRequestSuccess) {
+            ToastTheme.showSuccess(
+              context,
+              message: L10n.get("gigs_post_request_success_toast"),
+            );
+            _allowPopWithoutConfirm = true;
+            Navigator.of(context).pop(GigPublishMode.task);
+          } else if (state is GigRequestEditSuccess) {
+            ToastTheme.showSuccess(
+              context,
+              message: L10n.get("gigs_edit_request_success_toast"),
+            );
+            _allowPopWithoutConfirm = true;
+            Navigator.of(context).pop<GigRequest>(state.updated);
+          } else if (state is GigPostRequestError) {
+            ToastTheme.showError(
+              context,
+              message: state.message,
+            );
+          }
+        },
+        child: result,
+      );
+    }
+    return result;
   }
 
   Widget _buildSubmitButton({
@@ -809,16 +821,28 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     }
 
     if (_hasRequestBloc && !_hasOfferBloc) {
+      final requestBloc = _requestBloc;
+      if (requestBloc == null) return buildButton(false);
       return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+        bloc: requestBloc,
         selector: (state) => state is GigPostRequestSubmitting,
         builder: (context, submitting) => buildButton(submitting),
       );
     }
     if (_hasOfferBloc && !_hasRequestBloc) {
+      final offerBloc = _offerBloc;
+      if (offerBloc == null) return buildButton(false);
       return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+        bloc: offerBloc,
         selector: (state) => state is GigPostOfferSubmitting,
         builder: (context, submitting) => buildButton(submitting),
       );
+    }
+
+    final requestBloc = _requestBloc;
+    final offerBloc = _offerBloc;
+    if (requestBloc == null || offerBloc == null) {
+      return buildButton(false);
     }
 
     return ListenableBuilder(
@@ -826,11 +850,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       builder: (context, _) {
         if (_modeNotifier.value == GigPublishMode.task) {
           return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+            bloc: requestBloc,
             selector: (state) => state is GigPostRequestSubmitting,
             builder: (context, submitting) => buildButton(submitting),
           );
         }
         return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+          bloc: offerBloc,
           selector: (state) => state is GigPostOfferSubmitting,
           builder: (context, submitting) => buildButton(submitting),
         );
@@ -849,20 +875,30 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       );
     }
 
+    final requestBloc = _requestBloc;
+    final offerBloc = _offerBloc;
+
     return ListenableBuilder(
       listenable: _dirtyChromeNotifier,
       builder: (context, _) {
         if (_hasRequestBloc && !_hasOfferBloc) {
+          if (requestBloc == null) return const SizedBox.shrink();
           return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+            bloc: requestBloc,
             selector: (state) => state is GigPostRequestSubmitting,
             builder: (context, submitting) => buildAction(submitting),
           );
         }
         if (_hasOfferBloc && !_hasRequestBloc) {
+          if (offerBloc == null) return const SizedBox.shrink();
           return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+            bloc: offerBloc,
             selector: (state) => state is GigPostOfferSubmitting,
             builder: (context, submitting) => buildAction(submitting),
           );
+        }
+        if (requestBloc == null || offerBloc == null) {
+          return const SizedBox.shrink();
         }
 
         return ListenableBuilder(
@@ -870,11 +906,13 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
           builder: (context, _) {
             if (_modeNotifier.value == GigPublishMode.task) {
               return BlocSelector<GigPostRequestBloc, GigPostRequestState, bool>(
+                bloc: requestBloc,
                 selector: (state) => state is GigPostRequestSubmitting,
                 builder: (context, submitting) => buildAction(submitting),
               );
             }
             return BlocSelector<GigPostOfferBloc, GigPostOfferState, bool>(
+              bloc: offerBloc,
               selector: (state) => state is GigPostOfferSubmitting,
               builder: (context, submitting) => buildAction(submitting),
             );
@@ -886,10 +924,22 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildScreen(context);
+    // Self-contained providers so every entry point (navigation helpers,
+    // hot reload, direct pushes) always has the blocs this screen listens to.
+    return MultiBlocProvider(
+      providers: publishGigBlocProviders(
+        includeRequestBloc: _hasRequestBloc,
+        includeOfferBloc: _hasOfferBloc,
+      ),
+      child: Builder(builder: _buildScreen),
+    );
   }
 
   Widget _buildScreen(BuildContext context) {
+    _requestBloc =
+        _hasRequestBloc ? context.read<GigPostRequestBloc>() : null;
+    _offerBloc = _hasOfferBloc ? context.read<GigPostOfferBloc>() : null;
+
     final language = LanguageState().currentLanguage;
     final categories = GigCategoryCache.getOrdered();
     final isEditMode = _isEditingOffer || _isEditingRequest;
@@ -938,9 +988,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
               ],
             ),
             body: KeyboardDismissScope(
-              child: MultiBlocListener(
-                listeners: _buildBlocListeners(),
-                child: Form(
+              child: _wrapWithBlocListeners(
+                Form(
                   key: _formKey,
                   child: ListView(
                     controller: _scrollController,
@@ -960,9 +1009,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ),
                         const SizedBox(height: 22),
                       ],
-                      _FieldLabel(
-                        L10n.get("gigs_post_request_field_category"),
-                      ),
                       _CategoryPlate(
                         categories: categories,
                         selected: _selectedCategory,
@@ -979,9 +1025,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-                      _FieldLabel(
-                        L10n.get("gigs_post_request_field_title"),
-                      ),
                       UydoshPlateTextFormField(
                         hintText: L10n.get("gigs_post_request_field_title"),
                         decoration: UydoshPlateFieldDecoration.gigPostField(
@@ -1015,9 +1058,6 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      _FieldLabel(
-                        L10n.get("gigs_post_request_field_description"),
-                      ),
                       AnimatedSize(
                         duration: const Duration(milliseconds: 320),
                         reverseDuration: const Duration(milliseconds: 320),
@@ -1206,7 +1246,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
       const SizedBox(height: 14),
       ..._buildGeoFields(dirtyOutline),
       _FieldLabel(L10n.get("gigs_post_field_address_detail")),
-      UydoshPlateTextFormField(
+      YandexAddressSuggestField(
         hintText: L10n.get("gigs_post_field_address_detail"),
         decoration: UydoshPlateFieldDecoration.gigPostField(
           context,

@@ -378,9 +378,67 @@ post_install do |installer|
       # Inject right after roomVC is created.
       src = src.gsub(
         '        let roomVC = RoomCaptureViewController()',
-        "        let roomVC = RoomCaptureViewController()\n        #{marker}\n        if let strings = arguments?[\"strings\"] as? [String: String] {\n            roomVC.uydoshCancelTitle = strings[\"cancel\"]\n            roomVC.uydoshDoneTitle = strings[\"done\"]\n            roomVC.uydoshFinishTitle = strings[\"finish\"]\n            roomVC.uydoshScanOtherRoomsTitle = strings[\"scanOtherRooms\"]\n        }"
+        "        let roomVC = RoomCaptureViewController()\n        #{marker}\n        if let stringsDict = arguments?[\"strings\"] as? [String: Any] {\n            roomVC.uydoshCancelTitle = stringsDict[\"cancel\"] as? String\n            roomVC.uydoshDoneTitle = stringsDict[\"done\"] as? String\n            roomVC.uydoshFinishTitle = stringsDict[\"finish\"] as? String\n            roomVC.uydoshScanOtherRoomsTitle = stringsDict[\"scanOtherRooms\"] as? String\n        }"
       )
       File.write(flutter_roomplan_plugin_file, src)
+    end
+  end
+
+  # Migration: parse Flutter-provided button titles via [String: Any] (MethodChannel
+  # payloads are not always castable to [String: String] at runtime).
+  if File.exist?(flutter_roomplan_plugin_file)
+    src = File.read(flutter_roomplan_plugin_file)
+    unless src.include?('stringsDict = arguments?["strings"]')
+      src = src.gsub(
+        'if let strings = arguments?["strings"] as? [String: String] {',
+        'if let stringsDict = arguments?["strings"] as? [String: Any] {'
+      )
+      src = src.gsub(
+        'roomVC.uydoshCancelTitle = strings["cancel"]',
+        'roomVC.uydoshCancelTitle = stringsDict["cancel"] as? String'
+      )
+      src = src.gsub(
+        'roomVC.uydoshDoneTitle = strings["done"]',
+        'roomVC.uydoshDoneTitle = stringsDict["done"] as? String'
+      )
+      src = src.gsub(
+        'roomVC.uydoshFinishTitle = strings["finish"]',
+        'roomVC.uydoshFinishTitle = stringsDict["finish"] as? String'
+      )
+      src = src.gsub(
+        'roomVC.uydoshScanOtherRoomsTitle = strings["scanOtherRooms"]',
+        'roomVC.uydoshScanOtherRoomsTitle = stringsDict["scanOtherRooms"] as? String'
+      )
+      File.write(flutter_roomplan_plugin_file, src)
+    end
+  end
+
+  # Re-apply button titles when the capture UI appears so Flutter-provided labels
+  # are always shown even if view setup order changes across iOS versions.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: re-apply button titles on appear */'
+    unless src.include?(marker)
+      helper = [
+        '',
+        "    #{marker}",
+        '    private func uydoshApplyButtonTitles() {',
+        '        finishButton.setTitle((uydoshFinishTitle?.isEmpty == false ? uydoshFinishTitle! : uydoshL("roomplan_finish", "Finish")), for: .normal)',
+        '        scanOtherRoomsButton.setTitle((uydoshScanOtherRoomsTitle?.isEmpty == false ? uydoshScanOtherRoomsTitle! : uydoshL("roomplan_scan_other_rooms", "Scan Other Rooms")), for: .normal)',
+        '        cancelButton.setTitle((uydoshCancelTitle?.isEmpty == false ? uydoshCancelTitle! : uydoshL("roomplan_cancel", "Cancel")), for: .normal)',
+        '        doneButton.setTitle((uydoshDoneTitle?.isEmpty == false ? uydoshDoneTitle! : uydoshL("roomplan_done", "Done")), for: .normal)',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    public override func viewDidAppear(_ animated: Bool) {',
+        "#{helper}\n    public override func viewDidAppear(_ animated: Bool) {"
+      )
+      src = src.sub(
+        "    public override func viewDidAppear(_ animated: Bool) {\n        super.viewDidAppear(animated)\n        startSession()",
+        "    public override func viewDidAppear(_ animated: Bool) {\n        super.viewDidAppear(animated)\n        uydoshApplyButtonTitles()\n        startSession()"
+      )
+      File.write(room_capture_file, src)
     end
   end
 end

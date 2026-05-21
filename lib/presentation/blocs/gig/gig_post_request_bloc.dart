@@ -1,5 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -117,7 +118,7 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
         );
         emit(GigPostRequestSuccess(req));
       } catch (err) {
-        emit(GigPostRequestError(err.toString()));
+        emit(GigPostRequestError(ErrorMessageHelper.sanitizeErrorMessage(err)));
       }
     });
 
@@ -143,7 +144,7 @@ class GigPostRequestBloc extends Bloc<GigPostRequestEvent, GigPostRequestState> 
             await _service.updateRequest(id: e.requestId, patch: patch);
         emit(GigRequestEditSuccess(updated));
       } catch (err) {
-        emit(GigPostRequestError(err.toString()));
+        emit(GigPostRequestError(ErrorMessageHelper.sanitizeErrorMessage(err)));
       }
     });
   }

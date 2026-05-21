@@ -1,5 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 
@@ -102,7 +103,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
       );
       GigFavoritesState().syncFromRequests(res.requests);
     } catch (err) {
-      emit(GigRequestsError(err.toString()));
+      emit(GigRequestsError(ErrorMessageHelper.sanitizeErrorMessage(err)));
     }
   }
 
@@ -132,7 +133,7 @@ class GigRequestsBloc extends Bloc<GigRequestsEvent, GigRequestsState> {
       );
       GigFavoritesState().syncFromRequests(res.requests);
     } catch (err) {
-      emit(GigRequestsError(err.toString()));
+      emit(GigRequestsError(ErrorMessageHelper.sanitizeErrorMessage(err)));
     }
   }
 

@@ -1175,10 +1175,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                               return explainer;
                             },
                           ),
-                        if (_pushDebugEnabled) ...[
-                          const SizedBox(height: 12),
-                          _pushDebugPanel(theme),
-                        ],
                         const SizedBox(height: 36),
                         ThemeIcon(
                           Icons.notifications_none,
@@ -1199,13 +1195,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             ),
                           ),
                         ),
+                        if (_pushDebugEnabled) ...[
+                          const SizedBox(height: 24),
+                          _pushDebugPanel(theme),
+                        ],
                       ],
                     )
                   : ListView.separated(
                       padding:
                           EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
-                      itemCount:
-                          _alerts.length + (showAlertsExplainer ? 1 : 0) + 1,
+                      itemCount: _alerts.length +
+                          (showAlertsExplainer ? 1 : 0) +
+                          1 +
+                          (_pushDebugEnabled ? 1 : 0),
                       separatorBuilder: (_, i) =>
                           SizedBox(height: i == 0 ? 12 : 16),
                       itemBuilder: (context, i) {
@@ -1228,19 +1230,17 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             onClose: _closeAlertsExplainerAnimated,
                             pushStatus: _pushStatus,
                           );
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_alertsExplainerClosing)
-                                RollUpFadeOut(child: explainer)
-                              else
-                                explainer,
-                              if (_pushDebugEnabled) ...[
-                                const SizedBox(height: 12),
-                                _pushDebugPanel(theme),
-                              ],
-                            ],
-                          );
+                          if (_alertsExplainerClosing) {
+                            return RollUpFadeOut(child: explainer);
+                          }
+                          return explainer;
+                        }
+
+                        final debugIndex = _alerts.length +
+                            (showExplainer ? 1 : 0) +
+                            1;
+                        if (_pushDebugEnabled && i == debugIndex) {
+                          return _pushDebugPanel(theme);
                         }
 
                         final a =

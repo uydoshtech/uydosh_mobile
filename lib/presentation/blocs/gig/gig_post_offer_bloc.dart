@@ -1,5 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/gig_category_cache.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_category.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -185,7 +186,7 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
 
         emit(GigPostOfferSuccess(offer));
       } catch (err) {
-        emit(GigPostOfferError(err.toString()));
+        emit(GigPostOfferError(ErrorMessageHelper.sanitizeErrorMessage(err)));
       }
     });
 
@@ -253,7 +254,7 @@ class GigPostOfferBloc extends Bloc<GigPostOfferEvent, GigPostOfferState> {
         final fresh = await _service.getOffer(e.offerId);
         emit(GigOfferEditSuccess(fresh));
       } catch (err) {
-        emit(GigPostOfferError(err.toString()));
+        emit(GigPostOfferError(ErrorMessageHelper.sanitizeErrorMessage(err)));
       }
     });
   }

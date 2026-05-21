@@ -1,5 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 
@@ -89,7 +90,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
       );
       GigFavoritesState().syncFromOffers(res.offers);
     } catch (err) {
-      emit(GigOffersError(err.toString()));
+      emit(GigOffersError(ErrorMessageHelper.sanitizeErrorMessage(err)));
     }
   }
 
@@ -117,7 +118,7 @@ class GigOffersBloc extends Bloc<GigOffersEvent, GigOffersState> {
       );
       GigFavoritesState().syncFromOffers(res.offers);
     } catch (err) {
-      emit(GigOffersError(err.toString()));
+      emit(GigOffersError(ErrorMessageHelper.sanitizeErrorMessage(err)));
     }
   }
 

@@ -20,7 +20,7 @@ import "package:uy_dosh/presentation/screens/gig/my_published_gigs_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_offer_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/post_gig_request_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
-    show GigPublishMode, PublishGigScreen, publishGigBlocProviders;
+    show GigPublishMode, PublishGigScreen;
 
 /// Navigation helpers for the gig module. Mirrors the listing pattern in
 /// `navigation_extensions.dart`: each push wires the BLoCs the destination
@@ -83,12 +83,9 @@ extension GigNavigatorExtensions on BuildContext {
   Future<GigOffer?> pushEditGigOffer(GigOffer offer) {
     return Navigator.of(this).push<GigOffer>(
       MaterialPageRoute<GigOffer>(
-        builder: (_) => MultiBlocProvider(
-          providers: publishGigBlocProviders(includeRequestBloc: false),
-          child: PublishGigScreen(
-            initialMode: GigPublishMode.service,
-            editingOffer: offer,
-          ),
+        builder: (_) => PublishGigScreen(
+          initialMode: GigPublishMode.service,
+          editingOffer: offer,
         ),
       ),
     );
@@ -99,12 +96,9 @@ extension GigNavigatorExtensions on BuildContext {
   Future<GigRequest?> pushEditGigRequest(GigRequest request) {
     return Navigator.of(this).push<GigRequest>(
       MaterialPageRoute<GigRequest>(
-        builder: (_) => MultiBlocProvider(
-          providers: publishGigBlocProviders(includeOfferBloc: false),
-          child: PublishGigScreen(
-            initialMode: GigPublishMode.task,
-            editingRequest: request,
-          ),
+        builder: (_) => PublishGigScreen(
+          initialMode: GigPublishMode.task,
+          editingRequest: request,
         ),
       ),
     );
@@ -122,10 +116,7 @@ extension GigNavigatorExtensions on BuildContext {
   }) async {
     final published = await Navigator.of(this).push<GigPublishMode>(
       MaterialPageRoute<GigPublishMode>(
-        builder: (_) => MultiBlocProvider(
-          providers: publishGigBlocProviders(),
-          child: PublishGigScreen(initialMode: initialMode),
-        ),
+        builder: (_) => PublishGigScreen(initialMode: initialMode),
       ),
     );
     if (published == null) return;
