@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -115,6 +116,10 @@ class UydoshErrorRetryColumn extends StatelessWidget {
       if (hasTitle) {
         children.add(SizedBox(height: spacingAfterTitle));
       }
+      final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(
+        message,
+        context: context,
+      );
       final defaultMessageStyle = hasTitle
           ? TextStyle(
               fontSize: 12,
@@ -123,7 +128,7 @@ class UydoshErrorRetryColumn extends StatelessWidget {
           : theme.textTheme.bodyLarge;
       children.add(
         Text(
-          message!,
+          sanitizedMessage,
           textAlign: messageTextAlign,
           maxLines: messageMaxLines,
           overflow: messageOverflow,

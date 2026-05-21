@@ -33,7 +33,7 @@ abstract class EnvironmentUtil {
   /// [shareWebBase] for the runtime accessor.
   static const compileTimeShareWebBase = String.fromEnvironment(
     "SHARE_WEB_BASE",
-    defaultValue: "https://uydosh.app",
+    defaultValue: "https://uydosh.com",
   );
 
   /// Compile-time default for the Terms of Service URL. See

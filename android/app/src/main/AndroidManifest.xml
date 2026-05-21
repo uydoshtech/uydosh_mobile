@@ -57,12 +57,12 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="uydosh" android:host="auth"/>
             </intent-filter>
-            <!-- App Links: https://uydosh.app/listing/123 (for messengers) -->
+            <!-- App Links: https://uydosh.com/listing/123 (for messengers) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https" android:host="uydosh.app" android:pathPrefix="/listing/"/>
+                <data android:scheme="https" android:host="uydosh.com" android:pathPrefix="/listing/"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

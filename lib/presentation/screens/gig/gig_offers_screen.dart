@@ -6,9 +6,9 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
@@ -134,27 +134,13 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.redAccent,
-            ),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            PrimaryButtonFactory.text(
-              onPressed: onRetry,
-              text: L10n.get("gigs_retry"),
-            ),
-          ],
-        ),
-      ),
+    return UydoshErrorRetryColumn(
+      icon: Icons.error_outline_rounded,
+      iconSize: 48,
+      message: message,
+      onRetry: onRetry,
+      retryLabel: L10n.get("gigs_retry"),
+      padding: const EdgeInsets.all(24),
     );
   }
 }

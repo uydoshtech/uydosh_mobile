@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:uydosh.app</string>
+		<string>applinks:uydosh.com</string>
 	</array>
 	<!-- Sign in with Apple (kept in lockstep with Runner.entitlements so
 	     debug builds can exercise the SIWA flow on a real device). -->

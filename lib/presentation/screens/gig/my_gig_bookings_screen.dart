@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
@@ -170,6 +171,9 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
                     child: _BookingsRefreshScrollable(
                       state: state,
                       sessionUserId: _sessionUserId,
+                      onRetry: () => context.read<GigBookingsBloc>().add(
+                            FetchMyGigBookings(role: _role.apiValue),
+                          ),
                     ),
                   ),
                 );
@@ -186,10 +190,12 @@ class _BookingsRefreshScrollable extends StatelessWidget {
   const _BookingsRefreshScrollable({
     required this.state,
     required this.sessionUserId,
+    required this.onRetry,
   });
 
   final GigBookingsState state;
   final int? sessionUserId;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -201,11 +207,13 @@ class _BookingsRefreshScrollable extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(message),
-                  ),
+                child: UydoshErrorRetryColumn(
+                  icon: Icons.error_outline_rounded,
+                  iconSize: 48,
+                  message: message,
+                  onRetry: onRetry,
+                  retryLabel: L10n.get("gigs_retry"),
+                  padding: const EdgeInsets.all(24),
                 ),
               ),
             );
