@@ -1,8 +1,12 @@
 import "dart:async";
 
+import "package:dio/dio.dart";
 import "package:firebase_auth/firebase_auth.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:telegram_login/telegram_login.dart";
+import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 // import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
@@ -11,11 +15,14 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/telegram_native_login_service.dart";
 // import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/logout_service.dart"
     show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
@@ -25,6 +32,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -106,6 +114,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _cachedUserEmail;
   bool _achievementCheckScheduled = false;
   DateTime? _lastAchievementCheckTime;
+  bool? _telegramLinked;
+  bool _isLinkingTelegram = false;
   // AI allowance profile tile (hidden; restore with imports + _refreshListingAiQuota)
   // ListingAiQuotaSnapshot? _listingAiQuota;
   // bool _listingAiQuotaLoading = false;
@@ -115,7 +125,154 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
     _loadProfileScreenLocalSnapshot();
+    unawaited(_refreshTelegramLinkedStatus());
+    _registerTelegramBindDeepLinkListener();
+    if (kIsWeb) {
+      final webBind = DeepLinkService.tryParseTelegramBindFromCurrentLocation();
+      if (webBind != null) {
+        clearTelegramOAuthQueryFromBrowserUrl();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            unawaited(_handleTelegramBindDeepLink(webBind));
+          }
+        });
+      }
+    }
     // unawaited(_refreshListingAiQuota());
+  }
+
+  @override
+  void dispose() {
+    getIt<DeepLinkService>().onTelegramBindLink = null;
+    super.dispose();
+  }
+
+  void _registerTelegramBindDeepLinkListener() {
+    getIt<DeepLinkService>().onTelegramBindLink = (link) {
+      if (!mounted) return;
+      unawaited(_handleTelegramBindDeepLink(link));
+    };
+  }
+
+  Future<void> _refreshTelegramLinkedStatus() async {
+    if (!AuthenticationState().isAuthenticated) return;
+    try {
+      final me = await getIt<IAuthService>().fetchCurrentUser();
+      if (!mounted) return;
+      final telegramId = me["telegram_id"];
+      setState(() {
+        _telegramLinked =
+            telegramId is String ? telegramId.trim().isNotEmpty : telegramId != null;
+        if (_telegramLinked == false && _expandedSectionIndex == null) {
+          _expandedSectionIndex = 0;
+        }
+      });
+    } catch (e) {
+      logger.d("Failed to load Telegram link status: $e");
+    }
+  }
+
+  Future<void> _handleTelegramBindDeepLink(TelegramBindDeepLink link) async {
+    if (link.isError) {
+      ToastTheme.showWarning(
+        context,
+        message: _telegramBindErrorMessage(link.errorMessage ?? "unknown"),
+      );
+      return;
+    }
+    setState(() => _telegramLinked = true);
+    context.read<CurrentUserProfileBloc>().add(
+          const CurrentUserProfileEvent.fetchProfile(),
+        );
+    ToastTheme.showSuccess(
+      context,
+      message: L10n.get("telegram_linked_success"),
+    );
+  }
+
+  String _telegramBindErrorMessage(String code) {
+    switch (code) {
+      case "telegram_already_linked":
+        return L10n.get("telegram_already_linked");
+      case "telegram_account_in_use":
+        return L10n.get("telegram_account_in_use");
+      default:
+        return L10n.get("telegram_link_failed")
+            .replaceAll("{error}", code);
+    }
+  }
+
+  Future<void> _linkTelegramAccount() async {
+    if (_isLinkingTelegram || !mounted) return;
+    setState(() => _isLinkingTelegram = true);
+    try {
+      if (!kIsWeb && TelegramNativeLoginService.instance.isSupported) {
+        final idToken = await TelegramNativeLoginService.instance.login();
+        if (!mounted) return;
+        if (idToken == null) return;
+        await getIt<IAuthService>().telegramBind(idToken: idToken);
+        if (!mounted) return;
+        setState(() => _telegramLinked = true);
+        context.read<CurrentUserProfileBloc>().add(
+              const CurrentUserProfileEvent.fetchProfile(),
+            );
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("telegram_linked_success"),
+        );
+        return;
+      }
+
+      final url = await getIt<IAuthService>().fetchTelegramOAuthBindAuthorizationUrl(
+        languageCode: LanguageState().currentLanguage,
+        returnTo: telegramOAuthWebReturnTo(),
+      );
+      final uri = Uri.parse(url);
+      final ok = kIsWeb
+          ? await launchUrl(uri, webOnlyWindowName: "_self")
+          : await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      if (!ok) {
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("could_not_open_telegram"),
+        );
+        return;
+      }
+      if (!kIsWeb) {
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("telegram_login_continue_in_browser"),
+        );
+      }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final code = e.response?.data is Map
+          ? (e.response!.data as Map)["error"]?.toString()
+          : null;
+      ToastTheme.showWarning(
+        context,
+        message: _telegramBindErrorMessage(code ?? ErrorMessageHelper.sanitizeErrorMessage(e)),
+      );
+    } on TelegramLoginError catch (e) {
+      if (!mounted || e.code == TelegramLoginErrorCode.cancelled) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_link_failed")
+            .replaceAll("{error}", e.message ?? e.code.name),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_link_failed")
+            .replaceAll("{error}", ErrorMessageHelper.sanitizeErrorMessage(e)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLinkingTelegram = false);
+      }
+    }
   }
 
   // Future<void> _refreshListingAiQuota() async {
@@ -536,6 +693,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
                 getLocalizedRegionName: _getLocalizedRegionName,
                 getLocalizedUniversityName: _getLocalizedUniversityName,
+                telegramLinked: _telegramLinked,
+                isLinkingTelegram: _isLinkingTelegram,
+                onLinkTelegram: _telegramLinked == false ? _linkTelegramAccount : null,
               ),
               const SizedBox(height: 24),
               ProfileListingsSection(

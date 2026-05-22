@@ -1483,6 +1483,13 @@ class AppStrings {
       //                            Review Guideline 4.8 alongside Google) =====
       "sign_in_with_apple": "Sign in with Apple",
       "sign_in_with_telegram": "Sign In with Telegram",
+      "link_telegram": "Link Telegram",
+      "telegram_account_linked": "Telegram account linked",
+      "telegram_linked_success": "Telegram linked to your account",
+      "telegram_already_linked": "Telegram is already linked to this account",
+      "telegram_account_in_use":
+          "This Telegram account is already linked to another UyDosh account",
+      "telegram_link_failed": "Could not link Telegram: {error}",
       "telegram_login_continue_in_browser":
           "Finish signing in in the browser, then return here.",
       "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
@@ -3046,6 +3053,13 @@ class AppStrings {
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Войти через Apple",
       "sign_in_with_telegram": "Войти через Telegram",
+      "link_telegram": "Привязать Telegram",
+      "telegram_account_linked": "Telegram привязан",
+      "telegram_linked_success": "Telegram привязан к вашему аккаунту",
+      "telegram_already_linked": "Telegram уже привязан к этому аккаунту",
+      "telegram_account_in_use":
+          "Этот Telegram уже привязан к другому аккаунту UyDosh",
+      "telegram_link_failed": "Не удалось привязать Telegram: {error}",
       "telegram_login_continue_in_browser":
           "Завершите вход в браузере, затем вернитесь в приложение.",
       "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
@@ -4617,6 +4631,13 @@ class AppStrings {
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Apple orqali kirish",
       "sign_in_with_telegram": "Telegram orqali kirish",
+      "link_telegram": "Telegramni ulash",
+      "telegram_account_linked": "Telegram hisobi ulangan",
+      "telegram_linked_success": "Telegram hisobingizga ulandi",
+      "telegram_already_linked": "Telegram allaqachon ushbu hisobga ulangan",
+      "telegram_account_in_use":
+          "Bu Telegram boshqa UyDosh hisobiga ulangan",
+      "telegram_link_failed": "Telegramni ulab bo'lmadi: {error}",
       "telegram_login_continue_in_browser":
           "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
       "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",

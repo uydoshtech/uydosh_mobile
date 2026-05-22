@@ -15,6 +15,9 @@ class LogConfig {
 
   AppLogLevel logLevel = _getDefaultLogLevel();
 
+  /// Trace level for presentation-layer diagnostics (address suggest, etc.).
+  AppLogLevel uiUxLogLevel = _getDefaultUiUxLogLevel();
+
   bool enableColors = true;
   bool enableEmojis = true;
   bool enableMethodCount = false;
@@ -36,6 +39,13 @@ class LogConfig {
     } else {
       return AppLogLevel.info;
     }
+  }
+
+  static AppLogLevel _getDefaultUiUxLogLevel() {
+    if (kReleaseMode) {
+      return AppLogLevel.nothing;
+    }
+    return AppLogLevel.verbose;
   }
 
   void setProductionMode() {
@@ -64,6 +74,7 @@ class LogConfig {
 
   void setConsoleVerbose() {
     logLevel = AppLogLevel.verbose;
+    uiUxLogLevel = AppLogLevel.verbose;
     enableColors = true;
     enableEmojis = true;
     enableMethodCount = true;
@@ -102,6 +113,7 @@ class LogConfig {
     if (!kDebugMode) return;
     debugPrint("=== LOG CONFIGURATION ===");
     debugPrint("Log Level: $logLevel");
+    debugPrint("UI/UX Log Level: $uiUxLogLevel");
     debugPrint("Colors: $enableColors");
     debugPrint("Emojis: $enableEmojis");
     debugPrint("Method Count: $enableMethodCount");

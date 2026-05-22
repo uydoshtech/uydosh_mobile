@@ -150,7 +150,6 @@ class YandexGeosuggestService {
           "backend request uri=$uri text=\"$text\" lang=${_normalizeLang(lang)} "
           "session=${sessionToken.substring(0, 8)}…";
       _logTerminal(requestLine);
-      logger.d("Geosuggest $requestLine");
 
       final response = await oauthApiClient.dio.get<Map<String, dynamic>>(
         uri,
@@ -177,14 +176,10 @@ class YandexGeosuggestService {
         final responseLine =
             "backend response status=$status count=${suggestions.length}";
         _logTerminal(responseLine);
-        logger.d("Geosuggest $responseLine");
         return YandexGeosuggestFetchResult(suggestions: suggestions);
       }
 
-      final message = _messageForHttpStatus(
-        status,
-        configuredOnServer: status == 503,
-      );
+      final message = _messageFromBackendBody(data, status);
       _logTerminal("$message body=$data");
       logger.w("Geosuggest backend failed ← status=$status body=$data");
       return YandexGeosuggestFetchResult(
@@ -206,7 +201,12 @@ class YandexGeosuggestService {
         return null;
       }
 
-      final message = _messageForDioException(e);
+      final message = _messageFromBackendBody(
+        e.response?.data is Map<String, dynamic>
+            ? e.response!.data as Map<String, dynamic>
+            : null,
+        status,
+      );
       _logTerminal(message);
       logger.w(
         "Geosuggest backend failed ← status=$status",
@@ -262,7 +262,6 @@ class YandexGeosuggestService {
           "session=${sessionToken.substring(0, 8)}… "
           "key=${_maskApiKey(apiKey)}";
       _logTerminal(logLine);
-      logger.d("Geosuggest $logLine");
 
       final response = await _dio.get<Map<String, dynamic>>(
         directEndpoint,
@@ -275,9 +274,8 @@ class YandexGeosuggestService {
         final responseLine =
             "direct response status=$status count=${suggestions.length}";
         _logTerminal(responseLine);
-        logger.d("Geosuggest $responseLine");
         if (kDebugMode && response.data != null) {
-          logger.d("Geosuggest raw: ${jsonEncode(response.data)}");
+          _logTerminal("raw: ${jsonEncode(response.data)}");
         }
         return YandexGeosuggestFetchResult(suggestions: suggestions);
       }
@@ -353,6 +351,31 @@ class YandexGeosuggestService {
     return "Geosuggest failed (HTTP $status)";
   }
 
+  static String _messageFromBackendBody(
+    Map<String, dynamic>? data,
+    int? status,
+  ) {
+    if (data != null) {
+      final message = data["message"];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+      final error = data["error"];
+      if (error is String && error.trim().isNotEmpty) {
+        return switch (error.trim()) {
+          "geosuggest_not_configured" =>
+            "Geosuggest not configured on server — set YANDEX_GEOSUGGEST_API_KEY.",
+          "geosuggest_forbidden" =>
+            "Yandex rejected the Geosuggest API key — enable the Geosuggest product.",
+          "geosuggest_network_error" =>
+            "Failed to reach Yandex Geosuggest from server.",
+          _ => error.trim(),
+        };
+      }
+    }
+    return _messageForHttpStatus(status);
+  }
+
   static String _messageForDioException(DioException error) {
     final status = error.response?.statusCode;
     if (status == 403) {
@@ -374,9 +397,7 @@ class YandexGeosuggestService {
   }
 
   static void _logTerminal(String message) {
-    if (kDebugMode) {
-      debugPrint("[Geosuggest] $message");
-    }
+    logUiUx(message, tag: "Geosuggest");
   }
 
   static List<YandexGeosuggestSuggestion> parseSuggestions(

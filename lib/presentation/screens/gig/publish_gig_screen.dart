@@ -2285,6 +2285,9 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
   static const double _footerHeight = 22;
   static const double _inlineActionsLeadingInset = 8;
 
+  /// Matches [DescriptionCounterToolbar.stackCounterRightOffset] on create listing.
+  static const double _stackCounterRightOffset = -18;
+
   void _onDictationMeterServerDisabled() {
     if (ClientListingDictationMeterConfig.dictationMeterDisabled.value) {
       _dictationMeter.end();
@@ -2448,14 +2451,22 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 8),
               child: SizedBox(
-                height: _footerHeight,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildActionsRow(slot),
-                    const Spacer(),
-                    _buildCounterColumn(color),
-                  ],
+                width: double.infinity,
+                child: SizedBox(
+                  height: _footerHeight,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      _buildActionsRow(slot),
+                      Positioned(
+                        right: _stackCounterRightOffset,
+                        top: 0,
+                        bottom: 0,
+                        child: _buildCounterColumn(color),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

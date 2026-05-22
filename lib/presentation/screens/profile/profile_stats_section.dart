@@ -7,6 +7,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
@@ -18,6 +19,9 @@ class ProfileStatsSection extends StatelessWidget {
     required this.onExpandedSectionChanged,
     required this.getLocalizedRegionName,
     required this.getLocalizedUniversityName,
+    this.telegramLinked,
+    this.isLinkingTelegram = false,
+    this.onLinkTelegram,
     super.key,
   });
 
@@ -28,6 +32,11 @@ class ProfileStatsSection extends StatelessWidget {
   final String Function(UserProfileRegion region) getLocalizedRegionName;
   final String Function(UserProfileUniversity university)
       getLocalizedUniversityName;
+
+  /// `null` while loading identity; `true` when Telegram auth is linked.
+  final bool? telegramLinked;
+  final bool isLinkingTelegram;
+  final VoidCallback? onLinkTelegram;
 
   bool _hasNewProfileFields(UserProfile profile) {
     return profile.employed != null ||
@@ -178,6 +187,14 @@ class ProfileStatsSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 24),
                             _buildTelegramField(context),
+                            if (telegramLinked == false &&
+                                onLinkTelegram != null) ...[
+                              const SizedBox(height: 12),
+                              TelegramSignInBrandedButton(
+                                label: L10n.get("link_telegram"),
+                                onPressed: isLinkingTelegram ? null : onLinkTelegram,
+                              ),
+                            ],
                             if (profile.rating != null) ...[
                               const SizedBox(height: 24),
                               _buildRatingField(context),
@@ -472,6 +489,7 @@ class ProfileStatsSection extends StatelessWidget {
   Widget _buildTelegramField(BuildContext context) {
     final hasTelegram =
         profile.telegram != null && profile.telegram!.isNotEmpty;
+    final linked = telegramLinked == true;
 
     return InkWell(
       onTap: hasTelegram
@@ -511,6 +529,17 @@ class ProfileStatsSection extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (linked)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        L10n.get("telegram_account_linked"),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

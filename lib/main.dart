@@ -4,7 +4,7 @@ import "dart:ui" show PlatformDispatcher;
 
 import "package:firebase_core/firebase_core.dart";
 import "package:firebase_crashlytics/firebase_crashlytics.dart";
-import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
+import "package:flutter/foundation.dart" show kDebugMode, kIsWeb, kReleaseMode;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -166,6 +166,12 @@ void main() async {
       LogConfig.instance.setConsoleVerbose();
     }
     LogConfig.instance.printConfig();
+    if (!kReleaseMode && LogConfig.instance.uiUxLogLevel != AppLogLevel.nothing) {
+      logUiUx(
+        "trace enabled — open an address field and type 2+ characters",
+        tag: "UI/UX",
+      );
+    }
 
     // Dependency injection must be configured before any startup tasks that use GetIt
     // (e.g. server-backed client config fetches).

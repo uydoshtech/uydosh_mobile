@@ -1,6 +1,6 @@
 import "dart:async";
+import "dart:math" show max, min;
 
-import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -11,6 +11,10 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 
 /// Plate-style address field with Yandex Geosuggest autocomplete.
+///
+/// Suggestions float in an overlay anchored to the field. When the soft
+/// keyboard would cover a below-field panel, suggestions appear above instead,
+/// clamped to the visible screen area.
 class YandexAddressSuggestField extends StatefulWidget {
   const YandexAddressSuggestField({
     required this.hintText,
@@ -40,11 +44,20 @@ class YandexAddressSuggestField extends StatefulWidget {
       _YandexAddressSuggestFieldState();
 }
 
-class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
+class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField>
+    with WidgetsBindingObserver {
   static const _debounceDuration = Duration(milliseconds: 350);
   static const _minQueryLength = 2;
+  static const _panelGap = 6.0;
+  static const _panelPreferredMaxHeight = 220.0;
+  static const _panelMinHeight = 96.0;
+  static const _screenEdgePadding = 8.0;
+  static const _keyboardDoneBarHeight = 44.0;
 
   final FocusNode _focusNode = FocusNode();
+  final GlobalKey _fieldAnchorKey = GlobalKey();
+  final OverlayPortalController _overlayController = OverlayPortalController();
+
   late final YandexGeosuggestService _geosuggestService;
   late final String _sessionToken;
 
@@ -52,20 +65,29 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
   int _requestGeneration = 0;
   bool _loading = false;
   bool _suppressNextFetch = false;
-  String? _fetchErrorMessage;
+  bool _showSuggestionsAbove = true;
+  double _panelHeight = _panelPreferredMaxHeight;
+  Rect? _fieldRect;
   List<YandexGeosuggestSuggestion> _suggestions = const [];
 
   @override
   void initState() {
     super.initState();
-    _geosuggestService = widget.geosuggestService ?? getIt<YandexGeosuggestService>();
+    WidgetsBinding.instance.addObserver(this);
+    _geosuggestService =
+        widget.geosuggestService ?? getIt<YandexGeosuggestService>();
     _sessionToken = YandexGeosuggestService.newSessionToken();
     _focusNode.addListener(_onFocusChanged);
     widget.controller.addListener(_onControllerTextChanged);
   }
 
+  void _onControllerTextChanged() {
+    _handleQueryChange(widget.controller.text);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _debounceTimer?.cancel();
     widget.controller.removeListener(_onControllerTextChanged);
     _focusNode
@@ -74,47 +96,190 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
     super.dispose();
   }
 
-  void _onControllerTextChanged() {
-    _onTextChanged(widget.controller.text);
+  @override
+  void didChangeMetrics() {
+    _updateSuggestionsPlacement();
+  }
+
+  bool get _shouldShowSuggestions {
+    final query = widget.controller.text.trim();
+    if (query.length < _minQueryLength) {
+      return false;
+    }
+    return widget.enabled &&
+        _focusNode.hasFocus &&
+        (_loading || _suggestions.isNotEmpty);
+  }
+
+  void _resetSuggestions({bool invalidateInFlight = true}) {
+    _debounceTimer?.cancel();
+    if (invalidateInFlight) {
+      _requestGeneration++;
+    }
+    if (_loading || _suggestions.isNotEmpty) {
+      setState(() {
+        _loading = false;
+        _suggestions = const [];
+      });
+    }
+    _applyOverlayVisibility(immediate: true);
+  }
+
+  void _applyOverlayVisibility({bool immediate = false}) {
+    void update() {
+      if (!mounted) {
+        return;
+      }
+      if (_shouldShowSuggestions) {
+        _updateSuggestionsPlacement();
+      }
+      final shouldShow =
+          _shouldShowSuggestions && _fieldRect != null && _panelHeight >= 48;
+      if (shouldShow && !_overlayController.isShowing) {
+        _overlayController.show();
+      } else if (!shouldShow && _overlayController.isShowing) {
+        _overlayController.hide();
+      }
+    }
+
+    if (immediate) {
+      update();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_shouldShowSuggestions) {
+          return;
+        }
+        _updateSuggestionsPlacement();
+      });
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => update());
   }
 
   void _onFocusChanged() {
-    if (!_focusNode.hasFocus) {
-      Future<void>.delayed(const Duration(milliseconds: 180), () {
-        if (!mounted || _focusNode.hasFocus) {
+    if (_focusNode.hasFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_focusNode.hasFocus) {
           return;
         }
-        setState(() {
-          _suggestions = const [];
-          _loading = false;
-        });
+        _scrollFieldIntoView();
+        _updateSuggestionsPlacement();
+        _applyOverlayVisibility();
+      });
+      return;
+    }
+
+    Future<void>.delayed(const Duration(milliseconds: 180), () {
+      if (!mounted || _focusNode.hasFocus) {
+        return;
+      }
+      setState(() {
+        _suggestions = const [];
+        _loading = false;
+      });
+      _applyOverlayVisibility(immediate: true);
+    });
+  }
+
+  void _scrollFieldIntoView() {
+    final context = _fieldAnchorKey.currentContext;
+    if (context == null) {
+      return;
+    }
+    Scrollable.ensureVisible(
+      context,
+      alignment: 0.35,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Rect? _measureFieldRect() {
+    final renderBox =
+        _fieldAnchorKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.hasSize) {
+      return null;
+    }
+    return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  }
+
+  void _updateSuggestionsPlacement() {
+    if (!mounted) {
+      return;
+    }
+
+    final fieldRect = _measureFieldRect();
+    if (fieldRect == null) {
+      return;
+    }
+
+    final mediaQuery = MediaQuery.of(context);
+    final viewInsets =
+        MediaQueryData.fromView(View.of(context)).viewInsets.bottom;
+    final safeTop = mediaQuery.padding.top;
+    final screenHeight = mediaQuery.size.height;
+    final keyboardInset = viewInsets;
+    final doneBarInset =
+        keyboardInset > 0 ? _keyboardDoneBarHeight : 0.0;
+
+    final spaceAbove =
+        fieldRect.top - safeTop - _screenEdgePadding - _panelGap;
+    final spaceBelow = screenHeight -
+        fieldRect.bottom -
+        keyboardInset -
+        doneBarInset -
+        _screenEdgePadding -
+        _panelGap;
+
+    final canShowAbove = spaceAbove >= _panelMinHeight;
+    final canShowBelow = spaceBelow >= _panelMinHeight;
+
+    var showAbove = false;
+    if (keyboardInset > 0 && canShowAbove) {
+      showAbove = true;
+    } else if (canShowBelow && (!canShowAbove || spaceBelow >= spaceAbove)) {
+      showAbove = false;
+    } else if (canShowAbove) {
+      showAbove = true;
+    } else {
+      showAbove = spaceAbove >= spaceBelow;
+    }
+
+    final availableSpace = max(0.0, showAbove ? spaceAbove : spaceBelow);
+    final panelHeight = min(
+      _panelPreferredMaxHeight,
+      max(48.0, availableSpace),
+    );
+
+    if (_fieldRect != fieldRect ||
+        _showSuggestionsAbove != showAbove ||
+        _panelHeight != panelHeight) {
+      setState(() {
+        _fieldRect = fieldRect;
+        _showSuggestionsAbove = showAbove;
+        _panelHeight = panelHeight;
       });
     }
   }
 
-  void _onTextChanged(String value) {
+  void _handleQueryChange(String value) {
     widget.onChanged?.call(value);
 
     if (_suppressNextFetch) {
       _suppressNextFetch = false;
+      _resetSuggestions(invalidateInFlight: true);
       return;
     }
 
     _debounceTimer?.cancel();
     final trimmed = value.trim();
     if (trimmed.length < _minQueryLength) {
-      setState(() {
-        _loading = false;
-        _fetchErrorMessage = null;
-        _suggestions = const [];
-      });
+      _resetSuggestions(invalidateInFlight: true);
       return;
     }
 
-    setState(() {
-      _loading = true;
-      _fetchErrorMessage = null;
-    });
+    setState(() => _loading = true);
+    _applyOverlayVisibility(immediate: true);
     _debounceTimer = Timer(_debounceDuration, () => _fetchSuggestions(trimmed));
   }
 
@@ -146,56 +311,12 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
     setState(() {
       _loading = false;
       _suggestions = result.suggestions;
-      // Suggestions are best-effort; avoid surfacing raw API errors in the UI.
-      _fetchErrorMessage =
-          kDebugMode && result.suggestions.isEmpty
-              ? _debugErrorMessage(result)
-              : null;
     });
+    _applyOverlayVisibility(immediate: true);
   }
 
   void _logUi(String message) {
-    if (!kDebugMode) {
-      return;
-    }
-    debugPrint("[AddressSuggest] $message");
-    logger.d("[AddressSuggest] $message");
-  }
-
-  String? _debugErrorMessage(YandexGeosuggestFetchResult result) {
-    final parts = <String>[
-      if (result.httpStatus != null) "HTTP ${result.httpStatus}",
-      if (result.isConnectionError) "connectionError",
-      if (result.errorMessage != null && result.errorMessage!.isNotEmpty)
-        result.errorMessage!,
-    ];
-    if (parts.isNotEmpty) {
-      return parts.join(" · ");
-    }
-    return _userFacingError(result);
-  }
-
-  String? _userFacingError(YandexGeosuggestFetchResult result) {
-    final message = result.errorMessage;
-    if (message == null || message.isEmpty) {
-      return null;
-    }
-    if (result.isConnectionError) {
-      return L10n.get(
-        "address_suggest_connection_error",
-        fallback: "Could not load address suggestions. Check your connection.",
-      );
-    }
-    if (result.isAuthError || result.isConfiguredError) {
-      return L10n.get(
-        "address_suggest_unavailable",
-        fallback: "Address suggestions are temporarily unavailable.",
-      );
-    }
-    return L10n.get(
-      "address_suggest_failed",
-      fallback: "Could not load address suggestions.",
-    );
+    logUiUx(message, tag: "AddressSuggest");
   }
 
   void _selectSuggestion(YandexGeosuggestSuggestion suggestion) {
@@ -210,23 +331,49 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
     widget.onChanged?.call(suggestion.displayText);
     setState(() {
       _loading = false;
-      _fetchErrorMessage = null;
       _suggestions = const [];
     });
+    _applyOverlayVisibility(immediate: true);
     _focusNode.unfocus();
+  }
+
+  Widget _buildSuggestionsOverlay(BuildContext context) {
+    final fieldRect = _fieldRect;
+    if (fieldRect == null) {
+      return const SizedBox.shrink();
+    }
+
+    final top = _showSuggestionsAbove
+        ? fieldRect.top - _panelGap - _panelHeight
+        : fieldRect.bottom + _panelGap;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned(
+          left: fieldRect.left,
+          top: top,
+          width: fieldRect.width,
+          height: _panelHeight,
+          child: _SuggestionsPanel(
+            loading: _loading,
+            suggestions: _suggestions,
+            onSelected: _selectSuggestion,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final showSuggestions =
-        widget.enabled &&
-        _focusNode.hasFocus &&
-        (_loading || _suggestions.isNotEmpty || _fetchErrorMessage != null);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        UydoshPlateTextFormField(
+    return OverlayPortal(
+      controller: _overlayController,
+      overlayLocation: OverlayChildLocation.rootOverlay,
+      overlayChildBuilder: _buildSuggestionsOverlay,
+      child: KeyedSubtree(
+        key: _fieldAnchorKey,
+        child: UydoshPlateTextFormField(
           hintText: widget.hintText,
           controller: widget.controller,
           focusNode: _focusNode,
@@ -235,18 +382,8 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
           dirtyOutlineColor: widget.dirtyOutlineColor,
           decoration: widget.decoration,
           textInputAction: TextInputAction.done,
-          onChanged: _onTextChanged,
         ),
-        if (showSuggestions) ...[
-          const SizedBox(height: 6),
-          _SuggestionsPanel(
-            loading: _loading,
-            suggestions: _suggestions,
-            errorMessage: _fetchErrorMessage,
-            onSelected: _selectSuggestion,
-          ),
-        ],
-      ],
+      ),
     );
   }
 }
@@ -256,13 +393,11 @@ class _SuggestionsPanel extends StatelessWidget {
     required this.loading,
     required this.suggestions,
     required this.onSelected,
-    this.errorMessage,
   });
 
   final bool loading;
   final List<YandexGeosuggestSuggestion> suggestions;
   final ValueChanged<YandexGeosuggestSuggestion> onSelected;
-  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -274,36 +409,22 @@ class _SuggestionsPanel extends StatelessWidget {
       alpha: isDark ? 0.75 : 0.85,
     );
 
-    return WheelPickerPlateContainer(
-      theme: Theme.of(context),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 220),
-        child: loading && suggestions.isEmpty && errorMessage == null
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(
-                  child: SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-              )
-            : errorMessage != null && suggestions.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Text(
-                  errorMessage!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: scheme.error.withValues(alpha: 0.9),
-                  ),
+    return Material(
+      type: MaterialType.transparency,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.25),
+      child: WheelPickerPlateContainer(
+        theme: Theme.of(context),
+        clipBehavior: Clip.antiAlias,
+        child: loading && suggestions.isEmpty
+            ? const Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             : ListView.separated(
-                shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: suggestions.length,
                 separatorBuilder: (_, __) => Divider(

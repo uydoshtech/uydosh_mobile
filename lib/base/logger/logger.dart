@@ -20,6 +20,48 @@ import "package:uy_dosh/base/logger/log_config.dart";
 ///   the right log entry.
 final logger = _AppLogger();
 
+/// Presentation-layer trace logging (address suggest lifecycle, etc.).
+///
+/// Respects [LogConfig.uiUxLogLevel]; disabled in release builds.
+///
+/// Console output uses [print] (not [developer.log]) so lines appear in the
+/// `flutter run` terminal and IDE Debug Console — `developer.log` is
+/// DevTools-only and is easy to miss when debugging UI flows.
+void logUiUx(String message, {String tag = "UI"}) {
+  final config = LogConfig.instance;
+  final level = config.uiUxLogLevel;
+  if (kReleaseMode || level == AppLogLevel.nothing) {
+    return;
+  }
+
+  final line = tag.isEmpty ? message : "[$tag] $message";
+
+  if (config.enableConsoleOutput) {
+    print(line);
+  }
+
+  if (!kDebugMode) {
+    return;
+  }
+
+  switch (level) {
+    case AppLogLevel.verbose:
+      logger.v(line);
+    case AppLogLevel.debug:
+      logger.d(line);
+    case AppLogLevel.info:
+      logger.i(line);
+    case AppLogLevel.warning:
+      logger.w(line);
+    case AppLogLevel.error:
+      logger.e(line);
+    case AppLogLevel.fatal:
+      logger.f(line);
+    case AppLogLevel.nothing:
+      break;
+  }
+}
+
 class _AppLogger {
   /// Verbose / trace — debug builds only.
   void v(dynamic message, {Object? error, StackTrace? stackTrace}) {

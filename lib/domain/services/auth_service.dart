@@ -48,6 +48,18 @@ abstract class IAuthService {
   /// Telegram native SDK / OIDC: POST `/users/telegram-auth` with JWT id_token.
   Future<Map<String, dynamic>> telegramAuthWithIdToken(String idToken);
 
+  /// GET `/users/me` — identity fields for the authenticated user.
+  Future<Map<String, dynamic>> fetchCurrentUser();
+
+  /// POST `/users/telegram-bind` — link Telegram to the current account.
+  Future<Map<String, dynamic>> telegramBind({required String idToken});
+
+  /// Authenticated Telegram OAuth URL for linking while logged in (browser fallback).
+  Future<String> fetchTelegramOAuthBindAuthorizationUrl({
+    String? languageCode,
+    String? returnTo,
+  });
+
   Future<bool> refreshToken();
   Future<void> logout();
 }
@@ -255,6 +267,65 @@ class AuthService implements IAuthService {
       );
     } catch (e) {
       throw Exception("Telegram auth failed: $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> fetchCurrentUser() async {
+    try {
+      return await _oauthApiClient.get<Map<String, dynamic>>(
+        "/users/me",
+        (json) => json as Map<String, dynamic>,
+      );
+    } catch (e) {
+      throw Exception("fetch current user failed: $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> telegramBind({required String idToken}) async {
+    try {
+      final token = idToken.trim();
+      if (token.isEmpty) {
+        throw Exception("Telegram id_token is empty");
+      }
+      return await _oauthApiClient.post<Map<String, dynamic>, _TelegramIdTokenRequest>(
+        "/users/telegram-bind",
+        (json) => json as Map<String, dynamic>,
+        data: _TelegramIdTokenRequest(idToken: token),
+      );
+    } catch (e) {
+      throw Exception("Telegram bind failed: $e");
+    }
+  }
+
+  @override
+  Future<String> fetchTelegramOAuthBindAuthorizationUrl({
+    String? languageCode,
+    String? returnTo,
+  }) async {
+    try {
+      final lang = languageCode?.trim();
+      final returnToTrimmed = returnTo?.trim();
+      final queryParameters = <String, String>{};
+      if (lang != null && lang.isNotEmpty) {
+        queryParameters["lang"] = lang;
+      }
+      if (returnToTrimmed != null && returnToTrimmed.isNotEmpty) {
+        queryParameters["return_to"] = returnToTrimmed;
+      }
+      final map = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/users/me/telegram-oauth/start",
+        (json) => json as Map<String, dynamic>,
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      );
+      final url = map["authorizationUrl"];
+      if (url is! String || url.isEmpty) {
+        throw Exception("Telegram OAuth URL missing");
+      }
+      return url;
+    } catch (e) {
+      throw Exception("Telegram OAuth bind start failed: $e");
     }
   }
 

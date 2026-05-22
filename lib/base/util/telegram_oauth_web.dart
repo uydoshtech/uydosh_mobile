@@ -16,7 +16,9 @@ String? telegramOAuthWebReturnTo() {
 void clearTelegramOAuthQueryFromBrowserUrl() {
   final base = Uri.parse(html.window.location.href);
   if (!base.queryParameters.containsKey("session_token") &&
-      !base.queryParameters.containsKey("error")) {
+      !base.queryParameters.containsKey("error") &&
+      !base.queryParameters.containsKey("telegram_bind") &&
+      !base.queryParameters.containsKey("telegram_bind_error")) {
     return;
   }
   final cleaned = Uri(

@@ -9,6 +9,19 @@ import "package:uy_dosh/base/constants/app_domains.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 
+/// Payload for `uydosh://auth/telegram-bind` after linking Telegram in the browser.
+class TelegramBindDeepLink {
+  const TelegramBindDeepLink.ok({this.telegramUsername})
+    : errorMessage = null;
+
+  const TelegramBindDeepLink.error(this.errorMessage) : telegramUsername = null;
+
+  final String? errorMessage;
+  final String? telegramUsername;
+
+  bool get isError => errorMessage != null && errorMessage!.isNotEmpty;
+}
+
 /// Payload for `uydosh://auth/telegram` after Telegram OAuth completes in the browser.
 class TelegramAuthDeepLink {
   const TelegramAuthDeepLink.ok({
@@ -44,10 +57,53 @@ class DeepLinkService {
   /// Optional listener for Telegram Login (browser OAuth → app deep link).
   void Function(TelegramAuthDeepLink link)? onTelegramAuthLink;
 
+  /// Optional listener for Telegram account linking (browser OAuth → app deep link).
+  void Function(TelegramBindDeepLink link)? onTelegramBindLink;
+
   static const String _scheme = "uydosh";
   static const String _host = "listing";
   static const String _authHost = "auth";
   static const String _telegramSegment = "telegram";
+  static const String _telegramBindSegment = "telegram-bind";
+
+  /// Parses `uydosh://auth/telegram-bind?...` after browser OAuth bind completes.
+  static TelegramBindDeepLink? tryParseTelegramBind(Uri uri) {
+    if (uri.scheme != _scheme || uri.host != _authHost) return null;
+    if (uri.pathSegments.length != 1 ||
+        uri.pathSegments.first != _telegramBindSegment) {
+      return null;
+    }
+    return _parseTelegramBindQuery(uri.queryParameters);
+  }
+
+  static TelegramBindDeepLink? tryParseTelegramBindFromCurrentLocation() {
+    if (!kIsWeb) return null;
+    return _parseTelegramBindQuery(Uri.base.queryParameters);
+  }
+
+  static TelegramBindDeepLink? _parseTelegramBindQuery(
+    Map<String, String> queryParameters,
+  ) {
+    final bindError = queryParameters["telegram_bind_error"];
+    if (bindError != null && bindError.isNotEmpty) {
+      return TelegramBindDeepLink.error(bindError);
+    }
+    final err = queryParameters["error"];
+    if (err != null && err.isNotEmpty) {
+      return TelegramBindDeepLink.error(err);
+    }
+    if (queryParameters["telegram_bind"] == "success" ||
+        queryParameters["success"] == "1") {
+      final username = queryParameters["telegram_username"] ??
+          queryParameters["telegram"];
+      return TelegramBindDeepLink.ok(
+        telegramUsername: username?.trim().isNotEmpty == true
+            ? username!.trim()
+            : null,
+      );
+    }
+    return null;
+  }
 
   /// Parses `uydosh://auth/telegram?...` returned after OIDC callback.
   static TelegramAuthDeepLink? tryParseTelegramAuth(Uri uri) {
@@ -129,6 +185,11 @@ class DeepLinkService {
 
     // Handle app resumed from background with link
     _linkSubscription = appLinks.uriLinkStream.listen((uri) {
+      final tgBind = tryParseTelegramBind(uri);
+      if (tgBind != null) {
+        onTelegramBindLink?.call(tgBind);
+        return;
+      }
       final tg = tryParseTelegramAuth(uri);
       if (tg != null) {
         onTelegramAuthLink?.call(tg);
