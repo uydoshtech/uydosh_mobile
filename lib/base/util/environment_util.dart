@@ -79,7 +79,7 @@ abstract class EnvironmentUtil {
   /// Remote Config key `yandex_geosuggest_api_key`.
   static const compileTimeYandexGeosuggestApiKey = String.fromEnvironment(
     "YANDEX_GEOSUGGEST_API_KEY",
-    defaultValue: "",
+    defaultValue: "327df59e-b900-4c2b-ab91-3b46e864ee9d",
   );
 
   /// Compile-time default for the primary Google Gemini API key. Last-resort

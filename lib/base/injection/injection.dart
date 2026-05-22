@@ -71,7 +71,7 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<YandexGeosuggestService>(
-    YandexGeosuggestService.new,
+    () => YandexGeosuggestService(oauthApiClient: getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<DescriptionDictationService>(

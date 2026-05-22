@@ -1025,6 +1025,8 @@
   "publication_date": "Nashr sanasi:",
   "sign_in_with_google": "Google orqali kirish",
   "sign_in_with_google_or_apple": "Google yoki Apple orqali kirish",
+  "sign_in_oauth_prompt": "Davom etish uchun kiring",
+  "sign_in_oauth_continue": "Davom etish",
   "auth_wizard_oauth_step_header": "UyDosh ga kirish",
   "successfully_logged_in": "Muvaffaqiyatli tizimga kirdingiz",
   "signing_in": "Tizimga kirilmoqda...",

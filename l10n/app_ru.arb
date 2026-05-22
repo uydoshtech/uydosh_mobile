@@ -1017,6 +1017,8 @@
   "publication_date": "Опубликовано:",
   "sign_in_with_google": "Войти через Google",
   "sign_in_with_google_or_apple": "Войти через Google или Apple",
+  "sign_in_oauth_prompt": "Войдите, чтобы продолжить",
+  "sign_in_oauth_continue": "Продолжить",
   "auth_wizard_oauth_step_header": "Войти в UyDosh",
   "successfully_logged_in": "Вы успешно вошли",
   "signing_in": "Вход в систему...",

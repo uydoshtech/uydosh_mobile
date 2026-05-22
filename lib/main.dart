@@ -162,6 +162,9 @@ void main() async {
     }
 
     // Configure logging based on environment
+    if (kDebugMode) {
+      LogConfig.instance.setConsoleVerbose();
+    }
     LogConfig.instance.printConfig();
 
     // Dependency injection must be configured before any startup tasks that use GetIt

@@ -2,16 +2,14 @@ import "package:flutter/foundation.dart" show defaultTargetPlatform;
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 
-/// Pill-shaped Telegram sign-in control matching the official
-/// [Telegram Login](https://core.telegram.org/bots/telegram-login) rounded
-/// widget: flat `#54A9EB` background, white logo + label.
+/// Pill-shaped Telegram sign-in control: flat `#4DA3E9` background,
+/// white logo + label.
 ///
 /// [label] should come from localization (e.g. `sign_in_with_telegram`).
 /// Layout mirrors [GoogleSignInBrandedButton] / `SignInWithAppleButton`.
 const double _kTelegramSignInButtonHeight = 44;
 
-/// Official rounded Telegram Login widget background.
-const Color _kTelegramSignInBlue = Color(0xFF54A9EB);
+const Color _kTelegramSignInBlue = Color(0xFF4DA3E9);
 
 const double _kOauthIconSlotScale = 28 / 44;
 

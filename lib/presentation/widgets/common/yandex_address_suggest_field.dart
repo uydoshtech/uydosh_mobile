@@ -1,8 +1,10 @@
 import "dart:async";
 
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/yandex_geosuggest_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -118,22 +120,82 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField> {
 
   Future<void> _fetchSuggestions(String query) async {
     final generation = ++_requestGeneration;
+    final lang = widget.lang ?? L10n.currentLanguage;
+    _logUi(
+      "fetch start gen=$generation query=\"$query\" lang=$lang "
+      "session=${_sessionToken.substring(0, 8)}…",
+    );
+
     final result = await _geosuggestService.fetch(
       text: query,
       sessionToken: _sessionToken,
-      lang: widget.lang ?? L10n.currentLanguage,
+      lang: lang,
     );
 
     if (!mounted || generation != _requestGeneration) {
+      _logUi("fetch stale gen=$generation (current=$_requestGeneration) — ignored");
       return;
     }
+
+    _logUi(
+      "fetch done gen=$generation count=${result.suggestions.length} "
+      "status=${result.httpStatus} connectionError=${result.isConnectionError} "
+      "error=${result.errorMessage ?? "none"}",
+    );
 
     setState(() {
       _loading = false;
       _suggestions = result.suggestions;
+      // Suggestions are best-effort; avoid surfacing raw API errors in the UI.
       _fetchErrorMessage =
-          result.suggestions.isEmpty ? result.errorMessage : null;
+          kDebugMode && result.suggestions.isEmpty
+              ? _debugErrorMessage(result)
+              : null;
     });
+  }
+
+  void _logUi(String message) {
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint("[AddressSuggest] $message");
+    logger.d("[AddressSuggest] $message");
+  }
+
+  String? _debugErrorMessage(YandexGeosuggestFetchResult result) {
+    final parts = <String>[
+      if (result.httpStatus != null) "HTTP ${result.httpStatus}",
+      if (result.isConnectionError) "connectionError",
+      if (result.errorMessage != null && result.errorMessage!.isNotEmpty)
+        result.errorMessage!,
+    ];
+    if (parts.isNotEmpty) {
+      return parts.join(" · ");
+    }
+    return _userFacingError(result);
+  }
+
+  String? _userFacingError(YandexGeosuggestFetchResult result) {
+    final message = result.errorMessage;
+    if (message == null || message.isEmpty) {
+      return null;
+    }
+    if (result.isConnectionError) {
+      return L10n.get(
+        "address_suggest_connection_error",
+        fallback: "Could not load address suggestions. Check your connection.",
+      );
+    }
+    if (result.isAuthError || result.isConfiguredError) {
+      return L10n.get(
+        "address_suggest_unavailable",
+        fallback: "Address suggestions are temporarily unavailable.",
+      );
+    }
+    return L10n.get(
+      "address_suggest_failed",
+      fallback: "Could not load address suggestions.",
+    );
   }
 
   void _selectSuggestion(YandexGeosuggestSuggestion suggestion) {

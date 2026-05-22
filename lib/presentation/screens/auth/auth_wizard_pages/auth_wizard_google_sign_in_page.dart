@@ -106,41 +106,6 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   if (!isGoogleSignedIn) ...[
-                    // Sign in with Apple — App Review Guideline 4.8
-                    // requires this option to be at least as prominent
-                    // as Google when both are offered. The native
-                    // [SignInWithAppleButton] is rendered by the
-                    // package and respects Apple HIG (logo, font,
-                    // localized label). Width/height match the Google
-                    // button below for visual parity.
-                    if (AppleAuthService.isAvailable || kIsWeb) ...[
-                      Center(
-                        child: SizedBox(
-                          width: buttonWidth,
-                          height: 44,
-                          child: siwa.SignInWithAppleButton(
-                            onPressed: kIsWeb
-                                ? () {}
-                                : enabled
-                                    ? () {
-                                        HapticFeedbackUtils.impact();
-                                        onSignInWithApple();
-                                      }
-                                    : () {},
-                            // Always-black variant matches the dark
-                            // Google branded style on light theme; Apple's
-                            // button keeps the same look across themes
-                            // per HIG.
-                            style: siwa.SignInWithAppleButtonStyle.black,
-                            height: 44,
-                            borderRadius: BorderRadius.circular(22),
-                            iconAlignment: siwa.IconAlignment.left,
-                            text: L10n.get("sign_in_with_apple"),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
                     Center(
                       child: SizedBox(
                         width: buttonWidth,
@@ -156,6 +121,30 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (AppleAuthService.isAvailable || kIsWeb) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: SizedBox(
+                          width: buttonWidth,
+                          height: 44,
+                          child: siwa.SignInWithAppleButton(
+                            onPressed: kIsWeb
+                                ? () {}
+                                : enabled
+                                    ? () {
+                                        HapticFeedbackUtils.impact();
+                                        onSignInWithApple();
+                                      }
+                                    : () {},
+                            style: siwa.SignInWithAppleButtonStyle.black,
+                            height: 44,
+                            borderRadius: BorderRadius.circular(22),
+                            iconAlignment: siwa.IconAlignment.left,
+                            text: L10n.get("sign_in_with_apple"),
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Center(
                       child: SizedBox(

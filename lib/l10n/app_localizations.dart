@@ -5111,6 +5111,18 @@ abstract class AppLocalizations {
   /// **'Sign in with Google or Apple'**
   String get sign_in_with_google_or_apple;
 
+  /// No description provided for @sign_in_oauth_prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue'**
+  String get sign_in_oauth_prompt;
+
+  /// No description provided for @sign_in_oauth_continue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get sign_in_oauth_continue;
+
   /// No description provided for @auth_wizard_oauth_step_header.
   ///
   /// In en, this message translates to:

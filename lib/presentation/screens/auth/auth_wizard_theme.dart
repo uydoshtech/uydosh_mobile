@@ -1,8 +1,6 @@
-import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/domain/services/apple_auth_service.dart";
 
 /// Theme-dependent color helpers for auth wizard screens.
 abstract final class AuthWizardTheme {
@@ -106,15 +104,9 @@ abstract final class AuthWizardTheme {
     return Colors.black;
   }
 
-  /// L10n key for the OAuth wizard step title. Matches the rows shown on
-  /// [AuthWizardGoogleSignInPage]: Apple appears when native SIWA exists or
-  /// on web (layout parity); Android shows Google only.
-  static String oauthStepTitleL10nKey() {
-    final offerApple = AppleAuthService.isAvailable || kIsWeb;
-    return offerApple
-        ? "sign_in_with_google_or_apple"
-        : "sign_in_with_google";
-  }
+  /// L10n key for the OAuth wizard step subtitle shown above the provider
+  /// buttons (generic — logos identify each option).
+  static String oauthStepTitleL10nKey() => "sign_in_oauth_prompt";
 
   static Color getBottomSheetHandleColor(BuildContext context) {
     if (ThemeState().isBlueTheme) {

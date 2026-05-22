@@ -1025,6 +1025,8 @@
   "publication_date": "Published on:",
   "sign_in_with_google": "Sign In with Google",
   "sign_in_with_google_or_apple": "Sign in with Google or Apple",
+  "sign_in_oauth_prompt": "Sign in to continue",
+  "sign_in_oauth_continue": "Continue",
   "auth_wizard_oauth_step_header": "Sign in to UyDosh",
   "successfully_logged_in": "You have successfully logged in",
   "signing_in": "Signing in...",

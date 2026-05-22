@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
+import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class PostGigRequestScreen extends StatefulWidget {
@@ -183,8 +184,8 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   ],
                   const SizedBox(height: 14),
                   _FieldLabel(L10n.get("gigs_post_request_field_address")),
-                  UydoshPlateTextFormField(
-                    hintText: "",
+                  YandexAddressSuggestField(
+                    hintText: L10n.get("gigs_post_request_field_address"),
                     controller: _addressController,
                     style: _fieldTextStyle(context),
                     decoration: UydoshPlateFieldDecoration.gigPostField(

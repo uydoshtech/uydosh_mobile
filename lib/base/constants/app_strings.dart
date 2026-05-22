@@ -851,6 +851,11 @@ class AppStrings {
       "gigs_post_request_field_amount": "Amount",
       "gigs_post_request_field_address": "Address (optional)",
       "gigs_post_field_address_detail": "Detailed address (optional)",
+      "address_suggest_connection_error":
+          "Could not load address suggestions. Check your connection.",
+      "address_suggest_unavailable":
+          "Address suggestions are temporarily unavailable.",
+      "address_suggest_failed": "Could not load address suggestions.",
       "gigs_post_field_district": "District (optional)",
       "gigs_post_request_field_remote": "Remote",
       "gigs_post_request_required": "Required",
@@ -1465,6 +1470,8 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Sign In with Google",
       "sign_in_with_google_or_apple": "Sign in with Google or Apple",
+      "sign_in_oauth_prompt": "Sign in to continue",
+      "sign_in_oauth_continue": "Continue",
       "auth_wizard_oauth_step_header": "Sign in to UyDosh",
       "successfully_logged_in": "You have successfully logged in",
 
@@ -2395,6 +2402,11 @@ class AppStrings {
       "gigs_post_request_field_amount": "Сумма",
       "gigs_post_request_field_address": "Адрес (необязательно)",
       "gigs_post_field_address_detail": "Подробный адрес (необязательно)",
+      "address_suggest_connection_error":
+          "Не удалось загрузить подсказки адреса. Проверьте подключение к интернету.",
+      "address_suggest_unavailable":
+          "Подсказки адреса временно недоступны.",
+      "address_suggest_failed": "Не удалось загрузить подсказки адреса.",
       "gigs_post_field_district": "Район (необязательно)",
       "gigs_post_request_field_remote": "Удалённо",
       "gigs_post_request_required": "Обязательное поле",
@@ -3022,6 +3034,8 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Войти через Google",
       "sign_in_with_google_or_apple": "Войти через Google или Apple",
+      "sign_in_oauth_prompt": "Войдите, чтобы продолжить",
+      "sign_in_oauth_continue": "Продолжить",
       "auth_wizard_oauth_step_header": "Войти в UyDosh",
       "successfully_logged_in": "Вы успешно вошли",
 
@@ -3957,6 +3971,11 @@ class AppStrings {
       "gigs_post_request_field_amount": "Summa",
       "gigs_post_request_field_address": "Manzil (ixtiyoriy)",
       "gigs_post_field_address_detail": "Batafsil manzil (ixtiyoriy)",
+      "address_suggest_connection_error":
+          "Manzil takliflarini yuklab bo‘lmadi. Internet aloqasini tekshiring.",
+      "address_suggest_unavailable":
+          "Manzil takliflari vaqtincha mavjud emas.",
+      "address_suggest_failed": "Manzil takliflarini yuklab bo‘lmadi.",
       "gigs_post_field_district": "Tuman (ixtiyoriy)",
       "gigs_post_request_field_remote": "Masofadan",
       "gigs_post_request_required": "Majburiy",
@@ -4586,6 +4605,8 @@ class AppStrings {
       // ===== GOOGLE AUTHENTICATION =====
       "sign_in_with_google": "Google orqali kirish",
       "sign_in_with_google_or_apple": "Google yoki Apple orqali kirish",
+      "sign_in_oauth_prompt": "Davom etish uchun kiring",
+      "sign_in_oauth_continue": "Davom etish",
       "auth_wizard_oauth_step_header": "UyDosh ga kirish",
       "successfully_logged_in": "Muvaffaqiyatli tizimga kirdingiz",
 
