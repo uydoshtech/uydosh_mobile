@@ -4,6 +4,7 @@ import "package:app_links/app_links.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/constants/app_domains.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 
@@ -85,8 +86,10 @@ class DeepLinkService {
       if (segments.isEmpty) return null;
       return int.tryParse(segments.first);
     }
-    // HTTPS: https://uydosh.com/listing/123
-    if (uri.scheme == "https" && uri.pathSegments.length >= 2) {
+    // HTTPS: https://uydosh.com/listing/123 (also legacy uydosh.app links)
+    if ((uri.scheme == "https" || uri.scheme == "http") &&
+        uri.pathSegments.length >= 2 &&
+        AppDomains.isListingLinkHost(uri.host)) {
       if (uri.pathSegments.first == _host) {
         return int.tryParse(uri.pathSegments[1]);
       }

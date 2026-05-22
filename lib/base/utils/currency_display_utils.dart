@@ -68,7 +68,7 @@ class CurrencyDisplayUtils {
   /// badges never render the implicit national currency. UZS is assumed by
   /// default across the marketplace, so showing it on every chip is noise.
   /// Pair with [stripEmptyCurrencyArtifacts] when piping into templates that
-  /// keep punctuation around the `{currency}` placeholder (e.g. `/hr`, `/unit`).
+  /// keep punctuation around the `{currency}` placeholder (e.g. ` / hr`, ` / unit`).
   static String isoCodeForBadge(String currencyCode) {
     final code = isoCode(currencyCode);
     return code == "UZS" ? "" : code;
@@ -76,10 +76,10 @@ class CurrencyDisplayUtils {
 
   /// Cleans up the leftover separator + whitespace left behind when an empty
   /// currency token (from [isoCodeForBadge]) is rendered into a localized
-  /// price-label template — e.g. `"100  /hr"` → `"100/hr"`, `"100 "` → `"100"`.
+  /// price-label template — e.g. `"100  / hr"` → `"100 / hr"`, `"100 "` → `"100"`.
   static String stripEmptyCurrencyArtifacts(String label) {
     return label
-        .replaceAll(RegExp(r"\s+(?=/)"), "")
+        .replaceAll(RegExp(r"\s{2,}(?=/)"), " ")
         .replaceAll(RegExp(r"\s+$"), "");
   }
 

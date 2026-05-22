@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/constants/app_domains.dart";
 import "package:uy_dosh/base/services/remote_config_service.dart";
 
 /// Centralized access to environment-dependent settings.
@@ -33,7 +34,7 @@ abstract class EnvironmentUtil {
   /// [shareWebBase] for the runtime accessor.
   static const compileTimeShareWebBase = String.fromEnvironment(
     "SHARE_WEB_BASE",
-    defaultValue: "https://uydosh.com",
+    defaultValue: AppDomains.shareWebBase,
   );
 
   /// Compile-time default for the Terms of Service URL. See

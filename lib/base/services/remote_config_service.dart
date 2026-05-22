@@ -4,6 +4,7 @@ import "package:firebase_remote_config/firebase_remote_config.dart";
 import "package:flutter/foundation.dart" show ValueNotifier, kDebugMode;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/constants/app_domains.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
 /// Resolves runtime-tunable client config (API base URL plus a small set of
@@ -90,6 +91,14 @@ abstract class RemoteConfigService {
   static const _kPrefsCachePrefix = "uydosh.remote_config.";
   static const _firstLaunchFetchTimeout = Duration(seconds: 4);
 
+  /// Canonical https base for shareable listing links (messengers need https).
+  static const canonicalShareWebBase = AppDomains.shareWebBase;
+
+  static final RegExp _legacyShareWebHost = RegExp(
+    '://(?:www\\.)?${RegExp.escape(AppDomains.legacyWebHost)}(?=/|\$)',
+    caseSensitive: false,
+  );
+
   /// Every RC key we care about, mapped to its compile-time fallback.
   static final Map<String, String> _defaults = <String, String>{
     _kApiBasePath: EnvironmentUtil.compileTimeBasePath,
@@ -120,7 +129,8 @@ abstract class RemoteConfigService {
   static String get apiBasePath => _values[_kApiBasePath]!;
 
   /// Web base for shareable https links. Safe to call before [initialize].
-  static String get shareWebBase => _values[_kShareWebBase]!;
+  static String get shareWebBase =>
+      _normalizeValue(_kShareWebBase, _values[_kShareWebBase]!);
 
   /// Public Terms of Service URL. Safe to call before [initialize].
   static String get termsOfServiceUrl => _values[_kTermsOfServiceUrl]!;
@@ -230,7 +240,14 @@ abstract class RemoteConfigService {
     for (final key in _defaults.keys) {
       final cached = prefs.getString("$_kPrefsCachePrefix$key");
       if (cached != null && cached.isNotEmpty) {
-        _values[key] = cached;
+        final normalized = _normalizeValue(key, cached);
+        _values[key] = normalized;
+        if (normalized != cached) {
+          await prefs.setString("$_kPrefsCachePrefix$key", normalized);
+          logger.d(
+            "🛰️ RemoteConfig: migrated cached $key → $normalized",
+          );
+        }
         if (key == _kApiBasePath) hadApiBaseCache = true;
       }
     }
@@ -288,7 +305,7 @@ abstract class RemoteConfigService {
     try {
       await rc.fetchAndActivate();
       for (final key in _defaults.keys) {
-        final fresh = rc.getString(key).trim();
+        final fresh = _normalizeValue(key, rc.getString(key).trim());
         if (fresh.isEmpty) continue;
         if (fresh == _values[key]) continue;
         _values[key] = fresh;
@@ -299,6 +316,17 @@ abstract class RemoteConfigService {
     } catch (e) {
       logger.d("🛰️ RemoteConfig: fetch failed, keeping current values: $e");
     }
+  }
+
+  /// Rewrites legacy Remote Config / cache values (e.g. `uydosh.app` share host).
+  static String _normalizeValue(String key, String value) {
+    if (key != _kShareWebBase) return value;
+    var v = value.trim();
+    if (v.isEmpty) return canonicalShareWebBase;
+    if (_legacyShareWebHost.hasMatch(v)) {
+      v = v.replaceAll(_legacyShareWebHost, "://${AppDomains.webHost}");
+    }
+    return v.replaceAll(RegExp(r"/+$"), "");
   }
 
   /// Push the current string-typed `_values` into reactive notifiers so any
