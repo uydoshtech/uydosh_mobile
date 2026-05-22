@@ -190,16 +190,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  String? _backendErrorCode(DioException error) {
+    final data = error.response?.data;
+    if (data is Map) {
+      return data["error"]?.toString();
+    }
+    return null;
+  }
+
   String _telegramBindErrorMessage(String code) {
     switch (code) {
       case "telegram_already_linked":
         return L10n.get("telegram_already_linked");
       case "telegram_account_in_use":
         return L10n.get("telegram_account_in_use");
+      case "Invalid Telegram id_token":
+        return L10n.get("telegram_bind_invalid_token");
+      case "Telegram OIDC is not configured":
+        return L10n.get("telegram_bind_not_configured");
       default:
         return L10n.get("telegram_link_failed")
             .replaceAll("{error}", code);
     }
+  }
+
+  String _telegramBindErrorFromDio(DioException error) {
+    final backendCode = _backendErrorCode(error);
+    if (backendCode != null && backendCode.isNotEmpty) {
+      return _telegramBindErrorMessage(backendCode);
+    }
+    if (error.response?.statusCode == 404) {
+      return L10n.get("telegram_bind_not_available");
+    }
+    return L10n.get("telegram_link_failed").replaceAll(
+          "{error}",
+          ErrorMessageHelper.sanitizeErrorMessage(error),
+        );
   }
 
   Future<void> _linkTelegramAccount() async {
@@ -247,12 +273,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } on DioException catch (e) {
       if (!mounted) return;
-      final code = e.response?.data is Map
-          ? (e.response!.data as Map)["error"]?.toString()
-          : null;
       ToastTheme.showWarning(
         context,
-        message: _telegramBindErrorMessage(code ?? ErrorMessageHelper.sanitizeErrorMessage(e)),
+        message: _telegramBindErrorFromDio(e),
       );
     } on TelegramLoginError catch (e) {
       if (!mounted || e.code == TelegramLoginErrorCode.cancelled) return;
@@ -687,6 +710,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileStatsSection(
                 profile: profile,
                 cachedGoogleDisplayName: _cachedGoogleDisplayName,
+                cachedGooglePhotoUrl: _cachedGooglePhotoUrl,
                 expandedSectionIndex: _expandedSectionIndex,
                 onExpandedSectionChanged: (index) {
                   setState(() => _expandedSectionIndex = index);

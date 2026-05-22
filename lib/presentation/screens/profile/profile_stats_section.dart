@@ -1,15 +1,22 @@
+import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+
+/// Avatar diameter for the linked Telegram row — slightly larger than field
+/// icons (20) but compact like chat list avatars (32).
+const double _kTelegramFieldAvatarSize = 32;
 
 class ProfileStatsSection extends StatelessWidget {
   const ProfileStatsSection({
@@ -19,6 +26,7 @@ class ProfileStatsSection extends StatelessWidget {
     required this.onExpandedSectionChanged,
     required this.getLocalizedRegionName,
     required this.getLocalizedUniversityName,
+    this.cachedGooglePhotoUrl,
     this.telegramLinked,
     this.isLinkingTelegram = false,
     this.onLinkTelegram,
@@ -27,6 +35,7 @@ class ProfileStatsSection extends StatelessWidget {
 
   final UserProfile profile;
   final String? cachedGoogleDisplayName;
+  final String? cachedGooglePhotoUrl;
   final int? expandedSectionIndex;
   final void Function(int? index) onExpandedSectionChanged;
   final String Function(UserProfileRegion region) getLocalizedRegionName;
@@ -486,6 +495,52 @@ class ProfileStatsSection extends StatelessWidget {
     );
   }
 
+  String? _effectiveAvatarUrl() {
+    final raw = profile.avatarUrl?.trim();
+    final hasCustomUpload = raw != null &&
+        raw.isNotEmpty &&
+        !raw.startsWith("http://") &&
+        !raw.startsWith("https://");
+    if (hasCustomUpload) {
+      return resolveAvatarUrl(raw);
+    }
+    return cachedGooglePhotoUrl ??
+        FirebaseAuth.instance.currentUser?.photoURL ??
+        resolveAvatarUrl(raw);
+  }
+
+  Widget _buildTelegramLeading(BuildContext context, {required bool linked}) {
+    if (linked) {
+      final photoUrl = _effectiveAvatarUrl();
+      if (photoUrl != null) {
+        final fallback = Center(
+          child: ThemeIcon(
+            Icons.person,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        );
+        return SizedBox(
+          width: _kTelegramFieldAvatarSize,
+          height: _kTelegramFieldAvatarSize,
+          child: ClipOval(
+            child: NetworkAvatarImage(
+              imageUrl: photoUrl,
+              size: _kTelegramFieldAvatarSize,
+              fallback: fallback,
+            ),
+          ),
+        );
+      }
+    }
+
+    return ThemeIcon(
+      Icons.telegram,
+      size: 20,
+      color: Theme.of(context).colorScheme.onSurface,
+    );
+  }
+
   Widget _buildTelegramField(BuildContext context) {
     final hasTelegram =
         profile.telegram != null && profile.telegram!.isNotEmpty;
@@ -503,11 +558,7 @@ class ProfileStatsSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
           children: [
-            ThemeIcon(
-              Icons.telegram,
-              size: 20,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            _buildTelegramLeading(context, linked: linked),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

@@ -1490,6 +1490,12 @@ class AppStrings {
       "telegram_account_in_use":
           "This Telegram account is already linked to another UyDosh account",
       "telegram_link_failed": "Could not link Telegram: {error}",
+      "telegram_bind_not_available":
+          "Link Telegram is not available yet. Update the app or try again later.",
+      "telegram_bind_invalid_token":
+          "Telegram sign-in expired. Please try linking again.",
+      "telegram_bind_not_configured":
+          "Telegram login is temporarily unavailable on the server.",
       "telegram_login_continue_in_browser":
           "Finish signing in in the browser, then return here.",
       "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
@@ -3060,6 +3066,12 @@ class AppStrings {
       "telegram_account_in_use":
           "Этот Telegram уже привязан к другому аккаунту UyDosh",
       "telegram_link_failed": "Не удалось привязать Telegram: {error}",
+      "telegram_bind_not_available":
+          "Привязка Telegram пока недоступна. Обновите приложение или попробуйте позже.",
+      "telegram_bind_invalid_token":
+          "Сессия Telegram истекла. Попробуйте привязать снова.",
+      "telegram_bind_not_configured":
+          "Вход через Telegram временно недоступен на сервере.",
       "telegram_login_continue_in_browser":
           "Завершите вход в браузере, затем вернитесь в приложение.",
       "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
@@ -4638,6 +4650,12 @@ class AppStrings {
       "telegram_account_in_use":
           "Bu Telegram boshqa UyDosh hisobiga ulangan",
       "telegram_link_failed": "Telegramni ulab bo'lmadi: {error}",
+      "telegram_bind_not_available":
+          "Telegramni ulash hozircha mavjud emas. Ilovani yangilang yoki keyinroq urinib ko'ring.",
+      "telegram_bind_invalid_token":
+          "Telegram sessiyasi tugagan. Qayta ulashga harakat qiling.",
+      "telegram_bind_not_configured":
+          "Telegram orqali kirish serverda vaqtincha ishlamayapti.",
       "telegram_login_continue_in_browser":
           "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
       "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",

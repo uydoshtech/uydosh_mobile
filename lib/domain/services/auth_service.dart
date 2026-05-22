@@ -272,31 +272,23 @@ class AuthService implements IAuthService {
 
   @override
   Future<Map<String, dynamic>> fetchCurrentUser() async {
-    try {
-      return await _oauthApiClient.get<Map<String, dynamic>>(
-        "/users/me",
-        (json) => json as Map<String, dynamic>,
-      );
-    } catch (e) {
-      throw Exception("fetch current user failed: $e");
-    }
+    return _oauthApiClient.get<Map<String, dynamic>>(
+      "/users/me",
+      (json) => json as Map<String, dynamic>,
+    );
   }
 
   @override
   Future<Map<String, dynamic>> telegramBind({required String idToken}) async {
-    try {
-      final token = idToken.trim();
-      if (token.isEmpty) {
-        throw Exception("Telegram id_token is empty");
-      }
-      return await _oauthApiClient.post<Map<String, dynamic>, _TelegramIdTokenRequest>(
-        "/users/telegram-bind",
-        (json) => json as Map<String, dynamic>,
-        data: _TelegramIdTokenRequest(idToken: token),
-      );
-    } catch (e) {
-      throw Exception("Telegram bind failed: $e");
+    final token = idToken.trim();
+    if (token.isEmpty) {
+      throw Exception("Telegram id_token is empty");
     }
+    return _oauthApiClient.post<Map<String, dynamic>, _TelegramIdTokenRequest>(
+      "/users/telegram-bind",
+      (json) => json as Map<String, dynamic>,
+      data: _TelegramIdTokenRequest(idToken: token),
+    );
   }
 
   @override
