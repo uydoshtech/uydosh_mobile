@@ -7,6 +7,8 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:uydosh.com</string>
+		<string>applinks:app3016986242-login.tg.dev</string>
+		<string>webcredentials:app3016986242-login.tg.dev</string>
 	</array>
 	<!-- Sign in with Apple (App Review Guideline 4.8 — required because we
 	     also offer Google Sign-In). The "Default" value scopes the

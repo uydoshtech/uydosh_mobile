@@ -18,7 +18,9 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/telegram_native_login_service.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
+import "package:telegram_login/telegram_login.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -959,6 +961,63 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   Future<void> _signInWithTelegram() async {
     if (!mounted) return;
+    if (kIsWeb) {
+      await _signInWithTelegramViaBrowser();
+      return;
+    }
+    if (TelegramNativeLoginService.instance.isSupported) {
+      await _signInWithTelegramViaNativeSdk();
+      return;
+    }
+    await _signInWithTelegramViaBrowser();
+  }
+
+  Future<void> _signInWithTelegramViaNativeSdk() async {
+    setStateIfMounted(() {
+      _isAuthenticating = true;
+      _authMethod = _AuthMethod.telegram;
+    });
+    try {
+      final idToken = await TelegramNativeLoginService.instance.login();
+      if (!mounted) return;
+      if (idToken == null) return;
+      final response = await _authService.telegramAuthWithIdToken(idToken);
+      if (!mounted) return;
+      await _applyTelegramAuthBackendResponse(response);
+    } on TelegramLoginError catch (e) {
+      if (!mounted || e.code == TelegramLoginErrorCode.cancelled) return;
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "telegram",
+        stage: "native_sdk",
+        errorCode: e.code.name,
+        errorType: e.message ?? e.code.name,
+      );
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_sign_in_failed")
+            .replaceAll("{error}", e.message ?? e.code.name),
+      );
+    } catch (e, st) {
+      logger.d("Telegram native login failed: $e\n$st");
+      if (!mounted) return;
+      getIt<AppAnalyticsService>().logSignInFailure(
+        method: "telegram",
+        stage: "native_sdk",
+        errorCode: _extractAuthErrorCode(e),
+        errorType: e.toString().length > 100
+            ? e.toString().substring(0, 100)
+            : e.toString(),
+      );
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+      );
+    } finally {
+      setStateIfMounted(() => _isAuthenticating = false);
+    }
+  }
+
+  Future<void> _signInWithTelegramViaBrowser() async {
     try {
       final url = await _authService.fetchTelegramOAuthAuthorizationUrl(
         languageCode: _selectedLanguage,
@@ -999,6 +1058,56 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
+  Future<void> _applyTelegramAuthBackendResponse(
+    Map<String, dynamic> response,
+  ) async {
+    final sessionToken = response["sessionToken"];
+    if (sessionToken is! String || sessionToken.isEmpty) {
+      throw Exception("sessionToken missing");
+    }
+    await SessionManager.storeSessionToken(sessionToken);
+    final user = response["user"];
+    if (user is Map<String, dynamic>) {
+      final rawUserId = user["id"];
+      final userId =
+          rawUserId is int ? rawUserId : int.tryParse(rawUserId.toString());
+      if (userId != null) {
+        await SessionManager.storeBackendUserId(userId);
+        await getIt<AppAnalyticsService>().setUserId(userId.toString());
+      }
+    }
+    await _storeBackendSession(response);
+    final isBlocked = response["user"]?["is_blocked"] == true;
+    String? violationDialogResult;
+    if (mounted && isBlocked) {
+      violationDialogResult = await _showViolationDialog();
+    }
+    final hasProfile = response["profileExists"] == true;
+    if (hasProfile) {
+      await _pauseThenNavigateHomeForReturningUser(
+        response: response,
+        violationDialogResult: violationDialogResult,
+      );
+    } else if (mounted) {
+      setState(() {
+        _currentPage = 2;
+      });
+      await _pageController.animateToPage(
+        2,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+    if (mounted) {
+      getIt<AppAnalyticsService>().logSignInSuccess(method: "telegram");
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("successfully_signed_in_telegram"),
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
   Future<void> _handleTelegramAuthDeepLink(TelegramAuthDeepLink link) async {
     if (!mounted) return;
     if (link.isError) {
@@ -1015,41 +1124,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       _authMethod = _AuthMethod.telegram;
     });
     final token = link.sessionToken!;
-    final userId = link.userId!;
     try {
       await SessionManager.storeSessionToken(token);
-      await SessionManager.storeBackendUserId(userId);
+      await SessionManager.storeBackendUserId(link.userId!);
       final response = await _authService.verifySession();
-      await _storeBackendSession(response);
-      final isBlocked = response["user"]?["is_blocked"] == true;
-      String? violationDialogResult;
-      if (mounted && isBlocked) {
-        violationDialogResult = await _showViolationDialog();
-      }
-      final hasProfile = response["profileExists"] == true;
-      if (hasProfile) {
-        await _pauseThenNavigateHomeForReturningUser(
-          response: response,
-          violationDialogResult: violationDialogResult,
-        );
-      } else if (mounted) {
-        setState(() {
-          _currentPage = 2;
-        });
-        await _pageController.animateToPage(
-          2,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
-      if (mounted) {
-        getIt<AppAnalyticsService>().logSignInSuccess(method: "telegram");
-        ToastTheme.showSuccess(
-          context,
-          message: L10n.get("successfully_signed_in_telegram"),
-          duration: const Duration(seconds: 3),
-        );
-      }
+      if (!mounted) return;
+      await _applyTelegramAuthBackendResponse(response);
     } catch (e, st) {
       logger.d("Telegram deep link auth failed: $e\n$st");
       if (mounted) {

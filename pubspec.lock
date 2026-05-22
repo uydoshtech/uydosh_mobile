@@ -1778,6 +1778,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.0"
+  telegram_login:
+    dependency: "direct main"
+    description:
+      name: telegram_login
+      sha256: "53cef434dca9bdb6d3d9307887a8fafcb82e9c58bce5e75d82ad613fe708183a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   term_glyph:
     dependency: transitive
     description:

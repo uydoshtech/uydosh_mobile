@@ -8,6 +8,9 @@
 	<array>
 		<string>applinks:uydosh.com</string>
 		<string>applinks:uydosh.com?mode=developer</string>
+		<string>applinks:app3016986242-login.tg.dev</string>
+		<string>applinks:app3016986242-login.tg.dev?mode=developer</string>
+		<string>webcredentials:app3016986242-login.tg.dev</string>
 	</array>
 	<!-- Sign in with Apple (kept in lockstep with Runner.entitlements so
 	     debug builds can exercise the SIWA flow on a real device). -->

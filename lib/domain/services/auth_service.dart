@@ -39,11 +39,14 @@ abstract class IAuthService {
   /// Current session + profile flags (Bearer = stored session token).
   Future<Map<String, dynamic>> verifySession();
 
-  /// Telegram OIDC: GET `/users/telegram-oauth/start` (public).
+  /// Telegram OIDC: GET `/users/telegram-oauth/start` (public). Browser fallback only.
   Future<String> fetchTelegramOAuthAuthorizationUrl({
     String? languageCode,
     String? returnTo,
   });
+
+  /// Telegram native SDK / OIDC: POST `/users/telegram-auth` with JWT id_token.
+  Future<Map<String, dynamic>> telegramAuthWithIdToken(String idToken);
 
   Future<bool> refreshToken();
   Future<void> logout();
@@ -63,6 +66,14 @@ class _EmptyJson implements IJsonEncodable {
   const _EmptyJson();
   @override
   Map<String, dynamic> toJson() => {};
+}
+
+class _TelegramIdTokenRequest implements IJsonEncodable {
+  _TelegramIdTokenRequest({required this.idToken});
+  final String idToken;
+
+  @override
+  Map<String, dynamic> toJson() => {"id_token": idToken};
 }
 
 class AuthService implements IAuthService {
@@ -227,6 +238,23 @@ class AuthService implements IAuthService {
       return url;
     } catch (e) {
       throw Exception("Telegram OAuth start failed: $e");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> telegramAuthWithIdToken(String idToken) async {
+    try {
+      final token = idToken.trim();
+      if (token.isEmpty) {
+        throw Exception("Telegram id_token is empty");
+      }
+      return await _apiClient.post<Map<String, dynamic>, _TelegramIdTokenRequest>(
+        "/users/telegram-auth",
+        (json) => json as Map<String, dynamic>,
+        data: _TelegramIdTokenRequest(idToken: token),
+      );
+    } catch (e) {
+      throw Exception("Telegram auth failed: $e");
     }
   }
 

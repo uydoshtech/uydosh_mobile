@@ -50,12 +50,21 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="uydosh" android:host="listing" android:pathPrefix="/"/>
             </intent-filter>
-            <!-- Telegram OAuth return: uydosh://auth/telegram -->
+            <!-- Telegram OAuth return: uydosh://auth/telegram (legacy browser flow) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="uydosh" android:host="auth"/>
+            </intent-filter>
+            <!-- Telegram Login native SDK callback (App Link) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="app2183690589-login.tg.dev"/>
             </intent-filter>
             <!-- App Links: https://uydosh.com/listing/123 (for messengers) -->
             <intent-filter android:autoVerify="true">
