@@ -1031,7 +1031,7 @@
   },
   "popup_closed": "Окно входа было закрыто",
   "sign_in_with_apple": "Войти через Apple",
-  "sign_in_with_telegram": "Продолжить через Telegram",
+  "sign_in_with_telegram": "Войти через Telegram",
   "telegram_login_continue_in_browser": "Завершите вход в браузере, затем вернитесь в приложение.",
   "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
   "successfully_signed_in_apple": "Успешный вход через Apple!",

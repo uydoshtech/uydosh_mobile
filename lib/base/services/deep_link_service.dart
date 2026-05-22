@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:app_links/app_links.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
@@ -54,13 +55,25 @@ class DeepLinkService {
     if (uri.pathSegments.length != 1 || uri.pathSegments.first != _telegramSegment) {
       return null;
     }
-    final err = uri.queryParameters["error"];
+    return _parseTelegramAuthQuery(uri.queryParameters);
+  }
+
+  /// Parses Telegram OAuth query params on Flutter web after backend redirect.
+  static TelegramAuthDeepLink? tryParseTelegramAuthFromCurrentLocation() {
+    if (!kIsWeb) return null;
+    return _parseTelegramAuthQuery(Uri.base.queryParameters);
+  }
+
+  static TelegramAuthDeepLink? _parseTelegramAuthQuery(
+    Map<String, String> queryParameters,
+  ) {
+    final err = queryParameters["error"];
     if (err != null && err.isNotEmpty) {
       return TelegramAuthDeepLink.error(err);
     }
-    final token = uri.queryParameters["session_token"];
-    final uid = int.tryParse(uri.queryParameters["user_id"] ?? "");
-    final pe = uri.queryParameters["profile_exists"] == "1";
+    final token = queryParameters["session_token"];
+    final uid = int.tryParse(queryParameters["user_id"] ?? "");
+    final pe = queryParameters["profile_exists"] == "1";
     if (token == null || token.isEmpty || uid == null) {
       return null;
     }
@@ -148,6 +161,11 @@ class DeepLinkService {
     final p = _pendingTelegramAuth;
     _pendingTelegramAuth = null;
     return p;
+  }
+
+  /// Stores a Telegram auth payload for the next auth wizard mount (Flutter web OAuth return).
+  void stagePendingTelegramAuth(TelegramAuthDeepLink link) {
+    _pendingTelegramAuth = link;
   }
 
   /// Navigate to listing detail screen.

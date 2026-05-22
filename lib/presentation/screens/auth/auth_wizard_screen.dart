@@ -18,6 +18,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -262,6 +263,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       final pending = deepLinks.consumePendingTelegramAuth();
       if (pending != null) {
         unawaited(_handleTelegramAuthDeepLink(pending));
+        return;
+      }
+      if (kIsWeb) {
+        final webAuth = DeepLinkService.tryParseTelegramAuthFromCurrentLocation();
+        if (webAuth != null) {
+          clearTelegramOAuthQueryFromBrowserUrl();
+          unawaited(_handleTelegramAuthDeepLink(webAuth));
+        }
       }
     });
 
@@ -949,14 +958,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   Future<void> _signInWithTelegram() async {
-    if (!mounted || kIsWeb) return;
+    if (!mounted) return;
     try {
       final url = await _authService.fetchTelegramOAuthAuthorizationUrl(
         languageCode: _selectedLanguage,
+        returnTo: telegramOAuthWebReturnTo(),
       );
       final uri = Uri.parse(url);
-      final ok =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final ok = kIsWeb
+          ? await launchUrl(uri, webOnlyWindowName: "_self")
+          : await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!mounted) return;
       if (!ok) {
         ToastTheme.showWarning(
@@ -965,10 +976,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         );
         return;
       }
-      ToastTheme.showInfo(
-        context,
-        message: L10n.get("telegram_login_continue_in_browser"),
-      );
+      if (!kIsWeb) {
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("telegram_login_continue_in_browser"),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       getIt<AppAnalyticsService>().logSignInFailure(

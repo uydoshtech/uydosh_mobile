@@ -2769,7 +2769,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get sign_in_with_apple => 'Apple orqali kirish';
 
   @override
-  String get sign_in_with_telegram => 'Telegram orqali davom etish';
+  String get sign_in_with_telegram => 'Telegram orqali kirish';
 
   @override
   String get telegram_login_continue_in_browser =>

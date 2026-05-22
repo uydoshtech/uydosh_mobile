@@ -2725,7 +2725,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sign_in_with_apple => 'Sign in with Apple';
 
   @override
-  String get sign_in_with_telegram => 'Continue with Telegram';
+  String get sign_in_with_telegram => 'Sign In with Telegram';
 
   @override
   String get telegram_login_continue_in_browser =>

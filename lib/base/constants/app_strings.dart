@@ -1475,7 +1475,7 @@ class AppStrings {
       // ===== APPLE AUTHENTICATION (iOS only — required by App Store
       //                            Review Guideline 4.8 alongside Google) =====
       "sign_in_with_apple": "Sign in with Apple",
-      "sign_in_with_telegram": "Continue with Telegram",
+      "sign_in_with_telegram": "Sign In with Telegram",
       "telegram_login_continue_in_browser":
           "Finish signing in in the browser, then return here.",
       "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
@@ -3031,7 +3031,7 @@ class AppStrings {
 
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Войти через Apple",
-      "sign_in_with_telegram": "Продолжить через Telegram",
+      "sign_in_with_telegram": "Войти через Telegram",
       "telegram_login_continue_in_browser":
           "Завершите вход в браузере, затем вернитесь в приложение.",
       "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
@@ -4595,7 +4595,7 @@ class AppStrings {
 
       // ===== APPLE AUTHENTICATION (iOS only) =====
       "sign_in_with_apple": "Apple orqali kirish",
-      "sign_in_with_telegram": "Telegram orqali davom etish",
+      "sign_in_with_telegram": "Telegram orqali kirish",
       "telegram_login_continue_in_browser":
           "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
       "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",

@@ -40,7 +40,10 @@ abstract class IAuthService {
   Future<Map<String, dynamic>> verifySession();
 
   /// Telegram OIDC: GET `/users/telegram-oauth/start` (public).
-  Future<String> fetchTelegramOAuthAuthorizationUrl({String? languageCode});
+  Future<String> fetchTelegramOAuthAuthorizationUrl({
+    String? languageCode,
+    String? returnTo,
+  });
 
   Future<bool> refreshToken();
   Future<void> logout();
@@ -200,14 +203,22 @@ class AuthService implements IAuthService {
   @override
   Future<String> fetchTelegramOAuthAuthorizationUrl({
     String? languageCode,
+    String? returnTo,
   }) async {
     try {
       final lang = languageCode?.trim();
+      final returnToTrimmed = returnTo?.trim();
+      final queryParameters = <String, String>{};
+      if (lang != null && lang.isNotEmpty) {
+        queryParameters["lang"] = lang;
+      }
+      if (returnToTrimmed != null && returnToTrimmed.isNotEmpty) {
+        queryParameters["return_to"] = returnToTrimmed;
+      }
       final map = await _apiClient.get<Map<String, dynamic>>(
         "/users/telegram-oauth/start",
         (json) => json as Map<String, dynamic>,
-        queryParameters:
-            lang != null && lang.isNotEmpty ? {"lang": lang} : null,
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
       );
       final url = map["authorizationUrl"];
       if (url is! String || url.isEmpty) {

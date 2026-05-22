@@ -1039,7 +1039,7 @@
   },
   "popup_closed": "Kirish oynasi yopildi",
   "sign_in_with_apple": "Apple orqali kirish",
-  "sign_in_with_telegram": "Telegram orqali davom etish",
+  "sign_in_with_telegram": "Telegram orqali kirish",
   "telegram_login_continue_in_browser": "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
   "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",
   "successfully_signed_in_apple": "Apple orqali muvaffaqiyatli kirdingiz!",

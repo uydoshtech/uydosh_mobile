@@ -5150,7 +5150,7 @@ abstract class AppLocalizations {
   /// No description provided for @sign_in_with_telegram.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Telegram'**
+  /// **'Sign In with Telegram'**
   String get sign_in_with_telegram;
 
   /// No description provided for @telegram_login_continue_in_browser.

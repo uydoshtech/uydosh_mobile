@@ -13,6 +13,7 @@ import "package:uy_dosh/domain/services/apple_auth_service.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/google_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -155,45 +156,22 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (!kIsWeb) ...[
-                      const SizedBox(height: 12),
-                      Center(
-                        child: GhostButton(
+                    const SizedBox(height: 12),
+                    Center(
+                      child: SizedBox(
+                        width: buttonWidth,
+                        height: 44,
+                        child: TelegramSignInBrandedButton(
+                          label: L10n.get("sign_in_with_telegram"),
                           onPressed: enabled
                               ? () {
                                   HapticFeedbackUtils.impact();
                                   onSignInWithTelegram();
                                 }
                               : null,
-                          width: buttonWidth,
-                          height: 44,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          borderRadius: BorderRadius.circular(22),
-                          textColor: _getOnboardingTextColor(context),
-                          iconColor: _getOnboardingTextColor(context),
-                          neumorphicSoftUi: true,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ThemeIcon(
-                                Icons.chat_bubble_outline,
-                                color: _getOnboardingTextColor(context),
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                L10n.get("sign_in_with_telegram"),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
-                    ],
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       children: [

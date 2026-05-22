@@ -49,6 +49,7 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/lifecycle_ticker_mode.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
@@ -60,6 +61,7 @@ import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
@@ -307,6 +309,20 @@ void main() async {
         // also `ensureWarm`s before invoking the system sheet to handle
         // the case where the user reaches it before warm-up finishes.
         unawaited(GoogleSignInWarmup.start());
+      } else {
+        final webAuth =
+            DeepLinkService.tryParseTelegramAuthFromCurrentLocation();
+        if (webAuth != null) {
+          clearTelegramOAuthQueryFromBrowserUrl();
+          deepLinkService.stagePendingTelegramAuth(webAuth);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            navigatorKey.currentState?.push(
+              MaterialPageRoute<void>(
+                builder: (_) => const AuthWizardScreen(),
+              ),
+            );
+          });
+        }
       }
       // Warm up UI sound effects so the first refresh/like has no latency.
       unawaited(SoundService().preload());
