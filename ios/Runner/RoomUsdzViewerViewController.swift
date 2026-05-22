@@ -171,10 +171,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let dismissFlutterResult: OnceFlutterResult
   private var didPublishFlutterMetrics = false
   private let sceneView = SCNView()
-  private static let autoRotateActionKey = "uydosh.autoRotateModel"
-  /// Wraps all USDZ geometry so we can spin the room without rotating the camera (a sibling under `rootNode`).
-  private static let modelOrbitNodeName = "UydoshModelOrbit"
+  private static let autoRotateSecondsPerTurn: TimeInterval = 8.0
   private var isAutoRotating = true
+  private var autoRotateDisplayLink: CADisplayLink?
+  private var autoRotateLastTimestamp: CFTimeInterval = 0
   /// Orbit state (manual mode); camera stays a direct child of `rootNode`, not inside the model wrapper.
   private weak var framingCameraNode: SCNNode?
   private var orbitTarget = SCNVector3Zero
@@ -288,7 +288,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
-    // Start in "presentation" mode: auto-rotate until the user taps to take control.
+    // Start in "presentation" mode: camera auto-orbits the model center until the user interacts.
     sceneView.allowsCameraControl = false
     sceneView.antialiasingMode = .multisampling4X
     sceneView.autoenablesDefaultLighting = true
@@ -1364,43 +1364,43 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
   }
 
-  /// Reparents every child of `rootNode` except the framing camera under a wrapper so spin actions do not rotate the camera.
-  private func ensureModelOrbitWrapper() -> SCNNode? {
-    guard let scene = loadedScene else { return nil }
-    let root = scene.rootNode
-    if let existing = root.childNode(withName: Self.modelOrbitNodeName, recursively: false) {
-      return existing
-    }
-    let wrap = SCNNode()
-    wrap.name = Self.modelOrbitNodeName
-    let toReparent = root.childNodes.filter { $0.name != "UydoshFramingCamera" }
-    guard !toReparent.isEmpty else { return nil }
-    for child in toReparent {
-      child.removeFromParentNode()
-      wrap.addChildNode(child)
-    }
-    root.addChildNode(wrap)
-    return wrap
-  }
-
   private func removeAutoRotateAnimation() {
-    guard let scene = loadedScene else { return }
-    scene.rootNode.childNode(withName: Self.modelOrbitNodeName, recursively: false)?
-      .removeAction(forKey: Self.autoRotateActionKey)
-    scene.rootNode.removeAction(forKey: Self.autoRotateActionKey)
+    autoRotateDisplayLink?.invalidate()
+    autoRotateDisplayLink = nil
+    autoRotateLastTimestamp = 0
   }
 
   private func startIntroAutoRotationIfNeeded() {
-    guard isAutoRotating, let orbitNode = ensureModelOrbitWrapper() else { return }
-    // Y-up rooms: spin around **world Y** (turntable in the floor plane). Negative angle ≈ clockwise from above.
-    let secondsPerTurn: TimeInterval = 8.0
-    let spin = SCNAction.rotate(
-      by: -CGFloat.pi * 2,
-      around: SCNVector3(0, 1, 0),
-      duration: secondsPerTurn
-    )
-    let action = SCNAction.repeatForever(spin)
-    orbitNode.runAction(action, forKey: Self.autoRotateActionKey)
+    guard isAutoRotating, framingCameraNode != nil else { return }
+    removeAutoRotateAnimation()
+    // Orbit the camera around the model center (same pivot as manual pan), not world origin.
+    let link = CADisplayLink(target: self, selector: #selector(tickAutoRotate(_:)))
+    if #available(iOS 15.0, *) {
+      link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 120, preferred: 60)
+    }
+    link.add(to: .main, forMode: .common)
+    autoRotateDisplayLink = link
+  }
+
+  @objc private func tickAutoRotate(_ link: CADisplayLink) {
+    guard isAutoRotating, framingCameraNode != nil else {
+      removeAutoRotateAnimation()
+      return
+    }
+    let now = link.targetTimestamp
+    let dt: Float
+    if autoRotateLastTimestamp > 0 {
+      dt = Float(now - autoRotateLastTimestamp)
+    } else {
+      dt = Float(max(link.duration, 1.0 / 120.0))
+    }
+    autoRotateLastTimestamp = now
+    guard dt > 0, dt < 0.25 else { return }
+
+    // Match the old intro spin direction: clockwise from above (negative yaw).
+    let yawSpeed = Float(-2 * Double.pi / Self.autoRotateSecondsPerTurn)
+    orbitYaw += yawSpeed * dt
+    updateCameraFromOrbit()
   }
 
   private func installManualOrbitGestures() {
