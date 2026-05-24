@@ -646,20 +646,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: footerFill,
                   child: Scaffold(
                     backgroundColor: footerFill,
-                    extendBodyBehindAppBar: useLiquidGlassAppBar,
                     appBar: _buildProfileScreenAppBar(
                       context,
                       useLiquidGlass: useLiquidGlassAppBar,
                     ),
-                    body: Padding(
-                      padding: EdgeInsets.only(
-                        top: _profileScrollTopInset(
-                          context,
-                          useLiquidGlassAppBar,
-                        ),
-                      ),
-                      child: _buildErrorState(data.errorMessage, context),
-                    ),
+                    body: _buildErrorState(data.errorMessage, context),
                   ),
                 );
               }
@@ -682,7 +673,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: footerFill,
                 child: Scaffold(
                   backgroundColor: footerFill,
-                  extendBodyBehindAppBar: useLiquidGlassAppBar,
                   appBar: _buildProfileScreenAppBar(
                     context,
                     useLiquidGlass: useLiquidGlassAppBar,
@@ -704,15 +694,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   body: data.hasError
-                      ? Padding(
-                          padding: EdgeInsets.only(
-                            top: _profileScrollTopInset(
-                              context,
-                              useLiquidGlassAppBar,
-                            ),
-                          ),
-                          child: _buildErrorState(data.errorMessage, context),
-                        )
+                      ? _buildErrorState(data.errorMessage, context)
                       : _buildProfileContent(profile),
                 ),
               );
@@ -767,21 +749,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  double _profileScrollTopInset(BuildContext context, bool useLiquidGlass) {
-    if (!useLiquidGlass) return 0;
-    return MediaQuery.paddingOf(context).top + kToolbarHeight;
-  }
-
   Widget _buildProfileContent(UserProfile profile) {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
-        final themeState = ThemeState();
-        final useLiquidGlass =
-            themeState.isBlueTheme || themeState.isLightTheme;
-        final topInset = _profileScrollTopInset(context, useLiquidGlass);
         return SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 20 + topInset, 20, 20),
+          // Pushed route: body already clears the app bar — no
+          // [extendBodyBehindAppBar] / status-bar inset (see favorites_screen).
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

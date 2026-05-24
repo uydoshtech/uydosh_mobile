@@ -59,6 +59,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     _pendingLocationId = widget.initialLocationId;
     _pendingSubwayStationId = widget.initialSubwayStationId;
     _pendingSubwayLineId = widget.initialSubwayLineId;
+    _selectedSubwayLine = _resolveInitialSubwayLine();
 
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _metroLineScrollController = FixedExtentScrollController(
@@ -72,24 +73,24 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     _bootstrapMetroFromPending();
   }
 
+  int _resolveInitialSubwayLine() {
+    final stationId = _pendingSubwayStationId;
+    if (stationId != null) {
+      final station = MetroCache.getStationById(stationId);
+      if (station != null) return station.line;
+    }
+    final lineId = _pendingSubwayLineId;
+    if (lineId != null && lineId > 0) return lineId;
+    return 0;
+  }
+
   void _bootstrapLocationsFromCache() {
     _applyLocations(LocationCache.getAllLocations(), notifyParent: false);
   }
 
   void _bootstrapMetroFromPending() {
-    final stationId = _pendingSubwayStationId;
-    if (stationId != null) {
-      final station = MetroCache.getStationById(stationId);
-      if (station != null) {
-        _selectedSubwayLine = station.line;
-        _loadStationsForLine(station.line);
-        return;
-      }
-    }
-    final lineId = _pendingSubwayLineId;
-    if (lineId != null && lineId > 0) {
-      _selectedSubwayLine = lineId;
-      _loadStationsForLine(lineId);
+    if (_selectedSubwayLine > 0) {
+      _loadStationsForLine(_selectedSubwayLine);
     }
   }
 

@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/gig_description_template_button.dart";
+import "package:uy_dosh/presentation/widgets/common/ios_pop_blocked_edge_back_gesture.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_publish_geo_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
@@ -964,7 +965,10 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         return PopScope(
           canPop: _allowPopWithoutConfirm || !_cachedFormDirty,
           onPopInvokedWithResult: _onPopInvoked,
-          child: Scaffold(
+          child: IosPopBlockedEdgeBackGesture(
+            enabled: _cachedFormDirty && !_allowPopWithoutConfirm,
+            onBackAttempt: () => _onPopInvoked(false, null),
+            child: Scaffold(
             appBar: AppBar(
               leading: ThreeDAppBarIconButton.backLeading(
                 context,
@@ -1166,6 +1170,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                 ),
               ),
             ),
+          ),
           ),
         );
       },

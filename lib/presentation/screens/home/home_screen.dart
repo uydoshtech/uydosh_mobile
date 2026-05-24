@@ -238,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // SharedPreferences read resolves we keep the hint hidden to avoid a brief
   // flicker.
   bool _bellHintDismissed = true;
+  final LayerLink _bellHintLayerLink = LayerLink();
 
   @override
   void initState() {
@@ -963,36 +964,35 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 );
               },
               builder: (context, fabState) {
+                final showBellHint = fabState.showFab &&
+                    fabState.isEmpty &&
+                    TooltipsState().enabled &&
+                    !_bellHintDismissed;
+
                 return Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomRight,
                   children: [
-                    // Phantom sizer: forces this Stack's bounds to also cover
-                    // the area above the FAB column where the empty-state
-                    // hint bubble lives. Without it, the bubble (added via a
-                    // [Positioned] at the same vertical offset pattern as
-                    // [_searchAlertBellHintBottom]) sits above the Stack's
-                    // hit-test rect — Flutter then paints it (Clip.none) but
-                    // routes taps to whatever is below, so the close "x"
-                    // never receives them.
-                    const SizedBox(width: 220, height: 260),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         if (fabState.showFab) ...[
-                          Transform.scale(
-                            scale: 0.92,
-                            child: SearchFloatingActionButton(
-                              searchFiltersState: _searchFiltersState,
-                              onPressed: _isCreatingSearchAlert
-                                  ? null
-                                  : _showCreateSearchAlertSheet,
-                              iconData: Icons.add_alert,
-                              tooltip: L10n.get("search_alert_notify_me"),
-                              replaceCurrentRoute: false,
-                              openedFromHomeScreen: widget.isHomeTabActive,
-                              elevation: ThemeState().isBlueTheme ? null : 8,
+                          CompositedTransformTarget(
+                            link: _bellHintLayerLink,
+                            child: Transform.scale(
+                              scale: 0.92,
+                              child: SearchFloatingActionButton(
+                                searchFiltersState: _searchFiltersState,
+                                onPressed: _isCreatingSearchAlert
+                                    ? null
+                                    : _showCreateSearchAlertSheet,
+                                iconData: Icons.add_alert,
+                                tooltip: L10n.get("search_alert_notify_me"),
+                                replaceCurrentRoute: false,
+                                openedFromHomeScreen: widget.isHomeTabActive,
+                                elevation: ThemeState().isBlueTheme ? null : 8,
+                              ),
                             ),
                           ),
                           const SizedBox(height: _kFabGap),
@@ -1023,33 +1023,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         ),
                       ],
                     ),
-                    // Hint bubble pointing DOWN at the bell FAB. Surfaces only
-                    // when the search came back empty so users discover that
-                    // they can save the search and be notified later. Width
-                    // is right-anchored so the tail (offset 80px right of
-                    // center) lands directly above the bell.
-                    Positioned(
-                      // 56 (search FAB) + 12 (gap) + 52 (bell FAB scaled .92) + 4 px breathing room
-                      bottom: _searchAlertBellHintBottom(context),
-                      right: 0,
-                      // No IgnorePointer here: the bubble carries an "x" close
-                      // button that needs to receive taps. The bubble itself
-                      // is small and right-anchored, so it doesn't shadow the
-                      // FAB stack underneath.
+                    // Align bubble's right edge with the bell FAB so it sits near
+                    // the screen edge and grows left (avoids horizontal clipping).
+                    CompositedTransformFollower(
+                      link: _bellHintLayerLink,
+                      showWhenUnlinked: false,
+                      targetAnchor: Alignment.topRight,
+                      followerAnchor: Alignment.bottomRight,
+                      offset: const Offset(0, -4),
                       child: TooltipFade(
-                        // Stack-positioned: skip layout collapse so the
-                        // bubble simply fades in/out at its anchor.
                         collapse: false,
                         duration: const Duration(milliseconds: 260),
-                        visible: fabState.showFab &&
-                            fabState.isEmpty &&
-                            TooltipsState().enabled &&
-                            !_bellHintDismissed,
-                        child: Align(
-                          alignment: Alignment.bottomRight,
+                        visible: showBellHint,
+                        child: Material(
+                          type: MaterialType.transparency,
                           child: NeumorphicHintBubble(
                             maxWidth: 220,
-                            tailHorizontalOffset: 80,
+                            // Tail lands on the scaled bell center (~26px in from
+                            // the bubble's right edge when width ≈ 220).
+                            tailHorizontalOffset: 78,
                             onClose: _dismissBellHint,
                             message: TextSpan(
                               text: L10n.get("search_alert_bell_hint"),
@@ -1171,12 +1163,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// sitting above it like before extendBody.
   double _searchAlertFabStackBottom(BuildContext context) {
     const base = 30.0;
-    return base + _blueShellExtendBodyBottomInset(context);
-  }
-
-  /// Vertical anchor for the empty-search hint bubble above the bell FAB.
-  double _searchAlertBellHintBottom(BuildContext context) {
-    const base = 124.0;
     return base + _blueShellExtendBodyBottomInset(context);
   }
 
