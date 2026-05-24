@@ -120,6 +120,14 @@ class AppLocalizationsUz extends AppLocalizations {
   String get compatibility_differences => 'Ehtimoliy farqlar:';
 
   @override
+  String get compatibility_critical_differences => 'Muhim farqlar:';
+
+  @override
+  String compatibility_based_on_preferences(String scored, String total) {
+    return '$total ta afzallikdan $scored tasiga asoslangan';
+  }
+
+  @override
   String get vs => 'vs';
 
   @override

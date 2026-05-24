@@ -120,6 +120,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get compatibility_differences => 'Возможные различия:';
 
   @override
+  String get compatibility_critical_differences => 'Критичные различия:';
+
+  @override
+  String compatibility_based_on_preferences(String scored, String total) {
+    return 'На основе $scored из $total предпочтений';
+  }
+
+  @override
   String get vs => 'vs';
 
   @override

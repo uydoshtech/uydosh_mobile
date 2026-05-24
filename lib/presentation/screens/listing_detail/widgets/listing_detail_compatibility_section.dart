@@ -61,6 +61,9 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     required this.compatibilityError,
     required this.matches,
     required this.differences,
+    required this.dealbreakers,
+    required this.scoredFieldCount,
+    required this.totalFieldCount,
     required this.telegramHandle,
     required this.phoneNumber,
     required this.onTelegram,
@@ -80,6 +83,9 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final String? compatibilityError;
   final List<CompatibilityMatch> matches;
   final List<CompatibilityDifference> differences;
+  final List<CompatibilityDifference> dealbreakers;
+  final int scoredFieldCount;
+  final int totalFieldCount;
   final String? telegramHandle;
   final String? phoneNumber;
   final VoidCallback? onTelegram;
@@ -463,6 +469,82 @@ class _ListingDetailCompatibilitySectionState
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (widget.scoredFieldCount > 0 &&
+                          widget.scoredFieldCount < widget.totalFieldCount)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            L10n.getWithParams(
+                              "compatibility_based_on_preferences",
+                              params: {
+                                "scored": widget.scoredFieldCount.toString(),
+                                "total": widget.totalFieldCount.toString(),
+                              },
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: _getDescriptionTextColor().withValues(
+                                alpha: 0.85,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (widget.dealbreakers.isNotEmpty) ...[
+                        Text(
+                          L10n.get("compatibility_critical_differences"),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.error,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.error,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...widget.dealbreakers.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ThemeIcon(
+                                  _getLifestyleIcon(item.labelKey),
+                                  size: 20,
+                                  color: AppColors.error,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.error,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              "${item.label}: ${item.currentText} ",
+                                        ),
+                                        WidgetSpan(
+                                          alignment:
+                                              PlaceholderAlignment.middle,
+                                          child: ThemeIcon(
+                                            Icons.compare_arrows,
+                                            size: 16,
+                                            color: AppColors.error,
+                                          ),
+                                        ),
+                                        TextSpan(text: " ${item.ownerText}"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       if (widget.matches.isNotEmpty) ...[
                         Text(
                           L10n.get("compatibility_matches"),
@@ -557,7 +639,9 @@ class _ListingDetailCompatibilitySectionState
                           ),
                         ),
                       ],
-                      if (widget.matches.isEmpty && widget.differences.isEmpty)
+                      if (widget.matches.isEmpty &&
+                          widget.differences.isEmpty &&
+                          widget.dealbreakers.isEmpty)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

@@ -310,6 +310,18 @@ abstract class AppLocalizations {
   /// **'Potential differences:'**
   String get compatibility_differences;
 
+  /// No description provided for @compatibility_critical_differences.
+  ///
+  /// In en, this message translates to:
+  /// **'Critical differences:'**
+  String get compatibility_critical_differences;
+
+  /// No description provided for @compatibility_based_on_preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on {scored} of {total} preferences'**
+  String compatibility_based_on_preferences(String scored, String total);
+
   /// No description provided for @vs.
   ///
   /// In en, this message translates to:

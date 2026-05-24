@@ -55,6 +55,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_enable_flow.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
@@ -1104,6 +1105,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         context,
         message: L10n.get("successfully_signed_in_telegram"),
         duration: const Duration(seconds: 3),
+      );
+      await TelegramAlertsEnableFlow.offerIfNeeded(
+        context,
+        useRootNavigator: true,
       );
     }
   }

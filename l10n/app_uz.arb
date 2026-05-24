@@ -51,6 +51,20 @@
   "na": "N/A",
   "compatibility_matches": "Mos keladigan xususiyatlar:",
   "compatibility_differences": "Ehtimoliy farqlar:",
+  "compatibility_critical_differences": "Muhim farqlar:",
+  "compatibility_based_on_preferences": "{total} ta afzallikdan {scored} tasiga asoslangan",
+  "@compatibility_based_on_preferences": {
+    "placeholders": {
+      "scored": {
+        "type": "String",
+        "example": "scored"
+      },
+      "total": {
+        "type": "String",
+        "example": "total"
+      }
+    }
+  },
   "vs": "vs",
   "name": "Ism yoki taxallus",
   "im_from": "Men:",

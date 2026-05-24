@@ -18,6 +18,9 @@ class ListingDetailPageState {
     this.isLoadingCompatibility = false,
     this.compatibilityMatches = const [],
     this.compatibilityDifferences = const [],
+    this.compatibilityDealbreakers = const [],
+    this.compatibilityScoredFieldCount = 0,
+    this.compatibilityTotalFieldCount = 0,
     this.compatibilityError,
     this.ownerName,
     this.ownerNameListingUserId,
@@ -41,6 +44,9 @@ class ListingDetailPageState {
   final bool isLoadingCompatibility;
   final List<CompatibilityMatch> compatibilityMatches;
   final List<CompatibilityDifference> compatibilityDifferences;
+  final List<CompatibilityDifference> compatibilityDealbreakers;
+  final int compatibilityScoredFieldCount;
+  final int compatibilityTotalFieldCount;
   final String? compatibilityError;
   final String? ownerName;
   final int? ownerNameListingUserId;
@@ -68,6 +74,9 @@ class ListingDetailPageState {
     bool? isLoadingCompatibility,
     List<CompatibilityMatch>? compatibilityMatches,
     List<CompatibilityDifference>? compatibilityDifferences,
+    List<CompatibilityDifference>? compatibilityDealbreakers,
+    int? compatibilityScoredFieldCount,
+    int? compatibilityTotalFieldCount,
     String? compatibilityError,
     String? ownerName,
     int? ownerNameListingUserId,
@@ -98,6 +107,12 @@ class ListingDetailPageState {
           compatibilityMatches ?? this.compatibilityMatches,
       compatibilityDifferences:
           compatibilityDifferences ?? this.compatibilityDifferences,
+      compatibilityDealbreakers:
+          compatibilityDealbreakers ?? this.compatibilityDealbreakers,
+      compatibilityScoredFieldCount: compatibilityScoredFieldCount ??
+          this.compatibilityScoredFieldCount,
+      compatibilityTotalFieldCount: compatibilityTotalFieldCount ??
+          this.compatibilityTotalFieldCount,
       compatibilityError: compatibilityError ?? this.compatibilityError,
       ownerName: ownerName ?? this.ownerName,
       ownerNameListingUserId:
@@ -130,6 +145,9 @@ class ListingDetailPageState {
         other.isLoadingCompatibility == isLoadingCompatibility &&
         _listEquals(other.compatibilityMatches, compatibilityMatches) &&
         _listEquals(other.compatibilityDifferences, compatibilityDifferences) &&
+        _listEquals(other.compatibilityDealbreakers, compatibilityDealbreakers) &&
+        other.compatibilityScoredFieldCount == compatibilityScoredFieldCount &&
+        other.compatibilityTotalFieldCount == compatibilityTotalFieldCount &&
         other.compatibilityError == compatibilityError &&
         other.ownerName == ownerName &&
         other.ownerNameListingUserId == ownerNameListingUserId &&
@@ -252,7 +270,12 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
 
   void setCompatibilityResult({
     required int listingUserId,
-    required List<CompatibilityMatch> matches, required List<CompatibilityDifference> differences, int? percent,
+    required List<CompatibilityMatch> matches,
+    required List<CompatibilityDifference> differences,
+    required List<CompatibilityDifference> dealbreakers,
+    required int scoredFieldCount,
+    required int totalFieldCount,
+    int? percent,
     String? ownerName,
     String? ownerAvatarUrl,
     String? currentUserAvatarUrl,
@@ -263,6 +286,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         isLoadingCompatibility: false,
         compatibilityMatches: matches,
         compatibilityDifferences: differences,
+        compatibilityDealbreakers: dealbreakers,
+        compatibilityScoredFieldCount: scoredFieldCount,
+        compatibilityTotalFieldCount: totalFieldCount,
         compatibilityError: null,
         ownerName: ownerName,
         ownerNameListingUserId: listingUserId,
@@ -278,6 +304,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           compatibilityPercent: null,
           compatibilityMatches: [],
           compatibilityDifferences: [],
+          compatibilityDealbreakers: [],
+          compatibilityScoredFieldCount: 0,
+          compatibilityTotalFieldCount: 0,
         ),
       );
 
@@ -287,6 +316,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           compatibilityPercent: null,
           compatibilityMatches: [],
           compatibilityDifferences: [],
+          compatibilityDealbreakers: [],
+          compatibilityScoredFieldCount: 0,
+          compatibilityTotalFieldCount: 0,
           compatibilityError: error,
         ),
       );

@@ -53,6 +53,8 @@ class AppStrings {
       "na": "N/A",
       "compatibility_matches": "Matched preferences:",
       "compatibility_differences": "Potential differences:",
+      "compatibility_critical_differences": "Critical differences:",
+      "compatibility_based_on_preferences": "Based on {scored} of {total} preferences",
       "vs": "vs",
       "name": "Name or nickname",
       "im_from": "I'm from:",
@@ -1511,6 +1513,15 @@ class AppStrings {
           "Finish signing in in the browser, then return here.",
       "telegram_sign_in_failed": "Telegram sign-in failed: {error}",
       "could_not_open_telegram": "Could not open Telegram",
+      "telegram_alerts_enable_title": "Get alerts in Telegram?",
+      "telegram_alerts_enable_body":
+          "Receive message and search-match notifications in Telegram when push is off or unavailable.",
+      "telegram_alerts_enable_button": "Enable in Telegram",
+      "telegram_alerts_enable_waiting":
+          "Tap Start in Telegram, then return here.",
+      "telegram_alerts_enabled_success": "Telegram alerts are on",
+      "telegram_alerts_enable_failed":
+          "Could not open Telegram alerts setup. Try again later.",
       "apple_sign_in_failed": "Apple Sign-In failed: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -1619,6 +1630,8 @@ class AppStrings {
       "na": "Н/Д",
       "compatibility_matches": "Совпадающие предпочтения:",
       "compatibility_differences": "Возможные различия:",
+      "compatibility_critical_differences": "Критичные различия:",
+      "compatibility_based_on_preferences": "На основе {scored} из {total} предпочтений",
       "vs": "vs",
       "name": "Имя или никнейм",
       "im_from": "Я из:",
@@ -3102,6 +3115,15 @@ class AppStrings {
           "Завершите вход в браузере, затем вернитесь в приложение.",
       "telegram_sign_in_failed": "Вход через Telegram не удался: {error}",
       "could_not_open_telegram": "Не удалось открыть Telegram",
+      "telegram_alerts_enable_title": "Получать уведомления в Telegram?",
+      "telegram_alerts_enable_body":
+          "Сообщения и совпадения по поиску будут приходить в Telegram, если push недоступен.",
+      "telegram_alerts_enable_button": "Включить в Telegram",
+      "telegram_alerts_enable_waiting":
+          "Нажмите Start в Telegram, затем вернитесь сюда.",
+      "telegram_alerts_enabled_success": "Уведомления в Telegram включены",
+      "telegram_alerts_enable_failed":
+          "Не удалось открыть настройку Telegram-уведомлений. Попробуйте позже.",
       "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -3211,6 +3233,8 @@ class AppStrings {
       "na": "N/A",
       "compatibility_matches": "Mos keladigan xususiyatlar:",
       "compatibility_differences": "Ehtimoliy farqlar:",
+      "compatibility_critical_differences": "Muhim farqlar:",
+      "compatibility_based_on_preferences": "{total} ta afzallikdan {scored} tasiga asoslangan",
       "vs": "vs",
       "name": "Ism yoki taxallus",
       "im_from": "Men:",
@@ -4701,6 +4725,15 @@ class AppStrings {
           "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
       "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",
       "could_not_open_telegram": "Telegramni ochib bo‘lmadi",
+      "telegram_alerts_enable_title": "Telegramda bildirishnomalar?",
+      "telegram_alerts_enable_body":
+          "Push ishlamasa, xabarlar va qidiruv mosliklari Telegramga keladi.",
+      "telegram_alerts_enable_button": "Telegramda yoqish",
+      "telegram_alerts_enable_waiting":
+          "Telegramda Start bosing, so‘ng bu yerga qayting.",
+      "telegram_alerts_enabled_success": "Telegram bildirishnomalari yoqildi",
+      "telegram_alerts_enable_failed":
+          "Telegram bildirishnomalarini yoqib bo‘lmadi. Keyinroq urinib ko‘ring.",
       "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
 
       // ===== PHONE AUTHENTICATION =====

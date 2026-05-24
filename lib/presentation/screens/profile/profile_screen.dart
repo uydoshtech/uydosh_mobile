@@ -53,6 +53,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_enable_flow.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
@@ -201,6 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
       message: L10n.get("telegram_linked_success"),
     );
+    await TelegramAlertsEnableFlow.offerIfNeeded(context);
   }
 
   String? _backendErrorCode(DioException error) {
@@ -281,6 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           context,
           message: L10n.get("telegram_linked_success"),
         );
+        await TelegramAlertsEnableFlow.offerIfNeeded(context);
         return;
       }
 

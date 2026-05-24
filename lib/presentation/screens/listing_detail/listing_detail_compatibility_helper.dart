@@ -6,7 +6,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Computes compatibility between current user and listing owner.
-/// Moved out of build to avoid heavy logic and .map().toList() in build.
+/// Uses [computeProfileCompatibility] as the single scoring source of truth.
 class ListingDetailCompatibilityHelper {
   ListingDetailCompatibilityHelper._();
 
@@ -14,210 +14,238 @@ class ListingDetailCompatibilityHelper {
     UserProfile currentProfile,
     UserProfile ownerProfile,
   ) {
+    final analysis = computeProfileCompatibility(currentProfile, ownerProfile);
     final matches = <CompatibilityMatch>[];
     final differences = <CompatibilityDifference>[];
+    final dealbreakers = <CompatibilityDifference>[];
 
-    void compare<T>({
-      required String labelKey,
-      required T? currentValue,
-      required T? ownerValue,
-      required bool Function(T a, T b) isMatch,
-      required String Function(T value) formatValue,
-    }) {
-      if (currentValue == null || ownerValue == null) return;
-      final label = L10n.get(labelKey);
-      final currentText = formatValue(currentValue);
-      final ownerText = formatValue(ownerValue);
+    void addMatch(String labelKey, String label, String value) {
+      matches.add(CompatibilityMatch(
+        labelKey: labelKey,
+        label: label,
+        value: value,
+      ));
+    }
 
-      if (isMatch(currentValue, ownerValue)) {
-        matches.add(CompatibilityMatch(
-          labelKey: labelKey,
-          label: label,
-          value: currentText,
-        ));
-      } else {
-        differences.add(CompatibilityDifference(
-          labelKey: labelKey,
-          label: label,
-          currentText: currentText,
-          ownerText: ownerText,
-        ));
+    void addDifference(String labelKey, String label, String currentText,
+        String ownerText,) {
+      differences.add(CompatibilityDifference(
+        labelKey: labelKey,
+        label: label,
+        currentText: currentText,
+        ownerText: ownerText,
+      ));
+    }
+
+    void addDealbreaker(String labelKey, String label, String currentText,
+        String ownerText,) {
+      dealbreakers.add(CompatibilityDifference(
+        labelKey: labelKey,
+        label: label,
+        currentText: currentText,
+        ownerText: ownerText,
+      ));
+    }
+
+    for (final field in analysis.fields) {
+      switch (field.labelKey) {
+        case "sleep_schedule":
+          _addSleepRows(
+            currentProfile,
+            ownerProfile,
+            addMatch,
+            addDifference,
+          );
+        case "university":
+          _addUniversityRow(
+            currentProfile,
+            ownerProfile,
+            field.status,
+            addMatch,
+            addDifference,
+            addDealbreaker,
+          );
+        case "region":
+          _addRegionRow(
+            currentProfile,
+            ownerProfile,
+            field.status,
+            addMatch,
+            addDifference,
+            addDealbreaker,
+          );
+        default:
+          _addStandardRow(
+            currentProfile,
+            ownerProfile,
+            field,
+            addMatch,
+            addDifference,
+            addDealbreaker,
+          );
       }
     }
 
-    // University
-    if (currentProfile.universityId != null &&
-        ownerProfile.universityId != null) {
-      final currentLang = LanguageState().currentLanguage;
-      final currentText = currentProfile.university != null
-          ? currentProfile.university!.getLocalizedNameCapitalized(currentLang)
-          : "";
-      final ownerText = ownerProfile.university != null
-          ? ownerProfile.university!.getLocalizedNameCapitalized(currentLang)
-          : "";
-
-      if (currentProfile.universityId == ownerProfile.universityId) {
-        matches.insert(
-          0,
-          CompatibilityMatch(
-            labelKey: "same_university",
-            label: L10n.get("same_university"),
-            value: currentText.isNotEmpty ? currentText : ownerText,
-          ),
-        );
-      } else {
-        matches.insert(
-          0,
-          CompatibilityMatch(
-            labelKey: "both_students",
-            label: L10n.get("both_students"),
-            value: "$currentText ↔ $ownerText",
-          ),
-        );
-      }
-    }
-
-    // Region
-    if (currentProfile.regionId != null && ownerProfile.regionId != null) {
-      const labelKey = "region";
-      final label = L10n.get(labelKey);
-      final currentText = currentProfile.region != null
-          ? _getLocalizedRegionName(currentProfile.region!)
-          : "";
-      final ownerText = ownerProfile.region != null
-          ? _getLocalizedRegionName(ownerProfile.region!)
-          : "";
-
-      if (currentProfile.regionId == ownerProfile.regionId) {
-        matches.add(CompatibilityMatch(
-          labelKey: "same_region",
-          label: L10n.get("same_region"),
-          value: currentText.isNotEmpty ? currentText : ownerText,
-        ));
-      } else {
-        differences.add(CompatibilityDifference(
-          labelKey: labelKey,
-          label: label,
-          currentText: currentText.isNotEmpty ? currentText : L10n.get("unknown"),
-          ownerText: ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
-        ));
-      }
-    }
-
-    compare<String>(
-      labelKey: "language",
-      currentValue: currentProfile.preferredLanguage,
-      ownerValue: ownerProfile.preferredLanguage,
-      isMatch: (a, b) => a == b,
-      formatValue: LanguageDisplayHelper.getLocalizedLanguageName,
-    );
-
-    compare<int>(
-      labelKey: "cleanliness",
-      currentValue: currentProfile.cleanliness,
-      ownerValue: ownerProfile.cleanliness,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatCleanlinessLevel,
-    );
-
-    compare<int>(
-      labelKey: "noise_level",
-      currentValue: currentProfile.noiseLevel,
-      ownerValue: ownerProfile.noiseLevel,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatNoiseLevel,
-    );
-
-    compare<int>(
-      labelKey: "sociability",
-      currentValue: currentProfile.sociability,
-      ownerValue: ownerProfile.sociability,
-      isMatch: (a, b) => (a - b).abs() <= 1,
-      formatValue: _formatSociabilityLevel,
-    );
-
-    compare<bool>(
-      labelKey: "guests",
-      currentValue: currentProfile.guestsAllowed,
-      ownerValue: ownerProfile.guestsAllowed,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
-    );
-
-    compare<String>(
-      labelKey: "smoking_preference",
-      currentValue: currentProfile.smokingPreference,
-      ownerValue: ownerProfile.smokingPreference,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatSmokingPreference,
-    );
-
-    compare<String>(
-      labelKey: "alcohol_preference",
-      currentValue: currentProfile.alcoholPreference,
-      ownerValue: ownerProfile.alcoholPreference,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatAlcoholPreference,
-    );
-
-    compare<bool>(
-      labelKey: "cooking_habits",
-      currentValue: currentProfile.cookingHabits,
-      ownerValue: ownerProfile.cookingHabits,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatCookingHabits,
-    );
-
-    compare<String>(
-      labelKey: "pets_preference",
-      currentValue: currentProfile.petsPreference,
-      ownerValue: ownerProfile.petsPreference,
-      isMatch: _petsPreferenceCompatible,
-      formatValue: _formatPetsPreference,
-    );
-
-    compare<String>(
-      labelKey: "wakeup_time",
-      currentValue: currentProfile.wakeupTime,
-      ownerValue: ownerProfile.wakeupTime,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatDayPreference,
-    );
-
-    compare<String>(
-      labelKey: "sleep_time",
-      currentValue: currentProfile.sleepTime,
-      ownerValue: ownerProfile.sleepTime,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatDayPreference,
-    );
-
-    compare<bool>(
-      labelKey: "work",
-      currentValue: currentProfile.employed,
-      ownerValue: ownerProfile.employed,
-      isMatch: (a, b) => a == b,
-      formatValue: _formatBooleanPreference,
-    );
-
-    // Weighted score (sleep, smoking, drinking, university, hobbies) — not plain field counts.
-    final weighted = computeProfileMatchScore(currentProfile, ownerProfile);
-    final percent = (weighted * 100).round();
     return CompatibilityResult(
-      percent: percent,
+      percent: analysis.scoredFieldCount == 0 ? null : analysis.percent,
+      scoredFieldCount: analysis.scoredFieldCount,
+      totalFieldCount: analysis.totalFieldCount,
       matches: matches,
       differences: differences,
+      dealbreakers: dealbreakers,
+      hasDealbreaker: analysis.hasDealbreaker,
     );
   }
 
-  /// API slugs: `like_pets` | `dont_like_pets` | `have_cat` | `have_dog`.
-  /// Liking pets matches owning a cat or dog (either direction).
-  static bool _petsPreferenceCompatible(String a, String b) {
-    if (a == b) return true;
-    const hasPet = {'have_cat', 'have_dog'};
-    if (a == 'like_pets' && hasPet.contains(b)) return true;
-    if (b == 'like_pets' && hasPet.contains(a)) return true;
-    return false;
+  static void _addSleepRows(
+    UserProfile current,
+    UserProfile owner,
+    void Function(String, String, String) addMatch,
+    void Function(String, String, String, String) addDifference,
+  ) {
+    void compareSlot(String labelKey, String? a, String? b) {
+      if (a == null || b == null) return;
+      final label = L10n.get(labelKey);
+      final currentText = _formatDayPreference(a);
+      final ownerText = _formatDayPreference(b);
+      final slotScore = dayPhaseSlotScore(a, b);
+      final isMatch = slotScore != null && slotScore >= 0.75;
+      if (isMatch) {
+        addMatch(labelKey, label, currentText);
+      } else {
+        addDifference(labelKey, label, currentText, ownerText);
+      }
+    }
+
+    compareSlot("wakeup_time", current.wakeupTime, owner.wakeupTime);
+    compareSlot("sleep_time", current.sleepTime, owner.sleepTime);
+  }
+
+  static void _addUniversityRow(
+    UserProfile current,
+    UserProfile owner,
+    ProfileMatchFieldStatus status,
+    void Function(String, String, String) addMatch,
+    void Function(String, String, String, String) addDifference,
+    void Function(String, String, String, String) addDealbreaker,
+  ) {
+    if (current.universityId == null || owner.universityId == null) return;
+
+    final currentLang = LanguageState().currentLanguage;
+    final currentText = current.university != null
+        ? current.university!.getLocalizedNameCapitalized(currentLang)
+        : "";
+    final ownerText = owner.university != null
+        ? owner.university!.getLocalizedNameCapitalized(currentLang)
+        : "";
+
+    if (current.universityId == owner.universityId) {
+      addMatch(
+        "same_university",
+        L10n.get("same_university"),
+        currentText.isNotEmpty ? currentText : ownerText,
+      );
+    } else if (status == ProfileMatchFieldStatus.match ||
+        status == ProfileMatchFieldStatus.difference) {
+      addMatch(
+        "both_students",
+        L10n.get("both_students"),
+        "$currentText ↔ $ownerText",
+      );
+    }
+  }
+
+  static void _addRegionRow(
+    UserProfile current,
+    UserProfile owner,
+    ProfileMatchFieldStatus status,
+    void Function(String, String, String) addMatch,
+    void Function(String, String, String, String) addDifference,
+    void Function(String, String, String, String) addDealbreaker,
+  ) {
+    if (current.regionId == null || owner.regionId == null) return;
+
+    final currentText = current.region != null
+        ? _getLocalizedRegionName(current.region!)
+        : "";
+    final ownerText =
+        owner.region != null ? _getLocalizedRegionName(owner.region!) : "";
+
+    if (status == ProfileMatchFieldStatus.match) {
+      addMatch(
+        "same_region",
+        L10n.get("same_region"),
+        currentText.isNotEmpty ? currentText : ownerText,
+      );
+    } else if (status == ProfileMatchFieldStatus.dealbreaker) {
+      addDealbreaker(
+        "region",
+        L10n.get("region"),
+        currentText.isNotEmpty ? currentText : L10n.get("unknown"),
+        ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
+      );
+    } else {
+      addDifference(
+        "region",
+        L10n.get("region"),
+        currentText.isNotEmpty ? currentText : L10n.get("unknown"),
+        ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
+      );
+    }
+  }
+
+  static void _addStandardRow(
+    UserProfile current,
+    UserProfile owner,
+    ProfileMatchFieldResult field,
+    void Function(String, String, String) addMatch,
+    void Function(String, String, String, String) addDifference,
+    void Function(String, String, String, String) addDealbreaker,
+  ) {
+    if (field.status == ProfileMatchFieldStatus.incomplete) return;
+
+    final labelKey = field.labelKey;
+    final label = L10n.get(labelKey);
+    final currentText = _formatField(current, labelKey);
+    final ownerText = _formatField(owner, labelKey);
+
+    switch (field.status) {
+      case ProfileMatchFieldStatus.match:
+        addMatch(labelKey, label, currentText);
+      case ProfileMatchFieldStatus.dealbreaker:
+        addDealbreaker(labelKey, label, currentText, ownerText);
+      case ProfileMatchFieldStatus.difference:
+        addDifference(labelKey, label, currentText, ownerText);
+      case ProfileMatchFieldStatus.incomplete:
+        break;
+    }
+  }
+
+  static String _formatField(UserProfile profile, String labelKey) {
+    switch (labelKey) {
+      case "language":
+        return LanguageDisplayHelper.getLocalizedLanguageName(
+          profile.preferredLanguage ?? "",
+        );
+      case "cleanliness":
+        return _formatCleanlinessLevel(profile.cleanliness ?? 1);
+      case "noise_level":
+        return _formatNoiseLevel(profile.noiseLevel ?? 1);
+      case "sociability":
+        return _formatSociabilityLevel(profile.sociability ?? 1);
+      case "guests":
+        return _formatBooleanPreference(profile.guestsAllowed ?? false);
+      case "smoking_preference":
+        return _formatSmokingPreference(profile.smokingPreference ?? "");
+      case "alcohol_preference":
+        return _formatAlcoholPreference(profile.alcoholPreference ?? "");
+      case "cooking_habits":
+        return _formatCookingHabits(profile.cookingHabits ?? false);
+      case "pets_preference":
+        return _formatPetsPreference(profile.petsPreference ?? "");
+      default:
+        return "";
+    }
   }
 
   static String _getLocalizedRegionName(UserProfileRegion region) {
@@ -302,10 +330,19 @@ class ListingDetailCompatibilityHelper {
 class CompatibilityResult {
   const CompatibilityResult({
     required this.percent,
+    required this.scoredFieldCount,
+    required this.totalFieldCount,
     required this.matches,
     required this.differences,
+    required this.dealbreakers,
+    required this.hasDealbreaker,
   });
+
   final int? percent;
+  final int scoredFieldCount;
+  final int totalFieldCount;
   final List<CompatibilityMatch> matches;
   final List<CompatibilityDifference> differences;
+  final List<CompatibilityDifference> dealbreakers;
+  final bool hasDealbreaker;
 }

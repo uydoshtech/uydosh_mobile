@@ -51,6 +51,20 @@
   "na": "N/A",
   "compatibility_matches": "Matched preferences:",
   "compatibility_differences": "Potential differences:",
+  "compatibility_critical_differences": "Critical differences:",
+  "compatibility_based_on_preferences": "Based on {scored} of {total} preferences",
+  "@compatibility_based_on_preferences": {
+    "placeholders": {
+      "scored": {
+        "type": "String",
+        "example": "scored"
+      },
+      "total": {
+        "type": "String",
+        "example": "total"
+      }
+    }
+  },
   "vs": "vs",
   "name": "Name or nickname",
   "im_from": "I'm from:",

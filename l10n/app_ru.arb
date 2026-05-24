@@ -51,6 +51,20 @@
   "na": "Н/Д",
   "compatibility_matches": "Совпадающие предпочтения:",
   "compatibility_differences": "Возможные различия:",
+  "compatibility_critical_differences": "Критичные различия:",
+  "compatibility_based_on_preferences": "На основе {scored} из {total} предпочтений",
+  "@compatibility_based_on_preferences": {
+    "placeholders": {
+      "scored": {
+        "type": "String",
+        "example": "scored"
+      },
+      "total": {
+        "type": "String",
+        "example": "total"
+      }
+    }
+  },
   "vs": "vs",
   "name": "Имя или никнейм",
   "im_from": "Я из:",

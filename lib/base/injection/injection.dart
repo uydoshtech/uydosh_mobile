@@ -42,6 +42,7 @@ import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/services/search_analytics_service.dart";
 import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/domain/services/support_chat_service.dart";
+import "package:uy_dosh/domain/services/telegram_bot_alerts_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
@@ -132,6 +133,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAuthService>(
     () => AuthService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<ITelegramBotAlertsService>(
+    () => TelegramBotAlertsService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IOtpService>(

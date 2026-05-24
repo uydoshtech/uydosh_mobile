@@ -8,6 +8,14 @@ UserProfile _profile({
   String? smokingPreference,
   String? alcoholPreference,
   int? universityId,
+  String? petsPreference,
+  int? cleanliness,
+  int? noiseLevel,
+  int? sociability,
+  bool? guestsAllowed,
+  bool? cookingHabits,
+  int? regionId,
+  String? preferredLanguage,
 }) {
   return UserProfile(
     id: 1,
@@ -17,6 +25,14 @@ UserProfile _profile({
     smokingPreference: smokingPreference,
     alcoholPreference: alcoholPreference,
     universityId: universityId,
+    petsPreference: petsPreference,
+    cleanliness: cleanliness,
+    noiseLevel: noiseLevel,
+    sociability: sociability,
+    guestsAllowed: guestsAllowed,
+    cookingHabits: cookingHabits,
+    regionId: regionId,
+    preferredLanguage: preferredLanguage,
   );
 }
 
@@ -29,20 +45,21 @@ void main() {
       );
     });
 
-    test("unknown on one side uses neutral per slot", () {
+    test("missing data on both slots returns null", () {
       expect(
-        sleepScheduleCompatibility(
-          null,
-          "morning",
-          "night",
-          "night",
-          neutralPartialScore: 0.5,
-        ),
-        closeTo(0.25, 1e-9),
+        sleepScheduleCompatibility(null, null, null, null),
+        isNull,
       );
     });
 
-    test("non-phase strings fall back to equality", () {
+    test("one slot filled uses that slot only", () {
+      expect(
+        sleepScheduleCompatibility(null, "morning", null, "morning"),
+        1.0,
+      );
+    });
+
+    test("non-phase strings fall back to equality per slot", () {
       expect(
         sleepScheduleCompatibility("custom", "x", "custom", "x"),
         1.0,
@@ -55,9 +72,9 @@ void main() {
   });
 
   group("preferenceBinaryScore", () {
-    test("null yields neutral", () {
-      expect(preferenceBinaryScore(null, "a"), 0.5);
-      expect(preferenceBinaryScore("a", null), 0.5);
+    test("null yields null (excluded from score)", () {
+      expect(preferenceBinaryScore(null, "a"), isNull);
+      expect(preferenceBinaryScore("a", null), isNull);
     });
 
     test("match vs mismatch", () {
@@ -67,13 +84,61 @@ void main() {
   });
 
   group("universityScore", () {
-    test("null yields neutral", () {
-      expect(universityScore(null, 1), 0.5);
+    test("null yields null", () {
+      expect(universityScore(null, 1), isNull);
     });
 
     test("same id is 1.0", () {
       expect(universityScore(5, 5), 1.0);
-      expect(universityScore(5, 6), 0.0);
+    });
+
+    test("different ids score as both students", () {
+      expect(universityScore(5, 6), 0.55);
+    });
+  });
+
+  group("scaleCompatibility", () {
+    test("exact match is 1.0", () {
+      expect(scaleCompatibility(3, 3), 1.0);
+    });
+
+    test("distance 1 is soft match", () {
+      expect(scaleCompatibility(3, 4), 0.75);
+    });
+
+    test("distance 2 is weak", () {
+      expect(scaleCompatibility(1, 3), 0.35);
+    });
+
+    test("far apart is 0", () {
+      expect(scaleCompatibility(1, 5), 0.0);
+    });
+  });
+
+  group("smokingCompatibility", () {
+    test("non-smoker vs regular is dealbreaker", () {
+      final result = smokingCompatibility("non-smoker", "regular");
+      expect(result?.isDealbreaker, isTrue);
+      expect(result?.score, 0.0);
+    });
+
+    test("same preference is perfect", () {
+      final result = smokingCompatibility("occasional", "occasional");
+      expect(result?.score, 1.0);
+      expect(result?.isDealbreaker, isFalse);
+    });
+  });
+
+  group("petsCompatibility", () {
+    test("dont_like_pets vs have_cat is dealbreaker", () {
+      final result = petsCompatibility("dont_like_pets", "have_cat");
+      expect(result?.isDealbreaker, isTrue);
+      expect(result?.score, 0.0);
+    });
+
+    test("like_pets vs have_dog is compatible", () {
+      final result = petsCompatibility("like_pets", "have_dog");
+      expect(result?.score, 1.0);
     });
   });
 
@@ -101,55 +166,132 @@ void main() {
     });
   });
 
-  group("computeProfileMatchScore", () {
-    test("identical filled profiles trend to 1.0 with matching hobbies", () {
+  group("computeProfileCompatibility", () {
+    test("identical filled profiles score high", () {
       final a = _profile(
         sleepTime: "morning",
         wakeupTime: "evening",
-        smokingPreference: "no",
-        alcoholPreference: "no",
+        smokingPreference: "non-smoker",
+        alcoholPreference: "non-drinker",
         universityId: 10,
+        petsPreference: "like_pets",
+        cleanliness: 4,
+        noiseLevel: 3,
+        sociability: 3,
+        guestsAllowed: false,
+        cookingHabits: true,
+        regionId: 1,
+        preferredLanguage: "uz",
       );
       final b = _profile(
         sleepTime: "morning",
         wakeupTime: "evening",
-        smokingPreference: "no",
-        alcoholPreference: "no",
+        smokingPreference: "non-smoker",
+        alcoholPreference: "non-drinker",
         universityId: 10,
+        petsPreference: "like_pets",
+        cleanliness: 4,
+        noiseLevel: 3,
+        sociability: 3,
+        guestsAllowed: false,
+        cookingHabits: true,
+        regionId: 1,
+        preferredLanguage: "uz",
       );
-      expect(
-        computeProfileMatchScore(
-          a,
-          b,
-          hobbiesA: const ["music"],
-          hobbiesB: const ["music"],
-        ),
-        1.0,
-      );
+
+      final result = computeProfileCompatibility(a, b);
+      expect(result.percent, greaterThanOrEqualTo(95));
+      expect(result.scoredFieldCount, 12);
+      expect(result.hasDealbreaker, isFalse);
     });
 
-    test("result is clamped to [0, 1]", () {
+    test("incomplete profiles exclude missing fields from denominator", () {
+      final sparse = _profile(smokingPreference: "non-smoker");
+      final full = _profile(
+        smokingPreference: "non-smoker",
+        alcoholPreference: "non-drinker",
+        universityId: 1,
+        cleanliness: 3,
+        noiseLevel: 3,
+        sociability: 3,
+      );
+
+      final result = computeProfileCompatibility(sparse, full);
+      expect(result.scoredFieldCount, lessThan(result.totalFieldCount));
+      expect(result.percent, isNot(50));
+    });
+
+    test("smoking dealbreaker caps overall score", () {
+      final a = _profile(
+        sleepTime: "morning",
+        wakeupTime: "evening",
+        smokingPreference: "non-smoker",
+        alcoholPreference: "non-drinker",
+        universityId: 10,
+        petsPreference: "like_pets",
+        cleanliness: 5,
+        noiseLevel: 3,
+        sociability: 3,
+        guestsAllowed: false,
+        cookingHabits: true,
+        regionId: 1,
+        preferredLanguage: "uz",
+      );
+      final b = _profile(
+        sleepTime: "morning",
+        wakeupTime: "evening",
+        smokingPreference: "regular",
+        alcoholPreference: "non-drinker",
+        universityId: 10,
+        petsPreference: "like_pets",
+        cleanliness: 5,
+        noiseLevel: 3,
+        sociability: 3,
+        guestsAllowed: false,
+        cookingHabits: true,
+        regionId: 1,
+        preferredLanguage: "uz",
+      );
+
+      final result = computeProfileCompatibility(a, b);
+      expect(result.hasDealbreaker, isTrue);
+      expect(result.percent, lessThanOrEqualTo(35));
+    });
+
+    test("result is clamped to [0, 100]", () {
       final a = _profile(
         sleepTime: "morning",
         wakeupTime: "morning",
-        smokingPreference: "no",
-        alcoholPreference: "no",
+        smokingPreference: "non-smoker",
+        alcoholPreference: "non-drinker",
         universityId: 1,
+        petsPreference: "dont_like_pets",
+        cleanliness: 1,
+        noiseLevel: 5,
+        sociability: 1,
+        guestsAllowed: true,
+        cookingHabits: false,
+        regionId: 1,
+        preferredLanguage: "uz",
       );
       final b = _profile(
         sleepTime: "night",
         wakeupTime: "night",
-        smokingPreference: "yes",
-        alcoholPreference: "yes",
+        smokingPreference: "regular",
+        alcoholPreference: "regular",
         universityId: 2,
+        petsPreference: "have_cat",
+        cleanliness: 5,
+        noiseLevel: 1,
+        sociability: 5,
+        guestsAllowed: false,
+        cookingHabits: true,
+        regionId: 2,
+        preferredLanguage: "ru",
       );
-      final score = computeProfileMatchScore(
-        a,
-        b,
-        hobbiesA: const ["a"],
-        hobbiesB: const ["b"],
-      );
-      expect(score >= 0.0 && score <= 1.0, isTrue);
+
+      final result = computeProfileCompatibility(a, b);
+      expect(result.percent >= 0 && result.percent <= 100, isTrue);
     });
   });
 }
