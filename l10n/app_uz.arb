@@ -1060,6 +1060,18 @@
   "share_subject_ru": "UyDosh - Объявление о жилье",
   "share_subject_en": "UyDosh - Housing Listing",
   "contact_user": "Foydalanuvchi bilan bog'lanish",
+  "follow": "Kuzatish",
+  "following": "Kuzatilmoqda",
+  "common_connections": "Umumiy tanishlar",
+  "common_connections_count": "{count}",
+  "@common_connections_count": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
   "message": "Yozish",
   "uydosh_chat": "UyDosh Chat",
   "delete_listing": "E'loni o'chirish",

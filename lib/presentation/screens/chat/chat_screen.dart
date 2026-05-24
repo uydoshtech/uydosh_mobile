@@ -8,6 +8,7 @@ import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -1762,7 +1763,10 @@ class _ChatScreenState extends State<ChatScreen> {
         MaterialPageRoute(
           builder: (context) => BlocProvider(
             create: (context) =>
-                ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+                ListingOwnerProfileBloc(
+                  getIt<IUserProfileService>(),
+                  getIt<IFollowService>(),
+                ),
             child: ListingOwnerProfileScreen(userId: otherUserId),
           ),
         ),

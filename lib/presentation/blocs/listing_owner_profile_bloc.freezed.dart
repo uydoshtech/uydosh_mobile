@@ -20,32 +20,38 @@ mixin _$ListingOwnerProfileEvent {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(int userId) fetchProfile,
+    required TResult Function(int userId) toggleFollow,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int userId)? fetchProfile,
+    TResult? Function(int userId)? toggleFollow,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int userId)? fetchProfile,
+    TResult Function(int userId)? toggleFollow,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchProfile value) fetchProfile,
+    required TResult Function(_ToggleFollow value) toggleFollow,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchProfile value)? fetchProfile,
+    TResult? Function(_ToggleFollow value)? toggleFollow,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchProfile value)? fetchProfile,
+    TResult Function(_ToggleFollow value)? toggleFollow,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -164,6 +170,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(int userId) fetchProfile,
+    required TResult Function(int userId) toggleFollow,
   }) {
     return fetchProfile(userId);
   }
@@ -172,6 +179,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(int userId)? fetchProfile,
+    TResult? Function(int userId)? toggleFollow,
   }) {
     return fetchProfile?.call(userId);
   }
@@ -180,6 +188,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(int userId)? fetchProfile,
+    TResult Function(int userId)? toggleFollow,
     required TResult orElse(),
   }) {
     if (fetchProfile != null) {
@@ -192,6 +201,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_FetchProfile value) fetchProfile,
+    required TResult Function(_ToggleFollow value) toggleFollow,
   }) {
     return fetchProfile(this);
   }
@@ -200,6 +210,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_FetchProfile value)? fetchProfile,
+    TResult? Function(_ToggleFollow value)? toggleFollow,
   }) {
     return fetchProfile?.call(this);
   }
@@ -208,6 +219,7 @@ class _$FetchProfileImpl implements _FetchProfile {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_FetchProfile value)? fetchProfile,
+    TResult Function(_ToggleFollow value)? toggleFollow,
     required TResult orElse(),
   }) {
     if (fetchProfile != null) {
@@ -232,12 +244,163 @@ abstract class _FetchProfile implements ListingOwnerProfileEvent {
 }
 
 /// @nodoc
+abstract class _$$ToggleFollowImplCopyWith<$Res>
+    implements $ListingOwnerProfileEventCopyWith<$Res> {
+  factory _$$ToggleFollowImplCopyWith(
+          _$ToggleFollowImpl value, $Res Function(_$ToggleFollowImpl) then) =
+      __$$ToggleFollowImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({int userId});
+}
+
+/// @nodoc
+class __$$ToggleFollowImplCopyWithImpl<$Res>
+    extends _$ListingOwnerProfileEventCopyWithImpl<$Res, _$ToggleFollowImpl>
+    implements _$$ToggleFollowImplCopyWith<$Res> {
+  __$$ToggleFollowImplCopyWithImpl(
+      _$ToggleFollowImpl _value, $Res Function(_$ToggleFollowImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ListingOwnerProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? userId = null,
+  }) {
+    return _then(_$ToggleFollowImpl(
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ToggleFollowImpl implements _ToggleFollow {
+  const _$ToggleFollowImpl({required this.userId});
+
+  @override
+  final int userId;
+
+  @override
+  String toString() {
+    return 'ListingOwnerProfileEvent.toggleFollow(userId: $userId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ToggleFollowImpl &&
+            (identical(other.userId, userId) || other.userId == userId));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, userId);
+
+  /// Create a copy of ListingOwnerProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ToggleFollowImplCopyWith<_$ToggleFollowImpl> get copyWith =>
+      __$$ToggleFollowImplCopyWithImpl<_$ToggleFollowImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(int userId) fetchProfile,
+    required TResult Function(int userId) toggleFollow,
+  }) {
+    return toggleFollow(userId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(int userId)? fetchProfile,
+    TResult? Function(int userId)? toggleFollow,
+  }) {
+    return toggleFollow?.call(userId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(int userId)? fetchProfile,
+    TResult Function(int userId)? toggleFollow,
+    required TResult orElse(),
+  }) {
+    if (toggleFollow != null) {
+      return toggleFollow(userId);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_FetchProfile value) fetchProfile,
+    required TResult Function(_ToggleFollow value) toggleFollow,
+  }) {
+    return toggleFollow(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_FetchProfile value)? fetchProfile,
+    TResult? Function(_ToggleFollow value)? toggleFollow,
+  }) {
+    return toggleFollow?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_FetchProfile value)? fetchProfile,
+    TResult Function(_ToggleFollow value)? toggleFollow,
+    required TResult orElse(),
+  }) {
+    if (toggleFollow != null) {
+      return toggleFollow(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ToggleFollow implements ListingOwnerProfileEvent {
+  const factory _ToggleFollow({required final int userId}) = _$ToggleFollowImpl;
+
+  @override
+  int get userId;
+
+  /// Create a copy of ListingOwnerProfileEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ToggleFollowImplCopyWith<_$ToggleFollowImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$ListingOwnerProfileState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)
+        loaded,
     required TResult Function(String message) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -245,7 +408,14 @@ mixin _$ListingOwnerProfileState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult? Function(String message)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -253,7 +423,14 @@ mixin _$ListingOwnerProfileState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(UserProfile profile)? loaded,
+    TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) =>
@@ -350,7 +527,14 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -361,7 +545,14 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -372,7 +563,14 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(UserProfile profile)? loaded,
+    TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -467,7 +665,14 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -478,7 +683,14 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -489,7 +701,14 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(UserProfile profile)? loaded,
+    TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -547,7 +766,13 @@ abstract class _$$LoadedImplCopyWith<$Res> {
           _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
       __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({UserProfile profile});
+  $Res call(
+      {UserProfile profile,
+      bool isFollowing,
+      bool isFollowLoading,
+      List<CommonFriend> commonFriends,
+      int commonFriendsTotal,
+      bool canFollow});
 
   $UserProfileCopyWith<$Res> get profile;
 }
@@ -566,12 +791,37 @@ class __$$LoadedImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? profile = null,
+    Object? isFollowing = null,
+    Object? isFollowLoading = null,
+    Object? commonFriends = null,
+    Object? commonFriendsTotal = null,
+    Object? canFollow = null,
   }) {
     return _then(_$LoadedImpl(
       profile: null == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
               as UserProfile,
+      isFollowing: null == isFollowing
+          ? _value.isFollowing
+          : isFollowing // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isFollowLoading: null == isFollowLoading
+          ? _value.isFollowLoading
+          : isFollowLoading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      commonFriends: null == commonFriends
+          ? _value._commonFriends
+          : commonFriends // ignore: cast_nullable_to_non_nullable
+              as List<CommonFriend>,
+      commonFriendsTotal: null == commonFriendsTotal
+          ? _value.commonFriendsTotal
+          : commonFriendsTotal // ignore: cast_nullable_to_non_nullable
+              as int,
+      canFollow: null == canFollow
+          ? _value.canFollow
+          : canFollow // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 
@@ -589,14 +839,42 @@ class __$$LoadedImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$LoadedImpl implements _Loaded {
-  const _$LoadedImpl({required this.profile});
+  const _$LoadedImpl(
+      {required this.profile,
+      this.isFollowing = false,
+      this.isFollowLoading = false,
+      final List<CommonFriend> commonFriends = const <CommonFriend>[],
+      this.commonFriendsTotal = 0,
+      this.canFollow = false})
+      : _commonFriends = commonFriends;
 
   @override
   final UserProfile profile;
+  @override
+  @JsonKey()
+  final bool isFollowing;
+  @override
+  @JsonKey()
+  final bool isFollowLoading;
+  final List<CommonFriend> _commonFriends;
+  @override
+  @JsonKey()
+  List<CommonFriend> get commonFriends {
+    if (_commonFriends is EqualUnmodifiableListView) return _commonFriends;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_commonFriends);
+  }
+
+  @override
+  @JsonKey()
+  final int commonFriendsTotal;
+  @override
+  @JsonKey()
+  final bool canFollow;
 
   @override
   String toString() {
-    return 'ListingOwnerProfileState.loaded(profile: $profile)';
+    return 'ListingOwnerProfileState.loaded(profile: $profile, isFollowing: $isFollowing, isFollowLoading: $isFollowLoading, commonFriends: $commonFriends, commonFriendsTotal: $commonFriendsTotal, canFollow: $canFollow)';
   }
 
   @override
@@ -604,11 +882,28 @@ class _$LoadedImpl implements _Loaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$LoadedImpl &&
-            (identical(other.profile, profile) || other.profile == profile));
+            (identical(other.profile, profile) || other.profile == profile) &&
+            (identical(other.isFollowing, isFollowing) ||
+                other.isFollowing == isFollowing) &&
+            (identical(other.isFollowLoading, isFollowLoading) ||
+                other.isFollowLoading == isFollowLoading) &&
+            const DeepCollectionEquality()
+                .equals(other._commonFriends, _commonFriends) &&
+            (identical(other.commonFriendsTotal, commonFriendsTotal) ||
+                other.commonFriendsTotal == commonFriendsTotal) &&
+            (identical(other.canFollow, canFollow) ||
+                other.canFollow == canFollow));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, profile);
+  int get hashCode => Object.hash(
+      runtimeType,
+      profile,
+      isFollowing,
+      isFollowLoading,
+      const DeepCollectionEquality().hash(_commonFriends),
+      commonFriendsTotal,
+      canFollow);
 
   /// Create a copy of ListingOwnerProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -623,10 +918,18 @@ class _$LoadedImpl implements _Loaded {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)
+        loaded,
     required TResult Function(String message) error,
   }) {
-    return loaded(profile);
+    return loaded(profile, isFollowing, isFollowLoading, commonFriends,
+        commonFriendsTotal, canFollow);
   }
 
   @override
@@ -634,10 +937,18 @@ class _$LoadedImpl implements _Loaded {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult? Function(String message)? error,
   }) {
-    return loaded?.call(profile);
+    return loaded?.call(profile, isFollowing, isFollowLoading, commonFriends,
+        commonFriendsTotal, canFollow);
   }
 
   @override
@@ -645,12 +956,20 @@ class _$LoadedImpl implements _Loaded {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(UserProfile profile)? loaded,
+    TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
     if (loaded != null) {
-      return loaded(profile);
+      return loaded(profile, isFollowing, isFollowLoading, commonFriends,
+          commonFriendsTotal, canFollow);
     }
     return orElse();
   }
@@ -694,9 +1013,20 @@ class _$LoadedImpl implements _Loaded {
 }
 
 abstract class _Loaded implements ListingOwnerProfileState {
-  const factory _Loaded({required final UserProfile profile}) = _$LoadedImpl;
+  const factory _Loaded(
+      {required final UserProfile profile,
+      final bool isFollowing,
+      final bool isFollowLoading,
+      final List<CommonFriend> commonFriends,
+      final int commonFriendsTotal,
+      final bool canFollow}) = _$LoadedImpl;
 
   UserProfile get profile;
+  bool get isFollowing;
+  bool get isFollowLoading;
+  List<CommonFriend> get commonFriends;
+  int get commonFriendsTotal;
+  bool get canFollow;
 
   /// Create a copy of ListingOwnerProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -775,7 +1105,14 @@ class _$ErrorImpl implements _Error {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(UserProfile profile) loaded,
+    required TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)
+        loaded,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -786,7 +1123,14 @@ class _$ErrorImpl implements _Error {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(UserProfile profile)? loaded,
+    TResult? Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -797,7 +1141,14 @@ class _$ErrorImpl implements _Error {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(UserProfile profile)? loaded,
+    TResult Function(
+            UserProfile profile,
+            bool isFollowing,
+            bool isFollowLoading,
+            List<CommonFriend> commonFriends,
+            int commonFriendsTotal,
+            bool canFollow)?
+        loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {

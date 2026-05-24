@@ -22,6 +22,7 @@ import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/domain/services/listing_creation_analytics_service.dart";
@@ -98,6 +99,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IFavoriteService>(
     () => FavoriteService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IFollowService>(
+    () => FollowService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IUserProfileService>(

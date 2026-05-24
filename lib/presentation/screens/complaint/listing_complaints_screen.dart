@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -415,7 +416,10 @@ class _ListingComplaintsScreenState extends State<ListingComplaintsScreen> {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+          create: (_) => ListingOwnerProfileBloc(
+            getIt<IUserProfileService>(),
+            getIt<IFollowService>(),
+          ),
           child: ListingOwnerProfileScreen(userId: userId),
         ),
       ),

@@ -1545,6 +1545,10 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Contact User",
+      "follow": "Follow",
+      "following": "Following",
+      "common_connections": "Common connections",
+      "common_connections_count": "{count}",
       "message": "Text in Chat",
       "uydosh_chat": "UyDosh Chat",
       "admin_listing_contacts": "Listing contacts (admin)",
@@ -3132,6 +3136,10 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Связаться с пользователем",
+      "follow": "Подписаться",
+      "following": "Подписан",
+      "common_connections": "Общие связи",
+      "common_connections_count": "{count}",
       "message": "Написать в чат",
       "uydosh_chat": "Чат UyDosh",
       "admin_listing_contacts": "Контакты объявления (админ)",
@@ -4727,6 +4735,10 @@ class AppStrings {
       "share_subject_en": "UyDosh - Housing Listing",
 
       "contact_user": "Foydalanuvchi bilan bog'lanish",
+      "follow": "Kuzatish",
+      "following": "Kuzatilmoqda",
+      "common_connections": "Umumiy tanishlar",
+      "common_connections_count": "{count}",
       "message": "Chatda yozish",
       "uydosh_chat": "UyDosh Chat",
       "admin_listing_contacts": "E'lon kontaktlari (admin)",

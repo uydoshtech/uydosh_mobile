@@ -12,10 +12,12 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/domain/models/common_friend.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -33,11 +35,21 @@ class _ListingOwnerProfileData {
     required this.hasError,
     required this.errorMessage,
     required this.profile,
+    required this.isFollowing,
+    required this.isFollowLoading,
+    required this.commonFriends,
+    required this.commonFriendsTotal,
+    required this.canFollow,
   });
   final bool isLoading;
   final bool hasError;
   final String errorMessage;
   final UserProfile? profile;
+  final bool isFollowing;
+  final bool isFollowLoading;
+  final List<CommonFriend> commonFriends;
+  final int commonFriendsTotal;
+  final bool canFollow;
 
   @override
   bool operator ==(Object other) {
@@ -46,7 +58,11 @@ class _ListingOwnerProfileData {
         other.isLoading == isLoading &&
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
-        other.profile?.id == profile?.id;
+        other.profile?.id == profile?.id &&
+        other.isFollowing == isFollowing &&
+        other.isFollowLoading == isFollowLoading &&
+        other.commonFriendsTotal == commonFriendsTotal &&
+        other.canFollow == canFollow;
   }
 
   @override
@@ -54,7 +70,11 @@ class _ListingOwnerProfileData {
     return isLoading.hashCode ^
         hasError.hashCode ^
         errorMessage.hashCode ^
-        (profile?.id ?? 0).hashCode;
+        (profile?.id ?? 0).hashCode ^
+        isFollowing.hashCode ^
+        isFollowLoading.hashCode ^
+        commonFriendsTotal.hashCode ^
+        canFollow.hashCode;
   }
 }
 
@@ -122,24 +142,44 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                 hasError: false,
                 errorMessage: "",
                 profile: null,
+                isFollowing: false,
+                isFollowLoading: false,
+                commonFriends: [],
+                commonFriendsTotal: 0,
+                canFollow: false,
               ),
               loading: (_) => const _ListingOwnerProfileData(
                 isLoading: true,
                 hasError: false,
                 errorMessage: "",
                 profile: null,
+                isFollowing: false,
+                isFollowLoading: false,
+                commonFriends: [],
+                commonFriendsTotal: 0,
+                canFollow: false,
               ),
               loaded: (loadedState) => _ListingOwnerProfileData(
                 isLoading: false,
                 hasError: false,
                 errorMessage: "",
                 profile: loadedState.profile,
+                isFollowing: loadedState.isFollowing,
+                isFollowLoading: loadedState.isFollowLoading,
+                commonFriends: loadedState.commonFriends,
+                commonFriendsTotal: loadedState.commonFriendsTotal,
+                canFollow: loadedState.canFollow,
               ),
               error: (errorState) => _ListingOwnerProfileData(
                 isLoading: false,
                 hasError: true,
                 errorMessage: errorState.message,
                 profile: null,
+                isFollowing: false,
+                isFollowLoading: false,
+                commonFriends: [],
+                commonFriendsTotal: 0,
+                canFollow: false,
               ),
             ),
             builder: (context, data) {
@@ -157,7 +197,14 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                 return _buildErrorState(data.errorMessage, context);
               }
 
-              return _buildProfileContent(data.profile!);
+              return _buildProfileContent(
+                data.profile!,
+                isFollowing: data.isFollowing,
+                isFollowLoading: data.isFollowLoading,
+                commonFriends: data.commonFriends,
+                commonFriendsTotal: data.commonFriendsTotal,
+                canFollow: data.canFollow,
+              );
             },
           ),
         );
@@ -165,7 +212,14 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     );
   }
 
-  Widget _buildProfileContent(UserProfile profile) {
+  Widget _buildProfileContent(
+    UserProfile profile, {
+    required bool isFollowing,
+    required bool isFollowLoading,
+    required List<CommonFriend> commonFriends,
+    required int commonFriendsTotal,
+    required bool canFollow,
+  }) {
     logger.d("🔍 Profile Screen: Building profile content for: $profile");
     logger.d(
       "🔍 Profile Screen: Profile fields - id: ${profile.id}, userId: ${profile.userId}, name: ${profile.name}, gender: ${profile.gender}, isVerified: ${profile.isVerified}, rating: ${profile.rating}, aboutMe: ${profile.aboutMe}, telegram: ${profile.telegram}, createdAt: ${profile.createdAt}, updatedAt: ${profile.updatedAt}",
@@ -181,6 +235,23 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
             children: [
               // Profile Avatar Section
               Center(child: _buildNeumorphicAvatar(context, profile)),
+
+              if (canFollow) ...[
+                const SizedBox(height: 16),
+                _buildFollowButton(
+                  isFollowing: isFollowing,
+                  isLoading: isFollowLoading,
+                ),
+              ],
+
+              if (commonFriendsTotal > 0) ...[
+                const SizedBox(height: 16),
+                _buildCommonFriendsSection(
+                  context,
+                  commonFriends: commonFriends,
+                  total: commonFriendsTotal,
+                ),
+              ],
 
               const SizedBox(height: 24),
 
@@ -654,6 +725,143 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFollowButton({
+    required bool isFollowing,
+    required bool isLoading,
+  }) {
+    if (isLoading) {
+      return const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (isFollowing) {
+      return Center(
+        child: GhostButtonFactory.iconText(
+          onPressed: () {
+            context.read<ListingOwnerProfileBloc>().add(
+                  ListingOwnerProfileEvent.toggleFollow(userId: widget.userId),
+                );
+          },
+          icon: Icons.person_remove_outlined,
+          text: L10n.get("following"),
+          neumorphicSoftUi: true,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      );
+    }
+
+    return Center(
+      child: PrimaryButtonFactory.iconText(
+        onPressed: () {
+          context.read<ListingOwnerProfileBloc>().add(
+                ListingOwnerProfileEvent.toggleFollow(userId: widget.userId),
+              );
+        },
+        icon: Icons.person_add_outlined,
+        text: L10n.get("follow"),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      ),
+    );
+  }
+
+  Widget _buildCommonFriendsSection(
+    BuildContext context, {
+    required List<CommonFriend> commonFriends,
+    required int total,
+  }) {
+    return ListingDetailTileShell(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ThemeIcon(Icons.people_outline, color: _getPrimaryColor()),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    L10n.get("common_connections"),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: _getPrimaryColor(),
+                    ),
+                  ),
+                ),
+                Text(
+                  L10n.getWithParams(
+                    "common_connections_count",
+                    params: {"count": total.toString()},
+                  ),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 56,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: commonFriends.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final friend = commonFriends[index];
+                  final resolvedUrl = resolveAvatarUrl(friend.avatarUrl);
+                  return Column(
+                    children: [
+                      if (resolvedUrl != null)
+                        NetworkAvatarImage(
+                          imageUrl: resolvedUrl,
+                          size: 40,
+                          fallback: ThemeIcon(
+                            Icons.person,
+                            size: 20,
+                            color: _getPrimaryColor(),
+                          ),
+                        )
+                      else
+                        SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Center(
+                            child: ThemeIcon(
+                              Icons.person,
+                              size: 20,
+                              color: _getPrimaryColor(),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        width: 56,
+                        child: Text(
+                          friend.name ?? L10n.get("unknown"),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

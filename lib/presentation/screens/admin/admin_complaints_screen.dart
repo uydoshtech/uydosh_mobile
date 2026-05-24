@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -438,7 +439,10 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+          create: (_) => ListingOwnerProfileBloc(
+            getIt<IUserProfileService>(),
+            getIt<IFollowService>(),
+          ),
           child: ListingOwnerProfileScreen(userId: userId),
         ),
       ),

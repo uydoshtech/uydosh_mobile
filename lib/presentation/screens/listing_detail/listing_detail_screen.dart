@@ -16,6 +16,7 @@ import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -2237,7 +2238,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       MaterialPageRoute(
         builder: (context) => BlocProvider(
           create: (context) =>
-              ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+              ListingOwnerProfileBloc(
+                getIt<IUserProfileService>(),
+                getIt<IFollowService>(),
+              ),
           child: ListingOwnerProfileScreen(
             userId: userId,
             phoneNumber: phoneNumber,

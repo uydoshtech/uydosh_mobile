@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
@@ -807,7 +808,10 @@ class _GigOfferProviderBottomTile extends StatelessWidget {
               MaterialPageRoute<void>(
                 builder: (_) => BlocProvider(
                   create: (_) =>
-                      ListingOwnerProfileBloc(getIt<IUserProfileService>()),
+                      ListingOwnerProfileBloc(
+                        getIt<IUserProfileService>(),
+                        getIt<IFollowService>(),
+                      ),
                   child: ListingOwnerProfileScreen(
                     userId: offer.providerUserId,
                   ),

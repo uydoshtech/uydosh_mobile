@@ -1060,6 +1060,18 @@
   "share_subject_ru": "UyDosh - Объявление о жилье",
   "share_subject_en": "UyDosh - Housing Listing",
   "contact_user": "Contact User",
+  "follow": "Follow",
+  "following": "Following",
+  "common_connections": "Common connections",
+  "common_connections_count": "{count}",
+  "@common_connections_count": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
   "message": "Write",
   "uydosh_chat": "UyDosh Chat",
   "delete_listing": "Delete Listing",
