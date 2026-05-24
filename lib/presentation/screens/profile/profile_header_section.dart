@@ -1,4 +1,3 @@
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -59,24 +58,10 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   bool _uploadingAvatar = false;
 
   String? _effectiveAvatarUrl() {
-    // A custom upload is stored as a relative backend path
-    // (e.g. /images/avatars/avatar_42_xxx.jpg). Treat that as the source of
-    // truth so the avatar refreshes immediately after the user uploads a new
-    // photo — otherwise the Google/Firebase URL below wins and the new image
-    // never shows up here, even though the backend has it. Google avatars
-    // come back as absolute https URLs and fall through to the Firebase
-    // path, which keeps them fresh for users who haven't customized.
-    final raw = widget.profile.avatarUrl?.trim();
-    final hasCustomUpload = raw != null &&
-        raw.isNotEmpty &&
-        !raw.startsWith("http://") &&
-        !raw.startsWith("https://");
-    if (hasCustomUpload) {
-      return resolveAvatarUrl(raw);
-    }
-    return widget.cachedGooglePhotoUrl ??
-        FirebaseAuth.instance.currentUser?.photoURL ??
-        resolveAvatarUrl(raw);
+    return resolveCurrentUserDisplayAvatarUrl(
+      profileAvatarUrl: widget.profile.avatarUrl,
+      googlePhotoUrl: widget.cachedGooglePhotoUrl,
+    );
   }
 
   Future<void> _pickAndUploadAvatar() async {

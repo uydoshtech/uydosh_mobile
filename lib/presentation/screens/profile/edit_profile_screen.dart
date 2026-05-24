@@ -709,7 +709,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         await SessionManager.storeUserProfile(updatedProfile);
         ProfileCompletionState().updateFromProfile(updatedProfile);
         if (mounted) {
-          precacheCurrentUserAvatar(context, updatedProfile.avatarUrl);
+          precacheCurrentUserAvatar(
+            context,
+            ProfileCompletionState().effectiveAvatarUrl,
+          );
         }
 
         Navigator.of(context).pop(true); // Return true to indicate success

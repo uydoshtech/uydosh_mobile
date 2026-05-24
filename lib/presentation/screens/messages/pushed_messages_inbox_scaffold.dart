@@ -158,7 +158,7 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
                             ProfileCompletionState().needsProfileCompletion;
                         final hasAvatar =
                             resolveAvatarUrl(
-                              ProfileCompletionState().cachedAvatarUrl,
+                              ProfileCompletionState().effectiveAvatarUrl,
                             ) !=
                             null;
 

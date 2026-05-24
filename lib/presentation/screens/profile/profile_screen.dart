@@ -433,6 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userRoleLoaded = true;
       _cachedUserEmail = results[6] as String?;
     });
+    ProfileCompletionState().updateGooglePhotoUrl(results[1] as String?);
 
     // unawaited(_refreshListingAiQuota());
 

@@ -144,6 +144,9 @@ class MainNavigationState extends State<MainNavigation>
   Future<void> _initProfileCompletionFromCache() async {
     if (!AuthenticationState().isAuthenticated) return;
     try {
+      final googlePhoto = await SessionManager.getGooglePhotoUrl();
+      ProfileCompletionState().updateGooglePhotoUrl(googlePhoto);
+
       // 1) Instant-prime from cache so the UI has completion state without
       //    waiting for the network.
       final cached = await SessionManager.getCachedUserProfile();
@@ -152,7 +155,10 @@ class MainNavigationState extends State<MainNavigation>
         // Warm the image cache before the AppBar paints with the new URL,
         // so the profile icon doesn't flash through the fallback glyph on
         // the first frame after the cached profile arrives.
-        precacheCurrentUserAvatar(context, cached.avatarUrl);
+        precacheCurrentUserAvatar(
+          context,
+          ProfileCompletionState().effectiveAvatarUrl,
+        );
       }
 
       // 2) Always refresh from the server so stale cached profiles (e.g.
@@ -162,7 +168,10 @@ class MainNavigationState extends State<MainNavigation>
       await SessionManager.storeUserProfile(fresh);
       if (mounted) {
         ProfileCompletionState().updateFromProfile(fresh);
-        precacheCurrentUserAvatar(context, fresh.avatarUrl);
+        precacheCurrentUserAvatar(
+          context,
+          ProfileCompletionState().effectiveAvatarUrl,
+        );
       }
       await syncGoogleAvatarToBackendIfMissing(existingProfile: fresh);
     } catch (_) {
@@ -312,7 +321,10 @@ class MainNavigationState extends State<MainNavigation>
 
       ProfileCompletionState().updateFromProfile(profile);
       if (mounted) {
-        precacheCurrentUserAvatar(context, profile.avatarUrl);
+        precacheCurrentUserAvatar(
+          context,
+          ProfileCompletionState().effectiveAvatarUrl,
+        );
       }
 
       final completionPercent = ProfileCompletionState.completionPercent(profile);
@@ -978,7 +990,7 @@ class MainNavigationState extends State<MainNavigation>
                           ProfileCompletionState().needsProfileCompletion;
                       final hasAvatar =
                           resolveAvatarUrl(
-                            ProfileCompletionState().cachedAvatarUrl,
+                            ProfileCompletionState().effectiveAvatarUrl,
                           ) !=
                           null;
 

@@ -1,5 +1,6 @@
 import "package:flutter/foundation.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 
 /// Global state to track profile completion status.
@@ -14,8 +15,11 @@ class ProfileCompletionState extends ChangeNotifier {
   bool _hasEssentialInfo = true;
   bool _isInitialized = false;
 
-  /// Last known backend [UserProfile.avatarUrl] (may be relative). Used for app bar avatar.
+  /// Last known backend [UserProfile.avatarUrl] (may be relative).
   String? _cachedAvatarUrl;
+
+  /// Cached Google OAuth photo URL from [SessionManager] (when available).
+  String? _cachedGooglePhotoUrl;
 
   /// Last known backend [UserProfile.name]. Used to derive the current user's
   /// initials when their avatar is shown without a network image (e.g. in the
@@ -39,6 +43,13 @@ class ProfileCompletionState extends ChangeNotifier {
 
   /// Raw avatar URL from the last [updateFromProfile] call (same as [UserProfile.avatarUrl]).
   String? get cachedAvatarUrl => _cachedAvatarUrl;
+
+  /// Resolved avatar for app bar and inbox tiles — prefers a custom upload,
+  /// then Google OAuth, then the backend [UserProfile.avatarUrl].
+  String? get effectiveAvatarUrl => resolveCurrentUserDisplayAvatarUrl(
+        profileAvatarUrl: _cachedAvatarUrl,
+        googlePhotoUrl: _cachedGooglePhotoUrl,
+      );
 
   /// Display name from the last [updateFromProfile] call (same as [UserProfile.name]).
   String? get cachedName => _cachedName;
@@ -67,6 +78,7 @@ class ProfileCompletionState extends ChangeNotifier {
       _hasEssentialInfo = true;
       _isInitialized = false;
       _cachedAvatarUrl = null;
+      _cachedGooglePhotoUrl = null;
       _cachedName = null;
       notifyListeners();
       return;
@@ -101,12 +113,23 @@ class ProfileCompletionState extends ChangeNotifier {
     }
   }
 
+  /// Cache the Google OAuth photo URL used by [effectiveAvatarUrl].
+  void updateGooglePhotoUrl(String? url) {
+    final trimmed = url?.trim();
+    final normalized =
+        trimmed == null || trimmed.isEmpty ? null : trimmed;
+    if (_cachedGooglePhotoUrl == normalized) return;
+    _cachedGooglePhotoUrl = normalized;
+    notifyListeners();
+  }
+
   /// Reset state (e.g. on logout)
   void reset() {
     _isProfileComplete = true;
     _hasEssentialInfo = true;
     _isInitialized = false;
     _cachedAvatarUrl = null;
+    _cachedGooglePhotoUrl = null;
     _cachedName = null;
     notifyListeners();
   }

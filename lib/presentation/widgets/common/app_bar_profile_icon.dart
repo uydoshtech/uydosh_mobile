@@ -33,9 +33,8 @@ class AppBarProfileIcon extends StatelessWidget {
     return ListenableBuilder(
       listenable: ProfileCompletionState(),
       builder: (context, child) {
-        final resolved = resolveAvatarUrl(
-          ProfileCompletionState().cachedAvatarUrl,
-        );
+        final profileState = ProfileCompletionState();
+        final resolved = resolveAvatarUrl(profileState.effectiveAvatarUrl);
         final fallback = SizedBox.square(
           dimension: iconSize,
           child: Center(

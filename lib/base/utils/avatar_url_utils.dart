@@ -1,5 +1,6 @@
 import "dart:convert";
 
+import "package:firebase_auth/firebase_auth.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
 /// Resolves a stored avatar URL to something [CachedNetworkImage] can load.
@@ -17,6 +18,33 @@ String? resolveAvatarUrl(String? raw) {
     return trimmed;
   }
   return "${EnvironmentUtil.basePath}$trimmed";
+}
+
+/// Display avatar for the signed-in user (app bar, profile header, inbox).
+///
+/// Priority: custom backend upload → Google OAuth photo → backend
+/// [profileAvatarUrl] (which may be a provider URL when nothing else is set).
+String? resolveCurrentUserDisplayAvatarUrl({
+  String? profileAvatarUrl,
+  String? googlePhotoUrl,
+}) {
+  final raw = profileAvatarUrl?.trim();
+  final hasCustomUpload = raw != null &&
+      raw.isNotEmpty &&
+      !raw.startsWith("http://") &&
+      !raw.startsWith("https://");
+  if (hasCustomUpload) {
+    return resolveAvatarUrl(raw);
+  }
+  final google = googlePhotoUrl?.trim();
+  if (google != null && google.isNotEmpty) {
+    return google;
+  }
+  final firebase = FirebaseAuth.instance.currentUser?.photoURL?.trim();
+  if (firebase != null && firebase.isNotEmpty) {
+    return firebase;
+  }
+  return resolveAvatarUrl(raw);
 }
 
 /// True when [url] points at Telegram-hosted profile imagery (OIDC `picture`).

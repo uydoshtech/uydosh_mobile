@@ -62,7 +62,7 @@ class ConversationTile extends StatelessWidget {
         final rawAvatar = isListingMarketplace
             ? conversation.otherUserAvatar
             : (lastSenderIsCurrentUser
-                ? profileState.cachedAvatarUrl
+                ? profileState.effectiveAvatarUrl
                 : conversation.otherUserAvatar);
         final initialsName = isListingMarketplace
             ? null
