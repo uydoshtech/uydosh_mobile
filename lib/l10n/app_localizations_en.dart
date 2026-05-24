@@ -2771,6 +2771,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contact_user => 'Contact User';
 
   @override
+  String get follow => 'Follow';
+
+  @override
+  String get following => 'Following';
+
+  @override
+  String get common_connections => 'Common connections';
+
+  @override
+  String common_connections_count(String count) {
+    return '$count';
+  }
+
+  @override
   String get message => 'Write';
 
   @override

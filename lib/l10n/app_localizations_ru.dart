@@ -2783,6 +2783,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get contact_user => 'Связаться с пользователем';
 
   @override
+  String get follow => 'Подписаться';
+
+  @override
+  String get following => 'Подписан';
+
+  @override
+  String get common_connections => 'Общие связи';
+
+  @override
+  String common_connections_count(String count) {
+    return '$count';
+  }
+
+  @override
   String get message => 'Написать';
 
   @override

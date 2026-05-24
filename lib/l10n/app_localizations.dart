@@ -5225,6 +5225,30 @@ abstract class AppLocalizations {
   /// **'Contact User'**
   String get contact_user;
 
+  /// No description provided for @follow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get follow;
+
+  /// No description provided for @following.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get following;
+
+  /// No description provided for @common_connections.
+  ///
+  /// In en, this message translates to:
+  /// **'Common connections'**
+  String get common_connections;
+
+  /// No description provided for @common_connections_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String common_connections_count(String count);
+
   /// No description provided for @message.
   ///
   /// In en, this message translates to:

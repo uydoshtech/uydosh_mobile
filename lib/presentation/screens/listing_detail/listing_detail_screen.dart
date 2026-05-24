@@ -573,6 +573,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         differences: result.differences,
         ownerName: _listingAuthorNameFromProfile(ownerProfile),
         ownerAvatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
+        currentUserAvatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
       );
     } catch (e) {
       logger.d("Error loading compatibility: $e");
@@ -1895,6 +1896,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           String? compatibilityError,
           List<CompatibilityMatch> matches,
           List<CompatibilityDifference> differences,
+          String? ownerAvatarUrl,
+          String? currentUserAvatarUrl,
         })>(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
@@ -1902,6 +1905,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         compatibilityError: s.compatibilityError,
         matches: s.compatibilityMatches,
         differences: s.compatibilityDifferences,
+        ownerAvatarUrl: s.ownerAvatarUrl,
+        currentUserAvatarUrl: s.currentUserAvatarUrl,
       ),
       builder: (context, compat) => ListingDetailCompatibilitySection(
         listingDetail: listingDetail,
@@ -1912,6 +1917,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         compatibilityError: compat.compatibilityError,
         matches: compat.matches,
         differences: compat.differences,
+        currentUserAvatarUrl: compat.currentUserAvatarUrl,
+        ownerAvatarUrl: compat.ownerAvatarUrl,
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
         onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)

@@ -782,6 +782,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
@@ -810,56 +811,68 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 56,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: commonFriends.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final friend = commonFriends[index];
-                  final resolvedUrl = resolveAvatarUrl(friend.avatarUrl);
-                  return Column(
-                    children: [
-                      if (resolvedUrl != null)
-                        NetworkAvatarImage(
-                          imageUrl: resolvedUrl,
-                          size: 40,
-                          fallback: ThemeIcon(
-                            Icons.person,
-                            size: 20,
-                            color: _getPrimaryColor(),
-                          ),
-                        )
-                      else
-                        SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Center(
-                            child: ThemeIcon(
-                              Icons.person,
-                              size: 20,
-                              color: _getPrimaryColor(),
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        width: 56,
-                        child: Text(
-                          friend.name ?? L10n.get("unknown"),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (var i = 0; i < commonFriends.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 12),
+                    _buildCommonFriendItem(commonFriends[i]),
+                  ],
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommonFriendItem(CommonFriend friend) {
+    return SizedBox(
+      width: 60,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSmallCircularAvatar(friend.avatarUrl),
+          const SizedBox(height: 4),
+          Text(
+            friend.name ?? L10n.get("unknown"),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, height: 1.2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallCircularAvatar(String? avatarUrl, {double size = 40}) {
+    final theme = Theme.of(context);
+    final resolvedUrl = resolveAvatarUrl(avatarUrl);
+    final fallback = CircleAvatar(
+      radius: size / 2,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      child: ThemeIcon(
+        Icons.person,
+        size: size * 0.5,
+        color: _getPrimaryColor(),
+      ),
+    );
+
+    if (resolvedUrl == null) {
+      return fallback;
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipOval(
+        child: NetworkAvatarImage(
+          imageUrl: resolvedUrl,
+          size: size,
+          fallback: fallback,
         ),
       ),
     );

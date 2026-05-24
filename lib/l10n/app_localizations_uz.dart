@@ -2815,6 +2815,20 @@ class AppLocalizationsUz extends AppLocalizations {
   String get contact_user => 'Foydalanuvchi bilan bog\'lanish';
 
   @override
+  String get follow => 'Kuzatish';
+
+  @override
+  String get following => 'Kuzatilmoqda';
+
+  @override
+  String get common_connections => 'Umumiy tanishlar';
+
+  @override
+  String common_connections_count(String count) {
+    return '$count';
+  }
+
+  @override
   String get message => 'Yozish';
 
   @override

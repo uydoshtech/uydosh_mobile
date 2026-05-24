@@ -22,6 +22,7 @@ class ListingDetailPageState {
     this.ownerName,
     this.ownerNameListingUserId,
     this.ownerAvatarUrl,
+    this.currentUserAvatarUrl,
     this.similarListingsCount,
     this.similarListingsCountListingId,
     this.isLoadingSimilarListingsCount = false,
@@ -44,6 +45,7 @@ class ListingDetailPageState {
   final String? ownerName;
   final int? ownerNameListingUserId;
   final String? ownerAvatarUrl;
+  final String? currentUserAvatarUrl;
 
   /// Number of "similar" listings excluding the current one. When this is
   /// known and equal to 0 the UI hides the "view similar" affordance because
@@ -70,6 +72,7 @@ class ListingDetailPageState {
     String? ownerName,
     int? ownerNameListingUserId,
     String? ownerAvatarUrl,
+    String? currentUserAvatarUrl,
     int? similarListingsCount,
     int? similarListingsCountListingId,
     bool? isLoadingSimilarListingsCount,
@@ -100,6 +103,7 @@ class ListingDetailPageState {
       ownerNameListingUserId:
           ownerNameListingUserId ?? this.ownerNameListingUserId,
       ownerAvatarUrl: ownerAvatarUrl ?? this.ownerAvatarUrl,
+      currentUserAvatarUrl: currentUserAvatarUrl ?? this.currentUserAvatarUrl,
       similarListingsCount:
           similarListingsCount ?? this.similarListingsCount,
       similarListingsCountListingId:
@@ -130,6 +134,7 @@ class ListingDetailPageState {
         other.ownerName == ownerName &&
         other.ownerNameListingUserId == ownerNameListingUserId &&
         other.ownerAvatarUrl == ownerAvatarUrl &&
+        other.currentUserAvatarUrl == currentUserAvatarUrl &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
         other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount;
@@ -161,6 +166,7 @@ class ListingDetailPageState {
         ownerName,
         ownerNameListingUserId,
         ownerAvatarUrl,
+        currentUserAvatarUrl,
         similarListingsCount,
         similarListingsCountListingId,
         isLoadingSimilarListingsCount,
@@ -249,6 +255,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     required List<CompatibilityMatch> matches, required List<CompatibilityDifference> differences, int? percent,
     String? ownerName,
     String? ownerAvatarUrl,
+    String? currentUserAvatarUrl,
   }) =>
       emit(state.copyWith(
         compatibilityPercent: percent,
@@ -260,6 +267,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         ownerName: ownerName,
         ownerNameListingUserId: listingUserId,
         ownerAvatarUrl: ownerAvatarUrl,
+        currentUserAvatarUrl: currentUserAvatarUrl,
       ));
 
   void setLoadingCompatibility(int listingUserId) => emit(

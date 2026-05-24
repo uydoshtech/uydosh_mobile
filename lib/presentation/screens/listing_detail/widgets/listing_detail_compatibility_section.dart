@@ -11,10 +11,12 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
@@ -65,6 +67,8 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     required this.onPhone,
     required this.onViewProfile,
     required this.onCompleteProfile,
+    this.currentUserAvatarUrl,
+    this.ownerAvatarUrl,
     super.key,
   });
 
@@ -82,6 +86,8 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final VoidCallback? onPhone;
   final VoidCallback onViewProfile;
   final VoidCallback onCompleteProfile;
+  final String? currentUserAvatarUrl;
+  final String? ownerAvatarUrl;
 
   @override
   State<ListingDetailCompatibilitySection> createState() =>
@@ -221,6 +227,90 @@ class _ListingDetailCompatibilitySectionState
     return AppColors.error;
   }
 
+  Widget _buildHeaderAvatar(String? avatarUrl, {required double size}) {
+    final resolvedUrl = resolveAvatarUrl(avatarUrl);
+    final fallback = CircleAvatar(
+      radius: size / 2,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: ThemeIcon(
+        Icons.person_outline,
+        size: size * 0.45,
+        color: _getIconColor(),
+      ),
+    );
+
+    if (resolvedUrl == null) {
+      return fallback;
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipOval(
+        child: NetworkAvatarImage(
+          imageUrl: resolvedUrl,
+          size: size,
+          fallback: fallback,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverlappingHeaderAvatars() {
+    const size = 28.0;
+    const overlap = 8.0;
+    final borderColor = Theme.of(context).colorScheme.surface;
+
+    Widget borderedAvatar(String? avatarUrl) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 1.5),
+        ),
+        child: _buildHeaderAvatar(avatarUrl, size: size),
+      );
+    }
+
+    return SizedBox(
+      width: size * 2 - overlap,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            child: borderedAvatar(widget.currentUserAvatarUrl),
+          ),
+          Positioned(
+            left: size - overlap,
+            child: borderedAvatar(widget.ownerAvatarUrl),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatchingHeaderBadge(String percentLabel) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildOverlappingHeaderAvatars(),
+          const SizedBox(height: 2),
+          Text(
+            percentLabel,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _getCompatibilityPercentColor(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
     if (!isExpanded) return;
@@ -292,20 +382,9 @@ class _ListingDetailCompatibilitySectionState
           iconColor: chevronColor,
           collapsedIconColor: chevronColor,
           title: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ThemeIcon(
-                ThemeState().isBlueTheme
-                    ? CupertinoIcons.group_solid
-                    : CupertinoIcons.group,
-                size: 24,
-                color: ThemeState().isBlueTheme
-                    ? Colors.white
-                    : ThemeState().isLightTheme
-                        ? Colors.black
-                        : _getIconColor(),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
+              Expanded(
                 child: Text(
                   L10n.get("compatibility_title"),
                   style: TextStyle(
@@ -315,15 +394,20 @@ class _ListingDetailCompatibilitySectionState
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
-              Text(
-                headerPercentText,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: _getCompatibilityPercentColor(),
+              if (isAuthenticated)
+                _buildMatchingHeaderBadge(headerPercentText)
+              else
+                ThemeIcon(
+                  ThemeState().isBlueTheme
+                      ? CupertinoIcons.group_solid
+                      : CupertinoIcons.group,
+                  size: 24,
+                  color: ThemeState().isBlueTheme
+                      ? Colors.white
+                      : ThemeState().isLightTheme
+                          ? Colors.black
+                          : _getIconColor(),
                 ),
-              ),
             ],
           ),
           children: [

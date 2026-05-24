@@ -2088,38 +2088,46 @@ class _BudgetTypePlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = NeumorphicSegmentedSwitch<GigRequestBudgetType>(
-      value: value,
-      onChanged: onChanged,
-      entries: [
-        SegmentedSwitchEntry(
-          value: GigRequestBudgetType.fixed,
-          label: L10n.get("gigs_budget_type_fixed"),
-          icon: Icons.price_change_outlined,
-        ),
-        SegmentedSwitchEntry(
-          value: GigRequestBudgetType.hourly,
-          label: L10n.get("gigs_budget_type_hourly"),
-          icon: Icons.schedule_outlined,
-        ),
-        SegmentedSwitchEntry(
-          value: GigRequestBudgetType.open,
-          label: L10n.get("gigs_budget_type_open"),
-          icon: Icons.gavel_outlined,
-        ),
-      ],
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        Widget child = NeumorphicSegmentedSwitch<GigRequestBudgetType>(
+          liquidGlass:
+              themeState.isBlueTheme || themeState.isLightTheme,
+          value: value,
+          onChanged: onChanged,
+          entries: [
+            SegmentedSwitchEntry(
+              value: GigRequestBudgetType.fixed,
+              label: L10n.get("gigs_budget_type_fixed"),
+              icon: Icons.price_change_outlined,
+            ),
+            SegmentedSwitchEntry(
+              value: GigRequestBudgetType.hourly,
+              label: L10n.get("gigs_budget_type_hourly"),
+              icon: Icons.schedule_outlined,
+            ),
+            SegmentedSwitchEntry(
+              value: GigRequestBudgetType.open,
+              label: L10n.get("gigs_budget_type_open"),
+              icon: Icons.gavel_outlined,
+            ),
+          ],
+        );
+        final outline = dirtyOutlineColor;
+        if (outline != null) {
+          child = DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: outline, width: 1.5),
+            ),
+            child: child,
+          );
+        }
+        return child;
+      },
     );
-    final outline = dirtyOutlineColor;
-    if (outline != null) {
-      child = DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: outline, width: 1.5),
-        ),
-        child: child,
-      );
-    }
-    return child;
   }
 }
 
