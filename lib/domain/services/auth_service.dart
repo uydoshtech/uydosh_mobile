@@ -54,6 +54,9 @@ abstract class IAuthService {
   /// POST `/users/telegram-bind` — link Telegram to the current account.
   Future<Map<String, dynamic>> telegramBind({required String idToken});
 
+  /// DELETE `/users/telegram-unbind` — remove Telegram login from the current account.
+  Future<Map<String, dynamic>> telegramUnbind();
+
   /// Authenticated Telegram OAuth URL for linking while logged in (browser fallback).
   Future<String> fetchTelegramOAuthBindAuthorizationUrl({
     String? languageCode,
@@ -288,6 +291,15 @@ class AuthService implements IAuthService {
       "/users/telegram-bind",
       (json) => json as Map<String, dynamic>,
       data: _TelegramIdTokenRequest(idToken: token),
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> telegramUnbind() async {
+    return _oauthApiClient.delete<Map<String, dynamic>, _EmptyJson>(
+      "/users/telegram-unbind",
+      (json) => json as Map<String, dynamic>,
+      data: const _EmptyJson(),
     );
   }
 

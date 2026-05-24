@@ -20,6 +20,7 @@ class SessionManager {
   static const String _userBlockedKey = "user_blocked";
   static const String _googleDisplayNameKey = "google_display_name";
   static const String _googlePhotoUrlKey = "google_photo_url";
+  static const String _telegramPhotoUrlKey = "telegram_photo_url";
   static const String _userProfileCacheKey = "user_profile_cache";
   static const String _chatSecurityRibbonDismissedKey =
       "chat_security_ribbon_dismissed";
@@ -123,6 +124,7 @@ class SessionManager {
     await prefs.remove(_lastLoginKey);
     await prefs.remove(_googleDisplayNameKey);
     await prefs.remove(_googlePhotoUrlKey);
+    await prefs.remove(_telegramPhotoUrlKey);
     await prefs.remove(_userProfileCacheKey);
     await clearVerificationStatus();
     final hook = onSessionCleared;
@@ -240,6 +242,20 @@ class SessionManager {
   static Future<String?> getGooglePhotoUrl() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_googlePhotoUrlKey);
+  }
+
+  static Future<void> storeTelegramPhotoUrl(String? photoUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (photoUrl != null && photoUrl.trim().isNotEmpty) {
+      await prefs.setString(_telegramPhotoUrlKey, photoUrl.trim());
+    } else {
+      await prefs.remove(_telegramPhotoUrlKey);
+    }
+  }
+
+  static Future<String?> getTelegramPhotoUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_telegramPhotoUrlKey);
   }
 
   // Store full user profile locally for fast UI rendering

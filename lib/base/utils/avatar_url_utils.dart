@@ -1,3 +1,5 @@
+import "dart:convert";
+
 import "package:uy_dosh/base/util/environment_util.dart";
 
 /// Resolves a stored avatar URL to something [CachedNetworkImage] can load.
@@ -15,4 +17,33 @@ String? resolveAvatarUrl(String? raw) {
     return trimmed;
   }
   return "${EnvironmentUtil.basePath}$trimmed";
+}
+
+/// True when [url] points at Telegram-hosted profile imagery (OIDC `picture`).
+bool isTelegramHostedAvatarUrl(String url) {
+  final lower = url.trim().toLowerCase();
+  if (lower.isEmpty) return false;
+  return lower.contains("telegram.org") ||
+      lower.contains("t.me/i/userpic") ||
+      lower.contains("telesco.pe");
+}
+
+/// Reads the Telegram OIDC `picture` claim from a JWT [idToken] without
+/// verifying the signature (caller must only use this after a successful bind).
+String? telegramPictureUrlFromIdToken(String idToken) {
+  try {
+    final parts = idToken.split(".");
+    if (parts.length < 2) return null;
+    final normalized = base64Url.normalize(parts[1]);
+    final payload = utf8.decode(base64Url.decode(normalized));
+    final map = jsonDecode(payload);
+    if (map is! Map) return null;
+    final picture = map["picture"];
+    if (picture is! String) return null;
+    final trimmed = picture.trim();
+    if (trimmed.isEmpty) return null;
+    return trimmed;
+  } catch (_) {
+    return null;
+  }
 }

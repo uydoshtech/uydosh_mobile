@@ -7,6 +7,7 @@ import "package:flutter/services.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
@@ -283,7 +284,7 @@ class _MessageBubbleState extends State<MessageBubble>
             (widget.isCurrentUser || !myReactionAppeared));
     if (!mounted) return;
     if (shouldFeedback) {
-      HapticFeedback.mediumImpact();
+      HapticFeedbackUtils.tapticChain();
       SendSoundUtils.playSendSound();
     }
     if (_reactionsEnabled && next != null && next != prev) {
@@ -837,6 +838,7 @@ class _MessageBubbleState extends State<MessageBubble>
                   type: MaterialType.transparency,
                   child: InkWell(
                     onTap: () async {
+                      HapticFeedbackUtils.tapticChain();
                       Navigator.of(ctx).pop();
                       await _applyReactionChoice(id);
                     },
@@ -1406,6 +1408,7 @@ class _ReactionToolbarOverlayAnimatedState
                             type: MaterialType.transparency,
                             child: InkWell(
                               onTap: () {
+                                HapticFeedbackUtils.tapticChain();
                                 final applyReaction = widget.onEmojiChosen;
                                 final reactionId = id;
                                 final matchesOpening =

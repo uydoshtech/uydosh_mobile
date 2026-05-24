@@ -41,6 +41,10 @@ class CurrentUserProfileBloc
     try {
       final profile = await _userProfileService.getCurrentUserProfile();
       await SessionManager.storeUserProfile(profile);
+      final telegramPhoto = profile.telegramAvatarUrl?.trim();
+      if (telegramPhoto != null && telegramPhoto.isNotEmpty) {
+        await SessionManager.storeTelegramPhotoUrl(telegramPhoto);
+      }
       ProfileCompletionState().updateFromProfile(profile);
       await syncGoogleAvatarToBackendIfMissing(existingProfile: profile);
       final afterSync = await SessionManager.getCachedUserProfile();

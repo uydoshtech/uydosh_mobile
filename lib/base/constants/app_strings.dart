@@ -1484,9 +1484,18 @@ class AppStrings {
       "sign_in_with_apple": "Sign in with Apple",
       "sign_in_with_telegram": "Sign In with Telegram",
       "link_telegram": "Link Telegram",
+      "unlink_telegram": "Unlink Telegram",
       "telegram_account_linked": "Telegram account linked",
       "telegram_linked_success": "Telegram linked to your account",
+      "telegram_unlinked_success": "Telegram unlinked from your account",
       "telegram_already_linked": "Telegram is already linked to this account",
+      "telegram_not_linked": "Telegram is not linked to this account",
+      "telegram_only_sign_in_method":
+          "Add Google, Apple, or phone sign-in before unlinking Telegram",
+      "telegram_unlink_failed": "Could not unlink Telegram: {error}",
+      "unlink_telegram_confirmation_title": "Unlink Telegram?",
+      "unlink_telegram_confirmation_message":
+          "You will no longer be able to sign in with Telegram on this account. Your profile username will stay visible.",
       "telegram_account_in_use":
           "This Telegram account is already linked to another UyDosh account",
       "telegram_link_failed": "Could not link Telegram: {error}",
@@ -3060,9 +3069,18 @@ class AppStrings {
       "sign_in_with_apple": "Войти через Apple",
       "sign_in_with_telegram": "Войти через Telegram",
       "link_telegram": "Привязать Telegram",
+      "unlink_telegram": "Отвязать Telegram",
       "telegram_account_linked": "Telegram привязан",
       "telegram_linked_success": "Telegram привязан к вашему аккаунту",
+      "telegram_unlinked_success": "Telegram отвязан от вашего аккаунта",
       "telegram_already_linked": "Telegram уже привязан к этому аккаунту",
+      "telegram_not_linked": "Telegram не привязан к этому аккаунту",
+      "telegram_only_sign_in_method":
+          "Сначала добавьте вход через Google, Apple или телефон, затем отвяжите Telegram",
+      "telegram_unlink_failed": "Не удалось отвязать Telegram: {error}",
+      "unlink_telegram_confirmation_title": "Отвязать Telegram?",
+      "unlink_telegram_confirmation_message":
+          "Вы больше не сможете входить через Telegram в этот аккаунт. Имя пользователя в профиле останется.",
       "telegram_account_in_use":
           "Этот Telegram уже привязан к другому аккаунту UyDosh",
       "telegram_link_failed": "Не удалось привязать Telegram: {error}",
@@ -4644,9 +4662,18 @@ class AppStrings {
       "sign_in_with_apple": "Apple orqali kirish",
       "sign_in_with_telegram": "Telegram orqali kirish",
       "link_telegram": "Telegramni ulash",
+      "unlink_telegram": "Telegramni uzish",
       "telegram_account_linked": "Telegram hisobi ulangan",
       "telegram_linked_success": "Telegram hisobingizga ulandi",
+      "telegram_unlinked_success": "Telegram hisobingizdan uzildi",
       "telegram_already_linked": "Telegram allaqachon ushbu hisobga ulangan",
+      "telegram_not_linked": "Telegram ushbu hisobga ulanmagan",
+      "telegram_only_sign_in_method":
+          "Telegramni uzishdan oldin Google, Apple yoki telefon orqali kirishni qo'shing",
+      "telegram_unlink_failed": "Telegramni uzib bo'lmadi: {error}",
+      "unlink_telegram_confirmation_title": "Telegramni uzish?",
+      "unlink_telegram_confirmation_message":
+          "Endi ushbu hisobga Telegram orqali kira olmaysiz. Profildagi foydalanuvchi nomi qoladi.",
       "telegram_account_in_use":
           "Bu Telegram boshqa UyDosh hisobiga ulangan",
       "telegram_link_failed": "Telegramni ulab bo'lmadi: {error}",

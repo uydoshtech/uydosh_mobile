@@ -21,6 +21,7 @@ import "package:uy_dosh/base/services/telegram_native_login_service.dart";
 import "package:uy_dosh/base/services/logout_service.dart"
     show AccountBlockedException, LogoutService;
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -111,11 +112,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _cachedUserProfile;
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
+  String? _cachedTelegramPhotoUrl;
   String? _cachedUserEmail;
   bool _achievementCheckScheduled = false;
   DateTime? _lastAchievementCheckTime;
   bool? _telegramLinked;
+  bool _canUnbindTelegram = false;
   bool _isLinkingTelegram = false;
+  bool _isUnlinkingTelegram = false;
   // AI allowance profile tile (hidden; restore with imports + _refreshListingAiQuota)
   // ListingAiQuotaSnapshot? _listingAiQuota;
   // bool _listingAiQuotaLoading = false;
@@ -163,6 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _telegramLinked =
             telegramId is String ? telegramId.trim().isNotEmpty : telegramId != null;
+        _canUnbindTelegram = _hasAlternateSignInMethod(me);
         if (_telegramLinked == false && _expandedSectionIndex == null) {
           _expandedSectionIndex = 0;
         }
@@ -170,6 +175,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       logger.d("Failed to load Telegram link status: $e");
     }
+  }
+
+  bool _hasAlternateSignInMethod(Map<String, dynamic> me) {
+    bool hasValue(dynamic value) =>
+        value is String && value.trim().isNotEmpty;
+    return hasValue(me["firebase_uid"]) ||
+        hasValue(me["email"]) ||
+        hasValue(me["phone_number"]);
   }
 
   Future<void> _handleTelegramBindDeepLink(TelegramBindDeepLink link) async {
@@ -204,6 +217,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return L10n.get("telegram_already_linked");
       case "telegram_account_in_use":
         return L10n.get("telegram_account_in_use");
+      case "telegram_not_linked":
+        return L10n.get("telegram_not_linked");
+      case "telegram_only_sign_in_method":
+        return L10n.get("telegram_only_sign_in_method");
       case "Invalid Telegram id_token":
         return L10n.get("telegram_bind_invalid_token");
       case "Telegram OIDC is not configured":
@@ -211,6 +228,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       default:
         return L10n.get("telegram_link_failed")
             .replaceAll("{error}", code);
+    }
+  }
+
+  String _telegramUnbindErrorMessage(String code) {
+    switch (code) {
+      case "telegram_not_linked":
+        return L10n.get("telegram_not_linked");
+      case "telegram_only_sign_in_method":
+        return L10n.get("telegram_only_sign_in_method");
+      default:
+        return L10n.get("telegram_unlink_failed").replaceAll("{error}", code);
     }
   }
 
@@ -236,6 +264,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final idToken = await TelegramNativeLoginService.instance.login();
         if (!mounted) return;
         if (idToken == null) return;
+        final telegramPicture = telegramPictureUrlFromIdToken(idToken);
+        if (telegramPicture != null) {
+          await SessionManager.storeTelegramPhotoUrl(telegramPicture);
+          if (mounted) {
+            setState(() => _cachedTelegramPhotoUrl = telegramPicture);
+          }
+        }
         await getIt<IAuthService>().telegramBind(idToken: idToken);
         if (!mounted) return;
         setState(() => _telegramLinked = true);
@@ -298,6 +333,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _unlinkTelegramAccount() async {
+    if (_isUnlinkingTelegram || !mounted) return;
+
+    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "unlink_telegram_confirmation_title",
+      messageKey: "unlink_telegram_confirmation_message",
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isUnlinkingTelegram = true);
+    try {
+      await getIt<IAuthService>().telegramUnbind();
+      if (!mounted) return;
+      setState(() {
+        _telegramLinked = false;
+        _canUnbindTelegram = false;
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("telegram_unlinked_success"),
+      );
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final backendCode = _backendErrorCode(e);
+      ToastTheme.showWarning(
+        context,
+        message: backendCode != null && backendCode.isNotEmpty
+            ? _telegramUnbindErrorMessage(backendCode)
+            : L10n.get("telegram_unlink_failed").replaceAll(
+                  "{error}",
+                  ErrorMessageHelper.sanitizeErrorMessage(e),
+                ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_unlink_failed").replaceAll(
+              "{error}",
+              ErrorMessageHelper.sanitizeErrorMessage(e),
+            ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUnlinkingTelegram = false);
+      }
+    }
+  }
+
   // Future<void> _refreshListingAiQuota() async {
   //   if (!AuthenticationState().isAuthenticated || _userBlocked) {
   //     if (mounted) {
@@ -329,22 +414,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final results = await Future.wait<Object?>([
       SessionManager.getGoogleDisplayName(),
       SessionManager.getGooglePhotoUrl(),
+      SessionManager.getTelegramPhotoUrl(),
       SessionManager.getCachedUserProfile(),
       SessionManager.getIsUserBlocked(),
       SessionManager.getUserRole(),
       SessionManager.getUserEmail(),
     ]);
 
-    final cachedRole = results[4] as String?;
+    final cachedRole = results[5] as String?;
 
     setStateIfMounted(() {
       _cachedGoogleDisplayName = results[0] as String?;
       _cachedGooglePhotoUrl = results[1] as String?;
-      _cachedUserProfile = results[2] as UserProfile?;
-      _userBlocked = results[3]! as bool;
+      _cachedTelegramPhotoUrl = results[2] as String?;
+      _cachedUserProfile = results[3] as UserProfile?;
+      _userBlocked = results[4]! as bool;
       _userRole = cachedRole;
       _userRoleLoaded = true;
-      _cachedUserEmail = results[5] as String?;
+      _cachedUserEmail = results[6] as String?;
     });
 
     // unawaited(_refreshListingAiQuota());
@@ -466,9 +553,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       listener: (context, state) {
         state.whenOrNull(
           loaded: (profile) {
+            final telegramPhoto = profile.telegramAvatarUrl?.trim();
             setStateIfMounted(() {
               _cachedUserProfile = profile;
+              if (telegramPhoto != null && telegramPhoto.isNotEmpty) {
+                _cachedTelegramPhotoUrl = resolveAvatarUrl(telegramPhoto);
+              }
             });
+            if (telegramPhoto != null && telegramPhoto.isNotEmpty) {
+              unawaited(SessionManager.storeTelegramPhotoUrl(telegramPhoto));
+            }
           },
         );
         state.maybeWhen(
@@ -710,7 +804,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileStatsSection(
                 profile: profile,
                 cachedGoogleDisplayName: _cachedGoogleDisplayName,
-                cachedGooglePhotoUrl: _cachedGooglePhotoUrl,
+                cachedTelegramPhotoUrl: _cachedTelegramPhotoUrl,
                 expandedSectionIndex: _expandedSectionIndex,
                 onExpandedSectionChanged: (index) {
                   setState(() => _expandedSectionIndex = index);
@@ -718,8 +812,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 getLocalizedRegionName: _getLocalizedRegionName,
                 getLocalizedUniversityName: _getLocalizedUniversityName,
                 telegramLinked: _telegramLinked,
+                canUnbindTelegram: _canUnbindTelegram,
                 isLinkingTelegram: _isLinkingTelegram,
+                isUnlinkingTelegram: _isUnlinkingTelegram,
                 onLinkTelegram: _telegramLinked == false ? _linkTelegramAccount : null,
+                onUnlinkTelegram:
+                    _telegramLinked == true && _canUnbindTelegram
+                        ? _unlinkTelegramAccount
+                        : null,
               ),
               const SizedBox(height: 24),
               ProfileListingsSection(

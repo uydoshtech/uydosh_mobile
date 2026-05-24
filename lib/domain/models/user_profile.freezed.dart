@@ -36,6 +36,8 @@ mixin _$UserProfile {
   int? get universityId => throw _privateConstructorUsedError;
   @JsonKey(name: "avatar_url")
   String? get avatarUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: "telegram_avatar_url")
+  String? get telegramAvatarUrl => throw _privateConstructorUsedError;
   String? get telegram => throw _privateConstructorUsedError;
   double? get rating => throw _privateConstructorUsedError;
   @JsonKey(name: "about_me")
@@ -101,6 +103,7 @@ abstract class $UserProfileCopyWith<$Res> {
       @JsonKey(name: "region_id") int? regionId,
       @JsonKey(name: "university_id") int? universityId,
       @JsonKey(name: "avatar_url") String? avatarUrl,
+      @JsonKey(name: "telegram_avatar_url") String? telegramAvatarUrl,
       String? telegram,
       double? rating,
       @JsonKey(name: "about_me") String? aboutMe,
@@ -153,6 +156,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? regionId = freezed,
     Object? universityId = freezed,
     Object? avatarUrl = freezed,
+    Object? telegramAvatarUrl = freezed,
     Object? telegram = freezed,
     Object? rating = freezed,
     Object? aboutMe = freezed,
@@ -206,6 +210,10 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
       avatarUrl: freezed == avatarUrl
           ? _value.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegramAvatarUrl: freezed == telegramAvatarUrl
+          ? _value.telegramAvatarUrl
+          : telegramAvatarUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       telegram: freezed == telegram
           ? _value.telegram
@@ -339,6 +347,7 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       @JsonKey(name: "region_id") int? regionId,
       @JsonKey(name: "university_id") int? universityId,
       @JsonKey(name: "avatar_url") String? avatarUrl,
+      @JsonKey(name: "telegram_avatar_url") String? telegramAvatarUrl,
       String? telegram,
       double? rating,
       @JsonKey(name: "about_me") String? aboutMe,
@@ -391,6 +400,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? regionId = freezed,
     Object? universityId = freezed,
     Object? avatarUrl = freezed,
+    Object? telegramAvatarUrl = freezed,
     Object? telegram = freezed,
     Object? rating = freezed,
     Object? aboutMe = freezed,
@@ -444,6 +454,10 @@ class __$$UserProfileImplCopyWithImpl<$Res>
       avatarUrl: freezed == avatarUrl
           ? _value.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      telegramAvatarUrl: freezed == telegramAvatarUrl
+          ? _value.telegramAvatarUrl
+          : telegramAvatarUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       telegram: freezed == telegram
           ? _value.telegram
@@ -544,6 +558,7 @@ class _$UserProfileImpl implements _UserProfile {
       @JsonKey(name: "region_id") this.regionId,
       @JsonKey(name: "university_id") this.universityId,
       @JsonKey(name: "avatar_url") this.avatarUrl,
+      @JsonKey(name: "telegram_avatar_url") this.telegramAvatarUrl,
       this.telegram,
       this.rating,
       @JsonKey(name: "about_me") this.aboutMe,
@@ -596,6 +611,9 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   @JsonKey(name: "avatar_url")
   final String? avatarUrl;
+  @override
+  @JsonKey(name: "telegram_avatar_url")
+  final String? telegramAvatarUrl;
   @override
   final String? telegram;
   @override
@@ -655,7 +673,7 @@ class _$UserProfileImpl implements _UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, originCountryIso2: $originCountryIso2, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
+    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegramAvatarUrl: $telegramAvatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, originCountryIso2: $originCountryIso2, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
   }
 
   @override
@@ -675,6 +693,8 @@ class _$UserProfileImpl implements _UserProfile {
                 other.universityId == universityId) &&
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
+            (identical(other.telegramAvatarUrl, telegramAvatarUrl) ||
+                other.telegramAvatarUrl == telegramAvatarUrl) &&
             (identical(other.telegram, telegram) ||
                 other.telegram == telegram) &&
             (identical(other.rating, rating) || other.rating == rating) &&
@@ -726,6 +746,7 @@ class _$UserProfileImpl implements _UserProfile {
         regionId,
         universityId,
         avatarUrl,
+        telegramAvatarUrl,
         telegram,
         rating,
         aboutMe,
@@ -777,6 +798,7 @@ abstract class _UserProfile implements UserProfile {
       @JsonKey(name: "region_id") final int? regionId,
       @JsonKey(name: "university_id") final int? universityId,
       @JsonKey(name: "avatar_url") final String? avatarUrl,
+      @JsonKey(name: "telegram_avatar_url") final String? telegramAvatarUrl,
       final String? telegram,
       final double? rating,
       @JsonKey(name: "about_me") final String? aboutMe,
@@ -829,6 +851,9 @@ abstract class _UserProfile implements UserProfile {
   @override
   @JsonKey(name: "avatar_url")
   String? get avatarUrl;
+  @override
+  @JsonKey(name: "telegram_avatar_url")
+  String? get telegramAvatarUrl;
   @override
   String? get telegram;
   @override

@@ -1,4 +1,3 @@
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -10,6 +9,7 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -26,16 +26,19 @@ class ProfileStatsSection extends StatelessWidget {
     required this.onExpandedSectionChanged,
     required this.getLocalizedRegionName,
     required this.getLocalizedUniversityName,
-    this.cachedGooglePhotoUrl,
+    this.cachedTelegramPhotoUrl,
     this.telegramLinked,
+    this.canUnbindTelegram = false,
     this.isLinkingTelegram = false,
+    this.isUnlinkingTelegram = false,
     this.onLinkTelegram,
+    this.onUnlinkTelegram,
     super.key,
   });
 
   final UserProfile profile;
   final String? cachedGoogleDisplayName;
-  final String? cachedGooglePhotoUrl;
+  final String? cachedTelegramPhotoUrl;
   final int? expandedSectionIndex;
   final void Function(int? index) onExpandedSectionChanged;
   final String Function(UserProfileRegion region) getLocalizedRegionName;
@@ -44,8 +47,12 @@ class ProfileStatsSection extends StatelessWidget {
 
   /// `null` while loading identity; `true` when Telegram auth is linked.
   final bool? telegramLinked;
+  /// Whether the user has another sign-in method and can safely unlink Telegram.
+  final bool canUnbindTelegram;
   final bool isLinkingTelegram;
+  final bool isUnlinkingTelegram;
   final VoidCallback? onLinkTelegram;
+  final VoidCallback? onUnlinkTelegram;
 
   bool _hasNewProfileFields(UserProfile profile) {
     return profile.employed != null ||
@@ -202,6 +209,35 @@ class ProfileStatsSection extends StatelessWidget {
                               TelegramSignInBrandedButton(
                                 label: L10n.get("link_telegram"),
                                 onPressed: isLinkingTelegram ? null : onLinkTelegram,
+                              ),
+                            ],
+                            if (telegramLinked == true &&
+                                canUnbindTelegram &&
+                                onUnlinkTelegram != null) ...[
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: TextButtonThemed(
+                                  onPressed: isUnlinkingTelegram
+                                      ? null
+                                      : onUnlinkTelegram,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                  ),
+                                  child: isUnlinkingTelegram
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                          ),
+                                        )
+                                      : Text(L10n.get("unlink_telegram")),
+                                ),
                               ),
                             ],
                             if (profile.rating != null) ...[
@@ -495,49 +531,48 @@ class ProfileStatsSection extends StatelessWidget {
     );
   }
 
-  String? _effectiveAvatarUrl() {
-    final raw = profile.avatarUrl?.trim();
-    final hasCustomUpload = raw != null &&
-        raw.isNotEmpty &&
-        !raw.startsWith("http://") &&
-        !raw.startsWith("https://");
-    if (hasCustomUpload) {
-      return resolveAvatarUrl(raw);
+  String? _telegramFieldAvatarUrl() {
+    final cached = cachedTelegramPhotoUrl?.trim();
+    if (cached != null && cached.isNotEmpty) {
+      return cached;
     }
-    return cachedGooglePhotoUrl ??
-        FirebaseAuth.instance.currentUser?.photoURL ??
-        resolveAvatarUrl(raw);
+
+    final fromProfile = profile.telegramAvatarUrl?.trim();
+    if (fromProfile != null && fromProfile.isNotEmpty) {
+      return resolveAvatarUrl(fromProfile);
+    }
+
+    final rawAvatar = profile.avatarUrl?.trim();
+    if (rawAvatar != null &&
+        rawAvatar.isNotEmpty &&
+        isTelegramHostedAvatarUrl(rawAvatar)) {
+      return resolveAvatarUrl(rawAvatar);
+    }
+
+    return null;
   }
 
-  Widget _buildTelegramLeading(BuildContext context, {required bool linked}) {
-    if (linked) {
-      final photoUrl = _effectiveAvatarUrl();
-      if (photoUrl != null) {
-        final fallback = Center(
-          child: ThemeIcon(
-            Icons.person,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        );
-        return SizedBox(
-          width: _kTelegramFieldAvatarSize,
-          height: _kTelegramFieldAvatarSize,
-          child: ClipOval(
-            child: NetworkAvatarImage(
-              imageUrl: photoUrl,
-              size: _kTelegramFieldAvatarSize,
-              fallback: fallback,
-            ),
-          ),
-        );
-      }
-    }
+  Widget? _buildTelegramFieldAvatar(BuildContext context) {
+    final photoUrl = _telegramFieldAvatarUrl();
+    if (photoUrl == null) return null;
 
-    return ThemeIcon(
-      Icons.telegram,
-      size: 20,
-      color: Theme.of(context).colorScheme.onSurface,
+    final fallback = Center(
+      child: ThemeIcon(
+        Icons.person,
+        size: 18,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+    return SizedBox(
+      width: _kTelegramFieldAvatarSize,
+      height: _kTelegramFieldAvatarSize,
+      child: ClipOval(
+        child: NetworkAvatarImage(
+          imageUrl: photoUrl,
+          size: _kTelegramFieldAvatarSize,
+          fallback: fallback,
+        ),
+      ),
     );
   }
 
@@ -556,49 +591,67 @@ class ProfileStatsSection extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTelegramLeading(context, linked: linked),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    L10n.get("telegram"),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    hasTelegram
-                        ? "@${profile.telegram!}"
-                        : L10n.get("not_specified"),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (linked)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        L10n.get("telegram_account_linked"),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ThemeIcon(
+                  Icons.telegram,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        L10n.get("telegram"),
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    ),
+                      Text(
+                        hasTelegram
+                            ? "@${profile.telegram!}"
+                            : L10n.get("not_specified"),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (hasTelegram) ...[
+                  if (linked) ...[
+                    if (_buildTelegramFieldAvatar(context) case final avatar?) ...[
+                      avatar,
+                      const SizedBox(width: 8),
+                    ],
+                  ],
+                  ThemeIcon(
+                    Icons.arrow_forward_ios,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 16,
+                  ),
                 ],
-              ),
+              ],
             ),
-            if (hasTelegram)
-              ThemeIcon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                size: 16,
+            if (linked)
+              Padding(
+                padding: const EdgeInsets.only(left: 32, top: 4),
+                child: Text(
+                  L10n.get("telegram_account_linked"),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               ),
           ],
         ),

@@ -21,6 +21,7 @@ class UserProfile with _$UserProfile {
     @JsonKey(name: "region_id") int? regionId,
     @JsonKey(name: "university_id") int? universityId,
     @JsonKey(name: "avatar_url") String? avatarUrl,
+    @JsonKey(name: "telegram_avatar_url") String? telegramAvatarUrl,
     String? telegram,
     double? rating,
     @JsonKey(name: "about_me") String? aboutMe,
