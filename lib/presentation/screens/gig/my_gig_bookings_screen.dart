@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -13,6 +14,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
+import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_bookings_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
@@ -31,26 +33,26 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 /// Which role filter is currently applied to "My bookings".
-enum _BookingRole { all, client, provider }
+enum _BookingRole { client, provider }
 
 extension on _BookingRole {
   String get apiValue => switch (this) {
-        _BookingRole.all => "all",
         _BookingRole.client => "client",
         _BookingRole.provider => "provider",
       };
 }
 
-_BookingRole _bookingRoleFromApi(String raw) {
+_BookingRole _bookingRoleFromFilter(String raw) {
   switch (raw) {
-    case "client":
-      return _BookingRole.client;
     case "provider":
       return _BookingRole.provider;
+    case "client":
     default:
-      return _BookingRole.all;
+      return _BookingRole.client;
   }
 }
+
+bool _usesAutoSelectRoleFilter(String raw) => raw == "all";
 
 /// Picks a label color that stays readable on the neumorphic status chip (dark
 /// accents such as [ColorScheme.primary] on a dark blue theme were nearly
@@ -70,7 +72,8 @@ class MyGigBookingsScreen extends StatefulWidget {
     this.initialRoleFilter = 'all',
   });
 
-  /// Passed to [FetchMyGigBookings] as `all`, `client`, or `provider`.
+  /// Passed to [FetchMyGigBookings] as `client` or `provider`. Use `all` to
+  /// open the tab that has bookings when only one side is non-empty.
   final String initialRoleFilter;
 
   @override
@@ -84,13 +87,48 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
   @override
   void initState() {
     super.initState();
-    _role = _bookingRoleFromApi(widget.initialRoleFilter);
+    _role = _bookingRoleFromFilter(widget.initialRoleFilter);
     SessionManager.getUserId().then((id) {
       if (mounted) setState(() => _sessionUserId = id);
     });
-    context
-        .read<GigBookingsBloc>()
-        .add(FetchMyGigBookings(role: _role.apiValue));
+    unawaited(_bootstrapBookings());
+  }
+
+  Future<void> _bootstrapBookings() async {
+    if (!_usesAutoSelectRoleFilter(widget.initialRoleFilter)) {
+      if (!mounted) return;
+      context
+          .read<GigBookingsBloc>()
+          .add(FetchMyGigBookings(role: _role.apiValue));
+      return;
+    }
+
+    try {
+      final service = getIt<IGigService>();
+      final results = await Future.wait([
+        service.listMyBookings(role: "client"),
+        service.listMyBookings(role: "provider"),
+      ]);
+      if (!mounted) return;
+
+      final hasClient = results[0].isNotEmpty;
+      final hasProvider = results[1].isNotEmpty;
+
+      final selectedRole =
+          !hasClient && hasProvider ? _BookingRole.provider : _BookingRole.client;
+      if (selectedRole != _role) {
+        setState(() => _role = selectedRole);
+      }
+
+      context.read<GigBookingsBloc>().add(
+            FetchMyGigBookings(role: selectedRole.apiValue),
+          );
+    } catch (_) {
+      if (!mounted) return;
+      context
+          .read<GigBookingsBloc>()
+          .add(FetchMyGigBookings(role: _role.apiValue));
+    }
   }
 
   void _onRoleChanged(_BookingRole next) {
@@ -131,18 +169,7 @@ class _MyGigBookingsScreenState extends State<MyGigBookingsScreen> {
                       themeState.isBlueTheme || themeState.isLightTheme,
                   value: _role,
                   onChanged: _onRoleChanged,
-                  intrinsicWidthFirstSegment: true,
-                  firstSegmentWidthScale: 1.2,
-                  // Short "All" label is still much narrower than the other tabs by
-                  // intrinsic measure; keep a minimum share of the bar so the thumb
-                  // does not look like a tiny sliver.
-                  firstSegmentMinFractionOfBar: 0.26,
                   entries: [
-                    SegmentedSwitchEntry(
-                      value: _BookingRole.all,
-                      label: L10n.get("gigs_my_bookings_tab_all"),
-                      icon: Icons.list_alt_rounded,
-                    ),
                     SegmentedSwitchEntry(
                       value: _BookingRole.client,
                       label: L10n.get("gigs_my_bookings_tab_client"),

@@ -8,13 +8,15 @@ import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/gig_hub_feeds_refresh_notifier.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
+import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_offers_bloc.dart";
 import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
+import "package:uy_dosh/presentation/screens/gig/my_published_publish_fab.dart";
+import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
@@ -113,6 +115,9 @@ class _MyPublishedLists extends StatefulWidget {
 }
 
 class _MyPublishedListsState extends State<_MyPublishedLists> {
+  static const double _kFabBottomInset = 28.0;
+  static const double _kListBottomClearance = 88.0;
+
   _PublishedTab _tab = _PublishedTab.services;
   bool _didAutoSelectInitialTab = false;
   final _servicesScroll = ScrollController();
@@ -179,6 +184,14 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
     setState(() => _tab = next);
   }
 
+  GigPublishMode get _publishInitialMode => _tab == _PublishedTab.services
+      ? GigPublishMode.service
+      : GigPublishMode.task;
+
+  Future<void> _openPublish() async {
+    await context.pushPublishGig(initialMode: _publishInitialMode);
+  }
+
   /// Open tasks when services are empty (or failed) but tasks have rows.
   void _tryAutoSelectInitialTab() {
     if (_didAutoSelectInitialTab || !mounted) return;
@@ -240,50 +253,62 @@ class _MyPublishedListsState extends State<_MyPublishedLists> {
           listener: (_, __) => _tryAutoSelectInitialTab(),
         ),
       ],
-      child: Column(
+      child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: ListenableBuilder(
-              listenable: ThemeState(),
-              builder: (context, _) {
-                final themeState = ThemeState();
-                return NeumorphicSegmentedSwitch<_PublishedTab>(
-                  liquidGlass:
-                      themeState.isBlueTheme || themeState.isLightTheme,
-                  value: _tab,
-                  onChanged: _onTabChanged,
-                  entries: [
-                    SegmentedSwitchEntry(
-                      value: _PublishedTab.services,
-                      label: L10n.get("gigs_my_published_tab_services"),
-                      icon: Icons.handyman_outlined,
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: ListenableBuilder(
+                  listenable: ThemeState(),
+                  builder: (context, _) {
+                    final themeState = ThemeState();
+                    return NeumorphicSegmentedSwitch<_PublishedTab>(
+                      liquidGlass:
+                          themeState.isBlueTheme || themeState.isLightTheme,
+                      value: _tab,
+                      onChanged: _onTabChanged,
+                      entries: [
+                        SegmentedSwitchEntry(
+                          value: _PublishedTab.services,
+                          label: L10n.get("gigs_my_published_tab_services"),
+                          icon: Icons.handyman_outlined,
+                        ),
+                        SegmentedSwitchEntry(
+                          value: _PublishedTab.tasks,
+                          label: L10n.get("gigs_my_published_tab_tasks"),
+                          icon: Icons.assignment_outlined,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              Expanded(
+                child: IndexedStack(
+                  index: _tab == _PublishedTab.services ? 0 : 1,
+                  children: [
+                    _ServicesListView(
+                      scrollController: _servicesScroll,
+                      userId: widget.userId,
+                      onRefresh: _refreshServices,
                     ),
-                    SegmentedSwitchEntry(
-                      value: _PublishedTab.tasks,
-                      label: L10n.get("gigs_my_published_tab_tasks"),
-                      icon: Icons.assignment_outlined,
+                    _TasksListView(
+                      scrollController: _tasksScroll,
+                      userId: widget.userId,
+                      onRefresh: _refreshTasks,
                     ),
                   ],
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: IndexedStack(
-              index: _tab == _PublishedTab.services ? 0 : 1,
-              children: [
-                _ServicesListView(
-                  scrollController: _servicesScroll,
-                  userId: widget.userId,
-                  onRefresh: _refreshServices,
-                ),
-                _TasksListView(
-                  scrollController: _tasksScroll,
-                  userId: widget.userId,
-                  onRefresh: _refreshTasks,
-                ),
-              ],
+          Positioned(
+            right: 16,
+            bottom: _kFabBottomInset,
+            child: MyPublishedPublishFab(
+              isService: _tab == _PublishedTab.services,
+              onPressed: _openPublish,
             ),
           ),
         ],
@@ -334,7 +359,12 @@ class _ServicesListView extends StatelessWidget {
             child: ListView.separated(
               controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                _MyPublishedListsState._kListBottomClearance,
+              ),
               itemCount: state.offers.length + (state.hasMore ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: 14),
               itemBuilder: (_, i) {
@@ -414,7 +444,12 @@ class _TasksListView extends StatelessWidget {
             child: ListView.separated(
               controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                _MyPublishedListsState._kListBottomClearance,
+              ),
               itemCount: state.requests.length + (state.hasMore ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: 14),
               itemBuilder: (_, i) {

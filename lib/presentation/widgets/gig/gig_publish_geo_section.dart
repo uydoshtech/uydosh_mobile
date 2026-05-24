@@ -6,8 +6,10 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Optional district + metro pickers for gig publish (task and service).
@@ -18,6 +20,7 @@ class GigPublishGeoSection extends StatefulWidget {
     this.initialSubwayStationId,
     this.initialSubwayLineId,
     this.locationDirtyOutlineColor,
+    this.collapsible = false,
     super.key,
   });
 
@@ -31,6 +34,7 @@ class GigPublishGeoSection extends StatefulWidget {
   final int? initialSubwayStationId;
   final int? initialSubwayLineId;
   final Color? locationDirtyOutlineColor;
+  final bool collapsible;
 
   @override
   State<GigPublishGeoSection> createState() => _GigPublishGeoSectionState();
@@ -52,6 +56,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
   int? _pendingSubwayStationId;
   int? _pendingSubwayLineId;
   int? _pendingLocationId;
+  bool _expanded = false;
 
   @override
   void initState() {
@@ -237,6 +242,173 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     _notifyParent();
   }
 
+  String _localizedName({
+    String? nameUz,
+    String? nameRu,
+    String? nameEn,
+  }) {
+    final lang = L10n.currentLanguage;
+    switch (lang) {
+      case "uz":
+        return nameUz ?? nameRu ?? nameEn ?? "";
+      case "en":
+        return nameEn ?? nameRu ?? nameUz ?? "";
+      default:
+        return nameRu ?? nameUz ?? nameEn ?? "";
+    }
+  }
+
+  String? _locationDisplayName(Location location) {
+    final lang = L10n.currentLanguage;
+    switch (lang) {
+      case "uz":
+        return location.shortNameUz ??
+            location.shortNameRu ??
+            location.shortNameEn;
+      case "en":
+        return location.shortNameEn ??
+            location.shortNameRu ??
+            location.shortNameUz;
+      default:
+        return location.shortNameRu ??
+            location.shortNameUz ??
+            location.shortNameEn;
+    }
+  }
+
+  String? _buildCollapsedSummary() {
+    final parts = <String>[];
+
+    final station = _resolvedSubwayStation();
+    if (station != null) {
+      parts.add(
+        _localizedName(
+          nameUz: station.nameUz,
+          nameRu: station.nameRu,
+          nameEn: station.nameEn,
+        ),
+      );
+    } else if (_selectedSubwayLine > 0) {
+      parts.add(
+        MetroCache.getLineName(_selectedSubwayLine, L10n.currentLanguage),
+      );
+    }
+
+    final locationId = _resolvedLocationId();
+    if (locationId != null && _currentLocations.isNotEmpty) {
+      final idx = _currentLocations.indexWhere((l) => l.id == locationId);
+      if (idx >= 0) {
+        final name = _locationDisplayName(_currentLocations[idx]);
+        if (name != null && name.isNotEmpty) {
+          parts.add(name);
+        }
+      }
+    }
+
+    if (parts.isEmpty) return null;
+    return parts.join(" · ");
+  }
+
+  Widget _buildCollapsibleHeader(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final summary = _buildCollapsedSummary();
+    final titleColor = ThemeState().isLightTheme
+        ? Colors.black
+        : scheme.onSurfaceVariant;
+    final subtitleColor = scheme.onSurfaceVariant.withValues(
+      alpha: Theme.of(context).brightness == Brightness.dark ? 0.75 : 0.85,
+    );
+
+    return WheelPickerPlateContainer(
+      theme: Theme.of(context),
+      dirtyOutlineColor: widget.locationDirtyOutlineColor,
+      child: InkWell(
+        onTap: () => setState(() => _expanded = !_expanded),
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      L10n.get("metro_station_label"),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: titleColor,
+                      ),
+                    ),
+                    if (summary != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        summary,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: subtitleColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              AnimatedRotation(
+                turns: _expanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                child: ThemeIcon(
+                  Icons.keyboard_arrow_down,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeoPickers(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListingFormMetroSection(
+          selectedSubwayLine: _selectedSubwayLine,
+          selectedStationIndex: _selectedStationIndex,
+          currentStations: _currentStations,
+          isLoadingStations: _isLoadingStations,
+          metroLineScrollController: _metroLineScrollController,
+          metroStationScrollController: _metroStationScrollController,
+          onLineChanged: (index) {
+            setState(() {
+              _selectedSubwayLine = index;
+              if (index > 0) {
+                _loadStationsForLine(index);
+              } else {
+                _currentStations = [];
+                _selectedStationIndex = 0;
+              }
+            });
+            _notifyParent();
+          },
+          onStationChanged: (index) {
+            setState(() => _selectedStationIndex = index);
+            _syncLocationWithStation();
+            _notifyParent();
+          },
+          onDismissKeyboard: () => FocusScope.of(context).unfocus(),
+        ),
+        const SizedBox(height: 14),
+        _buildLocationPicker(context),
+      ],
+    );
+  }
+
   Widget _buildLocationPicker(BuildContext context) {
     final picker = LocationPicker(
       locations: _currentLocations,
@@ -273,39 +445,18 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
           loaded: (s) => _onStationsLoaded(s.stations),
         );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListingFormMetroSection(
-            selectedSubwayLine: _selectedSubwayLine,
-            selectedStationIndex: _selectedStationIndex,
-            currentStations: _currentStations,
-            isLoadingStations: _isLoadingStations,
-            metroLineScrollController: _metroLineScrollController,
-            metroStationScrollController: _metroStationScrollController,
-            onLineChanged: (index) {
-              setState(() {
-                _selectedSubwayLine = index;
-                if (index > 0) {
-                  _loadStationsForLine(index);
-                } else {
-                  _currentStations = [];
-                  _selectedStationIndex = 0;
-                }
-              });
-              _notifyParent();
-            },
-            onStationChanged: (index) {
-              setState(() => _selectedStationIndex = index);
-              _syncLocationWithStation();
-              _notifyParent();
-            },
-            onDismissKeyboard: () => FocusScope.of(context).unfocus(),
-          ),
-          const SizedBox(height: 14),
-          _buildLocationPicker(context),
-        ],
-      ),
+      child: widget.collapsible
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildCollapsibleHeader(context),
+                if (_expanded) ...[
+                  const SizedBox(height: 14),
+                  _buildGeoPickers(context),
+                ],
+              ],
+            )
+          : _buildGeoPickers(context),
     );
   }
 }

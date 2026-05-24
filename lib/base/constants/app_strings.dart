@@ -902,6 +902,8 @@ class AppStrings {
       "gigs_my_published_title": "My published",
       "gigs_my_published_tab_services": "Services",
       "gigs_my_published_tab_tasks": "Tasks",
+      "gigs_my_published_add_service": "Add service",
+      "gigs_my_published_add_task": "Add task",
       "gigs_my_published_empty_services":
           "You have not published any services yet.",
       "gigs_my_published_empty_tasks": "You have not posted any tasks yet.",
@@ -2475,6 +2477,8 @@ class AppStrings {
       "gigs_my_published_title": "Мои публикации",
       "gigs_my_published_tab_services": "Услуги",
       "gigs_my_published_tab_tasks": "Задачи",
+      "gigs_my_published_add_service": "Добавить услугу",
+      "gigs_my_published_add_task": "Добавить задачу",
       "gigs_my_published_empty_services": "Вы ещё не опубликовали услуги.",
       "gigs_my_published_empty_tasks": "Вы ещё не публиковали задачи.",
       "gigs_my_published_sign_in":
@@ -4066,6 +4070,8 @@ class AppStrings {
       "gigs_my_published_title": "Men nashr qilganlar",
       "gigs_my_published_tab_services": "Xizmatlar",
       "gigs_my_published_tab_tasks": "Vazifalar",
+      "gigs_my_published_add_service": "Xizmat qo'shish",
+      "gigs_my_published_add_task": "Vazifa qo'shish",
       "gigs_my_published_empty_services":
           "Siz hali hech qanday xizmat joylashtmagansiz.",
       "gigs_my_published_empty_tasks":

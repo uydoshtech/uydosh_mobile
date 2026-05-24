@@ -1191,6 +1191,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         initialLocationId: _locationId,
         initialSubwayStationId: _subwayStationId,
         initialSubwayLineId: _subwayLineId,
+        collapsible: _mode == GigPublishMode.task,
         locationDirtyOutlineColor: dirtyOutline(geoDirty),
         onGeoChanged: ({locationId, subwayStationId, subwayLineId}) {
           _mutateForm(() {
