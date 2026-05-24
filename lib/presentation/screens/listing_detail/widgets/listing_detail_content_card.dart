@@ -6,7 +6,9 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -15,6 +17,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_desc
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/deferred_yandex_map.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
@@ -30,6 +33,7 @@ class ListingDetailContentCard extends StatefulWidget {
     this.formattedPublicationDate,
     this.amenityChips,
     this.ownerName,
+    this.ownerAvatarUrl,
     this.onAuthorTap,
     super.key,
   });
@@ -37,6 +41,7 @@ class ListingDetailContentCard extends StatefulWidget {
   final ListingDetail listingDetail;
   final String currentLanguage;
   final String? ownerName;
+  final String? ownerAvatarUrl;
   final VoidCallback? onAuthorTap;
   final VoidCallback? onOpenInYandexMaps;
   /// Pre-formatted move-in date (avoids DateTime.parse in build).
@@ -68,6 +73,53 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     final phone = user.phone?.trim();
     if (phone != null && phone.isNotEmpty) return phone;
     return L10n.get("na");
+  }
+
+  Widget _buildAuthorAvatar() {
+    const size = 24.0;
+    final label = _authorDisplayLabel();
+    final resolvedUrl = resolveAvatarUrl(widget.ownerAvatarUrl);
+    final iconColor = ListingDetailThemeHelper.dateIconColor;
+
+    Widget fallback() {
+      final initials = StringUtils.extractInitials(label);
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        ),
+        child: Center(
+          child: initials.isNotEmpty
+              ? Text(
+                  initials,
+                  style: TextStyle(
+                    color: iconColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                  ),
+                )
+              : ThemeIconFactory.detail(
+                  icon: Icons.person_outline,
+                  color: iconColor,
+                  size: 16,
+                ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipOval(
+        child: resolvedUrl != null
+            ? NetworkAvatarImage(
+                imageUrl: resolvedUrl,
+                size: size,
+                fallback: fallback(),
+              )
+            : fallback(),
+      ),
+    );
   }
 
   final GlobalKey _inlineLocationExpansionKey = GlobalKey();
@@ -555,18 +607,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                         ],
                         Row(
                           children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Center(
-                                child: ThemeIconFactory.detail(
-                                  icon: Icons.person_outline,
-                                  color:
-                                      ListingDetailThemeHelper.dateIconColor,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
+                            _buildAuthorAvatar(),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Row(

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -11,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.d
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Optional district + metro pickers for gig publish (task and service).
 class GigPublishGeoSection extends StatefulWidget {
@@ -309,6 +311,17 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     return parts.join(" · ");
   }
 
+  Color _metroHeaderIconColor() {
+    final station = _resolvedSubwayStation();
+    if (station != null) {
+      return AppColors.getMetroLineColor(station.line);
+    }
+    if (_selectedSubwayLine > 0) {
+      return AppColors.getMetroLineColor(_selectedSubwayLine);
+    }
+    return Colors.black;
+  }
+
   Widget _buildCollapsibleHeader(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final summary = _buildCollapsedSummary();
@@ -329,6 +342,8 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
+              MLetterIcon(color: _metroHeaderIconColor(), size: 22),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

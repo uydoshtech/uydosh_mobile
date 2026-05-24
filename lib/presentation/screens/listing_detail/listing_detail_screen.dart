@@ -107,6 +107,16 @@ String? _listingAuthorNameFromProfile(UserProfile profile) {
   return null;
 }
 
+String? _listingAuthorAvatarUrlFromProfile(UserProfile profile) {
+  final avatar = profile.avatarUrl?.trim();
+  if (avatar != null && avatar.isNotEmpty) return avatar;
+  final telegramAvatar = profile.telegramAvatarUrl?.trim();
+  if (telegramAvatar != null && telegramAvatar.isNotEmpty) {
+    return telegramAvatar;
+  }
+  return null;
+}
+
 /// Owner label for listing UI / chat entry: use [ListingDetailPageBloc] cache only
 /// when it matches [ListingDetail.user], otherwise listing payload email (always
 /// tied to the current owner row).
@@ -520,6 +530,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       pageBloc.setOwnerName(
         listingUserId,
         _listingAuthorNameFromProfile(profile),
+        avatarUrl: _listingAuthorAvatarUrlFromProfile(profile),
       );
     } catch (e) {
       logger.d("Error loading owner name: $e");
@@ -560,6 +571,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         matches: result.matches,
         differences: result.differences,
         ownerName: _listingAuthorNameFromProfile(ownerProfile),
+        ownerAvatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
       );
     } catch (e) {
       logger.d("Error loading compatibility: $e");
@@ -1729,7 +1741,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                 // those from the outer buildWhen.
                 return BlocBuilder<ListingDetailPageBloc,
                     ListingDetailPageState>(
-                  buildWhen: (prev, curr) => prev.ownerName != curr.ownerName,
+                  buildWhen: (prev, curr) =>
+                      prev.ownerName != curr.ownerName ||
+                      prev.ownerAvatarUrl != curr.ownerAvatarUrl,
                   builder: (context, pageState) =>
                       _buildLoadedState(data.listingDetail!, pageState),
                 );
@@ -2069,6 +2083,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
             formattedPublicationDate: formattedPub,
             getLocalizedName: _getLocalizedName,
             ownerName: pageState.ownerName,
+            ownerAvatarUrl: pageState.ownerAvatarUrl,
             onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
           ),

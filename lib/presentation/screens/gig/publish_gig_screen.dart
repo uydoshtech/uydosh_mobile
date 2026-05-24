@@ -1191,7 +1191,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
         initialLocationId: _locationId,
         initialSubwayStationId: _subwayStationId,
         initialSubwayLineId: _subwayLineId,
-        collapsible: _mode == GigPublishMode.task,
+        collapsible: true,
         locationDirtyOutlineColor: dirtyOutline(geoDirty),
         onGeoChanged: ({locationId, subwayStationId, subwayLineId}) {
           _mutateForm(() {
@@ -1512,13 +1512,21 @@ class _PublishModeToggle extends StatelessWidget {
   final GigPublishMode value;
   final ValueChanged<GigPublishMode> onChanged;
 
+  static const double _switchHeight = 135 * 60 / 145;
+
   @override
   Widget build(BuildContext context) {
-    return NeumorphicSegmentedSwitch<GigPublishMode>(
-      value: value,
-      height: 135 * 60 / 145,
-      onChanged: onChanged,
-      entries: [
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        return NeumorphicSegmentedSwitch<GigPublishMode>(
+          liquidGlass:
+              themeState.isBlueTheme || themeState.isLightTheme,
+          value: value,
+          height: _switchHeight,
+          onChanged: onChanged,
+          entries: [
         SegmentedSwitchEntry(
           value: GigPublishMode.service,
           label: L10n.get("gigs_publish_mode_service"),
@@ -1531,7 +1539,9 @@ class _PublishModeToggle extends StatelessWidget {
           subtitle: L10n.get("gigs_publish_mode_task_subtitle"),
           icon: Icons.assignment_outlined,
         ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
