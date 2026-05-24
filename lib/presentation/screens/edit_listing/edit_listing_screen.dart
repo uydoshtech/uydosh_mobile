@@ -10,6 +10,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/room_plan_capability.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -22,6 +23,7 @@ import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
@@ -31,7 +33,6 @@ import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart"
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
@@ -68,12 +69,11 @@ class _EditListingScreenState extends State<EditListingScreen>
   final _moveInDateController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
-  FixedExtentScrollController? _genderScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
-  int _selectedGender = 1; // Default to male (1 = male, 2 = female)
+  int _selectedGender = 1; // From profile (1 = male, 2 = female)
   double _price = 50.0;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
@@ -169,9 +169,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateController.addListener(_markDirty);
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
-    _genderScrollController = FixedExtentScrollController(
-      initialItem: [1, 2].indexOf(_selectedGender).clamp(0, 1),
-    );
+    unawaited(_initProfileGender());
     _listingTypeScrollController = FixedExtentScrollController(
       initialItem: [2, 1].indexOf(_selectedListingTypeId).clamp(0, 1),
     );
@@ -293,11 +291,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Set price (single value, stored as both min and max)
     _price = widget.listingDetail.price.toDouble();
 
-    // Set gender
-    if (widget.listingDetail.gender != null) {
-      _selectedGender = widget.listingDetail.gender!;
-    }
-
     // Set subway line and station
     if (widget.listingDetail.subwayStation != null) {
       _selectedSubwayLine = widget.listingDetail.subwayStation!.line;
@@ -319,6 +312,32 @@ class _EditListingScreenState extends State<EditListingScreen>
       _selectedPhotos = [];
     }
     _rebuildOrderedPhotos();
+  }
+
+  /// Gender is derived from the user profile, not edited on the listing form.
+  Future<void> _initProfileGender() async {
+    final gender = await _getProfileGender();
+    if (!mounted) return;
+    final fallback = widget.listingDetail.gender ?? 1;
+    final resolved = (gender == 1 || gender == 2) ? gender! : fallback;
+    setState(() => _selectedGender = resolved);
+  }
+
+  /// Get profile gender (1 = male, 2 = female). Returns null if not available.
+  Future<int?> _getProfileGender() async {
+    var profile = await SessionManager.getCachedUserProfile();
+    if (profile?.gender != null &&
+        (profile!.gender == 1 || profile.gender == 2)) {
+      return profile.gender;
+    }
+    try {
+      profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      if (profile.gender != null &&
+          (profile.gender == 1 || profile.gender == 2)) {
+        return profile.gender;
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// Rebuild [_orderedPhotos] from the current sources, preserving any
@@ -545,7 +564,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
-    _genderScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
@@ -600,11 +618,6 @@ class _EditListingScreenState extends State<EditListingScreen>
         baseline.listingType.code == "roommate_needed" ? 2 : 1;
     if (_selectedListingTypeId != baselineTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
-    }
-
-    final baselineGender = baseline.gender ?? 1;
-    if (_selectedGender != baselineGender) {
-      addLabel("gender", fallback: "Gender");
     }
 
     if (_price.round() != baseline.price) {
@@ -693,9 +706,6 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     final baselineTypeId = d.listingType.code == "roommate_needed" ? 2 : 1;
     if (_selectedListingTypeId != baselineTypeId) return true;
-
-    final baselineGender = d.gender ?? 1;
-    if (_selectedGender != baselineGender) return true;
 
     if (_price.round() != d.price) return true;
 
@@ -835,48 +845,21 @@ class _EditListingScreenState extends State<EditListingScreen>
                     child: UydoshFormScrollBody(
                       topPadding: bodyTopPad,
                       children: [
-                        // Listing Type and Gender Selection - Side by Side
-                        Container(
-                          child: Row(
-                            children: [
-                              // Listing Type Selection (50% width)
-                              Expanded(
-                                child: LabeledFieldOverlay(
-                                  label: L10n.get("listing_type_label"),
-                                  child: ListingTypePicker(
-                                    selectedListingTypeId:
-                                        _selectedListingTypeId,
-                                    scrollController:
-                                        _listingTypeScrollController,
-                                    onListingTypeChanged: (listingTypeId) {
-                                      setState(() {
-                                        _selectedListingTypeId = listingTypeId;
-                                      });
-                                    },
-                                    useThemeColors: true,
-                                    showArrows: false,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              // Gender Selection (50% width)
-                              Expanded(
-                                child: LabeledFieldOverlay(
-                                  label: L10n.get("gender"),
-                                  child: GenderPicker(
-                                    selectedGender: _selectedGender,
-                                    scrollController: _genderScrollController,
-                                    onGenderChanged: (gender) {
-                                      setState(() {
-                                        _selectedGender = gender;
-                                      });
-                                    },
-                                    useThemeColors: true,
-                                    showArrows: false,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        // Listing type (gender is taken from profile, not shown in the form).
+                        LabeledFieldOverlay(
+                          label: L10n.get("listing_type_label"),
+                          child: ListingTypePicker(
+                            selectedListingTypeId:
+                                _selectedListingTypeId,
+                            scrollController:
+                                _listingTypeScrollController,
+                            onListingTypeChanged: (listingTypeId) {
+                              setState(() {
+                                _selectedListingTypeId = listingTypeId;
+                              });
+                            },
+                            useThemeColors: true,
+                            showArrows: false,
                           ),
                         ),
                         const SizedBox(height: 10),

@@ -31,7 +31,6 @@ import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -71,7 +70,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final TextEditingController _moveInDateController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
-  FixedExtentScrollController? _genderScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
@@ -114,7 +112,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   /// The most recent auto-generated default title. Used to decide whether the
   /// user has manually edited the title — if `_titleController.text` matches
-  /// this value (or is empty), we re-stamp on type/gender changes; otherwise
+  /// this value (or is empty), we re-stamp on listing-type changes; otherwise
   /// we preserve the user's edit.
   String _lastGeneratedTitle = "";
 
@@ -130,7 +128,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "create_listing");
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
-    _genderScrollController = FixedExtentScrollController(initialItem: 0);
     _listingTypeScrollController = FixedExtentScrollController(initialItem: 0);
     _metroLineScrollController = FixedExtentScrollController(
       initialItem: _selectedSubwayLine,
@@ -168,17 +165,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final listingTypeOptions = [2, 1];
-      final genderOptions = [1, 2];
       final listingTypeIndex =
           listingTypeOptions.indexOf(_selectedListingTypeId);
-      final genderIndex = genderOptions.indexOf(_selectedGender);
       _listingTypeScrollController?.animateToItem(
         listingTypeIndex >= 0 ? listingTypeIndex : 0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-      );
-      _genderScrollController?.animateToItem(
-        genderIndex >= 0 ? genderIndex : 0,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
       );
@@ -464,7 +454,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationScrollController?.dispose();
-    _genderScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
@@ -575,64 +564,36 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Listing Type and Gender Selection - Side by Side
-        Container(
-          child: Row(
-            children: [
-              // Listing Type Selection (50% width)
-              Expanded(
-                child: LabeledFieldOverlay(
-                  label: L10n.get("listing_type_label"),
-                  child: ListingTypePicker(
-                    selectedListingTypeId: _selectedListingTypeId,
-                    scrollController: _listingTypeScrollController,
-                    onListingTypeChanged: (listingTypeId) {
-                      setState(() {
-                        final prevType = _selectedListingTypeId;
-                        _selectedListingTypeId = listingTypeId;
-                        // Clear photos when switching to "room needed" (listingTypeId == 1)
-                        if (listingTypeId == 1) {
-                          _selectedPhotos.clear();
-                          _primaryPhotoIndex = null;
-                        }
-                        if (_priceTouched) {
-                          if (prevType == 2 && listingTypeId == 1) {
-                            _deriveBudgetRangeFromRoommatePrice();
-                          } else if (prevType == 1 && listingTypeId == 2) {
-                            _deriveRoommatePriceFromBudget();
-                          }
-                        }
-                      });
-                      _updateTitle();
-                    },
-                    useThemeColors: true,
-                    showArrows: false,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Gender Selection (50% width)
-              Expanded(
-                child: LabeledFieldOverlay(
-                  label: L10n.get("gender"),
-                  child: GenderPicker(
-                    selectedGender: _selectedGender,
-                    scrollController: _genderScrollController,
-                    onGenderChanged: (gender) {
-                      setState(() {
-                        _selectedGender = gender;
-                      });
-                      _updateTitle();
-                    },
-                    useThemeColors: true,
-                    showArrows: false,
-                  ),
-                ),
-              ),
-            ],
+        // Listing type (gender is taken from profile, not shown in the form).
+        LabeledFieldOverlay(
+          label: L10n.get("listing_type_label"),
+          child: ListingTypePicker(
+            selectedListingTypeId: _selectedListingTypeId,
+            scrollController: _listingTypeScrollController,
+            onListingTypeChanged: (listingTypeId) {
+              setState(() {
+                final prevType = _selectedListingTypeId;
+                _selectedListingTypeId = listingTypeId;
+                // Clear photos when switching to "room needed" (listingTypeId == 1)
+                if (listingTypeId == 1) {
+                  _selectedPhotos.clear();
+                  _primaryPhotoIndex = null;
+                }
+                if (_priceTouched) {
+                  if (prevType == 2 && listingTypeId == 1) {
+                    _deriveBudgetRangeFromRoommatePrice();
+                  } else if (prevType == 1 && listingTypeId == 2) {
+                    _deriveRoommatePriceFromBudget();
+                  }
+                }
+              });
+              _updateTitle();
+            },
+            useThemeColors: true,
+            showArrows: false,
           ),
         ),
-        const SizedBox(height: 10), // Space between gender and metro fields
+        const SizedBox(height: 10), // Space between listing type and metro fields
         // Metro Line and Station Selection
         ListingFormMetroSection(
           selectedSubwayLine: _selectedSubwayLine,

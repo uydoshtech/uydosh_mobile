@@ -257,7 +257,7 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildOverlappingHeaderAvatars() {
-    const size = 28.0;
+    const size = 32.0;
     const overlap = 8.0;
     final borderColor = Theme.of(context).colorScheme.surface;
 
@@ -284,27 +284,6 @@ class _ListingDetailCompatibilitySectionState
           Positioned(
             left: size - overlap,
             child: borderedAvatar(widget.ownerAvatarUrl),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMatchingHeaderBadge(String percentLabel) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildOverlappingHeaderAvatars(),
-          const SizedBox(height: 2),
-          Text(
-            percentLabel,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _getCompatibilityPercentColor(),
-            ),
           ),
         ],
       ),
@@ -384,19 +363,10 @@ class _ListingDetailCompatibilitySectionState
           title: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  L10n.get("compatibility_title"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: _getDescriptionTextColor(),
-                  ),
-                ),
-              ),
-              if (isAuthenticated)
-                _buildMatchingHeaderBadge(headerPercentText)
-              else
+              if (isAuthenticated) ...[
+                _buildOverlappingHeaderAvatars(),
+                const SizedBox(width: 10),
+              ] else
                 ThemeIcon(
                   ThemeState().isBlueTheme
                       ? CupertinoIcons.group_solid
@@ -408,6 +378,30 @@ class _ListingDetailCompatibilitySectionState
                           ? Colors.black
                           : _getIconColor(),
                 ),
+              if (!isAuthenticated) const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  L10n.get("compatibility_title"),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: _getDescriptionTextColor(),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isAuthenticated) ...[
+                const SizedBox(width: 8),
+                Text(
+                  headerPercentText,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _getCompatibilityPercentColor(),
+                  ),
+                ),
+              ],
             ],
           ),
           children: [
