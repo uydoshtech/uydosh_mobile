@@ -1039,9 +1039,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           type: MaterialType.transparency,
                           child: NeumorphicHintBubble(
                             maxWidth: 220,
-                            // Tail lands on the scaled bell center (~26px in from
-                            // the bubble's right edge when width ≈ 220).
-                            tailHorizontalOffset: 78,
+                            // Bubble right edge aligns with the bell FAB layout
+                            // box; tail points at its horizontal center (56 / 2).
+                            tailRightInset: 28,
                             onClose: _dismissBellHint,
                             message: TextSpan(
                               text: L10n.get("search_alert_bell_hint"),

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
@@ -220,10 +221,13 @@ class ConversationLocationInfo extends StatelessWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 140),
                       child: Text(
-                        _getLocalizedName(
-                          nameUz: conversation.subwayStationNameUz,
-                          nameRu: conversation.subwayStationNameRu,
-                          nameEn: conversation.subwayStationNameEn,
+                        MetroCache.formatStationLabel(
+                          _getLocalizedName(
+                            nameUz: conversation.subwayStationNameUz,
+                            nameRu: conversation.subwayStationNameRu,
+                            nameEn: conversation.subwayStationNameEn,
+                          ),
+                          LanguageState().currentLanguage,
                         ),
                         style: TextStyle(fontSize: 12, color: textColor),
                         maxLines: 1,
@@ -375,10 +379,13 @@ class ConversationSubwayStationDisplay extends StatelessWidget {
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            _getLocalizedName(
-              nameUz: conversation.subwayStationNameUz,
-              nameRu: conversation.subwayStationNameRu,
-              nameEn: conversation.subwayStationNameEn,
+            MetroCache.formatStationLabel(
+              _getLocalizedName(
+                nameUz: conversation.subwayStationNameUz,
+                nameRu: conversation.subwayStationNameRu,
+                nameEn: conversation.subwayStationNameEn,
+              ),
+              LanguageState().currentLanguage,
             ),
             style: TextStyle(fontSize: 12, color: textColor),
           ),

@@ -390,6 +390,8 @@ class AppStrings {
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Subway line",
       "select_metro_line_title": "Select\nsubway line",
+      "metro_line_abbr": "ln.",
+      "metro_station_abbr": "st.",
       "select_location": "Any district",
       "not_selected": "Not selected",
       "all": "All",
@@ -1986,6 +1988,8 @@ class AppStrings {
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Линия метро",
       "select_metro_line_title": "Выберите\nлинию метро",
+      "metro_line_abbr": "лн.",
+      "metro_station_abbr": "ст.",
       "select_location": "Любой район",
       "not_selected": "Не выбрано",
       "all": "Все",
@@ -3616,6 +3620,8 @@ class AppStrings {
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Liniyani tanlang",
       "select_metro_line_title": "Metro\nliniyasini tanlang",
+      "metro_line_abbr": "yo'n.",
+      "metro_station_abbr": "bek.",
       "select_location": "Har qanday tuman",
       "not_selected": "Tanlanmagan",
       "all": "Barchasi",

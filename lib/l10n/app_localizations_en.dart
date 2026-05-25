@@ -660,6 +660,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get select_metro_line_title => 'Select\nsubway line';
 
   @override
+  String get metro_line_abbr => 'ln.';
+
+  @override
+  String get metro_station_abbr => 'st.';
+
+  @override
   String get select_location => 'Any district';
 
   @override

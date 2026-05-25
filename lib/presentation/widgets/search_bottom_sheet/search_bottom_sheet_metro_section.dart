@@ -330,19 +330,19 @@ class _SearchBottomSheetMetroSectionState
                           ),
                         ),
                         ...([
-                          MetroCache.getLineName(
+                          MetroCache.getLineLabel(
                             1,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineName(
+                          MetroCache.getLineLabel(
                             2,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineName(
+                          MetroCache.getLineLabel(
                             3,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineName(
+                          MetroCache.getLineLabel(
                             4,
                             LanguageState().currentLanguage,
                           ),
@@ -431,7 +431,7 @@ class _SearchBottomSheetMetroSectionState
         .replaceAll("{count}", "${widget.currentStations.length}")
         .replaceAll(
           "{line}",
-          MetroCache.getLineName(
+          MetroCache.getLineLabel(
             widget.searchFiltersState.selectedSubwayLine,
             LanguageState().currentLanguage,
           ),
@@ -529,10 +529,9 @@ class _SearchBottomSheetMetroSectionState
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            widget.getLocalizedName(
-                              nameUz: station.nameUz,
-                              nameRu: station.nameRu,
-                              nameEn: station.nameEn,
+                            MetroCache.getStationLabelFromStation(
+                              station,
+                              LanguageState().currentLanguage,
                             ),
                             style: TextStyle(
                               fontSize: 15,

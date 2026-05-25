@@ -1092,7 +1092,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
     if (resolvedLineId != null &&
         (resolvedStationId == null || hasMultipleStations)) {
-      final name = MetroCache.getLineName(resolvedLineId, lang);
+      final name = MetroCache.getLineLabel(resolvedLineId, lang);
       final lineColor = AppColors.getMetroLineColor(resolvedLineId);
       final stationsCount =
           MetroCache.getStationsForLine(resolvedLineId).length;
@@ -1111,7 +1111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     } else if (resolvedStationId != null) {
       final stationId = resolvedStationId;
       final station = MetroCache.getStationById(stationId);
-      final name = MetroCache.getStationDisplayName(stationId, lang);
+      final name = MetroCache.getStationLabel(stationId, lang);
       // Avoid rendering an "empty" metro badge when cache can't resolve the id.
       if (name.trim().isNotEmpty) {
         chips.add(

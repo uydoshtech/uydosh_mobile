@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 
 /// Static cache for metro lines and stations to reduce API calls
@@ -597,13 +598,8 @@ class MetroCache {
     return metroStations.values.expand((stations) => stations).toList();
   }
 
-  /// Get station display name for a specific language.
-  /// [stationId] - station ID
-  /// [language] - language code ("en", "ru", "uz")
-  static String getStationDisplayName(int stationId, String language) {
-    final station = getStationById(stationId);
-    if (station == null) return "";
-
+  /// Raw station name for a specific language (no type prefix).
+  static String getStationName(SubwayStation station, String language) {
     switch (language) {
       case "uz":
         return station.nameUz ?? station.nameEn ?? station.nameRu ?? "";
@@ -614,6 +610,44 @@ class MetroCache {
       default:
         return station.nameUz ?? station.nameEn ?? station.nameRu ?? "";
     }
+  }
+
+  /// Station name with localized "st." / "ст." prefix for UI labels.
+  static String formatStationLabel(String stationName, String language) {
+    final trimmed = stationName.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final prefix = AppStrings.get("metro_station_abbr", language);
+    return "$prefix $trimmed";
+  }
+
+  /// Line name with localized "ln." / "лн." prefix for UI labels.
+  static String formatLineLabel(String lineName, String language) {
+    final trimmed = lineName.trim();
+    if (trimmed.isEmpty || trimmed == "Unknown Line") return trimmed;
+    final prefix = AppStrings.get("metro_line_abbr", language);
+    return "$prefix $trimmed";
+  }
+
+  /// Get station display name for a specific language.
+  /// [stationId] - station ID
+  /// [language] - language code ("en", "ru", "uz")
+  static String getStationDisplayName(int stationId, String language) {
+    final station = getStationById(stationId);
+    if (station == null) return "";
+    return getStationName(station, language);
+  }
+
+  /// Station display name with type prefix (e.g. "ст. Чиланзар").
+  static String getStationLabel(int stationId, String language) {
+    return formatStationLabel(getStationDisplayName(stationId, language), language);
+  }
+
+  /// Station label from a [SubwayStation] instance.
+  static String getStationLabelFromStation(
+    SubwayStation station,
+    String language,
+  ) {
+    return formatStationLabel(getStationName(station, language), language);
   }
 
   /// Get a specific station by ID
@@ -654,6 +688,11 @@ class MetroCache {
     if (lineNames == null) return "Unknown Line";
 
     return lineNames[language] ?? lineNames["en"] ?? "Unknown Line";
+  }
+
+  /// Line display name with type prefix (e.g. "лн. Чиланзар").
+  static String getLineLabel(int line, String language) {
+    return formatLineLabel(getLineName(line, language), language);
   }
 
   /// Get metro line name in English

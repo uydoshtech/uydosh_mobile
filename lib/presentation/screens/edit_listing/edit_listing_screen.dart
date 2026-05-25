@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart";
@@ -74,7 +75,14 @@ class _EditListingScreenState extends State<EditListingScreen>
   FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
   int _selectedGender = 1; // From profile (1 = male, 2 = female)
-  double _price = 50.0;
+  /// Scalar rent for "roommate needed" (listing type 2).
+  double _roommatePrice = 50.0;
+  /// Budget range for "room needed" (listing type 1).
+  double _roomBudgetMin = 50.0;
+  double _roomBudgetMax = 50.0;
+  static const double _priceSliderMin = 1.0;
+  static const double _priceSliderMax = 1000.0;
+  bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -288,8 +296,15 @@ class _EditListingScreenState extends State<EditListingScreen>
     _selectedListingTypeId =
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
 
-    // Set price (single value, stored as both min and max)
-    _price = widget.listingDetail.price.toDouble();
+    // Seed price fields from the stored listing price (midpoint for room-needed).
+    _roommatePrice =
+        widget.listingDetail.price.toDouble().clamp(_priceSliderMin, _priceSliderMax);
+    if (_selectedListingTypeId == 1) {
+      _deriveBudgetRangeFromRoommatePrice();
+    } else {
+      _roomBudgetMin = _roommatePrice;
+      _roomBudgetMax = _roommatePrice;
+    }
 
     // Set subway line and station
     if (widget.listingDetail.subwayStation != null) {
@@ -577,6 +592,29 @@ class _EditListingScreenState extends State<EditListingScreen>
     FocusScope.of(context).unfocus();
   }
 
+  /// When switching to "room needed", seed a sensible range from the scalar rent.
+  void _deriveBudgetRangeFromRoommatePrice() {
+    final s = _roommatePrice.clamp(_priceSliderMin, _priceSliderMax);
+    final hi = math.min(_priceSliderMax, math.max(s + 40, s + 10));
+    final lo = math.max(_priceSliderMin, s - 40);
+    _roomBudgetMin = lo >= hi ? math.max(_priceSliderMin, hi - 50) : lo;
+    _roomBudgetMax = hi;
+  }
+
+  /// When switching to "roommate needed", collapse range to a single value.
+  void _deriveRoommatePriceFromBudget() {
+    final mid = (_roomBudgetMin + _roomBudgetMax) / 2;
+    _roommatePrice =
+        ((mid / 10).round() * 10.0).clamp(_priceSliderMin, _priceSliderMax);
+  }
+
+  int _priceForUpdateRequest() {
+    if (_selectedListingTypeId == 2) {
+      return _roommatePrice.round();
+    }
+    return ((_roomBudgetMin + _roomBudgetMax) / 2).round();
+  }
+
   // Theme-dependent color method for borders
   Color _getBorderColor() {
     if (ThemeState().isBlueTheme) {
@@ -620,7 +658,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("listing_type_label", fallback: "Listing type");
     }
 
-    if (_price.round() != baseline.price) {
+    if (_priceForUpdateRequest() != baseline.price) {
       addLabel("listing_price_label", fallback: "Price");
     }
 
@@ -707,7 +745,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     final baselineTypeId = d.listingType.code == "roommate_needed" ? 2 : 1;
     if (_selectedListingTypeId != baselineTypeId) return true;
 
-    if (_price.round() != d.price) return true;
+    if (_priceForUpdateRequest() != d.price) return true;
 
     if (_isPrivateRoom != (d.privateRoom ?? false)) return true;
 
@@ -855,7 +893,13 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 _listingTypeScrollController,
                             onListingTypeChanged: (listingTypeId) {
                               setState(() {
+                                final prevType = _selectedListingTypeId;
                                 _selectedListingTypeId = listingTypeId;
+                                if (prevType == 2 && listingTypeId == 1) {
+                                  _deriveBudgetRangeFromRoommatePrice();
+                                } else if (prevType == 1 && listingTypeId == 2) {
+                                  _deriveRoommatePriceFromBudget();
+                                }
                               });
                             },
                             useThemeColors: true,
@@ -918,20 +962,29 @@ class _EditListingScreenState extends State<EditListingScreen>
                         const SizedBox(
                           height: 10,
                         ), // Space between location and price range
-                        // Price Field - Single handle, stored as both min and max
+                        // Price — single handle for roommate needed, range for room needed.
                         LabeledFieldOverlay(
                           label: L10n.get("listing_price_label"),
                           child: PriceRangePicker(
-                            minPrice: 10.0,
-                            maxPrice: 1000.0,
-                            initialMinPrice: _price,
-                            initialMaxPrice: _price,
-                            useSinglePrice: true,
+                            key: ValueKey<int>(_selectedListingTypeId),
+                            minPrice: _priceSliderMin,
+                            maxPrice: _priceSliderMax,
+                            initialMinPrice: _pricePickerSingleHandle
+                                ? _roommatePrice
+                                : _roomBudgetMin,
+                            initialMaxPrice: _pricePickerSingleHandle
+                                ? _roommatePrice
+                                : _roomBudgetMax,
+                            useSinglePrice: _pricePickerSingleHandle,
                             onPriceRangeChanged: (minPrice, maxPrice) {
                               _dismissKeyboard();
                               setState(() {
-                                _price =
-                                    minPrice; // Same value for both in single mode
+                                if (_pricePickerSingleHandle) {
+                                  _roommatePrice = minPrice;
+                                } else {
+                                  _roomBudgetMin = minPrice;
+                                  _roomBudgetMax = maxPrice;
+                                }
                               });
                             },
                           ),
@@ -1471,7 +1524,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       });
     }
 
-    if (_price.round() < 1) {
+    if (_priceForUpdateRequest() < 1) {
       ToastTheme.showError(
         context,
         message: L10n.get("listing_price_minimum"),
@@ -1505,7 +1558,7 @@ class _EditListingScreenState extends State<EditListingScreen>
         listingId: widget.listingDetail.id,
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
-        price: _price.round(),
+        price: _priceForUpdateRequest(),
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,

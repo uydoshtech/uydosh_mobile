@@ -280,6 +280,8 @@
   "refine_search": "Уточнить поиск",
   "select_metro_line": "Линия метро",
   "select_metro_line_title": "Выберите\nлинию метро",
+  "metro_line_abbr": "лн.",
+  "metro_station_abbr": "ст.",
   "select_location": "Любой район",
   "not_selected": "Не выбрано",
   "all_stations_count": "Все {count} станций",

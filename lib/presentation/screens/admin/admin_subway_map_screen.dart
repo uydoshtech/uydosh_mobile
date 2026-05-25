@@ -558,7 +558,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
         posY += override.dy * scale;
       }
       final displayName =
-          MetroCache.getStationDisplayName(label.stationId, language);
+          MetroCache.getStationLabel(label.stationId, language);
       final tapWidth =
           ((displayName.isNotEmpty ? displayName : label.label).length *
                   _charWidth)
@@ -618,7 +618,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
       }
 
       final displayName =
-          MetroCache.getStationDisplayName(label.stationId, language);
+          MetroCache.getStationLabel(label.stationId, language);
       final textLen =
           (displayName.isNotEmpty ? displayName : label.label).length;
       final baseWidth = (textLen * _charWidth).clamp(40.0, 140.0);

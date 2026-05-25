@@ -25,6 +25,7 @@ class NeumorphicHintBubble extends StatelessWidget {
     this.maxWidth = 240,
     this.tailSide = HintBubbleTailSide.bottom,
     this.tailHorizontalOffset = 0,
+    this.tailRightInset,
     this.onClose,
     this.closeTooltip,
   });
@@ -40,7 +41,14 @@ class NeumorphicHintBubble extends StatelessWidget {
 
   /// Offset (logical pixels) of the tail center from the bubble's
   /// horizontal center. Positive = right, negative = left.
+  ///
+  /// Ignored when [tailRightInset] is set.
   final double tailHorizontalOffset;
+
+  /// When set, places the tail this many logical pixels in from the bubble's
+  /// right edge (e.g. to point at a FAB whose right edge aligns with the
+  /// bubble's right edge). Takes precedence over [tailHorizontalOffset].
+  final double? tailRightInset;
 
   /// When non-null, renders a small "x" close button in the top-right of the
   /// bubble. Consumers are responsible for hiding the bubble in response.
@@ -72,6 +80,7 @@ class NeumorphicHintBubble extends StatelessWidget {
       tailHeight: _tailHeight,
       tailSide: tailSide,
       tailHorizontalOffset: tailHorizontalOffset,
+      tailRightInset: tailRightInset,
     );
 
     final disableAnimations =
@@ -226,11 +235,14 @@ Path _buildBubblePath(
   required double tailHeight,
   required HintBubbleTailSide tailSide,
   required double tailHorizontalOffset,
+  double? tailRightInset,
 }) {
   final w = size.width;
   final h = size.height;
   final r = radius;
-  final tailCenterX = (w / 2 + tailHorizontalOffset)
+  final tailCenterX = (tailRightInset != null
+          ? w - tailRightInset
+          : w / 2 + tailHorizontalOffset)
       .clamp(r + tailWidth / 2, w - r - tailWidth / 2);
 
   if (tailSide == HintBubbleTailSide.bottom) {
@@ -274,6 +286,7 @@ class _BubbleClipper extends CustomClipper<Path> {
     required this.tailHeight,
     required this.tailSide,
     required this.tailHorizontalOffset,
+    this.tailRightInset,
   });
 
   final double radius;
@@ -281,6 +294,7 @@ class _BubbleClipper extends CustomClipper<Path> {
   final double tailHeight;
   final HintBubbleTailSide tailSide;
   final double tailHorizontalOffset;
+  final double? tailRightInset;
 
   @override
   Path getClip(Size size) => _buildBubblePath(
@@ -290,6 +304,7 @@ class _BubbleClipper extends CustomClipper<Path> {
         tailHeight: tailHeight,
         tailSide: tailSide,
         tailHorizontalOffset: tailHorizontalOffset,
+        tailRightInset: tailRightInset,
       );
 
   @override
@@ -298,7 +313,8 @@ class _BubbleClipper extends CustomClipper<Path> {
       oldClipper.tailWidth != tailWidth ||
       oldClipper.tailHeight != tailHeight ||
       oldClipper.tailSide != tailSide ||
-      oldClipper.tailHorizontalOffset != tailHorizontalOffset;
+      oldClipper.tailHorizontalOffset != tailHorizontalOffset ||
+      oldClipper.tailRightInset != tailRightInset;
 }
 
 class _BubbleShadowPainter extends CustomPainter {

@@ -50,24 +50,6 @@ class ListingFormMetroSection extends StatelessWidget {
     );
   }
 
-  static String _getLocalizedName({
-    String? nameUz,
-    String? nameRu,
-    String? nameEn,
-  }) {
-    final lang = L10n.currentLanguage;
-    switch (lang) {
-      case "uz":
-        return nameUz ?? nameRu ?? nameEn ?? "Unknown";
-      case "ru":
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-      case "en":
-        return nameEn ?? nameRu ?? nameUz ?? "Unknown";
-      default:
-        return nameRu ?? nameUz ?? nameEn ?? "Unknown";
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -130,7 +112,8 @@ class ListingFormMetroSection extends StatelessWidget {
                   ),
                 ),
                 ...([1, 2, 3, 4].map((line) {
-                  final name = MetroCache.getLineName(line, L10n.currentLanguage);
+                  final name =
+                      MetroCache.getLineLabel(line, L10n.currentLanguage);
                   return Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -246,10 +229,9 @@ class ListingFormMetroSection extends StatelessWidget {
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  _getLocalizedName(
-                                    nameUz: station.nameUz,
-                                    nameRu: station.nameRu,
-                                    nameEn: station.nameEn,
+                                  MetroCache.getStationLabelFromStation(
+                                    station,
+                                    L10n.currentLanguage,
                                   ),
                                   style: TextStyle(
                                     fontSize: 15,

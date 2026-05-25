@@ -1108,10 +1108,13 @@ class _ListingTileState extends State<ListingTile> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              _getLocalizedName(
-                nameUz: mainStation.nameUz,
-                nameRu: mainStation.nameRu,
-                nameEn: mainStation.nameEn,
+              MetroCache.formatStationLabel(
+                _getLocalizedName(
+                  nameUz: mainStation.nameUz,
+                  nameRu: mainStation.nameRu,
+                  nameEn: mainStation.nameEn,
+                ),
+                LanguageState().currentLanguage,
               ),
               style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
               maxLines: 1,
@@ -1128,10 +1131,13 @@ class _ListingTileState extends State<ListingTile> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              _getLocalizedName(
-                nameUz: station.nameUz,
-                nameRu: station.nameRu,
-                nameEn: station.nameEn,
+              MetroCache.formatStationLabel(
+                _getLocalizedName(
+                  nameUz: station.nameUz,
+                  nameRu: station.nameRu,
+                  nameEn: station.nameEn,
+                ),
+                LanguageState().currentLanguage,
               ),
               style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
               maxLines: 1,

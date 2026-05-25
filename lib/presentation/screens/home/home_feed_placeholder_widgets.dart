@@ -121,7 +121,7 @@ class HomeEmptySearchPlaceholder extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 240),
+              const SizedBox(height: 300),
             ],
           ),
         ),

@@ -288,6 +288,8 @@
   "refine_search": "Qidiruvni aniqlash",
   "select_metro_line": "Liniyani tanlang",
   "select_metro_line_title": "Metro\nliniyasini tanlang",
+  "metro_line_abbr": "yo'n.",
+  "metro_station_abbr": "bek.",
   "select_location": "Har qanday tuman",
   "not_selected": "Tanlanmagan",
   "all_stations_count": "Barcha {count} bekat",

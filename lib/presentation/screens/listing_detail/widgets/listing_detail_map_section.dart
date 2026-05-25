@@ -100,11 +100,14 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
           ),
           const SizedBox(width: 4),
           Text(
-            widget.getLocalizedName(
-              nameUz: station.nameUz,
-              nameRu: station.nameRu,
-              nameEn: station.nameEn,
-              language: widget.currentLanguage,
+            MetroCache.formatStationLabel(
+              widget.getLocalizedName(
+                nameUz: station.nameUz,
+                nameRu: station.nameRu,
+                nameEn: station.nameEn,
+                language: widget.currentLanguage,
+              ),
+              widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -125,11 +128,14 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
           ),
           const SizedBox(width: 4),
           Text(
-            widget.getLocalizedName(
-              nameUz: connectedStation.nameUz,
-              nameRu: connectedStation.nameRu,
-              nameEn: connectedStation.nameEn,
-              language: widget.currentLanguage,
+            MetroCache.formatStationLabel(
+              widget.getLocalizedName(
+                nameUz: connectedStation.nameUz,
+                nameRu: connectedStation.nameRu,
+                nameEn: connectedStation.nameEn,
+                language: widget.currentLanguage,
+              ),
+              widget.currentLanguage,
             ),
             style: TextStyle(
               fontSize: 15,
@@ -149,11 +155,14 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              widget.getLocalizedName(
-                nameUz: station.nameUz,
-                nameRu: station.nameRu,
-                nameEn: station.nameEn,
-                language: widget.currentLanguage,
+              MetroCache.formatStationLabel(
+                widget.getLocalizedName(
+                  nameUz: station.nameUz,
+                  nameRu: station.nameRu,
+                  nameEn: station.nameEn,
+                  language: widget.currentLanguage,
+                ),
+                widget.currentLanguage,
               ),
               style: TextStyle(
                 fontSize: 15,

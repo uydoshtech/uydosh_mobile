@@ -657,6 +657,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get select_metro_line_title => 'Выберите\nлинию метро';
 
   @override
+  String get metro_line_abbr => 'лн.';
+
+  @override
+  String get metro_station_abbr => 'ст.';
+
+  @override
   String get select_location => 'Любой район';
 
   @override

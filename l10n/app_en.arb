@@ -288,6 +288,8 @@
   "refine_search": "Refine Search",
   "select_metro_line": "Subway line",
   "select_metro_line_title": "Select\nsubway line",
+  "metro_line_abbr": "ln.",
+  "metro_station_abbr": "st.",
   "select_location": "Any district",
   "not_selected": "Not selected",
   "all_stations_count": "All {count} stations",

@@ -670,6 +670,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get select_metro_line_title => 'Metro\nliniyasini tanlang';
 
   @override
+  String get metro_line_abbr => 'yo\'n.';
+
+  @override
+  String get metro_station_abbr => 'bek.';
+
+  @override
   String get select_location => 'Har qanday tuman';
 
   @override

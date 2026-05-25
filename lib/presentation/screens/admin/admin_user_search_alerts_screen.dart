@@ -169,7 +169,7 @@ class _AdminUserSearchAlertsScreenState
       final stationId = a.subwayStationId!;
       if (stationId > 0) {
         final station = MetroCache.getStationById(stationId);
-        final name = MetroCache.getStationDisplayName(stationId, lang);
+        final name = MetroCache.getStationLabel(stationId, lang);
         if (name.trim().isNotEmpty) {
           locationAndMetro.add(
             _iconTextBadge(
@@ -184,7 +184,7 @@ class _AdminUserSearchAlertsScreenState
         }
       }
     } else if (a.subwayLineId != null) {
-      final name = MetroCache.getLineName(a.subwayLineId!, lang);
+      final name = MetroCache.getLineLabel(a.subwayLineId!, lang);
       final lineColor = AppColors.getMetroLineColor(a.subwayLineId!);
       final stationsCount =
           MetroCache.getStationsForLine(a.subwayLineId!).length;

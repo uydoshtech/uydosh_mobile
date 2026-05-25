@@ -7,7 +7,6 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
@@ -68,13 +67,6 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     final t = s.trim();
     if (t.length <= maxChars) return t;
     return "${t.substring(0, maxChars)}…";
-  }
-
-  String _localizedMetroLineName(int lineId) {
-    final names = MetroCache.metroLineNames[lineId];
-    if (names == null) return "";
-    final lang = LanguageState().currentLanguage;
-    return names[lang] ?? names["en"] ?? names.values.first;
   }
 
   @override
@@ -319,8 +311,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       final stationLine = stationObj?.line;
       final stationColor =
           stationLine == null ? null : AppColors.getMetroLineColor(stationLine);
-      final stationName =
-          MetroCache.getStationDisplayName(station, lang).trim();
+      final stationName = MetroCache.getStationLabel(station, lang).trim();
       final stationShort = _truncateLabel(stationName, maxChars: 15);
       out.add(
         Tooltip(
@@ -357,8 +348,9 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     } else {
       final line = subwayLineId ?? 0;
       if (line > 0) {
+        final lang = L10n.currentLanguage;
         final trainColor = AppColors.getMetroLineColor(line);
-        final lineName = _localizedMetroLineName(line).trim();
+        final lineName = MetroCache.getLineLabel(line, lang).trim();
         out.add(
           Tooltip(
             message: lineName,

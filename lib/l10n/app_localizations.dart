@@ -1276,6 +1276,18 @@ abstract class AppLocalizations {
   /// **'Select\nsubway line'**
   String get select_metro_line_title;
 
+  /// No description provided for @metro_line_abbr.
+  ///
+  /// In en, this message translates to:
+  /// **'ln.'**
+  String get metro_line_abbr;
+
+  /// No description provided for @metro_station_abbr.
+  ///
+  /// In en, this message translates to:
+  /// **'st.'**
+  String get metro_station_abbr;
+
   /// No description provided for @select_location.
   ///
   /// In en, this message translates to:

@@ -280,14 +280,20 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
   String? _buildCollapsedMetroSummary() {
     final station = _resolvedSubwayStation();
     if (station != null) {
-      return _localizedName(
-        nameUz: station.nameUz,
-        nameRu: station.nameRu,
-        nameEn: station.nameEn,
+      return MetroCache.formatStationLabel(
+        _localizedName(
+          nameUz: station.nameUz,
+          nameRu: station.nameRu,
+          nameEn: station.nameEn,
+        ),
+        L10n.currentLanguage,
       );
     }
     if (_selectedSubwayLine > 0) {
-      return MetroCache.getLineName(_selectedSubwayLine, L10n.currentLanguage);
+      return MetroCache.getLineLabel(
+        _selectedSubwayLine,
+        L10n.currentLanguage,
+      );
     }
     return null;
   }
