@@ -36,9 +36,16 @@ class OutgoingConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (currentUserId == null) {
+      return _buildTile(context);
+    }
     return ListenableBuilder(
-      listenable: Listenable.merge([ThemeState(), ProfileCompletionState()]),
-      builder: (context, child) {
+      listenable: ProfileCompletionState(),
+      builder: (context, child) => _buildTile(context),
+    );
+  }
+
+  Widget _buildTile(BuildContext context) {
         final themeState = ThemeState();
         final cardColor = themeState.cardColor;
         final textColor = themeState.cardTextColor;
@@ -353,8 +360,6 @@ class OutgoingConversationTile extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: tileBody,
         );
-      },
-    );
   }
 
   String _formatTime(

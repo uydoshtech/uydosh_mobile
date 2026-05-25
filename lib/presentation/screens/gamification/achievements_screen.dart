@@ -94,33 +94,38 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           ProfileCompletionState.completionPercent(profile);
     } catch (_) {}
 
-    try {
-      final viewed =
-          await getIt<IListingService>().getViewedListings(page: 1, limit: 1);
-      viewedListingsCount = viewed.total;
-    } catch (_) {}
-
-    try {
-      final favorites =
-          await getIt<IFavoriteService>().getUserFavorites(page: 1, limit: 100);
-      favoritesCount = favorites.length;
-    } catch (_) {}
-
     final userId = await SessionManager.getUserId();
-    if (userId != null) {
-      try {
-        final myListings = await getIt<IListingService>()
-            .getListingsByUserId(userId: userId, page: 1, limit: 1);
-        listingsCreatedCount = myListings.total;
-      } catch (_) {}
-    }
-
     var messagesSentCount = 0;
-    try {
-      final hasSentFirst =
-          await getIt<IGamificationService>().hasSentFirstMessage();
-      if (hasSentFirst) messagesSentCount = 1;
-    } catch (_) {}
+
+    await Future.wait<void>([
+      () async {
+        try {
+          final viewed = await getIt<IListingService>()
+              .getViewedListings(page: 1, limit: 1);
+          viewedListingsCount = viewed.total;
+        } catch (_) {}
+      }(),
+      () async {
+        try {
+          favoritesCount = await getIt<IFavoriteService>().getUserFavoritesCount();
+        } catch (_) {}
+      }(),
+      () async {
+        if (userId == null) return;
+        try {
+          final myListings = await getIt<IListingService>()
+              .getListingsByUserId(userId: userId, page: 1, limit: 1);
+          listingsCreatedCount = myListings.total;
+        } catch (_) {}
+      }(),
+      () async {
+        try {
+          if (await getIt<IGamificationService>().hasSentFirstMessage()) {
+            messagesSentCount = 1;
+          }
+        } catch (_) {}
+      }(),
+    ]);
 
     return _GamificationStats(
       hasAccount: hasAccount,

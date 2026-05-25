@@ -48,6 +48,7 @@ import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/lifecycle_ticker_mode.dart";
+import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
@@ -214,6 +215,7 @@ void main() async {
     // Kick off the remote-config loaders now but don't await them. They
     // resolve asynchronously and their consumers already tolerate the
     // default/unloaded shape until the first fetch returns.
+    unawaited(getIt<IPublicAppSettingsService>().prefetch());
     unawaited(ClientGeminiListingUiConfig.load());
     unawaited(ClientLidarRoomScanConfig.load());
     unawaited(ClientCustomCameraConfig.load());
@@ -341,6 +343,9 @@ void main() async {
           if (userId != null) {
             unawaited(
               getIt<AppAnalyticsService>().setUserId(userId.toString()),
+            );
+            unawaited(
+              getIt<AppAnalyticsService>().syncUserPropertiesFromSession(),
             );
           }
         } catch (e) {

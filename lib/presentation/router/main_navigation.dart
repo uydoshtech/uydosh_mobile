@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -166,6 +167,13 @@ class MainNavigationState extends State<MainNavigation>
       //    self-heal on the next app launch.
       final fresh = await getIt<IUserProfileService>().getCurrentUserProfile();
       await SessionManager.storeUserProfile(fresh);
+      final role = await SessionManager.getUserRole();
+      unawaited(
+        getIt<AppAnalyticsService>().syncUserProfileProperties(
+          profile: fresh,
+          role: role,
+        ),
+      );
       if (mounted) {
         ProfileCompletionState().updateFromProfile(fresh);
         precacheCurrentUserAvatar(

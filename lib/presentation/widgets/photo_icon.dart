@@ -17,25 +17,19 @@ class PhotoIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, _) {
-        final iconColor = _getPhotoIconColor();
-        return Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: _getPhotoIconBackgroundColor(),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: iconColor, width: 1.0),
-          ),
-          child: ThemeIcon(Icons.camera_alt, color: iconColor, size: size),
-        );
-      },
+    final iconColor = _photoIconColor();
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: _photoIconBackgroundColor(),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: iconColor, width: 1.0),
+      ),
+      child: ThemeIcon(Icons.camera_alt, color: iconColor, size: size),
     );
   }
 
-  // Theme-dependent color method for photo icon
-  Color _getPhotoIconColor() {
+  Color _photoIconColor() {
     if (ThemeState().isBlueTheme) {
       return Colors.white; // White icon for blue theme
     } else if (ThemeState().isLightTheme) {
@@ -45,8 +39,7 @@ class PhotoIcon extends StatelessWidget {
     }
   }
 
-  // Theme-dependent color method for photo icon background
-  Color _getPhotoIconBackgroundColor() {
+  Color _photoIconBackgroundColor() {
     if (ThemeState().isBlueTheme) {
       return AppColors.iconPrimary.withValues(
         alpha: 0.1,

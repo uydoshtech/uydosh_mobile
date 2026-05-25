@@ -1,4 +1,6 @@
 import "package:firebase_analytics/firebase_analytics.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 
 /// Centralized analytics service wrapping Firebase Analytics.
 /// Tracks screens, searches, user actions, and key interactions.
@@ -158,6 +160,68 @@ class AppAnalyticsService {
   /// Set user ID for analytics (call after sign-in). Use hashed ID for privacy.
   Future<void> setUserId(String? userId) async {
     await _analytics.setUserId(id: userId);
+  }
+
+  /// Sync GA4 user properties from the cached session (profile + role).
+  Future<void> syncUserPropertiesFromSession() async {
+    final profile = await SessionManager.getCachedUserProfile();
+    if (profile == null) return;
+    final role = await SessionManager.getUserRole();
+    await syncUserProfileProperties(profile: profile, role: role);
+  }
+
+  /// Push profile-derived user properties to GA4/Firebase Analytics.
+  ///
+  /// Register matching custom definitions in GA4 Admin → Custom definitions
+  /// (scope: User) before using them in explorations and audiences.
+  Future<void> syncUserProfileProperties({
+    required UserProfile profile,
+    String? role,
+  }) async {
+    await Future.wait([
+      _setUserProperty("gender", _genderPropertyValue(profile.gender)),
+      _setUserProperty(
+        "is_student",
+        profile.universityId != null ? "true" : "false",
+      ),
+      _setUserProperty("university_code", _universityCode(profile)),
+      if (role != null && role.isNotEmpty)
+        _setUserProperty("user_role", role),
+    ]);
+  }
+
+  /// Clear profile-scoped user properties on logout.
+  Future<void> clearUserProperties() async {
+    const propertyNames = [
+      "gender",
+      "is_student",
+      "university_code",
+      "user_role",
+    ];
+    await Future.wait(
+      propertyNames.map(
+        (name) => _analytics.setUserProperty(name: name, value: null),
+      ),
+    );
+  }
+
+  String? _genderPropertyValue(int? gender) {
+    return switch (gender) {
+      1 => "male",
+      2 => "female",
+      _ => null,
+    };
+  }
+
+  String? _universityCode(UserProfile profile) {
+    if (profile.universityId == null) return null;
+    final shortName = profile.university?.shortNameEn?.trim();
+    if (shortName != null && shortName.isNotEmpty) return shortName;
+    return profile.universityId.toString();
+  }
+
+  Future<void> _setUserProperty(String name, String? value) {
+    return _analytics.setUserProperty(name: name, value: value);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

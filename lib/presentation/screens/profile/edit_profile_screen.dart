@@ -734,6 +734,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
         await SessionManager.storeUserRole(roleToSave);
         await SessionManager.storeUserProfile(updatedProfile);
+        unawaited(
+          getIt<AppAnalyticsService>().syncUserProfileProperties(
+            profile: updatedProfile,
+            role: roleToSave,
+          ),
+        );
         ProfileCompletionState().updateFromProfile(updatedProfile);
         if (mounted) {
           precacheCurrentUserAvatar(

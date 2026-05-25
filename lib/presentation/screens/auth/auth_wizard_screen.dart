@@ -1287,6 +1287,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     try {
       final profile = UserProfile.fromJson(raw);
       await SessionManager.storeUserProfile(profile);
+      final role = await SessionManager.getUserRole();
+      unawaited(
+        getIt<AppAnalyticsService>().syncUserProfileProperties(
+          profile: profile,
+          role: role,
+        ),
+      );
       setStateIfMounted(() {
         _oauthSummaryAvatarUrl = resolveAvatarUrl(profile.avatarUrl);
       });
@@ -2026,6 +2033,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         if (_selectedRole != null) {
           await SessionManager.storeUserRole(_selectedRole);
         }
+        unawaited(
+          getIt<AppAnalyticsService>().syncUserPropertiesFromSession(),
+        );
 
         // Show success message
         ToastTheme.showSuccess(

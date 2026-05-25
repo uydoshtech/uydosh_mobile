@@ -3,6 +3,8 @@ import "dart:async";
 import "package:dio/dio.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_expired_handler.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -50,9 +52,17 @@ class CurrentUserProfileBloc
       ProfileCompletionState().updateFromProfile(profile);
       await syncGoogleAvatarToBackendIfMissing(existingProfile: profile);
       final afterSync = await SessionManager.getCachedUserProfile();
+      final resolvedProfile = afterSync ?? profile;
+      final role = await SessionManager.getUserRole();
+      unawaited(
+        getIt<AppAnalyticsService>().syncUserProfileProperties(
+          profile: resolvedProfile,
+          role: role,
+        ),
+      );
       emit(
         CurrentUserProfileState.loaded(
-          profile: afterSync ?? profile,
+          profile: resolvedProfile,
         ),
       );
     } catch (error) {

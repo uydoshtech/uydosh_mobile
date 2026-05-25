@@ -2,7 +2,50 @@ import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
+bool _readPublicSettingBool(Object? value, {bool defaultValue = false}) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    final s = value.trim().toLowerCase();
+    return s == "true" || s == "1" || s == "yes";
+  }
+  return defaultValue;
+}
+
+class PublicAppSettingsSnapshot {
+  const PublicAppSettingsSnapshot({
+    required this.geminiListingUiHidden,
+    required this.lidarRoomScanDisabled,
+    required this.customCameraDisabled,
+    required this.listingContactsVisible,
+    required this.listingDescriptionDictationMeterDisabled,
+    required this.phoneSignInEnabled,
+  });
+
+  factory PublicAppSettingsSnapshot.fromJson(Map<String, dynamic> json) {
+    return PublicAppSettingsSnapshot(
+      geminiListingUiHidden: _readPublicSettingBool(json["geminiListingUiHidden"]),
+      lidarRoomScanDisabled: _readPublicSettingBool(json["lidarRoomScanDisabled"]),
+      customCameraDisabled: _readPublicSettingBool(json["customCameraDisabled"]),
+      listingContactsVisible: _readPublicSettingBool(json["listingContactsVisible"]),
+      listingDescriptionDictationMeterDisabled:
+          _readPublicSettingBool(json["listingDescriptionDictationMeterDisabled"]),
+      phoneSignInEnabled: _readPublicSettingBool(json["phoneSignInEnabled"]),
+    );
+  }
+
+  final bool geminiListingUiHidden;
+  final bool lidarRoomScanDisabled;
+  final bool customCameraDisabled;
+  final bool listingContactsVisible;
+  final bool listingDescriptionDictationMeterDisabled;
+  final bool phoneSignInEnabled;
+}
+
 abstract class IPublicAppSettingsService {
+  /// Single bulk fetch used at cold start; dedupes concurrent callers.
+  Future<void> prefetch();
+
   Future<bool> getGeminiListingUiHidden();
 
   Future<bool> getLidarRoomScanDisabled();
@@ -21,127 +64,78 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
 
   final IPublicApiClient _apiClient;
 
-  @override
-  Future<bool> getGeminiListingUiHidden() async {
+  PublicAppSettingsSnapshot? _cached;
+  Future<void>? _loading;
+
+  Future<void> _ensureLoaded() async {
+    if (_cached != null) return;
+    _loading ??= _fetchAll();
+    await _loading;
+  }
+
+  Future<void> _fetchAll() async {
     try {
       final response = await _apiClient.get<dynamic>(
-        "/app/settings/gemini-listing-ui-hidden",
+        "/app/settings",
         (data) => data,
         basePath: EnvironmentUtil.basePath,
       );
       if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        return map["hidden"] as bool? ?? false;
+        _cached = PublicAppSettingsSnapshot.fromJson(
+          Map<String, dynamic>.from(response),
+        );
+        return;
       }
-      return false;
+      _cached = const PublicAppSettingsSnapshot(
+        geminiListingUiHidden: false,
+        lidarRoomScanDisabled: false,
+        customCameraDisabled: false,
+        listingContactsVisible: false,
+        listingDescriptionDictationMeterDisabled: false,
+        phoneSignInEnabled: false,
+      );
     } catch (e) {
-      logger.d("PublicAppSettingsService.getGeminiListingUiHidden: $e");
+      logger.d("PublicAppSettingsService._fetchAll: $e");
       rethrow;
     }
+  }
+
+  @override
+  Future<void> prefetch() => _ensureLoaded();
+
+  @override
+  Future<bool> getGeminiListingUiHidden() async {
+    await _ensureLoaded();
+    return _cached?.geminiListingUiHidden ?? false;
   }
 
   @override
   Future<bool> getLidarRoomScanDisabled() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        "/app/settings/lidar-room-scan-disabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        return map["disabled"] as bool? ?? false;
-      }
-      return false;
-    } catch (e) {
-      logger.d("PublicAppSettingsService.getLidarRoomScanDisabled: $e");
-      rethrow;
-    }
+    await _ensureLoaded();
+    return _cached?.lidarRoomScanDisabled ?? false;
   }
 
   @override
   Future<bool> getCustomCameraDisabled() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        "/app/settings/custom-camera-disabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        return map["disabled"] as bool? ?? false;
-      }
-      return false;
-    } catch (e) {
-      logger.d("PublicAppSettingsService.getCustomCameraDisabled: $e");
-      rethrow;
-    }
+    await _ensureLoaded();
+    return _cached?.customCameraDisabled ?? false;
   }
 
   @override
   Future<bool> getListingContactsVisible() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        "/app/settings/listing-contacts-visible",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        return map["visible"] as bool? ?? false;
-      }
-      return false;
-    } catch (e) {
-      logger.d("PublicAppSettingsService.getListingContactsVisible: $e");
-      rethrow;
-    }
+    await _ensureLoaded();
+    return _cached?.listingContactsVisible ?? false;
   }
 
   @override
   Future<bool> getListingDescriptionDictationMeterDisabled() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        "/app/settings/listing-description-dictation-meter-disabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        return map["disabled"] as bool? ?? false;
-      }
-      return false;
-    } catch (e) {
-      logger.d("PublicAppSettingsService.getListingDescriptionDictationMeterDisabled: $e");
-      rethrow;
-    }
+    await _ensureLoaded();
+    return _cached?.listingDescriptionDictationMeterDisabled ?? false;
   }
 
   @override
   Future<bool> getPhoneSignInEnabled() async {
-    try {
-      final response = await _apiClient.get<dynamic>(
-        "/app/settings/phone-sign-in-enabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      if (response is Map) {
-        final map = Map<String, dynamic>.from(response);
-        final v = map["enabled"];
-        if (v is bool) {
-          return v;
-        }
-        if (v is num) {
-          return v != 0;
-        }
-        if (v is String) {
-          final s = v.trim().toLowerCase();
-          return s == "true" || s == "1" || s == "yes";
-        }
-      }
-      return false;
-    } catch (e) {
-      logger.d("PublicAppSettingsService.getPhoneSignInEnabled: $e");
-      rethrow;
-    }
+    await _ensureLoaded();
+    return _cached?.phoneSignInEnabled ?? false;
   }
 }

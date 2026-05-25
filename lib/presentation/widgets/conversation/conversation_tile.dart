@@ -34,9 +34,16 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (currentUserId == null) {
+      return _buildTile(context);
+    }
     return ListenableBuilder(
-      listenable: Listenable.merge([ThemeState(), ProfileCompletionState()]),
-      builder: (context, child) {
+      listenable: ProfileCompletionState(),
+      builder: (context, child) => _buildTile(context),
+    );
+  }
+
+  Widget _buildTile(BuildContext context) {
         final themeState = ThemeState();
         final cardColor = themeState.cardColor;
         final textColor = themeState.cardTextColor;
@@ -272,8 +279,6 @@ class ConversationTile extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           child: listTile,
         );
-      },
-    );
   }
 
   String _formatTime(

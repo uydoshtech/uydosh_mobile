@@ -34,6 +34,7 @@ class LogoutService {
     logger.d("🚪 Starting centralized logout process...");
     getIt<AppAnalyticsService>().logSignOut();
     await getIt<AppAnalyticsService>().setUserId(null);
+    await getIt<AppAnalyticsService>().clearUserProperties();
 
     try {
       // 1. Sign out from Firebase (Google Sign-In)
