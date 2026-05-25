@@ -31,6 +31,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
 
   bool? _alertsEnabled;
   bool _opening = false;
+  bool _disabling = false;
   bool _waiting = false;
   Timer? _pollTimer;
   int _pollCount = 0;
@@ -153,6 +154,29 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     } catch (_) {}
   }
 
+  Future<void> _disableAlerts() async {
+    if (_disabling) return;
+    HapticFeedbackUtils.impact();
+    setStateIfMounted(() => _disabling = true);
+    try {
+      await _service.disableAlerts();
+      if (!mounted) return;
+      setStateIfMounted(() => _alertsEnabled = false);
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("telegram_alerts_disabled_success"),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("telegram_alerts_disable_failed"),
+      );
+    } finally {
+      setStateIfMounted(() => _disabling = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_alertsEnabled == true) {
@@ -174,18 +198,36 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ThemeIcon(Icons.check_circle_outline, size: 22, color: fg),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                L10n.get("telegram_alerts_connected"),
-                style: const TextStyle(
-                  color: fg,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+            Row(
+              children: [
+                const ThemeIcon(Icons.check_circle_outline, size: 22, color: fg),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    L10n.get("telegram_alerts_connected"),
+                    style: const TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: PrimaryButton(
+                borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
+                textColor: fg,
+                isLoading: _disabling,
+                onPressed: _disableAlerts,
+                child: Text(L10n.get("telegram_alerts_disable_button")),
               ),
             ),
           ],

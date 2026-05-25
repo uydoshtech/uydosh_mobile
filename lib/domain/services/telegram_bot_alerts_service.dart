@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 
 class TelegramBotAlertsStatus {
@@ -54,6 +55,7 @@ class TelegramBotEnableLink {
 abstract class ITelegramBotAlertsService {
   Future<TelegramBotAlertsStatus> fetchStatus();
   Future<TelegramBotEnableLink> fetchEnableLink();
+  Future<void> disableAlerts();
 }
 
 class TelegramBotAlertsService implements ITelegramBotAlertsService {
@@ -78,4 +80,18 @@ class TelegramBotAlertsService implements ITelegramBotAlertsService {
     );
     return TelegramBotEnableLink.fromJson(json);
   }
+
+  @override
+  Future<void> disableAlerts() async {
+    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyRequest>(
+      "/users/me/telegram-bot/alerts",
+      (raw) => raw as Map<String, dynamic>,
+      data: _EmptyRequest(),
+    );
+  }
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  @override
+  dynamic toJson() => const {};
 }

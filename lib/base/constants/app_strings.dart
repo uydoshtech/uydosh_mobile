@@ -1518,17 +1518,20 @@ class AppStrings {
           "Receive message and search-match notifications in Telegram when push is off or unavailable.",
       "telegram_alerts_enable_button": "Enable in Telegram",
       "telegram_alerts_enable_waiting":
-          "Tap Start in Telegram, then return here.",
+          "Subscribe in Telegram, then return here.",
       "telegram_alerts_enabled_success": "Telegram alerts are on",
       "telegram_alerts_enable_failed":
           "Could not open Telegram alerts setup. Try again later.",
       "telegram_alerts_settings_title": "Telegram alerts",
       "telegram_alerts_settings_body":
-          "Open @uydosh_bot in Telegram and tap Start to get message and search alerts here.",
+          "Open @uydosh_bot in Telegram and subscribe to get message and search alerts here.",
       "telegram_alerts_settings_button": "Open @uydosh_bot",
       "telegram_alerts_settings_waiting":
-          "In Telegram tap Start on @uydosh_bot, then return here.",
+          "Subscribe in @uydosh_bot, then return here.",
       "telegram_alerts_connected": "Telegram alerts are on (@uydosh_bot)",
+      "telegram_alerts_disable_button": "Turn off Telegram alerts",
+      "telegram_alerts_disabled_success": "Telegram alerts turned off",
+      "telegram_alerts_disable_failed": "Could not turn off Telegram alerts",
       "apple_sign_in_failed": "Apple Sign-In failed: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -3127,17 +3130,20 @@ class AppStrings {
           "Сообщения и совпадения по поиску будут приходить в Telegram, если push недоступен.",
       "telegram_alerts_enable_button": "Включить в Telegram",
       "telegram_alerts_enable_waiting":
-          "Нажмите Start в Telegram, затем вернитесь сюда.",
+          "Подпишитесь в Telegram, затем вернитесь сюда.",
       "telegram_alerts_enabled_success": "Уведомления в Telegram включены",
       "telegram_alerts_enable_failed":
           "Не удалось открыть настройку Telegram-уведомлений. Попробуйте позже.",
       "telegram_alerts_settings_title": "Уведомления в Telegram",
       "telegram_alerts_settings_body":
-          "Откройте @uydosh_bot в Telegram и нажмите Start, чтобы получать сообщения и совпадения по поиску.",
+          "Откройте @uydosh_bot в Telegram и подпишитесь на уведомления о сообщениях и совпадениях по поиску.",
       "telegram_alerts_settings_button": "Открыть @uydosh_bot",
       "telegram_alerts_settings_waiting":
-          "В Telegram нажмите Start у @uydosh_bot, затем вернитесь сюда.",
+          "Подпишитесь в @uydosh_bot, затем вернитесь сюда.",
       "telegram_alerts_connected": "Уведомления в Telegram включены (@uydosh_bot)",
+      "telegram_alerts_disable_button": "Отключить уведомления в Telegram",
+      "telegram_alerts_disabled_success": "Уведомления в Telegram отключены",
+      "telegram_alerts_disable_failed": "Не удалось отключить уведомления в Telegram",
       "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -4744,17 +4750,20 @@ class AppStrings {
           "Push ishlamasa, xabarlar va qidiruv mosliklari Telegramga keladi.",
       "telegram_alerts_enable_button": "Telegramda yoqish",
       "telegram_alerts_enable_waiting":
-          "Telegramda Start bosing, so‘ng bu yerga qayting.",
+          "Telegramda obuna bo‘ling, so‘ng bu yerga qayting.",
       "telegram_alerts_enabled_success": "Telegram bildirishnomalari yoqildi",
       "telegram_alerts_enable_failed":
           "Telegram bildirishnomalarini yoqib bo‘lmadi. Keyinroq urinib ko‘ring.",
       "telegram_alerts_settings_title": "Telegram bildirishnomalari",
       "telegram_alerts_settings_body":
-          "Telegramda @uydosh_bot ni oching va Start bosing — xabarlar va qidiruv mosliklari shu yerda keladi.",
+          "Telegramda @uydosh_bot ni oching va bildirishnomalarga obuna bo‘ling — xabarlar va qidiruv mosliklari shu yerda keladi.",
       "telegram_alerts_settings_button": "@uydosh_bot ni ochish",
       "telegram_alerts_settings_waiting":
-          "Telegramda @uydosh_bot da Start bosing, so‘ng bu yerga qayting.",
+          "@uydosh_bot da obuna bo‘ling, so‘ng bu yerga qayting.",
       "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan (@uydosh_bot)",
+      "telegram_alerts_disable_button": "Telegram bildirishnomalarini o‘chirish",
+      "telegram_alerts_disabled_success": "Telegram bildirishnomalari o‘chirildi",
+      "telegram_alerts_disable_failed": "Telegram bildirishnomalarini o‘chirib bo‘lmadi",
       "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
 
       // ===== PHONE AUTHENTICATION =====
