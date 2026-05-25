@@ -201,6 +201,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
+  List<Listing>? _cachedFeedListingsRef;
+  List<HomeFeedEntry>? _cachedFeedEntries;
   bool _isCreatingSearchAlert = false;
   bool _searchCountReady = false;
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
@@ -727,17 +729,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  void _dispatchFeedRefresh({bool keepStaleWhileRibbonAnimates = false}) {
+  void _dispatchFeedRefresh({bool keepStaleWhileRefreshing = false}) {
     if (widget.isSearchMode || _inlineSearchActive) {
       _dispatchSearch(
         isRefresh: true,
-        keepStaleWhileRibbonAnimates: keepStaleWhileRibbonAnimates,
+        keepStaleWhileRibbonAnimates: keepStaleWhileRefreshing,
       );
     } else {
       context.read<ListingsBloc>().add(
             ListingsEvent.searchListings(
               isRefresh: true,
-              keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
+              keepStaleWhileRefreshing: keepStaleWhileRefreshing,
             ),
           );
     }
@@ -745,7 +747,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Future<void> _onFeedPullRefresh() async {
     try {
-      _dispatchFeedRefresh();
+      _dispatchFeedRefresh(keepStaleWhileRefreshing: true);
     } catch (e) {
       debugPrint("Error refreshing listings: $e");
     }
@@ -1693,7 +1695,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final withPhotoOnly = normalizeBool(filters.withPhoto);
 
     try {
-      final alerts = await getIt<ISearchAlertService>().listAlerts();
+      final cachedAlerts = ActiveSearchAlertsState().cachedAlerts;
+      final alerts = cachedAlerts ??
+          await getIt<ISearchAlertService>().listAlerts();
 
       bool sameDouble(double? a, double b) =>
           a != null && (a - b).abs() < 0.0001;
@@ -1790,7 +1794,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
         baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
-    final feedEntries = homeFeedEntriesWithDateHeaders(listings);
+    if (!identical(_cachedFeedListingsRef, listings)) {
+      _cachedFeedListingsRef = listings;
+      _cachedFeedEntries = homeFeedEntriesWithDateHeaders(listings);
+    }
+    final feedEntries = _cachedFeedEntries!;
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: edgeOffset,
@@ -1948,7 +1956,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     });
     final keepStaleDuringRibbonOut =
         animated && _homeRibbonAnimationsEnabled(context);
-    _dispatchFeedRefresh(keepStaleWhileRibbonAnimates: keepStaleDuringRibbonOut);
+    _dispatchFeedRefresh(keepStaleWhileRefreshing: keepStaleDuringRibbonOut);
     final animationsEnabled = animated && _homeRibbonAnimationsEnabled(context);
     unawaited(() async {
       if (animationsEnabled) {

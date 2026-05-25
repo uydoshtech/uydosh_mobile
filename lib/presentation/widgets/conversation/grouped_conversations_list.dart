@@ -76,17 +76,23 @@ DateTime _groupLatestActivityDay(List<ConversationSummary> convs) {
   return DateTime(t.year, t.month, t.day);
 }
 
-List<Widget> _intersperseGap(List<Widget> items, double gap) {
-  if (items.isEmpty) {
-    return const [];
-  }
-  final out = <Widget>[items.first];
-  for (var i = 1; i < items.length; i++) {
-    out
-      ..add(SizedBox(height: gap))
-      ..add(items[i]);
-  }
-  return out;
+sealed class _GroupedListSegment {}
+
+final class _GroupedDateHeaderSegment extends _GroupedListSegment {
+  _GroupedDateHeaderSegment({required this.day, required this.isFirst});
+
+  final DateTime day;
+  final bool isFirst;
+}
+
+final class _GroupedCardSegment extends _GroupedListSegment {
+  _GroupedCardSegment({
+    required this.listingId,
+    required this.conversations,
+  });
+
+  final int listingId;
+  final List<ConversationSummary> conversations;
 }
 
 class GroupedConversationsList extends StatefulWidget {
@@ -95,12 +101,13 @@ class GroupedConversationsList extends StatefulWidget {
     required this.onConversationTap,
     super.key,
     this.currentUserId,
-
-    /// When true, builds a [Column] of group cards for use inside another
-    /// scrollable (avoids nested [ListView]).
-    this.embedInParentScrollView = false,
     this.padding,
     this.itemSpacing,
+    this.physics,
+
+    /// Optional rows rendered before grouped segments (e.g. inbox push banner).
+    this.leadingItemCount = 0,
+    this.leadingItemBuilder,
 
     /// Passed through to inner [ConversationTile]s (e.g. inbox with day headers).
     this.showActivityTimeOnly = false,
@@ -109,13 +116,18 @@ class GroupedConversationsList extends StatefulWidget {
     /// When true, expanded rows use [OutgoingConversationTile] (messages tab
     /// "others' listings" / initiator side) instead of [ConversationTile].
     this.useOutgoingInnerTiles = false,
-  });
+  }) : assert(
+         leadingItemCount == 0 || leadingItemBuilder != null,
+         "leadingItemBuilder is required when leadingItemCount > 0",
+       );
   final List<ConversationSummary> conversations;
   final int? currentUserId;
   final Function(ConversationSummary) onConversationTap;
-  final bool embedInParentScrollView;
   final EdgeInsets? padding;
   final double? itemSpacing;
+  final ScrollPhysics? physics;
+  final int leadingItemCount;
+  final Widget Function(BuildContext context, int index)? leadingItemBuilder;
   final bool showActivityTimeOnly;
   final Function(ConversationSummary)? onConversationLongPress;
   final bool useOutgoingInnerTiles;
@@ -129,6 +141,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
   final Map<int, bool> _expandedGroups = {};
   Map<int, List<ConversationSummary>> _groupedConversations = const {};
   List<int> _sortedListingIds = const [];
+  List<_GroupedListSegment> _segments = const [];
 
   /// One-time animated expand + overlay hint for multi-thread groups; ends
   /// collapsed again after the coach unless unread keeps the group expanded.
@@ -439,81 +452,112 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         return bLatest.compareTo(aLatest);
       });
 
+    final segments = _buildSegments(
+      groupedConversations: groupedConversations,
+      sortedListingIds: sortedListingIds,
+    );
+
     setState(() {
       _groupedConversations = groupedConversations;
       _sortedListingIds = sortedListingIds;
+      _segments = segments;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _maybeScheduleGroupExpandCoach();
     });
   }
 
-  List<Widget> _buildDatedSegments(BuildContext context) {
-    final segments = <Widget>[];
+  List<_GroupedListSegment> _buildSegments({
+    required Map<int, List<ConversationSummary>> groupedConversations,
+    required List<int> sortedListingIds,
+  }) {
+    final segments = <_GroupedListSegment>[];
     DateTime? lastEmittedDay;
 
-    final onlyOneGroup = _sortedListingIds.length == 1;
-
-    for (var i = 0; i < _sortedListingIds.length; i++) {
-      final listingId = _sortedListingIds[i];
-      final conversations = _groupedConversations[listingId] ?? const [];
-      final hasIncomingUnread = _groupHasIncomingUnread(conversations);
-      final isSingletonThreadGroup = onlyOneGroup && conversations.length == 1;
-      final stored = _expandedGroups[listingId];
-      // Unread groups default to expanded so threads are visible; the user can
-      // still collapse (stored `false` is honored while unread).
-      final isExpanded = isSingletonThreadGroup
-          ? true
-          : hasIncomingUnread
-              ? (stored ?? true)
-              : (stored ?? false);
-      final canToggleExpansion = !isSingletonThreadGroup &&
-          (!onlyOneGroup || conversations.length > 1);
+    for (final listingId in sortedListingIds) {
+      final conversations = groupedConversations[listingId] ?? const [];
       final day = _groupLatestActivityDay(conversations);
 
       if (lastEmittedDay == null || !_sameCalendarDay(lastEmittedDay, day)) {
         segments.add(
-          DateHeaderWidget(
-            dateString: AppDateUtils.formatDateHeader(day, context),
-            date: day,
-            padding: segments.isEmpty
-                ? const EdgeInsets.only(top: 8, bottom: 6)
-                : const EdgeInsets.only(top: 4, bottom: 6),
+          _GroupedDateHeaderSegment(
+            day: day,
+            isFirst: segments.isEmpty,
           ),
         );
         lastEmittedDay = day;
       }
 
       segments.add(
-        _buildGroupCard(
+        _GroupedCardSegment(
           listingId: listingId,
           conversations: conversations,
-          isExpanded: isExpanded,
-          canToggleExpansion: canToggleExpansion,
         ),
       );
     }
     return segments;
   }
 
+  ({bool isExpanded, bool canToggleExpansion}) _groupCardExpansionState(
+    int listingId,
+    List<ConversationSummary> conversations,
+  ) {
+    final onlyOneGroup = _sortedListingIds.length == 1;
+    final hasIncomingUnread = _groupHasIncomingUnread(conversations);
+    final isSingletonThreadGroup = onlyOneGroup && conversations.length == 1;
+    final stored = _expandedGroups[listingId];
+    // Unread groups default to expanded so threads are visible; the user can
+    // still collapse (stored `false` is honored while unread).
+    final isExpanded = isSingletonThreadGroup
+        ? true
+        : hasIncomingUnread
+            ? (stored ?? true)
+            : (stored ?? false);
+    final canToggleExpansion = !isSingletonThreadGroup &&
+        (!onlyOneGroup || conversations.length > 1);
+    return (isExpanded: isExpanded, canToggleExpansion: canToggleExpansion);
+  }
+
+  Widget _buildSegment(BuildContext context, int segmentIndex) {
+    final segment = _segments[segmentIndex];
+    return switch (segment) {
+      _GroupedDateHeaderSegment(:final day, :final isFirst) => DateHeaderWidget(
+        dateString: AppDateUtils.formatDateHeader(day, context),
+        date: day,
+        padding: isFirst
+            ? const EdgeInsets.only(top: 8, bottom: 6)
+            : const EdgeInsets.only(top: 4, bottom: 6),
+      ),
+      _GroupedCardSegment(:final listingId, :final conversations) => () {
+        final expansion = _groupCardExpansionState(listingId, conversations);
+        return _buildGroupCard(
+          listingId: listingId,
+          conversations: conversations,
+          isExpanded: expansion.isExpanded,
+          canToggleExpansion: expansion.canToggleExpansion,
+        );
+      }(),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final gap = widget.itemSpacing ?? 10;
-
-    if (widget.embedInParentScrollView) {
-      return Padding(
-        padding: widget.padding ?? EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: _intersperseGap(_buildDatedSegments(context), gap),
-        ),
-      );
-    }
+    final leadingCount = widget.leadingItemCount;
+    final segmentCount = _segments.length;
+    final totalCount = leadingCount + segmentCount;
 
     return CommonListView(
       padding: widget.padding ?? const EdgeInsets.all(16),
+      physics: widget.physics ?? const AlwaysScrollableScrollPhysics(),
       itemSpacing: gap,
-      children: _buildDatedSegments(context),
+      itemCount: totalCount,
+      itemBuilder: (context, index) {
+        if (index < leadingCount) {
+          return widget.leadingItemBuilder!(context, index);
+        }
+        return _buildSegment(context, index - leadingCount);
+      },
     );
   }
 
@@ -523,20 +567,17 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     required bool isExpanded,
     required bool canToggleExpansion,
   }) {
-    return ListenableBuilder(
-      listenable: ThemeState(),
-      builder: (context, child) {
-        final themeState = ThemeState();
-        final cardColor = themeState.cardColor;
-        final textColor = themeState.cardTextColor;
-        final secondaryTextColor = themeState.cardSecondaryTextColor;
-        final iconColor = themeState.cardIconColor;
-        final avatarColor = themeState.avatarColor;
-        final avatarIconColor = themeState.avatarIconColor;
-        final unreadColor = themeState.unreadIndicatorColor;
-        final unreadTextColor = themeState.unreadIndicatorTextColor;
+    final themeState = ThemeState();
+    final cardColor = themeState.cardColor;
+    final textColor = themeState.cardTextColor;
+    final secondaryTextColor = themeState.cardSecondaryTextColor;
+    final iconColor = themeState.cardIconColor;
+    final avatarColor = themeState.avatarColor;
+    final avatarIconColor = themeState.avatarIconColor;
+    final unreadColor = themeState.unreadIndicatorColor;
+    final unreadTextColor = themeState.unreadIndicatorTextColor;
 
-        // Get location and metro station info from the first conversation
+    // Get location and metro station info from the first conversation
         final firstConversation = conversations.first;
         final hasLocation = firstConversation.locationNameUz != null ||
             firstConversation.locationNameRu != null ||
@@ -813,8 +854,6 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
             ],
           ),
         );
-      },
-    );
   }
 
   int _getGroupUnreadCount(List<ConversationSummary> conversations) {

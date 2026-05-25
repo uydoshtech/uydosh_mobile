@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:image_picker/image_picker.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -69,12 +71,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   @override
   void initState() {
     super.initState();
-    final initial = widget.initialFollowCounts;
-    if (initial != null) {
-      _followCounts = initial;
-      _followCountsLoaded = true;
-    }
-    _loadFollowCounts();
+    _applyInitialFollowCounts(widget.initialFollowCounts);
   }
 
   @override
@@ -85,19 +82,28 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
         _followCounts = null;
         _followCountsLoaded = false;
       });
-      _loadFollowCounts();
+      unawaited(_loadFollowCounts());
       return;
     }
 
-    final initial = widget.initialFollowCounts;
-    if (initial != null && !_followCountsLoaded) {
-      setState(() {
-        _followCounts = initial;
-        _followCountsLoaded = true;
-      });
-    }
+    _applyInitialFollowCounts(widget.initialFollowCounts);
   }
 
+  void _applyInitialFollowCounts(FollowCounts? initial) {
+    if (initial == null) return;
+    if (_followCountsLoaded &&
+        _followCounts?.followerCount == initial.followerCount &&
+        _followCounts?.followingCount == initial.followingCount) {
+      return;
+    }
+    setState(() {
+      _followCounts = initial;
+      _followCountsLoaded = true;
+    });
+  }
+
+  /// [ProfileScreen] prefetches follow counts on open; this runs only when the
+  /// viewed user changes (not on every profile visit).
   Future<void> _loadFollowCounts() async {
     final userId = widget.profile.userId;
     final counts = await getIt<IFollowService>().getFollowCounts(userId);

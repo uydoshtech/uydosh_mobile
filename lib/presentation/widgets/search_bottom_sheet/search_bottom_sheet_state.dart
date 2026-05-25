@@ -81,15 +81,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       );
     }
 
-    // Load stations if there"s a saved subway line
+    // Load stations if there"s a saved subway line (static MetroCache).
     if (_searchFiltersState.selectedSubwayLine > 0) {
-      final subwayBloc = context.read<SubwayStationsBloc>();
-      subwayBloc.add(
-        SubwayStationsEvent.fetchSubwayStationsByLine(
-          line: _searchFiltersState.selectedSubwayLine,
-        ),
+      _onStationsLoaded(
+        MetroCache.getStationsForLine(_searchFiltersState.selectedSubwayLine),
       );
-      setState(() {});
     }
 
     // Ensure station selection is reset when opening with only metro line (no specific station)
@@ -352,10 +348,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       resetStationWheelToZero();
     });
 
-    // Trigger the BLoC to fetch stations for the selected line
-    context.read<SubwayStationsBloc>().add(
-          SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
-        );
+    _onStationsLoaded(MetroCache.getStationsForLine(line));
   }
 
   /// Resets the location picker to its initial state (no location selected)
@@ -364,7 +357,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     setState(() {
       _searchFiltersState.setLocationIndex(0);
     });
-    _forceRebuildWheelPickers();
   }
 
   /// Resets all metro-related filters (line and station) to their initial state
@@ -394,7 +386,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       _currentStations = [];
     });
     _resetWheelPickerControllers();
-    _forceRebuildWheelPickers();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       syncPickerScrollToStart();
     });
@@ -408,11 +399,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         _currentStations.isNotEmpty) {
       _resetMetroPickers();
     }
-  }
-
-  void _forceRebuildWheelPickers() {
-    // Force rebuild by triggering setState
-    setState(() {});
   }
 
   void _resetWheelPickerControllers() {
@@ -588,16 +574,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       topRight: Radius.circular(20),
     );
 
-    return BlocListener<SubwayStationsBloc, SubwayStationsState>(
-      listener: (context, state) {
-        state.map(
-          initial: (_) {},
-          loading: (_) {},
-          loaded: (loadedState) => _onStationsLoaded(loadedState.stations),
-          error: (_) {},
-        );
-      },
-      child: ConstrainedBox(
+    return ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxSheetHeight),
         child: GlassBottomSheetSurface(
           borderRadius: radius,
@@ -785,7 +762,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             ],
           ),
         ),
-      ),
     );
   }
 

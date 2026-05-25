@@ -16,9 +16,14 @@ class ActiveSearchAlertsState extends ChangeNotifier {
   bool _hasActiveEnabledAlerts = false;
   int _enabledAlertsCount = 0;
   int _celebrationTick = 0;
+  List<SearchAlert>? _cachedAlerts;
 
   bool get hasActiveEnabledAlerts => _hasActiveEnabledAlerts;
   int get enabledAlertsCount => _enabledAlertsCount;
+
+  /// Last alert list from [refresh] or [syncFromAlerts], for duplicate checks
+  /// without an extra API round trip.
+  List<SearchAlert>? get cachedAlerts => _cachedAlerts;
 
   /// Increments when the number of enabled alerts increases (used to trigger UI
   /// celebration animations like the header bell shake).
@@ -35,6 +40,9 @@ class ActiveSearchAlertsState extends ChangeNotifier {
 
   /// Updates from a list already loaded in the UI (avoids an extra round trip).
   void syncFromAlerts(Iterable<SearchAlert> alerts) {
+    _cachedAlerts = alerts is List<SearchAlert>
+        ? List<SearchAlert>.from(alerts)
+        : alerts.toList();
     final enabledCount = alerts.where((a) => a.enabled).length;
     final has = enabledCount > 0;
 
@@ -58,9 +66,12 @@ class ActiveSearchAlertsState extends ChangeNotifier {
   /// Fetches alerts from the API. No-op when not authenticated.
   Future<void> refresh() async {
     if (!AuthenticationState().isAuthenticated) {
-      if (_hasActiveEnabledAlerts || _enabledAlertsCount != 0) {
+      if (_hasActiveEnabledAlerts ||
+          _enabledAlertsCount != 0 ||
+          _cachedAlerts != null) {
         _hasActiveEnabledAlerts = false;
         _enabledAlertsCount = 0;
+        _cachedAlerts = null;
         notifyListeners();
         logger.d("ActiveSearchAlertsState: cleared (signed out)");
       }

@@ -43,29 +43,35 @@ class ListingOwnerProfileBloc
           currentUserId != null && currentUserId != event.userId;
 
       var isFollowing = false;
-      var commonFriends = const <CommonFriend>[];
-      var commonFriendsTotal = 0;
-
       if (canFollow) {
-        final results = await Future.wait([
-          _followService.checkIfFollowing(event.userId),
-          _followService.getCommonFriends(event.userId, limit: 20),
-        ]);
-        isFollowing = results[0] as bool;
-        final commonResult = results[1] as CommonFriendsResult;
-        commonFriends = commonResult.commonFriends;
-        commonFriendsTotal = commonResult.total;
+        isFollowing = await _followService.checkIfFollowing(event.userId);
       }
 
       emit(
         ListingOwnerProfileState.loaded(
           profile: profile,
           isFollowing: isFollowing,
-          commonFriends: commonFriends,
-          commonFriendsTotal: commonFriendsTotal,
           canFollow: canFollow,
         ),
       );
+
+      if (canFollow) {
+        try {
+          final commonResult = await _followService.getCommonFriends(
+            event.userId,
+            limit: 6,
+          );
+          final current = state;
+          if (current is _Loaded && current.profile.userId == event.userId) {
+            emit(
+              current.copyWith(
+                commonFriends: commonResult.commonFriends,
+                commonFriendsTotal: commonResult.total,
+              ),
+            );
+          }
+        } catch (_) {}
+      }
     } catch (error) {
       logger.e("🔍 Profile BLoC: Error occurred: $error");
       final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(error);

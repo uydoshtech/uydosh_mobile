@@ -479,37 +479,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final profileCompletionPercent =
           ProfileCompletionState.completionPercent(profile);
+      final userId = await SessionManager.getUserId();
+
       var viewedListingsCount = 0;
       var favoritesCount = 0;
       var listingsCreatedCount = 0;
       var messagesSentCount = 0;
 
-      try {
-        final viewed =
-            await getIt<IListingService>().getViewedListings(page: 1, limit: 1);
-        viewedListingsCount = viewed.total;
-      } catch (_) {}
-
-      try {
-        final favorites = await getIt<IFavoriteService>()
-            .getUserFavorites(page: 1, limit: 100);
-        favoritesCount = favorites.length;
-      } catch (_) {}
-
-      final userId = await SessionManager.getUserId();
-      if (userId != null) {
-        try {
-          final myListings = await getIt<IListingService>()
-              .getListingsByUserId(userId: userId, page: 1, limit: 1);
-          listingsCreatedCount = myListings.total;
-        } catch (_) {}
-      }
-
-      try {
-        if (await getIt<IGamificationService>().hasSentFirstMessage()) {
-          messagesSentCount = 1;
-        }
-      } catch (_) {}
+      await Future.wait<void>([
+        () async {
+          try {
+            final viewed = await getIt<IListingService>()
+                .getViewedListings(page: 1, limit: 1);
+            viewedListingsCount = viewed.total;
+          } catch (_) {}
+        }(),
+        () async {
+          try {
+            favoritesCount = await getIt<IFavoriteService>().getUserFavoritesCount();
+          } catch (_) {}
+        }(),
+        () async {
+          if (userId == null) return;
+          try {
+            final myListings = await getIt<IListingService>()
+                .getListingsByUserId(userId: userId, page: 1, limit: 1);
+            listingsCreatedCount = myListings.total;
+          } catch (_) {}
+        }(),
+        () async {
+          try {
+            if (await getIt<IGamificationService>().hasSentFirstMessage()) {
+              messagesSentCount = 1;
+            }
+          } catch (_) {}
+        }(),
+      ]);
 
       final newlyUnlocked =
           await getIt<IGamificationService>().checkAndUnlockAchievements(
@@ -788,17 +793,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent(UserProfile profile) {
-    return ListenableBuilder(
-      listenable: LanguageState(),
-      builder: (context, child) {
-        return SingleChildScrollView(
-          // Pushed route: body already clears the app bar — no
-          // [extendBodyBehindAppBar] / status-bar inset (see favorites_screen).
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ProfileHeaderSection(
+    return SingleChildScrollView(
+      // Pushed route: body already clears the app bar — no
+      // [extendBodyBehindAppBar] / status-bar inset (see favorites_screen).
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProfileHeaderSection(
                 profile: profile,
                 cachedGoogleDisplayName: _cachedGoogleDisplayName,
                 cachedGooglePhotoUrl: _cachedGooglePhotoUrl,
@@ -908,8 +910,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 32),
             ],
           ),
-        );
-      },
     );
   }
 

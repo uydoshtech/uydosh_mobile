@@ -25,6 +25,7 @@ abstract class IFavoriteService {
   Future<bool> removeFromFavorites(int listingId);
   Future<bool> toggleFavorite(int listingId);
   Future<List<Listing>> getUserFavorites({int page = 1, int limit = 10});
+  Future<int> getUserFavoritesCount();
   Future<List<Listing>> getUserFavoriteListings(int userId);
   Future<bool> checkIfFavorited(int listingId);
   Future<int> getFavoriteCount(int listingId);
@@ -424,6 +425,30 @@ class FavoriteService implements IFavoriteService {
     } catch (e) {
       logger.d("❌ FavoriteService: Unexpected error: $e");
       return [];
+    }
+  }
+
+  @override
+  Future<int> getUserFavoritesCount() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/favorites?page=1&limit=1",
+        (data) => data,
+      );
+      if (response is Map<String, dynamic>) {
+        final total = response["total"];
+        if (total is int) return total;
+        if (total is num) return total.toInt();
+      }
+      if (response is List) return response.length;
+      return 0;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      return 0;
+    } catch (_) {
+      return 0;
     }
   }
 

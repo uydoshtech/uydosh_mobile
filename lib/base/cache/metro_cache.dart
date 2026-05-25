@@ -583,6 +583,16 @@ class MetroCache {
     ],
   };
 
+  static final Map<int, SubwayStation> _stationById = {
+    for (final stations in metroStations.values)
+      for (final station in stations)
+        station.id: station,
+  };
+
+  static final List<SubwayStation> _allStations = List<SubwayStation>.unmodifiable([
+    for (final stations in metroStations.values) ...stations,
+  ]);
+
   /// Get all stations for a specific line
   static List<SubwayStation> getStationsForLine(int line) {
     return metroStations[line] ?? [];
@@ -594,9 +604,7 @@ class MetroCache {
   }
 
   /// Get all stations from all lines
-  static List<SubwayStation> getAllStations() {
-    return metroStations.values.expand((stations) => stations).toList();
-  }
+  static List<SubwayStation> getAllStations() => _allStations;
 
   /// Raw station name for a specific language (no type prefix).
   static String getStationName(SubwayStation station, String language) {
@@ -651,29 +659,18 @@ class MetroCache {
   }
 
   /// Get a specific station by ID
-  static SubwayStation? getStationById(int id) {
-    for (final stations in metroStations.values) {
-      for (final station in stations) {
-        if (station.id == id) {
-          return station;
-        }
-      }
-    }
-    return null;
-  }
+  static SubwayStation? getStationById(int id) => _stationById[id];
 
   /// Get stations by name (case-insensitive search)
   static List<SubwayStation> getStationsByName(String name) {
     final lowercaseName = name.toLowerCase();
     final results = <SubwayStation>[];
 
-    for (final stations in metroStations.values) {
-      for (final station in stations) {
-        if ((station.nameUz?.toLowerCase().contains(lowercaseName) ?? false) ||
-            (station.nameRu?.toLowerCase().contains(lowercaseName) ?? false) ||
-            (station.nameEn?.toLowerCase().contains(lowercaseName) ?? false)) {
-          results.add(station);
-        }
+    for (final station in _allStations) {
+      if ((station.nameUz?.toLowerCase().contains(lowercaseName) ?? false) ||
+          (station.nameRu?.toLowerCase().contains(lowercaseName) ?? false) ||
+          (station.nameEn?.toLowerCase().contains(lowercaseName) ?? false)) {
+        results.add(station);
       }
     }
 

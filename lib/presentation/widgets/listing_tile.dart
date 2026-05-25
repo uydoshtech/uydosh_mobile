@@ -655,7 +655,10 @@ class _ListingTileState extends State<ListingTile> {
                       const SizedBox(height: 12),
                       // Location and subway (optional); price/amenities/date are not gated on these
                       if (widget.listing.location != null ||
-                          widget.listing.subwayStation != null) ...[
+                          widget.listing.subwayStation != null ||
+                          (widget.listing.privateRoom ?? false) ||
+                          (widget.listing.moveInDate != null &&
+                              widget.listing.moveInDate!.isNotEmpty))
                         ListenableBuilder(
                           listenable: LanguageState(),
                           builder: (context, child) {
@@ -663,54 +666,123 @@ class _ListingTileState extends State<ListingTile> {
                                 widget.listing.location != null;
                             final hasStation =
                                 widget.listing.subwayStation != null;
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                            final hasPrivateRoom =
+                                widget.listing.privateRoom ?? false;
+                            final hasMoveInDate =
+                                widget.listing.moveInDate != null &&
+                                    widget.listing.moveInDate!.isNotEmpty;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (hasLocation) ...[
-                                  const ThemeIcon(
-                                    Icons.location_on,
-                                    color: AppColors.error,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      _shortenDistrictSuffix(
-                                        _getLocalizedName(
-                                          nameUz:
-                                              widget.listing.location!.nameUz,
-                                          nameRu:
-                                              widget.listing.location!.nameRu,
-                                          nameEn:
-                                              widget.listing.location!.nameEn,
+                                if (hasLocation || hasStation)
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      if (hasLocation) ...[
+                                        const ThemeIcon(
+                                          Icons.location_on,
+                                          color: AppColors.error,
+                                          size: 20,
                                         ),
-                                      ),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: _getLocationTextColor(),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            _shortenDistrictSuffix(
+                                              _getLocalizedName(
+                                                nameUz: widget
+                                                    .listing
+                                                    .location!
+                                                    .nameUz,
+                                                nameRu: widget
+                                                    .listing
+                                                    .location!
+                                                    .nameRu,
+                                                nameEn: widget
+                                                    .listing
+                                                    .location!
+                                                    .nameEn,
+                                              ),
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: _getLocationTextColor(),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                      if (hasLocation && hasStation)
+                                        const SizedBox(width: 12),
+                                      if (hasStation)
+                                        Flexible(
+                                          child: _buildSubwayStationDisplay(
+                                            widget.listing.subwayStation!,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                if (hasPrivateRoom || hasMoveInDate) ...[
+                                  if (hasLocation || hasStation)
+                                    const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      if (hasPrivateRoom) ...[
+                                        ThemeIcon(
+                                          CupertinoIcons.lock_fill,
+                                          size: 20,
+                                          color: _getPrivateRoomIconColor(),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          L10n.get("private_room"),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: _getPrivateRoomTextColor(),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                      if (hasPrivateRoom && hasMoveInDate)
+                                        const SizedBox(width: 12),
+                                      if (hasMoveInDate) ...[
+                                        ThemeIcon(
+                                          CupertinoIcons.square_arrow_right,
+                                          size: 22,
+                                          color: _getDateTextColor(),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            hasPrivateRoom
+                                                ? (_cachedFormattedMoveInDate ??
+                                                    "")
+                                                : "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: _getDateTextColor(),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ],
-                                if (hasLocation && hasStation)
-                                  const SizedBox(width: 12),
-                                if (hasStation)
-                                  Flexible(
-                                    child: _buildSubwayStationDisplay(
-                                      widget.listing.subwayStation!,
-                                    ),
-                                  ),
                               ],
                             );
                           },
                         ),
-                      ],
                       if (widget.listing.amenities != null &&
                           widget.listing.amenities!.isNotEmpty) ...[
                         if (widget.listing.location != null ||
-                            widget.listing.subwayStation != null)
+                            widget.listing.subwayStation != null ||
+                            (widget.listing.privateRoom ?? false) ||
+                            (widget.listing.moveInDate != null &&
+                                widget.listing.moveInDate!.isNotEmpty))
                           const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.only(right: 40),
@@ -727,68 +799,6 @@ class _ListingTileState extends State<ListingTile> {
                                 )
                                 .toList(),
                           ),
-                        ),
-                      ],
-                      if ((widget.listing.privateRoom ?? false) ||
-                          (widget.listing.moveInDate != null &&
-                              widget.listing.moveInDate!.isNotEmpty)) ...[
-                        if (widget.listing.location != null ||
-                            widget.listing.subwayStation != null ||
-                            (widget.listing.amenities != null &&
-                                widget.listing.amenities!.isNotEmpty))
-                          const SizedBox(height: 12),
-                        ListenableBuilder(
-                          listenable: LanguageState(),
-                          builder: (context, child) {
-                            final hasPrivateRoom =
-                                widget.listing.privateRoom ?? false;
-                            final hasMoveInDate =
-                                widget.listing.moveInDate != null &&
-                                    widget.listing.moveInDate!.isNotEmpty;
-                            return Row(
-                              children: [
-                                if (hasPrivateRoom) ...[
-                                  ThemeIcon(
-                                    CupertinoIcons.lock_fill,
-                                    size: 20,
-                                    color: _getPrivateRoomIconColor(),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    L10n.get("private_room"),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: _getPrivateRoomTextColor(),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                                if (hasPrivateRoom && hasMoveInDate)
-                                  const SizedBox(width: 12),
-                                if (hasMoveInDate) ...[
-                                  ThemeIcon(
-                                    CupertinoIcons.square_arrow_right,
-                                    size: 22,
-                                    color: _getDateTextColor(),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      hasPrivateRoom
-                                          ? (_cachedFormattedMoveInDate ?? "")
-                                          : "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: _getDateTextColor(),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            );
-                          },
                         ),
                       ],
                     ],

@@ -38,7 +38,6 @@ import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/common_state_builder.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
@@ -632,13 +631,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 "🔍 [MessagesInboxScreen] Conversations loaded: ${state.conversations.length} conversations (${visible.length} with messages)",
               );
 
-              if (mounted) {
-                setState(() {
-                  _lastDisplayedConversations = List<ConversationSummary>.from(
-                    visible,
-                  );
-                });
-              }
+              _lastDisplayedConversations = List<ConversationSummary>.from(
+                visible,
+              );
 
               _maybeApplyInitialTabRule(visible);
 
@@ -647,9 +642,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 UnreadMessagesState().updateUnreadCount(totalUnreadCount);
               }
             } else if (state is ConversationsCleared) {
-              if (mounted) {
-                setState(() => _lastDisplayedConversations = null);
-              }
+              _lastDisplayedConversations = null;
               UnreadMessagesState().clearUnreadCount();
             }
           },
@@ -988,8 +981,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           child: GroupedConversationsList(
             conversations: sorted,
             currentUserId: _currentUserId,
-            embedInParentScrollView: true,
-            padding: EdgeInsets.fromLTRB(16, 8, 16, _inboxListBottomPadding(context)),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              _inboxListBottomPadding(context),
+            ),
             itemSpacing: 12,
             showActivityTimeOnly: true,
             useOutgoingInnerTiles: false,
@@ -1267,22 +1264,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     });
   }
 
-  /// One grouped listing/gig block for the whole tab (no per-day buckets, so
-  /// the same gig is not repeated under different date headers).
-  List<_InboxListEntry> _groupedInboxEntries(
-    List<ConversationSummary> conversations, {
-    required bool outgoingInnerTiles,
-  }) {
-    final sorted = _sortConversationsForInbox(conversations);
-    if (sorted.isEmpty) {
-      return [];
-    }
-    return [
-      _InboxGroupedSection(
-        conversations: sorted,
-        outgoingInnerTiles: outgoingInnerTiles,
-      ),
-    ];
+  List<ConversationSummary>? _visibleConversationsFromBloc() {
+    final state = context.read<ConversationsBloc>().state;
+    if (state is! ConversationsLoaded) return null;
+    return _visibleInboxConversations(state.conversations);
   }
 
   /// Show the archive/read bottom sheet for a conversation. Runs the archive
@@ -1417,7 +1402,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     // Recompute the unread badge right away so the home tab dot disappears
     // synchronously with the ribbon, not after the bloc emits. Task-scoped
     // inbox keeps a filtered cache — do not touch global unreads.
-    final cache = _lastDisplayedConversations;
+    final cache =
+        _lastDisplayedConversations ?? _visibleConversationsFromBloc();
     if (widget.filterGigRequestId == null && cache != null) {
       UnreadMessagesState().updateUnreadCount(
         _calculateTotalUnreadCount(
@@ -1466,7 +1452,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           _pendingArchiveIds.remove(id);
         });
         // Restore the unread badge now that the chat is visible again.
-        final cache = _lastDisplayedConversations;
+        final cache =
+            _lastDisplayedConversations ?? _visibleConversationsFromBloc();
         if (widget.filterGigRequestId == null && cache != null) {
           UnreadMessagesState().updateUnreadCount(
             _calculateTotalUnreadCount(
@@ -1577,29 +1564,33 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     List<ConversationSummary> conversations, {
     required bool outgoingInnerTiles,
   }) {
-    final entries = <_InboxListEntry>[
-      if (_shouldRenderPushBannerRow) _InboxPushBannerRow(),
-      ..._groupedInboxEntries(
-        conversations,
-        outgoingInnerTiles: outgoingInnerTiles,
-      ),
-    ];
-    return CommonListView(
+    final sorted = _sortConversationsForInbox(conversations);
+    return GroupedConversationsList(
+      conversations: sorted,
+      currentUserId: _currentUserId,
       padding: EdgeInsets.fromLTRB(16, 0, 16, _inboxListBottomPadding(context)),
-      physics: const AlwaysScrollableScrollPhysics(),
       itemSpacing: 12,
-      itemCount: entries.length,
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        return switch (entry) {
-          _InboxPushBannerRow() => Padding(
-            // Slightly larger top breathing room so the banner doesn't kiss
-            // the pinned tab toggle that floats above the list.
-            padding: const EdgeInsets.only(top: 4),
-            child: _pushBannerClosing
-                ? RollUpFadeOut(
-                    duration: _pushBannerCloseDuration,
-                    child: InboxPushBanner(
+      showActivityTimeOnly: true,
+      useOutgoingInnerTiles: outgoingInnerTiles,
+      onConversationTap: _openChatScreen,
+      onConversationLongPress: _promptConversationActions,
+      leadingItemCount: _shouldRenderPushBannerRow ? 1 : 0,
+      leadingItemBuilder: _shouldRenderPushBannerRow
+          ? (context, index) => Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _pushBannerClosing
+                  ? RollUpFadeOut(
+                      duration: _pushBannerCloseDuration,
+                      child: InboxPushBanner(
+                        key: const ValueKey("inbox_push_banner"),
+                        status:
+                            _pushStatus ?? AuthorizationStatus.notDetermined,
+                        busy: _pushBannerBusy,
+                        onPressed: _onPushBannerPressed,
+                        onDismiss: _onPushBannerDismiss,
+                      ),
+                    )
+                  : InboxPushBanner(
                       key: const ValueKey("inbox_push_banner"),
                       status:
                           _pushStatus ?? AuthorizationStatus.notDetermined,
@@ -1607,30 +1598,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       onPressed: _onPushBannerPressed,
                       onDismiss: _onPushBannerDismiss,
                     ),
-                  )
-                : InboxPushBanner(
-                    key: const ValueKey("inbox_push_banner"),
-                    status:
-                        _pushStatus ?? AuthorizationStatus.notDetermined,
-                    busy: _pushBannerBusy,
-                    onPressed: _onPushBannerPressed,
-                    onDismiss: _onPushBannerDismiss,
-                  ),
-          ),
-          _InboxGroupedSection(:final conversations, :final outgoingInnerTiles) =>
-            GroupedConversationsList(
-              conversations: conversations,
-              currentUserId: _currentUserId,
-              embedInParentScrollView: true,
-              padding: EdgeInsets.zero,
-              itemSpacing: 12,
-              showActivityTimeOnly: true,
-              useOutgoingInnerTiles: outgoingInnerTiles,
-              onConversationTap: _openChatScreen,
-              onConversationLongPress: _promptConversationActions,
-            ),
-        };
-      },
+            )
+          : null,
     );
   }
 
@@ -1661,25 +1630,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       subtitle: L10n.get("no_messages_description"),
     );
   }
-}
-
-sealed class _InboxListEntry {}
-
-/// Sentinel "row" rendered as the first item of the inbox list when the OS
-/// push permission is missing. Carrying it through the same entry pipeline
-/// lets it scroll away with the rest of the content (rather than steal a
-/// pinned slot above the incoming/outgoing toggle).
-final class _InboxPushBannerRow extends _InboxListEntry {
-  _InboxPushBannerRow();
-}
-
-final class _InboxGroupedSection extends _InboxListEntry {
-  _InboxGroupedSection({
-    required this.conversations,
-    required this.outgoingInnerTiles,
-  });
-  final List<ConversationSummary> conversations;
-  final bool outgoingInnerTiles;
 }
 
 /// Floating pill button that opens [ArchivedConversationsScreen]. Surfaced

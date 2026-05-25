@@ -162,38 +162,53 @@ class _UserFollowListScreenState extends State<UserFollowListScreen> {
           builder: (context, _) => Text(_title()),
         ),
       ),
-      body: ListenableBuilder(
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_isLoading) {
+      return ListenableBuilder(
+        listenable: LanguageState(),
+        builder: (context, _) =>
+            CenteredHouseLoadingIndicator(text: L10n.get("loading")),
+      );
+    }
+
+    if (_error != null) {
+      return ListenableBuilder(
         listenable: LanguageState(),
         builder: (context, _) {
-          if (_isLoading) {
-            return CenteredHouseLoadingIndicator(text: L10n.get("loading"));
-          }
+          return UydoshErrorRetryColumn(
+            message: _error!,
+            onRetry: () => _loadUsers(reset: true),
+          );
+        },
+      );
+    }
 
-          if (_error != null) {
-            final errorMessage = _error!;
-            return UydoshErrorRetryColumn(
-              message: errorMessage,
-              onRetry: () => _loadUsers(reset: true),
-            );
-          }
-
-          if (_users.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  _emptyMessage(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+    if (_users.isEmpty) {
+      return ListenableBuilder(
+        listenable: LanguageState(),
+        builder: (context, _) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                _emptyMessage(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            );
-          }
+            ),
+          );
+        },
+      );
+    }
 
-          return ListView.separated(
+    return ListView.separated(
             controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             itemCount: _users.length + (_isLoadingMore ? 1 : 0),
@@ -253,9 +268,6 @@ class _UserFollowListScreenState extends State<UserFollowListScreen> {
               );
             },
           );
-        },
-      ),
-    );
   }
 
   Widget _buildUserAvatar(BuildContext context, String? avatarUrl) {
