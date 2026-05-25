@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
@@ -161,6 +163,9 @@ class LanguageState extends ChangeNotifier {
       getIt<AppAnalyticsService>().logLanguageChanged(
         fromLanguage: fromLanguage,
         toLanguage: language,
+      );
+      unawaited(
+        getIt<AppAnalyticsService>().syncAppLanguageProperty(language),
       );
 
       // Invalidate university cache so next fetch uses new language

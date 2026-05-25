@@ -319,6 +319,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
         // Mark home screen for refresh to reflect the status change
         HomeRefreshState().markForRefresh();
+        unawaited(
+          getIt<AppAnalyticsService>().refreshHasActiveListingProperty(),
+        );
 
         context.read<ListingDetailPageBloc>().setToggling(false);
         logger.d(
@@ -2349,6 +2352,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         ToastReporting.successKey(context, "delete_listing_success");
 
         HomeRefreshState().markForRefresh();
+        unawaited(
+          getIt<AppAnalyticsService>().refreshHasActiveListingProperty(),
+        );
 
         Navigator.of(context).pop();
       } else {

@@ -1,6 +1,11 @@
+import "dart:async";
+
 import "package:firebase_analytics/firebase_analytics.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 
 /// Centralized analytics service wrapping Firebase Analytics.
 /// Tracks screens, searches, user actions, and key interactions.
@@ -80,6 +85,7 @@ class AppAnalyticsService {
   }
 
   Future<void> logSignInSuccess({required String method}) async {
+    await SessionManager.storeAuthMethod(method);
     // Also emit the standard GA4 "login" event for easier reporting.
     await logLogin(method: method);
     await _analytics.logEvent(
@@ -167,7 +173,14 @@ class AppAnalyticsService {
     final profile = await SessionManager.getCachedUserProfile();
     if (profile == null) return;
     final role = await SessionManager.getUserRole();
-    await syncUserProfileProperties(profile: profile, role: role);
+    final authMethod = await SessionManager.getAuthMethod();
+    final appLanguage = await SessionManager.getAppLanguage();
+    await syncUserProfileProperties(
+      profile: profile,
+      role: role,
+      authMethod: authMethod,
+      appLanguage: appLanguage,
+    );
   }
 
   /// Push profile-derived user properties to GA4/Firebase Analytics.
@@ -177,17 +190,62 @@ class AppAnalyticsService {
   Future<void> syncUserProfileProperties({
     required UserProfile profile,
     String? role,
+    String? authMethod,
+    String? appLanguage,
+    bool? hasActiveListing,
   }) async {
-    await Future.wait([
-      _setUserProperty("gender", _genderPropertyValue(profile.gender)),
-      _setUserProperty(
-        "is_student",
-        profile.universityId != null ? "true" : "false",
-      ),
-      _setUserProperty("university_code", _universityCode(profile)),
-      if (role != null && role.isNotEmpty)
-        _setUserProperty("user_role", role),
-    ]);
+    final resolvedAuthMethod =
+        authMethod ?? await SessionManager.getAuthMethod();
+    final resolvedAppLanguage =
+        appLanguage ?? await SessionManager.getAppLanguage();
+
+    final properties = <String, String?>{
+      "gender": _genderPropertyValue(profile.gender),
+      "is_student": profile.universityId != null ? "true" : "false",
+      "university_code": _universityCode(profile),
+      "user_role": role != null && role.isNotEmpty ? role : null,
+      "region_id": profile.regionId?.toString(),
+      "is_verified": profile.isVerified == true ? "true" : "false",
+      "auth_method": resolvedAuthMethod,
+      "preferred_language": _normalizeLanguageCode(profile.preferredLanguage),
+      "profile_completion_pct": _profileCompletionBucket(profile),
+      "origin_country_iso2": profile.originCountryIso2?.toUpperCase(),
+      "employed": _boolPropertyValue(profile.employed),
+      "has_active_listing": hasActiveListing == null
+          ? null
+          : (hasActiveListing ? "true" : "false"),
+      "account_age_days": _accountAgeBucket(profile.createdAt),
+      "app_language": _normalizeLanguageCode(resolvedAppLanguage),
+      "smoking_preference": profile.smokingPreference,
+      "pets_preference": profile.petsPreference,
+      "noise_level": profile.noiseLevel?.toString(),
+    };
+
+    await Future.wait(
+      properties.entries.map((entry) => _setUserProperty(entry.key, entry.value)),
+    );
+
+    if (hasActiveListing == null) {
+      unawaited(refreshHasActiveListingProperty());
+    }
+  }
+
+  /// Re-fetch whether the user has any active listing and update GA4.
+  Future<void> refreshHasActiveListingProperty() async {
+    final hasActiveListing = await _resolveHasActiveListing();
+    if (hasActiveListing == null) return;
+    await _setUserProperty(
+      "has_active_listing",
+      hasActiveListing ? "true" : "false",
+    );
+  }
+
+  /// Update only the UI language user property (e.g. after in-app switch).
+  Future<void> syncAppLanguageProperty(String language) async {
+    await _setUserProperty(
+      "app_language",
+      _normalizeLanguageCode(language),
+    );
   }
 
   /// Clear profile-scoped user properties on logout.
@@ -197,6 +255,19 @@ class AppAnalyticsService {
       "is_student",
       "university_code",
       "user_role",
+      "region_id",
+      "is_verified",
+      "auth_method",
+      "preferred_language",
+      "profile_completion_pct",
+      "origin_country_iso2",
+      "employed",
+      "has_active_listing",
+      "account_age_days",
+      "app_language",
+      "smoking_preference",
+      "pets_preference",
+      "noise_level",
     ];
     await Future.wait(
       propertyNames.map(
@@ -213,11 +284,57 @@ class AppAnalyticsService {
     };
   }
 
+  String? _boolPropertyValue(bool? value) {
+    if (value == null) return null;
+    return value ? "true" : "false";
+  }
+
+  String? _normalizeLanguageCode(String? language) {
+    final normalized = language?.trim().toLowerCase();
+    if (normalized == null || normalized.isEmpty) return null;
+    return normalized;
+  }
+
+  String _profileCompletionBucket(UserProfile profile) {
+    final percent = ProfileCompletionState.completionPercent(profile);
+    if (percent <= 25) return "0-25";
+    if (percent <= 50) return "26-50";
+    if (percent <= 75) return "51-75";
+    return "76-100";
+  }
+
+  String? _accountAgeBucket(String? createdAt) {
+    if (createdAt == null || createdAt.trim().isEmpty) return null;
+    try {
+      final created = DateTime.parse(createdAt);
+      final days = DateTime.now().difference(created).inDays;
+      if (days <= 7) return "0-7";
+      if (days <= 30) return "8-30";
+      if (days <= 90) return "31-90";
+      return "90+";
+    } catch (_) {
+      return null;
+    }
+  }
+
   String? _universityCode(UserProfile profile) {
     if (profile.universityId == null) return null;
     final shortName = profile.university?.shortNameEn?.trim();
     if (shortName != null && shortName.isNotEmpty) return shortName;
     return profile.universityId.toString();
+  }
+
+  Future<bool?> _resolveHasActiveListing() async {
+    if (!getIt.isRegistered<IListingService>()) return null;
+    try {
+      final response = await getIt<IListingService>().getUserListings(
+        page: 1,
+        limit: 50,
+      );
+      return response.data.any((listing) => listing.isActive);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _setUserProperty(String name, String? value) {

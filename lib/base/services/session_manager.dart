@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 
 // 🚀 PRODUCTION CONFIGURATION:
@@ -17,6 +18,7 @@ class SessionManager {
   static const String _emailKey = "user_email";
   static const String _lastLoginKey = "last_login";
   static const String _userRoleKey = "user_role";
+  static const String _authMethodKey = "auth_method";
   static const String _userBlockedKey = "user_blocked";
   static const String _googleDisplayNameKey = "google_display_name";
   static const String _googlePhotoUrlKey = "google_photo_url";
@@ -120,6 +122,7 @@ class SessionManager {
     await prefs.remove(_userIdKey);
     await prefs.remove(_emailKey);
     await prefs.remove(_userRoleKey);
+    await prefs.remove(_authMethodKey);
     await prefs.remove(_userBlockedKey);
     await prefs.remove(_lastLoginKey);
     await prefs.remove(_googleDisplayNameKey);
@@ -208,6 +211,29 @@ class SessionManager {
       return;
     }
     await prefs.setString(_userRoleKey, role);
+  }
+
+  /// Last successful sign-in method (google, apple, phone, telegram).
+  static Future<void> storeAuthMethod(String? method) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (method == null || method.trim().isEmpty) {
+      await prefs.remove(_authMethodKey);
+      return;
+    }
+    await prefs.setString(_authMethodKey, method.trim());
+  }
+
+  static Future<String?> getAuthMethod() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_authMethodKey);
+  }
+
+  /// UI language saved in local storage (en, ru, uz).
+  static Future<String> getAppLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(StorageKeys.selectedLanguage);
+    if (saved != null && saved.isNotEmpty) return saved;
+    return "uz";
   }
 
   // Get backend user ID for profile creation

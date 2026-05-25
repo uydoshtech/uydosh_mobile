@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
@@ -1282,6 +1283,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         locationId: selectedLocation.id,
         success: true,
       );
+      unawaited(getIt<AppAnalyticsService>().refreshHasActiveListingProperty());
 
       // Show success message
       ToastTheme.showSuccess(
