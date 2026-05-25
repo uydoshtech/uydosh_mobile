@@ -8,8 +8,11 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/models/common_friend.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/screens/profile/user_follow_list_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_blinking_dot.dart";
@@ -33,6 +36,7 @@ class ProfileHeaderSection extends StatefulWidget {
     required this.getRoleLabel,
     required this.onEditProfile,
     required this.onAvatarUpdated,
+    this.initialFollowCounts,
     super.key,
   });
 
@@ -42,6 +46,7 @@ class ProfileHeaderSection extends StatefulWidget {
   final String? userRole;
   final bool userRoleLoaded;
   final bool userBlocked;
+  final FollowCounts? initialFollowCounts;
   final String Function(String? role) getRoleLabel;
   final VoidCallback onEditProfile;
 
@@ -54,8 +59,54 @@ class ProfileHeaderSection extends StatefulWidget {
 }
 
 class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
+  static const double _followCountsRowHeight = 24;
+
   final ImagePicker _picker = ImagePicker();
   bool _uploadingAvatar = false;
+  FollowCounts? _followCounts;
+  bool _followCountsLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialFollowCounts;
+    if (initial != null) {
+      _followCounts = initial;
+      _followCountsLoaded = true;
+    }
+    _loadFollowCounts();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileHeaderSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile.userId != widget.profile.userId) {
+      setState(() {
+        _followCounts = null;
+        _followCountsLoaded = false;
+      });
+      _loadFollowCounts();
+      return;
+    }
+
+    final initial = widget.initialFollowCounts;
+    if (initial != null && !_followCountsLoaded) {
+      setState(() {
+        _followCounts = initial;
+        _followCountsLoaded = true;
+      });
+    }
+  }
+
+  Future<void> _loadFollowCounts() async {
+    final userId = widget.profile.userId;
+    final counts = await getIt<IFollowService>().getFollowCounts(userId);
+    if (!mounted || widget.profile.userId != userId) return;
+    setState(() {
+      _followCounts = counts;
+      _followCountsLoaded = true;
+    });
+  }
 
   String? _effectiveAvatarUrl() {
     return resolveCurrentUserDisplayAvatarUrl(
@@ -232,8 +283,19 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   textAlign: TextAlign.center,
                 ),
               ],
+              const SizedBox(height: 10),
+              SizedBox(
+                height: _followCountsRowHeight,
+                child: Center(
+                  child: _buildFollowCountsRow(
+                    context,
+                    counts: _followCounts,
+                    loaded: _followCountsLoaded,
+                  ),
+                ),
+              ),
               if (widget.userRoleLoaded) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 10),
                 Align(
                   alignment: Alignment.center,
                   child: SingleChildScrollView(
@@ -242,8 +304,11 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (widget.userRole == "admin")
-                          _buildAdminShieldBadge(context)
+                        if (profileRoleIcon(widget.userRole) != null)
+                          ProfileRoleIconBadge(
+                            role: widget.userRole,
+                            label: widget.getRoleLabel(widget.userRole),
+                          )
                         else
                           ProfileRoleNeumorphicBadge(
                             label: widget.getRoleLabel(widget.userRole),
@@ -350,29 +415,98 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     );
   }
 
-  /// Compact staff indicator so the header row stays calm next to preferences.
-  Widget _buildAdminShieldBadge(BuildContext context) {
+  Widget _buildFollowCountsRow(
+    BuildContext context, {
+    required FollowCounts? counts,
+    required bool loaded,
+  }) {
     final scheme = Theme.of(context).colorScheme;
-    final label = widget.getRoleLabel(widget.userRole);
-    return Tooltip(
-      message: label,
-      child: Semantics(
-        label: label,
-        child: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: scheme.surfaceContainerHighest.withValues(alpha: 0.42),
-            border: Border.all(
-              color: scheme.outline.withValues(alpha: 0.28),
+    final dotColor = scheme.onSurfaceVariant.withValues(alpha: 0.45);
+
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildFollowCountButton(
+              context,
+              count: counts?.followerCount,
+              labelKey: "followers_count",
+              placeholderKey: "followers_list_title",
+              listType: UserFollowListType.followers,
+              loaded: loaded,
             ),
-          ),
-          alignment: Alignment.center,
-          child: ThemeIcon(
-            Icons.shield,
-            size: 18,
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.88),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: SizedBox(
+                width: 4,
+                height: 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: dotColor,
+                  ),
+                ),
+              ),
+            ),
+            _buildFollowCountButton(
+              context,
+              count: counts?.followingCount,
+              labelKey: "following_count",
+              placeholderKey: "following_list_title",
+              listType: UserFollowListType.following,
+              loaded: loaded,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFollowCountButton(
+    BuildContext context, {
+    required int? count,
+    required String labelKey,
+    required String placeholderKey,
+    required UserFollowListType listType,
+    required bool loaded,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final label = loaded && count != null
+        ? L10n.plural(labelKey, count)
+        : L10n.get(placeholderKey);
+
+    return Semantics(
+      button: loaded,
+      label: label,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: loaded && count != null
+            ? () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => UserFollowListScreen(
+                      userId: widget.profile.userId,
+                      listType: listType,
+                      initialTotalCount: count,
+                    ),
+                  ),
+                );
+              }
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.92),
+            ),
           ),
         ),
       ),

@@ -1470,6 +1470,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     return 3; // Default: Language, Google Sign-In, Profile
   }
 
+  /// Index of the last lit progress stripe. OAuth completion is reflected
+  /// immediately after sign-in even while [_currentPage] is still 1 and
+  /// backend auth / page animation is in flight.
+  int _getProgressStep() {
+    if (_currentPage >= 2) return 2;
+    if (_currentPage == 1 && _isGoogleSignedIn) return 2;
+    return _currentPage;
+  }
+
   void _previousPage() {
     if (_currentPage > 0) {
       HapticFeedbackUtils.impact();
@@ -2134,7 +2143,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: BoxDecoration(
                             color:
-                                index <= _currentPage
+                                index <= _getProgressStep()
                                     ? _getOnboardingTextColor(context)
                                     : _getOnboardingTextColor(context).withValues(
                                         alpha: 0.3,

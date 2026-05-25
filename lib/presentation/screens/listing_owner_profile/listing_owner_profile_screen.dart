@@ -12,6 +12,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/common_friend.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
@@ -829,6 +830,10 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   }
 
   Widget _buildCommonFriendItem(CommonFriend friend) {
+    final (firstName, lastName) = StringUtils.splitFullName(
+      friend.name ?? L10n.get("unknown"),
+    );
+
     return SizedBox(
       width: 60,
       child: Column(
@@ -836,15 +841,21 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
         children: [
           _buildSmallCircularAvatar(friend.avatarUrl),
           const SizedBox(height: 4),
-          Text(
-            friend.name ?? L10n.get("unknown"),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, height: 1.2),
-          ),
+          _buildCommonFriendNameLine(firstName),
+          if (lastName != null) _buildCommonFriendNameLine(lastName),
         ],
       ),
+    );
+  }
+
+  Widget _buildCommonFriendNameLine(String name) {
+    return Text(
+      name,
+      maxLines: 1,
+      overflow:
+          name.length < 12 ? TextOverflow.clip : TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 11, height: 1.2),
     );
   }
 

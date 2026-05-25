@@ -2845,6 +2845,38 @@ class AppLocalizationsUz extends AppLocalizations {
   String get following => 'Kuzatilmoqda';
 
   @override
+  String followers_count_one(String count) {
+    return '$count follower';
+  }
+
+  @override
+  String followers_count_other(String count) {
+    return '$count kuzatuvchi';
+  }
+
+  @override
+  String following_count_one(String count) {
+    return '$count following';
+  }
+
+  @override
+  String following_count_other(String count) {
+    return '$count kuzatilmoqda';
+  }
+
+  @override
+  String get followers_list_title => 'Kuzatuvchilar';
+
+  @override
+  String get following_list_title => 'Kuzatilmoqda';
+
+  @override
+  String get no_followers_yet => 'Hali kuzatuvchilar yo\'q';
+
+  @override
+  String get no_following_yet => 'Hali hech kim kuzatilmagan';
+
+  @override
   String get common_connections => 'Umumiy tanishlar';
 
   @override

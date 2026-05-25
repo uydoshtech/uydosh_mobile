@@ -5273,6 +5273,54 @@ abstract class AppLocalizations {
   /// **'Following'**
   String get following;
 
+  /// No description provided for @followers_count_one.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} follower'**
+  String followers_count_one(String count);
+
+  /// No description provided for @followers_count_other.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} followers'**
+  String followers_count_other(String count);
+
+  /// No description provided for @following_count_one.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} following'**
+  String following_count_one(String count);
+
+  /// No description provided for @following_count_other.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} following'**
+  String following_count_other(String count);
+
+  /// No description provided for @followers_list_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Followers'**
+  String get followers_list_title;
+
+  /// No description provided for @following_list_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get following_list_title;
+
+  /// No description provided for @no_followers_yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No followers yet'**
+  String get no_followers_yet;
+
+  /// No description provided for @no_following_yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not following anyone yet'**
+  String get no_following_yet;
+
   /// No description provided for @common_connections.
   ///
   /// In en, this message translates to:

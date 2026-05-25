@@ -32,9 +32,11 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/domain/models/common_friend.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
+import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
@@ -120,6 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _canUnbindTelegram = false;
   bool _isLinkingTelegram = false;
   bool _isUnlinkingTelegram = false;
+  FollowCounts? _prefetchedFollowCounts;
   // AI allowance profile tile (hidden; restore with imports + _refreshListingAiQuota)
   // ListingAiQuotaSnapshot? _listingAiQuota;
   // bool _listingAiQuotaLoading = false;
@@ -129,6 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
     _loadProfileScreenLocalSnapshot();
+    unawaited(_prefetchFollowCounts());
     unawaited(_refreshTelegramLinkedStatus());
     _registerTelegramBindDeepLinkListener();
     if (kIsWeb) {
@@ -411,6 +415,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //   });
   // }
 
+  Future<void> _prefetchFollowCounts() async {
+    if (!AuthenticationState().isAuthenticated) return;
+
+    final userId = await SessionManager.getUserId();
+    if (userId == null || !mounted) return;
+
+    final counts = await getIt<IFollowService>().getFollowCounts(userId);
+    if (!mounted) return;
+
+    setStateIfMounted(() => _prefetchedFollowCounts = counts);
+  }
+
   /// One [Future.wait] for all local session fields used on cold open, so
   /// [SessionManager.getIsUserBlocked] (and shared prefs access) is not
   /// duplicated across two parallel startup paths.
@@ -576,10 +592,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _redirectedToProfileSetup) {
               return;
             }
+            // A cached profile means this is a returning user — keep them on
+            // the profile screen even if the live fetch 404s (stale session,
+            // transient API issue, etc.).
+            if (_cachedUserProfile != null) {
+              return;
+            }
             _redirectedToProfileSetup = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              context.pushReplaceAuthWizard(
+              context.pushAuthWizard(
                 initialPage: 2,
                 skipExistingSessionCheck: true,
               );
@@ -636,7 +658,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
 
               if (data.hasError &&
-                  data.errorMessage == profileNotFoundErrorCode) {
+                  data.errorMessage == profileNotFoundErrorCode &&
+                  effectiveProfile == null) {
                 return Scaffold(
                   body: CenteredHouseLoadingIndicator(
                     text: L10n.get("loading"),
@@ -697,7 +720,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  body: data.hasError
+                  body: _shouldShowProfileFetchError(data)
                       ? _buildErrorState(data.errorMessage, context)
                       : _buildProfileContent(profile),
                 ),
@@ -707,6 +730,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
       ),
     );
+  }
+
+  /// When a cached profile exists, a live `profile_not_found` response should
+  /// not replace the screen — show the cached profile instead.
+  bool _shouldShowProfileFetchError(_ProfileScreenData data) {
+    if (!data.hasError) return false;
+    if (data.errorMessage == profileNotFoundErrorCode &&
+        _cachedUserProfile != null) {
+      return false;
+    }
+    return true;
   }
 
   PreferredSizeWidget _buildProfileScreenAppBar(
@@ -771,6 +805,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 userRole: _userRole,
                 userRoleLoaded: _userRoleLoaded,
                 userBlocked: _userBlocked,
+                initialFollowCounts: _prefetchedFollowCounts,
                 getRoleLabel: (role) => _getRoleLabel(role, context),
                 onEditProfile: () => _openEditProfileScreen(context, profile),
                 onAvatarUpdated: () {

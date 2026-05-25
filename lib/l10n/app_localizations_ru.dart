@@ -2813,6 +2813,38 @@ class AppLocalizationsRu extends AppLocalizations {
   String get following => 'Подписан';
 
   @override
+  String followers_count_one(String count) {
+    return '$count подписчик';
+  }
+
+  @override
+  String followers_count_other(String count) {
+    return '$count followers';
+  }
+
+  @override
+  String following_count_one(String count) {
+    return '$count подписка';
+  }
+
+  @override
+  String following_count_other(String count) {
+    return '$count following';
+  }
+
+  @override
+  String get followers_list_title => 'Подписчики';
+
+  @override
+  String get following_list_title => 'Подписки';
+
+  @override
+  String get no_followers_yet => 'Пока нет подписчиков';
+
+  @override
+  String get no_following_yet => 'Пока нет подписок';
+
+  @override
   String get common_connections => 'Общие связи';
 
   @override

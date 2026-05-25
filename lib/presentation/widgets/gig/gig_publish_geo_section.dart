@@ -144,6 +144,11 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
   }
 
   void _loadStationsForLine(int line) {
+    if (line == _selectedSubwayLine &&
+        _currentStations.isNotEmpty &&
+        !_isLoadingStations) {
+      return;
+    }
     setState(() {
       _selectedSubwayLine = line;
       _selectedStationIndex = 0;
@@ -322,6 +327,18 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
       _pendingSubwayLineId = null;
     });
     _resetLocationSpinner();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final lineCtrl = _metroLineScrollController;
+      if (lineCtrl != null && lineCtrl.hasClients && lineCtrl.selectedItem != 0) {
+        lineCtrl.jumpToItem(0);
+      }
+      final stationCtrl = _metroStationScrollController;
+      if (stationCtrl != null &&
+          stationCtrl.hasClients &&
+          stationCtrl.selectedItem != 0) {
+        stationCtrl.jumpToItem(0);
+      }
+    });
   }
 
   Color _metroHeaderIconColor() {
@@ -439,6 +456,10 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
           metroLineScrollController: _metroLineScrollController,
           metroStationScrollController: _metroStationScrollController,
           onLineChanged: (index) {
+            if (index == _selectedSubwayLine) {
+              _notifyParent();
+              return;
+            }
             if (index > 0) {
               _loadStationsForLine(index);
             } else {
@@ -447,6 +468,10 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
             _notifyParent();
           },
           onStationChanged: (index) {
+            if (index == _selectedStationIndex) {
+              _notifyParent();
+              return;
+            }
             setState(() => _selectedStationIndex = index);
             _syncLocationWithStation();
             _notifyParent();

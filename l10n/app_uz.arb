@@ -1080,6 +1080,28 @@
   "contact_user": "Foydalanuvchi bilan bog'lanish",
   "follow": "Kuzatish",
   "following": "Kuzatilmoqda",
+  "followers_count_other": "{count} kuzatuvchi",
+  "@followers_count_other": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "124"
+      }
+    }
+  },
+  "following_count_other": "{count} kuzatilmoqda",
+  "@following_count_other": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "89"
+      }
+    }
+  },
+  "followers_list_title": "Kuzatuvchilar",
+  "following_list_title": "Kuzatilmoqda",
+  "no_followers_yet": "Hali kuzatuvchilar yo'q",
+  "no_following_yet": "Hali hech kim kuzatilmagan",
   "common_connections": "Umumiy tanishlar",
   "common_connections_count": "{count}",
   "@common_connections_count": {

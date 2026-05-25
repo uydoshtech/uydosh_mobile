@@ -1080,6 +1080,46 @@
   "contact_user": "Contact User",
   "follow": "Follow",
   "following": "Following",
+  "followers_count_one": "{count} follower",
+  "followers_count_other": "{count} followers",
+  "@followers_count_one": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "@followers_count_other": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "124"
+      }
+    }
+  },
+  "following_count_one": "{count} following",
+  "following_count_other": "{count} following",
+  "@following_count_one": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "@following_count_other": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "89"
+      }
+    }
+  },
+  "followers_list_title": "Followers",
+  "following_list_title": "Following",
+  "no_followers_yet": "No followers yet",
+  "no_following_yet": "Not following anyone yet",
   "common_connections": "Common connections",
   "common_connections_count": "{count}",
   "@common_connections_count": {

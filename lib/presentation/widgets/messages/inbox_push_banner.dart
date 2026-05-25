@@ -4,7 +4,6 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Warning banner shown at the top of the messages inbox when the OS push
@@ -99,25 +98,21 @@ class InboxPushBanner extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Semantics(
-                    button: true,
-                    label:
-                        MaterialLocalizations.of(context).closeButtonLabel,
-                    child: IgnorePointer(
-                      ignoring: busy,
-                      child: Opacity(
-                        opacity: busy ? 0.35 : 1,
-                        child: ThreeDAppBarIconButton(
-                          iconData: Icons.close,
-                          iconWidget: Icon(Icons.close, color: fg, size: 18),
-                          onPressed: onDismiss,
-                          semanticsLabel:
-                              MaterialLocalizations.of(context).closeButtonLabel,
-                          iconSize: 18,
-                          padding: EdgeInsets.zero,
-                          contentSlotSize: 28,
-                          borderRadius: BorderRadius.circular(8),
+                  IgnorePointer(
+                    ignoring: busy,
+                    child: Opacity(
+                      opacity: busy ? 0.35 : 1,
+                      child: IconButton(
+                        tooltip: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        onPressed: onDismiss,
+                        icon: const Icon(Icons.close, size: 18, color: fg),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
                         ),
+                        splashRadius: 18,
                       ),
                     ),
                   ),

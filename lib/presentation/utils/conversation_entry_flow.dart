@@ -91,19 +91,20 @@ abstract final class ConversationEntryFlow {
           listingId: listingDetail.id,
           participantId: listingDetail.user.id,
         );
+        final isFirstOpen = !_conversationHadMessages(conversation);
 
         dismissLoading();
 
         if (!context.mounted) return;
 
+        if (isFirstOpen) {
+          await getIt<AppAnalyticsService>().logConversationStarted(
+            listingId: analyticsListingRouteId,
+            ownerId: listingDetail.user.id,
+          );
+        }
+
         await pushNewThread(conversation);
-
-        await getIt<AppAnalyticsService>().logConversationStarted(
-          listingId: analyticsListingRouteId,
-          ownerId: listingDetail.user.id,
-        );
-
-        ToastReporting.successKey(context, "conversation_created");
       } catch (e) {
         logger.d("ConversationEntryFlow listing create failed: $e");
         final message = e.toString();
@@ -222,6 +223,13 @@ abstract final class ConversationEntryFlow {
       logger.d("ConversationEntryFlow gig booking chat failed: $e\n$st");
       ToastReporting.errorKey(context, errorMessageKey);
     }
+  }
+
+  /// POST /conversations is idempotent — it returns an existing row when one
+  /// already exists. Use message metadata to tell a genuinely new thread apart.
+  static bool _conversationHadMessages(Conversation conversation) {
+    final lastAt = conversation.lastMessageAt;
+    return lastAt != null && lastAt.trim().isNotEmpty;
   }
 
   static bool _looksLikeListingConversationExists(String message) {

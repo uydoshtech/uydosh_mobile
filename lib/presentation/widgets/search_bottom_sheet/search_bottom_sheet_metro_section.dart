@@ -330,19 +330,19 @@ class _SearchBottomSheetMetroSectionState
                           ),
                         ),
                         ...([
-                          MetroCache.getLineLabel(
+                          MetroCache.getLineName(
                             1,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineLabel(
+                          MetroCache.getLineName(
                             2,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineLabel(
+                          MetroCache.getLineName(
                             3,
                             LanguageState().currentLanguage,
                           ),
-                          MetroCache.getLineLabel(
+                          MetroCache.getLineName(
                             4,
                             LanguageState().currentLanguage,
                           ),
@@ -529,7 +529,7 @@ class _SearchBottomSheetMetroSectionState
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            MetroCache.getStationLabelFromStation(
+                            MetroCache.getStationName(
                               station,
                               LanguageState().currentLanguage,
                             ),

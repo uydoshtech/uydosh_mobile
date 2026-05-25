@@ -12,7 +12,7 @@ import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line and station selection for create/edit listing forms.
 /// Displays side-by-side pickers for line (optional) and station.
-class ListingFormMetroSection extends StatelessWidget {
+class ListingFormMetroSection extends StatefulWidget {
   const ListingFormMetroSection({
     required this.selectedSubwayLine,
     required this.selectedStationIndex,
@@ -38,10 +38,67 @@ class ListingFormMetroSection extends StatelessWidget {
   final void Function(int stationIndex) onStationChanged;
   final VoidCallback onDismissKeyboard;
 
+  @override
+  State<ListingFormMetroSection> createState() =>
+      _ListingFormMetroSectionState();
+}
+
+class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncPickerScrollPositions();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncPickerScrollPositions();
+      });
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ListingFormMetroSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedSubwayLine != widget.selectedSubwayLine ||
+        oldWidget.selectedStationIndex != widget.selectedStationIndex ||
+        oldWidget.currentStations.length != widget.currentStations.length ||
+        oldWidget.isLoadingStations != widget.isLoadingStations) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncPickerScrollPositions();
+      });
+    }
+  }
+
+  /// Parent-owned controllers can lose their scroll position when pickers are
+  /// removed from the tree (e.g. collapsible geo tile); realign on mount.
+  void _syncPickerScrollPositions() {
+    if (!mounted) return;
+
+    final lineCtrl = widget.metroLineScrollController;
+    if (lineCtrl != null && lineCtrl.hasClients) {
+      final targetLine = widget.selectedSubwayLine;
+      if (lineCtrl.selectedItem != targetLine) {
+        lineCtrl.jumpToItem(targetLine);
+      }
+    }
+
+    final stationCtrl = widget.metroStationScrollController;
+    if (stationCtrl != null &&
+        stationCtrl.hasClients &&
+        widget.selectedSubwayLine > 0 &&
+        !widget.isLoadingStations &&
+        widget.currentStations.isNotEmpty) {
+      final maxIndex = widget.currentStations.length - 1;
+      final targetStation = widget.selectedStationIndex.clamp(0, maxIndex);
+      if (stationCtrl.selectedItem != targetStation) {
+        stationCtrl.jumpToItem(targetStation);
+      }
+    }
+  }
+
   BoxDecoration _pickerDecoration(BuildContext context) {
-    if (embeddedInPlate) {
+    if (widget.embeddedInPlate) {
       return ThreeDSurfaceStyle.wheelPickerInsetDecoration(context);
     }
     return ThreeDSurfaceStyle.wheelPickerPlateDecoration(
@@ -72,7 +129,6 @@ class ListingFormMetroSection extends StatelessWidget {
   }
 
   Widget _buildLinePicker(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       decoration: _pickerDecoration(context),
       height: 80,
@@ -83,11 +139,11 @@ class ListingFormMetroSection extends StatelessWidget {
               backgroundColor: Colors.transparent,
               changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: 40,
-              scrollController: metroLineScrollController,
+              scrollController: widget.metroLineScrollController,
               onSelectedItemChanged: (index) {
-                onDismissKeyboard();
+                widget.onDismissKeyboard();
                 SendSoundUtils.playCupertinoWheelSound();
-                onLineChanged(index);
+                widget.onLineChanged(index);
               },
               children: [
                 Center(
@@ -113,7 +169,7 @@ class ListingFormMetroSection extends StatelessWidget {
                 ),
                 ...([1, 2, 3, 4].map((line) {
                   final name =
-                      MetroCache.getLineLabel(line, L10n.currentLanguage);
+                      MetroCache.getLineName(line, L10n.currentLanguage);
                   return Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -148,14 +204,14 @@ class ListingFormMetroSection extends StatelessWidget {
   }
 
   Widget _buildStationPicker(BuildContext context) {
-    if (selectedSubwayLine <= 0) {
+    if (widget.selectedSubwayLine <= 0) {
       return _buildStationPlaceholder(
         context,
         text: L10n.get("select_metro_line_title"),
       );
     }
 
-    if (isLoadingStations) {
+    if (widget.isLoadingStations) {
       return _buildStationPlaceholder(
         context,
         child: Row(
@@ -188,14 +244,14 @@ class ListingFormMetroSection extends StatelessWidget {
       );
     }
 
-    if (currentStations.isEmpty) {
+    if (widget.currentStations.isEmpty) {
       return _buildStationPlaceholder(
         context,
         text: L10n.get("select_metro_line_title"),
       );
     }
 
-    if (currentStations.isNotEmpty) {
+    if (widget.currentStations.isNotEmpty) {
       return Container(
         decoration: _pickerDecoration(context),
         height: 80,
@@ -206,13 +262,13 @@ class ListingFormMetroSection extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
                 itemExtent: 40,
-                scrollController: metroStationScrollController,
+                scrollController: widget.metroStationScrollController,
                 onSelectedItemChanged: (index) {
-                  onDismissKeyboard();
+                  widget.onDismissKeyboard();
                   SendSoundUtils.playCupertinoWheelSound();
-                  onStationChanged(index);
+                  widget.onStationChanged(index);
                 },
-                children: currentStations
+                children: widget.currentStations
                     .map(
                       (station) {
                         final transferInfo =
@@ -229,7 +285,7 @@ class ListingFormMetroSection extends StatelessWidget {
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  MetroCache.getStationLabelFromStation(
+                                  MetroCache.getStationName(
                                     station,
                                     L10n.currentLanguage,
                                   ),

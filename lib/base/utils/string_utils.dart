@@ -13,6 +13,23 @@ class StringUtils {
   /// Returns 2 letters for names with spaces (first and last name)
   /// Returns first 2 letters for single names
   /// Returns empty string if name is null or empty
+  /// Splits a full name into a first line and optional second line.
+  /// Uses the first whitespace as the boundary (e.g. "Artur Musin" → "Artur", "Musin").
+  static (String firstName, String? lastName) splitFullName(String? name) {
+    if (name == null || name.trim().isEmpty) {
+      return ("", null);
+    }
+
+    final trimmed = name.trim();
+    final spaceIndex = trimmed.indexOf(" ");
+    if (spaceIndex < 0) {
+      return (trimmed, null);
+    }
+
+    final lastName = trimmed.substring(spaceIndex + 1).trim();
+    return (trimmed.substring(0, spaceIndex), lastName.isEmpty ? null : lastName);
+  }
+
   static String extractInitials(String? name) {
     if (name == null || name.trim().isEmpty) {
       return "";

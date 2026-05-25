@@ -2801,6 +2801,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get following => 'Following';
 
   @override
+  String followers_count_one(String count) {
+    return '$count follower';
+  }
+
+  @override
+  String followers_count_other(String count) {
+    return '$count followers';
+  }
+
+  @override
+  String following_count_one(String count) {
+    return '$count following';
+  }
+
+  @override
+  String following_count_other(String count) {
+    return '$count following';
+  }
+
+  @override
+  String get followers_list_title => 'Followers';
+
+  @override
+  String get following_list_title => 'Following';
+
+  @override
+  String get no_followers_yet => 'No followers yet';
+
+  @override
+  String get no_following_yet => 'Not following anyone yet';
+
+  @override
   String get common_connections => 'Common connections';
 
   @override

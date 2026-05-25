@@ -18,6 +18,17 @@ abstract class IFollowService {
     int page = 1,
     int limit = 10,
   });
+  Future<FollowCounts> getFollowCounts(int userId);
+  Future<FollowUsersResult> getFollowers(
+    int userId, {
+    int page = 1,
+    int limit = 20,
+  });
+  Future<FollowUsersResult> getFollowing(
+    int userId, {
+    int page = 1,
+    int limit = 20,
+  });
 }
 
 class FollowService implements IFollowService {
@@ -96,6 +107,77 @@ class FollowService implements IFollowService {
       logger.d("FollowService: getCommonFriends error: $e");
       return const CommonFriendsResult(
         commonFriends: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+      );
+    }
+  }
+
+  @override
+  Future<FollowCounts> getFollowCounts(int userId) async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/follows/counts/$userId",
+        (data) => data as Map<String, dynamic>,
+      );
+      return FollowCounts.fromJson(response);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("FollowService: getFollowCounts error: ${e.message}");
+      return const FollowCounts(followerCount: 0, followingCount: 0);
+    } catch (e) {
+      logger.d("FollowService: getFollowCounts error: $e");
+      return const FollowCounts(followerCount: 0, followingCount: 0);
+    }
+  }
+
+  @override
+  Future<FollowUsersResult> getFollowers(
+    int userId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    return _fetchFollowUsers("/follows/followers/$userId", page, limit);
+  }
+
+  @override
+  Future<FollowUsersResult> getFollowing(
+    int userId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    return _fetchFollowUsers("/follows/following/$userId", page, limit);
+  }
+
+  Future<FollowUsersResult> _fetchFollowUsers(
+    String path,
+    int page,
+    int limit,
+  ) async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "$path?page=$page&limit=$limit",
+        (data) => data as Map<String, dynamic>,
+      );
+      return FollowUsersResult.fromJson(response);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("FollowService: fetchFollowUsers error: ${e.message}");
+      return const FollowUsersResult(
+        users: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+      );
+    } catch (e) {
+      logger.d("FollowService: fetchFollowUsers error: $e");
+      return const FollowUsersResult(
+        users: [],
         total: 0,
         page: 1,
         totalPages: 0,

@@ -60,21 +60,13 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                               fit: StackFit.expand,
                               children: [
                                 ImageFiltered(
+                                  // Portrait photos use BoxFit.contain in the
+                                  // foreground; the blurred cover fill avoids
+                                  // empty side bars. Not gated on animation
+                                  // settings — this is static layout chrome.
                                   imageFilter: ImageFilter.blur(
-                                    sigmaX: (AnimationSettingsState()
-                                                .uiAnimationsEnabled &&
-                                            !(MediaQuery.maybeOf(context)
-                                                    ?.disableAnimations ??
-                                                false))
-                                        ? 18
-                                        : 0,
-                                    sigmaY: (AnimationSettingsState()
-                                                .uiAnimationsEnabled &&
-                                            !(MediaQuery.maybeOf(context)
-                                                    ?.disableAnimations ??
-                                                false))
-                                        ? 18
-                                        : 0,
+                                    sigmaX: 18,
+                                    sigmaY: 18,
                                   ),
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(rawUrl),
@@ -106,7 +98,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                                 ColoredBox(
                                   color: Colors.black.withValues(alpha: 0.12),
                                 ),
-                                Positioned.fill(
+                                Center(
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(rawUrl),
                                     fit: BoxFit.contain,

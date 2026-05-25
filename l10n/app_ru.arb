@@ -1072,6 +1072,64 @@
   "contact_user": "Связаться с пользователем",
   "follow": "Подписаться",
   "following": "Подписан",
+  "followers_count_one": "{count} подписчик",
+  "followers_count_few": "{count} подписчика",
+  "followers_count_many": "{count} подписчиков",
+  "@followers_count_one": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "@followers_count_few": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "@followers_count_many": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "124"
+      }
+    }
+  },
+  "following_count_one": "{count} подписка",
+  "following_count_few": "{count} подписки",
+  "following_count_many": "{count} подписок",
+  "@following_count_one": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "@following_count_few": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "@following_count_many": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "89"
+      }
+    }
+  },
+  "followers_list_title": "Подписчики",
+  "following_list_title": "Подписки",
+  "no_followers_yet": "Пока нет подписчиков",
+  "no_following_yet": "Пока нет подписок",
   "common_connections": "Общие связи",
   "common_connections_count": "{count}",
   "@common_connections_count": {

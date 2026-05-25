@@ -47,16 +47,32 @@ extension NavigatorExtensions on BuildContext {
   }
 
   /// Push auth wizard screen.
-  void pushAuthWizard() {
-    Navigator.of(this).push(
-      MaterialPageRoute<void>(builder: (_) => const AuthWizardScreen()),
+  Future<void> pushAuthWizard({
+    int initialPage = 0,
+    bool skipExistingSessionCheck = false,
+  }) {
+    return Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AuthWizardScreen(
+          initialPage: initialPage,
+          skipExistingSessionCheck: skipExistingSessionCheck,
+        ),
+      ),
     );
   }
 
   /// Push auth wizard and remove all previous routes.
-  void pushAuthWizardAndRemoveUntil() {
+  void pushAuthWizardAndRemoveUntil({
+    int initialPage = 0,
+    bool skipExistingSessionCheck = false,
+  }) {
     Navigator.of(this).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => const AuthWizardScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => AuthWizardScreen(
+          initialPage: initialPage,
+          skipExistingSessionCheck: skipExistingSessionCheck,
+        ),
+      ),
       (route) => false,
     );
   }

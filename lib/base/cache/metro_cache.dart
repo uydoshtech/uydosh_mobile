@@ -620,12 +620,12 @@ class MetroCache {
     return "$prefix $trimmed";
   }
 
-  /// Line name with localized "ln." / "лн." prefix for UI labels.
+  /// Line name with localized "ln." / "лн." suffix for UI labels.
   static String formatLineLabel(String lineName, String language) {
     final trimmed = lineName.trim();
     if (trimmed.isEmpty || trimmed == "Unknown Line") return trimmed;
-    final prefix = AppStrings.get("metro_line_abbr", language);
-    return "$prefix $trimmed";
+    final suffix = AppStrings.get("metro_line_abbr", language);
+    return "$trimmed $suffix";
   }
 
   /// Get station display name for a specific language.
