@@ -57,6 +57,7 @@ class _AdminContentModerationScreenState
   bool _phoneSignInEnabled = false;
   bool _isSavingPhoneSignIn = false;
   bool _isSavingPriceInsights = false;
+  bool _isSavingPushDebug = false;
   bool _isSavingTooltips = false;
 
   @override
@@ -314,6 +315,17 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onShowPushDebugChanged(bool value) async {
+    if (_isSavingPushDebug) return;
+    setState(() => _isSavingPushDebug = true);
+    try {
+      HapticFeedbackUtils.impact();
+      await AdminFeatureFlagsState().setShowPushDebug(value);
+    } finally {
+      setStateIfMounted(() => _isSavingPushDebug = false);
+    }
+  }
+
   Future<void> _onTooltipsEnabledChanged(bool value) async {
     if (_isSavingTooltips) return;
     setState(() => _isSavingTooltips = true);
@@ -556,6 +568,41 @@ class _AdminContentModerationScreenState
                   value: flags.showPriceInsights,
                   enabled: !_isSavingPriceInsights,
                   onChanged: _onShowPriceInsightsChanged,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        ListenableBuilder(
+          listenable: AdminFeatureFlagsState(),
+          builder: (context, _) {
+            final flags = AdminFeatureFlagsState();
+            return _neumorphicRow(
+              ListTile(
+                leading: _isSavingPushDebug
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ThemeIcon(Icons.notifications_active_outlined),
+                title: Text(
+                  L10n.get("admin_client_settings_show_push_debug"),
+                ),
+                subtitle: Text(
+                  L10n.get(
+                    "admin_client_settings_show_push_debug_description",
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: NeumorphicThemeAwareToggle(
+                  value: flags.showPushDebug,
+                  enabled: !_isSavingPushDebug,
+                  onChanged: _onShowPushDebugChanged,
                 ),
               ),
             );

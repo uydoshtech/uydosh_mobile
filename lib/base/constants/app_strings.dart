@@ -985,6 +985,9 @@ class AppStrings {
       "admin_client_settings_show_price_insights": "Show price insights",
       "admin_client_settings_show_price_insights_description":
           "Enables the “Price insights” (median nearby rent) block on listing details.",
+      "admin_client_settings_show_push_debug": "Show push debug panel",
+      "admin_client_settings_show_push_debug_description":
+          "Shows the push notification debug tools on the Notifications screen (admin only).",
       "admin_client_config_hide_gemini_listing_ui":
           "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -2588,6 +2591,9 @@ class AppStrings {
       "admin_client_settings_show_price_insights": "Показывать ориентир по цене",
       "admin_client_settings_show_price_insights_description":
           "Включает блок «Ориентир по цене» (медиана по району/станции) в карточке объявления.",
+      "admin_client_settings_show_push_debug": "Показывать отладку push",
+      "admin_client_settings_show_push_debug_description":
+          "Показывает инструменты отладки push-уведомлений на экране «Уведомления» (только для админов).",
       "admin_client_config_hide_gemini_listing_ui":
           "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -4209,6 +4215,9 @@ class AppStrings {
           "Narx bo‘yicha orientirni ko‘rsatish",
       "admin_client_settings_show_price_insights_description":
           "E’lon tafsilotlarida “Narx bo‘yicha orientir” (yaqin atrof medianasi) blokini yoqadi.",
+      "admin_client_settings_show_push_debug": "Push debug panelini ko‘rsatish",
+      "admin_client_settings_show_push_debug_description":
+          "«Bildirishnomalar» ekranida push debug vositalarini ko‘rsatadi (faqat adminlar uchun).",
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":

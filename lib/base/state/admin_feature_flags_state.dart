@@ -14,16 +14,22 @@ class AdminFeatureFlagsState extends ChangeNotifier {
   factory AdminFeatureFlagsState() => _instance;
 
   static const _kShowPriceInsightsKey = "admin_show_price_insights";
+  static const _kShowPushDebugKey = "admin_show_push_debug";
 
   bool _loaded = false;
   bool _showPriceInsights = true;
+  bool _showPushDebug = false;
 
   bool get showPriceInsights => _showPriceInsights;
+
+  /// Push token / permission debug panel on the notifications screen.
+  bool get showPushDebug => _showPushDebug;
 
   Future<void> _loadIfNeeded() async {
     if (_loaded) return;
     final prefs = await SharedPreferences.getInstance();
     _showPriceInsights = prefs.getBool(_kShowPriceInsightsKey) ?? true;
+    _showPushDebug = prefs.getBool(_kShowPushDebugKey) ?? false;
     _loaded = true;
     notifyListeners();
   }
@@ -37,6 +43,15 @@ class AdminFeatureFlagsState extends ChangeNotifier {
     _showPriceInsights = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kShowPriceInsightsKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setShowPushDebug(bool value) async {
+    await _loadIfNeeded();
+    if (_showPushDebug == value) return;
+    _showPushDebug = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kShowPushDebugKey, value);
     notifyListeners();
   }
 }

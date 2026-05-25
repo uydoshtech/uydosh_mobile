@@ -15,6 +15,37 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
+String get _telegramBotHandle => "@${TelegramBotConfig.botUsername}";
+
+Widget _textWithBoldBotName(String text, TextStyle style) {
+  final handle = _telegramBotHandle;
+  if (!text.contains(handle)) {
+    return Text(text, style: style);
+  }
+
+  final spans = <TextSpan>[];
+  var start = 0;
+  var index = text.indexOf(handle);
+  while (index != -1) {
+    if (index > start) {
+      spans.add(TextSpan(text: text.substring(start, index)));
+    }
+    spans.add(
+      TextSpan(
+        text: handle,
+        style: style.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+    start = index + handle.length;
+    index = text.indexOf(handle, start);
+  }
+  if (start < text.length) {
+    spans.add(TextSpan(text: text.substring(start)));
+  }
+
+  return Text.rich(TextSpan(style: style, children: spans));
+}
+
 /// Notifications settings tile: open @uydosh_bot to opt in (separate from login).
 class TelegramAlertsSettingsCard extends StatefulWidget {
   const TelegramAlertsSettingsCard({super.key});
@@ -272,9 +303,9 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
               ],
             ),
             const SizedBox(height: 8),
-            Text(
+            _textWithBoldBotName(
               L10n.get("telegram_alerts_settings_body"),
-              style: TextStyle(
+              TextStyle(
                 color: fg.withValues(alpha: 0.9),
                 fontSize: 13,
                 height: 1.35,
@@ -290,9 +321,9 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
+                    child: _textWithBoldBotName(
                       L10n.get("telegram_alerts_settings_waiting"),
-                      style: TextStyle(
+                      TextStyle(
                         color: fg.withValues(alpha: 0.85),
                         fontSize: 12,
                       ),
@@ -312,7 +343,12 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
                 isLoading: _opening,
                 isDisabled: _waiting,
                 onPressed: _openBot,
-                child: Text(L10n.get("telegram_alerts_settings_button")),
+                child: Builder(
+                  builder: (context) => _textWithBoldBotName(
+                    L10n.get("telegram_alerts_settings_button"),
+                    DefaultTextStyle.of(context).style,
+                  ),
+                ),
               ),
             ),
           ],

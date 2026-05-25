@@ -16,6 +16,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
@@ -51,8 +52,6 @@ import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_settings_card.dart";
 
-const bool _pushDebugEnabled = true;
-
 // Force-show the "Enable notifications" tile on web (Chrome) so the layout can
 // be tested without deploying to a real device. Push is not actually supported
 // on web; the button just won't do anything meaningful there.
@@ -82,6 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   AuthorizationStatus? _pushStatus;
   bool _pushStatusLoading = false;
+  bool _isAdmin = false;
 
   bool _pushDebugExpanded = false;
   bool _pushDebugLoading = false;
@@ -90,6 +90,24 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   String? _fcmTokenPreview;
   String? _fcmTokenFull;
   bool _hasBackendSessionToken = false;
+
+  bool get _showPushDebug =>
+      _isAdmin && AdminFeatureFlagsState().showPushDebug;
+
+  void _onAdminFlagsChanged() {
+    setStateIfMounted(() {});
+    if (_showPushDebug) {
+      _refreshPushDebug();
+    }
+  }
+
+  Future<void> _loadUserRole() async {
+    final role = await SessionManager.getUserRole();
+    setStateIfMounted(() => _isAdmin = role == "admin");
+    if (_showPushDebug) {
+      await _refreshPushDebug();
+    }
+  }
 
   Future<void> _loadPushStatus() async {
     final push = getIt<IPushNotificationService>();
@@ -311,7 +329,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }
 
   Widget _pushDebugPanel(ThemeData theme) {
-    if (!_pushDebugEnabled) {
+    if (!_showPushDebug) {
       return const SizedBox.shrink();
     }
     final mono = theme.textTheme.bodySmall?.copyWith(
@@ -536,21 +554,34 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
+  Widget _alertsExplainerSlot(ThemeData theme) {
+    final explainer = _alertsExplainer(
+      theme,
+      onClose: _closeAlertsExplainerAnimated,
+      pushStatus: _pushStatus,
+    );
+    if (_alertsExplainerClosing) {
+      return RollUpFadeOut(child: explainer);
+    }
+    return explainer;
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     getIt<AppAnalyticsService>().logScreenView(screenName: "notifications");
+    AdminFeatureFlagsState().ensureLoaded();
+    AdminFeatureFlagsState().addListener(_onAdminFlagsChanged);
+    _loadUserRole();
     _loadPushStatus();
     _loadAlertsExplainerVisibility();
     _load();
-    if (_pushDebugEnabled) {
-      _refreshPushDebug();
-    }
   }
 
   @override
   void dispose() {
+    AdminFeatureFlagsState().removeListener(_onAdminFlagsChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -562,7 +593,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     // "Enable notifications" card / explainer reflects the current status.
     if (state == AppLifecycleState.resumed) {
       _loadPushStatus();
-      if (_pushDebugEnabled && _pushDebugExpanded) {
+      if (_showPushDebug && _pushDebugExpanded) {
         _refreshPushDebug();
       }
     }
@@ -1136,8 +1167,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             _pushStatus != null &&
             (_pushStatus == AuthorizationStatus.denied ||
                 _pushStatus == AuthorizationStatus.notDetermined));
-    final showAlertsExplainer =
-        tooltipsEnabled && _showAlertsExplainer && !showPushEnableCard;
+    final pushIsAuthorized = push.isSupported &&
+        _pushStatus != null &&
+        (_pushStatus == AuthorizationStatus.authorized ||
+            _pushStatus == AuthorizationStatus.provisional);
+    final showAlertsExplainer = tooltipsEnabled &&
+        _showAlertsExplainer &&
+        !showPushEnableCard &&
+        !pushIsAuthorized;
 
     final topInset = MediaQuery.of(context).padding.top;
     final contentTopPadding =
@@ -1176,19 +1213,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             physics: const AlwaysScrollableScrollPhysics(),
                             children: [
                               if (showAlertsExplainer)
-                                Builder(
-                                  builder: (context) {
-                                    final explainer = _alertsExplainer(
-                                      theme,
-                                      onClose: _closeAlertsExplainerAnimated,
-                                      pushStatus: _pushStatus,
-                                    );
-                                    if (_alertsExplainerClosing) {
-                                      return RollUpFadeOut(child: explainer);
-                                    }
-                                    return explainer;
-                                  },
-                                ),
+                                _alertsExplainerSlot(theme),
                               const SizedBox(height: 36),
                               ThemeIcon(
                                 Icons.notifications_none,
@@ -1209,7 +1234,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                   ),
                                 ),
                               ),
-                              if (_pushDebugEnabled) ...[
+                              if (_showPushDebug) ...[
                                 const SizedBox(height: 24),
                                 _pushDebugPanel(theme),
                               ],
@@ -1219,26 +1244,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             itemCount: _alerts.length +
                                 (showAlertsExplainer ? 1 : 0) +
-                                (_pushDebugEnabled ? 1 : 0),
+                                (_showPushDebug ? 1 : 0),
                             separatorBuilder: (_, i) =>
                                 SizedBox(height: i == 0 ? 12 : 16),
                             itemBuilder: (context, i) {
                               final showExplainer = showAlertsExplainer;
                               if (showExplainer && i == 0) {
-                                final explainer = _alertsExplainer(
-                                  theme,
-                                  onClose: _closeAlertsExplainerAnimated,
-                                  pushStatus: _pushStatus,
-                                );
-                                if (_alertsExplainerClosing) {
-                                  return RollUpFadeOut(child: explainer);
-                                }
-                                return explainer;
+                                return _alertsExplainerSlot(theme);
                               }
 
                               final debugIndex = _alerts.length +
                                   (showExplainer ? 1 : 0);
-                              if (_pushDebugEnabled && i == debugIndex) {
+                              if (_showPushDebug && i == debugIndex) {
                                 return _pushDebugPanel(theme);
                               }
 
