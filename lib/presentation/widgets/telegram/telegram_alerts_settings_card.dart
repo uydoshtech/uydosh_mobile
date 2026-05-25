@@ -1,0 +1,281 @@
+import "dart:async";
+
+import "package:flutter/material.dart";
+import "package:url_launcher/url_launcher.dart";
+import "package:uy_dosh/base/config/telegram_bot_config.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/open_telegram_bot_start_link.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/domain/services/telegram_bot_alerts_service.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+
+/// Notifications settings tile: open @uydosh_bot to opt in (separate from login).
+class TelegramAlertsSettingsCard extends StatefulWidget {
+  const TelegramAlertsSettingsCard({super.key});
+
+  @override
+  State<TelegramAlertsSettingsCard> createState() =>
+      _TelegramAlertsSettingsCardState();
+}
+
+class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
+    with WidgetsBindingObserver {
+  static const _pollInterval = Duration(seconds: 2);
+  static const _maxPolls = 30;
+
+  bool? _alertsEnabled;
+  bool _opening = false;
+  bool _waiting = false;
+  Timer? _pollTimer;
+  int _pollCount = 0;
+
+  ITelegramBotAlertsService get _service =>
+      getIt<ITelegramBotAlertsService>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_loadStatus());
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_loadStatus());
+      if (_waiting) unawaited(_pollOnce());
+    }
+  }
+
+  Future<void> _loadStatus() async {
+    try {
+      final status = await _service.fetchStatus();
+      if (!mounted) return;
+      setStateIfMounted(() {
+        _alertsEnabled = status.alertsEnabled;
+        if (status.alertsEnabled) {
+          _waiting = false;
+          _pollTimer?.cancel();
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setStateIfMounted(() {
+        _alertsEnabled ??= false;
+      });
+    }
+  }
+
+  Future<void> _openBot() async {
+    if (_opening || _waiting) return;
+    HapticFeedbackUtils.impact();
+    setStateIfMounted(() => _opening = true);
+    try {
+      try {
+        final link = await _service.fetchEnableLink();
+        final ok = await openTelegramBotStartLink(
+          botUsername: link.botUsername,
+          startParam: link.startParam,
+          httpsUrl: link.url,
+        );
+        if (!mounted) return;
+        if (!ok) {
+          ToastTheme.showWarning(
+            context,
+            message: L10n.get("could_not_open_telegram"),
+          );
+          return;
+        }
+      } catch (_) {
+        final fallback = Uri.parse(
+          "https://t.me/${TelegramBotConfig.botUsername}",
+        );
+        final ok = await launchUrl(
+          fallback,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!mounted) return;
+        if (!ok) {
+          ToastTheme.showWarning(
+            context,
+            message: L10n.get("could_not_open_telegram"),
+          );
+          return;
+        }
+      }
+
+      setStateIfMounted(() {
+        _waiting = true;
+        _pollCount = 0;
+      });
+      _pollTimer?.cancel();
+      _pollTimer = Timer.periodic(_pollInterval, (_) {
+        unawaited(_pollOnce());
+      });
+    } finally {
+      setStateIfMounted(() => _opening = false);
+    }
+  }
+
+  Future<void> _pollOnce() async {
+    if (!_waiting || !mounted) return;
+    _pollCount += 1;
+    if (_pollCount > _maxPolls) {
+      setStateIfMounted(() => _waiting = false);
+      _pollTimer?.cancel();
+      return;
+    }
+    try {
+      final status = await _service.fetchStatus();
+      if (!mounted || !status.alertsEnabled) return;
+      _pollTimer?.cancel();
+      setStateIfMounted(() {
+        _alertsEnabled = true;
+        _waiting = false;
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("telegram_alerts_enabled_success"),
+      );
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_alertsEnabled == true) {
+      return _connectedCard(context);
+    }
+
+    return _connectCard(context);
+  }
+
+  Widget _connectedCard(BuildContext context) {
+    const fg = Color(0xFF0D3B1E);
+    const cardBg = Color(0xFFB8E6C8);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardBg),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          children: [
+            const ThemeIcon(Icons.check_circle_outline, size: 22, color: fg),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                L10n.get("telegram_alerts_connected"),
+                style: const TextStyle(
+                  color: fg,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _connectCard(BuildContext context) {
+    const fg = Color(0xFF0A3050);
+    const cardBg = Color(0xFF4DA3E9);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardBg),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Icon(Icons.telegram, size: 22, color: fg),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    L10n.get("telegram_alerts_settings_title"),
+                    style: const TextStyle(
+                      color: fg,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              L10n.get("telegram_alerts_settings_body"),
+              style: TextStyle(
+                color: fg.withValues(alpha: 0.9),
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+            if (_waiting) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  UydoshInlineSpinner(
+                    color: fg.withValues(alpha: 0.85),
+                    dimension: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      L10n.get("telegram_alerts_settings_waiting"),
+                      style: TextStyle(
+                        color: fg.withValues(alpha: 0.85),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: PrimaryButton(
+                borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
+                textColor: fg,
+                isLoading: _opening,
+                isDisabled: _waiting,
+                onPressed: _openBot,
+                child: Text(L10n.get("telegram_alerts_settings_button")),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

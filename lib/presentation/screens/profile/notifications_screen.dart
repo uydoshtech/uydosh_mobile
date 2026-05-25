@@ -49,6 +49,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_settings_card.dart";
 
 const bool _pushDebugEnabled = true;
 
@@ -1145,108 +1146,106 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     return Scaffold(
       extendBodyBehindAppBar: useLiquidGlassAppBar,
       appBar: _buildAppBar(useLiquidGlassAppBar),
-      body: _loading
-          ? const Center(child: HouseLoadingIndicator())
-          : UydoshRefreshIndicator(
-              onRefresh: () async {
-                await Future.wait([_load(), _loadPushStatus()]);
-              },
-              child: _alerts.isEmpty
-                  ? ListView(
-                      padding:
-                          EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        if (showPushEnableCard) ...[
-                          _pushEnableCard(theme),
-                          const SizedBox(height: 12),
-                        ],
-                        if (showAlertsExplainer)
-                          Builder(
-                            builder: (context) {
-                              final explainer = _alertsExplainer(
-                                theme,
-                                onClose: _closeAlertsExplainerAnimated,
-                                pushStatus: _pushStatus,
-                              );
-                              if (_alertsExplainerClosing) {
-                                return RollUpFadeOut(child: explainer);
-                              }
-                              return explainer;
-                            },
-                          ),
-                        const SizedBox(height: 36),
-                        ThemeIcon(
-                          Icons.notifications_none,
-                          size: 56,
-                          color: ThemeState().isBlueTheme
-                              ? Colors.white70
-                              : Colors.black54,
-                        ),
-                        const SizedBox(height: 12),
-                        Center(
-                          child: Text(
-                            L10n.get("notifications_empty"),
-                            style: TextStyle(
-                              color: ThemeState().isBlueTheme
-                                  ? Colors.white70
-                                  : Colors.black54,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        if (_pushDebugEnabled) ...[
-                          const SizedBox(height: 24),
-                          _pushDebugPanel(theme),
-                        ],
-                      ],
-                    )
-                  : ListView.separated(
-                      padding:
-                          EdgeInsets.fromLTRB(16, contentTopPadding, 16, 16),
-                      itemCount: _alerts.length +
-                          (showAlertsExplainer ? 1 : 0) +
-                          1 +
-                          (_pushDebugEnabled ? 1 : 0),
-                      separatorBuilder: (_, i) =>
-                          SizedBox(height: i == 0 ? 12 : 16),
-                      itemBuilder: (context, i) {
-                        if (i == 0) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, contentTopPadding, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (showPushEnableCard) ...[
+                  _pushEnableCard(theme),
+                  const SizedBox(height: 12),
+                ],
+                const TelegramAlertsSettingsCard(),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _loading
+                ? const Center(child: HouseLoadingIndicator())
+                : UydoshRefreshIndicator(
+                    onRefresh: () async {
+                      await Future.wait([_load(), _loadPushStatus()]);
+                    },
+                    child: _alerts.isEmpty
+                        ? ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            physics: const AlwaysScrollableScrollPhysics(),
                             children: [
-                              if (showPushEnableCard) ...[
-                                _pushEnableCard(theme),
-                                const SizedBox(height: 12),
+                              if (showAlertsExplainer)
+                                Builder(
+                                  builder: (context) {
+                                    final explainer = _alertsExplainer(
+                                      theme,
+                                      onClose: _closeAlertsExplainerAnimated,
+                                      pushStatus: _pushStatus,
+                                    );
+                                    if (_alertsExplainerClosing) {
+                                      return RollUpFadeOut(child: explainer);
+                                    }
+                                    return explainer;
+                                  },
+                                ),
+                              const SizedBox(height: 36),
+                              ThemeIcon(
+                                Icons.notifications_none,
+                                size: 56,
+                                color: ThemeState().isBlueTheme
+                                    ? Colors.white70
+                                    : Colors.black54,
+                              ),
+                              const SizedBox(height: 12),
+                              Center(
+                                child: Text(
+                                  L10n.get("notifications_empty"),
+                                  style: TextStyle(
+                                    color: ThemeState().isBlueTheme
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              if (_pushDebugEnabled) ...[
+                                const SizedBox(height: 24),
+                                _pushDebugPanel(theme),
                               ],
                             ],
-                          );
-                        }
-                        final adjustedIndex = i - 1;
-                        final showExplainer = showAlertsExplainer;
-                        if (showExplainer && adjustedIndex == 0) {
-                          final explainer = _alertsExplainer(
-                            theme,
-                            onClose: _closeAlertsExplainerAnimated,
-                            pushStatus: _pushStatus,
-                          );
-                          if (_alertsExplainerClosing) {
-                            return RollUpFadeOut(child: explainer);
-                          }
-                          return explainer;
-                        }
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            itemCount: _alerts.length +
+                                (showAlertsExplainer ? 1 : 0) +
+                                (_pushDebugEnabled ? 1 : 0),
+                            separatorBuilder: (_, i) =>
+                                SizedBox(height: i == 0 ? 12 : 16),
+                            itemBuilder: (context, i) {
+                              final showExplainer = showAlertsExplainer;
+                              if (showExplainer && i == 0) {
+                                final explainer = _alertsExplainer(
+                                  theme,
+                                  onClose: _closeAlertsExplainerAnimated,
+                                  pushStatus: _pushStatus,
+                                );
+                                if (_alertsExplainerClosing) {
+                                  return RollUpFadeOut(child: explainer);
+                                }
+                                return explainer;
+                              }
 
-                        final debugIndex = _alerts.length +
-                            (showExplainer ? 1 : 0) +
-                            1;
-                        if (_pushDebugEnabled && i == debugIndex) {
-                          return _pushDebugPanel(theme);
-                        }
+                              final debugIndex = _alerts.length +
+                                  (showExplainer ? 1 : 0);
+                              if (_pushDebugEnabled && i == debugIndex) {
+                                return _pushDebugPanel(theme);
+                              }
 
-                        final a =
-                            _alerts[adjustedIndex - (showExplainer ? 1 : 0)];
-                        final alertIndex =
-                            adjustedIndex - (showExplainer ? 1 : 0);
+                              final a = _alerts[
+                                  i - (showExplainer ? 1 : 0)];
+                              final alertIndex =
+                                  i - (showExplainer ? 1 : 0);
                         final themeState = ThemeState();
                         final isRemoving = _itemsBeingRemoved.contains(a.id);
                         const duration = Duration(milliseconds: 300);
@@ -1439,7 +1438,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                         return RollUpFadeOut(duration: duration, child: wrapped);
                       },
                     ),
-            ),
+                  ),
+          ),
+        ],
+      ),
       backgroundColor: ThemeState().backgroundColor,
     );
   }

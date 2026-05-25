@@ -76,6 +76,14 @@ class ProfileStatsSection extends StatelessWidget {
     }
   }
 
+  Color _telegramLinkedLabelColor(BuildContext context) {
+    if (ThemeState().isBlueTheme) {
+      // colorScheme.primary is dark blue on this theme — unread-style emerald reads clearly.
+      return const Color(0xFF34D399);
+    }
+    return Theme.of(context).colorScheme.primary;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -649,7 +657,7 @@ class ProfileStatsSection extends StatelessWidget {
                   L10n.get("telegram_account_linked"),
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: _telegramLinkedLabelColor(context),
                   ),
                 ),
               ),

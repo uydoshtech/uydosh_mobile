@@ -20,9 +20,40 @@ class TelegramBotAlertsStatus {
   }
 }
 
+class TelegramBotEnableLink {
+  const TelegramBotEnableLink({
+    required this.url,
+    required this.botUsername,
+    required this.startParam,
+  });
+
+  final String url;
+  final String botUsername;
+  final String startParam;
+
+  factory TelegramBotEnableLink.fromJson(Map<String, dynamic> json) {
+    final url = json["url"];
+    final botUsername = json["botUsername"];
+    final startParam = json["startParam"];
+    if (url is! String ||
+        url.trim().isEmpty ||
+        botUsername is! String ||
+        botUsername.trim().isEmpty ||
+        startParam is! String ||
+        startParam.trim().isEmpty) {
+      throw Exception("Telegram enable link missing fields");
+    }
+    return TelegramBotEnableLink(
+      url: url.trim(),
+      botUsername: botUsername.trim(),
+      startParam: startParam.trim(),
+    );
+  }
+}
+
 abstract class ITelegramBotAlertsService {
   Future<TelegramBotAlertsStatus> fetchStatus();
-  Future<String> fetchEnableLinkUrl();
+  Future<TelegramBotEnableLink> fetchEnableLink();
 }
 
 class TelegramBotAlertsService implements ITelegramBotAlertsService {
@@ -40,15 +71,11 @@ class TelegramBotAlertsService implements ITelegramBotAlertsService {
   }
 
   @override
-  Future<String> fetchEnableLinkUrl() async {
+  Future<TelegramBotEnableLink> fetchEnableLink() async {
     final json = await _oauthApiClient.get<Map<String, dynamic>>(
       "/users/me/telegram-bot/enable-link",
       (raw) => raw as Map<String, dynamic>,
     );
-    final url = json["url"];
-    if (url is! String || url.trim().isEmpty) {
-      throw Exception("Telegram enable link missing");
-    }
-    return url.trim();
+    return TelegramBotEnableLink.fromJson(json);
   }
 }

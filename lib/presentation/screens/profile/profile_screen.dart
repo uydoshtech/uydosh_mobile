@@ -53,7 +53,6 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_enable_flow.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
@@ -194,15 +193,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
       return;
     }
-    setState(() => _telegramLinked = true);
+    setState(() {
+      _telegramLinked = true;
+      // Bind requires an existing session (Google/phone/etc.), so unlink is safe.
+      _canUnbindTelegram = true;
+    });
     context.read<CurrentUserProfileBloc>().add(
           const CurrentUserProfileEvent.fetchProfile(),
         );
+    unawaited(_refreshTelegramLinkedStatus());
     ToastTheme.showSuccess(
       context,
       message: L10n.get("telegram_linked_success"),
     );
-    await TelegramAlertsEnableFlow.offerIfNeeded(context);
   }
 
   String? _backendErrorCode(DioException error) {
@@ -266,24 +269,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final idToken = await TelegramNativeLoginService.instance.login();
         if (!mounted) return;
         if (idToken == null) return;
-        final telegramPicture = telegramPictureUrlFromIdToken(idToken);
-        if (telegramPicture != null) {
-          await SessionManager.storeTelegramPhotoUrl(telegramPicture);
-          if (mounted) {
-            setState(() => _cachedTelegramPhotoUrl = telegramPicture);
-          }
-        }
         await getIt<IAuthService>().telegramBind(idToken: idToken);
         if (!mounted) return;
-        setState(() => _telegramLinked = true);
+        setState(() {
+          _telegramLinked = true;
+          // Bind requires an existing session (Google/phone/etc.), so unlink is safe.
+          _canUnbindTelegram = true;
+        });
         context.read<CurrentUserProfileBloc>().add(
               const CurrentUserProfileEvent.fetchProfile(),
             );
+        unawaited(_refreshTelegramLinkedStatus());
         ToastTheme.showSuccess(
           context,
           message: L10n.get("telegram_linked_success"),
         );
-        await TelegramAlertsEnableFlow.offerIfNeeded(context);
         return;
       }
 
@@ -350,10 +350,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await getIt<IAuthService>().telegramUnbind();
       if (!mounted) return;
-      setState(() {
-        _telegramLinked = false;
-        _canUnbindTelegram = false;
-      });
+      setState(() => _telegramLinked = false);
+      context.read<CurrentUserProfileBloc>().add(
+            const CurrentUserProfileEvent.fetchProfile(),
+          );
+      unawaited(_refreshTelegramLinkedStatus());
       ToastTheme.showSuccess(
         context,
         message: L10n.get("telegram_unlinked_success"),
