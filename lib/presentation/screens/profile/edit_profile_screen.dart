@@ -1,7 +1,12 @@
 import "dart:async";
 
+import "package:dio/dio.dart";
 import "package:flutter/cupertino.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+import "package:telegram_login/telegram_login.dart";
+import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
@@ -10,7 +15,12 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/telegram_native_login_service.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
@@ -22,15 +32,20 @@ import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/country_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_dropdown_control.dart";
 import "package:uy_dosh/presentation/widgets/common/profile_slider_control.dart";
@@ -55,7 +70,13 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     with SingleTickerProviderStateMixin {
   late TextEditingController _nameController;
   late TextEditingController _aboutMeController;
-  late TextEditingController _telegramController;
+
+  String? _displayTelegram;
+  bool? _telegramLinked;
+  bool _canUnbindTelegram = false;
+  bool _isLinkingTelegram = false;
+  bool _isUnlinkingTelegram = false;
+  void Function(TelegramBindDeepLink link)? _previousTelegramBindDeepLinkHandler;
 
   // Form state as ValueNotifiers - only the relevant widget rebuilds on change
   late ValueNotifier<int> _selectedGender;
@@ -164,9 +185,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _aboutMeController = TextEditingController(
       text: widget.profile.aboutMe ?? "",
     );
-    _telegramController = TextEditingController(
-      text: widget.profile.telegram ?? "",
-    );
+    _displayTelegram = widget.profile.telegram;
 
     _selectedGender = ValueNotifier(widget.profile.gender ?? 1);
     _selectedRegionId = ValueNotifier(widget.profile.regionId);
@@ -206,7 +225,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _formListenables = Listenable.merge([
       _nameController,
       _aboutMeController,
-      _telegramController,
       _selectedGender,
       _selectedCountryIso2,
       _selectedRegionId,
@@ -249,6 +267,19 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _loadRegions();
     _loadUniversities();
     _loadUserRole();
+    unawaited(_refreshTelegramLinkedStatus());
+    _registerTelegramBindDeepLinkListener();
+    if (kIsWeb) {
+      final webBind = DeepLinkService.tryParseTelegramBindFromCurrentLocation();
+      if (webBind != null) {
+        clearTelegramOAuthQueryFromBrowserUrl();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            unawaited(_handleTelegramBindDeepLink(webBind));
+          }
+        });
+      }
+    }
   }
 
   Future<void> _loadCountries() async {
@@ -345,9 +376,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     }
     if (_normText(_aboutMeController.text) != _normText(p.aboutMe)) {
       addLabel("about_me", fallback: "About me");
-    }
-    if (_normText(_telegramController.text) != _normText(p.telegram)) {
-      addLabel("telegram", fallback: "Telegram");
     }
     if (_selectedGender.value != (p.gender ?? 1)) {
       addLabel("gender", fallback: "Gender");
@@ -455,9 +483,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (_normText(_aboutMeController.text) != _normText(p.aboutMe)) {
       return true;
     }
-    if (_normText(_telegramController.text) != _normText(p.telegram)) {
-      return true;
-    }
     if (_selectedGender.value != (p.gender ?? 1)) return true;
     if (_isOriginDirty(p)) return true;
 
@@ -509,9 +534,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   @override
   void dispose() {
+    final deepLink = getIt<DeepLinkService>();
+    deepLink.onTelegramBindLink = _previousTelegramBindDeepLinkHandler;
     _nameController.dispose();
     _aboutMeController.dispose();
-    _telegramController.dispose();
     _selectedGender.dispose();
     _selectedRegionId.dispose();
     _selectedCountryIso2.dispose();
@@ -633,10 +659,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       final aboutMe = _aboutMeController.text.trim();
       final aboutMeToSend = aboutMe.isEmpty ? null : aboutMe;
 
-      // Handle telegram text: if it's empty, send null to clear it; if it has content, send the content
-      final telegram = _telegramController.text.trim();
-      final telegramToSend = telegram.isEmpty ? null : telegram;
-
       // Preserve admin role: check actual role at save time to avoid overwriting
       // when dropdown wasn't loaded yet (race condition)
       final currentRole = await SessionManager.getUserRole();
@@ -650,7 +672,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         universityId: universityId,
         role: roleToSave,
         aboutMe: aboutMeToSend,
-        telegram: telegramToSend,
         employed: _employedBoolFromSlug(_employed.value),
         cleanliness: _cleanliness.value,
         noiseLevel: _committedNoiseApiValue(),
@@ -668,7 +689,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
       // Debug logging to see what values are being sent
       logger.d("🔍 [EditProfileScreen] Update request values:");
-      logger.d("  - telegram: $telegramToSend");
       logger.d("  - smokingPreference: ${_smokingPreference.value}");
       logger.d("  - alcoholPreference: ${_alcoholPreference.value}");
       logger.d("  - wakeupTime: ${_wakeupTime.value}");
@@ -857,12 +877,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                     const SizedBox(height: 24),
 
-                    // Telegram Field
-                    _buildTextField(
-                      label: L10n.get("telegram"),
-                      controller: _telegramController,
-                      icon: Icons.telegram,
-                    ),
+                    // Telegram (OAuth link — same flow as profile page)
+                    _buildTelegramSection(context),
 
                     const SizedBox(height: 24),
 
@@ -1536,6 +1552,347 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildTelegramSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final iconColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+    final telegram = _displayTelegram?.trim();
+    final linked = _telegramLinked == true;
+    final showUsername =
+        linked && telegram != null && telegram.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          L10n.get("telegram"),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: _getLifestyleHeaderColor(),
+          ),
+        ),
+        if (linked) ...[
+          const SizedBox(height: 10),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: ThreeDSurfaceStyle.insetRecessedShadows(context),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ThemeIcon(Icons.telegram, color: iconColor),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          showUsername
+                              ? "@$telegram"
+                              : L10n.get("not_specified"),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 36),
+                    child: Text(
+                      L10n.get("telegram_account_linked"),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_canUnbindTelegram) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButtonThemed(
+                onPressed: _isUnlinkingTelegram ? null : _unlinkTelegramAccount,
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                ),
+                child: _isUnlinkingTelegram
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.colorScheme.error,
+                        ),
+                      )
+                    : Text(L10n.get("unlink_telegram")),
+              ),
+            ),
+          ],
+        ] else if (_telegramLinked == false) ...[
+          const SizedBox(height: 10),
+          TelegramSignInBrandedButton(
+            label: L10n.get("link_telegram"),
+            onPressed: _isLinkingTelegram ? null : _linkTelegramAccount,
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _registerTelegramBindDeepLinkListener() {
+    final deepLink = getIt<DeepLinkService>();
+    _previousTelegramBindDeepLinkHandler = deepLink.onTelegramBindLink;
+    deepLink.onTelegramBindLink = (link) {
+      if (!mounted) return;
+      unawaited(_handleTelegramBindDeepLink(link));
+    };
+  }
+
+  Future<void> _refreshTelegramLinkedStatus() async {
+    if (!AuthenticationState().isAuthenticated) return;
+    try {
+      final me = await getIt<IAuthService>().fetchCurrentUser();
+      if (!mounted) return;
+      final telegramId = me["telegram_id"];
+      setState(() {
+        _telegramLinked = telegramId is String
+            ? telegramId.trim().isNotEmpty
+            : telegramId != null;
+        _canUnbindTelegram = _hasAlternateSignInMethod(me);
+      });
+    } catch (e) {
+      logger.d("Failed to load Telegram link status on edit profile: $e");
+    }
+  }
+
+  bool _hasAlternateSignInMethod(Map<String, dynamic> me) {
+    bool hasValue(dynamic value) =>
+        value is String && value.trim().isNotEmpty;
+    return hasValue(me["firebase_uid"]) ||
+        hasValue(me["email"]) ||
+        hasValue(me["phone_number"]);
+  }
+
+  Future<void> _refreshTelegramProfile() async {
+    try {
+      final profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      if (!mounted) return;
+      setState(() => _displayTelegram = profile.telegram);
+      await SessionManager.storeUserProfile(profile);
+      ProfileCompletionState().updateFromProfile(profile);
+      context.read<CurrentUserProfileBloc>().add(
+            const CurrentUserProfileEvent.fetchProfile(),
+          );
+    } catch (e) {
+      logger.d("Failed to refresh profile after Telegram link: $e");
+    }
+  }
+
+  Future<void> _handleTelegramBindDeepLink(TelegramBindDeepLink link) async {
+    if (link.isError) {
+      ToastTheme.showWarning(
+        context,
+        message: _telegramBindErrorMessage(link.errorMessage ?? "unknown"),
+      );
+      return;
+    }
+    setState(() => _telegramLinked = true);
+    unawaited(_refreshTelegramLinkedStatus());
+    unawaited(_refreshTelegramProfile());
+    ToastTheme.showSuccess(
+      context,
+      message: L10n.get("telegram_linked_success"),
+    );
+  }
+
+  String? _backendErrorCode(DioException error) {
+    final data = error.response?.data;
+    if (data is Map) {
+      return data["error"]?.toString();
+    }
+    return null;
+  }
+
+  String _telegramBindErrorMessage(String code) {
+    switch (code) {
+      case "telegram_already_linked":
+        return L10n.get("telegram_already_linked");
+      case "telegram_account_in_use":
+        return L10n.get("telegram_account_in_use");
+      case "telegram_not_linked":
+        return L10n.get("telegram_not_linked");
+      case "telegram_only_sign_in_method":
+        return L10n.get("telegram_only_sign_in_method");
+      case "Invalid Telegram id_token":
+        return L10n.get("telegram_bind_invalid_token");
+      case "Telegram OIDC is not configured":
+        return L10n.get("telegram_bind_not_configured");
+      default:
+        return L10n.get("telegram_link_failed").replaceAll("{error}", code);
+    }
+  }
+
+  String _telegramBindErrorFromDio(DioException error) {
+    final backendCode = _backendErrorCode(error);
+    if (backendCode != null && backendCode.isNotEmpty) {
+      return _telegramBindErrorMessage(backendCode);
+    }
+    if (error.response?.statusCode == 404) {
+      return L10n.get("telegram_bind_not_available");
+    }
+    return L10n.get("telegram_link_failed").replaceAll(
+          "{error}",
+          ErrorMessageHelper.sanitizeErrorMessage(error),
+        );
+  }
+
+  String _telegramUnbindErrorMessage(String code) {
+    switch (code) {
+      case "telegram_not_linked":
+        return L10n.get("telegram_not_linked");
+      case "telegram_only_sign_in_method":
+        return L10n.get("telegram_only_sign_in_method");
+      default:
+        return L10n.get("telegram_unlink_failed").replaceAll("{error}", code);
+    }
+  }
+
+  Future<void> _unlinkTelegramAccount() async {
+    if (_isUnlinkingTelegram || !mounted) return;
+
+    final confirmed = await CommonConfirmationDialogs.showDeleteConfirmation(
+      context: context,
+      titleKey: "unlink_telegram_confirmation_title",
+      messageKey: "unlink_telegram_confirmation_message",
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isUnlinkingTelegram = true);
+    try {
+      await getIt<IAuthService>().telegramUnbind();
+      if (!mounted) return;
+      setState(() => _telegramLinked = false);
+      unawaited(_refreshTelegramLinkedStatus());
+      unawaited(_refreshTelegramProfile());
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("telegram_unlinked_success"),
+      );
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final backendCode = _backendErrorCode(e);
+      ToastTheme.showWarning(
+        context,
+        message: backendCode != null && backendCode.isNotEmpty
+            ? _telegramUnbindErrorMessage(backendCode)
+            : L10n.get("telegram_unlink_failed").replaceAll(
+                  "{error}",
+                  ErrorMessageHelper.sanitizeErrorMessage(e),
+                ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_unlink_failed").replaceAll(
+              "{error}",
+              ErrorMessageHelper.sanitizeErrorMessage(e),
+            ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUnlinkingTelegram = false);
+      }
+    }
+  }
+
+  Future<void> _linkTelegramAccount() async {
+    if (_isLinkingTelegram || !mounted) return;
+    setState(() => _isLinkingTelegram = true);
+    try {
+      if (!kIsWeb && TelegramNativeLoginService.instance.isSupported) {
+        final idToken = await TelegramNativeLoginService.instance.login();
+        if (!mounted) return;
+        if (idToken == null) return;
+        await getIt<IAuthService>().telegramBind(idToken: idToken);
+        if (!mounted) return;
+        setState(() => _telegramLinked = true);
+        unawaited(_refreshTelegramLinkedStatus());
+        unawaited(_refreshTelegramProfile());
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("telegram_linked_success"),
+        );
+        return;
+      }
+
+      final url =
+          await getIt<IAuthService>().fetchTelegramOAuthBindAuthorizationUrl(
+        languageCode: LanguageState().currentLanguage,
+        returnTo: telegramOAuthWebReturnTo(),
+      );
+      final uri = Uri.parse(url);
+      final ok = kIsWeb
+          ? await launchUrl(uri, webOnlyWindowName: "_self")
+          : await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      if (!ok) {
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("could_not_open_telegram"),
+        );
+        return;
+      }
+      if (!kIsWeb) {
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("telegram_login_continue_in_browser"),
+        );
+      }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: _telegramBindErrorFromDio(e),
+      );
+    } on TelegramLoginError catch (e) {
+      if (!mounted || e.code == TelegramLoginErrorCode.cancelled) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_link_failed")
+            .replaceAll("{error}", e.message ?? e.code.name),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("telegram_link_failed").replaceAll(
+              "{error}",
+              ErrorMessageHelper.sanitizeErrorMessage(e),
+            ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLinkingTelegram = false);
+      }
+    }
   }
 
   Widget _buildTextField({

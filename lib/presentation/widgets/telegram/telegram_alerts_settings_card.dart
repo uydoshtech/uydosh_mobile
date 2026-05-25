@@ -234,7 +234,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
           children: [
             Row(
               children: [
-                const ThemeIcon(Icons.check_circle_outline, size: 22, color: fg),
+                const ThemeIcon(Icons.telegram, size: 22, color: fg),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

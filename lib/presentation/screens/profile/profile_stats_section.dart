@@ -210,10 +210,10 @@ class ProfileStatsSection extends StatelessWidget {
                                   : L10n.get("not_specified"),
                             ),
                             const SizedBox(height: 24),
-                            _buildTelegramField(context),
-                            if (telegramLinked == false &&
+                            if (telegramLinked == true) ...[
+                              _buildTelegramField(context),
+                            ] else if (telegramLinked == false &&
                                 onLinkTelegram != null) ...[
-                              const SizedBox(height: 12),
                               TelegramSignInBrandedButton(
                                 label: L10n.get("link_telegram"),
                                 onPressed: isLinkingTelegram ? null : onLinkTelegram,
@@ -585,15 +585,16 @@ class ProfileStatsSection extends StatelessWidget {
   }
 
   Widget _buildTelegramField(BuildContext context) {
-    final hasTelegram =
-        profile.telegram != null && profile.telegram!.isNotEmpty;
     final linked = telegramLinked == true;
+    final telegramUsername = profile.telegram?.trim();
+    final showUsername =
+        linked && telegramUsername != null && telegramUsername.isNotEmpty;
 
     return InkWell(
-      onTap: hasTelegram
+      onTap: showUsername
           ? () {
               HapticFeedbackUtils.impact();
-              _confirmOpenTelegram(profile.telegram!, context);
+              _confirmOpenTelegram(telegramUsername, context);
             }
           : null,
       borderRadius: BorderRadius.circular(8),
@@ -624,8 +625,8 @@ class ProfileStatsSection extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        hasTelegram
-                            ? "@${profile.telegram!}"
+                        showUsername
+                            ? "@$telegramUsername"
                             : L10n.get("not_specified"),
                         style: const TextStyle(
                           fontSize: 16,
@@ -635,12 +636,10 @@ class ProfileStatsSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (hasTelegram) ...[
-                  if (linked) ...[
-                    if (_buildTelegramFieldAvatar(context) case final avatar?) ...[
-                      avatar,
-                      const SizedBox(width: 8),
-                    ],
+                if (showUsername) ...[
+                  if (_buildTelegramFieldAvatar(context) case final avatar?) ...[
+                    avatar,
+                    const SizedBox(width: 8),
                   ],
                   ThemeIcon(
                     Icons.arrow_forward_ios,

@@ -1032,19 +1032,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
 
+    if (!mounted) return;
+
+    // User may have linked/unlinked Telegram without saving other profile fields.
+    unawaited(_refreshTelegramLinkedStatus());
+    context.read<CurrentUserProfileBloc>().add(
+          const CurrentUserProfileEvent.fetchProfile(),
+        );
+
     if (result == true) {
       logger.d("=== PROFILE EDIT SUCCESS ===");
-      logger.d("Edit profile returned true, refreshing profile data...");
-
-      context.read<CurrentUserProfileBloc>().add(
-            const CurrentUserProfileEvent.fetchProfile(),
-          );
-
-      logger.d("✅ Profile refresh event dispatched");
+      logger.d("Edit profile returned true");
     } else {
-      logger.d("=== PROFILE EDIT CANCELLED ===");
+      logger.d("=== PROFILE EDIT CLOSED ===");
       logger.d("Edit profile returned: $result");
-      logger.d("Profile will not be refreshed");
     }
   }
 }

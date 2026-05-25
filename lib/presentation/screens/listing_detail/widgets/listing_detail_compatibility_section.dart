@@ -110,9 +110,18 @@ class _ListingDetailCompatibilitySectionState
     super.dispose();
   }
 
+  /// Extra scroll offset so the section header lands below the app bar when
+  /// [Scaffold.extendBodyBehindAppBar] is active (blue / light themes).
+  static double _listingDetailScrollTopInset(BuildContext ctx) {
+    final themeState = ThemeState();
+    final useLiquidGlassAppBar =
+        themeState.isBlueTheme || themeState.isLightTheme;
+    if (!useLiquidGlassAppBar) return 0;
+    return MediaQuery.paddingOf(ctx).top + kToolbarHeight;
+  }
+
   static void _maybeAnimateScrollIntoView(
     BuildContext ctx, {
-    required double alignment,
     Duration duration = const Duration(milliseconds: 300),
     Curve curve = Curves.easeInOut,
   }) {
@@ -124,13 +133,15 @@ class _ListingDetailCompatibilitySectionState
     if (renderObject is! RenderBox) return;
 
     final viewport = RenderAbstractViewport.of(renderObject);
+    final topInset = _listingDetailScrollTopInset(ctx);
 
-    final target = viewport
-        .getOffsetToReveal(renderObject, alignment)
-        .offset
+    final target = (viewport
+                .getOffsetToReveal(renderObject, 0.0)
+                .offset -
+            topInset)
         .clamp(position.minScrollExtent, position.maxScrollExtent);
 
-    if ((target - position.pixels).abs() < 8) return;
+    if ((target - position.pixels).abs() < 2) return;
     position.animateTo(target, duration: duration, curve: curve);
   }
 
@@ -316,7 +327,7 @@ class _ListingDetailCompatibilitySectionState
         if (!mounted) return;
         final ctx = widget.sectionKey.currentContext;
         if (ctx == null || !ctx.mounted) return;
-        _maybeAnimateScrollIntoView(ctx, alignment: 0.0);
+        _maybeAnimateScrollIntoView(ctx);
       });
     });
   }
@@ -346,7 +357,6 @@ class _ListingDetailCompatibilitySectionState
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
     return ListingDetailTileShell(
-      key: widget.sectionKey,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -366,7 +376,9 @@ class _ListingDetailCompatibilitySectionState
           childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           iconColor: chevronColor,
           collapsedIconColor: chevronColor,
-          title: Row(
+          title: KeyedSubtree(
+            key: widget.sectionKey,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (isAuthenticated) ...[
@@ -409,6 +421,7 @@ class _ListingDetailCompatibilitySectionState
                 ),
               ],
             ],
+            ),
           ),
           children: [
             if (!isAuthenticated)

@@ -1531,7 +1531,7 @@ class AppStrings {
       "telegram_alerts_settings_button": "Open @uydosh_bot",
       "telegram_alerts_settings_waiting":
           "Subscribe in @uydosh_bot, then return here.",
-      "telegram_alerts_connected": "Telegram alerts are on (@uydosh_bot)",
+      "telegram_alerts_connected": "Telegram alerts are on",
       "telegram_alerts_disable_button": "Turn off Telegram alerts",
       "telegram_alerts_disabled_success": "Telegram alerts turned off",
       "telegram_alerts_disable_failed": "Could not turn off Telegram alerts",
@@ -3146,7 +3146,7 @@ class AppStrings {
       "telegram_alerts_settings_button": "Открыть @uydosh_bot",
       "telegram_alerts_settings_waiting":
           "Подпишитесь в @uydosh_bot, затем вернитесь сюда.",
-      "telegram_alerts_connected": "Уведомления в Telegram включены (@uydosh_bot)",
+      "telegram_alerts_connected": "Уведомления в Telegram включены",
       "telegram_alerts_disable_button": "Отключить уведомления в Telegram",
       "telegram_alerts_disabled_success": "Уведомления в Telegram отключены",
       "telegram_alerts_disable_failed": "Не удалось отключить уведомления в Telegram",
@@ -4769,7 +4769,7 @@ class AppStrings {
       "telegram_alerts_settings_button": "@uydosh_bot ni ochish",
       "telegram_alerts_settings_waiting":
           "@uydosh_bot da obuna bo‘ling, so‘ng bu yerga qayting.",
-      "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan (@uydosh_bot)",
+      "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan",
       "telegram_alerts_disable_button": "Telegram bildirishnomalarini o‘chirish",
       "telegram_alerts_disabled_success": "Telegram bildirishnomalari o‘chirildi",
       "telegram_alerts_disable_failed": "Telegram bildirishnomalarini o‘chirib bo‘lmadi",

@@ -83,8 +83,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     );
   }
 
-  /// Default listing owner after Telegram sync (Uydoshtech@gmail.com in production).
-  static const int _kDefaultListingOwnerUserId = 86;
+  /// Default listing owner after Telegram sync (admin user id 1 in production).
+  static const int _kDefaultListingOwnerUserId = 1;
 
   /// Telegram channels the daily cron scrapes. Rendered as items in the chat
   /// dropdown; picking one sets [_chatController]. Keep in sync with
