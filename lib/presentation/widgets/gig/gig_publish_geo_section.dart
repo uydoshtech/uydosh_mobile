@@ -212,9 +212,11 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
 
     var locationIndex = -1;
     final pendingLoc = _pendingLocationId;
-    if (pendingLoc != null) {
+    if (pendingLoc != null && _selectedSubwayLine > 0) {
       final idx = sorted.indexWhere((l) => l.id == pendingLoc);
       if (idx >= 0) locationIndex = idx;
+      _pendingLocationId = null;
+    } else if (pendingLoc != null) {
       _pendingLocationId = null;
     }
 
@@ -274,55 +276,46 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
     }
   }
 
-  String? _locationDisplayName(Location location) {
-    final lang = L10n.currentLanguage;
-    switch (lang) {
-      case "uz":
-        return location.shortNameUz ??
-            location.shortNameRu ??
-            location.shortNameEn;
-      case "en":
-        return location.shortNameEn ??
-            location.shortNameRu ??
-            location.shortNameUz;
-      default:
-        return location.shortNameRu ??
-            location.shortNameUz ??
-            location.shortNameEn;
-    }
-  }
-
-  String? _buildCollapsedSummary() {
-    final parts = <String>[];
-
+  /// Metro line/station only — used under the "Metro station" collapsible title.
+  String? _buildCollapsedMetroSummary() {
     final station = _resolvedSubwayStation();
     if (station != null) {
-      parts.add(
-        _localizedName(
-          nameUz: station.nameUz,
-          nameRu: station.nameRu,
-          nameEn: station.nameEn,
-        ),
-      );
-    } else if (_selectedSubwayLine > 0) {
-      parts.add(
-        MetroCache.getLineName(_selectedSubwayLine, L10n.currentLanguage),
+      return _localizedName(
+        nameUz: station.nameUz,
+        nameRu: station.nameRu,
+        nameEn: station.nameEn,
       );
     }
+    if (_selectedSubwayLine > 0) {
+      return MetroCache.getLineName(_selectedSubwayLine, L10n.currentLanguage);
+    }
+    return null;
+  }
 
-    final locationId = _resolvedLocationId();
-    if (locationId != null && _currentLocations.isNotEmpty) {
-      final idx = _currentLocations.indexWhere((l) => l.id == locationId);
-      if (idx >= 0) {
-        final name = _locationDisplayName(_currentLocations[idx]);
-        if (name != null && name.isNotEmpty) {
-          parts.add(name);
-        }
+  void _resetLocationSpinner() {
+    setState(() {
+      _selectedLocationIndex = -1;
+      _pendingLocationId = null;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _locationScrollController;
+      if (controller == null || !controller.hasClients) return;
+      if (controller.selectedItem != 0) {
+        controller.jumpToItem(0);
       }
-    }
+    });
+  }
 
-    if (parts.isEmpty) return null;
-    return parts.join(" · ");
+  void _clearMetroSelection() {
+    setState(() {
+      _selectedSubwayLine = 0;
+      _currentStations = [];
+      _selectedStationIndex = 0;
+      _isLoadingStations = false;
+      _pendingSubwayStationId = null;
+      _pendingSubwayLineId = null;
+    });
+    _resetLocationSpinner();
   }
 
   Color _metroHeaderIconColor() {
@@ -338,7 +331,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
 
   Widget _buildCollapsibleHeader(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final summary = _buildCollapsedSummary();
+    final summary = _buildCollapsedMetroSummary();
     final titleColor = ThemeState().isLightTheme
         ? Colors.black
         : scheme.onSurfaceVariant;
@@ -346,67 +339,93 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
       alpha: Theme.of(context).brightness == Brightness.dark ? 0.75 : 0.85,
     );
 
-    return WheelPickerPlateContainer(
-      theme: Theme.of(context),
-      dirtyOutlineColor: widget.locationDirtyOutlineColor,
-      child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
-        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              MLetterIcon(color: _metroHeaderIconColor(), size: 22),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      L10n.get("metro_station_label"),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: titleColor,
-                      ),
+    return InkWell(
+      onTap: () => setState(() => _expanded = !_expanded),
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            MLetterIcon(color: _metroHeaderIconColor(), size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    L10n.get("metro_station_label"),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: titleColor,
                     ),
-                    if (summary != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        summary,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: subtitleColor,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                  ),
+                  if (summary != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      summary,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: subtitleColor,
                       ),
-                    ],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
-                ),
+                ],
               ),
-              AnimatedRotation(
-                turns: _expanded ? 0.5 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-                child: ThemeIcon(
-                  Icons.keyboard_arrow_down,
-                  color: scheme.onSurfaceVariant,
-                ),
+            ),
+            AnimatedRotation(
+              turns: _expanded ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: ThemeIcon(
+                Icons.keyboard_arrow_down,
+                color: scheme.onSurfaceVariant,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildGeoPickers(BuildContext context) {
+  Widget _buildCollapsibleTile(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dividerColor = scheme.onSurfaceVariant.withValues(
+      alpha: Theme.of(context).brightness == Brightness.dark ? 0.22 : 0.14,
+    );
+
+    return WheelPickerPlateContainer(
+      theme: Theme.of(context),
+      dirtyOutlineColor: widget.locationDirtyOutlineColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCollapsibleHeader(context),
+          if (_expanded) ...[
+            Divider(height: 1, thickness: 1, color: dividerColor),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+              child: _buildGeoPickers(context, embeddedInPlate: true),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGeoPickers(
+    BuildContext context, {
+    bool embeddedInPlate = false,
+  }) {
+    final sectionGap = embeddedInPlate ? 10.0 : 14.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ListingFormMetroSection(
+          embeddedInPlate: embeddedInPlate,
           selectedSubwayLine: _selectedSubwayLine,
           selectedStationIndex: _selectedStationIndex,
           currentStations: _currentStations,
@@ -417,12 +436,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
             if (index > 0) {
               _loadStationsForLine(index);
             } else {
-              setState(() {
-                _selectedSubwayLine = 0;
-                _currentStations = [];
-                _selectedStationIndex = 0;
-                _isLoadingStations = false;
-              });
+              _clearMetroSelection();
             }
             _notifyParent();
           },
@@ -433,17 +447,26 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
           },
           onDismissKeyboard: () => FocusScope.of(context).unfocus(),
         ),
-        const SizedBox(height: 14),
-        _buildLocationPicker(context),
+        SizedBox(height: sectionGap),
+        _buildLocationPicker(context, embeddedInPlate: embeddedInPlate),
       ],
     );
   }
 
-  Widget _buildLocationPicker(BuildContext context) {
+  Widget _buildLocationPicker(
+    BuildContext context, {
+    bool embeddedInPlate = false,
+  }) {
+    final metroLineSelected = _selectedSubwayLine > 0;
     final picker = LocationPicker(
+      embeddedInPlate: embeddedInPlate,
+      readOnly: !metroLineSelected,
       locations: _currentLocations,
       selectedLocationIndex: _selectedLocationIndex,
       scrollController: _locationScrollController,
+      placeholderText: metroLineSelected
+          ? null
+          : L10n.get("select_metro_line_title"),
       onLocationChanged: (locationIndex) {
         setState(() => _selectedLocationIndex = locationIndex);
         _notifyParent();
@@ -454,14 +477,18 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
       useColoredIcons: true,
       showArrows: false,
     );
-    final outline = widget.locationDirtyOutlineColor;
-    if (outline == null) return picker;
+    if (embeddedInPlate || widget.locationDirtyOutlineColor == null) {
+      return picker;
+    }
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
           ThreeDSurfaceStyle.wheelPickerCornerRadius,
         ),
-        border: Border.all(color: outline, width: 1.5),
+        border: Border.all(
+          color: widget.locationDirtyOutlineColor!,
+          width: 1.5,
+        ),
       ),
       child: picker,
     );
@@ -476,16 +503,7 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
         );
       },
       child: widget.collapsible
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildCollapsibleHeader(context),
-                if (_expanded) ...[
-                  const SizedBox(height: 14),
-                  _buildGeoPickers(context),
-                ],
-              ],
-            )
+          ? _buildCollapsibleTile(context)
           : _buildGeoPickers(context),
     );
   }

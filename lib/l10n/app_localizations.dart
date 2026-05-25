@@ -3283,14 +3283,26 @@ abstract class AppLocalizations {
   /// No description provided for @admin_reassign_owner_from_user.
   ///
   /// In en, this message translates to:
-  /// **'Current owner user id: {id}'**
+  /// **'Owner ID: {id}'**
   String admin_reassign_owner_from_user(Object id);
 
-  /// No description provided for @admin_reassign_owner_entity_label.
+  /// No description provided for @admin_reassign_owner_listing_id.
   ///
   /// In en, this message translates to:
-  /// **'Entity: {entity} · id {id}'**
-  String admin_reassign_owner_entity_label(Object entity, Object id);
+  /// **'Listing ID: {id}'**
+  String admin_reassign_owner_listing_id(Object id);
+
+  /// No description provided for @admin_reassign_owner_gig_offer_id.
+  ///
+  /// In en, this message translates to:
+  /// **'Gig offer ID: {id}'**
+  String admin_reassign_owner_gig_offer_id(Object id);
+
+  /// No description provided for @admin_reassign_owner_gig_request_id.
+  ///
+  /// In en, this message translates to:
+  /// **'Gig request ID: {id}'**
+  String admin_reassign_owner_gig_request_id(Object id);
 
   /// No description provided for @admin_reassign_owner_empty.
   ///

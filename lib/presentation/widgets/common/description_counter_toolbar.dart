@@ -238,41 +238,33 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   Widget _buildInner(Color color, DictationMeterController? dictateMeterSlot) {
-    if (widget.layout == DescriptionCounterToolbarLayout.stack) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 4, bottom: 8),
-        child: SizedBox(
-          width: double.infinity,
-          child: SizedBox(
-            height: _footerHeight,
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.centerLeft,
-              children: [
-                _buildActionsRow(dictateMeterSlot),
-                Positioned(
-                  right: widget.stackCounterRightOffset,
-                  top: 0,
-                  bottom: 0,
-                  child: _buildCounterColumn(color),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    final counterWidget = _buildCounterColumn(color);
+    final counter = widget.layout == DescriptionCounterToolbarLayout.stack
+        ? Transform.translate(
+            offset: Offset(widget.stackCounterRightOffset, 0),
+            child: counterWidget,
+          )
+        : counterWidget;
 
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: SizedBox(
         height: _footerHeight,
+        width: double.infinity,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildActionsRow(dictateMeterSlot),
-            const Spacer(),
-            _buildCounterColumn(color),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: _buildActionsRow(dictateMeterSlot),
+                ),
+              ),
+            ),
+            counter,
           ],
         ),
       ),

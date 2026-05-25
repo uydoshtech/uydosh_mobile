@@ -30,6 +30,8 @@ class LocationPicker extends StatefulWidget {
     this.showArrows = true,
     this.scrollController,
     this.useGlassPlate = false,
+    this.embeddedInPlate = false,
+    this.readOnly = false,
   });
 
   final List<Location> locations;
@@ -49,6 +51,10 @@ class LocationPicker extends StatefulWidget {
   final bool showArrows;
   final FixedExtentScrollController? scrollController;
   final bool useGlassPlate;
+  final bool embeddedInPlate;
+
+  /// When true, the wheel cannot be scrolled and selection callbacks are ignored.
+  final bool readOnly;
 
   @override
   State<LocationPicker> createState() => _LocationPickerState();
@@ -147,6 +153,18 @@ class _LocationPickerState extends State<LocationPicker> {
           child: loadingChild,
         );
       }
+      if (widget.embeddedInPlate) {
+        return SizedBox(
+          height: widget.height,
+          child: DecoratedBox(
+            decoration: ThreeDSurfaceStyle.wheelPickerInsetDecoration(
+              context,
+              theme: theme,
+            ),
+            child: loadingChild,
+          ),
+        );
+      }
       return WheelPickerPlateChrome(
         height: widget.height,
         theme: theme,
@@ -158,7 +176,7 @@ class _LocationPickerState extends State<LocationPicker> {
     final selectionOverlayFill =
         theme.colorScheme.onSurface.withValues(alpha: isBlueTheme ? 0.14 : 0.07);
 
-    final wheel = Row(
+    Widget wheel = Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
@@ -170,7 +188,9 @@ class _LocationPickerState extends State<LocationPicker> {
               ),
               itemExtent: widget.itemExtent,
               scrollController: _effectiveController,
-              onSelectedItemChanged: (index) {
+              onSelectedItemChanged: widget.readOnly
+                  ? null
+                  : (index) {
                 FocusScope.of(context).unfocus();
                 SendSoundUtils.playCupertinoWheelSound();
                 widget.onLocationChanged(index - 1);
@@ -285,12 +305,33 @@ class _LocationPickerState extends State<LocationPicker> {
         ],
       );
 
+    if (widget.readOnly) {
+      wheel = Opacity(
+        opacity: 0.55,
+        child: AbsorbPointer(child: wheel),
+      );
+    }
+
     if (widget.useGlassPlate) {
       return LiquidGlassPlate(
         key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
         height: widget.height,
         borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
         child: wheel,
+      );
+    }
+
+    if (widget.embeddedInPlate) {
+      return SizedBox(
+        key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
+        height: widget.height,
+        child: DecoratedBox(
+          decoration: ThreeDSurfaceStyle.wheelPickerInsetDecoration(
+            context,
+            theme: theme,
+          ),
+          child: wheel,
+        ),
       );
     }
 

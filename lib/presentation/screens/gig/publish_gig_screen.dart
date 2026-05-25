@@ -2475,22 +2475,26 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 8),
               child: SizedBox(
+                height: _footerHeight,
                 width: double.infinity,
-                child: SizedBox(
-                  height: _footerHeight,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      _buildActionsRow(slot),
-                      Positioned(
-                        right: _stackCounterRightOffset,
-                        top: 0,
-                        bottom: 0,
-                        child: _buildCounterColumn(color),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _buildActionsRow(slot),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    Transform.translate(
+                      offset: const Offset(_stackCounterRightOffset, 0),
+                      child: _buildCounterColumn(color),
+                    ),
+                  ],
                 ),
               ),
             ),

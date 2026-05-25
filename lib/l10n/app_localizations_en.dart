@@ -1739,12 +1739,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String admin_reassign_owner_from_user(Object id) {
-    return 'Current owner user id: $id';
+    return 'Owner ID: $id';
   }
 
   @override
-  String admin_reassign_owner_entity_label(Object entity, Object id) {
-    return 'Entity: $entity · id $id';
+  String admin_reassign_owner_listing_id(Object id) {
+    return 'Listing ID: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_offer_id(Object id) {
+    return 'Gig offer ID: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_request_id(Object id) {
+    return 'Gig request ID: $id';
   }
 
   @override

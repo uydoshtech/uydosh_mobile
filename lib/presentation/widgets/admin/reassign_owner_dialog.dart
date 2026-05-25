@@ -206,11 +206,8 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
                 Expanded(
                   child: Text(
                     L10n.getWithParams(
-                      "admin_reassign_owner_entity_label",
-                      params: {
-                        "entity": widget.entityType.apiValue,
-                        "id": "${widget.entityId}",
-                      },
+                      _entityIdLabelKey(widget.entityType),
+                      params: {"id": "${widget.entityId}"},
                     ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -361,4 +358,12 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
       ),
     );
   }
+}
+
+String _entityIdLabelKey(AdminEntityOwnershipType entityType) {
+  return switch (entityType) {
+    AdminEntityOwnershipType.listing => "admin_reassign_owner_listing_id",
+    AdminEntityOwnershipType.gigOffer => "admin_reassign_owner_gig_offer_id",
+    AdminEntityOwnershipType.gigRequest => "admin_reassign_owner_gig_request_id",
+  };
 }

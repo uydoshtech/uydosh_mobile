@@ -1762,12 +1762,22 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String admin_reassign_owner_from_user(Object id) {
-    return 'Joriy egasi foydalanuvchi id: $id';
+    return 'Ega ID: $id';
   }
 
   @override
-  String admin_reassign_owner_entity_label(Object entity, Object id) {
-    return 'Ob\'ekt: $entity · id $id';
+  String admin_reassign_owner_listing_id(Object id) {
+    return 'E\'lon ID: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_offer_id(Object id) {
+    return 'Taklif ID: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_request_id(Object id) {
+    return 'So\'rov ID: $id';
   }
 
   @override

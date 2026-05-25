@@ -23,9 +23,11 @@ class ListingFormMetroSection extends StatelessWidget {
     required this.onLineChanged,
     required this.onStationChanged,
     required this.onDismissKeyboard,
+    this.embeddedInPlate = false,
     super.key,
   });
 
+  final bool embeddedInPlate;
   final int selectedSubwayLine;
   final int selectedStationIndex;
   final List<SubwayStation> currentStations;
@@ -37,6 +39,16 @@ class ListingFormMetroSection extends StatelessWidget {
   final VoidCallback onDismissKeyboard;
 
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
+
+  BoxDecoration _pickerDecoration(BuildContext context) {
+    if (embeddedInPlate) {
+      return ThreeDSurfaceStyle.wheelPickerInsetDecoration(context);
+    }
+    return ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+      context,
+      theme: Theme.of(context),
+    );
+  }
 
   static String _getLocalizedName({
     String? nameUz,
@@ -80,10 +92,7 @@ class ListingFormMetroSection extends StatelessWidget {
   Widget _buildLinePicker(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
-        theme: theme,
-      ),
+      decoration: _pickerDecoration(context),
       height: 80,
       child: Row(
         children: [
@@ -205,10 +214,7 @@ class ListingFormMetroSection extends StatelessWidget {
 
     if (currentStations.isNotEmpty) {
       return Container(
-        decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-          context,
-          theme: Theme.of(context),
-        ),
+        decoration: _pickerDecoration(context),
         height: 80,
         child: Row(
           children: [
@@ -293,10 +299,7 @@ class ListingFormMetroSection extends StatelessWidget {
     Widget? child,
   }) {
     return Container(
-      decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-        context,
-        theme: Theme.of(context),
-      ),
+      decoration: _pickerDecoration(context),
       height: 80,
       child: Center(
         child:

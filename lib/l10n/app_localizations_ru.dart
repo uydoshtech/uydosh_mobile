@@ -1745,12 +1745,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String admin_reassign_owner_from_user(Object id) {
-    return 'Текущий владелец (id): $id';
+    return 'ID владельца: $id';
   }
 
   @override
-  String admin_reassign_owner_entity_label(Object entity, Object id) {
-    return 'Сущность: $entity · id $id';
+  String admin_reassign_owner_listing_id(Object id) {
+    return 'ID объявления: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_offer_id(Object id) {
+    return 'ID предложения: $id';
+  }
+
+  @override
+  String admin_reassign_owner_gig_request_id(Object id) {
+    return 'ID заявки: $id';
   }
 
   @override

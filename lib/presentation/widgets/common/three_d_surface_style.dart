@@ -206,6 +206,24 @@ abstract final class ThreeDSurfaceStyle {
       border: border,
     );
   }
+
+  /// Recessed chrome for pickers nested inside a parent [WheelPickerPlateContainer].
+  static BoxDecoration wheelPickerInsetDecoration(
+    BuildContext context, {
+    ThemeData? theme,
+  }) {
+    final t = theme ?? Theme.of(context);
+    final plateBase = t.colorScheme.surface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      borderRadius: wheelPickerPlateRadius,
+      gradient: surfaceGradient(
+        context,
+        Color.lerp(plateBase, t.colorScheme.onSurface, isDark ? 0.14 : 0.06)!,
+      ),
+      boxShadow: insetRecessedShadows(context),
+    );
+  }
 }
 
 /// Raised listing “plate” with optional validation styling. When [showErrorBorder] is
