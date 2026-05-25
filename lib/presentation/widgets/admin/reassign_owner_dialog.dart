@@ -9,6 +9,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_moderation_user_picker_service.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -194,15 +195,6 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Text(
-                    "·",
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ),
                 Expanded(
                   child: Text(
                     L10n.getWithParams(
@@ -241,7 +233,7 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
             const SizedBox(height: 12),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: HouseLoadingIndicator())
                   : _loadError != null
                       ? Center(
                           child: Text(
