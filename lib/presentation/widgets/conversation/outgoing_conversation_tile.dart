@@ -111,11 +111,7 @@ class OutgoingConversationTile extends StatelessWidget {
                 ),
               );
 
-        return ThreeDElevatedSurface(
-          baseColor: cardColor,
-          useFlatHighlightColor: true,
-          margin: EdgeInsets.zero,
-          child: InkWell(
+        final tileBody = InkWell(
             onTap: onTap,
             onLongPress: onLongPress,
             child: Column(
@@ -331,7 +327,31 @@ class OutgoingConversationTile extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          );
+
+        if (isGrouped) {
+          // Full-bleed flat tone on the parent card — no nested radius/shadows,
+          // which read as a floating inset "bottom sheet" with gaps at the edges.
+          final scheme = Theme.of(context).colorScheme;
+          final flatHighlight = Color.lerp(
+            cardColor,
+            scheme.onSurface,
+            Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.03,
+          )!;
+          return ColoredBox(
+            color: flatHighlight,
+            child: Material(
+              color: Colors.transparent,
+              child: tileBody,
+            ),
+          );
+        }
+
+        return ThreeDElevatedSurface(
+          baseColor: cardColor,
+          useFlatHighlightColor: true,
+          margin: EdgeInsets.zero,
+          child: tileBody,
         );
       },
     );

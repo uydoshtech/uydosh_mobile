@@ -136,12 +136,18 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
         _selectedStationIndex >= _currentStations.length) {
       return null;
     }
-    return _currentStations[_selectedStationIndex];
+    final station = _currentStations[_selectedStationIndex];
+    if (station.line != _selectedSubwayLine) {
+      return null;
+    }
+    return station;
   }
 
   void _loadStationsForLine(int line) {
     setState(() {
       _selectedSubwayLine = line;
+      _selectedStationIndex = 0;
+      _currentStations = [];
       _isLoadingStations = true;
     });
     context.read<SubwayStationsBloc>().add(
@@ -150,6 +156,14 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
   }
 
   void _onStationsLoaded(List<SubwayStation> stations) {
+    if (_selectedSubwayLine <= 0) {
+      return;
+    }
+    if (stations.isNotEmpty &&
+        stations.any((station) => station.line != _selectedSubwayLine)) {
+      return;
+    }
+
     var stationIndex = 0;
     final pendingId = _pendingSubwayStationId;
     if (pendingId != null) {
@@ -400,15 +414,16 @@ class _GigPublishGeoSectionState extends State<GigPublishGeoSection> {
           metroLineScrollController: _metroLineScrollController,
           metroStationScrollController: _metroStationScrollController,
           onLineChanged: (index) {
-            setState(() {
-              _selectedSubwayLine = index;
-              if (index > 0) {
-                _loadStationsForLine(index);
-              } else {
+            if (index > 0) {
+              _loadStationsForLine(index);
+            } else {
+              setState(() {
+                _selectedSubwayLine = 0;
                 _currentStations = [];
                 _selectedStationIndex = 0;
-              }
-            });
+                _isLoadingStations = false;
+              });
+            }
             _notifyParent();
           },
           onStationChanged: (index) {

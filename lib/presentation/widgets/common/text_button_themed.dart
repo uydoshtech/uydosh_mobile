@@ -9,19 +9,22 @@ class TextButtonThemed extends StatelessWidget {
     required this.onPressed, required this.child, super.key,
     this.padding,
     this.style,
+    this.attentionBorder = false,
   });
 
   final VoidCallback? onPressed;
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final ButtonStyle? style;
+  /// Draws a red outline around the button (e.g. for destructive CTAs).
+  final bool attentionBorder;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isLightTheme = theme.brightness == Brightness.light;
 
-    return TextButton(
+    final button = TextButton(
       onPressed: onPressed == null
           ? null
           : () {
@@ -43,6 +46,19 @@ class TextButtonThemed extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+
+    if (!attentionBorder) return button;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.error, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: button,
+      ),
     );
   }
 }

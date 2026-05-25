@@ -1,22 +1,14 @@
 import "package:flutter/material.dart";
-import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
-import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
+import "package:uy_dosh/presentation/widgets/profile/linked_telegram_account_tile.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-
-/// Avatar diameter for the linked Telegram row — slightly larger than field
-/// icons (20) but compact like chat list avatars (32).
-const double _kTelegramFieldAvatarSize = 32;
 
 class ProfileStatsSection extends StatelessWidget {
   const ProfileStatsSection({
@@ -74,14 +66,6 @@ class ProfileStatsSection extends StatelessWidget {
     } else {
       return Colors.black;
     }
-  }
-
-  Color _telegramLinkedLabelColor(BuildContext context) {
-    if (ThemeState().isBlueTheme) {
-      // colorScheme.primary is dark blue on this theme — unread-style emerald reads clearly.
-      return const Color(0xFF34D399);
-    }
-    return Theme.of(context).colorScheme.primary;
   }
 
   @override
@@ -211,7 +195,10 @@ class ProfileStatsSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 24),
                             if (telegramLinked == true) ...[
-                              _buildTelegramField(context),
+                              LinkedTelegramAccountTile(
+                                profile: profile,
+                                cachedTelegramPhotoUrl: cachedTelegramPhotoUrl,
+                              ),
                             ] else if (telegramLinked == false &&
                                 onLinkTelegram != null) ...[
                               TelegramSignInBrandedButton(
@@ -229,6 +216,7 @@ class ProfileStatsSection extends StatelessWidget {
                                   onPressed: isUnlinkingTelegram
                                       ? null
                                       : onUnlinkTelegram,
+                                  attentionBorder: true,
                                   style: TextButton.styleFrom(
                                     foregroundColor:
                                         Theme.of(context).colorScheme.error,
@@ -539,133 +527,6 @@ class ProfileStatsSection extends StatelessWidget {
     );
   }
 
-  String? _telegramFieldAvatarUrl() {
-    final cached = cachedTelegramPhotoUrl?.trim();
-    if (cached != null && cached.isNotEmpty) {
-      return cached;
-    }
-
-    final fromProfile = profile.telegramAvatarUrl?.trim();
-    if (fromProfile != null && fromProfile.isNotEmpty) {
-      return resolveAvatarUrl(fromProfile);
-    }
-
-    final rawAvatar = profile.avatarUrl?.trim();
-    if (rawAvatar != null &&
-        rawAvatar.isNotEmpty &&
-        isTelegramHostedAvatarUrl(rawAvatar)) {
-      return resolveAvatarUrl(rawAvatar);
-    }
-
-    return null;
-  }
-
-  Widget? _buildTelegramFieldAvatar(BuildContext context) {
-    final photoUrl = _telegramFieldAvatarUrl();
-    if (photoUrl == null) return null;
-
-    final fallback = Center(
-      child: ThemeIcon(
-        Icons.person,
-        size: 18,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-    );
-    return SizedBox(
-      width: _kTelegramFieldAvatarSize,
-      height: _kTelegramFieldAvatarSize,
-      child: ClipOval(
-        child: NetworkAvatarImage(
-          imageUrl: photoUrl,
-          size: _kTelegramFieldAvatarSize,
-          fallback: fallback,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTelegramField(BuildContext context) {
-    final linked = telegramLinked == true;
-    final telegramUsername = profile.telegram?.trim();
-    final showUsername =
-        linked && telegramUsername != null && telegramUsername.isNotEmpty;
-
-    return InkWell(
-      onTap: showUsername
-          ? () {
-              HapticFeedbackUtils.impact();
-              _confirmOpenTelegram(telegramUsername, context);
-            }
-          : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ThemeIcon(
-                  Icons.telegram,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        L10n.get("telegram"),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        showUsername
-                            ? "@$telegramUsername"
-                            : L10n.get("not_specified"),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (showUsername) ...[
-                  if (_buildTelegramFieldAvatar(context) case final avatar?) ...[
-                    avatar,
-                    const SizedBox(width: 8),
-                  ],
-                  ThemeIcon(
-                    Icons.arrow_forward_ios,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    size: 16,
-                  ),
-                ],
-              ],
-            ),
-            if (linked)
-              Padding(
-                padding: const EdgeInsets.only(left: 32, top: 4),
-                child: Text(
-                  L10n.get("telegram_account_linked"),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _telegramLinkedLabelColor(context),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildRatingField(BuildContext context) {
     return Row(
       children: [
@@ -705,43 +566,6 @@ class ProfileStatsSection extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Future<void> _confirmOpenTelegram(
-    String telegramUsername,
-    BuildContext context,
-  ) async {
-    final shouldOpen = await CommonConfirmationDialogs.showGenericConfirmation(
-      context: context,
-      titleKey: "open_in_telegram",
-      messageKey: "open_in_telegram_confirmation",
-      confirmButtonKey: "confirm",
-    );
-
-    if (shouldOpen ?? false) {
-      await _openTelegram(telegramUsername, context);
-    }
-  }
-
-  Future<void> _openTelegram(
-    String telegramUsername,
-    BuildContext context,
-  ) async {
-    final cleanUsername = telegramUsername.startsWith("@")
-        ? telegramUsername.substring(1)
-        : telegramUsername;
-
-    final url = "https://t.me/$cleanUsername";
-
-    try {
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      } else {
-        ToastTheme.showError(context, message: "Could not open Telegram");
-      }
-    } catch (e) {
-      ToastTheme.showError(context, message: "Could not open Telegram");
-    }
   }
 
   String _getGenderText(int gender, BuildContext context) {

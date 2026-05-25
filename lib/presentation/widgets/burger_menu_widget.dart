@@ -440,8 +440,9 @@ final class _DrawerColors {
     return switch (currentTheme) {
       AppTheme.blueTheme => AppColors.textLight.withValues(alpha: 0.18),
       AppTheme.messagingTheme => MessagingThemeColors.divider,
-      AppTheme.lightTheme => LightThemeColors.divider,
-      _ => LightThemeColors.divider,
+      // Frosted-glass panels need a darker tint than card dividers.
+      AppTheme.lightTheme => Colors.black.withValues(alpha: 0.14),
+      _ => Colors.black.withValues(alpha: 0.14),
     };
   }
 
@@ -451,8 +452,6 @@ final class _DrawerColors {
     final isDark = brightness == Brightness.dark;
     return LiquidGlassRendering.panelFillColor(base, isDark: isDark);
   }
-  static Color glassBorder(BuildContext context) =>
-      LiquidGlassRendering.panelBorderColor(glassTint(context));
 }
 
 class _DrawerGlassSurface extends StatelessWidget {
@@ -470,15 +469,7 @@ class _DrawerGlassSurface extends StatelessWidget {
         enabled: LiquidGlassRendering.effectsEnabled(context),
         sigma: LiquidGlassRendering.panelBlurSigma,
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: tint,
-            border: Border(
-              right: BorderSide(
-                color: _DrawerColors.glassBorder(context),
-                width: 1,
-              ),
-            ),
-          ),
+          decoration: BoxDecoration(color: tint),
           child: child,
         ),
       ),
@@ -493,7 +484,7 @@ class _DrawerDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Divider(
       color: _DrawerColors.divider(),
-      thickness: 0.5,
+      thickness: 1,
       height: 24,
       indent: 16,
       endIndent: 16,

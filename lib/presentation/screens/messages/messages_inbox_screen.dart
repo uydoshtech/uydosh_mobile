@@ -1300,18 +1300,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
     await showAppBottomSheet<void>(
       context: context,
+      useSafeArea: false,
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
         final destructive = AppColors.error;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: GlassBottomSheetSurface(
+        return GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(
               type: MaterialType.transparency,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(
+                  bottom: 10 + MediaQuery.viewPaddingOf(sheetCtx).bottom,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1333,8 +1334,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                           vertical: 4,
                         ),
                         minVerticalPadding: 10,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
                         ),
                       ),
                       child: Column(
@@ -1390,8 +1391,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 ),
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }

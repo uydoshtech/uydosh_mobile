@@ -24,6 +24,7 @@ import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
@@ -55,6 +56,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/profile/linked_telegram_account_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class EditProfileScreen extends StatefulWidget {
@@ -72,6 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late TextEditingController _aboutMeController;
 
   String? _displayTelegram;
+  String? _cachedTelegramPhotoUrl;
   bool? _telegramLinked;
   bool _canUnbindTelegram = false;
   bool _isLinkingTelegram = false;
@@ -186,6 +189,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       text: widget.profile.aboutMe ?? "",
     );
     _displayTelegram = widget.profile.telegram;
+    _cachedTelegramPhotoUrl = resolveTelegramAccountAvatarUrl(
+      profile: widget.profile,
+    );
 
     _selectedGender = ValueNotifier(widget.profile.gender ?? 1);
     _selectedRegionId = ValueNotifier(widget.profile.regionId);
@@ -268,6 +274,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _loadUniversities();
     _loadUserRole();
     unawaited(_refreshTelegramLinkedStatus());
+    unawaited(_loadCachedTelegramPhotoUrl());
     _registerTelegramBindDeepLinkListener();
     if (kIsWeb) {
       final webBind = DeepLinkService.tryParseTelegramBindFromCurrentLocation();
@@ -1556,72 +1563,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   Widget _buildTelegramSection(BuildContext context) {
     final theme = Theme.of(context);
-    final isBlueTheme = ThemeState().isBlueTheme;
-    final baseColor =
-        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
-    final iconColor =
-        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
-    final telegram = _displayTelegram?.trim();
     final linked = _telegramLinked == true;
-    final showUsername =
-        linked && telegram != null && telegram.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          L10n.get("telegram"),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: _getLifestyleHeaderColor(),
-          ),
-        ),
         if (linked) ...[
-          const SizedBox(height: 10),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: baseColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: ThreeDSurfaceStyle.insetRecessedShadows(context),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ThemeIcon(Icons.telegram, color: iconColor),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          showUsername
-                              ? "@$telegram"
-                              : L10n.get("not_specified"),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 36),
-                    child: Text(
-                      L10n.get("telegram_account_linked"),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          LinkedTelegramAccountTile(
+            profile: widget.profile,
+            cachedTelegramPhotoUrl: _cachedTelegramPhotoUrl,
+            telegramUsername: _displayTelegram,
           ),
           if (_canUnbindTelegram) ...[
             const SizedBox(height: 12),
@@ -1629,6 +1580,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               width: double.infinity,
               child: TextButtonThemed(
                 onPressed: _isUnlinkingTelegram ? null : _unlinkTelegramAccount,
+                attentionBorder: true,
                 style: TextButton.styleFrom(
                   foregroundColor: theme.colorScheme.error,
                 ),
@@ -1646,6 +1598,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             ),
           ],
         ] else if (_telegramLinked == false) ...[
+          Text(
+            L10n.get("telegram"),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _getLifestyleHeaderColor(),
+            ),
+          ),
           const SizedBox(height: 10),
           TelegramSignInBrandedButton(
             label: L10n.get("link_telegram"),
@@ -1654,6 +1614,14 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ],
       ],
     );
+  }
+
+  Future<void> _loadCachedTelegramPhotoUrl() async {
+    final cached = await SessionManager.getTelegramPhotoUrl();
+    if (!mounted) return;
+    final resolved = resolveAvatarUrl(cached);
+    if (resolved == null || resolved.isEmpty) return;
+    setState(() => _cachedTelegramPhotoUrl = resolved);
   }
 
   void _registerTelegramBindDeepLinkListener() {
@@ -1694,7 +1662,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     try {
       final profile = await getIt<IUserProfileService>().getCurrentUserProfile();
       if (!mounted) return;
-      setState(() => _displayTelegram = profile.telegram);
+      final telegramPhoto = profile.telegramAvatarUrl?.trim();
+      setState(() {
+        _displayTelegram = profile.telegram;
+        if (telegramPhoto != null && telegramPhoto.isNotEmpty) {
+          _cachedTelegramPhotoUrl = resolveAvatarUrl(telegramPhoto);
+        }
+      });
+      if (telegramPhoto != null && telegramPhoto.isNotEmpty) {
+        unawaited(SessionManager.storeTelegramPhotoUrl(telegramPhoto));
+      }
       await SessionManager.storeUserProfile(profile);
       ProfileCompletionState().updateFromProfile(profile);
       context.read<CurrentUserProfileBloc>().add(

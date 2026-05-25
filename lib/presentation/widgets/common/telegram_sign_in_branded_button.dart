@@ -17,11 +17,14 @@ class TelegramSignInBrandedButton extends StatefulWidget {
   const TelegramSignInBrandedButton({
     required this.label,
     required this.onPressed,
+    this.attentionBorder = false,
     super.key,
   });
 
   final String label;
   final VoidCallback? onPressed;
+  /// Draws a red outline around the pill (e.g. for "Link Telegram" CTAs).
+  final bool attentionBorder;
 
   @override
   State<TelegramSignInBrandedButton> createState() =>
@@ -41,7 +44,9 @@ class _TelegramSignInBrandedButtonState
     final useSfPro = defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS;
 
-    return AnimatedContainer(
+    return _wrapAttentionBorder(
+      context,
+      AnimatedContainer(
       duration: const Duration(milliseconds: 90),
       transform: Matrix4.translationValues(
         0,
@@ -101,6 +106,23 @@ class _TelegramSignInBrandedButtonState
             ),
           ),
         ),
+      ),
+    ),
+    );
+  }
+
+  Widget _wrapAttentionBorder(BuildContext context, Widget child) {
+    if (!widget.attentionBorder) return child;
+
+    final borderColor = Theme.of(context).colorScheme.error;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: borderColor, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(3),
+        child: child,
       ),
     );
   }

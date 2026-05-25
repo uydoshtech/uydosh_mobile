@@ -92,6 +92,11 @@ class ConversationTile extends StatelessWidget {
           onLongPress: onLongPress,
           // Sit on parent [ThreeDElevatedSurface] gradient instead of a flat fill.
           tileColor: isGrouped ? Colors.transparent : null,
+          // Parent card already owns outer rounding — square top corners so the
+          // header seam stays flush (avoids notched gaps at the junction).
+          shape: isGrouped
+              ? const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
+              : null,
           leading: resolvedAvatarUrl != null
               ? ClipOval(
                   child: NetworkAvatarImage(

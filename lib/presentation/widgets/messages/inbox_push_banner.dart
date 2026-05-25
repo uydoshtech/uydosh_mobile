@@ -51,10 +51,11 @@ class InboxPushBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Same lighter brand blue as `_pushEnableCard` on the Notifications screen,
-    // so the two surfaces read as one system.
-    final cardBg = BlueThemeColors.primaryLight;
-    const fg = Colors.white;
+    // Warning-tinted "alert" tile, matching `_pushEnableCard` on the
+    // Notifications screen and ToastTheme.showWarning.
+    final cardBg = AppColors.warning;
+    const fg = Color(0xFF1F1300);
+    const buttonFg = Color(0xFF1F1300);
     final buttonBg = Colors.white.withValues(alpha: 0.18);
 
     return Semantics(
@@ -134,7 +135,7 @@ class InboxPushBanner extends StatelessWidget {
                     onPressed: busy ? null : onPressed,
                     isLoading: busy,
                     surfaceGradientBase: buttonBg,
-                    textColor: fg,
+                    textColor: buttonFg,
                     borderRadius: BorderRadius.circular(12),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

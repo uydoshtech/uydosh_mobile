@@ -408,6 +408,7 @@ class _ArchivedConversationsScreenState
     if (!mounted) return;
     await showAppBottomSheet<void>(
       context: context,
+      useSafeArea: false,
       builder: (sheetCtx) {
         final theme = Theme.of(sheetCtx);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
@@ -416,14 +417,14 @@ class _ArchivedConversationsScreenState
         // making the label hard to read. Use a high-contrast foreground there.
         final actionColor =
             themeState.isBlueTheme ? Colors.white : theme.colorScheme.primary;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: GlassBottomSheetSurface(
+        return GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(
               type: MaterialType.transparency,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(
+                  bottom: 10 + MediaQuery.viewPaddingOf(sheetCtx).bottom,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -448,8 +449,8 @@ class _ArchivedConversationsScreenState
                           vertical: 4,
                         ),
                         minVerticalPadding: 10,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
                         ),
                       ),
                       child: ListTile(
@@ -474,8 +475,7 @@ class _ArchivedConversationsScreenState
                 ),
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }
