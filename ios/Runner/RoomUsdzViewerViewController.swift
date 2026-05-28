@@ -26,6 +26,7 @@ struct RoomViewerStrings {
   let brandMarkA11yLabel: String
   /// RGB hex `RRGGBB` from [AppColors.floorObject3dTint] (Material brown).
   let onFloorObjectTint: UIColor
+  let floorPlan: FloorPlanTabStrings
 
   init(
     title: String,
@@ -47,7 +48,8 @@ struct RoomViewerStrings {
     materialsStyleValueStylized: String,
     materialsStyleValueReal: String,
     brandMarkA11yLabel: String,
-    onFloorObjectTint: UIColor
+    onFloorObjectTint: UIColor,
+    floorPlan: FloorPlanTabStrings
   ) {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
@@ -69,6 +71,7 @@ struct RoomViewerStrings {
     self.materialsStyleValueReal = materialsStyleValueReal
     self.brandMarkA11yLabel = brandMarkA11yLabel
     self.onFloorObjectTint = onFloorObjectTint
+    self.floorPlan = floorPlan
   }
 
   init?(dict: [String: String]) {
@@ -101,7 +104,8 @@ struct RoomViewerStrings {
       materialsStyleValueStylized: dict["materialsStylizedValue"] ?? "Stylized",
       materialsStyleValueReal: dict["materialsRealValue"] ?? "Real",
       brandMarkA11yLabel: dict["brandMarkA11yLabel"] ?? "UyDosh",
-      onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548")
+      onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548"),
+      floorPlan: FloorPlanTabStrings(dict: dict) ?? .englishFallback
     )
   }
 
@@ -140,7 +144,8 @@ struct RoomViewerStrings {
     materialsStyleValueStylized: "Stylized",
     materialsStyleValueReal: "Real",
     brandMarkA11yLabel: "UyDosh",
-    onFloorObjectTint: Self.uiColorFromRgbHex6("795548")
+    onFloorObjectTint: Self.uiColorFromRgbHex6("795548"),
+    floorPlan: .englishFallback
   )
 }
 
@@ -261,6 +266,17 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var orbitYawVel: Float = 0
   private var orbitPitchVel: Float = 0
 
+  private enum ViewerTab: Int {
+    case threeD = 0
+    case floorPlan = 1
+  }
+
+  private var viewerTab: ViewerTab = .threeD
+  private let viewerTabControl = UISegmentedControl(items: ["", ""])
+  private let viewerTabContainer = UIView()
+  private var floorPlanTabView: FloorPlanTab?
+  private var floorPlanModel: FloorPlanModel?
+
   fileprivate init(
     fileURL: URL,
     strings: RoomViewerStrings,
@@ -294,6 +310,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     )
     setupModeControl()
     setupMaterialsStyleButton()
+    setupViewerTabControl()
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
     sceneView.backgroundColor = .black
@@ -302,6 +319,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sceneView.antialiasingMode = .multisampling4X
     sceneView.autoenablesDefaultLighting = true
     view.addSubview(sceneView)
+
+    let floorPlanTab = FloorPlanTab(strings: strings.floorPlan)
+    floorPlanTab.translatesAutoresizingMaskIntoConstraints = false
+    floorPlanTab.isHidden = true
+    view.addSubview(floorPlanTab)
+    floorPlanTabView = floorPlanTab
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(sceneTapped))
     tap.cancelsTouchesInView = false
@@ -431,8 +454,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     setupModeMaterialsToolbar()
 
     // Make sure overlay controls remain tappable/draggable above SceneKit.
+    view.bringSubviewToFront(viewerTabContainer)
     view.bringSubviewToFront(zoomControlsContainer)
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
+    view.bringSubviewToFront(floorPlanTab)
 
     let modeMaterialsToolbarPlacement: [NSLayoutConstraint] = {
       let modeCenterX = modeMaterialsToolbarContainer.centerXAnchor.constraint(
@@ -458,10 +483,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     NSLayoutConstraint.activate(
       [
-        sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+        viewerTabContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
+        viewerTabContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+        viewerTabContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+
+        sceneView.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 8),
         sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
         sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+
+        floorPlanTab.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 8),
+        floorPlanTab.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+        floorPlanTab.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        floorPlanTab.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
         hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
         hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
@@ -470,7 +504,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
         hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
         hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-        hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+        hintContainer.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 10),
 
         // Brand mark moved to bottom-trailing (was bottom-leading); zoom
         // controls take over the bottom-leading slot below.
@@ -678,6 +712,74 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       return
     }
     setZoom(fovDegrees: cam.fieldOfView + Self.zoomFovStepDegrees, animated: true)
+  }
+
+  private func setupViewerTabControl() {
+    viewerTabContainer.translatesAutoresizingMaskIntoConstraints = false
+    viewerTabContainer.backgroundColor = UIColor.black.withAlphaComponent(0.35)
+    viewerTabContainer.layer.cornerRadius = 12
+    if #available(iOS 13.0, *) {
+      viewerTabContainer.layer.cornerCurve = .continuous
+    }
+    view.addSubview(viewerTabContainer)
+
+    viewerTabControl.translatesAutoresizingMaskIntoConstraints = false
+    viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
+    viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
+    viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
+    viewerTabControl.addTarget(self, action: #selector(viewerTabChanged), for: .valueChanged)
+    if #available(iOS 13.0, *) {
+      viewerTabControl.overrideUserInterfaceStyle = .dark
+      viewerTabControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
+      viewerTabControl.selectedSegmentTintColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
+      viewerTabControl.setTitleTextAttributes(
+        [.foregroundColor: UIColor.white.withAlphaComponent(0.92)],
+        for: .selected
+      )
+      viewerTabControl.setTitleTextAttributes(
+        [.foregroundColor: UIColor.white.withAlphaComponent(0.55)],
+        for: .normal
+      )
+    }
+    viewerTabContainer.addSubview(viewerTabControl)
+
+    NSLayoutConstraint.activate([
+      viewerTabControl.topAnchor.constraint(equalTo: viewerTabContainer.topAnchor, constant: 4),
+      viewerTabControl.leadingAnchor.constraint(equalTo: viewerTabContainer.leadingAnchor, constant: 4),
+      viewerTabControl.trailingAnchor.constraint(equalTo: viewerTabContainer.trailingAnchor, constant: -4),
+      viewerTabControl.bottomAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: -4),
+      viewerTabControl.heightAnchor.constraint(equalToConstant: 32),
+    ])
+  }
+
+  @objc private func viewerTabChanged() {
+    let next = ViewerTab(rawValue: viewerTabControl.selectedSegmentIndex) ?? .threeD
+    guard next != viewerTab else { return }
+    viewerTab = next
+    applyViewerTab(next, animated: true)
+  }
+
+  private func applyViewerTab(_ tab: ViewerTab, animated: Bool) {
+    let show3D = tab == .threeD
+    let updates = {
+      self.sceneView.isHidden = !show3D
+      self.floorPlanTabView?.isHidden = show3D
+      self.zoomControlsContainer.isHidden = !show3D
+      self.modeMaterialsToolbarContainer.isHidden = !show3D
+      self.brandMarkView.isHidden = !show3D
+      self.hintContainer.isHidden = !show3D || self.dimensionsLineStack.isHidden
+    }
+    if animated {
+      UIView.transition(with: view, duration: 0.2, options: .transitionCrossDissolve, animations: updates)
+    } else {
+      updates()
+    }
+    if tab == .threeD {
+      startIntroAutoRotationIfNeeded()
+    } else {
+      removeAutoRotateAnimation()
+      isAutoRotating = false
+    }
   }
 
   private func setupModeControl() {
@@ -1575,6 +1677,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.loadedScene = scene
         self.sceneView.scene = scene
         self.frameCamera(for: scene, in: self.sceneView)
+        if let metrics = self.footprintMetrics {
+          self.floorPlanModel = RoomPlan3DToFloorPlanMapper.map(scene: scene, metrics: metrics)
+          if let model = self.floorPlanModel {
+            self.floorPlanTabView?.configure(model: model)
+          }
+        }
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
         self.startIntroAutoRotationIfNeeded()
@@ -1838,6 +1946,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     originalMaterialsByGeometry.removeAll(keepingCapacity: false)
     sceneWorldBounds = nil
     footprintMetrics = nil
+    floorPlanModel = nil
+    floorPlanTabView?.canvas.clearModel()
+    viewerTab = .threeD
+    viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
     isOrthographicPlanView = false
     debugOverlayNode = nil
     displayMode = .fullRoom

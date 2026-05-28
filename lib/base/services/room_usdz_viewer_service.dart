@@ -168,6 +168,27 @@ class RoomUsdzViewerService {
       "brandMarkA11yLabel":
           L10n.getForLanguage("app_name", languageCode, fallback: "UyDosh"),
       "onFloorTintRgb": _rgbHex6(AppColors.floorObject3dTint),
+      "tab3DView": L10n.getForLanguage("room_3d_tab_view_3d", languageCode),
+      "tabFloorPlan": L10n.getForLanguage("room_3d_tab_floor_plan", languageCode),
+      "floorPlanReset": L10n.getForLanguage("room_3d_floor_plan_reset", languageCode),
+      "floorPlanDimensionsOverall":
+          L10n.getForLanguage("room_3d_floor_plan_dimensions_overall", languageCode),
+      "floorPlanDimensionsWalls":
+          L10n.getForLanguage("room_3d_floor_plan_dimensions_walls", languageCode),
+      "floorPlanDimensionsHide":
+          L10n.getForLanguage("room_3d_floor_plan_dimensions_hide", languageCode),
+      "floorPlanShowObjects":
+          L10n.getForLanguage("room_3d_floor_plan_show_objects", languageCode),
+      "floorPlanHideObjects":
+          L10n.getForLanguage("room_3d_floor_plan_hide_objects", languageCode),
+      "floorPlanShowGrid": L10n.getForLanguage("room_3d_floor_plan_show_grid", languageCode),
+      "floorPlanHideGrid": L10n.getForLanguage("room_3d_floor_plan_hide_grid", languageCode),
+      "floorPlanAutoAlignOn":
+          L10n.getForLanguage("room_3d_floor_plan_auto_align_on", languageCode),
+      "floorPlanAutoAlignOff":
+          L10n.getForLanguage("room_3d_floor_plan_auto_align_off", languageCode),
+      "floorPlanUnitMeters":
+          L10n.getForLanguage("room_3d_floor_plan_unit_meters", languageCode),
     };
     final ok = await _channel.invokeMethod<bool>("presentLocalFile", <String, dynamic>{
       "path": file.path,
