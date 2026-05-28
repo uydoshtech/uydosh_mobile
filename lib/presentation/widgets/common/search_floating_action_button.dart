@@ -37,7 +37,7 @@ class SearchFloatingActionButton extends StatefulWidget {
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
 
-  static const double _fabSize = 56.0;
+  static const double fabSize = 56.0;
 
   @override
   State<SearchFloatingActionButton> createState() =>
@@ -49,7 +49,10 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   bool _pressed = false;
   late final AnimationSettingsState _animationSettings;
   late final AnimationController _idleController;
+  late final CurvedAnimation _idleCurve;
   late final Animation<double> _idleTurns;
+  bool _tickersEnabled = true;
+  bool _lastWiggleEnabled = false;
 
   @override
   void initState() {
@@ -59,19 +62,32 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
       vsync: this,
       duration: const Duration(milliseconds: 960),
     );
-    _idleTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
-      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
+    _idleCurve = CurvedAnimation(
+      parent: _idleController,
+      curve: Curves.easeInOut,
     );
+    _idleTurns = Tween<double>(begin: -0.012, end: 0.012).animate(_idleCurve);
     _animationSettings.addListener(_syncFromSettings);
     _syncFromSettings();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tickersEnabled = TickerMode.of(context);
+    if (tickersEnabled != _tickersEnabled) {
+      _tickersEnabled = tickersEnabled;
+      _syncFromSettings();
+    }
+  }
+
   void _syncFromSettings() {
     if (!mounted) return;
-    final idleEnabled = _animationSettings.bellIdleEnabled &&
+    final wiggleEnabled = _animationSettings.bellIdleEnabled &&
         _animationSettings.uiAnimationsEnabled &&
-        widget.iconData == Icons.add_alert;
-    if (idleEnabled) {
+        widget.iconData == Icons.add_alert &&
+        _tickersEnabled;
+    if (wiggleEnabled) {
       if (!_idleController.isAnimating) {
         _idleController.repeat(reverse: true);
       }
@@ -79,7 +95,10 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
       _idleController.stop();
       _idleController.value = 0.5;
     }
-    setState(() {});
+    if (_lastWiggleEnabled != wiggleEnabled) {
+      _lastWiggleEnabled = wiggleEnabled;
+      setState(() {});
+    }
   }
 
   @override
@@ -93,6 +112,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   @override
   void dispose() {
     _animationSettings.removeListener(_syncFromSettings);
+    _idleCurve.dispose();
     _idleController.dispose();
     super.dispose();
   }
@@ -129,12 +149,12 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     // Mirrors `_buildInlineFiltersRibbon` on [HomeScreen]: [LiquidGlassPlate] is
     // the glass surface; interaction sits inside it (ribbon uses IconButtons).
     final Widget liquidBody = SizedBox(
-      width: SearchFloatingActionButton._fabSize,
-      height: SearchFloatingActionButton._fabSize,
+      width: SearchFloatingActionButton.fabSize,
+      height: SearchFloatingActionButton.fabSize,
       child: LiquidGlassPlate(
-        height: SearchFloatingActionButton._fabSize,
+        height: SearchFloatingActionButton.fabSize,
         borderRadius: BorderRadius.circular(
-          SearchFloatingActionButton._fabSize / 2,
+          SearchFloatingActionButton.fabSize / 2,
         ),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -147,9 +167,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
             size: widget.iconSize,
             color: fg,
             idleTurns: _idleTurns,
-            wiggle: widget.iconData == Icons.add_alert &&
-                _animationSettings.bellIdleEnabled &&
-                _animationSettings.uiAnimationsEnabled,
+            wiggle: _lastWiggleEnabled,
           ),
         ),
       ),
@@ -169,8 +187,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
         onHighlightChanged: setPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 90),
-          width: SearchFloatingActionButton._fabSize,
-          height: SearchFloatingActionButton._fabSize,
+          width: SearchFloatingActionButton.fabSize,
+          height: SearchFloatingActionButton.fabSize,
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: shadows,
@@ -188,9 +206,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
               size: widget.iconSize,
               color: fg,
               idleTurns: _idleTurns,
-              wiggle: widget.iconData == Icons.add_alert &&
-                  _animationSettings.bellIdleEnabled &&
-                  _animationSettings.uiAnimationsEnabled,
+              wiggle: _lastWiggleEnabled,
             ),
           ),
         ),
@@ -255,16 +271,18 @@ class _AnimatedFabIcon extends StatelessWidget {
 
     return Center(
       child: wiggle
-          ? AnimatedBuilder(
-              animation: idleTurns,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: idleTurns.value * 2 * 3.1415926535897932,
-                  alignment: Alignment.topCenter,
-                  child: child,
-                );
-              },
-              child: icon,
+          ? RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: idleTurns,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: idleTurns.value * 2 * 3.1415926535897932,
+                    alignment: Alignment.topCenter,
+                    child: child,
+                  );
+                },
+                child: icon,
+              ),
             )
           : icon,
     );

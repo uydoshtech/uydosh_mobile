@@ -20,6 +20,7 @@ class RoomUsdzViewerService {
   static const MethodChannel _metricsSink = MethodChannel("uydosh/room_scan_metrics_sink");
 
   static bool _metricsSinkRegistered = false;
+  static bool _presentInFlight = false;
 
   static void _ensureRoomScanMetricsSink() {
     if (_metricsSinkRegistered) {
@@ -79,6 +80,26 @@ class RoomUsdzViewerService {
     bool publishMetricsIfMissing = false,
   }) async {
     if (!isIOSDevice) return false;
+    if (_presentInFlight) return false;
+    _presentInFlight = true;
+    try {
+      return await _downloadAndPresentImpl(
+        absoluteUrl,
+        listingId: listingId,
+        languageCode: languageCode,
+        publishMetricsIfMissing: publishMetricsIfMissing,
+      );
+    } finally {
+      _presentInFlight = false;
+    }
+  }
+
+  static Future<bool> _downloadAndPresentImpl(
+    String absoluteUrl, {
+    required int listingId,
+    required String languageCode,
+    required bool publishMetricsIfMissing,
+  }) async {
     if (publishMetricsIfMissing) {
       _ensureRoomScanMetricsSink();
     }

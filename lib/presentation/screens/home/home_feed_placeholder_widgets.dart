@@ -76,53 +76,47 @@ class HomeEmptySearchPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ThemeIcon(
-                Icons.search_off,
-                size: 64,
-                color: homeIconColor,
-              ),
-              const SizedBox(height: 16),
-              L10n.text(
-                "no_search_results",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: titleColor,
+        ThemeIcon(
+          Icons.search_off,
+          size: 64,
+          color: homeIconColor,
+        ),
+        const SizedBox(height: 16),
+        L10n.text(
+          "no_search_results",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: titleColor,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                GhostButtonFactory.iconText(
+                  onPressed: onClearFilters,
+                  icon: Icons.filter_alt_off,
+                  text: L10n.get("search_clear_filters"),
+                  height: emptySearchCtaHeight,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  neumorphicSoftUi: true,
                 ),
-              ),
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      GhostButtonFactory.iconText(
-                        onPressed: onClearFilters,
-                        icon: Icons.filter_alt_off,
-                        text: L10n.get("search_clear_filters"),
-                        height: emptySearchCtaHeight,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        neumorphicSoftUi: true,
-                      ),
-                      const SizedBox(height: 12),
-                      NotifySearchAlertGhostButton(
-                        height: emptySearchCtaHeight,
-                        label: L10n.get("search_alert_notify_me"),
-                        onPressed: onNotifyMe,
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 12),
+                NotifySearchAlertGhostButton(
+                  height: emptySearchCtaHeight,
+                  label: L10n.get("search_alert_notify_me"),
+                  onPressed: onNotifyMe,
                 ),
-              ),
-              const SizedBox(height: 400),
-            ],
+              ],
+            ),
           ),
         ),
       ],

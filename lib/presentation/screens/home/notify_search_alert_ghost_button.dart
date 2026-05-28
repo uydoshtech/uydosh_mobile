@@ -31,7 +31,13 @@ class _NotifySearchAlertGhostButtonState
   late final Animation<double> _ringOpacity;
   late final AnimationController _idleController;
   late final Animation<double> _idleBellTurns;
+  late final CurvedAnimation _idleCurve;
+  late final CurvedAnimation _ringScaleCurve;
+  late final CurvedAnimation _ringOpacityCurve;
   late final AnimationSettingsState _animationSettings;
+  bool _tickersEnabled = true;
+  bool _lastIdleEnabled = false;
+  bool _lastTapEnabled = false;
 
   @override
   void initState() {
@@ -41,8 +47,12 @@ class _NotifySearchAlertGhostButtonState
       vsync: this,
       duration: const Duration(milliseconds: 960),
     );
+    _idleCurve = CurvedAnimation(
+      parent: _idleController,
+      curve: Curves.easeInOut,
+    );
     _idleBellTurns = Tween<double>(begin: -0.012, end: 0.012).animate(
-      CurvedAnimation(parent: _idleController, curve: Curves.easeInOut),
+      _idleCurve,
     );
 
     _controller = AnimationController(
@@ -75,26 +85,35 @@ class _NotifySearchAlertGhostButtonState
         weight: 30,
       ),
     ]).animate(_controller);
-    _ringScale = Tween<double>(begin: 1, end: 2.15).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.72, curve: Curves.easeOut),
-      ),
+    _ringScaleCurve = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, 0.72, curve: Curves.easeOut),
     );
-    _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.88, curve: Curves.easeOut),
-      ),
+    _ringScale = Tween<double>(begin: 1, end: 2.15).animate(_ringScaleCurve);
+    _ringOpacityCurve = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, 0.88, curve: Curves.easeOut),
     );
+    _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(_ringOpacityCurve);
 
     _animationSettings.addListener(_syncFromSettings);
     _syncFromSettings();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tickersEnabled = TickerMode.of(context);
+    if (tickersEnabled != _tickersEnabled) {
+      _tickersEnabled = tickersEnabled;
+      _syncFromSettings();
+    }
+  }
+
   void _syncFromSettings() {
     if (!mounted) return;
-    final idleEnabled = _animationSettings.bellIdleEnabled;
+    final idleEnabled =
+        _animationSettings.bellIdleEnabled && _tickersEnabled;
     if (idleEnabled) {
       if (!_idleController.isAnimating) {
         _idleController.repeat(reverse: true);
@@ -111,12 +130,19 @@ class _NotifySearchAlertGhostButtonState
       _controller.value = 0;
     }
 
-    setState(() {});
+    if (_lastIdleEnabled != idleEnabled || _lastTapEnabled != tapEnabled) {
+      _lastIdleEnabled = idleEnabled;
+      _lastTapEnabled = tapEnabled;
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     _animationSettings.removeListener(_syncFromSettings);
+    _idleCurve.dispose();
+    _ringScaleCurve.dispose();
+    _ringOpacityCurve.dispose();
     _controller.dispose();
     _idleController.dispose();
     super.dispose();
@@ -134,8 +160,8 @@ class _NotifySearchAlertGhostButtonState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ringColor = theme.colorScheme.primary;
-    final idleEnabled = _animationSettings.bellIdleEnabled;
-    final tapEnabled = _animationSettings.bellTapEnabled;
+    final idleEnabled = _lastIdleEnabled;
+    final tapEnabled = _lastTapEnabled;
 
     final label = theme.textTheme.labelLarge;
     final baseSize = label?.fontSize ?? 14;
@@ -155,55 +181,57 @@ class _NotifySearchAlertGhostButtonState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 30,
-            height: 30,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                if (tapEnabled)
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return IgnorePointer(
-                        child: Opacity(
-                          opacity: _ringOpacity.value.clamp(0.0, 1.0),
-                          child: Transform.scale(
-                            scale: _ringScale.value,
-                            child: Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: ringColor.withValues(alpha: 0.85),
-                                  width: 1.5,
+          RepaintBoundary(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  if (tapEnabled)
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return IgnorePointer(
+                          child: Opacity(
+                            opacity: _ringOpacity.value.clamp(0.0, 1.0),
+                            child: Transform.scale(
+                              scale: _ringScale.value,
+                              child: Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: ringColor.withValues(alpha: 0.85),
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                        );
+                      },
+                    ),
+                  AnimatedBuilder(
+                    animation: Listenable.merge([_idleController, _controller]),
+                    builder: (context, child) {
+                      final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
+                          (tapEnabled ? _bellTurns.value : 0.0);
+                      return Transform.rotate(
+                        angle: turns * 2 * math.pi,
+                        alignment: Alignment.topCenter,
+                        child: child,
                       );
                     },
+                    child: const ThemeIcon(
+                      Icons.notifications_active,
+                      size: 24,
+                    ),
                   ),
-                AnimatedBuilder(
-                  animation: Listenable.merge([_idleController, _controller]),
-                  builder: (context, child) {
-                    final turns = (idleEnabled ? _idleBellTurns.value : 0.0) +
-                        (tapEnabled ? _bellTurns.value : 0.0);
-                    return Transform.rotate(
-                      angle: turns * 2 * math.pi,
-                      alignment: Alignment.topCenter,
-                      child: child,
-                    );
-                  },
-                  child: const ThemeIcon(
-                    Icons.notifications_active,
-                    size: 24,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 8),

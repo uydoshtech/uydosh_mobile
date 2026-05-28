@@ -228,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   static const double _inlineSearchRibbonHeight = 56.0;
   static const double _inlineSearchRibbonToListGap = 8.0;
   static const double _kFabGap = 12.0;
+  static const double _kFabSize = SearchFloatingActionButton.fabSize;
   late final VoidCallback _throttledScrollListener;
   late final VoidCallback _resetScrollLoadingState;
   final SearchFiltersState _searchFiltersState = SearchFiltersState();
@@ -599,6 +600,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     _resetScrollLoadingState();
   }
 
+  void _syncFeedEntriesCache(List<Listing> listings) {
+    if (identical(_cachedFeedListingsRef, listings)) return;
+    _cachedFeedListingsRef = listings;
+    _cachedFeedEntries = homeFeedEntriesWithDateHeaders(listings);
+  }
+
+  void _clearFeedEntriesCache() {
+    _cachedFeedListingsRef = null;
+    _cachedFeedEntries = null;
+  }
+
   void _onHomeRefreshStateChanged() {
     final refreshState = HomeRefreshState();
     if (refreshState.forceRefresh && mounted) {
@@ -846,15 +858,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         state.map(
           initial: (_) {
             _resetLoadMoreState();
+            _clearFeedEntriesCache();
           },
           loading: (_) {
             _resetLoadMoreState();
           },
-          loaded: (_) {
+          loaded: (loadedState) {
             _resetLoadMoreState();
+            _syncFeedEntriesCache(loadedState.listings);
           },
           error: (_) {
             _resetLoadMoreState();
+            _clearFeedEntriesCache();
           },
         );
       },
@@ -1208,26 +1223,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeInCubic,
           transitionBuilder: (child, animation) {
-            final curved = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-              reverseCurve: Curves.easeInCubic,
-            );
-            // Use a larger travel distance so the slide is clearly visible.
+            // AnimatedSwitcher already applies switchInCurve/switchOutCurve to
+            // [animation]; avoid wrapping in extra CurvedAnimations (leak).
             final slide = Tween<Offset>(
               begin: const Offset(-1.0, 0),
               end: Offset.zero,
-            ).animate(curved);
-            final fade = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOut,
-              reverseCurve: Curves.easeIn,
-            );
-            // Avoid clipping while sliding out: ClipRect can "cut" the trailing
-            // circular close button mid-transition, briefly making it look oval.
+            ).animate(animation);
             return SlideTransition(
               position: slide,
-              child: FadeTransition(opacity: fade, child: child),
+              child: FadeTransition(opacity: animation, child: child),
             );
           },
           child: _inlineSearchActive
@@ -1248,9 +1252,27 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  double _fabColumnHeight({required bool includeBellFab}) {
+    if (includeBellFab) {
+      return _kFabSize + _kFabGap + _kFabSize;
+    }
+    return _kFabSize;
+  }
+
+  /// Extra scroll padding so empty-search CTAs can scroll above the FAB stack.
+  double _emptySearchExtraBottomScrollPadding(BuildContext context) {
+    final showBellFab = widget.isSearchMode || _inlineSearchActive;
+    return _searchAlertFabStackBottom(context) +
+        _fabColumnHeight(includeBellFab: showBellFab) +
+        16.0;
+  }
+
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
   /// the viewport (welcome / empty states).
-  Widget _buildPullToRefreshAroundFillChild(Widget child) {
+  Widget _buildPullToRefreshAroundFillChild(
+    Widget child, {
+    double extraBottomPadding = 0,
+  }) {
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
         baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
@@ -1270,7 +1292,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 16.0,
                 baseTopPad,
                 16.0,
-                _feedListBottomPadding(context),
+                _feedListBottomPadding(context) + extraBottomPadding,
               ),
               children: [
                 _buildAnimatedFeedTopSpacer(trailingSpacing: 0),
@@ -1413,6 +1435,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             _isCreatingSearchAlert ? null : () => unawaited(_subscribeToSearchAlerts()),
         emptySearchCtaHeight: _kEmptySearchCtaButtonHeight,
       ),
+      extraBottomPadding: _emptySearchExtraBottomScrollPadding(context),
     );
   }
 
@@ -1794,11 +1817,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
         baseTopPad + _feedRibbonSpacerHeight() + _inlineSearchRibbonToListGap;
-    if (!identical(_cachedFeedListingsRef, listings)) {
-      _cachedFeedListingsRef = listings;
-      _cachedFeedEntries = homeFeedEntriesWithDateHeaders(listings);
-    }
-    final feedEntries = _cachedFeedEntries!;
+    final feedEntries =
+        _cachedFeedEntries ?? homeFeedEntriesWithDateHeaders(listings);
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: edgeOffset,

@@ -227,6 +227,15 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let modeMaterialsToolbarPanel = UIView()
   private let modeMaterialsStack = UIStackView()
   private var sceneWorldBounds: (min: SCNVector3, max: SCNVector3)?
+  private var footprintMetrics: RoomScanMetricsResult?
+  private var isOrthographicPlanView = false
+  private var savedPerspectiveOrbitYaw: Float = 0
+  private var savedPerspectiveOrbitPitch: Float = 0
+  private var savedPerspectiveOrbitRadius: Float = 1
+  private var savedPerspectiveFov: CGFloat = 60
+  private var planOrthographicScale: CGFloat = 1
+  private var pinchBaseOrthoScale: CGFloat = 1
+  private weak var debugOverlayNode: SCNNode?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
   /// Matches `zoomInTapped` / `zoomOutTapped` (FOV change per step).
@@ -499,6 +508,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     dimensionsLine1Label.preferredMaxLayoutWidth = lineLabelMaxWidth
     dimensionsHeightLabel.preferredMaxLayoutWidth = lineLabelMaxWidth
     dimensionsLine2Label.preferredMaxLayoutWidth = lineLabelMaxWidth
+    if isOrthographicPlanView {
+      applyTopDownPlanCamera(animated: false)
+    }
   }
 
   /// Fade + slight drop entrance for the brand mark. Mirrors the feel of
@@ -618,6 +630,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   private func setZoom(fovDegrees: CGFloat, animated: Bool) {
     guard let cam = sceneView.pointOfView?.camera else { return }
+    if isOrthographicPlanView {
+      let next = max(0.5, planOrthographicScale * (60 / max(28, min(82, fovDegrees))))
+      planOrthographicScale = next
+      if animated {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.12
+        cam.orthographicScale = Double(next)
+        SCNTransaction.commit()
+      } else {
+        cam.orthographicScale = Double(next)
+      }
+      return
+    }
     let next = max(28, min(82, fovDegrees))
     if animated {
       SCNTransaction.begin()
@@ -631,11 +656,27 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   @objc private func zoomInTapped() {
     guard let cam = sceneView.pointOfView?.camera else { return }
+    if isOrthographicPlanView {
+      planOrthographicScale = max(0.5, planOrthographicScale * 0.88)
+      SCNTransaction.begin()
+      SCNTransaction.animationDuration = 0.12
+      cam.orthographicScale = Double(planOrthographicScale)
+      SCNTransaction.commit()
+      return
+    }
     setZoom(fovDegrees: cam.fieldOfView - Self.zoomFovStepDegrees, animated: true)
   }
 
   @objc private func zoomOutTapped() {
     guard let cam = sceneView.pointOfView?.camera else { return }
+    if isOrthographicPlanView {
+      planOrthographicScale = min(80, planOrthographicScale * 1.12)
+      SCNTransaction.begin()
+      SCNTransaction.animationDuration = 0.12
+      cam.orthographicScale = Double(planOrthographicScale)
+      SCNTransaction.commit()
+      return
+    }
     setZoom(fovDegrees: cam.fieldOfView + Self.zoomFovStepDegrees, animated: true)
   }
 
@@ -1180,6 +1221,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         present(alert, animated: true)
       }
     }
+    updateCameraForDisplayMode()
   }
 
   @objc private func modeChanged() {
@@ -1197,13 +1239,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     applyMaterialsStyle()
   }
 
-  /// RoomPlan / SceneKit: meters, Y-up. Uses horizontal spans (X, Z) as floor footprint and Y as height.
-  /// Floor “area” is the axis-aligned footprint (long × short); room shapes are often non-rectangular.
-  private func updateDimensionsDisplay(dx: Float, dy: Float, dz: Float) {
-    let floorLong = max(dx, dz)
-    let floorShort = min(dx, dz)
-    let height = dy
-    let floorArea = Double(floorLong) * Double(floorShort)
+  /// RoomPlan / SceneKit: meters, Y-up. Footprint from floor polygon; height from full scene.
+  private func updateDimensionsDisplay(_ metrics: RoomScanMetricsResult) {
+    let floorLong = Float(metrics.floorLongM)
+    let floorShort = Float(metrics.floorShortM)
+    let height = Float(metrics.heightM)
+    let floorArea = metrics.floorAreaM2
     func fmt(_ v: Float) -> String {
       String(format: "%.1f", v)
     }
@@ -1225,19 +1266,18 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
     hintContainer.isUserInteractionEnabled = true
-    publishMetricsToFlutterIfNeeded(dx: dx, dy: dy, dz: dz)
+    publishMetricsToFlutterIfNeeded(metrics: metrics)
+    #if DEBUG
+    logFootprintDebug(metrics)
+    #endif
   }
 
   /// Owner backfill: push bounds to Flutter once so the API can persist metrics for legacy scans.
-  private func publishMetricsToFlutterIfNeeded(dx: Float, dy: Float, dz: Float) {
+  private func publishMetricsToFlutterIfNeeded(metrics: RoomScanMetricsResult) {
     guard publishMetricsIfMissing, listingId > 0, !didPublishFlutterMetrics,
       let messenger = metricsMessenger
     else { return }
     didPublishFlutterMetrics = true
-    let floorLong = Double(max(dx, dz))
-    let floorShort = Double(min(dx, dz))
-    let height = Double(dy)
-    let floorArea = floorLong * floorShort
     let channel = FlutterMethodChannel(
       name: "uydosh/room_scan_metrics_sink",
       binaryMessenger: messenger
@@ -1246,10 +1286,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       "onComputedMetrics",
       arguments: [
         "listingId": listingId,
-        "floor_long_m": floorLong,
-        "floor_short_m": floorShort,
-        "height_m": height,
-        "floor_area_m2": floorArea,
+        "floor_long_m": metrics.floorLongM,
+        "floor_short_m": metrics.floorShortM,
+        "height_m": metrics.heightM,
+        "floor_area_m2": metrics.floorAreaM2,
       ],
       result: { _ in }
     )
@@ -1257,7 +1297,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
   private func frameCamera(for scene: SCNScene, in view: SCNView) {
-    guard let bounds = unionWorldBounds(of: scene.rootNode) else { return }
+    guard let bounds = RoomScanMetricsComputer.unionWorldBounds(of: scene.rootNode),
+      let metrics = RoomScanMetricsComputer.metrics(for: scene)
+    else { return }
 
     let minB = bounds.min
     let maxB = bounds.max
@@ -1267,12 +1309,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     guard dx > 1e-6 || dy > 1e-6 || dz > 1e-6 else { return }
 
     sceneWorldBounds = (minB, maxB)
-    updateDimensionsDisplay(dx: dx, dy: dy, dz: dz)
+    footprintMetrics = metrics
+    updateDimensionsDisplay(metrics)
+    updateDebugFootprintOverlay(in: scene)
 
     let centerWorld = SCNVector3(
-      (minB.x + maxB.x) * 0.5,
+      (metrics.minX + metrics.maxX) * 0.5,
       (minB.y + maxB.y) * 0.5,
-      (minB.z + maxB.z) * 0.5
+      (metrics.minZ + metrics.maxZ) * 0.5
     )
 
     // Half diagonal of the axis-aligned box; enclosing sphere radius for a conservative fit.
@@ -1283,6 +1327,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let cameraNode = SCNNode()
     cameraNode.name = "UydoshFramingCamera"
     let cam = SCNCamera()
+    cam.usesOrthographicProjection = false
     cameraNode.camera = cam
 
     let vfovDegrees: CGFloat = 60
@@ -1340,10 +1385,185 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       orbitPitch = asin(min(1, max(-1, cdy / orbitRadius)))
       orbitYaw = atan2(cdx, cdz)
     }
+    savedPerspectiveOrbitYaw = orbitYaw
+    savedPerspectiveOrbitPitch = orbitPitch
+    savedPerspectiveOrbitRadius = orbitRadius
+    savedPerspectiveFov = initialFov
+    isOrthographicPlanView = false
 
     cacheOriginalMaterialsIfNeeded()
     applyMaterialsStyle()
+    updateCameraForDisplayMode()
   }
+
+  private func updateCameraForDisplayMode() {
+    switch displayMode {
+    case .furnitureOnly:
+      applyTopDownPlanCamera(animated: true)
+    default:
+      restorePerspectiveCamera(animated: true)
+    }
+  }
+
+  /// Orthographic top-down camera aligned to the floor footprint so on-screen aspect matches dimensions.
+  private func applyTopDownPlanCamera(animated: Bool) {
+    guard let metrics = footprintMetrics,
+      let camNode = framingCameraNode,
+      let cam = camNode.camera,
+      let sceneBounds = sceneWorldBounds
+    else { return }
+
+    if !isOrthographicPlanView {
+      savedPerspectiveOrbitYaw = orbitYaw
+      savedPerspectiveOrbitPitch = orbitPitch
+      savedPerspectiveOrbitRadius = orbitRadius
+      savedPerspectiveFov = cam.fieldOfView
+    }
+
+    removeAutoRotateAnimation()
+    isAutoRotating = false
+
+    let dx = metrics.maxX - metrics.minX
+    let dz = metrics.maxZ - metrics.minZ
+    let centerWorld = SCNVector3(
+      (metrics.minX + metrics.maxX) * 0.5,
+      (sceneBounds.min.y + sceneBounds.max.y) * 0.5,
+      (metrics.minZ + metrics.maxZ) * 0.5
+    )
+    orbitTarget = centerWorld
+
+    let w = max(sceneView.bounds.width, 1)
+    let h = max(sceneView.bounds.height, 1)
+    let aspect = w / h
+    let padding: CGFloat = 1.12
+    let floorLong = CGFloat(metrics.floorLongM)
+    let floorShort = CGFloat(metrics.floorShortM)
+    let halfHeight = max(floorShort * 0.5, floorLong * 0.5 / aspect) * padding
+    planOrthographicScale = halfHeight
+
+    let cameraHeight = max(dx, dz) * 2.5 + max(sceneBounds.max.y - sceneBounds.min.y, 0.5)
+
+    let apply = {
+      cam.usesOrthographicProjection = true
+      cam.orthographicScale = Double(self.planOrthographicScale)
+      cam.fieldOfView = 60
+      camNode.position = SCNVector3(
+        centerWorld.x,
+        sceneBounds.max.y + cameraHeight,
+        centerWorld.z
+      )
+      // Pitch −90° looks straight down; yaw aligns long footprint edge with screen horizontal.
+      camNode.eulerAngles = SCNVector3(-Float.pi / 2, metrics.footprintYaw, 0)
+      self.isOrthographicPlanView = true
+    }
+
+    if animated {
+      SCNTransaction.begin()
+      SCNTransaction.animationDuration = 0.28
+      apply()
+      SCNTransaction.commit()
+    } else {
+      apply()
+    }
+  }
+
+  private func restorePerspectiveCamera(animated: Bool) {
+    guard isOrthographicPlanView,
+      let camNode = framingCameraNode,
+      let cam = camNode.camera
+    else { return }
+
+    orbitYaw = savedPerspectiveOrbitYaw
+    orbitPitch = savedPerspectiveOrbitPitch
+    orbitRadius = savedPerspectiveOrbitRadius
+
+    let apply = {
+      cam.usesOrthographicProjection = false
+      cam.fieldOfView = self.savedPerspectiveFov
+      self.updateCameraFromOrbit()
+      self.isOrthographicPlanView = false
+    }
+
+    if animated {
+      SCNTransaction.begin()
+      SCNTransaction.animationDuration = 0.28
+      apply()
+      SCNTransaction.commit()
+    } else {
+      apply()
+    }
+  }
+
+  #if DEBUG
+  private func logFootprintDebug(_ metrics: RoomScanMetricsResult) {
+    let aabbDx = metrics.maxX - metrics.minX
+    let aabbDz = metrics.maxZ - metrics.minZ
+    let viewAspect = sceneView.bounds.width / max(sceneView.bounds.height, 1)
+    NSLog(
+      """
+      [RoomScanMetrics] source=\(metrics.footprintSource) verts=\(metrics.polygonVertexCount)
+      footprint long×short=\(String(format: "%.2f", metrics.floorLongM))×\(String(format: "%.2f", metrics.floorShortM)) m area=\(String(format: "%.1f", metrics.floorAreaM2)) m²
+      AABB X[\(metrics.minX), \(metrics.maxX)] Z[\(metrics.minZ), \(metrics.maxZ)] dx=\(aabbDx) dz=\(aabbDz)
+      footprintYaw=\(metrics.footprintYaw) viewportAspect=\(viewAspect)
+      """
+    )
+  }
+
+  private func updateDebugFootprintOverlay(in scene: SCNScene) {
+    debugOverlayNode?.removeFromParentNode()
+    guard let metrics = footprintMetrics,
+      let sceneBounds = sceneWorldBounds
+    else { return }
+
+    let overlay = SCNNode()
+    overlay.name = "UydoshFootprintDebug"
+
+    let y = sceneBounds.min.y + 0.03
+    let corners: [SCNVector3] = [
+      SCNVector3(metrics.minX, y, metrics.minZ),
+      SCNVector3(metrics.maxX, y, metrics.minZ),
+      SCNVector3(metrics.maxX, y, metrics.maxZ),
+      SCNVector3(metrics.minX, y, metrics.maxZ),
+    ]
+
+    func addEdge(from a: SCNVector3, to b: SCNVector3) {
+      let dx = b.x - a.x
+      let dy = b.y - a.y
+      let dz = b.z - a.z
+      let length = sqrt(dx * dx + dy * dy + dz * dz)
+      guard length > 1e-4 else { return }
+      let cyl = SCNCylinder(radius: 0.015, height: CGFloat(length))
+      cyl.firstMaterial?.diffuse.contents = UIColor.systemGreen.withAlphaComponent(0.9)
+      cyl.firstMaterial?.lightingModel = .constant
+      let node = SCNNode(geometry: cyl)
+      node.position = SCNVector3(
+        (a.x + b.x) * 0.5,
+        (a.y + b.y) * 0.5,
+        (a.z + b.z) * 0.5
+      )
+      node.look(at: b, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 1, 0))
+      overlay.addChildNode(node)
+    }
+
+    for i in 0..<corners.count {
+      addEdge(from: corners[i], to: corners[(i + 1) % corners.count])
+    }
+
+    for c in corners {
+      let sphere = SCNSphere(radius: 0.06)
+      sphere.firstMaterial?.diffuse.contents = UIColor.systemYellow
+      sphere.firstMaterial?.lightingModel = .constant
+      let node = SCNNode(geometry: sphere)
+      node.position = c
+      overlay.addChildNode(node)
+    }
+
+    scene.rootNode.addChildNode(overlay)
+    debugOverlayNode = overlay
+  }
+  #else
+  private func updateDebugFootprintOverlay(in _: SCNScene) {}
+  #endif
 
   private func loadScene() {
     // Load on the main thread: SceneKit + SCNView expect scene graph work on main; background
@@ -1508,6 +1728,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   @objc private func orbitPan(_ gr: UIPanGestureRecognizer) {
+    if isOrthographicPlanView { return }
     switch gr.state {
     case .began:
       stopOrbitDeceleration()
@@ -1551,6 +1772,20 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       stopOrbitDeceleration()
     }
     guard let cam = framingCameraNode?.camera else { return }
+    if isOrthographicPlanView {
+      switch gr.state {
+      case .began:
+        pinchBaseOrthoScale = planOrthographicScale
+      case .changed:
+        planOrthographicScale = max(0.5, min(80, pinchBaseOrthoScale / CGFloat(gr.scale)))
+        cam.orthographicScale = Double(planOrthographicScale)
+      case .ended, .cancelled, .failed:
+        pinchBaseOrthoScale = planOrthographicScale
+      default:
+        break
+      }
+      return
+    }
     switch gr.state {
     case .began:
       pinchBaseFov = cam.fieldOfView
@@ -1602,6 +1837,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     didCacheOriginalMaterials = false
     originalMaterialsByGeometry.removeAll(keepingCapacity: false)
     sceneWorldBounds = nil
+    footprintMetrics = nil
+    isOrthographicPlanView = false
+    debugOverlayNode = nil
     displayMode = .fullRoom
     modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
     useStylizedMaterials = true

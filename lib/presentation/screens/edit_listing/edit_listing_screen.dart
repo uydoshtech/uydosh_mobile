@@ -578,6 +578,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateController.removeListener(_markDirty);
     _titleController.dispose();
     _descriptionController.dispose();
+    _moveInDateController.dispose();
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();

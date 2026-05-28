@@ -220,6 +220,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   // which is only mounted when there's a 3D scan to rotate the icon for.
   late PageController _pageController;
   late ScrollController _scrollController;
+  bool _isOpeningRoom3d = false;
 
   /// Cached so [ListenableBuilder] around the app bar menu does not restart
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
@@ -821,8 +822,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   }
 
   Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
+    if (_isOpeningRoom3d) return;
     final raw = listingDetail.pointCloudUrl;
     if (raw == null || raw.isEmpty) return;
+    setState(() => _isOpeningRoom3d = true);
     HapticFeedbackUtils.impact();
     final url = _buildPhotoUrl(raw);
     try {
@@ -884,6 +887,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     } catch (e) {
       logger.d("Room 3D viewer error: $e");
       _toastRoom3dOpenError();
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningRoom3d = false);
+      } else {
+        _isOpeningRoom3d = false;
+      }
     }
   }
 
@@ -1955,7 +1964,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   Widget _room3dTile(ListingDetail listingDetail) {
     return ListingRoom3dTile(
       listingDetail: listingDetail,
-      onTap: () => _openRoom3dViewer(listingDetail),
+      onTap: _isOpeningRoom3d
+          ? null
+          : () => _openRoom3dViewer(listingDetail),
     );
   }
 

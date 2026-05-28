@@ -40,7 +40,7 @@ class ListingRoom3dTile extends StatefulWidget {
   });
 
   final ListingDetail listingDetail;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   State<ListingRoom3dTile> createState() => _ListingRoom3dTileState();

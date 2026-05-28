@@ -454,6 +454,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _moveInDateController.dispose();
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
