@@ -27,6 +27,16 @@
 		E8A1B2F61ED2DC5600515817 /* FloorPlanCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */; };
 		E8A1B2F81ED2DC5600515818 /* FloorPlanTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */; };
 		E8A1B3011ED2DC5600515819 /* FloorPlanAlignmentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */; };
+		E8A1B3031ED2DC560051581B /* EditableFloorPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */; };
+		E8A1B3051ED2DC560051581D /* RoomPlanToEditableModelMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */; };
+		E8A1B3071ED2DC560051581F /* EditableFloorPlanAlignService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */; };
+		E8A1B3091ED2DC5600515821 /* DimensionLineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */; };
+		E8A1B30B1ED2DC5600515823 /* FloorPlanResizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */; };
+		E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */; };
+		E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */; };
+		E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */; };
+		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
+		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
 		F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B60 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
@@ -90,6 +100,16 @@
 		E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanCanvas.swift; sourceTree = "<group>"; };
 		E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanTab.swift; sourceTree = "<group>"; };
 		E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanAlignmentService.swift; sourceTree = "<group>"; };
+		E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanModel.swift; sourceTree = "<group>"; };
+		E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomPlanToEditableModelMapper.swift; sourceTree = "<group>"; };
+		E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanAlignService.swift; sourceTree = "<group>"; };
+		E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionLineService.swift; sourceTree = "<group>"; };
+		E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeService.swift; sourceTree = "<group>"; };
+		E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanProjector.swift; sourceTree = "<group>"; };
+		E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanStateManager.swift; sourceTree = "<group>"; };
+		E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene3DRegenerationService.swift; sourceTree = "<group>"; };
+		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
+		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B61 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B62 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B63 /* uz */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uz; path = uz.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -132,6 +152,7 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
+				E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -198,6 +219,15 @@
 				E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */,
 				E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */,
 				E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */,
+				E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */,
+				E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */,
+				E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */,
+				E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */,
+				E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */,
+				E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */,
+				E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */,
+				E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */,
+				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -508,6 +538,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -525,6 +556,15 @@
 				E8A1B2F61ED2DC5600515817 /* FloorPlanCanvas.swift in Sources */,
 				E8A1B2F81ED2DC5600515818 /* FloorPlanTab.swift in Sources */,
 				E8A1B3011ED2DC5600515819 /* FloorPlanAlignmentService.swift in Sources */,
+				E8A1B3031ED2DC560051581B /* EditableFloorPlanModel.swift in Sources */,
+				E8A1B3051ED2DC560051581D /* RoomPlanToEditableModelMapper.swift in Sources */,
+				E8A1B3071ED2DC560051581F /* EditableFloorPlanAlignService.swift in Sources */,
+				E8A1B3091ED2DC5600515821 /* DimensionLineService.swift in Sources */,
+				E8A1B30B1ED2DC5600515823 /* FloorPlanResizeService.swift in Sources */,
+				E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */,
+				E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */,
+				E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */,
+				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -11,6 +11,9 @@ struct RoomScanMetricsResult {
   let maxX: Float
   let minZ: Float
   let maxZ: Float
+  /// OBB footprint center in world X/Z — matches floorLongM × floorShortM.
+  let footprintCenterX: Float
+  let footprintCenterZ: Float
   /// Yaw (radians) that aligns the long footprint edge with +X in world space.
   let footprintYaw: Float
   let footprintSource: String
@@ -97,6 +100,8 @@ enum RoomScanMetricsComputer {
         maxX: sceneBounds.max.x,
         minZ: sceneBounds.min.z,
         maxZ: sceneBounds.max.z,
+        footprintCenterX: (sceneBounds.min.x + sceneBounds.max.x) * 0.5,
+        footprintCenterZ: (sceneBounds.min.z + sceneBounds.max.z) * 0.5,
         footprintYaw: dx >= dz ? 0 : Float.pi / 2,
         footprintSource: source,
         polygonVertexCount: 0
@@ -119,6 +124,8 @@ enum RoomScanMetricsComputer {
       maxX: maxX,
       minZ: minZ,
       maxZ: maxZ,
+      footprintCenterX: obb.centerX,
+      footprintCenterZ: obb.centerZ,
       footprintYaw: obb.yaw,
       footprintSource: source,
       polygonVertexCount: floorPoints.count
@@ -241,10 +248,10 @@ enum RoomScanMetricsComputer {
 
   private static func minimumAreaBoundingRect(
     points: [(x: Float, z: Float)]
-  ) -> (long: Float, short: Float, yaw: Float) {
+  ) -> (long: Float, short: Float, yaw: Float, centerX: Float, centerZ: Float) {
     let unique = dedupePoints(points, epsilon: 0.02)
     guard unique.count >= 2 else {
-      return (long: 1, short: 1, yaw: 0)
+      return (long: 1, short: 1, yaw: 0, centerX: 0, centerZ: 0)
     }
 
     let hull = convexHull(unique)
@@ -254,13 +261,15 @@ enum RoomScanMetricsComputer {
     var bestLong: Float = 0
     var bestShort: Float = 0
     var bestYaw: Float = 0
+    var bestCenterX: Float = unique[0].x
+    var bestCenterZ: Float = unique[0].z
 
     for i in 0..<ring.count {
       let p1 = ring[i]
       let p2 = ring[(i + 1) % ring.count]
-      let yaw = atan2(p2.z - p1.z, p2.x - p1.x)
-      let cosA = cos(-yaw)
-      let sinA = sin(-yaw)
+      let edgeYaw = atan2(p2.z - p1.z, p2.x - p1.x)
+      let cosA = cos(-edgeYaw)
+      let sinA = sin(-edgeYaw)
       var minRX = Float.greatestFiniteMagnitude
       var maxRX = -Float.greatestFiniteMagnitude
       var minRZ = Float.greatestFiniteMagnitude
@@ -278,9 +287,16 @@ enum RoomScanMetricsComputer {
       let area = w * h
       if area < bestArea {
         bestArea = area
-        bestLong = max(w, h)
-        bestShort = min(w, h)
-        bestYaw = w >= h ? yaw : yaw + Float.pi / 2
+        let long = max(w, h)
+        let short = min(w, h)
+        let rectYaw = w >= h ? edgeYaw : edgeYaw + Float.pi / 2
+        bestLong = long
+        bestShort = short
+        bestYaw = rectYaw
+        let cx = (minRX + maxRX) * 0.5
+        let cz = (minRZ + maxRZ) * 0.5
+        bestCenterX = cx * cos(rectYaw) + cz * sin(rectYaw)
+        bestCenterZ = -cx * sin(rectYaw) + cz * cos(rectYaw)
       }
     }
 
@@ -291,10 +307,16 @@ enum RoomScanMetricsComputer {
       let maxZ = unique.map(\.z).max() ?? 0
       let dx = maxX - minX
       let dz = maxZ - minZ
-      return (long: max(dx, dz), short: min(dx, dz), yaw: dx >= dz ? 0 : Float.pi / 2)
+      return (
+        long: max(dx, dz),
+        short: min(dx, dz),
+        yaw: dx >= dz ? 0 : Float.pi / 2,
+        centerX: (minX + maxX) * 0.5,
+        centerZ: (minZ + maxZ) * 0.5
+      )
     }
 
-    return (long: bestLong, short: bestShort, yaw: bestYaw)
+    return (long: bestLong, short: bestShort, yaw: bestYaw, centerX: bestCenterX, centerZ: bestCenterZ)
   }
 
   private static func convexHull(_ points: [(x: Float, z: Float)]) -> [(x: Float, z: Float)] {

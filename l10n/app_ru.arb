@@ -1075,6 +1075,7 @@
   "followers_count_one": "{count} подписчик",
   "followers_count_few": "{count} подписчика",
   "followers_count_many": "{count} подписчиков",
+  "followers_count_other": "{count} подписчиков",
   "@followers_count_one": {
     "placeholders": {
       "count": {
@@ -1099,9 +1100,18 @@
       }
     }
   },
+  "@followers_count_other": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "124"
+      }
+    }
+  },
   "following_count_one": "{count} подписка",
   "following_count_few": "{count} подписки",
   "following_count_many": "{count} подписок",
+  "following_count_other": "{count} подписок",
   "@following_count_one": {
     "placeholders": {
       "count": {
@@ -1119,6 +1129,14 @@
     }
   },
   "@following_count_many": {
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "89"
+      }
+    }
+  },
+  "@following_count_other": {
     "placeholders": {
       "count": {
         "type": "String",

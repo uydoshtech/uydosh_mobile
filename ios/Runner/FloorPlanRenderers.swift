@@ -49,8 +49,14 @@ enum FloorPlanObjectRenderer {
       guard screenCorners.count >= 3 else { continue }
 
       context.saveGState()
-      context.setFillColor(fillColor.cgColor)
-      context.setStrokeColor(strokeColor.cgColor)
+      let fill = object.isOutsideBounds
+        ? UIColor.systemOrange.withAlphaComponent(0.55)
+        : fillColor
+      let stroke = object.isOutsideBounds
+        ? UIColor.systemOrange
+        : strokeColor
+      context.setFillColor(fill.cgColor)
+      context.setStrokeColor(stroke.cgColor)
       context.setLineWidth(max(1, transform.scale * 0.015))
       context.move(to: screenCorners[0])
       for point in screenCorners.dropFirst() {
@@ -189,30 +195,52 @@ enum FloorPlanOpeningRenderer {
 }
 
 enum DimensionLineRenderer {
+  struct LabelHitRegion {
+    var dimensionId: UUID
+    var rect: CGRect
+    var editKind: DimensionEditKind
+  }
+
   static func draw(
     lines: [DimensionLine],
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    color: UIColor
-  ) {
+    color: UIColor,
+    highlightedDimensionId: UUID? = nil
+  ) -> [LabelHitRegion] {
+    var hits: [LabelHitRegion] = []
     for line in lines {
-      draw(line, in: context, transform: transform, color: color)
+      if let hit = draw(
+        line,
+        in: context,
+        transform: transform,
+        color: color,
+        highlightedDimensionId: highlightedDimensionId
+      ) {
+        hits.append(hit)
+      }
     }
+    return hits
   }
 
   private static func draw(
     _ line: DimensionLine,
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    color: UIColor
-  ) {
+    color: UIColor,
+    highlightedDimensionId: UUID?
+  ) -> LabelHitRegion? {
     let start = transform.planToScreen(line.start)
     let end = transform.planToScreen(line.end)
     let dx = end.x - start.x
     let dy = end.y - start.y
     let len = hypot(dx, dy)
-    guard len > 2 else { return }
+    guard len > 2 else { return nil }
 
+    let isHighlighted = line.id == highlightedDimensionId
+    let strokeColor = line.isEditable
+      ? (isHighlighted ? UIColor.systemBlue : color)
+      : color
     let dirX = dx / len
     let dirY = dy / len
     let perpX = -dirY
@@ -222,7 +250,7 @@ enum DimensionLineRenderer {
     let witnessWidth = max(0.5, transform.scale * 0.005)
 
     context.saveGState()
-    context.setStrokeColor(color.cgColor)
+    context.setStrokeColor(strokeColor.cgColor)
     context.setLineCap(.butt)
     context.setLineJoin(.miter)
 
@@ -256,9 +284,10 @@ enum DimensionLineRenderer {
     drawArchitecturalTick(at: end)
 
     let fontSize = max(9, min(12, transform.scale * 0.085))
+    let textColor = line.isEditable ? UIColor.systemBlue : strokeColor
     let attrs: [NSAttributedString.Key: Any] = [
-      .font: UIFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .regular),
-      .foregroundColor: color,
+      .font: UIFont.monospacedDigitSystemFont(ofSize: fontSize, weight: line.isEditable ? .semibold : .regular),
+      .foregroundColor: textColor,
     ]
     let text = line.label as NSString
     let size = text.size(withAttributes: attrs)
@@ -268,21 +297,41 @@ enum DimensionLineRenderer {
       y: (start.y + end.y) * 0.5 + perpY * labelGap
     )
     let textOrigin = CGPoint(x: mid.x - size.width * 0.5, y: mid.y - size.height * 0.5)
-    let padH: CGFloat = 4
-    let padV: CGFloat = 2
+    let padH: CGFloat = line.isEditable ? 8 : 4
+    let padV: CGFloat = 3
     let bgRect = CGRect(
       x: textOrigin.x - padH,
       y: textOrigin.y - padV,
       width: size.width + padH * 2,
       height: size.height + padV * 2
     )
-    context.setFillColor(UIColor(white: 1, alpha: 0.92).cgColor)
+    let bgFill = line.isEditable
+      ? UIColor.systemBlue.withAlphaComponent(isHighlighted ? 0.18 : 0.10)
+      : UIColor(white: 1, alpha: 0.92)
+    context.setFillColor(bgFill.cgColor)
     context.fill(bgRect)
-    context.setStrokeColor(color.withAlphaComponent(0.25).cgColor)
-    context.setLineWidth(0.5)
+    context.setStrokeColor((line.isEditable ? UIColor.systemBlue : strokeColor).withAlphaComponent(0.35).cgColor)
+    context.setLineWidth(line.isEditable ? 1 : 0.5)
     context.stroke(bgRect)
     text.draw(at: textOrigin, withAttributes: attrs)
+
+    if line.isEditable, let icon = UIImage(systemName: "pencil")?.withTintColor(
+      UIColor.systemBlue.withAlphaComponent(0.85),
+      renderingMode: .alwaysOriginal
+    ) {
+      let iconSide = min(11, bgRect.height - 2)
+      icon.draw(in: CGRect(
+        x: bgRect.maxX - iconSide - 2,
+        y: bgRect.midY - iconSide * 0.5,
+        width: iconSide,
+        height: iconSide
+      ))
+    }
+
     context.restoreGState()
+
+    guard line.isEditable, let editKind = line.editKind else { return nil }
+    return LabelHitRegion(dimensionId: line.id, rect: bgRect.insetBy(dx: -6, dy: -6), editKind: editKind)
   }
 }
 

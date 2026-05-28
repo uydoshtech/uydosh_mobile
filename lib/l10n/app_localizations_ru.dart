@@ -2819,7 +2819,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String followers_count_other(String count) {
-    return '$count followers';
+    return '$count подписчиков';
   }
 
   @override
@@ -2829,7 +2829,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String following_count_other(String count) {
-    return '$count following';
+    return '$count подписок';
   }
 
   @override

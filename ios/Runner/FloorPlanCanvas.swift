@@ -1,12 +1,17 @@
 import UIKit
 
+protocol FloorPlanCanvasDelegate: AnyObject {
+  func floorPlanCanvas(_ canvas: FloorPlanCanvas, didTapEditableDimension dimensionId: UUID)
+  func floorPlanCanvasPresenterViewController(_ canvas: FloorPlanCanvas) -> UIViewController?
+}
+
 /// Interactive 2D blueprint canvas with zoom, pan, and layered rendering.
 final class FloorPlanCanvas: UIView {
+  weak var delegate: FloorPlanCanvasDelegate?
+
   var model: FloorPlanModel? {
     didSet { setNeedsDisplay() }
   }
-
-  private var sourceModel: FloorPlanModel?
 
   var autoAlignEnabled = true {
     didSet {
@@ -27,11 +32,16 @@ final class FloorPlanCanvas: UIView {
     didSet { setNeedsDisplay() }
   }
 
+  private var sourceModel: FloorPlanModel?
+  private var labelHitRegions: [DimensionLineRenderer.LabelHitRegion] = []
+  private var highlightedDimensionId: UUID?
+
   private var userScale: CGFloat = 1
   private var userPan = CGPoint.zero
   private var pinchBaseScale: CGFloat = 1
   private var panGesture: UIPanGestureRecognizer?
   private var pinchGesture: UIPinchGestureRecognizer?
+  private var tapGesture: UITapGestureRecognizer?
 
   override init(frame: CGRect) {
     super.init(frame: frame)
@@ -55,6 +65,11 @@ final class FloorPlanCanvas: UIView {
     let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
     addGestureRecognizer(pinch)
     pinchGesture = pinch
+
+    let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+    tap.delegate = self
+    addGestureRecognizer(tap)
+    tapGesture = tap
   }
 
   func resetView(animated: Bool = true) {
@@ -77,9 +92,16 @@ final class FloorPlanCanvas: UIView {
     resetView(animated: false)
   }
 
+  func setDisplayModel(_ model: FloorPlanModel) {
+    sourceModel = model
+    autoAlignEnabled = false
+    self.model = model
+  }
+
   func clearModel() {
     sourceModel = nil
     model = nil
+    labelHitRegions = []
   }
 
   private func applyDisplayModel() {
@@ -90,6 +112,15 @@ final class FloorPlanCanvas: UIView {
     model = autoAlignEnabled
       ? FloorPlanAlignmentService.alignToLongestWall(source)
       : source
+  }
+
+  @objc private func handleTap(_ gr: UITapGestureRecognizer) {
+    guard dimensionMode == .overall else { return }
+    let point = gr.location(in: self)
+    guard let hit = labelHitRegions.first(where: { $0.rect.contains(point) }) else { return }
+    highlightedDimensionId = hit.dimensionId
+    setNeedsDisplay()
+    delegate?.floorPlanCanvas(self, didTapEditableDimension: hit.dimensionId)
   }
 
   @objc private func handlePan(_ gr: UIPanGestureRecognizer) {
@@ -172,25 +203,33 @@ final class FloorPlanCanvas: UIView {
       )
     }
 
+    labelHitRegions = []
     let dimensionColor = UIColor(red: 0.28, green: 0.34, blue: 0.42, alpha: 0.95)
     switch dimensionMode {
     case .overall:
-      DimensionLineRenderer.draw(
+      labelHitRegions = DimensionLineRenderer.draw(
         lines: model.overallDimensions,
         in: ctx,
         transform: transform,
-        color: dimensionColor
+        color: dimensionColor,
+        highlightedDimensionId: highlightedDimensionId
       )
     case .wallSegments:
-      DimensionLineRenderer.draw(
+      _ = DimensionLineRenderer.draw(
         lines: model.wallSegmentDimensions,
         in: ctx,
         transform: transform,
-        color: dimensionColor
+        color: dimensionColor,
+        highlightedDimensionId: nil
       )
     case .hidden:
       break
     }
+  }
+
+  func clearHighlight() {
+    highlightedDimensionId = nil
+    setNeedsDisplay()
   }
 
   private func expandedBounds(_ bounds: FloorPlanBounds, padding: CGFloat) -> FloorPlanBounds {
@@ -200,5 +239,15 @@ final class FloorPlanCanvas: UIView {
       minY: bounds.minY - padding,
       maxY: bounds.maxY + padding
     )
+  }
+}
+
+extension FloorPlanCanvas: UIGestureRecognizerDelegate {
+  func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+    if gestureRecognizer === tapGesture {
+      let point = touch.location(in: self)
+      return labelHitRegions.contains { $0.rect.contains(point) }
+    }
+    return true
   }
 }

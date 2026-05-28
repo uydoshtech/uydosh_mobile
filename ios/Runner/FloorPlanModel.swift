@@ -42,6 +42,27 @@ struct FloorPlanObject: Equatable {
   var rotation: CGFloat
   var category: String
   var label: String
+  var isOutsideBounds: Bool
+
+  init(
+    center: FloorPlanPoint2D,
+    corners: [FloorPlanPoint2D],
+    width: CGFloat,
+    length: CGFloat,
+    rotation: CGFloat,
+    category: String,
+    label: String,
+    isOutsideBounds: Bool = false
+  ) {
+    self.center = center
+    self.corners = corners
+    self.width = width
+    self.length = length
+    self.rotation = rotation
+    self.category = category
+    self.label = label
+    self.isOutsideBounds = isOutsideBounds
+  }
 }
 
 struct FloorPlanOpening: Equatable {
@@ -58,6 +79,7 @@ enum DimensionLineType: Equatable {
 }
 
 struct DimensionLine: Equatable {
+  var id: UUID
   var start: FloorPlanPoint2D
   var end: FloorPlanPoint2D
   var label: String
@@ -66,6 +88,32 @@ struct DimensionLine: Equatable {
   /// Extension-line anchors on the measured geometry (architectural witness lines).
   var witnessStart: FloorPlanPoint2D?
   var witnessEnd: FloorPlanPoint2D?
+  var isEditable: Bool
+  var editKind: DimensionEditKind?
+
+  init(
+    id: UUID = UUID(),
+    start: FloorPlanPoint2D,
+    end: FloorPlanPoint2D,
+    label: String,
+    offset: CGFloat,
+    type: DimensionLineType,
+    witnessStart: FloorPlanPoint2D? = nil,
+    witnessEnd: FloorPlanPoint2D? = nil,
+    isEditable: Bool = false,
+    editKind: DimensionEditKind? = nil
+  ) {
+    self.id = id
+    self.start = start
+    self.end = end
+    self.label = label
+    self.offset = offset
+    self.type = type
+    self.witnessStart = witnessStart
+    self.witnessEnd = witnessEnd
+    self.isEditable = isEditable
+    self.editKind = editKind
+  }
 }
 
 struct FloorPlanModel: Equatable {

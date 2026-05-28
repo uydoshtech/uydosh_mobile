@@ -383,6 +383,19 @@ class AppStrings {
       "room_3d_floor_plan_hide_grid": "Hide grid",
       "room_3d_floor_plan_auto_align_on": "Auto-align",
       "room_3d_floor_plan_auto_align_off": "Scan angle",
+      "room_3d_floor_plan_edit_dimension_title": "Edit dimension",
+      "room_3d_floor_plan_edit_dimension_current": "Current",
+      "room_3d_floor_plan_edit_dimension_new_value": "New value (m)",
+      "room_3d_floor_plan_edit_dimension_cancel": "Cancel",
+      "room_3d_floor_plan_edit_dimension_apply": "Apply",
+      "room_3d_floor_plan_edit_dimension_updated": "Dimension updated",
+      "room_3d_floor_plan_edit_dimension_large_change_title": "Large change",
+      "room_3d_floor_plan_edit_dimension_large_change_message":
+          "New value differs significantly from the scanned measurement. Apply correction?",
+      "room_3d_floor_plan_edit_dimension_invalid_title": "Invalid value",
+      "room_3d_floor_plan_edit_dimension_invalid_message":
+          "Enter a number between 0.5 and 100 meters.",
+      "room_3d_floor_plan_edit_dimension_confirm_large_change": "Apply",
       "room_3d_floor_plan_unit_meters": "meters",
 
       "profile_completed_success": "Profile completed successfully!",
@@ -2002,6 +2015,19 @@ class AppStrings {
       "room_3d_floor_plan_hide_grid": "Скрыть сетку",
       "room_3d_floor_plan_auto_align_on": "Выравнивание",
       "room_3d_floor_plan_auto_align_off": "Угол скана",
+      "room_3d_floor_plan_edit_dimension_title": "Изменить размер",
+      "room_3d_floor_plan_edit_dimension_current": "Текущее",
+      "room_3d_floor_plan_edit_dimension_new_value": "Новое значение (м)",
+      "room_3d_floor_plan_edit_dimension_cancel": "Отмена",
+      "room_3d_floor_plan_edit_dimension_apply": "Применить",
+      "room_3d_floor_plan_edit_dimension_updated": "Размер обновлён",
+      "room_3d_floor_plan_edit_dimension_large_change_title": "Большое изменение",
+      "room_3d_floor_plan_edit_dimension_large_change_message":
+          "Новое значение сильно отличается от результата сканирования. Применить исправление?",
+      "room_3d_floor_plan_edit_dimension_invalid_title": "Неверное значение",
+      "room_3d_floor_plan_edit_dimension_invalid_message":
+          "Введите число от 0,5 до 100 метров.",
+      "room_3d_floor_plan_edit_dimension_confirm_large_change": "Применить",
       "room_3d_floor_plan_unit_meters": "метры",
 
       "profile_completed_success": "Профиль успешно завершен!",
@@ -3654,6 +3680,19 @@ class AppStrings {
       "room_3d_floor_plan_hide_grid": "To'rni yashirish",
       "room_3d_floor_plan_auto_align_on": "Tekislash",
       "room_3d_floor_plan_auto_align_off": "Skan burchagi",
+      "room_3d_floor_plan_edit_dimension_title": "O'lchamni tahrirlash",
+      "room_3d_floor_plan_edit_dimension_current": "Joriy",
+      "room_3d_floor_plan_edit_dimension_new_value": "Yangi qiymat (m)",
+      "room_3d_floor_plan_edit_dimension_cancel": "Bekor qilish",
+      "room_3d_floor_plan_edit_dimension_apply": "Qo'llash",
+      "room_3d_floor_plan_edit_dimension_updated": "O'lcham yangilandi",
+      "room_3d_floor_plan_edit_dimension_large_change_title": "Katta o'zgarish",
+      "room_3d_floor_plan_edit_dimension_large_change_message":
+          "Yangi qiymat skan natijasidan sezilarli darajada farq qiladi. Tuzatishni qo'llash?",
+      "room_3d_floor_plan_edit_dimension_invalid_title": "Noto'g'ri qiymat",
+      "room_3d_floor_plan_edit_dimension_invalid_message":
+          "0,5 dan 100 metrgacha bo'lgan son kiriting.",
+      "room_3d_floor_plan_edit_dimension_confirm_large_change": "Qo'llash",
       "room_3d_floor_plan_unit_meters": "metr",
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",

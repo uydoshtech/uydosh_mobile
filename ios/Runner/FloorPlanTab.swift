@@ -28,7 +28,11 @@ final class FloorPlanTab: UIView {
   }
 
   func configure(model: FloorPlanModel) {
-    canvas.configure(sourceModel: model, autoAlignEnabled: true)
+    canvas.configure(sourceModel: model, autoAlignEnabled: false)
+  }
+
+  func setDisplayModel(_ model: FloorPlanModel) {
+    canvas.setDisplayModel(model)
   }
 
   func updateStrings(_ strings: FloorPlanTabStrings) {
@@ -192,6 +196,33 @@ struct FloorPlanTabStrings {
   let autoAlignOn: String
   let autoAlignOff: String
   let unitMeters: String
+  let editDimensionTitle: String
+  let editDimensionCurrent: String
+  let editDimensionNewValue: String
+  let editDimensionCancel: String
+  let editDimensionApply: String
+  let editDimensionUpdated: String
+  let editDimensionLargeChangeTitle: String
+  let editDimensionLargeChangeMessage: String
+  let editDimensionInvalidTitle: String
+  let editDimensionInvalidMessage: String
+  let editDimensionConfirmLargeChange: String
+
+  var dimensionEditDialogStrings: DimensionEditDialogStrings {
+    DimensionEditDialogStrings(
+      title: editDimensionTitle,
+      currentLabel: editDimensionCurrent,
+      newValuePlaceholder: editDimensionNewValue,
+      cancel: editDimensionCancel,
+      apply: editDimensionApply,
+      updatedConfirmation: editDimensionUpdated,
+      largeChangeTitle: editDimensionLargeChangeTitle,
+      largeChangeMessage: editDimensionLargeChangeMessage,
+      invalidInputTitle: editDimensionInvalidTitle,
+      invalidInputMessage: editDimensionInvalidMessage,
+      confirmLargeChange: editDimensionConfirmLargeChange
+    )
+  }
 
   init(
     tab3DView: String,
@@ -206,7 +237,18 @@ struct FloorPlanTabStrings {
     hideGrid: String,
     autoAlignOn: String,
     autoAlignOff: String,
-    unitMeters: String
+    unitMeters: String,
+    editDimensionTitle: String,
+    editDimensionCurrent: String,
+    editDimensionNewValue: String,
+    editDimensionCancel: String,
+    editDimensionApply: String,
+    editDimensionUpdated: String,
+    editDimensionLargeChangeTitle: String,
+    editDimensionLargeChangeMessage: String,
+    editDimensionInvalidTitle: String,
+    editDimensionInvalidMessage: String,
+    editDimensionConfirmLargeChange: String
   ) {
     self.tab3DView = tab3DView
     self.tabFloorPlan = tabFloorPlan
@@ -221,6 +263,17 @@ struct FloorPlanTabStrings {
     self.autoAlignOn = autoAlignOn
     self.autoAlignOff = autoAlignOff
     self.unitMeters = unitMeters
+    self.editDimensionTitle = editDimensionTitle
+    self.editDimensionCurrent = editDimensionCurrent
+    self.editDimensionNewValue = editDimensionNewValue
+    self.editDimensionCancel = editDimensionCancel
+    self.editDimensionApply = editDimensionApply
+    self.editDimensionUpdated = editDimensionUpdated
+    self.editDimensionLargeChangeTitle = editDimensionLargeChangeTitle
+    self.editDimensionLargeChangeMessage = editDimensionLargeChangeMessage
+    self.editDimensionInvalidTitle = editDimensionInvalidTitle
+    self.editDimensionInvalidMessage = editDimensionInvalidMessage
+    self.editDimensionConfirmLargeChange = editDimensionConfirmLargeChange
   }
 
   init?(dict: [String: String]) {
@@ -241,7 +294,20 @@ struct FloorPlanTabStrings {
       hideGrid: dict["floorPlanHideGrid"] ?? "Hide grid",
       autoAlignOn: dict["floorPlanAutoAlignOn"] ?? "Auto-align",
       autoAlignOff: dict["floorPlanAutoAlignOff"] ?? "Scan angle",
-      unitMeters: dict["floorPlanUnitMeters"] ?? "m"
+      unitMeters: dict["floorPlanUnitMeters"] ?? "m",
+      editDimensionTitle: dict["floorPlanEditDimensionTitle"] ?? "Edit dimension",
+      editDimensionCurrent: dict["floorPlanEditDimensionCurrent"] ?? "Current",
+      editDimensionNewValue: dict["floorPlanEditDimensionNewValue"] ?? "New value (m)",
+      editDimensionCancel: dict["floorPlanEditDimensionCancel"] ?? "Cancel",
+      editDimensionApply: dict["floorPlanEditDimensionApply"] ?? "Apply",
+      editDimensionUpdated: dict["floorPlanEditDimensionUpdated"] ?? "Dimension updated",
+      editDimensionLargeChangeTitle: dict["floorPlanEditDimensionLargeChangeTitle"] ?? "Large change",
+      editDimensionLargeChangeMessage: dict["floorPlanEditDimensionLargeChangeMessage"]
+        ?? "New value differs significantly from the scanned measurement. Apply correction?",
+      editDimensionInvalidTitle: dict["floorPlanEditDimensionInvalidTitle"] ?? "Invalid value",
+      editDimensionInvalidMessage: dict["floorPlanEditDimensionInvalidMessage"]
+        ?? "Enter a number between 0.5 and 100 meters.",
+      editDimensionConfirmLargeChange: dict["floorPlanEditDimensionConfirmLargeChange"] ?? "Apply"
     )
   }
 
@@ -258,6 +324,18 @@ struct FloorPlanTabStrings {
     hideGrid: "Hide grid",
     autoAlignOn: "Auto-align",
     autoAlignOff: "Scan angle",
-    unitMeters: "meters"
+    unitMeters: "meters",
+    editDimensionTitle: "Edit dimension",
+    editDimensionCurrent: "Current",
+    editDimensionNewValue: "New value (m)",
+    editDimensionCancel: "Cancel",
+    editDimensionApply: "Apply",
+    editDimensionUpdated: "Dimension updated",
+    editDimensionLargeChangeTitle: "Large change",
+    editDimensionLargeChangeMessage:
+      "New value differs significantly from the scanned measurement. Apply correction?",
+    editDimensionInvalidTitle: "Invalid value",
+    editDimensionInvalidMessage: "Enter a number between 0.5 and 100 meters.",
+    editDimensionConfirmLargeChange: "Apply"
   )
 }

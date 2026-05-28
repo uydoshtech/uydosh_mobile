@@ -2846,7 +2846,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String followers_count_one(String count) {
-    return '$count follower';
+    return '$count kuzatuvchi';
   }
 
   @override
@@ -2856,7 +2856,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String following_count_one(String count) {
-    return '$count following';
+    return '$count kuzatilmoqda';
   }
 
   @override

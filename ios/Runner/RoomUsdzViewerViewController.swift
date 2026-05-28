@@ -192,7 +192,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var pinchBaseFov: CGFloat = 60
   private let hintContainer = UIView()
   private let hintStack = UIStackView()
-  private let dimensionsTitleLabel = UILabel()
   private let dimensionsLineStack = UIStackView()
   private let dimensionsLine1Icon = UIImageView()
   private let dimensionsLine1Label = UILabel()
@@ -275,7 +274,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let viewerTabControl = UISegmentedControl(items: ["", ""])
   private let viewerTabContainer = UIView()
   private var floorPlanTabView: FloorPlanTab?
-  private var floorPlanModel: FloorPlanModel?
+  private var floorPlanStateManager = FloorPlanStateManager()
+  private var dimensionEditController: DimensionEditController?
+  private var dimensionEditStrings: DimensionEditDialogStrings = .englishFallback
 
   fileprivate init(
     fileURL: URL,
@@ -323,8 +324,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let floorPlanTab = FloorPlanTab(strings: strings.floorPlan)
     floorPlanTab.translatesAutoresizingMaskIntoConstraints = false
     floorPlanTab.isHidden = true
+    floorPlanTab.canvas.delegate = self
     view.addSubview(floorPlanTab)
     floorPlanTabView = floorPlanTab
+
+    dimensionEditStrings = strings.floorPlan.dimensionEditDialogStrings
+    dimensionEditController = DimensionEditController(
+      stateManager: floorPlanStateManager,
+      strings: dimensionEditStrings
+    )
+    floorPlanStateManager.onDisplayModelUpdated = { [weak self] displayModel in
+      self?.floorPlanTabView?.setDisplayModel(displayModel)
+    }
+    floorPlanStateManager.onRequires3DRegeneration = { [weak self] editableModel in
+      self?.regenerateSceneFromEditableModel(editableModel)
+    }
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(sceneTapped))
     tap.cancelsTouchesInView = false
@@ -342,15 +356,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
     hintContainer.clipsToBounds = true
     hintContainer.isUserInteractionEnabled = false
-
-    dimensionsTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-    dimensionsTitleLabel.textAlignment = .center
-    dimensionsTitleLabel.numberOfLines = 0
-    dimensionsTitleLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
-    dimensionsTitleLabel.adjustsFontForContentSizeCategory = true
-    dimensionsTitleLabel.textColor = UIColor.white.withAlphaComponent(0.68)
-    dimensionsTitleLabel.text = strings.dimensionsCaption
-    dimensionsTitleLabel.isHidden = true
 
     let dimSymbolConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
     func configureDimensionIcon(_ iv: UIImageView, systemName: String) {
@@ -419,9 +424,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     hintStack.translatesAutoresizingMaskIntoConstraints = false
     hintStack.axis = .vertical
-    hintStack.alignment = .center
+    hintStack.alignment = .leading
     hintStack.spacing = 4
-    hintStack.addArrangedSubview(dimensionsTitleLabel)
     hintStack.addArrangedSubview(dimensionsLineStack)
 
     hintContainer.addSubview(hintStack)
@@ -502,8 +506,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         hintStack.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
         hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
 
-        hintContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-        hintContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+        hintContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+        hintContainer.trailingAnchor.constraint(equalTo: hintStack.trailingAnchor, constant: 14),
+        hintContainer.trailingAnchor.constraint(
+          lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor,
+          constant: -16
+        ),
+        hintContainer.widthAnchor.constraint(
+          lessThanOrEqualTo: view.safeAreaLayoutGuide.widthAnchor,
+          constant: -32
+        ),
         hintContainer.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 10),
 
         // Brand mark moved to bottom-trailing (was bottom-leading); zoom
@@ -534,14 +546,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     super.viewDidLayoutSubviews()
     refreshZoomControlsNeumorphicShadowPaths()
     refreshModeMaterialsToolbarShadowPaths()
+    // Cap line width so large content sizes / long values wrap instead of stretching the panel.
+    let panelMaxWidth = max(0, view.bounds.width - 32 - 28)
     let stackWidth = hintStack.bounds.width
-    guard stackWidth > 0 else { return }
-    // Multiline dimension lines need an explicit width so labels wrap correctly.
-    dimensionsTitleLabel.preferredMaxLayoutWidth = stackWidth
-    let lineLabelMaxWidth = stackWidth - 20 - 8  // icon width + row spacing
-    dimensionsLine1Label.preferredMaxLayoutWidth = lineLabelMaxWidth
-    dimensionsHeightLabel.preferredMaxLayoutWidth = lineLabelMaxWidth
-    dimensionsLine2Label.preferredMaxLayoutWidth = lineLabelMaxWidth
+    let lineWrapWidth: CGFloat
+    if stackWidth > 0 {
+      lineWrapWidth = min(stackWidth - 20 - 8, panelMaxWidth - 20 - 8)
+    } else {
+      lineWrapWidth = panelMaxWidth - 20 - 8
+    }
+    guard lineWrapWidth > 0 else { return }
+    dimensionsLine1Label.preferredMaxLayoutWidth = lineWrapWidth
+    dimensionsHeightLabel.preferredMaxLayoutWidth = lineWrapWidth
+    dimensionsLine2Label.preferredMaxLayoutWidth = lineWrapWidth
     if isOrthographicPlanView {
       applyTopDownPlanCamera(animated: false)
     }
@@ -1202,6 +1219,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       restoreOriginalMaterials()
     }
+    if let editable = floorPlanStateManager.editableModel,
+      editable.metadata.isEdited,
+      let scene = loadedScene
+    {
+      Scene3DRegenerationService.regenerate(
+        in: scene,
+        model: editable,
+        stylizedMaterials: useStylizedMaterials
+      )
+    }
   }
 
   /// Uses mesh node names from RoomPlan-style USDZ. Furniture stays visible unless its name matches these.
@@ -1364,7 +1391,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     dimensionsHeightLabel.text = lineH
     dimensionsLine2Label.text = line2
     dimensionsLineStack.accessibilityLabel = "\(line1). \(lineH). \(line2)"
-    dimensionsTitleLabel.isHidden = false
     dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
     hintContainer.isUserInteractionEnabled = true
@@ -1678,10 +1704,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.sceneView.scene = scene
         self.frameCamera(for: scene, in: self.sceneView)
         if let metrics = self.footprintMetrics {
-          self.floorPlanModel = RoomPlan3DToFloorPlanMapper.map(scene: scene, metrics: metrics)
-          if let model = self.floorPlanModel {
-            self.floorPlanTabView?.configure(model: model)
-          }
+          self.floorPlanStateManager.importScan(
+            scene: scene,
+            metrics: metrics,
+            sourceScanId: self.fileURL.lastPathComponent
+          )
         }
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
@@ -1946,7 +1973,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     originalMaterialsByGeometry.removeAll(keepingCapacity: false)
     sceneWorldBounds = nil
     footprintMetrics = nil
-    floorPlanModel = nil
+    floorPlanStateManager.clear()
     floorPlanTabView?.canvas.clearModel()
     viewerTab = .threeD
     viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
@@ -2042,5 +2069,30 @@ enum RoomUsdzViewerPresenter {
       return findTop(from: selected)
     }
     return vc
+  }
+}
+
+extension RoomUsdzViewerViewController: FloorPlanCanvasDelegate {
+  func floorPlanCanvas(_ canvas: FloorPlanCanvas, didTapEditableDimension dimensionId: UUID) {
+    guard let controller = dimensionEditController else { return }
+    controller.presentEdit(for: dimensionId, from: self) { [weak self] in
+      self?.floorPlanTabView?.canvas.clearHighlight()
+    }
+  }
+
+  func floorPlanCanvasPresenterViewController(_ canvas: FloorPlanCanvas) -> UIViewController? {
+    self
+  }
+
+  private func regenerateSceneFromEditableModel(_ model: EditableFloorPlanModel) {
+    guard let scene = loadedScene else { return }
+    Scene3DRegenerationService.regenerate(
+      in: scene,
+      model: model,
+      stylizedMaterials: useStylizedMaterials
+    )
+    if viewerTab == .threeD {
+      applyDisplayMode(displayMode)
+    }
   }
 }

@@ -142,16 +142,6 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 6),
-                              Text(
-                                L10n.get("room_3d_dimensions_caption"),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: variant.withValues(alpha: 0.85),
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
                               _room3dDimensionMetricRow(
                                 context: context,
                                 icon: Icons.rectangle_outlined,

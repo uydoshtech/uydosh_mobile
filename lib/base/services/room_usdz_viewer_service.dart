@@ -187,6 +187,28 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_auto_align_on", languageCode),
       "floorPlanAutoAlignOff":
           L10n.getForLanguage("room_3d_floor_plan_auto_align_off", languageCode),
+      "floorPlanEditDimensionTitle":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
+      "floorPlanEditDimensionCurrent":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_current", languageCode),
+      "floorPlanEditDimensionNewValue":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_new_value", languageCode),
+      "floorPlanEditDimensionCancel":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_cancel", languageCode),
+      "floorPlanEditDimensionApply":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_apply", languageCode),
+      "floorPlanEditDimensionUpdated":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_updated", languageCode),
+      "floorPlanEditDimensionLargeChangeTitle":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_large_change_title", languageCode),
+      "floorPlanEditDimensionLargeChangeMessage":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_large_change_message", languageCode),
+      "floorPlanEditDimensionInvalidTitle":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_invalid_title", languageCode),
+      "floorPlanEditDimensionInvalidMessage":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_invalid_message", languageCode),
+      "floorPlanEditDimensionConfirmLargeChange":
+          L10n.getForLanguage("room_3d_floor_plan_edit_dimension_confirm_large_change", languageCode),
       "floorPlanUnitMeters":
           L10n.getForLanguage("room_3d_floor_plan_unit_meters", languageCode),
     };
