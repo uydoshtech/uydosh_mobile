@@ -397,6 +397,150 @@ enum FloorPlanGridRenderer {
   }
 }
 
+/// Draws a fixed compass rose showing scan/world axes on the 2D floor plan canvas.
+enum FloorPlanOrientationOverlayRenderer {
+  private static let radius: CGFloat = 24
+  private static let cornerInset: CGFloat = 14
+
+  static func draw(
+    in context: CGContext,
+    canvasSize: CGSize,
+    model: FloorPlanModel,
+    transform: FloorPlanViewTransform
+  ) {
+    let northPlanAngle = northPlanAngle(for: model)
+    let screenNorth = screenAngle(
+      forPlanAngle: northPlanAngle,
+      pivot: model.planCenter,
+      transform: transform
+    )
+
+    let center = CGPoint(
+      x: canvasSize.width - cornerInset - radius,
+      y: cornerInset + radius
+    )
+
+    let fill = UIColor.white.withAlphaComponent(0.92)
+    let stroke = UIColor(red: 0.28, green: 0.34, blue: 0.42, alpha: 0.35)
+    let labelColor = UIColor(red: 0.35, green: 0.41, blue: 0.48, alpha: 0.95)
+    let northColor = UIColor(red: 0.78, green: 0.22, blue: 0.24, alpha: 1)
+
+    context.setFillColor(fill.cgColor)
+    context.setStrokeColor(stroke.cgColor)
+    context.setLineWidth(1)
+    context.addEllipse(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+    context.drawPath(using: .fillStroke)
+
+    context.setStrokeColor(stroke.cgColor)
+    context.setLineWidth(0.75)
+    context.move(to: point(onCircle: center, angle: screenNorth, inset: 6))
+    context.addLine(to: point(onCircle: center, angle: screenNorth + .pi, inset: 10))
+    context.move(to: point(onCircle: center, angle: screenNorth + .pi / 2, inset: 6))
+    context.addLine(to: point(onCircle: center, angle: screenNorth - .pi / 2, inset: 6))
+    context.strokePath()
+
+    if model.orientationUsesTrueNorth {
+      let tip = point(onCircle: center, angle: screenNorth, inset: 4)
+      let left = point(onCircle: center, angle: screenNorth, inset: 13, lateral: -4.5)
+      let right = point(onCircle: center, angle: screenNorth, inset: 13, lateral: 4.5)
+      context.setFillColor(northColor.cgColor)
+      context.move(to: tip)
+      context.addLine(to: left)
+      context.addLine(to: right)
+      context.closePath()
+      context.fillPath()
+
+      drawLabel("N", at: point(onCircle: center, angle: screenNorth, inset: 2), color: northColor)
+      drawLabel("E", at: point(onCircle: center, angle: screenNorth + .pi / 2, inset: 3), color: labelColor)
+      drawLabel("S", at: point(onCircle: center, angle: screenNorth + .pi, inset: 2), color: labelColor)
+      drawLabel("W", at: point(onCircle: center, angle: screenNorth - .pi / 2, inset: 3), color: labelColor)
+      let caption: String
+      if model.orientationHasGeographicNorth {
+        caption = model.orientationNorthIsAdjusted ? "True N · adj" : "True N"
+      } else {
+        caption = model.orientationNorthIsAdjusted ? "Scan N · adj" : "Scan N"
+      }
+      drawCaption(caption, near: center, emphasized: model.orientationHasGeographicNorth)
+    }
+  }
+
+  private static func northPlanAngle(for model: FloorPlanModel) -> CGFloat {
+    if let trueNorth = model.orientationTrueNorthPlanAngleRad {
+      return trueNorth
+    }
+    return model.orientationEastPlanAngleRad + .pi / 2
+  }
+
+  private static func screenAngle(
+    forPlanAngle planAngle: CGFloat,
+    pivot: FloorPlanPoint2D,
+    transform: FloorPlanViewTransform
+  ) -> CGFloat {
+    let origin = transform.planToScreen(pivot)
+    let probe = transform.planToScreen(
+      FloorPlanPoint2D(
+        x: pivot.x + cos(planAngle) * 0.05,
+        y: pivot.y + sin(planAngle) * 0.05
+      )
+    )
+    return atan2(probe.y - origin.y, probe.x - origin.x)
+  }
+
+  private static func point(
+    onCircle center: CGPoint,
+    angle: CGFloat,
+    inset: CGFloat,
+    lateral: CGFloat = 0
+  ) -> CGPoint {
+    let radial = radius - inset
+    let nx = cos(angle)
+    let ny = sin(angle)
+    return CGPoint(
+      x: center.x + nx * radial - ny * lateral,
+      y: center.y + ny * radial + nx * lateral
+    )
+  }
+
+  private static func drawLabel(_ text: String, at center: CGPoint, color: UIColor) {
+    let font = UIFont.systemFont(ofSize: 10, weight: .bold)
+    let attrs: [NSAttributedString.Key: Any] = [
+      .font: font,
+      .foregroundColor: color,
+    ]
+    let size = (text as NSString).size(withAttributes: attrs)
+    let rect = CGRect(
+      x: center.x - size.width * 0.5,
+      y: center.y - size.height * 0.5,
+      width: size.width,
+      height: size.height
+    )
+    (text as NSString).draw(in: rect, withAttributes: attrs)
+  }
+
+  private static func drawScanAxesCaption(near center: CGPoint) {
+    drawCaption("Not compass", near: center, emphasized: false)
+  }
+
+  private static func drawCaption(_ text: String, near center: CGPoint, emphasized: Bool) {
+    let font = UIFont.systemFont(ofSize: emphasized ? 8 : 7, weight: .semibold)
+    let color = emphasized
+      ? UIColor(red: 0.35, green: 0.41, blue: 0.48, alpha: 0.9)
+      : UIColor(red: 0.78, green: 0.22, blue: 0.24, alpha: 0.85)
+    let attrs: [NSAttributedString.Key: Any] = [
+      .font: font,
+      .foregroundColor: color,
+    ]
+    let size = (text as NSString).size(withAttributes: attrs)
+    let rect = CGRect(
+      x: center.x - size.width * 0.5,
+      y: center.y + radius + 2,
+      width: size.width,
+      height: size.height
+    )
+    (text as NSString).draw(in: rect, withAttributes: attrs)
+  }
+}
+
 /// Maps plan coordinates (meters, X/−Z) to screen points using the same pivot and yaw
 /// as `RoomUsdzViewerViewController.applyTopDownPlanCamera`.
 struct FloorPlanViewTransform {

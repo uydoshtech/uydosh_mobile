@@ -32,6 +32,10 @@ final class FloorPlanCanvas: UIView {
     didSet { setNeedsDisplay() }
   }
 
+  var showOrientationOverlay = true {
+    didSet { setNeedsDisplay() }
+  }
+
   private var sourceModel: FloorPlanModel?
   private var labelHitRegions: [DimensionLineRenderer.LabelHitRegion] = []
   private var highlightedDimensionId: UUID?
@@ -224,6 +228,15 @@ final class FloorPlanCanvas: UIView {
       )
     case .hidden:
       break
+    }
+
+    if showOrientationOverlay {
+      FloorPlanOrientationOverlayRenderer.draw(
+        in: ctx,
+        canvasSize: bounds.size,
+        model: model,
+        transform: transform
+      )
     }
   }
 

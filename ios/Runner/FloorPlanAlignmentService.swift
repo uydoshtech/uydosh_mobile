@@ -103,7 +103,12 @@ enum FloorPlanAlignmentService {
       overallDimensions: [],
       wallSegmentDimensions: [],
       footprintYaw: 0,
-      planCenter: bounds.center
+      planCenter: bounds.center,
+      orientationEastPlanAngleRad: model.orientationEastPlanAngleRad - angle,
+      orientationTrueNorthPlanAngleRad: model.orientationTrueNorthPlanAngleRad.map { $0 - angle },
+      orientationScanWorldPlusXBearingDeg: model.orientationScanWorldPlusXBearingDeg,
+      orientationNorthCorrectionDeg: model.orientationNorthCorrectionDeg,
+      orientationHasGeographicNorth: model.orientationHasGeographicNorth
     )
   }
 

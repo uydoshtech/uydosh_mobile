@@ -186,9 +186,19 @@ struct EditableFloorPlanModel: Equatable {
   var wallThickness: Double
   var floorY: Double
   var bounds: EditableFloorPlanBounds
+  /// Scan OBB footprint (matches 3D banner); walls may extend beyond this after content padding.
+  var scanFootprintBounds: EditableFloorPlanBounds
   /// Canonical long/short footprint edges — same source as the 3D dimensions banner.
   var footprintLongM: Double
   var footprintShortM: Double
+  /// Plan angle (radians) of world +X after alignment rotations.
+  var worldEastPlanAngleRad: Double
+  /// True geographic north in plan coordinates; nil = scan axes only (world −Z).
+  var trueNorthPlanAngleRad: Double?
+  /// Captured scan bearing of world +X (degrees clockwise from true north).
+  var scanWorldPlusXBearingDeg: Double?
+  /// Manual correction (degrees) added to [scanWorldPlusXBearingDeg] for compass north.
+  var northCorrectionDeg: Double
   var metadata: EditableFloorPlanMetadata
   var dimensionAnnotations: [EditableDimensionAnnotation]
 

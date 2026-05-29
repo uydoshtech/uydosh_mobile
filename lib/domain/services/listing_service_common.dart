@@ -48,6 +48,18 @@ class RoomScanMetricsPatchRequest implements IJsonEncodable {
       };
 }
 
+/// Manual compass correction for an existing room scan (-180..180, or null to reset).
+class RoomScanNorthCorrectionPatchRequest implements IJsonEncodable {
+  RoomScanNorthCorrectionPatchRequest({required this.northCorrectionDeg});
+
+  final double? northCorrectionDeg;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "north_correction_deg": northCorrectionDeg,
+      };
+}
+
 /// Footprint derived from LiDAR USDZ (meters); sent with [RoomScanUploadRequest].
 class RoomScanMetrics implements IJsonEncodable {
   RoomScanMetrics({
@@ -55,12 +67,14 @@ class RoomScanMetrics implements IJsonEncodable {
     required this.floorShortM,
     required this.heightM,
     required this.floorAreaM2,
+    this.worldPlusXBearingDeg,
   });
 
   final double floorLongM;
   final double floorShortM;
   final double heightM;
   final double floorAreaM2;
+  final double? worldPlusXBearingDeg;
 
   @override
   Map<String, dynamic> toJson() => {
@@ -68,6 +82,8 @@ class RoomScanMetrics implements IJsonEncodable {
         "floor_short_m": floorShortM,
         "height_m": heightM,
         "floor_area_m2": floorAreaM2,
+        if (worldPlusXBearingDeg != null)
+          "world_plus_x_bearing_deg": worldPlusXBearingDeg,
       };
 }
 

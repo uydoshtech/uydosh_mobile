@@ -441,4 +441,78 @@ post_install do |installer|
       File.write(room_capture_file, src)
     end
   end
+
+  # Capture device compass + AR world axes when RoomPlan scan finishes so the floor
+  # plan overlay can show true geographic north (not just scan-relative axes).
+  if File.exist?(room_capture_file)
+    orientation_src = File.expand_path('Runner/RoomScanOrientationCapture.swift', __dir__)
+    orientation_dst = File.join(File.dirname(room_capture_file), 'RoomScanOrientationCapture.swift')
+    FileUtils.cp(orientation_src, orientation_dst) if File.exist?(orientation_src)
+
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: scan orientation capture */'
+    unless src.include?(marker)
+      src = src.sub('import ARKit', "import ARKit\nimport CoreLocation") unless src.include?('import CoreLocation')
+      src = src.sub(
+        '    public var uydoshScanOtherRoomsTitle: String?',
+        "    public var uydoshScanOtherRoomsTitle: String?\n\n    #{marker}\n    private var uydoshHeadingReader = RoomScanHeadingReader()\n    private var uydoshPendingOrientation: RoomScanOrientationCapture.Snapshot?"
+      )
+
+      helper = [
+        '',
+        "    #{marker} helpers",
+        '    private func uydoshStartHeadingUpdates() {',
+        '        uydoshHeadingReader.start()',
+        '    }',
+        '',
+        '    private func uydoshCaptureScanOrientation() {',
+        '        guard let heading = uydoshHeadingReader.trueHeadingDegrees else { return }',
+        '        uydoshPendingOrientation = RoomScanOrientationCapture.snapshot(',
+        '            from: roomCaptureView.captureSession.arSession,',
+        '            trueHeadingDegrees: heading',
+        '        )',
+        '    }',
+        '',
+        '    private func uydoshWriteOrientationSidecarIfNeeded() {',
+        '        guard let snapshot = uydoshPendingOrientation,',
+        '            let path = usdzFilePath else { return }',
+        '        RoomScanOrientationCapture.writeSidecar(snapshot, forUsdzPath: path)',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{helper}\n    private func resetScanningSession() {"
+      )
+
+      if src.include?('uydoshApplyButtonTitles()')
+        src = src.sub(
+          'uydoshApplyButtonTitles()',
+          "uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()"
+        )
+      else
+        src = src.sub(
+          '        startSession()',
+          "        uydoshStartHeadingUpdates()\n        startSession()"
+        )
+      end
+
+      src = src.sub(
+        "    public override func viewWillDisappear(_ animated: Bool) {\n        super.viewWillDisappear(animated)\n        stopSession()\n    }",
+        "    public override func viewWillDisappear(_ animated: Bool) {\n        super.viewWillDisappear(animated)\n        uydoshHeadingReader.stop()\n        stopSession()\n    }"
+      )
+
+      src = src.sub(
+        "    @objc private func doneScanning() {\n        if isScanning {",
+        "    @objc private func doneScanning() {\n        uydoshCaptureScanOrientation()\n        if isScanning {"
+      )
+
+      src = src.gsub(
+        "                self.usdzFilePath = fileURL.path\n                \n                print(\"Successfully exported USDZ file to:",
+        "                self.usdzFilePath = fileURL.path\n                self.uydoshWriteOrientationSidecarIfNeeded()\n                \n                print(\"Successfully exported USDZ file to:"
+      )
+
+      File.write(room_capture_file, src)
+    end
+  end
 end

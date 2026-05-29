@@ -132,6 +132,24 @@ struct FloorPlanModel: Equatable {
   var footprintYaw: CGFloat
   /// Footprint center in plan coordinates — same pivot as the 3D top-down camera.
   var planCenter: FloorPlanPoint2D
+  /// Plan angle (radians) of world +X (east) relative to plan +X.
+  var orientationEastPlanAngleRad: CGFloat
+  /// When set, compass north arrow follows this plan angle.
+  var orientationTrueNorthPlanAngleRad: CGFloat?
+  /// Scan captured geographic bearing of world +X; nil = scan-north fallback only.
+  var orientationScanWorldPlusXBearingDeg: CGFloat?
+  /// Manual correction applied on top of scan bearing.
+  var orientationNorthCorrectionDeg: CGFloat
+  /// True when scan-time compass heading was stored (vs scan-axis fallback).
+  var orientationHasGeographicNorth: Bool
+
+  var orientationUsesTrueNorth: Bool {
+    orientationTrueNorthPlanAngleRad != nil
+  }
+
+  var orientationNorthIsAdjusted: Bool {
+    abs(orientationNorthCorrectionDeg) > 0.01
+  }
 }
 
 enum FloorPlanDimensionMode: Int, CaseIterable {

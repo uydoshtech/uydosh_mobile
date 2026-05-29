@@ -11,14 +11,41 @@ final class FloorPlanStateManager {
   func importScan(
     scene: SCNScene,
     metrics: RoomScanMetricsResult,
-    sourceScanId: String
+    sourceScanId: String,
+    worldPlusXTrueBearingDeg: Double? = nil,
+    northCorrectionDeg: Double = 0
   ) {
     editableModel = RoomPlanToEditableModelMapper.map(
       scene: scene,
       metrics: metrics,
-      sourceScanId: sourceScanId
+      sourceScanId: sourceScanId,
+      worldPlusXTrueBearingDeg: worldPlusXTrueBearingDeg,
+      northCorrectionDeg: northCorrectionDeg
     )
     publishDisplayUpdate()
+  }
+
+  var northCorrectionDeg: Double {
+    editableModel?.northCorrectionDeg ?? 0
+  }
+
+  var scanWorldPlusXBearingDeg: Double? {
+    editableModel?.scanWorldPlusXBearingDeg
+  }
+
+  func previewNorthCorrection(_ correctionDeg: Double) {
+    guard var model = editableModel else { return }
+    FloorPlanNorthOrientation.applyTrueNorth(to: &model, correctionDeg: correctionDeg)
+    editableModel = model
+    publishDisplayUpdate()
+  }
+
+  func applyNorthCorrection(_ correctionDeg: Double) {
+    previewNorthCorrection(correctionDeg)
+  }
+
+  func resetNorthCorrection() {
+    applyNorthCorrection(0)
   }
 
   func displayModel() -> FloorPlanModel? {

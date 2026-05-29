@@ -27,6 +27,8 @@ class Listing with _$Listing {
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
     @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
     @JsonKey(name: "room_scan_floor_area_m2") double? roomScanFloorAreaM2,
+    @JsonKey(name: "room_scan_world_plus_x_bearing_deg") double? roomScanWorldPlusXBearingDeg,
+    @JsonKey(name: "room_scan_north_correction_deg") double? roomScanNorthCorrectionDeg,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     @JsonKey(name: "location") LocationDetail? location,
     @JsonKey(name: "listing_type") ListingTypeDetail? listingType,

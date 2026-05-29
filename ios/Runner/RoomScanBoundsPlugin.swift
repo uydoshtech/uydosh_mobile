@@ -33,9 +33,12 @@ final class RoomScanBoundsPlugin: NSObject, FlutterPlugin {
     }
 
     DispatchQueue.global(qos: .userInitiated).async {
-      let payload = RoomScanMetricsComputer.metrics(forUsdPath: path)
+      var payload = RoomScanMetricsComputer.metrics(forUsdPath: path) ?? [:]
+      if let bearing = RoomScanOrientationCapture.readSidecar(forUsdzPath: path) {
+        payload["world_plus_x_bearing_deg"] = bearing
+      }
       DispatchQueue.main.async {
-        result(payload)
+        result(payload.isEmpty ? nil : payload)
       }
     }
   }

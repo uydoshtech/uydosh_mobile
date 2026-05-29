@@ -11,9 +11,11 @@ final class FloorPlanTab: UIView {
   private let objectsButton = UIButton(type: .system)
   private let gridButton = UIButton(type: .system)
   private let alignButton = UIButton(type: .system)
+  private let northButton = UIButton(type: .system)
   private let unitLabel = UILabel()
 
   private var strings: FloorPlanTabStrings
+  var onAdjustNorthTapped: (() -> Void)?
 
   init(strings: FloorPlanTabStrings) {
     self.strings = strings
@@ -38,6 +40,11 @@ final class FloorPlanTab: UIView {
   func updateStrings(_ strings: FloorPlanTabStrings) {
     self.strings = strings
     applyControlLabels()
+  }
+
+  func setNorthAdjustEnabled(_ enabled: Bool) {
+    northButton.isHidden = !enabled
+    northButton.isEnabled = enabled
   }
 
   private func setupViews() {
@@ -69,12 +76,15 @@ final class FloorPlanTab: UIView {
     configureControlButton(dimensionsButton, symbol: "ruler", action: #selector(dimensionsTapped))
     configureControlButton(objectsButton, symbol: "cube.box", action: #selector(objectsTapped))
     configureControlButton(gridButton, symbol: "grid", action: #selector(gridTapped))
+    configureControlButton(northButton, symbol: "location.north.line", action: #selector(northTapped))
 
     controlsStack.addArrangedSubview(alignButton)
     controlsStack.addArrangedSubview(resetButton)
     controlsStack.addArrangedSubview(dimensionsButton)
     controlsStack.addArrangedSubview(objectsButton)
     controlsStack.addArrangedSubview(gridButton)
+    controlsStack.addArrangedSubview(northButton)
+    northButton.isHidden = true
 
     unitLabel.translatesAutoresizingMaskIntoConstraints = false
     unitLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
@@ -127,6 +137,7 @@ final class FloorPlanTab: UIView {
     dimensionsButton.accessibilityLabel = strings.dimensionsOverall
     objectsButton.accessibilityLabel = strings.showObjects
     gridButton.accessibilityLabel = strings.showGrid
+    northButton.accessibilityLabel = strings.adjustNorth
     unitLabel.text = strings.unitMeters
     updateToggleStates()
   }
@@ -153,6 +164,12 @@ final class FloorPlanTab: UIView {
     let gridTitle = canvas.showGrid ? strings.showGrid : strings.hideGrid
     gridButton.setTitle(gridTitle, for: .normal)
     gridButton.alpha = canvas.showGrid ? 1 : 0.72
+
+    northButton.setTitle(strings.adjustNorth, for: .normal)
+  }
+
+  @objc private func northTapped() {
+    onAdjustNorthTapped?()
   }
 
   @objc private func alignTapped() {
@@ -195,6 +212,7 @@ struct FloorPlanTabStrings {
   let hideGrid: String
   let autoAlignOn: String
   let autoAlignOff: String
+  let adjustNorth: String
   let unitMeters: String
   let editDimensionTitle: String
   let editDimensionCurrent: String
@@ -237,6 +255,7 @@ struct FloorPlanTabStrings {
     hideGrid: String,
     autoAlignOn: String,
     autoAlignOff: String,
+    adjustNorth: String,
     unitMeters: String,
     editDimensionTitle: String,
     editDimensionCurrent: String,
@@ -262,6 +281,7 @@ struct FloorPlanTabStrings {
     self.hideGrid = hideGrid
     self.autoAlignOn = autoAlignOn
     self.autoAlignOff = autoAlignOff
+    self.adjustNorth = adjustNorth
     self.unitMeters = unitMeters
     self.editDimensionTitle = editDimensionTitle
     self.editDimensionCurrent = editDimensionCurrent
@@ -294,6 +314,7 @@ struct FloorPlanTabStrings {
       hideGrid: dict["floorPlanHideGrid"] ?? "Hide grid",
       autoAlignOn: dict["floorPlanAutoAlignOn"] ?? "Auto-align",
       autoAlignOff: dict["floorPlanAutoAlignOff"] ?? "Scan angle",
+      adjustNorth: dict["floorPlanAdjustNorth"] ?? "North",
       unitMeters: dict["floorPlanUnitMeters"] ?? "m",
       editDimensionTitle: dict["floorPlanEditDimensionTitle"] ?? "Edit dimension",
       editDimensionCurrent: dict["floorPlanEditDimensionCurrent"] ?? "Current",
@@ -324,6 +345,7 @@ struct FloorPlanTabStrings {
     hideGrid: "Hide grid",
     autoAlignOn: "Auto-align",
     autoAlignOff: "Scan angle",
+    adjustNorth: "North",
     unitMeters: "meters",
     editDimensionTitle: "Edit dimension",
     editDimensionCurrent: "Current",

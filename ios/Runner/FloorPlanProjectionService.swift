@@ -96,7 +96,12 @@ enum FloorPlanProjectionService {
       overallDimensions: overallDimensions,
       wallSegmentDimensions: wallSegmentDimensions,
       footprintYaw: 0,
-      planCenter: planCenter
+      planCenter: planCenter,
+      orientationEastPlanAngleRad: 0,
+      orientationTrueNorthPlanAngleRad: CGFloat.pi / 2,
+      orientationScanWorldPlusXBearingDeg: nil,
+      orientationNorthCorrectionDeg: 0,
+      orientationHasGeographicNorth: false
     )
   }
 

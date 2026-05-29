@@ -43,23 +43,23 @@ enum FloorPlanResizeService {
   }
 
   static func applyWidthChange(to model: EditableFloorPlanModel, newWidth: Double) -> EditableFloorPlanModel {
-    let currentWidth = model.bounds.width
+    let currentWidth = model.footprintLongM
     let delta = newWidth - currentWidth
     guard abs(delta) > 1e-6 else { return model }
 
     let fixedSide = model.dimensionAnnotations
       .first(where: { $0.type == .overallWidth })?.target.fixedSide ?? .minX
-    return applyHorizontalResize(to: model, delta: delta, fixedSide: fixedSide)
+    return applyHorizontalResize(to: model, delta: delta, fixedSide: fixedSide, newLongM: newWidth)
   }
 
   static func applyLengthChange(to model: EditableFloorPlanModel, newLength: Double) -> EditableFloorPlanModel {
-    let currentLength = model.bounds.length
+    let currentLength = model.footprintShortM
     let delta = newLength - currentLength
     guard abs(delta) > 1e-6 else { return model }
 
     let fixedSide = model.dimensionAnnotations
       .first(where: { $0.type == .overallLength })?.target.fixedSide ?? .minZ
-    return applyVerticalResize(to: model, delta: delta, fixedSide: fixedSide)
+    return applyVerticalResize(to: model, delta: delta, fixedSide: fixedSide, newShortM: newLength)
   }
 
   // MARK: - Resize internals
@@ -67,7 +67,8 @@ enum FloorPlanResizeService {
   private static func applyHorizontalResize(
     to model: EditableFloorPlanModel,
     delta: Double,
-    fixedSide: DimensionFixedSide
+    fixedSide: DimensionFixedSide,
+    newLongM: Double
   ) -> EditableFloorPlanModel {
     var updated = model
     let moveMin = fixedSide == .maxX
@@ -85,8 +86,12 @@ enum FloorPlanResizeService {
     updated = clampFreeObjects(in: updated)
     updated.metadata.isEdited = true
     updated.metadata.updatedAt = Date()
-    updated.footprintLongM = updated.bounds.width
-    updated.footprintShortM = updated.bounds.length
+    updated.scanFootprintBounds = resizeScanBoundsHorizontally(
+      model.scanFootprintBounds,
+      delta: delta,
+      fixedSide: fixedSide
+    )
+    updated.footprintLongM = newLongM
     updated.dimensionAnnotations = DimensionLineService.annotations(for: updated)
     return updated
   }
@@ -94,7 +99,8 @@ enum FloorPlanResizeService {
   private static func applyVerticalResize(
     to model: EditableFloorPlanModel,
     delta: Double,
-    fixedSide: DimensionFixedSide
+    fixedSide: DimensionFixedSide,
+    newShortM: Double
   ) -> EditableFloorPlanModel {
     var updated = model
     let moveMin = fixedSide == .maxZ
@@ -112,9 +118,47 @@ enum FloorPlanResizeService {
     updated = clampFreeObjects(in: updated)
     updated.metadata.isEdited = true
     updated.metadata.updatedAt = Date()
-    updated.footprintLongM = updated.bounds.width
-    updated.footprintShortM = updated.bounds.length
+    updated.scanFootprintBounds = resizeScanBoundsVertically(
+      model.scanFootprintBounds,
+      delta: delta,
+      fixedSide: fixedSide
+    )
+    updated.footprintShortM = newShortM
     updated.dimensionAnnotations = DimensionLineService.annotations(for: updated)
+    return updated
+  }
+
+  private static func resizeScanBoundsHorizontally(
+    _ bounds: EditableFloorPlanBounds,
+    delta: Double,
+    fixedSide: DimensionFixedSide
+  ) -> EditableFloorPlanBounds {
+    var updated = bounds
+    switch fixedSide {
+    case .minX, .auto:
+      updated.maxX += delta
+    case .maxX:
+      updated.minX -= delta
+    case .minZ, .maxZ:
+      break
+    }
+    return updated
+  }
+
+  private static func resizeScanBoundsVertically(
+    _ bounds: EditableFloorPlanBounds,
+    delta: Double,
+    fixedSide: DimensionFixedSide
+  ) -> EditableFloorPlanBounds {
+    var updated = bounds
+    switch fixedSide {
+    case .minZ, .auto:
+      updated.maxZ += delta
+    case .maxZ:
+      updated.minZ -= delta
+    case .minX, .maxX:
+      break
+    }
     return updated
   }
 

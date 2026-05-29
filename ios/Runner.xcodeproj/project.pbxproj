@@ -21,6 +21,7 @@
 		E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */; };
 		E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */; };
 		E8A1B2E11ED2DC5600515813 /* RoomScanMetricsComputer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */; };
+		E8A1B3191ED2DC5600515831 /* RoomScanOrientationCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */; };
 		E8A1B2F11ED2DC5600515814 /* FloorPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */; };
 		E8A1B2F21ED2DC5600515815 /* FloorPlanProjectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */; };
 		E8A1B2F41ED2DC5600515816 /* FloorPlanRenderers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */; };
@@ -36,6 +37,8 @@
 		E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */; };
 		E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */; };
 		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
+		E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */; };
+		E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */; };
 		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
 		F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B60 /* Localizable.strings */; };
 /* End PBXBuildFile section */
@@ -94,6 +97,7 @@
 		E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomUsdzViewerViewController.swift; sourceTree = "<group>"; };
 		E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanBoundsPlugin.swift; sourceTree = "<group>"; };
 		E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanMetricsComputer.swift; sourceTree = "<group>"; };
+		E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanOrientationCapture.swift; sourceTree = "<group>"; };
 		E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanModel.swift; sourceTree = "<group>"; };
 		E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanProjectionService.swift; sourceTree = "<group>"; };
 		E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanRenderers.swift; sourceTree = "<group>"; };
@@ -109,6 +113,8 @@
 		E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanStateManager.swift; sourceTree = "<group>"; };
 		E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene3DRegenerationService.swift; sourceTree = "<group>"; };
 		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
+		E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanNorthOrientation.swift; sourceTree = "<group>"; };
+		E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationEditController.swift; sourceTree = "<group>"; };
 		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B61 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B62 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -213,6 +219,7 @@
 				E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */,
 				E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */,
 				E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */,
+				E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */,
 				E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */,
 				E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */,
 				E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */,
@@ -228,6 +235,8 @@
 				E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */,
 				E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */,
 				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
+				E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */,
+				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -550,6 +559,7 @@
 				E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */,
 				E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */,
 				E8A1B2E11ED2DC5600515813 /* RoomScanMetricsComputer.swift in Sources */,
+				E8A1B3191ED2DC5600515831 /* RoomScanOrientationCapture.swift in Sources */,
 				E8A1B2F11ED2DC5600515814 /* FloorPlanModel.swift in Sources */,
 				E8A1B2F21ED2DC5600515815 /* FloorPlanProjectionService.swift in Sources */,
 				E8A1B2F41ED2DC5600515816 /* FloorPlanRenderers.swift in Sources */,
@@ -565,6 +575,8 @@
 				E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */,
 				E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */,
 				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
+				E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */,
+				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

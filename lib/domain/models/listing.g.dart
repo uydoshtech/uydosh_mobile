@@ -32,6 +32,10 @@ _$ListingImpl _$$ListingImplFromJson(Map<String, dynamic> json) =>
       roomScanHeightM: (json['room_scan_height_m'] as num?)?.toDouble(),
       roomScanFloorAreaM2:
           (json['room_scan_floor_area_m2'] as num?)?.toDouble(),
+      roomScanWorldPlusXBearingDeg:
+          (json['room_scan_world_plus_x_bearing_deg'] as num?)?.toDouble(),
+      roomScanNorthCorrectionDeg:
+          (json['room_scan_north_correction_deg'] as num?)?.toDouble(),
       subwayStation: json['subway_station'] == null
           ? null
           : SubwayStationDetail.fromJson(
@@ -76,6 +80,9 @@ Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
       'room_scan_floor_short_m': instance.roomScanFloorShortM,
       'room_scan_height_m': instance.roomScanHeightM,
       'room_scan_floor_area_m2': instance.roomScanFloorAreaM2,
+      'room_scan_world_plus_x_bearing_deg':
+          instance.roomScanWorldPlusXBearingDeg,
+      'room_scan_north_correction_deg': instance.roomScanNorthCorrectionDeg,
       'subway_station': instance.subwayStation,
       'location': instance.location,
       'listing_type': instance.listingType,

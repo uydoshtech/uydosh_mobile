@@ -63,6 +63,11 @@ mixin _$Listing {
   double? get roomScanHeightM => throw _privateConstructorUsedError;
   @JsonKey(name: "room_scan_floor_area_m2")
   double? get roomScanFloorAreaM2 => throw _privateConstructorUsedError;
+  @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+  double? get roomScanWorldPlusXBearingDeg =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: "room_scan_north_correction_deg")
+  double? get roomScanNorthCorrectionDeg => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
   @JsonKey(name: "location")
@@ -112,6 +117,10 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
       @JsonKey(name: "room_scan_floor_area_m2") double? roomScanFloorAreaM2,
+      @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+      double? roomScanWorldPlusXBearingDeg,
+      @JsonKey(name: "room_scan_north_correction_deg")
+      double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "location") LocationDetail? location,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
@@ -161,6 +170,8 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? roomScanFloorShortM = freezed,
     Object? roomScanHeightM = freezed,
     Object? roomScanFloorAreaM2 = freezed,
+    Object? roomScanWorldPlusXBearingDeg = freezed,
+    Object? roomScanNorthCorrectionDeg = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? listingType = freezed,
@@ -256,6 +267,14 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
       roomScanFloorAreaM2: freezed == roomScanFloorAreaM2
           ? _value.roomScanFloorAreaM2
           : roomScanFloorAreaM2 // ignore: cast_nullable_to_non_nullable
+              as double?,
+      roomScanWorldPlusXBearingDeg: freezed == roomScanWorldPlusXBearingDeg
+          ? _value.roomScanWorldPlusXBearingDeg
+          : roomScanWorldPlusXBearingDeg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      roomScanNorthCorrectionDeg: freezed == roomScanNorthCorrectionDeg
+          ? _value.roomScanNorthCorrectionDeg
+          : roomScanNorthCorrectionDeg // ignore: cast_nullable_to_non_nullable
               as double?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
@@ -357,6 +376,10 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
       @JsonKey(name: "room_scan_floor_area_m2") double? roomScanFloorAreaM2,
+      @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+      double? roomScanWorldPlusXBearingDeg,
+      @JsonKey(name: "room_scan_north_correction_deg")
+      double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "location") LocationDetail? location,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
@@ -407,6 +430,8 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? roomScanFloorShortM = freezed,
     Object? roomScanHeightM = freezed,
     Object? roomScanFloorAreaM2 = freezed,
+    Object? roomScanWorldPlusXBearingDeg = freezed,
+    Object? roomScanNorthCorrectionDeg = freezed,
     Object? subwayStation = freezed,
     Object? location = freezed,
     Object? listingType = freezed,
@@ -503,6 +528,14 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value.roomScanFloorAreaM2
           : roomScanFloorAreaM2 // ignore: cast_nullable_to_non_nullable
               as double?,
+      roomScanWorldPlusXBearingDeg: freezed == roomScanWorldPlusXBearingDeg
+          ? _value.roomScanWorldPlusXBearingDeg
+          : roomScanWorldPlusXBearingDeg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      roomScanNorthCorrectionDeg: freezed == roomScanNorthCorrectionDeg
+          ? _value.roomScanNorthCorrectionDeg
+          : roomScanNorthCorrectionDeg // ignore: cast_nullable_to_non_nullable
+              as double?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
@@ -557,6 +590,10 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "room_scan_floor_short_m") this.roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") this.roomScanHeightM,
       @JsonKey(name: "room_scan_floor_area_m2") this.roomScanFloorAreaM2,
+      @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+      this.roomScanWorldPlusXBearingDeg,
+      @JsonKey(name: "room_scan_north_correction_deg")
+      this.roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") this.subwayStation,
       @JsonKey(name: "location") this.location,
       @JsonKey(name: "listing_type") this.listingType,
@@ -635,6 +672,12 @@ class _$ListingImpl implements _Listing {
   @JsonKey(name: "room_scan_floor_area_m2")
   final double? roomScanFloorAreaM2;
   @override
+  @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+  final double? roomScanWorldPlusXBearingDeg;
+  @override
+  @JsonKey(name: "room_scan_north_correction_deg")
+  final double? roomScanNorthCorrectionDeg;
+  @override
   @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
   @override
@@ -670,7 +713,7 @@ class _$ListingImpl implements _Listing {
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
   }
 
   @override
@@ -716,6 +759,14 @@ class _$ListingImpl implements _Listing {
                 other.roomScanHeightM == roomScanHeightM) &&
             (identical(other.roomScanFloorAreaM2, roomScanFloorAreaM2) ||
                 other.roomScanFloorAreaM2 == roomScanFloorAreaM2) &&
+            (identical(other.roomScanWorldPlusXBearingDeg,
+                    roomScanWorldPlusXBearingDeg) ||
+                other.roomScanWorldPlusXBearingDeg ==
+                    roomScanWorldPlusXBearingDeg) &&
+            (identical(other.roomScanNorthCorrectionDeg,
+                    roomScanNorthCorrectionDeg) ||
+                other.roomScanNorthCorrectionDeg ==
+                    roomScanNorthCorrectionDeg) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
             (identical(other.location, location) ||
@@ -755,6 +806,8 @@ class _$ListingImpl implements _Listing {
         roomScanFloorShortM,
         roomScanHeightM,
         roomScanFloorAreaM2,
+        roomScanWorldPlusXBearingDeg,
+        roomScanNorthCorrectionDeg,
         subwayStation,
         location,
         listingType,
@@ -805,6 +858,10 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "room_scan_height_m") final double? roomScanHeightM,
       @JsonKey(name: "room_scan_floor_area_m2")
       final double? roomScanFloorAreaM2,
+      @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+      final double? roomScanWorldPlusXBearingDeg,
+      @JsonKey(name: "room_scan_north_correction_deg")
+      final double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       @JsonKey(name: "location") final LocationDetail? location,
       @JsonKey(name: "listing_type") final ListingTypeDetail? listingType,
@@ -879,6 +936,12 @@ abstract class _Listing implements Listing {
   @override
   @JsonKey(name: "room_scan_floor_area_m2")
   double? get roomScanFloorAreaM2;
+  @override
+  @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+  double? get roomScanWorldPlusXBearingDeg;
+  @override
+  @JsonKey(name: "room_scan_north_correction_deg")
+  double? get roomScanNorthCorrectionDeg;
   @override
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;

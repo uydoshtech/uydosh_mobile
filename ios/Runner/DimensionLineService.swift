@@ -6,7 +6,7 @@ enum DimensionLineService {
   private static let metersFormat = "%.2f m"
 
   static func annotations(for model: EditableFloorPlanModel) -> [EditableDimensionAnnotation] {
-    let bounds = model.bounds
+    let scan = model.scanFootprintBounds
     let offset = max(model.footprintLongM, model.footprintShortM) * 0.10 + 0.45
     // After alignment the long edge is horizontal (+X), short edge is vertical (+Z).
     let longM = model.footprintLongM
@@ -15,13 +15,13 @@ enum DimensionLineService {
     let maxXVertices = verticesNearMaxX(in: model)
     let maxZVertices = verticesNearMaxZ(in: model)
 
-    // Long edge (matches 3D banner) — horizontal below the room; resize moves maxX.
-    let longY = -bounds.minZ - offset
+    // Long edge (matches 3D banner) — horizontal below the scan footprint.
+    let longY = -scan.maxZ - offset
     let longAnnotation = EditableDimensionAnnotation(
       id: UUID(),
       type: .overallWidth,
-      startPoint2D: EditablePlanPoint2D(x: bounds.minX, y: longY),
-      endPoint2D: EditablePlanPoint2D(x: bounds.maxX, y: longY),
+      startPoint2D: EditablePlanPoint2D(x: scan.minX, y: longY),
+      endPoint2D: EditablePlanPoint2D(x: scan.maxX, y: longY),
       measuredValueMeters: longM,
       label: String(format: metersFormat, longM),
       editable: true,
@@ -31,17 +31,17 @@ enum DimensionLineService {
         affectedVertexIds: maxXVertices.map(\.id),
         fixedSide: .minX
       ),
-      witnessStart2D: EditablePlanPoint2D(x: bounds.minX, y: -bounds.minZ),
-      witnessEnd2D: EditablePlanPoint2D(x: bounds.maxX, y: -bounds.minZ)
+      witnessStart2D: EditablePlanPoint2D(x: scan.minX, y: -scan.maxZ),
+      witnessEnd2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.maxZ)
     )
 
-    // Short edge — vertical to the right; resize moves maxZ.
-    let shortX = bounds.maxX + offset
+    // Short edge — vertical to the right of the scan footprint.
+    let shortX = scan.maxX + offset
     let shortAnnotation = EditableDimensionAnnotation(
       id: UUID(),
       type: .overallLength,
-      startPoint2D: EditablePlanPoint2D(x: shortX, y: -bounds.maxZ),
-      endPoint2D: EditablePlanPoint2D(x: shortX, y: -bounds.minZ),
+      startPoint2D: EditablePlanPoint2D(x: shortX, y: -scan.maxZ),
+      endPoint2D: EditablePlanPoint2D(x: shortX, y: -scan.minZ),
       measuredValueMeters: shortM,
       label: String(format: metersFormat, shortM),
       editable: true,
@@ -51,8 +51,8 @@ enum DimensionLineService {
         affectedVertexIds: maxZVertices.map(\.id),
         fixedSide: .minZ
       ),
-      witnessStart2D: EditablePlanPoint2D(x: bounds.maxX, y: -bounds.maxZ),
-      witnessEnd2D: EditablePlanPoint2D(x: bounds.maxX, y: -bounds.minZ)
+      witnessStart2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.maxZ),
+      witnessEnd2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.minZ)
     )
 
     return [longAnnotation, shortAnnotation]

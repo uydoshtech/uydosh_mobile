@@ -843,6 +843,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         listingId: listingDetail.id,
         languageCode: LanguageState().currentLanguage,
         publishMetricsIfMissing: isOwner && metricsMissing,
+        worldPlusXBearingDeg: listingDetail.roomScanWorldPlusXBearingDeg,
+        northCorrectionDeg: listingDetail.roomScanNorthCorrectionDeg,
+        isListingOwner: isOwner,
       );
       if (!mounted) return;
       if (!ok) {

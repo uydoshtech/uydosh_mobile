@@ -54,7 +54,25 @@ enum EditableFloorPlanAlignService {
       )
     }
 
+    func rotateBounds(_ bounds: EditableFloorPlanBounds) -> EditableFloorPlanBounds {
+      let corners = [
+        (bounds.minX, bounds.minZ),
+        (bounds.maxX, bounds.minZ),
+        (bounds.maxX, bounds.maxZ),
+        (bounds.minX, bounds.maxZ),
+      ]
+      let rotated = corners.map { rotatePoint(x: $0.0, z: $0.1) }
+      return EditableFloorPlanBoundsCalculator.bounds(
+        for: rotated.map { EditableVertex(id: UUID(), x: $0.0, z: $0.1, locked: true) }
+      )
+    }
+
     var updated = model
+    updated.worldEastPlanAngleRad = model.worldEastPlanAngleRad - angle
+    if var trueNorth = updated.trueNorthPlanAngleRad {
+      trueNorth -= angle
+      updated.trueNorthPlanAngleRad = trueNorth
+    }
     updated.vertices = model.vertices.map { vertex in
       var v = vertex
       let rotated = rotatePoint(x: vertex.x, z: vertex.z)
@@ -86,6 +104,7 @@ enum EditableFloorPlanAlignService {
       }
       return o
     }
+    updated.scanFootprintBounds = rotateBounds(model.scanFootprintBounds)
     return recalculate(updated)
   }
 

@@ -149,6 +149,10 @@ abstract class IListingService {
     required int listingId,
     required RoomScanMetrics metrics,
   });
+  Future<void> patchRoomScanNorthCorrection({
+    required int listingId,
+    required double? northCorrectionDeg,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
   Future<void> recordListingView(int listingId);
@@ -472,6 +476,16 @@ class ListingService implements IListingService {
       _crudService.patchRoomScanMetricsIfMissing(
         listingId: listingId,
         metrics: metrics,
+      );
+
+  @override
+  Future<void> patchRoomScanNorthCorrection({
+    required int listingId,
+    required double? northCorrectionDeg,
+  }) =>
+      _crudService.patchRoomScanNorthCorrection(
+        listingId: listingId,
+        northCorrectionDeg: northCorrectionDeg,
       );
 
   @override

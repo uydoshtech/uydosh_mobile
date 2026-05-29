@@ -27,11 +27,13 @@ class RoomScanBoundsService {
           area == null) {
         return null;
       }
+      final bearing = (raw["world_plus_x_bearing_deg"] as num?)?.toDouble();
       return RoomScanMetrics(
         floorLongM: floorLong,
         floorShortM: floorShort,
         heightM: height,
         floorAreaM2: area,
+        worldPlusXBearingDeg: bearing,
       );
     } on Object {
       return null;

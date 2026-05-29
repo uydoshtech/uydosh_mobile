@@ -71,6 +71,21 @@ final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
       if let n = args["publishMetricsIfMissing"] as? NSNumber { return n.boolValue }
       return false
     }()
+    let worldPlusXTrueBearingDeg: Double? = {
+      if let d = args["worldPlusXBearingDeg"] as? Double { return d }
+      if let n = args["worldPlusXBearingDeg"] as? NSNumber { return n.doubleValue }
+      return nil
+    }()
+    let northCorrectionDeg: Double = {
+      if let d = args["northCorrectionDeg"] as? Double { return d }
+      if let n = args["northCorrectionDeg"] as? NSNumber { return n.doubleValue }
+      return 0
+    }()
+    let isListingOwner: Bool = {
+      if let b = args["isListingOwner"] as? Bool { return b }
+      if let n = args["isListingOwner"] as? NSNumber { return n.boolValue }
+      return false
+    }()
     DispatchQueue.main.async {
       RoomUsdzViewerPresenter.present(
         filePath: path,
@@ -78,6 +93,9 @@ final class RoomUsdzViewerPlugin: NSObject, FlutterPlugin {
         messenger: Self.binaryMessenger,
         listingId: listingId,
         publishMetricsIfMissing: publishMetricsIfMissing,
+        worldPlusXTrueBearingDeg: worldPlusXTrueBearingDeg,
+        northCorrectionDeg: northCorrectionDeg,
+        isListingOwner: isListingOwner,
         result: result
       )
     }

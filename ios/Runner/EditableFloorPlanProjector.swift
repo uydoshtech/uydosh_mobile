@@ -71,7 +71,12 @@ enum EditableFloorPlanProjector {
       overallDimensions: overallDimensions,
       wallSegmentDimensions: wallSegmentDimensions,
       footprintYaw: 0,
-      planCenter: bounds.center
+      planCenter: bounds.center,
+      orientationEastPlanAngleRad: CGFloat(model.worldEastPlanAngleRad),
+      orientationTrueNorthPlanAngleRad: model.trueNorthPlanAngleRad.map { CGFloat($0) },
+      orientationScanWorldPlusXBearingDeg: model.scanWorldPlusXBearingDeg.map { CGFloat($0) },
+      orientationNorthCorrectionDeg: CGFloat(model.northCorrectionDeg),
+      orientationHasGeographicNorth: model.scanWorldPlusXBearingDeg != nil
     )
   }
 

@@ -9,7 +9,9 @@ enum RoomPlanToEditableModelMapper {
   static func map(
     scene: SCNScene,
     metrics: RoomScanMetricsResult,
-    sourceScanId: String
+    sourceScanId: String,
+    worldPlusXTrueBearingDeg: Double? = nil,
+    northCorrectionDeg: Double = 0
   ) -> EditableFloorPlanModel? {
     guard let sceneBounds = RoomScanMetricsComputer.unionWorldBounds(of: scene.rootNode) else {
       return nil
@@ -21,23 +23,27 @@ enum RoomPlanToEditableModelMapper {
 
     let vertices = obbFootprintVertices(from: metrics)
     guard vertices.count == 4 else { return nil }
+    let scanFootprintBounds = EditableFloorPlanBoundsCalculator.bounds(for: vertices)
 
-    let w0 = makeWall(start: vertices[0], end: vertices[1], height: wallHeight, thickness: wallThickness)
-    let w1 = makeWall(start: vertices[1], end: vertices[2], height: wallHeight, thickness: wallThickness)
-    let w2 = makeWall(start: vertices[2], end: vertices[3], height: wallHeight, thickness: wallThickness)
-    let w3 = makeWall(start: vertices[3], end: vertices[0], height: wallHeight, thickness: wallThickness)
-    var walls = [w0, w1, w2, w3]
-
-    var openings = extractOpenings(from: scene, walls: walls, vertices: vertices, wallHeight: wallHeight)
-    attachOpeningsToWalls(openings: &openings, walls: &walls)
-
-    let objects = extractObjects(
+    // Walls follow the scan floor-polygon OBB exactly so the drawn room and all
+    // dimension labels match the 3D view (floorLongM × floorShortM). Furniture is
+    // extracted in world space and flagged if it falls outside this footprint.
+    var walls = exteriorWalls(
+      from: vertices,
+      wallHeight: wallHeight,
+      wallThickness: wallThickness
+    )
+    var objects = extractObjects(
       from: scene,
       sceneBounds: sceneBounds,
       wallHeight: wallHeight,
       walls: walls,
       vertices: vertices
     )
+
+    var openings = extractOpenings(from: scene, walls: walls, vertices: vertices, wallHeight: wallHeight)
+    attachOpeningsToWalls(openings: &openings, walls: &walls)
+    markObjectsOutsideBounds(&objects, vertices: vertices)
 
     let bounds = EditableFloorPlanBoundsCalculator.bounds(for: vertices)
     let now = Date()
@@ -55,8 +61,13 @@ enum RoomPlanToEditableModelMapper {
       wallThickness: wallThickness,
       floorY: floorY,
       bounds: bounds,
+      scanFootprintBounds: scanFootprintBounds,
       footprintLongM: metrics.floorLongM,
       footprintShortM: metrics.floorShortM,
+      worldEastPlanAngleRad: 0,
+      trueNorthPlanAngleRad: nil,
+      scanWorldPlusXBearingDeg: nil,
+      northCorrectionDeg: 0,
       metadata: EditableFloorPlanMetadata(
         createdAt: now,
         updatedAt: now,
@@ -71,8 +82,8 @@ enum RoomPlanToEditableModelMapper {
       footprintYaw: Double(metrics.footprintYaw)
     )
     model = EditableFloorPlanAlignService.alignToLongestWall(model)
-    model.footprintLongM = model.bounds.width
-    model.footprintShortM = model.bounds.length
+    model.scanWorldPlusXBearingDeg = worldPlusXTrueBearingDeg
+    FloorPlanNorthOrientation.applyTrueNorth(to: &model, correctionDeg: northCorrectionDeg)
     model.dimensionAnnotations = DimensionLineService.annotations(for: model)
     return model
   }
@@ -104,7 +115,61 @@ enum RoomPlanToEditableModelMapper {
     }
   }
 
+  private static func exteriorWalls(
+    from vertices: [EditableVertex],
+    wallHeight: Double,
+    wallThickness: Double,
+    wallIds: [WallId]? = nil
+  ) -> [EditableWall] {
+    guard vertices.count == 4 else { return [] }
+    let ids = wallIds ?? (0..<4).map { _ in UUID() }
+    guard ids.count == 4 else { return [] }
+    return [
+      makeWall(id: ids[0], start: vertices[0], end: vertices[1], height: wallHeight, thickness: wallThickness),
+      makeWall(id: ids[1], start: vertices[1], end: vertices[2], height: wallHeight, thickness: wallThickness),
+      makeWall(id: ids[2], start: vertices[2], end: vertices[3], height: wallHeight, thickness: wallThickness),
+      makeWall(id: ids[3], start: vertices[3], end: vertices[0], height: wallHeight, thickness: wallThickness),
+    ]
+  }
+
+  private static func markObjectsOutsideBounds(
+    _ objects: inout [EditableObject],
+    vertices: [EditableVertex]
+  ) {
+    guard vertices.count >= 3 else { return }
+    let ring = vertices.map { (x: $0.x, z: $0.z) }
+    for index in objects.indices {
+      objects[index].isOutsideBounds = !pointInsidePolygon(
+        x: objects[index].centerX,
+        z: objects[index].centerZ,
+        ring: ring
+      )
+    }
+  }
+
+  private static func pointInsidePolygon(
+    x: Double,
+    z: Double,
+    ring: [(x: Double, z: Double)]
+  ) -> Bool {
+    guard ring.count >= 3 else { return false }
+    var inside = false
+    var j = ring.count - 1
+    for i in 0..<ring.count {
+      let xi = ring[i].x
+      let zi = ring[i].z
+      let xj = ring[j].x
+      let zj = ring[j].z
+      let intersects = (zi > z) != (zj > z)
+        && x < (xj - xi) * (z - zi) / (zj - zi + 1e-12) + xi
+      if intersects { inside.toggle() }
+      j = i
+    }
+    return inside
+  }
+
   private static func makeWall(
+    id: WallId = UUID(),
     start: EditableVertex,
     end: EditableVertex,
     height: Double,
@@ -114,7 +179,7 @@ enum RoomPlanToEditableModelMapper {
     let dz = end.z - start.z
     let length = hypot(dx, dz)
     return EditableWall(
-      id: UUID(),
+      id: id,
       startVertexId: start.id,
       endVertexId: end.id,
       height: height,

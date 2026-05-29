@@ -79,6 +79,10 @@ abstract class IListingCrudService {
     required int listingId,
     required RoomScanMetrics metrics,
   });
+  Future<void> patchRoomScanNorthCorrection({
+    required int listingId,
+    required double? northCorrectionDeg,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
 }
@@ -554,6 +558,21 @@ class ListingCrudService implements IListingCrudService {
       (json) => json,
       basePath: EnvironmentUtil.basePath,
       data: RoomScanMetricsPatchRequest(metrics: metrics),
+    );
+  }
+
+  @override
+  Future<void> patchRoomScanNorthCorrection({
+    required int listingId,
+    required double? northCorrectionDeg,
+  }) async {
+    await _oauthApiClient.patch<dynamic, RoomScanNorthCorrectionPatchRequest>(
+      "/listings/$listingId/room-scan-north-correction",
+      (json) => json,
+      basePath: EnvironmentUtil.basePath,
+      data: RoomScanNorthCorrectionPatchRequest(
+        northCorrectionDeg: northCorrectionDeg,
+      ),
     );
   }
 

@@ -124,8 +124,13 @@ final class FloorPlanResizeServiceTests: XCTestCase {
       wallThickness: 0.12,
       floorY: 0,
       bounds: bounds,
+      scanFootprintBounds: bounds,
       footprintLongM: width,
       footprintShortM: length,
+      worldEastPlanAngleRad: 0,
+      trueNorthPlanAngleRad: nil,
+      scanWorldPlusXBearingDeg: nil,
+      northCorrectionDeg: 0,
       metadata: EditableFloorPlanMetadata(
         createdAt: now,
         updatedAt: now,

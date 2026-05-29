@@ -18,8 +18,11 @@ class RoomUsdzViewerService {
 
   static const MethodChannel _channel = MethodChannel("uydosh/room_usdz_viewer");
   static const MethodChannel _metricsSink = MethodChannel("uydosh/room_scan_metrics_sink");
+  static const MethodChannel _northCorrectionSink =
+      MethodChannel("uydosh/room_scan_north_correction_sink");
 
   static bool _metricsSinkRegistered = false;
+  static bool _northCorrectionSinkRegistered = false;
   static bool _presentInFlight = false;
 
   static void _ensureRoomScanMetricsSink() {
@@ -63,6 +66,43 @@ class RoomUsdzViewerService {
     });
   }
 
+  static void _ensureRoomScanNorthCorrectionSink() {
+    if (_northCorrectionSinkRegistered) {
+      return;
+    }
+    _northCorrectionSinkRegistered = true;
+    _northCorrectionSink.setMethodCallHandler((call) async {
+      if (call.method != "onNorthCorrectionChanged") {
+        return;
+      }
+      final raw = call.arguments;
+      if (raw is! Map) {
+        return;
+      }
+      final listingId = (raw["listingId"] as num?)?.toInt();
+      if (listingId == null) {
+        return;
+      }
+      final rawCorrection = raw["north_correction_deg"];
+      final double? northCorrectionDeg;
+      if (rawCorrection == null) {
+        northCorrectionDeg = null;
+      } else if (rawCorrection is num) {
+        northCorrectionDeg = rawCorrection.toDouble();
+      } else {
+        return;
+      }
+      try {
+        await getIt<IListingService>().patchRoomScanNorthCorrection(
+          listingId: listingId,
+          northCorrectionDeg: northCorrectionDeg,
+        );
+      } catch (e, st) {
+        logger.d("Room scan north correction save failed: $e\n$st");
+      }
+    });
+  }
+
   static String _rgbHex6(Color color) {
     final v = color.toARGB32();
     return (v & 0xFFFFFF).toRadixString(16).padLeft(6, "0");
@@ -78,6 +118,9 @@ class RoomUsdzViewerService {
     required int listingId,
     required String languageCode,
     bool publishMetricsIfMissing = false,
+    double? worldPlusXBearingDeg,
+    double? northCorrectionDeg,
+    bool isListingOwner = false,
   }) async {
     if (!isIOSDevice) return false;
     if (_presentInFlight) return false;
@@ -88,6 +131,9 @@ class RoomUsdzViewerService {
         listingId: listingId,
         languageCode: languageCode,
         publishMetricsIfMissing: publishMetricsIfMissing,
+        worldPlusXBearingDeg: worldPlusXBearingDeg,
+        northCorrectionDeg: northCorrectionDeg,
+        isListingOwner: isListingOwner,
       );
     } finally {
       _presentInFlight = false;
@@ -99,9 +145,15 @@ class RoomUsdzViewerService {
     required int listingId,
     required String languageCode,
     required bool publishMetricsIfMissing,
+    double? worldPlusXBearingDeg,
+    double? northCorrectionDeg,
+    bool isListingOwner = false,
   }) async {
     if (publishMetricsIfMissing) {
       _ensureRoomScanMetricsSink();
+    }
+    if (isListingOwner) {
+      _ensureRoomScanNorthCorrectionSink();
     }
     final temp = await getTemporaryDirectory();
     final file = File("${temp.path}/uydosh_room_$listingId.usdz");
@@ -187,6 +239,18 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_auto_align_on", languageCode),
       "floorPlanAutoAlignOff":
           L10n.getForLanguage("room_3d_floor_plan_auto_align_off", languageCode),
+      "floorPlanAdjustNorth":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north", languageCode),
+      "floorPlanAdjustNorthTitle":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north_title", languageCode),
+      "floorPlanAdjustNorthMessage":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north_message", languageCode),
+      "floorPlanAdjustNorthReset":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north_reset", languageCode),
+      "floorPlanAdjustNorthUpdated":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north_updated", languageCode),
+      "floorPlanAdjustNorthDegreesFormat":
+          L10n.getForLanguage("room_3d_floor_plan_adjust_north_degrees_format", languageCode),
       "floorPlanEditDimensionTitle":
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
       "floorPlanEditDimensionCurrent":
@@ -217,6 +281,9 @@ class RoomUsdzViewerService {
       "strings": strings,
       "listingId": listingId,
       "publishMetricsIfMissing": publishMetricsIfMissing,
+      "isListingOwner": isListingOwner,
+      if (worldPlusXBearingDeg != null) "worldPlusXBearingDeg": worldPlusXBearingDeg,
+      if (northCorrectionDeg != null) "northCorrectionDeg": northCorrectionDeg,
     });
     return ok ?? false;
   }

@@ -27,6 +27,7 @@ struct RoomViewerStrings {
   /// RGB hex `RRGGBB` from [AppColors.floorObject3dTint] (Material brown).
   let onFloorObjectTint: UIColor
   let floorPlan: FloorPlanTabStrings
+  let compassOrientation: CompassOrientationEditStrings
 
   init(
     title: String,
@@ -49,7 +50,8 @@ struct RoomViewerStrings {
     materialsStyleValueReal: String,
     brandMarkA11yLabel: String,
     onFloorObjectTint: UIColor,
-    floorPlan: FloorPlanTabStrings
+    floorPlan: FloorPlanTabStrings,
+    compassOrientation: CompassOrientationEditStrings
   ) {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
@@ -72,6 +74,7 @@ struct RoomViewerStrings {
     self.brandMarkA11yLabel = brandMarkA11yLabel
     self.onFloorObjectTint = onFloorObjectTint
     self.floorPlan = floorPlan
+    self.compassOrientation = compassOrientation
   }
 
   init?(dict: [String: String]) {
@@ -105,7 +108,8 @@ struct RoomViewerStrings {
       materialsStyleValueReal: dict["materialsRealValue"] ?? "Real",
       brandMarkA11yLabel: dict["brandMarkA11yLabel"] ?? "UyDosh",
       onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548"),
-      floorPlan: FloorPlanTabStrings(dict: dict) ?? .englishFallback
+      floorPlan: FloorPlanTabStrings(dict: dict) ?? .englishFallback,
+      compassOrientation: CompassOrientationEditStrings(dict: dict) ?? .englishFallback
     )
   }
 
@@ -145,7 +149,8 @@ struct RoomViewerStrings {
     materialsStyleValueReal: "Real",
     brandMarkA11yLabel: "UyDosh",
     onFloorObjectTint: Self.uiColorFromRgbHex6("795548"),
-    floorPlan: .englishFallback
+    floorPlan: .englishFallback,
+    compassOrientation: .englishFallback
   )
 }
 
@@ -171,6 +176,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let strings: RoomViewerStrings
   private let listingId: Int
   private let publishMetricsIfMissing: Bool
+  private let worldPlusXTrueBearingDeg: Double?
+  private let isListingOwner: Bool
+  private var committedNorthCorrectionDeg: Double
   private weak var metricsMessenger: FlutterBinaryMessenger?
   /// Completes the Flutter `presentLocalFile` future when the viewer is dismissed (not when it opens).
   private let dismissFlutterResult: OnceFlutterResult
@@ -276,6 +284,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var floorPlanTabView: FloorPlanTab?
   private var floorPlanStateManager = FloorPlanStateManager()
   private var dimensionEditController: DimensionEditController?
+  private var compassOrientationEditController: CompassOrientationEditController?
   private var dimensionEditStrings: DimensionEditDialogStrings = .englishFallback
 
   fileprivate init(
@@ -283,6 +292,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     strings: RoomViewerStrings,
     listingId: Int = 0,
     publishMetricsIfMissing: Bool = false,
+    worldPlusXTrueBearingDeg: Double? = nil,
+    northCorrectionDeg: Double = 0,
+    isListingOwner: Bool = false,
     metricsMessenger: FlutterBinaryMessenger? = nil,
     dismissFlutterResult: OnceFlutterResult
   ) {
@@ -290,6 +302,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     self.strings = strings
     self.listingId = listingId
     self.publishMetricsIfMissing = publishMetricsIfMissing
+    self.worldPlusXTrueBearingDeg = worldPlusXTrueBearingDeg
+    self.isListingOwner = isListingOwner
+    self.committedNorthCorrectionDeg = northCorrectionDeg
     self.metricsMessenger = metricsMessenger
     self.dismissFlutterResult = dismissFlutterResult
     super.init(nibName: nil, bundle: nil)
@@ -339,6 +354,13 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     floorPlanStateManager.onRequires3DRegeneration = { [weak self] editableModel in
       self?.regenerateSceneFromEditableModel(editableModel)
     }
+    floorPlanTab.onAdjustNorthTapped = { [weak self] in
+      self?.presentNorthCorrectionEditor()
+    }
+    compassOrientationEditController = CompassOrientationEditController(
+      strings: strings.compassOrientation
+    )
+    updateNorthAdjustButtonVisibility()
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(sceneTapped))
     tap.cancelsTouchesInView = false
@@ -1423,6 +1445,50 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     )
   }
 
+  /// Owner: persist manual north correction to Flutter/backend.
+  private func publishNorthCorrectionToFlutter(correctionDeg: Double?) {
+    guard isListingOwner, listingId > 0, let messenger = metricsMessenger else { return }
+    let channel = FlutterMethodChannel(
+      name: "uydosh/room_scan_north_correction_sink",
+      binaryMessenger: messenger
+    )
+    var args: [String: Any] = ["listingId": listingId]
+    if let correctionDeg {
+      args["north_correction_deg"] = correctionDeg
+    } else {
+      args["north_correction_deg"] = NSNull()
+    }
+    channel.invokeMethod("onNorthCorrectionChanged", arguments: args, result: { _ in })
+  }
+
+  private func updateNorthAdjustButtonVisibility() {
+    let canEdit = isListingOwner && listingId > 0
+    floorPlanTabView?.setNorthAdjustEnabled(canEdit)
+  }
+
+  private func presentNorthCorrectionEditor() {
+    guard isListingOwner, let controller = compassOrientationEditController else { return }
+    controller.present(
+      from: self,
+      currentCorrection: floorPlanStateManager.northCorrectionDeg,
+      onPreview: { [weak self] value in
+        self?.floorPlanStateManager.previewNorthCorrection(value)
+      },
+      onCommit: { [weak self] value in
+        guard let self else { return }
+        self.committedNorthCorrectionDeg = value
+        self.floorPlanStateManager.applyNorthCorrection(value)
+        self.publishNorthCorrectionToFlutter(correctionDeg: value)
+      },
+      onReset: { [weak self] in
+        guard let self else { return }
+        self.committedNorthCorrectionDeg = 0
+        self.floorPlanStateManager.resetNorthCorrection()
+        self.publishNorthCorrectionToFlutter(correctionDeg: nil)
+      }
+    )
+  }
+
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
   private func frameCamera(for scene: SCNScene, in view: SCNView) {
     guard let bounds = RoomScanMetricsComputer.unionWorldBounds(of: scene.rootNode),
@@ -1704,11 +1770,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.sceneView.scene = scene
         self.frameCamera(for: scene, in: self.sceneView)
         if let metrics = self.footprintMetrics {
+          let bearing = self.worldPlusXTrueBearingDeg
+            ?? RoomScanOrientationCapture.readSidecar(forUsdzPath: self.fileURL.path)
           self.floorPlanStateManager.importScan(
             scene: scene,
             metrics: metrics,
-            sourceScanId: self.fileURL.lastPathComponent
+            sourceScanId: self.fileURL.lastPathComponent,
+            worldPlusXTrueBearingDeg: bearing,
+            northCorrectionDeg: self.committedNorthCorrectionDeg
           )
+          self.updateNorthAdjustButtonVisibility()
         }
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
@@ -2003,6 +2074,9 @@ enum RoomUsdzViewerPresenter {
     messenger: FlutterBinaryMessenger?,
     listingId: Int,
     publishMetricsIfMissing: Bool,
+    worldPlusXTrueBearingDeg: Double? = nil,
+    northCorrectionDeg: Double = 0,
+    isListingOwner: Bool = false,
     result: @escaping FlutterResult
   ) {
     let once = OnceFlutterResult(result)
@@ -2035,6 +2109,9 @@ enum RoomUsdzViewerPresenter {
       strings: resolved,
       listingId: listingId,
       publishMetricsIfMissing: publishMetricsIfMissing,
+      worldPlusXTrueBearingDeg: worldPlusXTrueBearingDeg,
+      northCorrectionDeg: northCorrectionDeg,
+      isListingOwner: isListingOwner,
       metricsMessenger: messenger,
       dismissFlutterResult: once
     )
