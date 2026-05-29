@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
@@ -351,6 +352,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     if (await SessionManager.isAuthenticated()) {
       await _searchFiltersState.hydrateFromBackendForCurrentUser();
+      unawaited(PriceDisplaySettingsState().hydrateFromBackendForCurrentUser());
     }
     if (!mounted) return;
     // Build + save profile-derived defaults when the user has no saved filters.
@@ -387,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     if (!await SessionManager.isAuthenticated()) return;
     await _searchFiltersState.hydrateFromBackendForCurrentUser();
+    unawaited(PriceDisplaySettingsState().hydrateFromBackendForCurrentUser());
     if (!mounted) return;
     final builtDefaults =
         await _searchFiltersState.ensureDefaultFiltersBuiltAndSaved();

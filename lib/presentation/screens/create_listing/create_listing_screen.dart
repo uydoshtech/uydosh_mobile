@@ -572,6 +572,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           child: ListingTypePicker(
             selectedListingTypeId: _selectedListingTypeId,
             scrollController: _listingTypeScrollController,
+            userGender: _selectedGender,
             onListingTypeChanged: (listingTypeId) {
               setState(() {
                 final prevType = _selectedListingTypeId;

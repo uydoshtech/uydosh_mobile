@@ -11,6 +11,7 @@ import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_avatar_backend_sync.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/active_search_alerts_state.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -290,6 +291,9 @@ class MainNavigationState extends State<MainNavigation>
                   (_) =>
                       SearchFiltersState().ensureDefaultFiltersBuiltAndSaved(),
                 ),
+          );
+          unawaited(
+            PriceDisplaySettingsState().hydrateFromBackendForCurrentUser(),
           );
         }
 

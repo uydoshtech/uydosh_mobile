@@ -43,6 +43,8 @@
 		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
 		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
 		E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */; };
+		E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */; };
+		E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */; };
 		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
 		F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B60 /* Localizable.strings */; };
 /* End PBXBuildFile section */
@@ -123,6 +125,8 @@
 		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
 		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
 		E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunCompassOverlayView.swift; sourceTree = "<group>"; };
+		E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassScreenProjection.swift; sourceTree = "<group>"; };
+		E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanCeilingService.swift; sourceTree = "<group>"; };
 		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B61 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B62 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -249,6 +253,8 @@
 				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
 				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
 				E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */,
+				E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */,
+				E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -593,6 +599,8 @@
 				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
 				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
 				E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */,
+				E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */,
+				E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

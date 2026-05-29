@@ -461,6 +461,7 @@
   "listing_description_template_roommate_needed_male": "Ищу соседа.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
   "listing_description_template_roommate_needed_female": "Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
   "listing_type_roommate_needed": "Ищу соседа",
+  "listing_type_roommate_needed_female": "Ищу соседку",
   "listing_type_room_needed": "Ищу жилье",
   "title_male_roommate": "#ИщемСоседа",
   "title_female_roommate": "#ИщемСоседку",

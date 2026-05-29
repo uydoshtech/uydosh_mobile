@@ -1056,6 +1056,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_type_roommate_needed => 'Need Roommate';
 
   @override
+  String get listing_type_roommate_needed_female => 'Need Roommate';
+
+  @override
   String get listing_type_room_needed => 'Need Room';
 
   @override

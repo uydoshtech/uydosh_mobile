@@ -1,9 +1,12 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -23,6 +26,7 @@ class ListingTypePicker extends StatefulWidget {
     this.unselectedLabelKey = "not_selected",
     this.scrollController,
     this.useGlassPlate = false,
+    this.userGender,
   });
 
   final int selectedListingTypeId;
@@ -36,6 +40,11 @@ class ListingTypePicker extends StatefulWidget {
   final FixedExtentScrollController? scrollController;
   final bool useGlassPlate;
 
+  /// User's profile gender (1 = male, 2 = female), used to tailor the
+  /// "roommate needed" option label and icon color. When null, the picker
+  /// resolves it from the cached/current user profile.
+  final int? userGender;
+
   @override
   State<ListingTypePicker> createState() => _ListingTypePickerState();
 }
@@ -43,8 +52,56 @@ class ListingTypePicker extends StatefulWidget {
 class _ListingTypePickerState extends State<ListingTypePicker> {
   FixedExtentScrollController? _ownScrollController;
 
+  /// Profile gender resolved from the session when [ListingTypePicker.userGender]
+  /// is not supplied by the parent.
+  int? _resolvedGender;
+
   List<int> get _listingTypeOptions =>
       widget.includeUnselected ? [2, 1, 0] : [2, 1];
+
+  /// Effective user gender (1 = male, 2 = female), preferring the explicit
+  /// value from the parent and falling back to the resolved profile gender.
+  int? get _effectiveGender => widget.userGender ?? _resolvedGender;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.userGender == null) {
+      _resolveProfileGender();
+    }
+  }
+
+  Future<void> _resolveProfileGender() async {
+    int? gender;
+    try {
+      var profile = await SessionManager.getCachedUserProfile();
+      if (profile?.gender != 1 && profile?.gender != 2) {
+        profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      }
+      if (profile?.gender == 1 || profile?.gender == 2) {
+        gender = profile!.gender;
+      }
+    } catch (_) {}
+    if (!mounted || gender == null) return;
+    setState(() => _resolvedGender = gender);
+  }
+
+  /// Label key for the "roommate needed" option, gendered to match the user.
+  String get _roommateNeededLabelKey => _effectiveGender == 2
+      ? "listing_type_roommate_needed_female"
+      : "listing_type_roommate_needed";
+
+  /// Icon color for the "roommate needed" option: blue for men, red for women.
+  Color get _roommateNeededIconColor {
+    switch (_effectiveGender) {
+      case 1:
+        return AppColors.genderMale;
+      case 2:
+        return AppColors.genderFemale;
+      default:
+        return _getListingTypeColor(2);
+    }
+  }
 
   FixedExtentScrollController get _effectiveController {
     if (widget.scrollController != null) {
@@ -132,13 +189,13 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                     children: [
                       ThemeIcon(
                         Icons.people,
-                        color: _getListingTypeColor(2),
+                        color: _roommateNeededIconColor,
                         size: 20,
                       ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: L10n.text(
-                          "listing_type_roommate_needed",
+                          _roommateNeededLabelKey,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

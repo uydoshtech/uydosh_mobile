@@ -10,6 +10,11 @@ final class SunCompassOverlayView: UIView {
     didSet { setNeedsDisplay() }
   }
 
+  /// Screen-space angle (radians) where geographic north points; `nil` = N fixed at top of widget.
+  var northScreenAngleRad: CGFloat? {
+    didSet { setNeedsDisplay() }
+  }
+
   private let valuesLabel = UILabel()
 
   override init(frame: CGRect) {
@@ -22,8 +27,15 @@ final class SunCompassOverlayView: UIView {
     setup()
   }
 
-  func update(azimuthDeg: Float, elevationDeg: Float, azimuthFormat: String, elevationFormat: String) {
+  func update(
+    azimuthDeg: Float,
+    elevationDeg: Float,
+    azimuthFormat: String,
+    elevationFormat: String,
+    northScreenAngleRad: CGFloat? = nil
+  ) {
     self.azimuthDeg = azimuthDeg
+    self.northScreenAngleRad = northScreenAngleRad
     valuesLabel.text = String(
       format: "%@ · %@",
       String(format: azimuthFormat, Int(azimuthDeg.rounded())),
@@ -73,7 +85,8 @@ final class SunCompassOverlayView: UIView {
     ctx.addEllipse(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
     ctx.strokePath()
 
-    let northRad = -CGFloat.pi / 2
+    // Rotate rose so N aligns with calibrated north projected onto the current 3D view.
+    let northRad = northScreenAngleRad ?? (-CGFloat.pi / 2)
     drawCardinal("N", angle: northRad, center: center, radius: radius, color: UIColor(red: 0.95, green: 0.45, blue: 0.4, alpha: 1))
     drawCardinal("E", angle: northRad + .pi / 2, center: center, radius: radius, color: UIColor.white.withAlphaComponent(0.85))
     drawCardinal("S", angle: northRad + .pi, center: center, radius: radius, color: UIColor.white.withAlphaComponent(0.75))

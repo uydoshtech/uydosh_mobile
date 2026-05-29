@@ -2002,6 +2002,12 @@ abstract class AppLocalizations {
   /// **'Need Roommate'**
   String get listing_type_roommate_needed;
 
+  /// No description provided for @listing_type_roommate_needed_female.
+  ///
+  /// In en, this message translates to:
+  /// **'Need Roommate'**
+  String get listing_type_roommate_needed_female;
+
   /// No description provided for @listing_type_room_needed.
   ///
   /// In en, this message translates to:

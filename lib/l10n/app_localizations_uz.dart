@@ -1070,6 +1070,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_type_roommate_needed => 'Xonadosh qidiraman';
 
   @override
+  String get listing_type_roommate_needed_female => 'Xonadosh qidiraman';
+
+  @override
   String get listing_type_room_needed => 'Xonadon kerak';
 
   @override

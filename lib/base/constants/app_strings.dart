@@ -615,6 +615,7 @@ class AppStrings {
           "Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
 
       "listing_type_roommate_needed": "Need Roommate",
+      "listing_type_roommate_needed_female": "Need Roommate",
       "listing_type_room_needed": "Need Room",
       "listing_type_label": "Listing type",
       "title_male_roommate": "#NeedRoommate",
@@ -2270,6 +2271,7 @@ class AppStrings {
           "Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
 
       "listing_type_roommate_needed": "Ищу соседа",
+      "listing_type_roommate_needed_female": "Ищу соседку",
       "listing_type_room_needed": "Ищу жилье",
       "listing_type_label": "Тип объявления",
       "title_male_roommate": "#ИщемСоседа",
@@ -3950,6 +3952,7 @@ class AppStrings {
           "Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
 
       "listing_type_roommate_needed": "Xonadosh qidiraman",
+      "listing_type_roommate_needed_female": "Xonadosh qidiraman",
       "listing_type_room_needed": "Xonadon kerak",
       "listing_type_label": "E'lon turi",
       "title_male_roommate": "#YigitXonadoshQidiramiz",

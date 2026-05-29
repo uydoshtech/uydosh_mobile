@@ -23,6 +23,8 @@ final class SunSimulationController {
   private var worldEastPlanAngleRad: Double = 0
   private var scanWorldPlusXBearingDeg: Double?
   private var northCorrectionDeg: Double = 0
+  /// Called whenever azimuth or elevation changes (sliders, presets, attach).
+  var onSunPositionChanged: ((Float, Float) -> Void)?
 
   func attach(
     to scene: SCNScene,
@@ -98,6 +100,7 @@ final class SunSimulationController {
     setEnabled(true)
     updateSunPosition()
     updateDirectionalLight()
+    notifySunPositionChanged()
   }
 
   func detach() {
@@ -120,6 +123,7 @@ final class SunSimulationController {
     if isEnabled {
       updateSunPosition()
       updateDirectionalLight()
+      notifySunPositionChanged()
     }
   }
 
@@ -134,12 +138,14 @@ final class SunSimulationController {
     azimuthDeg = value
     updateSunPosition()
     updateDirectionalLight()
+    notifySunPositionChanged()
   }
 
   func setSunElevation(degrees: Float) {
     elevationDeg = min(90, max(0, degrees))
     updateSunPosition()
     updateDirectionalLight()
+    notifySunPositionChanged()
   }
 
   func applyPreset(_ preset: SunPositionMath.TimePreset) {
@@ -178,7 +184,9 @@ final class SunSimulationController {
     guard let scene else { return }
     func visit(_ node: SCNNode) {
       let name = node.name ?? ""
-      if name == Self.rigName || name == "UydoshFramingCamera" || name.hasPrefix("UydoshFootprintDebug") {
+      if name == Self.rigName || name == "UydoshFramingCamera" || name.hasPrefix("UydoshFootprintDebug")
+        || name == ScanCeilingService.auxRootName
+      {
         for child in node.childNodes { visit(child) }
         return
       }
@@ -232,5 +240,9 @@ final class SunSimulationController {
     ray.pivot = SCNMatrix4MakeTranslation(0, -Float(dist) * 0.5, 0)
     ray.position = sunPos
     ray.look(at: center, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 1, 0))
+  }
+
+  private func notifySunPositionChanged() {
+    onSunPositionChanged?(azimuthDeg, elevationDeg)
   }
 }

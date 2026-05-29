@@ -92,6 +92,14 @@ Future<void> _bootstrapSearchFiltersColdStart() async {
   await SearchFiltersState().ensureDefaultFiltersBuiltAndSaved();
 }
 
+Future<void> _bootstrapPriceDisplayCurrencyColdStart() async {
+  // Load the device-local currency first, then let the account-bound value
+  // (when signed in) win so the preference follows the user across logins.
+  await PriceDisplaySettingsState().initialize();
+  if (!await SessionManager.isAuthenticated()) return;
+  await PriceDisplaySettingsState().hydrateFromBackendForCurrentUser();
+}
+
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
@@ -183,6 +191,7 @@ void main() async {
 
     SessionManager.onSessionCleared = () async {
       SearchFiltersState().onSessionEnded();
+      PriceDisplaySettingsState().onSessionEnded();
       await SearchFiltersState().clearAllFilters(persistRemote: false);
       await HomeInlineSearchState().clearPersistedActiveForLogout();
     };
@@ -231,7 +240,7 @@ void main() async {
     unawaited(HapticFeedbackState().initialize());
     unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());
-    unawaited(PriceDisplaySettingsState().initialize());
+    unawaited(_bootstrapPriceDisplayCurrencyColdStart());
     unawaited(_bootstrapSearchFiltersColdStart());
 
     if (kDebugMode) {

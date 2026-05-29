@@ -1055,6 +1055,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_type_roommate_needed => 'Ищу соседа';
 
   @override
+  String get listing_type_roommate_needed_female => 'Ищу соседку';
+
+  @override
   String get listing_type_room_needed => 'Ищу жилье';
 
   @override

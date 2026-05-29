@@ -45,6 +45,7 @@ import "package:uy_dosh/domain/services/support_chat_service.dart";
 import "package:uy_dosh/domain/services/telegram_bot_alerts_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/services/user_price_display_currency_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
 final getIt = GetIt.instance;
@@ -113,6 +114,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IUserSearchFiltersService>(
     () => UserSearchFiltersService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IUserPriceDisplayCurrencyService>(
+    () => UserPriceDisplayCurrencyService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAmenityService>(

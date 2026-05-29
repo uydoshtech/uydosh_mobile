@@ -737,6 +737,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunSimulationPanel.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(sunSimulationPanel)
 
+    sunSimulationController.onSunPositionChanged = { [weak self] azimuth, elevation in
+      self?.updateSceneSkyBackground(azimuthDeg: azimuth, elevationDeg: elevation)
+    }
+
     sunCompassOverlay.translatesAutoresizingMaskIntoConstraints = false
     sunCompassOverlay.usesTrueNorth = worldPlusXTrueBearingDeg != nil
     view.addSubview(sunCompassOverlay)
@@ -779,6 +783,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunSimulationPanel.setIntensity(sunSimulationController.lightIntensity)
     refreshSunCompassLabels()
     sceneView.autoenablesDefaultLighting = false
+    updateSceneSkyBackground(
+      azimuthDeg: sunSimulationController.azimuthDeg,
+      elevationDeg: sunSimulationController.elevationDeg
+    )
+  }
+
+  private func updateSceneSkyBackground(azimuthDeg: Float, elevationDeg: Float) {
+    let color = RoomSceneAppearance.skyBackgroundColor(
+      azimuthDeg: azimuthDeg,
+      elevationDeg: elevationDeg
+    )
+    sceneView.backgroundColor = color
+    view.backgroundColor = color
   }
 
   private func resolvedScanBearingDeg() -> Double? {
@@ -800,11 +817,36 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   private func refreshSunCompassLabels() {
     let s = strings.sunSimulation
+    let northAngle = computeNorthScreenAngleRad()
     sunCompassOverlay.update(
       azimuthDeg: sunSimulationController.azimuthDeg,
       elevationDeg: sunSimulationController.elevationDeg,
       azimuthFormat: s.azimuthFormat,
-      elevationFormat: s.elevationFormat
+      elevationFormat: s.elevationFormat,
+      northScreenAngleRad: northAngle
+    )
+  }
+
+  private func resolvedTrueNorthPlanAngleRad() -> Double {
+    if let model = floorPlanStateManager.editableModel,
+      let trueNorth = model.trueNorthPlanAngleRad
+    {
+      return trueNorth
+    }
+    let eastRad = floorPlanStateManager.editableModel?.worldEastPlanAngleRad ?? 0
+    return FloorPlanNorthOrientation.trueNorthPlanAngleRad(
+      worldEastPlanAngleRad: eastRad,
+      scanBearing: resolvedScanBearingDeg(),
+      correctionDeg: floorPlanStateManager.northCorrectionDeg
+    )
+  }
+
+  private func computeNorthScreenAngleRad() -> CGFloat? {
+    guard viewerTab == .threeD, !isOrthographicPlanView else { return nil }
+    return CompassScreenProjection.northScreenAngleRad(
+      sceneView: sceneView,
+      roomCenter: orbitTarget,
+      trueNorthPlanAngleRad: resolvedTrueNorthPlanAngleRad()
     )
   }
 
@@ -1381,6 +1423,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         stylizedMaterials: useStylizedMaterials
       )
     }
+    if floorPlanStateManager.editableModel?.metadata.isEdited != true,
+      let scene = loadedScene
+    {
+      ScanCeilingService.updateMaterials(in: scene, stylizedMaterials: useStylizedMaterials)
+    }
+    sunSimulationController.refreshShadowCasters()
+  }
+
+  private func applyScanCeilingIfNeeded() {
+    guard let scene = loadedScene else { return }
+    if floorPlanStateManager.editableModel?.metadata.isEdited == true {
+      ScanCeilingService.remove(from: scene)
+      return
+    }
+    ScanCeilingService.apply(to: scene, stylizedMaterials: useStylizedMaterials)
     sunSimulationController.refreshShadowCasters()
   }
 
@@ -1923,6 +1980,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         }
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
+        self.applyScanCeilingIfNeeded()
         self.attachSunSimulationIfNeeded()
         self.startIntroAutoRotationIfNeeded()
       } catch {
@@ -2005,6 +2063,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let z = T.z + horizontal * cos(orbitYaw)
     camNode.worldPosition = SCNVector3(x, y, z)
     camNode.look(at: T, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+    refreshSunCompassLabels()
   }
 
   private func stopOrbitDeceleration() {
@@ -2305,6 +2364,7 @@ extension RoomUsdzViewerViewController: FloorPlanCanvasDelegate {
 
   private func regenerateSceneFromEditableModel(_ model: EditableFloorPlanModel) {
     guard let scene = loadedScene else { return }
+    ScanCeilingService.remove(from: scene)
     Scene3DRegenerationService.regenerate(
       in: scene,
       model: model,

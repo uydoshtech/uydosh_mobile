@@ -469,6 +469,7 @@
   "listing_description_template_roommate_needed_male": "Looking for a male roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
   "listing_description_template_roommate_needed_female": "Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
   "listing_type_roommate_needed": "Need Roommate",
+  "listing_type_roommate_needed_female": "Need Roommate",
   "listing_type_room_needed": "Need Room",
   "title_male_roommate": "#NeedRoommate",
   "title_female_roommate": "#NeedRoommate",

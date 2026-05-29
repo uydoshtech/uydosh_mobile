@@ -20,6 +20,13 @@ struct RoomScanMetricsResult {
   let polygonVertexCount: Int
 }
 
+/// Floor outline extracted from scan geometry — used to auto-build a ceiling cap.
+struct ScanFloorFootprint {
+  let polygonXZ: [(x: Float, z: Float)]
+  let floorY: Float
+  let ceilingY: Float
+}
+
 /// Computes room dimensions from floor polygon geometry with fallbacks.
 enum RoomScanMetricsComputer {
   static func metrics(for scene: SCNScene) -> RoomScanMetricsResult? {
@@ -30,6 +37,33 @@ enum RoomScanMetricsComputer {
 
     let footprint = computeFootprintMetrics(scene: scene, sceneBounds: sceneBounds)
     return footprint
+  }
+
+  /// Convex floor outline in world X/Z, derived from the scan floor mesh (same footprint used for metrics).
+  static func floorFootprint(for scene: SCNScene) -> ScanFloorFootprint? {
+    guard let sceneBounds = unionWorldBounds(of: scene.rootNode) else { return nil }
+
+    var floorPoints = collectFloorPoints(from: scene, sceneBounds: sceneBounds)
+    if floorPoints.count < 3 {
+      floorPoints = wallBasePoints(scene: scene, sceneBounds: sceneBounds)
+    }
+    if floorPoints.count < 3 {
+      floorPoints = [
+        (x: sceneBounds.min.x, z: sceneBounds.min.z),
+        (x: sceneBounds.max.x, z: sceneBounds.min.z),
+        (x: sceneBounds.max.x, z: sceneBounds.max.z),
+        (x: sceneBounds.min.x, z: sceneBounds.max.z),
+      ]
+    }
+
+    let hull = convexHull(dedupePoints(floorPoints, epsilon: 0.02))
+    guard hull.count >= 3 else { return nil }
+
+    return ScanFloorFootprint(
+      polygonXZ: hull,
+      floorY: sceneBounds.min.y,
+      ceilingY: sceneBounds.max.y - 0.01
+    )
   }
 
   static func metrics(forUsdPath path: String) -> [String: Double]? {
@@ -53,32 +87,8 @@ enum RoomScanMetricsComputer {
     scene: SCNScene,
     sceneBounds: (min: SCNVector3, max: SCNVector3)
   ) -> RoomScanMetricsResult? {
-    var floorPoints: [(x: Float, z: Float)] = []
-    var floorTriangles: [[(x: Float, z: Float)]] = []
-
-    func visit(_ node: SCNNode) {
-      if let geo = node.geometry {
-        let name = (node.name ?? "").lowercased()
-        let isNamedFloor = name.contains("floor") || name.contains("ground")
-        let nodeBounds = worldBounds(of: node)
-        let isSlab = nodeBounds.map { isLikelyFloorSlab($0, sceneBounds: sceneBounds) } ?? false
-        if isNamedFloor || isSlab {
-          let verts = worldVertices(of: node)
-          let floorY = nodeBounds?.min.y ?? sceneBounds.min.y
-          let yTol = max(0.08, 0.06 * max(sceneBounds.max.y - sceneBounds.min.y, 0.12))
-          for v in verts where abs(v.y - floorY) <= yTol {
-            floorPoints.append((x: v.x, z: v.z))
-          }
-          for tri in worldTrianglesXZ(of: node, floorY: floorY, yTolerance: yTol) {
-            floorTriangles.append(tri)
-          }
-        }
-      }
-      for child in node.childNodes {
-        visit(child)
-      }
-    }
-    visit(scene.rootNode)
+    var floorPoints = collectFloorPoints(from: scene, sceneBounds: sceneBounds)
+    var floorTriangles: [[(x: Float, z: Float)]] = collectFloorTriangles(from: scene, sceneBounds: sceneBounds)
 
     var source = "floor_polygon"
     if floorPoints.count < 3 {
@@ -130,6 +140,57 @@ enum RoomScanMetricsComputer {
       footprintSource: source,
       polygonVertexCount: floorPoints.count
     )
+  }
+
+  private static func collectFloorPoints(
+    from scene: SCNScene,
+    sceneBounds: (min: SCNVector3, max: SCNVector3)
+  ) -> [(x: Float, z: Float)] {
+    var floorPoints: [(x: Float, z: Float)] = []
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        let name = (node.name ?? "").lowercased()
+        let isNamedFloor = name.contains("floor") || name.contains("ground")
+        let nodeBounds = worldBounds(of: node)
+        let isSlab = nodeBounds.map { isLikelyFloorSlab($0, sceneBounds: sceneBounds) } ?? false
+        if isNamedFloor || isSlab {
+          let verts = worldVertices(of: node)
+          let floorY = nodeBounds?.min.y ?? sceneBounds.min.y
+          let yTol = max(0.08, 0.06 * max(sceneBounds.max.y - sceneBounds.min.y, 0.12))
+          for v in verts where abs(v.y - floorY) <= yTol {
+            floorPoints.append((x: v.x, z: v.z))
+          }
+        }
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+    return floorPoints
+  }
+
+  private static func collectFloorTriangles(
+    from scene: SCNScene,
+    sceneBounds: (min: SCNVector3, max: SCNVector3)
+  ) -> [[(x: Float, z: Float)]] {
+    var floorTriangles: [[(x: Float, z: Float)]] = []
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        let name = (node.name ?? "").lowercased()
+        let isNamedFloor = name.contains("floor") || name.contains("ground")
+        let nodeBounds = worldBounds(of: node)
+        let isSlab = nodeBounds.map { isLikelyFloorSlab($0, sceneBounds: sceneBounds) } ?? false
+        if isNamedFloor || isSlab {
+          let floorY = nodeBounds?.min.y ?? sceneBounds.min.y
+          let yTol = max(0.08, 0.06 * max(sceneBounds.max.y - sceneBounds.min.y, 0.12))
+          for tri in worldTrianglesXZ(of: node, floorY: floorY, yTolerance: yTol) {
+            floorTriangles.append(tri)
+          }
+        }
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+    return floorTriangles
   }
 
   private static func wallBasePoints(

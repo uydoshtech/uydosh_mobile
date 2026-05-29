@@ -892,6 +892,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 _selectedListingTypeId,
                             scrollController:
                                 _listingTypeScrollController,
+                            userGender: _selectedGender,
                             onListingTypeChanged: (listingTypeId) {
                               setState(() {
                                 final prevType = _selectedListingTypeId;

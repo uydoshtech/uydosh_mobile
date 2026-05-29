@@ -469,6 +469,7 @@
   "listing_description_template_roommate_needed_male": "Qo‘shni yigit qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
   "listing_description_template_roommate_needed_female": "Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
   "listing_type_roommate_needed": "Xonadosh qidiraman",
+  "listing_type_roommate_needed_female": "Xonadosh qidiraman",
   "listing_type_room_needed": "Xonadon kerak",
   "title_male_roommate": "#YigitXonadoshQidiramiz",
   "title_female_roommate": "#QizXonadoshQidiramiz",
