@@ -39,6 +39,10 @@
 		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
 		E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */; };
 		E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */; };
+		E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */; };
+		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
+		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
+		E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */; };
 		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
 		F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B60 /* Localizable.strings */; };
 /* End PBXBuildFile section */
@@ -115,6 +119,10 @@
 		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
 		E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanNorthOrientation.swift; sourceTree = "<group>"; };
 		E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationEditController.swift; sourceTree = "<group>"; };
+		E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunPositionMath.swift; sourceTree = "<group>"; };
+		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
+		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
+		E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunCompassOverlayView.swift; sourceTree = "<group>"; };
 		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B61 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B62 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -237,6 +245,10 @@
 				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
 				E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */,
 				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
+				E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */,
+				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
+				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
+				E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -577,6 +589,10 @@
 				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
 				E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */,
 				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,
+				E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */,
+				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
+				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
+				E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

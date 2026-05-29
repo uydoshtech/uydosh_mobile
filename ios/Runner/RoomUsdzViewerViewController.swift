@@ -28,6 +28,7 @@ struct RoomViewerStrings {
   let onFloorObjectTint: UIColor
   let floorPlan: FloorPlanTabStrings
   let compassOrientation: CompassOrientationEditStrings
+  let sunSimulation: SunSimulationStrings
 
   init(
     title: String,
@@ -51,7 +52,8 @@ struct RoomViewerStrings {
     brandMarkA11yLabel: String,
     onFloorObjectTint: UIColor,
     floorPlan: FloorPlanTabStrings,
-    compassOrientation: CompassOrientationEditStrings
+    compassOrientation: CompassOrientationEditStrings,
+    sunSimulation: SunSimulationStrings
   ) {
     self.title = title
     self.dimensionsCaption = dimensionsCaption
@@ -75,6 +77,7 @@ struct RoomViewerStrings {
     self.onFloorObjectTint = onFloorObjectTint
     self.floorPlan = floorPlan
     self.compassOrientation = compassOrientation
+    self.sunSimulation = sunSimulation
   }
 
   init?(dict: [String: String]) {
@@ -109,7 +112,8 @@ struct RoomViewerStrings {
       brandMarkA11yLabel: dict["brandMarkA11yLabel"] ?? "UyDosh",
       onFloorObjectTint: Self.uiColorFromRgbHex6(dict["onFloorTintRgb"] ?? "795548"),
       floorPlan: FloorPlanTabStrings(dict: dict) ?? .englishFallback,
-      compassOrientation: CompassOrientationEditStrings(dict: dict) ?? .englishFallback
+      compassOrientation: CompassOrientationEditStrings(dict: dict) ?? .englishFallback,
+      sunSimulation: SunSimulationStrings(dict: dict) ?? .englishFallback
     )
   }
 
@@ -150,7 +154,8 @@ struct RoomViewerStrings {
     brandMarkA11yLabel: "UyDosh",
     onFloorObjectTint: Self.uiColorFromRgbHex6("795548"),
     floorPlan: .englishFallback,
-    compassOrientation: .englishFallback
+    compassOrientation: .englishFallback,
+    sunSimulation: .englishFallback
   )
 }
 
@@ -286,6 +291,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var dimensionEditController: DimensionEditController?
   private var compassOrientationEditController: CompassOrientationEditController?
   private var dimensionEditStrings: DimensionEditDialogStrings = .englishFallback
+  private let sunSimulationController = SunSimulationController()
+  private let sunToggleButton = UIButton(type: .system)
+  private let sunSimulationPanel: SunSimulationPanel
+  private let sunCompassOverlay = SunCompassOverlayView()
+  private var isSunPanelExpanded = false
 
   fileprivate init(
     fileURL: URL,
@@ -307,6 +317,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     self.committedNorthCorrectionDeg = northCorrectionDeg
     self.metricsMessenger = metricsMessenger
     self.dismissFlutterResult = dismissFlutterResult
+    sunSimulationPanel = SunSimulationPanel(strings: strings.sunSimulation)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -316,7 +327,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .black
+    view.backgroundColor = RoomSceneAppearance.skyBackgroundColor
     title = strings.title
 
     navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -329,11 +340,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     setupViewerTabControl()
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
-    sceneView.backgroundColor = .black
+    sceneView.backgroundColor = RoomSceneAppearance.skyBackgroundColor
     // Start in "presentation" mode: camera auto-orbits the model center until the user interacts.
     sceneView.allowsCameraControl = false
     sceneView.antialiasingMode = .multisampling4X
-    sceneView.autoenablesDefaultLighting = true
+    sceneView.autoenablesDefaultLighting = false
     view.addSubview(sceneView)
 
     let floorPlanTab = FloorPlanTab(strings: strings.floorPlan)
@@ -368,6 +379,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     introTapGesture = tap
 
     setupZoomControls()
+    setupSunControls()
 
     hintContainer.translatesAutoresizingMaskIntoConstraints = false
     // Opaque panel only once dimensions are known (avoids an empty strip while labels are hidden).
@@ -483,6 +495,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     view.bringSubviewToFront(viewerTabContainer)
     view.bringSubviewToFront(zoomControlsContainer)
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
+    view.bringSubviewToFront(sunSimulationPanel)
+    view.bringSubviewToFront(sunCompassOverlay)
     view.bringSubviewToFront(floorPlanTab)
 
     let modeMaterialsToolbarPlacement: [NSLayoutConstraint] = {
@@ -549,6 +563,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
         zoomControlsContainer.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
         zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
+
+        sunCompassOverlay.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
+        sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: 10),
+
+        sunSimulationPanel.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
+        sunSimulationPanel.trailingAnchor.constraint(
+          lessThanOrEqualTo: sceneView.trailingAnchor,
+          constant: -12
+        ),
+        sunSimulationPanel.bottomAnchor.constraint(
+          equalTo: modeMaterialsToolbarContainer.topAnchor,
+          constant: -10
+        ),
       ]
         + modeMaterialsToolbarPlacement
     )
@@ -686,6 +713,101 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     ])
   }
 
+  private func setupSunControls() {
+    let sunStrings = strings.sunSimulation
+    let iconCfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    sunToggleButton.translatesAutoresizingMaskIntoConstraints = false
+    sunToggleButton.setPreferredSymbolConfiguration(iconCfg, forImageIn: .normal)
+    sunToggleButton.setImage(UIImage(systemName: "sun.max.fill"), for: .normal)
+    sunToggleButton.tintColor = UIColor(red: 1, green: 0.82, blue: 0.35, alpha: 1)
+    sunToggleButton.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
+    sunToggleButton.layer.cornerRadius = Self.zoomButtonCornerRadius
+    if #available(iOS 13.0, *) {
+      sunToggleButton.layer.cornerCurve = .continuous
+    }
+    sunToggleButton.accessibilityLabel = sunStrings.toggleA11yLabel
+    sunToggleButton.accessibilityHint = sunStrings.toggleA11yHint
+    sunToggleButton.addTarget(self, action: #selector(sunToggleTapped), for: .touchUpInside)
+    NSLayoutConstraint.activate([
+      sunToggleButton.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+      sunToggleButton.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+    ])
+
+    sunSimulationPanel.delegate = self
+    sunSimulationPanel.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(sunSimulationPanel)
+
+    sunCompassOverlay.translatesAutoresizingMaskIntoConstraints = false
+    sunCompassOverlay.usesTrueNorth = worldPlusXTrueBearingDeg != nil
+    view.addSubview(sunCompassOverlay)
+    refreshSunCompassLabels()
+  }
+
+  @objc private func sunToggleTapped() {
+    isSunPanelExpanded.toggle()
+    sunSimulationPanel.isHidden = !isSunPanelExpanded
+    if isSunPanelExpanded, loadedScene != nil, sunSimulationController.isEnabled == false {
+      attachSunSimulationIfNeeded()
+    }
+    updateSunToggleAppearance()
+  }
+
+  private func updateSunToggleAppearance() {
+    let active = isSunPanelExpanded
+    sunToggleButton.layer.borderWidth = active ? 1.5 : 0.5
+    sunToggleButton.layer.borderColor = (
+      active
+        ? UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.9)
+        : UIColor.white.withAlphaComponent(0.1)
+    ).cgColor
+  }
+
+  private func attachSunSimulationIfNeeded() {
+    guard let scene = loadedScene, let bounds = sceneWorldBounds else { return }
+    let bearing = resolvedScanBearingDeg()
+    let eastRad = floorPlanStateManager.editableModel?.worldEastPlanAngleRad ?? 0
+    sunSimulationController.attach(
+      to: scene,
+      roomCenter: orbitTarget,
+      sceneBounds: bounds,
+      worldEastPlanAngleRad: eastRad,
+      scanWorldPlusXBearingDeg: bearing,
+      northCorrectionDeg: floorPlanStateManager.northCorrectionDeg
+    )
+    sunSimulationPanel.setAzimuth(sunSimulationController.azimuthDeg)
+    sunSimulationPanel.setElevation(sunSimulationController.elevationDeg)
+    sunSimulationPanel.setIntensity(sunSimulationController.lightIntensity)
+    refreshSunCompassLabels()
+    sceneView.autoenablesDefaultLighting = false
+  }
+
+  private func resolvedScanBearingDeg() -> Double? {
+    worldPlusXTrueBearingDeg
+      ?? RoomScanOrientationCapture.readSidecar(forUsdzPath: fileURL.path)
+  }
+
+  private func refreshSunOrientationContext() {
+    let bearing = resolvedScanBearingDeg()
+    let eastRad = floorPlanStateManager.editableModel?.worldEastPlanAngleRad ?? 0
+    sunCompassOverlay.usesTrueNorth = bearing != nil
+    sunSimulationController.setOrientationContext(
+      worldEastPlanAngleRad: eastRad,
+      scanWorldPlusXBearingDeg: bearing,
+      northCorrectionDeg: floorPlanStateManager.northCorrectionDeg
+    )
+    refreshSunCompassLabels()
+  }
+
+  private func refreshSunCompassLabels() {
+    let s = strings.sunSimulation
+    sunCompassOverlay.update(
+      azimuthDeg: sunSimulationController.azimuthDeg,
+      elevationDeg: sunSimulationController.elevationDeg,
+      azimuthFormat: s.azimuthFormat,
+      elevationFormat: s.elevationFormat
+    )
+  }
+
   private func refreshZoomControlsNeumorphicShadowPaths() {
     let panelR = Self.zoomControlsPanelCornerRadius
     let outer = zoomControlsContainer.bounds
@@ -807,6 +929,13 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       self.modeMaterialsToolbarContainer.isHidden = !show3D
       self.brandMarkView.isHidden = !show3D
       self.hintContainer.isHidden = !show3D || self.dimensionsLineStack.isHidden
+      self.sunToggleButton.isHidden = !show3D
+      self.sunCompassOverlay.isHidden = !show3D
+      if !show3D {
+        self.sunSimulationPanel.isHidden = true
+      } else {
+        self.sunSimulationPanel.isHidden = !self.isSunPanelExpanded
+      }
     }
     if animated {
       UIView.transition(with: view, duration: 0.2, options: .transitionCrossDissolve, animations: updates)
@@ -958,6 +1087,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeMaterialsStack.alignment = .center
     modeMaterialsStack.spacing = 12
 
+    modeMaterialsStack.addArrangedSubview(sunToggleButton)
     modeMaterialsStack.addArrangedSubview(modeControl)
     modeMaterialsStack.addArrangedSubview(materialsStyleButton)
     modeMaterialsToolbarPanel.addSubview(modeMaterialsStack)
@@ -1251,6 +1381,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         stylizedMaterials: useStylizedMaterials
       )
     }
+    sunSimulationController.refreshShadowCasters()
   }
 
   /// Uses mesh node names from RoomPlan-style USDZ. Furniture stays visible unless its name matches these.
@@ -1473,18 +1604,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       currentCorrection: floorPlanStateManager.northCorrectionDeg,
       onPreview: { [weak self] value in
         self?.floorPlanStateManager.previewNorthCorrection(value)
+        self?.refreshSunOrientationContext()
       },
       onCommit: { [weak self] value in
         guard let self else { return }
         self.committedNorthCorrectionDeg = value
         self.floorPlanStateManager.applyNorthCorrection(value)
         self.publishNorthCorrectionToFlutter(correctionDeg: value)
+        self.refreshSunOrientationContext()
       },
       onReset: { [weak self] in
         guard let self else { return }
         self.committedNorthCorrectionDeg = 0
         self.floorPlanStateManager.resetNorthCorrection()
         self.publishNorthCorrectionToFlutter(correctionDeg: nil)
+        self.refreshSunOrientationContext()
       }
     )
   }
@@ -1649,6 +1783,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       // Pitch −90° looks straight down; yaw aligns long footprint edge with screen horizontal.
       camNode.eulerAngles = SCNVector3(-Float.pi / 2, metrics.footprintYaw, 0)
       self.isOrthographicPlanView = true
+      self.sunSimulationController.setEnabled(false)
+      self.sunCompassOverlay.isHidden = true
     }
 
     if animated {
@@ -1676,6 +1812,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       cam.fieldOfView = self.savedPerspectiveFov
       self.updateCameraFromOrbit()
       self.isOrthographicPlanView = false
+      if self.isSunPanelExpanded {
+        self.sunSimulationController.setEnabled(true)
+      }
+      self.sunCompassOverlay.isHidden = false
     }
 
     if animated {
@@ -1783,6 +1923,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         }
         self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
         self.applyDisplayMode(self.displayMode)
+        self.attachSunSimulationIfNeeded()
         self.startIntroAutoRotationIfNeeded()
       } catch {
         self.presentLoadError(error)
@@ -2054,6 +2195,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
     useStylizedMaterials = true
     updateMaterialsButtonAppearance()
+    sunSimulationController.detach()
     sceneView.scene = nil
     loadedScene = nil
     let once = dismissFlutterResult
@@ -2171,5 +2313,29 @@ extension RoomUsdzViewerViewController: FloorPlanCanvasDelegate {
     if viewerTab == .threeD {
       applyDisplayMode(displayMode)
     }
+    sunSimulationController.refreshShadowCasters()
+  }
+}
+
+extension RoomUsdzViewerViewController: SunSimulationPanelDelegate {
+  func sunPanel(_ panel: SunSimulationPanel, didChangeAzimuth degrees: Float) {
+    sunSimulationController.setSunAzimuth(degrees: degrees)
+    refreshSunCompassLabels()
+  }
+
+  func sunPanel(_ panel: SunSimulationPanel, didChangeElevation degrees: Float) {
+    sunSimulationController.setSunElevation(degrees: degrees)
+    refreshSunCompassLabels()
+  }
+
+  func sunPanel(_ panel: SunSimulationPanel, didChangeIntensity value: CGFloat) {
+    sunSimulationController.setLightIntensity(value)
+  }
+
+  func sunPanel(_ panel: SunSimulationPanel, didSelectPreset preset: SunPositionMath.TimePreset) {
+    sunSimulationController.applyPreset(preset)
+    panel.setAzimuth(sunSimulationController.azimuthDeg)
+    panel.setElevation(sunSimulationController.elevationDeg)
+    refreshSunCompassLabels()
   }
 }

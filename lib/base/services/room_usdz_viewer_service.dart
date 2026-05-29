@@ -275,6 +275,26 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_confirm_large_change", languageCode),
       "floorPlanUnitMeters":
           L10n.getForLanguage("room_3d_floor_plan_unit_meters", languageCode),
+      "sunToggleLabel":
+          L10n.getForLanguage("room_3d_sun_toggle_label", languageCode),
+      "sunToggleHint":
+          L10n.getForLanguage("room_3d_sun_toggle_hint", languageCode),
+      "sunAzimuthLabel":
+          L10n.getForLanguage("room_3d_sun_azimuth_label", languageCode),
+      "sunElevationLabel":
+          L10n.getForLanguage("room_3d_sun_elevation_label", languageCode),
+      "sunIntensityLabel":
+          L10n.getForLanguage("room_3d_sun_intensity_label", languageCode),
+      "sunPresetMorning":
+          L10n.getForLanguage("room_3d_sun_preset_morning", languageCode),
+      "sunPresetNoon":
+          L10n.getForLanguage("room_3d_sun_preset_noon", languageCode),
+      "sunPresetEvening":
+          L10n.getForLanguage("room_3d_sun_preset_evening", languageCode),
+      "sunAzimuthFormat":
+          L10n.getForLanguage("room_3d_sun_azimuth_format", languageCode),
+      "sunElevationFormat":
+          L10n.getForLanguage("room_3d_sun_elevation_format", languageCode),
     };
     final ok = await _channel.invokeMethod<bool>("presentLocalFile", <String, dynamic>{
       "path": file.path,
