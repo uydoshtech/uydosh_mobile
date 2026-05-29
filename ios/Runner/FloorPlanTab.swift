@@ -6,11 +6,7 @@ final class FloorPlanTab: UIView {
 
   private let controlsPanel = UIView()
   private let controlsStack = UIStackView()
-  private let resetButton = UIButton(type: .system)
   private let dimensionsButton = UIButton(type: .system)
-  private let objectsButton = UIButton(type: .system)
-  private let gridButton = UIButton(type: .system)
-  private let alignButton = UIButton(type: .system)
   private let northButton = UIButton(type: .system)
   private let unitLabel = UILabel()
 
@@ -71,18 +67,10 @@ final class FloorPlanTab: UIView {
     controlsStack.distribution = .fillProportionally
     controlsPanel.addSubview(controlsStack)
 
-    configureControlButton(alignButton, symbol: "arrow.left.and.right.righttriangle.left.righttriangle.right", action: #selector(alignTapped))
-    configureControlButton(resetButton, symbol: "arrow.counterclockwise", action: #selector(resetTapped))
     configureControlButton(dimensionsButton, symbol: "ruler", action: #selector(dimensionsTapped))
-    configureControlButton(objectsButton, symbol: "cube.box", action: #selector(objectsTapped))
-    configureControlButton(gridButton, symbol: "grid", action: #selector(gridTapped))
     configureControlButton(northButton, symbol: "location.north.line", action: #selector(northTapped))
 
-    controlsStack.addArrangedSubview(alignButton)
-    controlsStack.addArrangedSubview(resetButton)
     controlsStack.addArrangedSubview(dimensionsButton)
-    controlsStack.addArrangedSubview(objectsButton)
-    controlsStack.addArrangedSubview(gridButton)
     controlsStack.addArrangedSubview(northButton)
     northButton.isHidden = true
 
@@ -132,23 +120,13 @@ final class FloorPlanTab: UIView {
   }
 
   private func applyControlLabels() {
-    alignButton.accessibilityLabel = canvas.autoAlignEnabled ? strings.autoAlignOn : strings.autoAlignOff
-    resetButton.accessibilityLabel = strings.resetView
     dimensionsButton.accessibilityLabel = strings.dimensionsOverall
-    objectsButton.accessibilityLabel = strings.showObjects
-    gridButton.accessibilityLabel = strings.showGrid
     northButton.accessibilityLabel = strings.adjustNorth
     unitLabel.text = strings.unitMeters
     updateToggleStates()
   }
 
   private func updateToggleStates() {
-    let alignTitle = canvas.autoAlignEnabled ? strings.autoAlignOn : strings.autoAlignOff
-    alignButton.setTitle(alignTitle, for: .normal)
-    alignButton.alpha = canvas.autoAlignEnabled ? 1 : 0.72
-
-    resetButton.setTitle(strings.resetView, for: .normal)
-
     let dimTitle: String
     switch canvas.dimensionMode {
     case .overall: dimTitle = strings.dimensionsOverall
@@ -157,14 +135,6 @@ final class FloorPlanTab: UIView {
     }
     dimensionsButton.setTitle(dimTitle, for: .normal)
 
-    let objectsTitle = canvas.showObjects ? strings.showObjects : strings.hideObjects
-    objectsButton.setTitle(objectsTitle, for: .normal)
-    objectsButton.alpha = canvas.showObjects ? 1 : 0.72
-
-    let gridTitle = canvas.showGrid ? strings.showGrid : strings.hideGrid
-    gridButton.setTitle(gridTitle, for: .normal)
-    gridButton.alpha = canvas.showGrid ? 1 : 0.72
-
     northButton.setTitle(strings.adjustNorth, for: .normal)
   }
 
@@ -172,29 +142,9 @@ final class FloorPlanTab: UIView {
     onAdjustNorthTapped?()
   }
 
-  @objc private func alignTapped() {
-    canvas.autoAlignEnabled.toggle()
-    canvas.resetView(animated: false)
-    updateToggleStates()
-  }
-
-  @objc private func resetTapped() {
-    canvas.resetView()
-  }
-
   @objc private func dimensionsTapped() {
     let nextRaw = (canvas.dimensionMode.rawValue + 1) % FloorPlanDimensionMode.allCases.count
     canvas.dimensionMode = FloorPlanDimensionMode(rawValue: nextRaw) ?? .overall
-    updateToggleStates()
-  }
-
-  @objc private func objectsTapped() {
-    canvas.showObjects.toggle()
-    updateToggleStates()
-  }
-
-  @objc private func gridTapped() {
-    canvas.showGrid.toggle()
     updateToggleStates()
   }
 }
