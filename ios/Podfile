@@ -458,9 +458,24 @@ post_install do |installer|
         "    public var uydoshScanOtherRoomsTitle: String?\n\n    #{marker}\n    private var uydoshHeadingReader = RoomScanHeadingReader()\n    private var uydoshPendingOrientation: RoomScanOrientationCapture.Snapshot?"
       )
 
+      unless src.include?("uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()") ||
+             src.include?("super.viewDidAppear(animated)\n        uydoshStartHeadingUpdates()")
+        if src.include?("uydoshApplyButtonTitles()\n        startSession()")
+          src = src.sub(
+            "uydoshApplyButtonTitles()\n        startSession()",
+            "uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()\n        startSession()"
+          )
+        else
+          src = src.sub(
+            "        super.viewDidAppear(animated)\n        startSession()",
+            "        super.viewDidAppear(animated)\n        uydoshStartHeadingUpdates()\n        startSession()"
+          )
+        end
+      end
+
       helper = [
         '',
-        "    #{marker} helpers",
+        "    #{marker}",
         '    private func uydoshStartHeadingUpdates() {',
         '        uydoshHeadingReader.start()',
         '    }',
@@ -485,18 +500,6 @@ post_install do |installer|
         "#{helper}\n    private func resetScanningSession() {"
       )
 
-      if src.include?('uydoshApplyButtonTitles()')
-        src = src.sub(
-          'uydoshApplyButtonTitles()',
-          "uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()"
-        )
-      else
-        src = src.sub(
-          '        startSession()',
-          "        uydoshStartHeadingUpdates()\n        startSession()"
-        )
-      end
-
       src = src.sub(
         "    public override func viewWillDisappear(_ animated: Bool) {\n        super.viewWillDisappear(animated)\n        stopSession()\n    }",
         "    public override func viewWillDisappear(_ animated: Bool) {\n        super.viewWillDisappear(animated)\n        uydoshHeadingReader.stop()\n        stopSession()\n    }"
@@ -514,5 +517,36 @@ post_install do |installer|
 
       File.write(room_capture_file, src)
     end
+  end
+
+  # Repair a broken scan-orientation patch from earlier Podfile versions.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    repaired = false
+
+    if src.include?('/* uydosh: scan orientation capture */ helpers')
+      src = src.gsub('/* uydosh: scan orientation capture */ helpers', '/* uydosh: scan orientation capture */')
+      repaired = true
+    end
+
+    if src.include?("private func uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates() {")
+      src = src.sub(
+        "private func uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates() {",
+        'private func uydoshApplyButtonTitles() {'
+      )
+      repaired = true
+    end
+
+    if src.include?('private func uydoshStartHeadingUpdates()') &&
+       !src.include?("uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()") &&
+       src.include?("uydoshApplyButtonTitles()\n        startSession()")
+      src = src.sub(
+        "uydoshApplyButtonTitles()\n        startSession()",
+        "uydoshApplyButtonTitles()\n        uydoshStartHeadingUpdates()\n        startSession()"
+      )
+      repaired = true
+    end
+
+    File.write(room_capture_file, src) if repaired
   end
 end
