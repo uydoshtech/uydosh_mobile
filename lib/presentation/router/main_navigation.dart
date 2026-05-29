@@ -286,9 +286,10 @@ class MainNavigationState extends State<MainNavigation>
           });
           _maybeShowProfileCompletionPrompt();
           unawaited(
-            SearchFiltersState()
-                .hydrateFromBackendForCurrentUser()
-                .then((_) => SearchFiltersState().ensureProfileDefaultsApplied()),
+            SearchFiltersState().hydrateFromBackendForCurrentUser().then(
+                  (_) =>
+                      SearchFiltersState().ensureDefaultFiltersBuiltAndSaved(),
+                ),
           );
         }
 

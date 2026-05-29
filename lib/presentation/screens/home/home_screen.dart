@@ -353,28 +353,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       await _searchFiltersState.hydrateFromBackendForCurrentUser();
     }
     if (!mounted) return;
-    await _searchFiltersState.ensureProfileDefaultsApplied();
+    // Build + save profile-derived defaults when the user has no saved filters.
+    // For authenticated users this guarantees filters exist afterwards (freshly
+    // built defaults, or the user's existing saved filters left untouched).
+    await _searchFiltersState.ensureDefaultFiltersBuiltAndSaved();
     if (!mounted) return;
     final restored = await _restoreInlineSearchModeFromPrefs();
     if (restored) return;
     if (!mounted) return;
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
-    // Fallback for the fresh-mount-after-login path: the auth wizard's
-    // [_navigateToMainNavigation] uses `pushAndRemoveUntil` whenever the
-    // existing `MainNavigation` was disposed (e.g. when the user reached
-    // the wizard via `pushReplaceAuthWizard`), so this state object is
-    // brand new and the auth-flip listener never sees a transition. The
-    // logout hook wiped the local `home_inline_search_active` prefs flag,
-    // so [_restoreInlineSearchModeFromPrefs] returns false above. We use
-    // the freshly hydrated backend filters as a proxy for "user had a
-    // previous search" and re-activate the ribbon when any of them are
-    // non-default.
-    if (!await SessionManager.isAuthenticated()) return;
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
-    if (_hasUserAppliedSearchCriteria()) {
-      _activateInlineSearch(persistActiveFlag: true);
-    }
+    // Always apply the current filters to the feed on home load: freshly built
+    // defaults (gender / role-derived listing type / full price range) or the
+    // user's existing saved filters. This surfaces the inline filter ribbon and
+    // dispatches a filtered listings search.
+    if (!await SessionManager.isAuthenticated()) return;
+    _activateInlineSearch(persistActiveFlag: true);
   }
 
   /// Re-runs the auth-dependent portion of the bootstrap after the user signs
@@ -393,7 +388,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!await SessionManager.isAuthenticated()) return;
     await _searchFiltersState.hydrateFromBackendForCurrentUser();
     if (!mounted) return;
-    await _searchFiltersState.ensureProfileDefaultsApplied();
+    final builtDefaults =
+        await _searchFiltersState.ensureDefaultFiltersBuiltAndSaved();
     if (!mounted) return;
     final restored = await _restoreInlineSearchModeFromPrefs();
     if (restored) {
@@ -405,13 +401,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _postLoginActivationDeadline = null;
       return;
     }
-    if (_hasUserAppliedSearchCriteria()) {
+    if (widget.isSearchMode) return;
+    if (_inlineSearchActive || _inlineSearchClosing) return;
+    // Apply the current filters to the feed: freshly built defaults or the
+    // user's saved filters. If neither produced filters (e.g. hydrate hasn't
+    // landed yet), leave the post-login window open so
+    // [_onSearchFiltersStateChanged] can activate when a delayed hydrate
+    // notification arrives.
+    if (builtDefaults || _hasUserAppliedSearchCriteria()) {
       _postLoginActivationDeadline = null;
       _activateInlineSearch(persistActiveFlag: true);
     }
-    // If criteria are still all-default, leave the post-login window open;
-    // [_onSearchFiltersStateChanged] may activate later when a delayed
-    // hydrate notification arrives.
   }
 
   /// True when filters carry user intent beyond the listing-type / gender

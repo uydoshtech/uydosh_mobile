@@ -86,7 +86,10 @@ Future<void> _bootstrapSearchFiltersColdStart() async {
   await SearchFiltersState().initialize();
   if (!await SessionManager.isAuthenticated()) return;
   await SearchFiltersState().hydrateFromBackendForCurrentUser();
-  await SearchFiltersState().ensureProfileDefaultsApplied();
+  // Build + persist profile-derived defaults (gender / role-derived listing
+  // type / full price range) when the user has no saved filters; otherwise keep
+  // their saved filters untouched.
+  await SearchFiltersState().ensureDefaultFiltersBuiltAndSaved();
 }
 
 void main() async {

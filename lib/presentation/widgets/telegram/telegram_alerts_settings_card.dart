@@ -210,11 +210,51 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
 
   @override
   Widget build(BuildContext context) {
+    if (_alertsEnabled == null) {
+      return _loadingCard(context);
+    }
     if (_alertsEnabled == true) {
       return _connectedCard(context);
     }
 
     return _connectCard(context);
+  }
+
+  Widget _loadingCard(BuildContext context) {
+    const fg = Color(0xFF0A3050);
+    const cardBg = Color(0xFF4DA3E9);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardBg),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          children: [
+            const Icon(Icons.telegram, size: 22, color: fg),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                L10n.get("telegram_alerts_settings_title"),
+                style: const TextStyle(
+                  color: fg,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            UydoshInlineSpinner(
+              color: fg.withValues(alpha: 0.85),
+              dimension: 18,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _connectedCard(BuildContext context) {
