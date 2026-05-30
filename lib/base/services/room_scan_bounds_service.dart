@@ -11,6 +11,24 @@ class RoomScanBoundsService {
   static Future<RoomScanMetrics?> computeFromUsdPath(String path) async {
     if (!isIOSDevice) return null;
     if (path.isEmpty) return null;
+    const delays = <Duration>[
+      Duration.zero,
+      const Duration(milliseconds: 350),
+      const Duration(milliseconds: 800),
+    ];
+    for (final delay in delays) {
+      if (delay > Duration.zero) {
+        await Future<void>.delayed(delay);
+      }
+      final metrics = await _computeOnce(path);
+      if (metrics != null) {
+        return metrics;
+      }
+    }
+    return null;
+  }
+
+  static Future<RoomScanMetrics?> _computeOnce(String path) async {
     try {
       final raw = await _channel.invokeMethod<Object?>(
         "computeFromUsdPath",

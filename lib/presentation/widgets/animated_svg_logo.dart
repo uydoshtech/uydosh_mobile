@@ -54,7 +54,7 @@ class AnimatedSvgLogo extends StatefulWidget {
   const AnimatedSvgLogo({
     super.key,
     this.size = 100.0,
-    this.animationDuration = const Duration(milliseconds: 6000),
+    this.animationDuration = const Duration(milliseconds: 2500),
   });
 
   final double size;
@@ -68,7 +68,6 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _squareFadeAnimation;
-  late Animation<double> _squareRotationAnimation;
   late Animation<double> _uLetterFadeAnimation;
   late Animation<double> _uLetterColorAnimation;
   late Animation<double> _roofFallAnimation;
@@ -76,7 +75,6 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
   bool _hasLoggedSquareStop = false;
   bool _hasLoggedULetterDone = false;
   bool _hasLoggedRoofDone = false;
-  int _lastHalfRotationIndex = 0;
 
   void _logStage(String message) {
     if (kDebugMode) {
@@ -93,42 +91,27 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
       vsync: this,
     );
 
-    // Square fades in first (0-500ms)
+    // Square simply fades in (0-500ms of the 2500ms timeline).
     _squareFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(
           0.0,
-          0.4,
+          0.2,
           curve: Curves.easeInOut,
-        ), // 0-20% of total duration
+        ), // 0-500ms
       ),
     );
 
-    // Square rotates 2 times (1.5x faster - takes 67% of duration)
-    _squareRotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 6.0, // 2 full rotations (2 * 2π)
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(
-          0.0,
-          0.4,
-          curve: Curves.easeInOut,
-        ), // 0-67% of total duration with constant speed
-      ),
-    );
-
-    // U letter fades in after square rotation completes
+    // U letter fades in after the square has appeared
     _uLetterFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(
-          0.4,
-          0.7,
+          0.2,
+          0.5,
           curve: Curves.easeInOut,
-        ), // 67-80% of total duration
+        ), // 500-1250ms
       ),
     );
 
@@ -137,14 +120,14 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(
-          0.4,
-          0.7,
+          0.2,
+          0.5,
           curve: Curves.easeInOut,
         ), // Same timing as fade
       ),
     );
 
-    // Roof falls down from above after square rotation completes (even slower)
+    // Roof falls down from above after the U letter appears
     _roofFallAnimation = Tween<double>(
       begin: -3.0, // Start much further above to be completely hidden
       end: 0.0, // End at normal position
@@ -152,14 +135,14 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(
-          0.7,
-          0.9,
+          0.5,
+          0.8,
           curve: Curves.bounceOut,
-        ), // 80-99.8% of total duration with bounce effect
+        ), // 1250-2000ms with bounce effect
       ),
     );
 
-    // Chimney falls down from above after roof appears (even slower)
+    // Chimney falls down from above after roof appears
     _chimneyFallAnimation = Tween<double>(
       begin: -3.0, // Start much further above to be completely hidden
       end: 0.0, // End at normal position
@@ -167,10 +150,10 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(
-          0.8,
+          0.7,
           1,
           curve: Curves.bounceOut,
-        ), // 90-95% of total duration with bounce effect
+        ), // 1750-2500ms with bounce effect
       ),
     );
 
@@ -184,25 +167,15 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
   }
 
   void _handleAnimationSideEffects() {
-    final currentHalfRotationIndex =
-        _squareRotationAnimation.value.floor().clamp(0, 6);
-    if (currentHalfRotationIndex > _lastHalfRotationIndex) {
-      for (var i = _lastHalfRotationIndex + 1;
-          i <= currentHalfRotationIndex;
-          i++) {
-        HapticFeedbackUtils.strongImpact();
-      }
-      _lastHalfRotationIndex = currentHalfRotationIndex;
-    }
-    if (!_hasLoggedSquareStop && _controller.value >= 0.4) {
+    if (!_hasLoggedSquareStop && _controller.value >= 0.2) {
       _hasLoggedSquareStop = true;
-      _logStage("Logo animation: square rotation completed");
+      _logStage("Logo animation: square fade-in completed");
     }
-    if (!_hasLoggedULetterDone && _controller.value >= 0.7) {
+    if (!_hasLoggedULetterDone && _controller.value >= 0.5) {
       _hasLoggedULetterDone = true;
       _logStage("Logo animation: U letter drawing completed");
     }
-    if (!_hasLoggedRoofDone && _controller.value >= 0.9) {
+    if (!_hasLoggedRoofDone && _controller.value >= 0.8) {
       _hasLoggedRoofDone = true;
       _logStage("Logo animation: roof animation completed");
     }
@@ -220,7 +193,7 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
             height: widget.size * 1.5, // Larger to accommodate rotated square
             child: Stack(
               children: [
-                // Square - fades in first and rotates 2 times
+                // Square - simply fades in
                 Positioned(
                   top: widget.size * 0.25, // Center in the larger container
                   left: widget.size * 0.25, // Center in the larger container
@@ -228,34 +201,29 @@ class _AnimatedSvgLogoState extends State<AnimatedSvgLogo>
                   bottom: widget.size * 0.25,
                   child: Opacity(
                     opacity: _squareFadeAnimation.value,
-                    child: Transform.rotate(
-                      angle:
-                          _squareRotationAnimation.value *
-                          3.14159, // Convert to radians
-                      child: SvgPicture.asset(
-                        "assets/icon/components/square.svg",
-                        width: widget.size * 1.44, // 1.2 * 1.2
-                        height: widget.size * 1.44, // 1.2 * 1.2
-                        fit: BoxFit.contain,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF00426E),
-                          BlendMode.srcIn,
-                        ),
-                        placeholderBuilder:
-                            (context) => SizedBox(
-                              width: widget.size * 1.44, // 1.2 * 1.2
-                              height: widget.size * 1.44, // 1.2 * 1.2
-                              child: const Center(
-                                child: Text(
-                                  "Square",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
+                    child: SvgPicture.asset(
+                      "assets/icon/components/square.svg",
+                      width: widget.size * 1.44, // 1.2 * 1.2
+                      height: widget.size * 1.44, // 1.2 * 1.2
+                      fit: BoxFit.contain,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF00426E),
+                        BlendMode.srcIn,
+                      ),
+                      placeholderBuilder:
+                          (context) => SizedBox(
+                            width: widget.size * 1.44, // 1.2 * 1.2
+                            height: widget.size * 1.44, // 1.2 * 1.2
+                            child: const Center(
+                              child: Text(
+                                "Square",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
-                      ),
+                          ),
                     ),
                   ),
                 ),

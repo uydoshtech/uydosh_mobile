@@ -104,7 +104,7 @@ struct RoomViewerStrings {
       zoomInA11yLabel: dict["zoomIn"] ?? "Zoom in",
       zoomOutA11yLabel: dict["zoomOut"] ?? "Zoom out",
       viewModeA11yLabel: dict["viewModeLabel"] ?? "3D view mode",
-      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room, walls only, and furniture only.",
+      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room and furniture only.",
       materialsStyleA11yLabel: dict["materialsStyleLabel"] ?? "Materials style",
       materialsStyleA11yHint: dict["materialsStyleHint"] ?? "Toggle between real materials and stylized colors.",
       materialsStyleValueStylized: dict["materialsStylizedValue"] ?? "Stylized",
@@ -146,7 +146,7 @@ struct RoomViewerStrings {
     zoomInA11yLabel: "Zoom in",
     zoomOutA11yLabel: "Zoom out",
     viewModeA11yLabel: "3D view mode",
-    viewModeA11yHint: "Switch between full room, walls only, and furniture only.",
+    viewModeA11yHint: "Switch between full room and furniture only.",
     materialsStyleA11yLabel: "Materials style",
     materialsStyleA11yHint: "Toggle between real materials and stylized colors.",
     materialsStyleValueStylized: "Stylized",
@@ -228,18 +228,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var loadedScene: SCNScene?
   private enum DisplayMode: Int {
     case fullRoom = 0
-    /// Furniture removed, keep walls/structure.
-    case wallsOnly = 1
     /// Walls/structure removed, keep furniture.
-    case furnitureOnly = 2
+    case furnitureOnly = 1
   }
 
   private var displayMode: DisplayMode = .fullRoom
-  private let modeControl = UISegmentedControl(items: ["", "", ""])
-  private var useStylizedMaterials = true
-  /// Materials toggle lives in the bottom-center toolbar with view mode segments.
-  private let materialsStyleButton = UIButton(type: .system)
-  /// Bottom-centered “glassy” bar: 3-way mode picker + materials style (matches zoom panel styling).
+  private let modeControl = UISegmentedControl(items: ["", ""])
+  private let useStylizedMaterials = true
+  /// Bottom-centered “glassy” bar: view mode picker (matches zoom panel styling).
   private let modeMaterialsToolbarContainer = UIView()
   private let modeMaterialsToolbarPanel = UIView()
   private let modeMaterialsStack = UIStackView()
@@ -328,15 +324,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = RoomSceneAppearance.skyBackgroundColor
-    title = strings.title
 
-    navigationItem.leftBarButtonItem = UIBarButtonItem(
+    navigationItem.leftBarButtonItem = nil
+    navigationItem.rightBarButtonItem = UIBarButtonItem(
       barButtonSystemItem: .close,
       target: self,
       action: #selector(closeTapped)
     )
     setupModeControl()
-    setupMaterialsStyleButton()
     setupViewerTabControl()
 
     sceneView.translatesAutoresizingMaskIntoConstraints = false
@@ -492,7 +487,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     setupModeMaterialsToolbar()
 
     // Make sure overlay controls remain tappable/draggable above SceneKit.
-    view.bringSubviewToFront(viewerTabContainer)
     view.bringSubviewToFront(zoomControlsContainer)
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
     view.bringSubviewToFront(sunSimulationPanel)
@@ -523,16 +517,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     NSLayoutConstraint.activate(
       [
-        viewerTabContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
-        viewerTabContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-        viewerTabContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-
-        sceneView.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 8),
+        sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
         sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
         sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
-        floorPlanTab.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 8),
+        floorPlanTab.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
         floorPlanTab.leadingAnchor.constraint(equalTo: view.leadingAnchor),
         floorPlanTab.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         floorPlanTab.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
@@ -552,7 +542,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           lessThanOrEqualTo: view.safeAreaLayoutGuide.widthAnchor,
           constant: -32
         ),
-        hintContainer.topAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: 10),
+        hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+
+        sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
+        sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 12),
+        sunCompassOverlay.trailingAnchor.constraint(
+          lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor,
+          constant: -16
+        ),
 
         // Brand mark moved to bottom-trailing (was bottom-leading); zoom
         // controls take over the bottom-leading slot below.
@@ -563,9 +560,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
         zoomControlsContainer.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
         zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
-
-        sunCompassOverlay.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
-        sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: 10),
 
         sunSimulationPanel.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
         sunSimulationPanel.trailingAnchor.constraint(
@@ -924,13 +918,32 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     if #available(iOS 13.0, *) {
       viewerTabContainer.layer.cornerCurve = .continuous
     }
-    view.addSubview(viewerTabContainer)
 
     viewerTabControl.translatesAutoresizingMaskIntoConstraints = false
     viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
-    viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
-    viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
+    viewerTabControl.apportionsSegmentWidthsByContent = true
     viewerTabControl.addTarget(self, action: #selector(viewerTabChanged), for: .valueChanged)
+
+    let iconCfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+    let threeDIcon = UIImage(systemName: "rotate.3d.fill", withConfiguration: iconCfg)
+      ?? UIImage(systemName: "cube.fill", withConfiguration: iconCfg)
+    let planIcon = UIImage(systemName: "map.fill", withConfiguration: iconCfg)
+      ?? UIImage(systemName: "square.grid.2x2.fill", withConfiguration: iconCfg)
+
+    if let threeDIcon {
+      viewerTabControl.setImage(threeDIcon, forSegmentAt: ViewerTab.threeD.rawValue)
+    } else {
+      viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
+    }
+    if let planIcon {
+      viewerTabControl.setImage(planIcon, forSegmentAt: ViewerTab.floorPlan.rawValue)
+    } else {
+      viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
+    }
+
+    viewerTabControl.setWidth(40, forSegmentAt: ViewerTab.threeD.rawValue)
+    viewerTabControl.setWidth(40, forSegmentAt: ViewerTab.floorPlan.rawValue)
+
     if #available(iOS 13.0, *) {
       viewerTabControl.overrideUserInterfaceStyle = .dark
       viewerTabControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
@@ -944,21 +957,36 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         for: .normal
       )
     }
+    viewerTabControl.tintColor = UIColor.white.withAlphaComponent(0.92)
+    viewerTabControl.accessibilityLabel = "\(strings.floorPlan.tab3DView), \(strings.floorPlan.tabFloorPlan)"
+    updateViewerTabAccessibility()
+
     viewerTabContainer.addSubview(viewerTabControl)
 
     NSLayoutConstraint.activate([
+      viewerTabContainer.widthAnchor.constraint(equalToConstant: 96),
+      viewerTabContainer.heightAnchor.constraint(equalToConstant: 40),
       viewerTabControl.topAnchor.constraint(equalTo: viewerTabContainer.topAnchor, constant: 4),
       viewerTabControl.leadingAnchor.constraint(equalTo: viewerTabContainer.leadingAnchor, constant: 4),
       viewerTabControl.trailingAnchor.constraint(equalTo: viewerTabContainer.trailingAnchor, constant: -4),
       viewerTabControl.bottomAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: -4),
       viewerTabControl.heightAnchor.constraint(equalToConstant: 32),
     ])
+
+    navigationItem.titleView = viewerTabContainer
+  }
+
+  private func updateViewerTabAccessibility() {
+    viewerTabControl.accessibilityValue = viewerTab == .threeD
+      ? strings.floorPlan.tab3DView
+      : strings.floorPlan.tabFloorPlan
   }
 
   @objc private func viewerTabChanged() {
     let next = ViewerTab(rawValue: viewerTabControl.selectedSegmentIndex) ?? .threeD
     guard next != viewerTab else { return }
     viewerTab = next
+    updateViewerTabAccessibility()
     applyViewerTab(next, animated: true)
   }
 
@@ -999,8 +1027,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeControl.apportionsSegmentWidthsByContent = true
 
     let fullIcon = UIImage(systemName: "house.fill")
-    let wallsIcon = UIImage(systemName: "rectangle.split.3x1.fill")
-      ?? UIImage(systemName: "square.split.2x2.fill")
     let furnitureIcon = UIImage(systemName: "bed.double.fill")
       ?? UIImage(systemName: "shippingbox.fill")
       ?? UIImage(systemName: "cube.box.fill")
@@ -1010,11 +1036,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       modeControl.setTitle("All", forSegmentAt: DisplayMode.fullRoom.rawValue)
     }
-    if let wallsIcon = wallsIcon {
-      modeControl.setImage(wallsIcon, forSegmentAt: DisplayMode.wallsOnly.rawValue)
-    } else {
-      modeControl.setTitle("Walls", forSegmentAt: DisplayMode.wallsOnly.rawValue)
-    }
     if let furnitureIcon = furnitureIcon {
       modeControl.setImage(furnitureIcon, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
     } else {
@@ -1022,7 +1043,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
 
     modeControl.setWidth(38, forSegmentAt: DisplayMode.fullRoom.rawValue)
-    modeControl.setWidth(38, forSegmentAt: DisplayMode.wallsOnly.rawValue)
     modeControl.setWidth(38, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
 
     modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
@@ -1055,45 +1075,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     ])
   }
 
-  private func setupMaterialsStyleButton() {
-    materialsStyleButton.translatesAutoresizingMaskIntoConstraints = false
-    let iconCfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
-    materialsStyleButton.setPreferredSymbolConfiguration(iconCfg, forImageIn: .normal)
-    let buttonTint = UIColor.white.withAlphaComponent(0.92)
-    materialsStyleButton.tintColor = buttonTint
-    materialsStyleButton.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
-    materialsStyleButton.layer.cornerRadius = Self.zoomButtonCornerRadius
-    if #available(iOS 13.0, *) {
-      materialsStyleButton.layer.cornerCurve = .continuous
-    }
-    materialsStyleButton.clipsToBounds = false
-    materialsStyleButton.layer.masksToBounds = false
-    materialsStyleButton.layer.shadowColor = UIColor.black.cgColor
-    materialsStyleButton.layer.shadowOpacity = 0.4
-    materialsStyleButton.layer.shadowOffset = CGSize(width: 2, height: 3)
-    materialsStyleButton.layer.shadowRadius = 4
-    materialsStyleButton.layer.borderWidth = 0.5
-    materialsStyleButton.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
-    materialsStyleButton.accessibilityLabel = strings.materialsStyleA11yLabel
-    materialsStyleButton.accessibilityHint = strings.materialsStyleA11yHint
-    materialsStyleButton.addTarget(self, action: #selector(toggleMaterialsStyle), for: .touchUpInside)
-    NSLayoutConstraint.activate([
-      materialsStyleButton.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
-      materialsStyleButton.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
-    ])
-    updateMaterialsButtonAppearance()
-  }
-
-  private func updateMaterialsButtonAppearance() {
-    // Stylized: paintbrush, Real: photo
-    let name = useStylizedMaterials ? "paintbrush.fill" : "photo.fill.on.rectangle.fill"
-    materialsStyleButton.setImage(UIImage(systemName: name), for: .normal)
-    materialsStyleButton.accessibilityValue = useStylizedMaterials
-      ? strings.materialsStyleValueStylized
-      : strings.materialsStyleValueReal
-  }
-
-  /// Hosts segmented view mode control + materials toggle centered at the bottom safe area.
   private func setupModeMaterialsToolbar() {
     modeMaterialsToolbarContainer.translatesAutoresizingMaskIntoConstraints = false
     modeMaterialsToolbarContainer.isUserInteractionEnabled = true
@@ -1131,7 +1112,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     modeMaterialsStack.addArrangedSubview(sunToggleButton)
     modeMaterialsStack.addArrangedSubview(modeControl)
-    modeMaterialsStack.addArrangedSubview(materialsStyleButton)
     modeMaterialsToolbarPanel.addSubview(modeMaterialsStack)
 
     NSLayoutConstraint.activate([
@@ -1162,11 +1142,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     guard outer.width > 1, outer.height > 1 else { return }
     modeMaterialsToolbarContainer.layer.shadowPath =
       UIBezierPath(roundedRect: outer, cornerRadius: panelR).cgPath
-    let br = Self.zoomButtonCornerRadius
-    let bb = materialsStyleButton.bounds
-    if bb.width > 1, bb.height > 1 {
-      materialsStyleButton.layer.shadowPath = UIBezierPath(roundedRect: bb, cornerRadius: br).cgPath
-    }
   }
 
   // (Removed: `UydoshVectorBrandMarkView` and its `SVGPathParser` helper
@@ -1510,14 +1485,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         switch mode {
         case .fullRoom:
           node.isHidden = false
-        case .wallsOnly:
-          if node.name == "UydoshFramingCamera" {
-            node.isHidden = false
-          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
-            node.isHidden = true
-          } else {
-            node.isHidden = false
-          }
         case .furnitureOnly:
           if node.name == "UydoshFramingCamera" {
             node.isHidden = false
@@ -1569,13 +1536,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let next = DisplayMode(rawValue: idx) ?? .fullRoom
     displayMode = next
     applyDisplayMode(next)
-  }
-
-  @objc private func toggleMaterialsStyle() {
-    guard loadedScene != nil else { return }
-    useStylizedMaterials.toggle()
-    updateMaterialsButtonAppearance()
-    applyMaterialsStyle()
   }
 
   /// RoomPlan / SceneKit: meters, Y-up. Footprint from floor polygon; height from full scene.
@@ -2248,12 +2208,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     floorPlanTabView?.canvas.clearModel()
     viewerTab = .threeD
     viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
+    updateViewerTabAccessibility()
     isOrthographicPlanView = false
     debugOverlayNode = nil
     displayMode = .fullRoom
     modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
-    useStylizedMaterials = true
-    updateMaterialsButtonAppearance()
     sunSimulationController.detach()
     sceneView.scene = nil
     loadedScene = nil

@@ -791,7 +791,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       changedFieldLabels: changedFields,
     );
     if (!mounted || !leave) return;
-    Navigator.of(context).pop(result);
+    Navigator.of(context).pop(_roomScanChanged ? true : result);
   }
 
   @override

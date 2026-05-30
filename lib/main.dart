@@ -728,8 +728,8 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 200));
     _fadeController.forward();
 
-    // Start text animations after logo animation completes (4000ms + 200ms delay)
-    await Future.delayed(const Duration(milliseconds: 4200));
+    // Start text animations after logo animation completes (2500ms + 200ms delay)
+    await Future.delayed(const Duration(milliseconds: 2700));
     _titleController.forward();
     _subtitleController.forward(); // Start simultaneously with title
 
@@ -883,7 +883,7 @@ class _SplashScreenState extends State<SplashScreen>
                     SizedBox(height: size.height * 0.25),
                     const AnimatedSvgLogo(
                       size: 180,
-                      animationDuration: Duration(milliseconds: 4000),
+                      animationDuration: Duration(milliseconds: 2500),
                     ),
                     const SizedBox(height: 0),
                     // Title slide: only this AnimatedBuilder rebuilds per

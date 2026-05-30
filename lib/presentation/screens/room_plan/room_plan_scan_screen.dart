@@ -110,12 +110,27 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         }
         setState(() => _uploading = true);
         try {
-          final metrics = await RoomScanBoundsService.computeFromUsdPath(path);
+          var metrics = await RoomScanBoundsService.computeFromUsdPath(path);
           await getIt<IListingService>().uploadRoomScan(
             listingId: widget.listingId,
             usdzFilePath: path,
             roomScanMetrics: metrics,
           );
+          // RoomPlan may finish writing the USDZ slightly after the callback; backfill if
+          // the first compute failed but upload succeeded.
+          if (metrics == null) {
+            metrics = await RoomScanBoundsService.computeFromUsdPath(path);
+          }
+          if (metrics != null) {
+            try {
+              await getIt<IListingService>().patchRoomScanMetricsIfMissing(
+                listingId: widget.listingId,
+                metrics: metrics,
+              );
+            } catch (e, st) {
+              logger.d("Room scan metrics backfill after upload failed: $e\n$st");
+            }
+          }
           if (!mounted) return;
           ToastTheme.showSuccess(
             context,
