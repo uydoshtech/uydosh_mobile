@@ -193,6 +193,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var isAutoRotating = true
   private var autoRotateDisplayLink: CADisplayLink?
   private var autoRotateLastTimestamp: CFTimeInterval = 0
+  /// While the model auto-rotates with the sun enabled, sweep the real sun from 00:00 → 12:00
+  /// (one turn = midnight to noon). Local minutes of day; resets each time the spin starts.
+  private static let sunSweepEndMinute: Double = 12 * 60
+  private var sunSweepMinute: Double = 0
   /// Orbit state (manual mode); camera stays a direct child of `rootNode`, not inside the model wrapper.
   private weak var framingCameraNode: SCNNode?
   private var orbitTarget = SCNVector3Zero
@@ -558,7 +562,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
 
         sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
-        sunCompassOverlay.heightAnchor.constraint(equalToConstant: 108),
+        sunCompassOverlay.heightAnchor.constraint(equalToConstant: 88),
         sunCompassOverlay.widthAnchor.constraint(equalToConstant: 88),
         sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 12),
         sunCompassOverlay.trailingAnchor.constraint(
@@ -2191,6 +2195,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func startIntroAutoRotationIfNeeded() {
     guard isAutoRotating, framingCameraNode != nil else { return }
     removeAutoRotateAnimation()
+    sunSweepMinute = 0
     // Orbit the camera around the model center (same pivot as manual pan), not world origin.
     let link = CADisplayLink(target: self, selector: #selector(tickAutoRotate(_:)))
     if #available(iOS 15.0, *) {
@@ -2219,6 +2224,35 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let yawSpeed = Float(-2 * Double.pi / Self.autoRotateSecondsPerTurn)
     orbitYaw += yawSpeed * dt
     updateCameraFromOrbit()
+
+    // Sweep the real sun across the morning (00:00 → 12:00) in lockstep with one full turn.
+    if sunSimulationController.isEnabled {
+      let minutesPerSecond = Self.sunSweepEndMinute / Self.autoRotateSecondsPerTurn
+      sunSweepMinute += Double(dt) * minutesPerSecond
+      if sunSweepMinute > Self.sunSweepEndMinute { sunSweepMinute = 0 }
+      applySunSweep(minute: sunSweepMinute)
+    }
+  }
+
+  /// Drives the sun rig to the real solar position for today at `minute` (local), and keeps the
+  /// compass + sun panel in sync. Used by the rotate-with-sun cinematic.
+  private func applySunSweep(minute: Double) {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = SolarPosition.tashkentTimeZone
+    let date = cal.startOfDay(for: Date()).addingTimeInterval(minute * 60)
+    let pos = SolarPosition.position(
+      latitude: SolarPosition.tashkentLatitude,
+      longitude: SolarPosition.tashkentLongitude,
+      date: date,
+      timeZone: SolarPosition.tashkentTimeZone
+    )
+    let azimuth = Float(pos.azimuthDeg)
+    let elevation = Float(max(0, pos.elevationDeg))
+    sunSimulationController.setSunAzimuth(degrees: azimuth)
+    sunSimulationController.setSunElevation(degrees: elevation)
+    sunSimulationPanel.setAzimuth(azimuth)
+    sunSimulationPanel.setElevation(elevation)
+    refreshSunCompassLabels()
   }
 
   private func installManualOrbitGestures() {

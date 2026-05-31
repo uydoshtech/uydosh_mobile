@@ -42,16 +42,19 @@ enum ScanCeilingService {
     _ = stylizedMaterials
   }
 
-  /// Visible to the user: fully transparent. Still participates in depth/shadow maps to block sun.
+  /// Invisible shadow caster: the material must stay *opaque* so SceneKit includes it in the
+  /// shadow pass (transparent materials are skipped and would let the sun through). It is hidden
+  /// from the camera with an empty `colorBufferWriteMask`, and does not write the main depth
+  /// buffer so the roof remains see-through when orbiting above the room.
   private static func invisibleShadowMaterial() -> SCNMaterial {
     let material = SCNMaterial()
     material.lightingModel = .constant
-    material.diffuse.contents = UIColor.clear
+    material.diffuse.contents = UIColor.black
     material.transparency = 1.0
     material.transparencyMode = .aOne
     material.isDoubleSided = true
-    material.writesToDepthBuffer = true
-    material.readsFromDepthBuffer = true
+    material.writesToDepthBuffer = false
+    material.readsFromDepthBuffer = false
     if #available(iOS 13.0, *) {
       material.colorBufferWriteMask = []
     }

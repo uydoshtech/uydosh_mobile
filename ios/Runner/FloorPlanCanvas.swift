@@ -58,7 +58,7 @@ final class FloorPlanCanvas: UIView {
   }
 
   private func commonInit() {
-    backgroundColor = UIColor(red: 0.95, green: 0.97, blue: 0.99, alpha: 1)
+    backgroundColor = .white
     isMultipleTouchEnabled = true
     contentMode = .redraw
 
@@ -164,7 +164,7 @@ final class FloorPlanCanvas: UIView {
         in: ctx,
         bounds: expandedBounds(model.bounds, padding: 0.8),
         transform: transform,
-        color: UIColor(red: 0.72, green: 0.78, blue: 0.86, alpha: 0.55)
+        color: UIColor(white: 0.85, alpha: 1)
       )
     }
 

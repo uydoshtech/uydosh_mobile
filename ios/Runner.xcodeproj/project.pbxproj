@@ -41,6 +41,7 @@
 		E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */; };
 		E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */; };
 		E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */; };
+		E8A1B3401ED2DC5600515901 /* SolarPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3411ED2DC5600515902 /* SolarPosition.swift */; };
 		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
 		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
 		E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */; };
@@ -124,6 +125,7 @@
 		E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationEditController.swift; sourceTree = "<group>"; };
 		E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationAdjustPanel.swift; sourceTree = "<group>"; };
 		E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunPositionMath.swift; sourceTree = "<group>"; };
+		E8A1B3411ED2DC5600515902 /* SolarPosition.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolarPosition.swift; sourceTree = "<group>"; };
 		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
 		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
 		E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunCompassOverlayView.swift; sourceTree = "<group>"; };
@@ -253,6 +255,7 @@
 				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
 				E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */,
 				E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */,
+				E8A1B3411ED2DC5600515902 /* SolarPosition.swift */,
 				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
 				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
 				E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */,
@@ -600,6 +603,7 @@
 				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,
 				E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */,
 				E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */,
+				E8A1B3401ED2DC5600515901 /* SolarPosition.swift in Sources */,
 				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
 				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
 				E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */,

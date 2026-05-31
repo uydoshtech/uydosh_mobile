@@ -28,8 +28,6 @@ final class SunCompassOverlayView: UIControl {
     }
   }
 
-  private let valuesLabel = UILabel()
-
   override init(frame: CGRect) {
     super.init(frame: frame)
     setup()
@@ -49,11 +47,6 @@ final class SunCompassOverlayView: UIControl {
   ) {
     self.azimuthDeg = azimuthDeg
     self.northScreenAngleRad = northScreenAngleRad
-    valuesLabel.text = String(
-      format: "%@ · %@",
-      String(format: azimuthFormat, Int(azimuthDeg.rounded())),
-      String(format: elevationFormat, Int(elevationDeg.rounded()))
-    )
     setNeedsDisplay()
   }
 
@@ -75,26 +68,15 @@ final class SunCompassOverlayView: UIControl {
     layer.borderColor = UIColor.white.withAlphaComponent(0.12).cgColor
     clipsToBounds = true
 
-    valuesLabel.translatesAutoresizingMaskIntoConstraints = false
-    valuesLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .medium)
-    valuesLabel.textColor = UIColor.white.withAlphaComponent(0.9)
-    valuesLabel.textAlignment = .center
-    valuesLabel.numberOfLines = 2
-    valuesLabel.isUserInteractionEnabled = false
-    addSubview(valuesLabel)
-
     NSLayoutConstraint.activate([
       widthAnchor.constraint(equalToConstant: 88),
-      heightAnchor.constraint(equalToConstant: 108),
-      valuesLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 3),
-      valuesLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -3),
-      valuesLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -3),
+      heightAnchor.constraint(equalToConstant: 88),
     ])
   }
 
   override func draw(_ rect: CGRect) {
     guard let ctx = UIGraphicsGetCurrentContext() else { return }
-    let center = CGPoint(x: rect.midX, y: rect.midY - 8)
+    let center = CGPoint(x: rect.midX, y: rect.midY)
     let radius: CGFloat = 28
 
     ctx.setFillColor(UIColor.white.withAlphaComponent(0.08).cgColor)

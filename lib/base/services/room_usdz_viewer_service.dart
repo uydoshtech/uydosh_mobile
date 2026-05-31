@@ -291,6 +291,8 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_sun_preset_noon", languageCode),
       "sunPresetEvening":
           L10n.getForLanguage("room_3d_sun_preset_evening", languageCode),
+      "sunToday": L10n.getForLanguage("room_3d_sun_today", languageCode),
+      "sunNow": L10n.getForLanguage("room_3d_sun_now", languageCode),
       "sunAzimuthFormat":
           L10n.getForLanguage("room_3d_sun_azimuth_format", languageCode),
       "sunElevationFormat":

@@ -8,8 +8,10 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -29,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -89,6 +92,15 @@ class _ListingTileState extends State<ListingTile> {
   // listing id changes (the FavoritesState key).
   late Listenable _favoriteListenable;
 
+  // When an admin removes a featured listing from the top directly from the
+  // feed tile, we drop the featured border immediately (optimistic) instead of
+  // waiting for the surrounding list to refetch.
+  bool _featuredRemovedLocally = false;
+
+  bool get _isFeatured =>
+      !_featuredRemovedLocally &&
+      ListingUtils.isCurrentlyFeatured(widget.listing);
+
   static const _viewCountLoadDelay = Duration(milliseconds: 300);
 
   void _updateCachedValues() {
@@ -129,6 +141,8 @@ class _ListingTileState extends State<ListingTile> {
       // Listing identity changed — rebuild the merged listenable so we listen
       // to the right per-id FavoritesState notifier.
       _favoriteListenable = _buildFavoriteListenable();
+      // ...and drop any optimistic unfeature applied to the previous listing.
+      _featuredRemovedLocally = false;
     }
   }
 
@@ -207,6 +221,93 @@ class _ListingTileState extends State<ListingTile> {
           message: L10n.get("favorite_toggle_network_error"),
         );
       }
+    }
+  }
+
+  /// Admin-only affordance: long-pressing a *featured* tile lets an admin pull
+  /// the listing back down from the top, without opening it. The menu is only
+  /// surfaced for admins on currently-featured listings, so for everyone else
+  /// the long-press is a silent no-op.
+  Future<void> _onTileLongPress() async {
+    if (!_isFeatured) return;
+
+    final role = await SessionManager.getUserRole();
+    if (role != "admin") return;
+    if (!mounted) return;
+
+    HapticFeedbackUtils.lightImpact();
+    await _showAdminTileActions();
+  }
+
+  Future<void> _showAdminTileActions() async {
+    final scheme = Theme.of(context).colorScheme;
+    final confirmed = await showAppBottomSheet<bool>(
+      context: context,
+      cardColor: scheme.surface,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  CupertinoIcons.arrow_down_circle,
+                  color: Colors.red,
+                ),
+                title: Text(
+                  L10n.get("remove_from_top"),
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () => Navigator.of(sheetContext).pop(true),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if ((confirmed ?? false) && mounted) {
+      await _removeFromTop();
+    }
+  }
+
+  Future<void> _removeFromTop() async {
+    try {
+      final listingService = getIt<IListingService>();
+      // The tile is featured here, so this routes to DELETE /listings/:id/feature.
+      final success = await listingService.toggleFeatureListing(
+        widget.listing.id,
+        true,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        setState(() => _featuredRemovedLocally = true);
+        // Keep the home/search feeds in sync on their next refresh.
+        HomeRefreshState().markForRefresh();
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("unfeature_listing_success"),
+        );
+      } else {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("feature_listing_error"),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("feature_listing_error"),
+      );
     }
   }
 
@@ -310,6 +411,7 @@ class _ListingTileState extends State<ListingTile> {
               HapticFeedbackUtils.lightImpact();
               context.pushListingDetail(widget.listing.id);
             },
+            onLongPress: () => unawaited(_onTileLongPress()),
             borderRadius: borderRadius,
             child: Stack(
               children: [
@@ -754,7 +856,7 @@ class _ListingTileState extends State<ListingTile> {
       ),
     );
 
-    if (ListingUtils.isCurrentlyFeatured(widget.listing)) {
+    if (_isFeatured) {
       return AnimatedFeaturedBorder(
         borderWidth: 3.0,
         borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -927,7 +1029,7 @@ class _ListingTileState extends State<ListingTile> {
           isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
         );
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
           decoration: BoxDecoration(
             color: _accentGreen.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),

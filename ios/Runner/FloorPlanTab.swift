@@ -45,7 +45,7 @@ final class FloorPlanTab: UIView {
 
   private func setupViews() {
     translatesAutoresizingMaskIntoConstraints = false
-    backgroundColor = UIColor(red: 0.95, green: 0.97, blue: 0.99, alpha: 1)
+    backgroundColor = .white
 
     canvas.translatesAutoresizingMaskIntoConstraints = false
     addSubview(canvas)

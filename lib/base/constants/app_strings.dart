@@ -412,6 +412,8 @@ class AppStrings {
       "room_3d_sun_preset_morning": "Morning",
       "room_3d_sun_preset_noon": "Noon",
       "room_3d_sun_preset_evening": "Evening",
+      "room_3d_sun_today": "Today",
+      "room_3d_sun_now": "Now",
       "room_3d_sun_azimuth_format": "Az %d°",
       "room_3d_sun_elevation_format": "El %d°",
 
@@ -2069,6 +2071,8 @@ class AppStrings {
       "room_3d_sun_preset_morning": "Утро",
       "room_3d_sun_preset_noon": "Полдень",
       "room_3d_sun_preset_evening": "Вечер",
+      "room_3d_sun_today": "Сегодня",
+      "room_3d_sun_now": "Сейчас",
       "room_3d_sun_azimuth_format": "Аз %d°",
       "room_3d_sun_elevation_format": "Выс %d°",
 
@@ -3759,6 +3763,8 @@ class AppStrings {
       "room_3d_sun_preset_morning": "Ertalab",
       "room_3d_sun_preset_noon": "Tush",
       "room_3d_sun_preset_evening": "Kechqurun",
+      "room_3d_sun_today": "Bugun",
+      "room_3d_sun_now": "Hozir",
       "room_3d_sun_azimuth_format": "Az %d°",
       "room_3d_sun_elevation_format": "Bl %d°",
 
