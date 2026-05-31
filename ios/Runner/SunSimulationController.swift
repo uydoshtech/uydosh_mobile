@@ -29,6 +29,9 @@ final class SunSimulationController {
   """
   static let fillLightNodeName = "UydoshSunFill"
 
+  /// TEMPORARY: tracks the highest sun elevation seen, so one day-cycle reveals the noon peak.
+  private static var debugMaxEl: Float = -90
+
   private(set) var isEnabled = false
   private(set) var azimuthDeg: Float = SunPositionMath.TimePreset.noon.azimuthDeg
   private(set) var elevationDeg: Float = SunPositionMath.TimePreset.noon.elevationDeg
@@ -242,6 +245,8 @@ final class SunSimulationController {
     // Fake a roof: a roofed room gets little DIRECT sun on the floor when the sun is overhead, but
     // plenty of low/glancing light through windows. So fade the direct beam as the sun climbs.
     let roofScale = Self.roofedSunScale(forElevation: el)
+    Self.debugMaxEl = max(Self.debugMaxEl, el)
+    print("[Sun] el=\(Int(el))° peakEl=\(Int(Self.debugMaxEl))° roofScale=\(String(format: "%.2f", roofScale))")
     if let direct = lightNode.light {
       direct.color = Self.directionalColor(forElevation: el)
       direct.intensity = lightIntensity * scale * roofScale
@@ -308,11 +313,11 @@ final class SunSimulationController {
     }
   }
 
-  /// Orb base color: pale white-gold high in the sky → deep orange/red near and below the horizon.
+  /// Orb base color: warm yellow-gold high in the sky → deep orange/red near and below the horizon.
   private static func orbColor(forElevation el: Float) -> UIColor {
     let low = UIColor(red: 1.00, green: 0.50, blue: 0.26, alpha: 1)
     let warm = UIColor(red: 1.00, green: 0.82, blue: 0.45, alpha: 1)
-    let high = UIColor(red: 1.00, green: 0.97, blue: 0.82, alpha: 1)
+    let high = UIColor(red: 1.00, green: 0.88, blue: 0.50, alpha: 1)
     switch el {
     case ..<2: return low
     case ..<10: return lerp(low, warm, (el - 2) / 8)
@@ -334,10 +339,13 @@ final class SunSimulationController {
   /// real roof lets light stream through windows, fading toward the zenith where the roof would
   /// block it. Only the direct beam is scaled — ambient/fill keep the interior readable.
   private static func roofedSunScale(forElevation el: Float) -> CGFloat {
+    // TEMPORARY A/B TEST: midday floor pushed to near-zero so the effect is unmistakable.
+    // If the interior goes obviously dark at noon vs. bright in the morning, the mechanism works —
+    // then restore a tasteful value (the previous floor was 0.3).
     switch el {
     case ..<30: return 1.0
-    case ..<65: return CGFloat(1.0 - (el - 30) / 35) * 0.7 + 0.3
-    default: return 0.3
+    case ..<65: return CGFloat(1.0 - (el - 30) / 35) * 0.95 + 0.05
+    default: return 0.05
     }
   }
 

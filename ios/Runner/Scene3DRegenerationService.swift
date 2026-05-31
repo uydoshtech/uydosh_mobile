@@ -148,9 +148,21 @@ enum Scene3DRegenerationService {
       let material = SCNMaterial()
       if stylized {
         material.lightingModel = .physicallyBased
-        material.diffuse.contents = UIColor(red: 232 / 255, green: 223 / 255, blue: 207 / 255, alpha: 1)
-        material.roughness.contents = 0.86
         material.metalness.contents = 0
+        if wall.type == .exterior {
+          // Tileable red-brick texture, repeated so brick size stays physically
+          // consistent regardless of wall length/height (~1 m per image tile).
+          material.diffuse.contents = BrickTexture.shared
+          material.diffuse.wrapS = .repeat
+          material.diffuse.wrapT = .repeat
+          let repeatS = Float(max(length / BrickTexture.tileMeters, 1))
+          let repeatT = Float(max(wall.height / BrickTexture.tileMeters, 1))
+          material.diffuse.contentsTransform = SCNMatrix4MakeScale(repeatS, repeatT, 1)
+          material.roughness.contents = 0.95
+        } else {
+          material.diffuse.contents = UIColor(red: 232 / 255, green: 223 / 255, blue: 207 / 255, alpha: 1)
+          material.roughness.contents = 0.86
+        }
       } else {
         material.diffuse.contents = UIColor(white: 0.88, alpha: 1)
       }
@@ -247,5 +259,66 @@ enum Scene3DRegenerationService {
     let source = SCNGeometrySource(vertices: vertices)
     let element = SCNGeometryElement(indices: indices, primitiveType: .triangles)
     return SCNGeometry(sources: [source], elements: [element])
+  }
+}
+
+/// Procedurally generated, tileable red-brick texture for exterior walls.
+/// Rendered once and shared by every wall material, so it adds only a single
+/// small texture to GPU memory regardless of how many walls there are.
+enum BrickTexture {
+  /// Physical size (in metres) that one repetition of the image represents.
+  static let tileMeters: Double = 1.0
+
+  /// Cached tileable brick image. Generated lazily on first access.
+  static let shared: UIImage = makeImage(size: 512, bricksPerRow: 4, coursesPerColumn: 13)
+
+  private static func makeImage(size: Int, bricksPerRow: Int, coursesPerColumn: Int) -> UIImage {
+    let dimension = CGFloat(size)
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: dimension, height: dimension))
+    return renderer.image { context in
+      let cg = context.cgContext
+
+      // Mortar background.
+      let mortar = UIColor(red: 222 / 255, green: 214 / 255, blue: 201 / 255, alpha: 1)
+      mortar.setFill()
+      cg.fill(CGRect(x: 0, y: 0, width: dimension, height: dimension))
+
+      let courseHeight = dimension / CGFloat(coursesPerColumn)
+      let brickWidth = dimension / CGFloat(bricksPerRow)
+      let mortarGap = max(dimension / 160, 1.5)
+
+      // Slight per-brick colour variation around a warm red.
+      func brickColor(_ seed: Int) -> UIColor {
+        let jitter = CGFloat((seed * 2654435761 & 0x3F)) / 63.0 - 0.5
+        let r = (170 + jitter * 26) / 255
+        let g = (74 + jitter * 18) / 255
+        let b = (58 + jitter * 14) / 255
+        return UIColor(red: r, green: g, blue: b, alpha: 1)
+      }
+
+      var seed = 0
+      var course = -1
+      // Draw an extra course/column on each edge so the running-bond offset
+      // tiles seamlessly when the image repeats.
+      while CGFloat(course) * courseHeight < dimension {
+        let y = CGFloat(course) * courseHeight
+        let rowOffset = (course % 2 == 0) ? 0 : -brickWidth / 2
+        var x = rowOffset - brickWidth
+        while x < dimension {
+          let rect = CGRect(
+            x: x + mortarGap / 2,
+            y: y + mortarGap / 2,
+            width: brickWidth - mortarGap,
+            height: courseHeight - mortarGap
+          )
+          brickColor(seed).setFill()
+          let path = UIBezierPath(roundedRect: rect, cornerRadius: mortarGap / 2)
+          path.fill()
+          seed += 1
+          x += brickWidth
+        }
+        course += 1
+      }
+    }
   }
 }

@@ -1497,6 +1497,44 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     material.roughness.contents = NSNumber(value: Double(Self.stylizedWallRoughness))
   }
 
+  /// World-space triplanar projection for the brick texture. Scan wall meshes from RoomPlan
+  /// often lack usable UV coordinates, which would collapse a tiled texture to a single texel.
+  /// Projecting from world position (blended by surface normal) maps brick onto any geometry
+  /// without relying on UVs, and keeps brick proportions consistent across all walls.
+  private static let brickTriplanarModifier = """
+  #pragma arguments
+  float brickTileMeters;
+  #pragma body
+  float tile = max(brickTileMeters, 0.001);
+  float4x4 invView = scn_frame.inverseViewTransform;
+  float3 worldPos = (invView * float4(_surface.position, 1.0)).xyz;
+  float3 worldNrm = normalize((invView * float4(_surface.normal, 0.0)).xyz);
+  float3 blend = abs(worldNrm);
+  blend /= (blend.x + blend.y + blend.z + 1e-5);
+  float2 uvX = worldPos.zy / tile;
+  float2 uvY = worldPos.xz / tile;
+  float2 uvZ = worldPos.xy / tile;
+  float4 cx = u_diffuseTexture.sample(u_diffuseTextureSampler, uvX);
+  float4 cy = u_diffuseTexture.sample(u_diffuseTextureSampler, uvY);
+  float4 cz = u_diffuseTexture.sample(u_diffuseTextureSampler, uvZ);
+  _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
+  """
+
+  /// Applies the shared tileable red-brick texture to a scan wall surface using triplanar
+  /// world-space projection (see `brickTriplanarModifier`), so brick shows correctly even on
+  /// meshes without proper UV coordinates.
+  private func applyBrickWallMaterial(_ material: SCNMaterial) {
+    material.lightingModel = .physicallyBased
+    material.metalness.contents = NSNumber(value: 0.0)
+    material.roughness.contents = NSNumber(value: 0.95)
+    material.diffuse.contents = BrickTexture.shared
+    material.diffuse.wrapS = .repeat
+    material.diffuse.wrapT = .repeat
+    material.ambient.contents = UIColor(white: 0.5, alpha: 1)
+    material.shaderModifiers = [.surface: Self.brickTriplanarModifier]
+    material.setValue(NSNumber(value: Float(BrickTexture.tileMeters)), forKey: "brickTileMeters")
+  }
+
   /// Stylized palette (fixed tints for USDZ room scans):
   /// - Walls: Soft Sand `#E8DFCF`
   /// - Floor: Walnut Wood `#7A5C4F`
@@ -1539,7 +1577,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       } else if isWallSurface(node) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
-          applyStylizedWallMaterial(m, diffuseTint: wallTint)
+          applyBrickWallMaterial(m)
           return m
         }
       }
