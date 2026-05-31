@@ -100,6 +100,29 @@ enum SolarPosition {
     )
   }
 
+  /// Playback-speed multiplier for day-cycle animations, as a function of the sun's true
+  /// elevation. Daylight plays at 1× so the interesting moments (sunrise, the shadow sweep across
+  /// the floor, golden hour, sunset) are easy to follow, while the dead-of-night stretch — where
+  /// nothing visibly changes — is fast-forwarded up to `maxScale`. The ramp is smoothstep-eased
+  /// across twilight so there's no abrupt jump in speed at sunset/sunrise.
+  ///
+  /// - elevationDeg: the sun's true elevation (negative below the horizon).
+  /// - maxScale: top speed reached deep in the night (≥ 1).
+  /// - dayElevationDeg: at/above this elevation playback runs at full 1× (normal) speed.
+  /// - nightElevationDeg: at/below this elevation playback runs at `maxScale`.
+  static func nightPlaybackSpeedScale(
+    elevationDeg el: Double,
+    maxScale: Double = 3.0,
+    dayElevationDeg: Double = 6,
+    nightElevationDeg: Double = -12
+  ) -> Double {
+    if el >= dayElevationDeg { return 1 }
+    if el <= nightElevationDeg { return maxScale }
+    let t = (dayElevationDeg - el) / (dayElevationDeg - nightElevationDeg)
+    let eased = t * t * (3 - 2 * t)  // smoothstep: eases the speed in/out across twilight
+    return 1 + (maxScale - 1) * eased
+  }
+
   // MARK: - NOAA core
 
   private struct SolarParameters {

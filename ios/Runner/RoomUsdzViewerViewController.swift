@@ -198,6 +198,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private static let sunCycleSeconds: TimeInterval = 88.0
   private static let sunCycleStartMinute: Double = 18 * 60
   private var sunSweepMinute: Double = sunCycleStartMinute
+  /// True solar elevation last applied by the sweep; drives the night fast-forward so the cycle
+  /// speeds through darkness and slows back to normal across twilight. Updated each `applySunSweep`.
+  private var sunSweepElevationDeg: Double = 0
   /// Cached so the per-frame sweep doesn't allocate a Calendar every tick.
   private lazy var sunSweepCalendar: Calendar = {
     var cal = Calendar(identifier: .gregorian)
@@ -1500,14 +1503,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     material.setValue(NSNumber(value: Float(BrickTexture.tileMeters)), forKey: "triTileMeters")
   }
 
-  /// Stylized palette (fixed tints for USDZ room scans):
-  /// - Walls: Soft Sand `#E8DFCF`
-  /// - Floor: Walnut Wood `#7A5C4F`
-  /// - Furniture: Muted Teal `#4F7D8A`
+  /// Applies the stylized look to a USDZ room scan: brick exterior walls, dark wood-tile floor,
+  /// per-category furniture materials, and a glossy-black material for televisions.
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
-    let floorTint = UIColor(red: 122 / 255, green: 92 / 255, blue: 79 / 255, alpha: 1) // #7A5C4F
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -1523,13 +1523,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
       // Restore originals first; then selectively retint per surface class.
       geo.materials = originals.map { $0.copy() as! SCNMaterial }
-      if let b = worldBounds(of: node), isLikelyFloorSlab(b, sceneBounds: sceneBounds) {
-        geo.materials = originals.map { orig in
-          let m = orig.copy() as! SCNMaterial
-          m.diffuse.contents = floorTint
-          m.ambient.contents = floorTint.withAlphaComponent(0.4)
-          return m
-        }
+      // Televisions are often wall-mounted, so they may not pass the floor-object test.
+      // Detect them by name first so they always get the glossy-black screen material.
+      if EditableObjectType.from(nodeName: node.name ?? "") == .television {
+        geo.materials = originals.map { _ in FurnitureMaterials.material(for: .television) }
+      } else if let b = worldBounds(of: node), isLikelyFloorSlab(b, sceneBounds: sceneBounds) {
+        geo.materials = originals.map { _ in FurnitureMaterials.floor() }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
         let type = EditableObjectType.from(nodeName: node.name ?? "")
         geo.materials = originals.map { _ in FurnitureMaterials.material(for: type) }
@@ -2286,7 +2285,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     // Loop the real sun through a full day (dusk → dawn → dusk) so the sky cycles while spinning.
     if sunSimulationController.isEnabled {
       let minutesPerSecond = 1440.0 / Self.sunCycleSeconds
-      sunSweepMinute += Double(dt) * minutesPerSecond
+      // Fast-forward the night (eased across twilight) so the cycle lingers on daylight.
+      let speedScale = SolarPosition.nightPlaybackSpeedScale(elevationDeg: sunSweepElevationDeg)
+      sunSweepMinute += Double(dt) * minutesPerSecond * speedScale
       if sunSweepMinute >= 1440 { sunSweepMinute -= 1440 }
       applySunSweep(minute: sunSweepMinute)
     }
@@ -2302,6 +2303,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       date: date,
       timeZone: SolarPosition.tashkentTimeZone
     )
+    sunSweepElevationDeg = pos.elevationDeg
     let azimuth = Float(pos.azimuthDeg)
     let trueElevation = Float(pos.elevationDeg)
     let lightElevation = max(0, trueElevation)

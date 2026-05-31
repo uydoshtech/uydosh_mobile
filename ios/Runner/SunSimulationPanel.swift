@@ -106,6 +106,10 @@ final class SunSimulationPanel: UIView {
   private var animationTimer: Timer?
   private var sunriseMinute: Double = 6 * 60
   private var sunsetMinute: Double = 20 * 60
+  /// True solar elevation last applied to the scene; drives the night fast-forward during playback
+  /// so the timeline races through darkness and eases back to normal across twilight. Starts high
+  /// (daytime → normal speed) until the first `applySolar` populates it.
+  private var lastSolarElevationDeg: Double = 90
 
   /// Minutes in a full day — the timeline spans 00:00…24:00 regardless of the daylight window.
   private static let dayMinutes: Double = 24 * 60
@@ -397,13 +401,16 @@ final class SunSimulationPanel: UIView {
   private func startPlayback() {
     isPlaying = true
     updatePlayButtonAppearance()
-    // Sweep the full 24-hour day in ~28s, looping back to midnight at the end.
+    // Sweep the full daylight portion in ~28s; the night is fast-forwarded (eased across twilight)
+    // so playback lingers on the interesting sunrise → shadow-sweep → sunset transitions.
     let stepPerTick = SunSimulationPanel.dayMinutes / (28.0 / 0.05)
     let timer = Timer(timeInterval: 0.05, repeats: true) { [weak self] _ in
       guard let self else { return }
-      var next = Double(self.timeSlider.value) + stepPerTick
+      let speedScale = SolarPosition.nightPlaybackSpeedScale(elevationDeg: self.lastSolarElevationDeg)
+      var next = Double(self.timeSlider.value) + stepPerTick * speedScale
       if next >= SunSimulationPanel.dayMinutes { next = 0 }
       self.timeSlider.value = Float(next)
+      // applySolar refreshes lastSolarElevationDeg, scaling the next tick.
       self.applySolar(atMinute: next)
     }
     RunLoop.main.add(timer, forMode: .common)
@@ -426,6 +433,7 @@ final class SunSimulationPanel: UIView {
       date: date,
       timeZone: siteTimeZone
     )
+    lastSolarElevationDeg = pos.elevationDeg
     let azimuth = Float(pos.azimuthDeg)
     let elevation = Float(max(0, pos.elevationDeg))
 

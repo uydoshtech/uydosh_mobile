@@ -118,7 +118,7 @@ final class SunSimulationController {
     directional.shadowMode = .deferred
     directional.shadowSampleCount = 12
     directional.shadowRadius = 6
-    directional.shadowColor = UIColor(red: 0.28, green: 0.30, blue: 0.36, alpha: 1)
+    directional.shadowColor = Self.baseShadowColor
     directional.automaticallyAdjustsShadowProjection = true
     if #available(iOS 13.0, *) {
       directional.shadowMapSize = CGSize(width: 1024, height: 1024)
@@ -245,6 +245,12 @@ final class SunSimulationController {
     if let direct = lightNode.light {
       direct.color = Self.directionalColor(forElevation: el)
       direct.intensity = lightIntensity * scale * roofScale
+      // The shadow pass ignores light intensity, so a clamped-to-horizon dusk sun would keep
+      // painting hard, grazing shadow slabs with no light to justify them. Fade the shadow out
+      // (and stop casting entirely) as the sun nears/drops below the horizon.
+      let shadowStrength = Self.shadowStrength(forElevation: el)
+      direct.castsShadow = shadowStrength > 0.01
+      direct.shadowColor = Self.baseShadowColor.withAlphaComponent(shadowStrength)
     }
 
     // Orb tint follows the time of day; fade it out as it sinks below the horizon.
@@ -271,6 +277,19 @@ final class SunSimulationController {
         fillLight.color = Self.ambientColor(forElevation: el)
         fillLight.intensity = Self.fillLightIntensity(forDirectional: lightIntensity) * max(0.4, scale)
       }
+    }
+  }
+
+  /// Opaque base tint for cast shadows; its alpha is faded by elevation at dusk/night.
+  private static let baseShadowColor = UIColor(red: 0.28, green: 0.30, blue: 0.36, alpha: 1)
+
+  /// Shadow opacity by sun elevation: full when the sun is comfortably up, fading to none as it
+  /// nears the horizon (where real shadows lengthen and wash out) and off once it's below.
+  private static func shadowStrength(forElevation el: Float) -> CGFloat {
+    switch el {
+    case ..<3: return 0
+    case ..<15: return CGFloat((el - 3) / 12)
+    default: return 1
     }
   }
 
