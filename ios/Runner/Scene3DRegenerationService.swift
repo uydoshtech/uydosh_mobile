@@ -193,12 +193,14 @@ enum Scene3DRegenerationService {
         length: CGFloat(object.length),
         chamferRadius: 0.01
       )
-      let material = SCNMaterial()
+      let material: SCNMaterial
       if object.isOutsideBounds {
+        material = SCNMaterial()
         material.diffuse.contents = UIColor.systemOrange.withAlphaComponent(0.75)
       } else if stylized {
-        material.diffuse.contents = UIColor(red: 79 / 255, green: 125 / 255, blue: 138 / 255, alpha: 1)
+        material = FurnitureMaterials.material(for: object.type)
       } else {
+        material = SCNMaterial()
         material.diffuse.contents = UIColor(white: 0.72, alpha: 1)
       }
       box.materials = [material]
@@ -319,6 +321,182 @@ enum BrickTexture {
         }
         course += 1
       }
+    }
+  }
+}
+
+// MARK: - Shared surface shaders
+
+enum SurfaceShaders {
+  /// World-space triplanar projection of a material's diffuse texture, blended by the surface
+  /// normal. Requires no UV coordinates, so it maps textures correctly onto RoomPlan scan meshes
+  /// (walls/furniture) that often lack usable texcoords, and keeps texel size physically
+  /// consistent. Tile size (metres) is supplied via the `triTileMeters` material argument.
+  static let triplanar = """
+  #pragma arguments
+  float triTileMeters;
+  #pragma body
+  float tile = max(triTileMeters, 0.001);
+  float4x4 invView = scn_frame.inverseViewTransform;
+  float3 worldPos = (invView * float4(_surface.position, 1.0)).xyz;
+  float3 worldNrm = normalize((invView * float4(_surface.normal, 0.0)).xyz);
+  float3 blend = abs(worldNrm);
+  blend /= (blend.x + blend.y + blend.z + 1e-5);
+  float2 uvX = worldPos.zy / tile;
+  float2 uvY = worldPos.xz / tile;
+  float2 uvZ = worldPos.xy / tile;
+  float4 cx = u_diffuseTexture.sample(u_diffuseTextureSampler, uvX);
+  float4 cy = u_diffuseTexture.sample(u_diffuseTextureSampler, uvY);
+  float4 cz = u_diffuseTexture.sample(u_diffuseTextureSampler, uvZ);
+  _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
+  """
+
+  /// Builds a PBR material that projects `texture` via world-space triplanar mapping.
+  static func triplanarMaterial(
+    texture: UIImage,
+    tileMeters: Float,
+    roughness: CGFloat,
+    metalness: CGFloat
+  ) -> SCNMaterial {
+    let m = SCNMaterial()
+    m.lightingModel = .physicallyBased
+    m.diffuse.contents = texture
+    m.diffuse.wrapS = .repeat
+    m.diffuse.wrapT = .repeat
+    m.roughness.contents = NSNumber(value: Double(roughness))
+    m.metalness.contents = NSNumber(value: Double(metalness))
+    m.shaderModifiers = [.surface: triplanar]
+    m.setValue(NSNumber(value: tileMeters), forKey: "triTileMeters")
+    return m
+  }
+}
+
+// MARK: - Procedural furniture textures
+
+/// Procedurally generated, tileable furniture textures. Each image is rendered once and cached,
+/// then shared across every matching item, so the whole set adds only a few small textures to
+/// GPU memory regardless of how many objects are in the room.
+enum FurnitureTextures {
+  static let wood: UIImage = makeWood(size: 512, planks: 5)
+  static let fabricTeal: UIImage = makeFabric(
+    size: 256, base: UIColor(red: 79 / 255, green: 125 / 255, blue: 138 / 255, alpha: 1))
+  static let fabricLinen: UIImage = makeFabric(
+    size: 256, base: UIColor(red: 206 / 255, green: 197 / 255, blue: 178 / 255, alpha: 1))
+  static let metal: UIImage = makeMetal(size: 256)
+
+  private static func jitter(_ seed: Int) -> CGFloat {
+    CGFloat((seed &* 2_654_435_761 & 0x3F)) / 63.0 - 0.5
+  }
+
+  /// Warm wood with horizontal planks, seam lines, and subtle vertical grain.
+  private static func makeWood(size: Int, planks: Int) -> UIImage {
+    let dim = CGFloat(size)
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: dim, height: dim))
+    return renderer.image { ctx in
+      let cg = ctx.cgContext
+      UIColor(red: 138 / 255, green: 98 / 255, blue: 64 / 255, alpha: 1).setFill()
+      cg.fill(CGRect(x: 0, y: 0, width: dim, height: dim))
+
+      let plankHeight = dim / CGFloat(planks)
+      for p in 0..<planks {
+        let j = jitter(p &+ 7)
+        let r = (138 + j * 30) / 255
+        let g = (98 + j * 22) / 255
+        let b = (64 + j * 16) / 255
+        UIColor(red: r, green: g, blue: b, alpha: 1).setFill()
+        cg.fill(CGRect(x: 0, y: CGFloat(p) * plankHeight, width: dim, height: plankHeight))
+
+        // Vertical grain streaks within the plank.
+        cg.saveGState()
+        cg.clip(to: CGRect(x: 0, y: CGFloat(p) * plankHeight, width: dim, height: plankHeight))
+        for s in 0..<14 {
+          let gx = jitter(p &* 31 &+ s)
+          let x = (CGFloat(s) / 14.0 + gx * 0.03) * dim
+          UIColor(white: gx > 0 ? 1 : 0, alpha: 0.05).setStroke()
+          let line = UIBezierPath()
+          line.move(to: CGPoint(x: x, y: CGFloat(p) * plankHeight))
+          line.addLine(to: CGPoint(x: x + gx * 6, y: CGFloat(p + 1) * plankHeight))
+          line.lineWidth = 1
+          line.stroke()
+        }
+        cg.restoreGState()
+
+        // Dark seam between planks.
+        UIColor(red: 60 / 255, green: 40 / 255, blue: 26 / 255, alpha: 0.85).setFill()
+        cg.fill(CGRect(x: 0, y: CGFloat(p) * plankHeight, width: dim, height: max(dim / 220, 1)))
+      }
+    }
+  }
+
+  /// Woven cloth: a base colour with a fine crosshatch weave to read as fabric.
+  private static func makeFabric(size: Int, base: UIColor) -> UIImage {
+    let dim = CGFloat(size)
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: dim, height: dim))
+    return renderer.image { ctx in
+      let cg = ctx.cgContext
+      base.setFill()
+      cg.fill(CGRect(x: 0, y: 0, width: dim, height: dim))
+
+      let threads = 32
+      let step = dim / CGFloat(threads)
+      for i in 0..<threads {
+        let pos = CGFloat(i) * step
+        // Alternating light/dark threads give the woven look.
+        UIColor(white: i % 2 == 0 ? 1 : 0, alpha: 0.06).setFill()
+        cg.fill(CGRect(x: pos, y: 0, width: step / 2, height: dim))
+        cg.fill(CGRect(x: 0, y: pos, width: dim, height: step / 2))
+      }
+    }
+  }
+
+  /// Brushed neutral metal: gray base with fine horizontal streaks.
+  private static func makeMetal(size: Int) -> UIImage {
+    let dim = CGFloat(size)
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: dim, height: dim))
+    return renderer.image { ctx in
+      let cg = ctx.cgContext
+      UIColor(white: 0.62, alpha: 1).setFill()
+      cg.fill(CGRect(x: 0, y: 0, width: dim, height: dim))
+      for s in 0..<Int(dim) {
+        let j = jitter(s)
+        UIColor(white: j > 0 ? 0.85 : 0.45, alpha: 0.08).setStroke()
+        let y = CGFloat(s)
+        let line = UIBezierPath()
+        line.move(to: CGPoint(x: 0, y: y))
+        line.addLine(to: CGPoint(x: dim, y: y))
+        line.lineWidth = 1
+        line.stroke()
+      }
+    }
+  }
+}
+
+// MARK: - Furniture material mapping
+
+/// Maps a furniture category to a stylized PBR material. Used by both the live scan view and the
+/// regenerated/edited geometry so an item looks the same in either mode.
+enum FurnitureMaterials {
+  static func material(for type: EditableObjectType) -> SCNMaterial {
+    switch type {
+    case .table, .cabinet, .storage:
+      return SurfaceShaders.triplanarMaterial(
+        texture: FurnitureTextures.wood, tileMeters: 0.9, roughness: 0.7, metalness: 0)
+    case .sofa, .chair:
+      return SurfaceShaders.triplanarMaterial(
+        texture: FurnitureTextures.fabricTeal, tileMeters: 0.4, roughness: 0.96, metalness: 0)
+    case .bed:
+      return SurfaceShaders.triplanarMaterial(
+        texture: FurnitureTextures.fabricLinen, tileMeters: 0.5, roughness: 0.96, metalness: 0)
+    case .appliance, .television, .fixture:
+      return SurfaceShaders.triplanarMaterial(
+        texture: FurnitureTextures.metal, tileMeters: 0.8, roughness: 0.32, metalness: 0.7)
+    case .unknown:
+      let m = SCNMaterial()
+      m.lightingModel = .physicallyBased
+      m.diffuse.contents = UIColor(red: 79 / 255, green: 125 / 255, blue: 138 / 255, alpha: 1)
+      m.roughness.contents = NSNumber(value: 0.85)
+      m.metalness.contents = NSNumber(value: 0.0)
+      return m
     }
   }
 }

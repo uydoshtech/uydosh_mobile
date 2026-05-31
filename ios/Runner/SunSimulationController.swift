@@ -29,9 +29,6 @@ final class SunSimulationController {
   """
   static let fillLightNodeName = "UydoshSunFill"
 
-  /// TEMPORARY: tracks the highest sun elevation seen, so one day-cycle reveals the noon peak.
-  private static var debugMaxEl: Float = -90
-
   private(set) var isEnabled = false
   private(set) var azimuthDeg: Float = SunPositionMath.TimePreset.noon.azimuthDeg
   private(set) var elevationDeg: Float = SunPositionMath.TimePreset.noon.elevationDeg
@@ -245,8 +242,6 @@ final class SunSimulationController {
     // Fake a roof: a roofed room gets little DIRECT sun on the floor when the sun is overhead, but
     // plenty of low/glancing light through windows. So fade the direct beam as the sun climbs.
     let roofScale = Self.roofedSunScale(forElevation: el)
-    Self.debugMaxEl = max(Self.debugMaxEl, el)
-    print("[Sun] el=\(Int(el))° peakEl=\(Int(Self.debugMaxEl))° roofScale=\(String(format: "%.2f", roofScale))")
     if let direct = lightNode.light {
       direct.color = Self.directionalColor(forElevation: el)
       direct.intensity = lightIntensity * scale * roofScale
@@ -339,13 +334,13 @@ final class SunSimulationController {
   /// real roof lets light stream through windows, fading toward the zenith where the roof would
   /// block it. Only the direct beam is scaled — ambient/fill keep the interior readable.
   private static func roofedSunScale(forElevation el: Float) -> CGFloat {
-    // TEMPORARY A/B TEST: midday floor pushed to near-zero so the effect is unmistakable.
-    // If the interior goes obviously dark at noon vs. bright in the morning, the mechanism works —
-    // then restore a tasteful value (the previous floor was 0.3).
+    // Fakes a roof for this scan's ~70° noon peak: full direct sun while it's low enough to come
+    // through windows (< 35°), fading as it climbs, mostly blocked once it's overhead (> 60°).
+    // Only the direct beam is scaled — ambient/fill keep the interior readable, never black.
     switch el {
-    case ..<30: return 1.0
-    case ..<65: return CGFloat(1.0 - (el - 30) / 35) * 0.95 + 0.05
-    default: return 0.05
+    case ..<35: return 1.0
+    case ..<60: return CGFloat(1.0 - (el - 35) / 25) * 0.82 + 0.18
+    default: return 0.18
     }
   }
 

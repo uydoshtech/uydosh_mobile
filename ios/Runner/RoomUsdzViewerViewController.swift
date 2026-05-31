@@ -1485,43 +1485,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     SCNTransaction.commit()
   }
 
-  /// Roughness for stylized wall materials (PBR). Higher = more diffuse, less plastic shine.
-  private static let stylizedWallRoughness: CGFloat = 0.86
-
-  /// Applies PBR + matte roughness so stylized walls do not read as perfectly smooth plastic.
-  private func applyStylizedWallMaterial(_ material: SCNMaterial, diffuseTint: UIColor) {
-    material.lightingModel = .physicallyBased
-    material.diffuse.contents = diffuseTint
-    material.ambient.contents = diffuseTint.withAlphaComponent(0.45)
-    material.metalness.contents = NSNumber(value: 0.0)
-    material.roughness.contents = NSNumber(value: Double(Self.stylizedWallRoughness))
-  }
-
-  /// World-space triplanar projection for the brick texture. Scan wall meshes from RoomPlan
-  /// often lack usable UV coordinates, which would collapse a tiled texture to a single texel.
-  /// Projecting from world position (blended by surface normal) maps brick onto any geometry
-  /// without relying on UVs, and keeps brick proportions consistent across all walls.
-  private static let brickTriplanarModifier = """
-  #pragma arguments
-  float brickTileMeters;
-  #pragma body
-  float tile = max(brickTileMeters, 0.001);
-  float4x4 invView = scn_frame.inverseViewTransform;
-  float3 worldPos = (invView * float4(_surface.position, 1.0)).xyz;
-  float3 worldNrm = normalize((invView * float4(_surface.normal, 0.0)).xyz);
-  float3 blend = abs(worldNrm);
-  blend /= (blend.x + blend.y + blend.z + 1e-5);
-  float2 uvX = worldPos.zy / tile;
-  float2 uvY = worldPos.xz / tile;
-  float2 uvZ = worldPos.xy / tile;
-  float4 cx = u_diffuseTexture.sample(u_diffuseTextureSampler, uvX);
-  float4 cy = u_diffuseTexture.sample(u_diffuseTextureSampler, uvY);
-  float4 cz = u_diffuseTexture.sample(u_diffuseTextureSampler, uvZ);
-  _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
-  """
-
-  /// Applies the shared tileable red-brick texture to a scan wall surface using triplanar
-  /// world-space projection (see `brickTriplanarModifier`), so brick shows correctly even on
+  /// Applies the shared tileable red-brick texture to a scan wall surface using world-space
+  /// triplanar projection (see `SurfaceShaders.triplanar`), so brick shows correctly even on
   /// meshes without proper UV coordinates.
   private func applyBrickWallMaterial(_ material: SCNMaterial) {
     material.lightingModel = .physicallyBased
@@ -1531,8 +1496,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     material.diffuse.wrapS = .repeat
     material.diffuse.wrapT = .repeat
     material.ambient.contents = UIColor(white: 0.5, alpha: 1)
-    material.shaderModifiers = [.surface: Self.brickTriplanarModifier]
-    material.setValue(NSNumber(value: Float(BrickTexture.tileMeters)), forKey: "brickTileMeters")
+    material.shaderModifiers = [.surface: SurfaceShaders.triplanar]
+    material.setValue(NSNumber(value: Float(BrickTexture.tileMeters)), forKey: "triTileMeters")
   }
 
   /// Stylized palette (fixed tints for USDZ room scans):
@@ -1543,8 +1508,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
     let floorTint = UIColor(red: 122 / 255, green: 92 / 255, blue: 79 / 255, alpha: 1) // #7A5C4F
-    let furnitureTint = UIColor(red: 79 / 255, green: 125 / 255, blue: 138 / 255, alpha: 1) // #4F7D8A
-    let wallTint = UIColor(red: 232 / 255, green: 223 / 255, blue: 207 / 255, alpha: 1) // #E8DFCF
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -1568,12 +1531,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           return m
         }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
-        geo.materials = originals.map { orig in
-          let m = orig.copy() as! SCNMaterial
-          m.diffuse.contents = furnitureTint
-          m.ambient.contents = furnitureTint.withAlphaComponent(0.38)
-          return m
-        }
+        let type = EditableObjectType.from(nodeName: node.name ?? "")
+        geo.materials = originals.map { _ in FurnitureMaterials.material(for: type) }
       } else if isWallSurface(node) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial

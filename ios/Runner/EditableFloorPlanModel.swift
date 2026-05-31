@@ -42,6 +42,26 @@ enum EditableObjectType: String, Equatable {
   case television
   case fixture
   case unknown
+
+  /// Derives a furniture category from a scan/USDZ node name (RoomPlan names object nodes by
+  /// category, e.g. "Table0", "Sofa1"). Shared by the model mapper and the 3D material styling.
+  static func from(nodeName name: String) -> EditableObjectType {
+    let n = name.lowercased()
+    if n.contains("bed") { return .bed }
+    if n.contains("sofa") || n.contains("couch") { return .sofa }
+    if n.contains("table") || n.contains("desk") { return .table }
+    if n.contains("chair") || n.contains("stool") { return .chair }
+    if n.contains("storage") || n.contains("shelf") { return .storage }
+    if n.contains("cabinet") || n.contains("cupboard") { return .cabinet }
+    if n.contains("refrigerator") || n.contains("fridge") || n.contains("oven")
+      || n.contains("washer") || n.contains("appliance")
+    {
+      return .appliance
+    }
+    if n.contains("television") || n.contains("tv") { return .television }
+    if n.contains("bathtub") || n.contains("toilet") || n.contains("sink") { return .fixture }
+    return .unknown
+  }
 }
 
 enum EditableObjectAnchorType: String, Equatable {
