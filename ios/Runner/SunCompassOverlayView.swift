@@ -1,7 +1,7 @@
 import UIKit
 
 /// Compact compass showing N/E/S/W and current sun azimuth on the 3D viewport.
-final class SunCompassOverlayView: UIView {
+final class SunCompassOverlayView: UIControl {
   var azimuthDeg: Float = 0 {
     didSet { setNeedsDisplay() }
   }
@@ -18,7 +18,9 @@ final class SunCompassOverlayView: UIView {
   /// When true, overlay accepts taps to open north-orientation correction (listing owner).
   var isOrientationEditable: Bool = false {
     didSet {
-      isUserInteractionEnabled = isOrientationEditable
+      isEnabled = isOrientationEditable
+      isUserInteractionEnabled = true
+      accessibilityTraits = isOrientationEditable ? [.button] : [.image]
       setNeedsDisplay()
     }
   }
@@ -54,6 +56,7 @@ final class SunCompassOverlayView: UIView {
 
   private func setup() {
     isOpaque = false
+    isUserInteractionEnabled = true
     backgroundColor = UIColor(red: 0.12, green: 0.14, blue: 0.18, alpha: 0.72)
     layer.cornerRadius = 14
     if #available(iOS 13.0, *) {

@@ -833,6 +833,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
         return;
       }
+      await UserListingState().initialize();
       final isOwner = UserListingState().isOwner(listingDetail.user.id);
       final metricsMissing = listingDetail.roomScanFloorLongM == null ||
           listingDetail.roomScanFloorShortM == null ||

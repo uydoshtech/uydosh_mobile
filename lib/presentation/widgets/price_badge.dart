@@ -287,6 +287,7 @@ class ListingPaymentsOutlineBadge extends StatelessWidget {
     required this.label,
     super.key,
     this.foregroundColor = Colors.green,
+    this.backgroundColor,
     this.padding = const EdgeInsets.all(4),
     this.borderRadius = 8,
     this.iconSize = 18,
@@ -295,6 +296,9 @@ class ListingPaymentsOutlineBadge extends StatelessWidget {
 
   final String label;
   final Color foregroundColor;
+
+  /// Optional soft fill behind the badge (defaults to transparent).
+  final Color? backgroundColor;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final double iconSize;
@@ -305,6 +309,7 @@ class ListingPaymentsOutlineBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: foregroundColor, width: 1),
       ),

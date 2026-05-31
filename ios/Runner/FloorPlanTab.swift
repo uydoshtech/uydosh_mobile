@@ -283,8 +283,8 @@ struct FloorPlanTabStrings {
   }
 
   static let englishFallback = FloorPlanTabStrings(
-    tab3DView: "3D View",
-    tabFloorPlan: "Floor Plan",
+    tab3DView: "3D",
+    tabFloorPlan: "2D",
     resetView: "Reset",
     dimensionsOverall: "Overall",
     dimensionsWalls: "Wall dims",

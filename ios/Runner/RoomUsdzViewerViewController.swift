@@ -104,7 +104,7 @@ struct RoomViewerStrings {
       zoomInA11yLabel: dict["zoomIn"] ?? "Zoom in",
       zoomOutA11yLabel: dict["zoomOut"] ?? "Zoom out",
       viewModeA11yLabel: dict["viewModeLabel"] ?? "3D view mode",
-      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room and furniture only.",
+      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room, walls only, and floor with furniture.",
       materialsStyleA11yLabel: dict["materialsStyleLabel"] ?? "Materials style",
       materialsStyleA11yHint: dict["materialsStyleHint"] ?? "Toggle between real materials and stylized colors.",
       materialsStyleValueStylized: dict["materialsStylizedValue"] ?? "Stylized",
@@ -146,7 +146,7 @@ struct RoomViewerStrings {
     zoomInA11yLabel: "Zoom in",
     zoomOutA11yLabel: "Zoom out",
     viewModeA11yLabel: "3D view mode",
-    viewModeA11yHint: "Switch between full room and furniture only.",
+    viewModeA11yHint: "Switch between full room, walls only, and floor with furniture.",
     materialsStyleA11yLabel: "Materials style",
     materialsStyleA11yHint: "Toggle between real materials and stylized colors.",
     materialsStyleValueStylized: "Stylized",
@@ -228,12 +228,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var loadedScene: SCNScene?
   private enum DisplayMode: Int {
     case fullRoom = 0
-    /// Walls/structure removed, keep furniture.
-    case furnitureOnly = 1
+    /// Furniture removed, keep walls/structure.
+    case wallsOnly = 1
+    /// Walls/structure removed, keep floor + furniture (top-down).
+    case furnitureOnly = 2
   }
 
   private var displayMode: DisplayMode = .fullRoom
-  private let modeControl = UISegmentedControl(items: ["", ""])
+  private let modeControl = UISegmentedControl(items: ["", "", ""])
   private let useStylizedMaterials = true
   /// Bottom-centered “glassy” bar: view mode picker (matches zoom panel styling).
   private let modeMaterialsToolbarContainer = UIView()
@@ -345,6 +347,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let floorPlanTab = FloorPlanTab(strings: strings.floorPlan)
     floorPlanTab.translatesAutoresizingMaskIntoConstraints = false
     floorPlanTab.isHidden = true
+    floorPlanTab.isUserInteractionEnabled = false
     floorPlanTab.canvas.delegate = self
     view.addSubview(floorPlanTab)
     floorPlanTabView = floorPlanTab
@@ -486,12 +489,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     setupModeMaterialsToolbar()
 
-    // Make sure overlay controls remain tappable/draggable above SceneKit.
-    view.bringSubviewToFront(zoomControlsContainer)
-    view.bringSubviewToFront(modeMaterialsToolbarContainer)
-    view.bringSubviewToFront(sunSimulationPanel)
-    view.bringSubviewToFront(sunCompassOverlay)
-    view.bringSubviewToFront(floorPlanTab)
+    // Keep interactive overlays above SceneKit and the full-screen plan tab (3D mode).
+    bringInteractiveOverlaysToFront()
 
     let modeMaterialsToolbarPlacement: [NSLayoutConstraint] = {
       let modeCenterX = modeMaterialsToolbarContainer.centerXAnchor.constraint(
@@ -587,6 +586,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
+    if viewerTab == .threeD {
+      bringInteractiveOverlaysToFront()
+    }
     refreshZoomControlsNeumorphicShadowPaths()
     refreshModeMaterialsToolbarShadowPaths()
     // Cap line width so large content sizes / long values wrap instead of stretching the panel.
@@ -739,8 +741,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunCompassOverlay.usesTrueNorth = worldPlusXTrueBearingDeg != nil
     sunCompassOverlay.isAccessibilityElement = true
     sunCompassOverlay.accessibilityLabel = strings.compassOrientation.title
-    let compassTap = UITapGestureRecognizer(target: self, action: #selector(compassOverlayTapped))
-    sunCompassOverlay.addGestureRecognizer(compassTap)
+    sunCompassOverlay.addTarget(self, action: #selector(compassOverlayTapped), for: .touchUpInside)
     view.addSubview(sunCompassOverlay)
     refreshSunCompassLabels()
     updateNorthAdjustButtonVisibility()
@@ -941,14 +942,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       ?? UIImage(systemName: "square.grid.2x2.fill", withConfiguration: iconCfg)
 
     let tabTitleFont = UIFont.systemFont(ofSize: 12, weight: .semibold)
-    viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
-    viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
-    if let threeDIcon {
-      viewerTabControl.setImage(threeDIcon, forSegmentAt: ViewerTab.threeD.rawValue)
-    }
-    if let planIcon {
-      viewerTabControl.setImage(planIcon, forSegmentAt: ViewerTab.floorPlan.rawValue)
-    }
+    let tabLabelColor = UIColor.white.withAlphaComponent(0.88)
+    configureViewerTabSegment(
+      at: ViewerTab.threeD.rawValue,
+      icon: threeDIcon,
+      title: strings.floorPlan.tab3DView,
+      font: tabTitleFont,
+      labelColor: tabLabelColor
+    )
+    configureViewerTabSegment(
+      at: ViewerTab.floorPlan.rawValue,
+      icon: planIcon,
+      title: strings.floorPlan.tabFloorPlan,
+      font: tabTitleFont,
+      labelColor: tabLabelColor
+    )
 
     if #available(iOS 13.0, *) {
       viewerTabControl.overrideUserInterfaceStyle = .dark
@@ -983,8 +991,71 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     navigationItem.titleView = viewerTabContainer
     viewerTabContainer.layoutIfNeeded()
     viewerTabControl.sizeToFit()
-    let tabBarWidth = max(viewerTabControl.bounds.width + 8, 180)
+    let tabBarWidth = max(viewerTabControl.bounds.width + 8, 148)
     viewerTabContainer.frame = CGRect(x: 0, y: 0, width: tabBarWidth, height: 40)
+  }
+
+  /// UISegmentedControl hides `setTitle` when `setImage` is also set — bake icon + label into one image.
+  private func configureViewerTabSegment(
+    at index: Int,
+    icon: UIImage?,
+    title: String,
+    font: UIFont,
+    labelColor: UIColor
+  ) {
+    if let icon {
+      let content = Self.makeSegmentIconTitleImage(
+        icon: icon,
+        title: title,
+        font: font,
+        color: labelColor
+      )
+      viewerTabControl.setImage(content, forSegmentAt: index)
+      viewerTabControl.setTitle(nil, forSegmentAt: index)
+    } else {
+      viewerTabControl.setImage(nil, forSegmentAt: index)
+      viewerTabControl.setTitle(title, forSegmentAt: index)
+    }
+  }
+
+  private static func makeSegmentIconTitleImage(
+    icon: UIImage,
+    title: String,
+    font: UIFont,
+    color: UIColor
+  ) -> UIImage {
+    let spacing: CGFloat = 5
+    let horizontalPadding: CGFloat = 10
+    let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+    let titleSize = (title as NSString).size(withAttributes: attributes)
+    let tintedIcon = icon.withTintColor(color, renderingMode: .alwaysOriginal)
+    let iconSize = tintedIcon.size
+    let contentWidth = iconSize.width + spacing + titleSize.width
+    let contentHeight = max(iconSize.height, titleSize.height)
+    let size = CGSize(width: contentWidth + horizontalPadding * 2, height: contentHeight + 8)
+
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = UIScreen.main.scale
+    format.opaque = false
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+    return renderer.image { _ in
+      let midY = size.height * 0.5
+      tintedIcon.draw(
+        in: CGRect(
+          x: horizontalPadding,
+          y: midY - iconSize.height * 0.5,
+          width: iconSize.width,
+          height: iconSize.height
+        )
+      )
+      (title as NSString).draw(
+        at: CGPoint(
+          x: horizontalPadding + iconSize.width + spacing,
+          y: midY - titleSize.height * 0.5
+        ),
+        withAttributes: attributes
+      )
+    }
   }
 
   private func updateViewerTabAccessibility() {
@@ -1006,6 +1077,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let updates = {
       self.sceneView.isHidden = !show3D
       self.floorPlanTabView?.isHidden = show3D
+      self.floorPlanTabView?.isUserInteractionEnabled = !show3D
       self.zoomControlsContainer.isHidden = !show3D
       self.modeMaterialsToolbarContainer.isHidden = !show3D
       self.brandMarkView.isHidden = !show3D
@@ -1023,6 +1095,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       updates()
     }
+    if show3D {
+      bringInteractiveOverlaysToFront()
+    } else if let floorPlanTabView {
+      view.bringSubviewToFront(floorPlanTabView)
+    }
     if tab == .threeD {
       startIntroAutoRotationIfNeeded()
     } else {
@@ -1032,6 +1109,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     updateNorthAdjustButtonVisibility()
   }
 
+  /// Keeps tappable HUD controls above the full-screen floor-plan layer in 3D mode.
+  private func bringInteractiveOverlaysToFront() {
+    view.bringSubviewToFront(zoomControlsContainer)
+    view.bringSubviewToFront(modeMaterialsToolbarContainer)
+    view.bringSubviewToFront(sunSimulationPanel)
+    view.bringSubviewToFront(sunCompassOverlay)
+  }
+
   private func setupModeControl() {
     modeControl.translatesAutoresizingMaskIntoConstraints = false
     modeControl.isMomentary = false
@@ -1039,6 +1124,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeControl.apportionsSegmentWidthsByContent = true
 
     let fullIcon = UIImage(systemName: "house.fill")
+    let wallsIcon = UIImage(systemName: "rectangle.split.3x1.fill")
+      ?? UIImage(systemName: "square.split.2x2.fill")
     let furnitureIcon = UIImage(systemName: "bed.double.fill")
       ?? UIImage(systemName: "shippingbox.fill")
       ?? UIImage(systemName: "cube.box.fill")
@@ -1048,6 +1135,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       modeControl.setTitle("All", forSegmentAt: DisplayMode.fullRoom.rawValue)
     }
+    if let wallsIcon = wallsIcon {
+      modeControl.setImage(wallsIcon, forSegmentAt: DisplayMode.wallsOnly.rawValue)
+    } else {
+      modeControl.setTitle("Walls", forSegmentAt: DisplayMode.wallsOnly.rawValue)
+    }
     if let furnitureIcon = furnitureIcon {
       modeControl.setImage(furnitureIcon, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
     } else {
@@ -1055,6 +1147,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
 
     modeControl.setWidth(38, forSegmentAt: DisplayMode.fullRoom.rawValue)
+    modeControl.setWidth(38, forSegmentAt: DisplayMode.wallsOnly.rawValue)
     modeControl.setWidth(38, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
 
     modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
@@ -1500,6 +1593,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         switch mode {
         case .fullRoom:
           node.isHidden = false
+        case .wallsOnly:
+          if node.name == "UydoshFramingCamera" {
+            node.isHidden = false
+          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
+            node.isHidden = true
+          } else {
+            node.isHidden = false
+          }
         case .furnitureOnly:
           if node.name == "UydoshFramingCamera" {
             node.isHidden = false

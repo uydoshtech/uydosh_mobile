@@ -53,7 +53,7 @@ class ListingTileSkeleton extends StatelessWidget {
             Padding(
               // Match `ListingTile`'s padding so the skeleton lines up with
               // the real tile (left thumbnail + content column).
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -61,23 +61,23 @@ class ListingTileSkeleton extends StatelessWidget {
                   Row(
                     children: [
                       _SkeletonBox(
-                        width: 26,
-                        height: 26,
-                        radius: 7,
+                        width: 74,
+                        height: 28,
+                        radius: 8,
                         color: baseColor,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _SkeletonBox(
-                        width: 22,
-                        height: 22,
-                        radius: 11,
+                        width: 56,
+                        height: 28,
+                        radius: 8,
                         color: baseColor,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _SkeletonBox(
-                        width: 20,
-                        height: 20,
-                        radius: 6,
+                        width: 64,
+                        height: 28,
+                        radius: 8,
                         color: baseColor,
                       ),
                       const Spacer(),
@@ -89,14 +89,14 @@ class ListingTileSkeleton extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _SkeletonBox(
-                        width: 110,
-                        height: 110,
-                        radius: 12,
+                        width: 118,
+                        height: 152,
+                        radius: 14,
                         color: baseColor,
                       ),
                       const SizedBox(width: 12),
@@ -105,17 +105,24 @@ class ListingTileSkeleton extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _SkeletonBox(
-                              width: 150,
-                              height: 14,
+                              width: 160,
+                              height: 18,
                               radius: 7,
+                              color: baseColor,
+                            ),
+                            const SizedBox(height: 12),
+                            _SkeletonBox(
+                              width: 150,
+                              height: 36,
+                              radius: 12,
                               color: baseColor,
                             ),
                             const SizedBox(height: 14),
                             Row(
                               children: [
                                 _SkeletonBox(
-                                  width: 17,
-                                  height: 17,
+                                  width: 18,
+                                  height: 18,
                                   radius: 6,
                                   color: baseColor,
                                 ),
@@ -128,12 +135,12 @@ class ListingTileSkeleton extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Row(
                               children: [
                                 _SkeletonBox(
-                                  width: 17,
-                                  height: 17,
+                                  width: 18,
+                                  height: 18,
                                   radius: 6,
                                   color: baseColor,
                                 ),

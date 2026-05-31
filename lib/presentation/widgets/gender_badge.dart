@@ -7,25 +7,50 @@ class GenderBadge extends StatelessWidget {
     required this.gender, super.key,
     this.size = 20,
     this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    this.label,
+    this.labelFontSize = 13,
+    this.borderRadius = 8,
   });
 
   final int gender;
   final double size;
   final EdgeInsets padding;
 
+  /// Optional text shown next to the icon (e.g. "Муж." / "Жен.").
+  final String? label;
+  final double labelFontSize;
+  final double borderRadius;
+
   @override
   Widget build(BuildContext context) {
+    final color = _getGenderColor(gender);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: _getGenderColor(gender).withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _getGenderColor(gender), width: 1.0),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: color, width: 1.0),
       ),
-      child: ThemeIcon(
-        _getGenderIcon(gender),
-        color: _getGenderColor(gender),
-        size: size,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(
+            _getGenderIcon(gender),
+            color: color,
+            size: size,
+          ),
+          if (label != null && label!.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            Text(
+              label!,
+              style: TextStyle(
+                fontSize: labelFontSize,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -33,7 +33,6 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
-import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -402,7 +401,7 @@ class _ListingTileState extends State<ListingTile> {
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -410,53 +409,56 @@ class _ListingTileState extends State<ListingTile> {
                       // width above the photo; favorite heart at the far end.
                       Row(
                         children: [
-                          // Listing Type and Price
+                          // Type / gender / price / 3D badges. A Wrap (not a
+                          // Row) so labelled badges flow onto a second line on
+                          // narrow screens instead of overflowing.
                           Expanded(
-                            child: Row(
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 // Listing Type
-                                if (widget.listing.listingType != null) ...[
+                                if (widget.listing.listingType != null)
                                   ListingTypeIconBadge(
                                     listingTypeCode:
                                         widget.listing.listingType!.code,
-                                    size: 18,
-                                    padding: const EdgeInsets.all(4),
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
-                                // Gender Badge
-                                if (widget.listing.gender != null) ...[
-                                  GenderBadge(
-                                    gender: widget.listing.gender!,
-                                    size: 18,
-                                    padding: const EdgeInsets.all(4),
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
-                                // Price (inline with top icons)
-                                if (widget.listing.price > 0) ...[
-                                  ListenableBuilder(
-                                    listenable: PriceDisplaySettingsState(),
-                                    builder: (context, _) =>
-                                        ListingPaymentsOutlineBadge(
-                                      label: PriceRangeHelper
-                                          .formatListingPriceRangeWithCurrency(
-                                        widget.listing.price,
-                                        widget.listing.price,
-                                      ),
+                                    size: 16,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 5,
+                                    ),
+                                    label: _shortListingTypeLabel(
+                                      widget.listing.listingType!.code,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
-                                ],
+                                // Gender Badge
+                                if (widget.listing.gender != null)
+                                  GenderBadge(
+                                    gender: widget.listing.gender!,
+                                    size: 16,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 5,
+                                    ),
+                                    label: _shortGenderLabel(
+                                      widget.listing.gender!,
+                                    ),
+                                  ),
+                                // Price is shown only in the prominent price
+                                // card below the title (no header duplicate).
                                 // 3D room scan (available on iOS; show indicator on web too)
                                 if ((kIsWeb || isIPhoneFormFactor(context)) &&
                                     (widget.listing.pointCloudUrl?.isNotEmpty ??
-                                        false)) ...[
+                                        false))
                                   const Room3dIconBadge(
-                                    size: 18,
-                                    padding: EdgeInsets.all(4),
+                                    size: 16,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 5,
+                                    ),
+                                    label: "3D",
                                   ),
-                                ],
                               ],
                             ),
                           ),
@@ -593,130 +595,134 @@ class _ListingTileState extends State<ListingTile> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          _buildThumbnail(context),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Title
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.only(
-                                    right: 40,
-                                  ), // Add right padding to avoid arrow overlap
-                                  child: Text(
-                                    ListingUtils.usesPresetListingTitle(
-                                      widget.listing.listingTypeId,
-                                    )
-                                        ? L10n.get(
-                                            ListingUtils
-                                                .presetListingTitleL10nKey(
-                                              listingTypeId:
-                                                  widget.listing.listingTypeId,
-                                              gender: widget.listing.gender,
-                                            ),
-                                          )
-                                        : widget.listing.title,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: _getTitleTextColor(),
+                      const SizedBox(height: 10),
+                      // Media on the left stretches to match the content
+                      // height (IntrinsicHeight) — matching the design where
+                      // the photo spans the full info column.
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildThumbnail(context),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Padding(
+                                // Keep text clear of the centered chevron.
+                                padding: const EdgeInsets.only(right: 24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Title
+                                    Text(
+                                      ListingUtils.usesPresetListingTitle(
+                                        widget.listing.listingTypeId,
+                                      )
+                                          ? L10n.get(
+                                              ListingUtils
+                                                  .presetListingTitleL10nKey(
+                                                listingTypeId: widget
+                                                    .listing.listingTypeId,
+                                                gender: widget.listing.gender,
+                                              ),
+                                            )
+                                          : widget.listing.title,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: _getTitleTextColor(),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                // Location and metro on separate lines.
-                                if (widget.listing.location != null ||
-                                    widget.listing.subwayStation != null)
-                                  ListenableBuilder(
-                                    listenable: LanguageState(),
-                                    builder: (context, child) {
-                                      final hasLocation =
-                                          widget.listing.location != null;
-                                      final hasStation =
-                                          widget.listing.subwayStation != null;
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (hasLocation)
-                                            Row(
-                                              children: [
-                                                const ThemeIcon(
-                                                  Icons.location_on,
-                                                  color: AppColors.error,
-                                                  size: 20,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Expanded(
-                                                  child: Text(
-                                                    _shortenDistrictSuffix(
-                                                      _getLocalizedName(
-                                                        nameUz: widget.listing
-                                                            .location!.nameUz,
-                                                        nameRu: widget.listing
-                                                            .location!.nameRu,
-                                                        nameEn: widget.listing
-                                                            .location!.nameEn,
+                                    // Prominent monthly-price card.
+                                    if (widget.listing.price > 0) ...[
+                                      const SizedBox(height: 10),
+                                      _buildPriceCard(),
+                                    ],
+                                    // Location and metro on separate lines.
+                                    if (widget.listing.location != null ||
+                                        widget.listing.subwayStation !=
+                                            null) ...[
+                                      const SizedBox(height: 12),
+                                      ListenableBuilder(
+                                        listenable: LanguageState(),
+                                        builder: (context, child) {
+                                          final hasLocation =
+                                              widget.listing.location != null;
+                                          final hasStation = widget
+                                                  .listing.subwayStation !=
+                                              null;
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (hasLocation)
+                                                Row(
+                                                  children: [
+                                                    const ThemeIcon(
+                                                      Icons.location_on,
+                                                      color: AppColors.error,
+                                                      size: 20,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: Text(
+                                                        _shortenDistrictSuffix(
+                                                          _getLocalizedName(
+                                                            nameUz: widget
+                                                                .listing
+                                                                .location!
+                                                                .nameUz,
+                                                            nameRu: widget
+                                                                .listing
+                                                                .location!
+                                                                .nameRu,
+                                                            nameEn: widget
+                                                                .listing
+                                                                .location!
+                                                                .nameEn,
+                                                          ),
+                                                        ),
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color:
+                                                              _getLocationTextColor(),
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                     ),
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      color:
-                                                          _getLocationTextColor(),
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
+                                                  ],
+                                                ),
+                                              if (hasStation) ...[
+                                                if (hasLocation)
+                                                  const SizedBox(height: 8),
+                                                _buildSubwayStationDisplay(
+                                                  widget
+                                                      .listing.subwayStation!,
                                                 ),
                                               ],
-                                            ),
-                                          if (hasStation) ...[
-                                            if (hasLocation)
-                                              const SizedBox(height: 8),
-                                            _buildSubwayStationDisplay(
-                                              widget.listing.subwayStation!,
-                                            ),
-                                          ],
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                if (widget.listing.amenities != null &&
-                                    widget.listing.amenities!.isNotEmpty) ...[
-                                  if (widget.listing.location != null ||
-                                      widget.listing.subwayStation != null)
-                                    const SizedBox(height: 12),
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 40),
-                                    child: Wrap(
-                                      spacing: 10,
-                                      runSpacing: 8,
-                                      children: (_cachedSortedAmenities ?? [])
-                                          .map(
-                                            (amenity) => ThemeIcon(
-                                              _getAmenityIcon(amenity),
-                                              size: 18,
-                                              color: _getAmenityIconColor(),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                    // Amenity chips with overflow counter.
+                                    if (widget.listing.amenities != null &&
+                                        widget.listing.amenities!
+                                            .isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      _buildAmenityIcons(),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -862,6 +868,137 @@ class _ListingTileState extends State<ListingTile> {
   /// matching `MessagingThemeColors.textSecondary`/`iconSecondary`.
   static const Color _blueThemeSecondary = Color(0xFFB3C0CC);
 
+  /// Shared green accent for the price badge + the prominent price card so the
+  /// two read as the same colour family across all themes.
+  static const Color _accentGreen = Color(0xFF35C26B);
+
+  /// Branded illustration shown in the media slot when a listing has no photo.
+  /// Resolution-aware (`2.0x` / `3.0x` variants live alongside the base asset).
+  /// Dark artwork suits the blue/dark themes; [_noPhotoPlaceholderAssetLight]
+  /// is the airy variant for the light theme.
+  static const String _noPhotoPlaceholderAsset =
+      "assets/images/uydosh_no_photo_placeholder.png";
+  static const String _noPhotoPlaceholderAssetLight =
+      "assets/images/uydosh_light_no_photo_placeholder.png";
+
+  /// Short, badge-friendly label for a listing type code (e.g. "Сосед").
+  /// Returns null for unknown codes so the badge stays icon-only.
+  String? _shortListingTypeLabel(String code) {
+    switch (code) {
+      case "roommate_needed":
+        return L10n.get("listing_type_short_roommate_needed");
+      case "room_needed":
+        return L10n.get("listing_type_short_room_needed");
+      default:
+        return null;
+    }
+  }
+
+  /// Short gender label (e.g. "Жен."). Null for unspecified gender.
+  String? _shortGenderLabel(int gender) {
+    switch (gender) {
+      case 1:
+        return L10n.get("gender_short_male");
+      case 2:
+        return L10n.get("gender_short_female");
+      default:
+        return null;
+    }
+  }
+
+  /// Prominent monthly-price card shown under the title. The amount respects
+  /// the user's currency preference; the unit suffix follows it.
+  Widget _buildPriceCard() {
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final amount = PriceRangeHelper.formatListingPriceRangeWithCurrency(
+          widget.listing.price,
+          widget.listing.price,
+        );
+        final isUsd = PriceDisplaySettingsState().currency ==
+            PriceDisplayCurrency.usd;
+        final unit = L10n.get(
+          isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
+        );
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: _accentGreen.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _accentGreen.withValues(alpha: 0.6),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ThemeIcon(
+                Icons.payments,
+                size: 16,
+                color: _accentGreen,
+                useThemeColor: false,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  amount,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: _accentGreen,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                unit,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: _accentGreen.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Amenity icons (no labels) under a thin divider — a compact strip that
+  /// keeps the tile clean while still hinting at the listing's features.
+  Widget _buildAmenityIcons() {
+    final amenities = _cachedSortedAmenities ?? const <Amenity>[];
+    if (amenities.isEmpty) return const SizedBox.shrink();
+    final fg = _getAmenityIconColor();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(height: 1, color: _amenityDividerColor()),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          children: [
+            for (final amenity in amenities)
+              ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Color _amenityDividerColor() {
+    if (ThemeState().isBlueTheme) {
+      return Colors.white.withValues(alpha: 0.12);
+    }
+    return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12);
+  }
+
   // Theme-dependent color method for title text
   Color _getTitleTextColor() {
     if (ThemeState().isBlueTheme) {
@@ -876,51 +1013,91 @@ class _ListingTileState extends State<ListingTile> {
   /// photo when available (falling back to the first), otherwise renders a
   /// neutral placeholder so every tile keeps a consistent left column.
   Widget _buildThumbnail(BuildContext context) {
-    // Square thumbnail: portrait photos are center-cropped (BoxFit.cover) to a
-    // square so a tall card never stretches the image into a thin vertical strip.
-    const double thumbSize = 110;
+    // Fixed-width media column; its height is supplied by the surrounding
+    // `IntrinsicHeight`/stretch so the photo spans the whole info column.
+    // We use `Image` with a `CachedNetworkImageProvider` (not the
+    // `CachedNetworkImage` widget) so the subtree reports clean intrinsic
+    // dimensions for the `IntrinsicHeight` pass.
+    const double thumbWidth = 118;
     final scheme = Theme.of(context).colorScheme;
     final photos = widget.listing.photos;
     final hasPhoto = photos != null && photos.isNotEmpty;
 
     Widget content;
     if (hasPhoto) {
-      content = CachedNetworkImage(
-        imageUrl: _buildPhotoUrl(_primaryPhotoUrl(photos)),
-        fit: BoxFit.cover,
-        memCacheWidth: 320,
-        memCacheHeight: 320,
-        fadeInDuration: const Duration(milliseconds: 250),
-        fadeInCurve: Curves.easeOut,
-        placeholder: (context, url) => ColoredBox(
-          color: scheme.onSurface.withValues(alpha: 0.06),
+      // No explicit width/height here: the stretched `SizedBox` supplies tight
+      // constraints (so the image fills the cell), while leaving the image's
+      // intrinsic height finite for the `IntrinsicHeight` measurement pass.
+      content = Image(
+        image: ResizeImage(
+          CachedNetworkImageProvider(_buildPhotoUrl(_primaryPhotoUrl(photos))),
+          width: 320,
+          height: 320,
         ),
-        errorWidget: (context, url, error) => _thumbnailPlaceholder(scheme),
+        fit: BoxFit.cover,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) return child;
+          return ColoredBox(color: scheme.onSurface.withValues(alpha: 0.06));
+        },
+        errorBuilder: (context, error, stackTrace) =>
+            _thumbnailPlaceholder(scheme),
       );
     } else {
       content = _thumbnailPlaceholder(scheme);
     }
 
+    // The media sits in a `Positioned.fill` inside a `Stack` so it reports
+    // ZERO intrinsic height to the surrounding `IntrinsicHeight`. That makes
+    // the info column (not the photo) drive the tile height, and any taller
+    // photo is simply `cover`-cropped to fit instead of stretching the tile.
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: SizedBox(
-        width: thumbSize,
-        height: thumbSize,
-        child: content,
+        width: thumbWidth,
+        child: Stack(
+          children: [Positioned.fill(child: content)],
+        ),
       ),
     );
   }
 
-  Widget _thumbnailPlaceholder(ColorScheme scheme) => ColoredBox(
-        color: scheme.onSurface.withValues(alpha: 0.06),
-        child: Center(
+  /// Branded "no photo yet" illustration (house + "Фото скоро" chip baked into
+  /// the artwork). Resolution variants (2.0x / 3.0x) live next to the asset and
+  /// are picked automatically. Falls back to a neutral tile if the asset fails.
+  Widget _thumbnailPlaceholder(ColorScheme scheme) {
+    final isLight = ThemeState().isLightTheme;
+    final asset =
+        isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
+    // Backdrop gradient sampled from the artwork's own background so the
+    // letterbox area (when the media cell is taller/shorter than the image)
+    // blends seamlessly — the illustration is shown with `contain` so its
+    // aspect ratio is never distorted or cropped.
+    final gradient = isLight
+        ? const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFB1BFD5), Color(0xFFAABBD3)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1E3962), Color(0xFF112548)],
+          );
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: gradient),
+      child: Image.asset(
+        asset,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Center(
           child: ThemeIcon(
             Icons.photo_outlined,
             size: 32,
             color: scheme.onSurface.withValues(alpha: 0.35),
           ),
         ),
-      );
+      ),
+    );
+  }
 
   String _primaryPhotoUrl(List<Photo> photos) {
     final primary = photos.where((p) => p.isPrimary);

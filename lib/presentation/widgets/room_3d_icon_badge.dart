@@ -10,11 +10,17 @@ class Room3dIconBadge extends StatelessWidget {
     this.size = 20,
     this.padding = const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
     this.borderRadius = 8,
+    this.label,
+    this.labelFontSize = 13,
   });
 
   final double size;
   final EdgeInsets padding;
   final double borderRadius;
+
+  /// Optional text shown next to the icon (e.g. "3D").
+  final String? label;
+  final double labelFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +40,23 @@ class Room3dIconBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: borderColor, width: 1),
       ),
-      child: ThemeIcon(Icons.view_in_ar, color: iconColor, size: size),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(Icons.view_in_ar, color: iconColor, size: size),
+          if (label != null && label!.isNotEmpty) ...[
+            const SizedBox(width: 5),
+            Text(
+              label!,
+              style: TextStyle(
+                fontSize: labelFontSize,
+                fontWeight: FontWeight.w600,
+                color: iconColor,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

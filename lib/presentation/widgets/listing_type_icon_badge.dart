@@ -11,11 +11,19 @@ class ListingTypeIconBadge extends StatelessWidget {
     super.key,
     this.size = 24,
     this.padding = const EdgeInsets.all(8),
+    this.label,
+    this.labelFontSize = 13,
+    this.borderRadius = 8,
   });
 
   final String listingTypeCode;
   final double size;
   final EdgeInsets padding;
+
+  /// Optional text shown next to the icon (e.g. "Сосед" / "Комната").
+  final String? label;
+  final double labelFontSize;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +41,34 @@ class ListingTypeIconBadge extends StatelessWidget {
         : color.withValues(alpha: 0.1);
     final Color effectiveIconColor =
         isRoomNeeded ? (isLight ? effectiveBorderColor : const Color(0xFFE6F6FF)) : color;
+    // Label uses the (higher-contrast) border tint so it reads on the soft fill.
+    final Color effectiveLabelColor =
+        isRoomNeeded ? (isLight ? effectiveBorderColor : const Color(0xFFE6F6FF)) : color;
 
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: effectiveBackgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: effectiveBorderColor, width: 1),
       ),
-      child: ThemeIcon(icon, color: effectiveIconColor, size: size),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(icon, color: effectiveIconColor, size: size),
+          if (label != null && label!.isNotEmpty) ...[
+            const SizedBox(width: 5),
+            Text(
+              label!,
+              style: TextStyle(
+                fontSize: labelFontSize,
+                fontWeight: FontWeight.w600,
+                color: effectiveLabelColor,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
