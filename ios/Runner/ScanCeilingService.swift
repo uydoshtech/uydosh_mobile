@@ -42,13 +42,10 @@ enum ScanCeilingService {
     _ = stylizedMaterials
   }
 
-  /// Invisible shadow caster: the material must stay *opaque* so SceneKit includes it in the
-  /// shadow pass (transparent materials are skipped and would let the sun through). It is hidden
-  /// from the camera with an empty `colorBufferWriteMask`, and does not write the main depth
-  /// buffer so the roof remains see-through when orbiting above the room.
-  ///
-  /// Shared with `Scene3DRegenerationService` so edited rooms get the same invisible-but-light-
-  /// blocking ceiling as raw scans.
+  /// Fully invisible, non-occluding material. NOTE: this does not cast a shadow — SceneKit can only
+  /// shadow from depth-writing geometry, which would occlude the cutaway camera. Overhead-light
+  /// blocking is therefore handled non-geometrically by `SunSimulationController` dimming the sun
+  /// as it climbs toward the zenith. This material just keeps the ceiling node harmless/invisible.
   static func invisibleShadowMaterial() -> SCNMaterial {
     let material = SCNMaterial()
     material.lightingModel = .constant

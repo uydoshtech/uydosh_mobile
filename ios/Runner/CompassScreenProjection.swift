@@ -9,6 +9,10 @@ enum CompassScreenProjection {
     roomCenter: SCNVector3,
     trueNorthPlanAngleRad: Double
   ) -> CGFloat? {
+    // `projectPoint` asserts ("scene failed. Null argument") if the view has no scene, which can
+    // happen if this is called mid/after teardown. Bail out instead of crashing the main thread.
+    guard sceneView.scene != nil else { return nil }
+
     let nx = Float(cos(trueNorthPlanAngleRad))
     let nz = Float(-sin(trueNorthPlanAngleRad))
     let probeDistance: Float = max(0.5, roomCenter.y * 0.1 + 0.5)

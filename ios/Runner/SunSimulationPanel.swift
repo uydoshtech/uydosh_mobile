@@ -175,9 +175,12 @@ final class SunSimulationPanel: UIView {
     updatePlayButtonAppearance()
   }
 
-  /// Moves the timeline thumb to mirror an externally-driven sun sweep (clamped to daylight).
+  /// Moves the timeline thumb to mirror an externally-driven sun sweep. The timeline spans the
+  /// full 24-hour day, so clamp only to the slider's range (not the daylight window) — otherwise
+  /// the thumb stalls at sunset and restarts at sunrise instead of sweeping midnight → midnight.
   func syncTimeline(toMinute minute: Double) {
-    timeSlider.value = Float(clampToDaylight(minute))
+    let clamped = min(SunSimulationPanel.dayMinutes, max(0, minute))
+    timeSlider.value = Float(clamped)
   }
 
   private func setup() {
@@ -213,6 +216,8 @@ final class SunSimulationPanel: UIView {
     presetStack.addArrangedSubview(presetButton(strings.morning, preset: .morning))
     presetStack.addArrangedSubview(presetButton(strings.noon, preset: .noon))
     presetStack.addArrangedSubview(presetButton(strings.evening, preset: .evening))
+    configurePlayButton()
+    presetStack.addArrangedSubview(playButton)
     stack.addArrangedSubview(presetStack)
 
     setupSolarControls()
@@ -258,43 +263,29 @@ final class SunSimulationPanel: UIView {
     timeSlider.addTarget(self, action: #selector(timeScrubbed), for: .valueChanged)
     timeSlider.addTarget(self, action: #selector(timeScrubBegan), for: .touchDown)
 
-    configureSolarIconButton(playButton, systemName: "play.fill", title: nil)
-    playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
-
-    // Play control sits on its own row, right-aligned; the timeline gets the row below.
-    let spacer = UIView()
-    spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-    let controlsRow = UIStackView(arrangedSubviews: [spacer, playButton])
-    controlsRow.axis = .horizontal
-    controlsRow.spacing = 8
-    controlsRow.alignment = .center
-
     timeLabelsRow.axis = .horizontal
     timeLabelsRow.distribution = .equalSpacing
     timeLabelsRow.alignment = .fill
 
-    solarContainer.addArrangedSubview(controlsRow)
     solarContainer.addArrangedSubview(timeSlider)
     solarContainer.addArrangedSubview(timeLabelsRow)
   }
 
-  private func configureSolarIconButton(_ button: UIButton, systemName: String, title: String?) {
-    let cfg = UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)
-    button.setImage(UIImage(systemName: systemName, withConfiguration: cfg), for: .normal)
-    if let title {
-      button.setTitle(" " + title, for: .normal)
-      button.titleLabel?.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
-    }
-    button.tintColor = UIColor.white.withAlphaComponent(0.92)
-    button.setTitleColor(UIColor.white.withAlphaComponent(0.92), for: .normal)
-    button.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
-    button.layer.cornerRadius = 8
+  /// Styles the play/pause control to match the time-of-day preset buttons so all four sit
+  /// together on the same row.
+  private func configurePlayButton() {
+    let cfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    playButton.setImage(UIImage(systemName: "play.fill", withConfiguration: cfg), for: .normal)
+    // Warm amber fill (matching the timeline tint) with a dark icon so the play/pause control
+    // reads as the primary action and visually ties to the timeline it drives.
+    playButton.tintColor = UIColor(red: 0.12, green: 0.1, blue: 0.05, alpha: 1)
+    playButton.backgroundColor = UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 1)
+    playButton.layer.cornerRadius = 10
     if #available(iOS 13.0, *) {
-      button.layer.cornerCurve = .continuous
+      playButton.layer.cornerCurve = .continuous
     }
-    button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 9, bottom: 6, right: 9)
-    button.setContentHuggingPriority(.required, for: .horizontal)
-    button.setContentCompressionResistancePriority(.required, for: .horizontal)
+    playButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+    playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
   }
 
   private func presetButton(_ title: String, preset: SunPositionMath.TimePreset) -> UIButton {
@@ -490,7 +481,7 @@ final class SunSimulationPanel: UIView {
   }
 
   private func updatePlayButtonAppearance() {
-    let cfg = UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)
+    let cfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
     let name = isPlaying ? "pause.fill" : "play.fill"
     playButton.setImage(UIImage(systemName: name, withConfiguration: cfg), for: .normal)
   }

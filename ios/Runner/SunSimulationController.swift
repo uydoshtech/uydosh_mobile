@@ -7,7 +7,6 @@ final class SunSimulationController {
   static let sunNodeName = "UydoshSunIndicator"
   static let lightNodeName = "UydoshSunLight"
   static let rayNodeName = "UydoshSunRay"
-  static let rayGlowNodeName = "UydoshSunRayGlow"
   static let ambientNodeName = "UydoshSunAmbient"
   /// Invisible opaque cap attached to a door so it blocks sunlight while staying see-through.
   static let lightBlockerProxyName = "UydoshLightBlockerProxy"
@@ -116,10 +115,7 @@ final class SunSimulationController {
     directional.color = UIColor(red: 1, green: 0.96, blue: 0.88, alpha: 1)
     directional.intensity = lightIntensity
     directional.castsShadow = true
-    // Forward (shadow-map) mode renders shadows from caster geometry directly. Deferred mode is
-    // screen-space and derives shadows from the scene depth buffer — our invisible ceiling writes
-    // no color/depth, so deferred would never let it block the sun. Forward makes it cast properly.
-    directional.shadowMode = .forward
+    directional.shadowMode = .deferred
     directional.shadowSampleCount = 12
     directional.shadowRadius = 6
     directional.shadowColor = UIColor(red: 0.28, green: 0.30, blue: 0.36, alpha: 1)
@@ -131,11 +127,7 @@ final class SunSimulationController {
     rig.addChildNode(lightHolder)
     lightNode = lightHolder
 
-    let rayGlow = buildRayNode(length: sunRadius * 0.92, core: false)
-    rayGlow.name = Self.rayGlowNodeName
-    rig.addChildNode(rayGlow)
-
-    let ray = buildRayNode(length: sunRadius * 0.92, core: true)
+    let ray = buildRayNode(length: sunRadius * 0.92)
     ray.name = Self.rayNodeName
     rig.addChildNode(ray)
 
@@ -247,9 +239,12 @@ final class SunSimulationController {
 
     let el = tintElevationDeg
     let scale = Self.intensityScale(forElevation: el)
+    // Fake a roof: a roofed room gets little DIRECT sun on the floor when the sun is overhead, but
+    // plenty of low/glancing light through windows. So fade the direct beam as the sun climbs.
+    let roofScale = Self.roofedSunScale(forElevation: el)
     if let direct = lightNode.light {
       direct.color = Self.directionalColor(forElevation: el)
-      direct.intensity = lightIntensity * scale
+      direct.intensity = lightIntensity * scale * roofScale
     }
 
     // Orb tint follows the time of day; fade it out as it sinks below the horizon.
@@ -332,6 +327,17 @@ final class SunSimulationController {
     case ..<(-4): return 0
     case ..<2: return (el + 4) / 6
     default: return 1
+    }
+  }
+
+  /// Simulates an (invisible) roof without geometry: full direct sun at low/glancing angles where a
+  /// real roof lets light stream through windows, fading toward the zenith where the roof would
+  /// block it. Only the direct beam is scaled — ambient/fill keep the interior readable.
+  private static func roofedSunScale(forElevation el: Float) -> CGFloat {
+    switch el {
+    case ..<30: return 1.0
+    case ..<65: return CGFloat(1.0 - (el - 30) / 35) * 0.7 + 0.3
+    default: return 0.3
     }
   }
 
@@ -418,51 +424,32 @@ final class SunSimulationController {
     node.addChildNode(proxy)
   }
 
-  /// Builds a cylinder beam node. `core` = the bright solid line; otherwise a wider translucent halo.
-  private func buildRayNode(length: Float, core: Bool) -> SCNNode {
-    // Thickness scales with room size so the beam stays clearly visible in any scan.
-    let baseRadius = CGFloat(max(0.02, sunRadius * 0.012))
-    let radius = core ? baseRadius : baseRadius * 2.6
-    let cylinder = SCNCylinder(radius: radius, height: CGFloat(length))
+  private func buildRayNode(length: Float) -> SCNNode {
+    let cylinder = SCNCylinder(radius: 0.004, height: CGFloat(length))
     let mat = SCNMaterial()
     mat.lightingModel = .constant
-    if core {
-      mat.emission.contents = UIColor(red: 1, green: 0.84, blue: 0.30, alpha: 1)
-      mat.diffuse.contents = UIColor(red: 1, green: 0.80, blue: 0.26, alpha: 1)
-      mat.transparency = 0.92
-    } else {
-      mat.emission.contents = UIColor(red: 1, green: 0.88, blue: 0.45, alpha: 1)
-      mat.diffuse.contents = UIColor(red: 1, green: 0.85, blue: 0.40, alpha: 1)
-      mat.transparency = 0.22
-    }
-    mat.isDoubleSided = true
-    // Don't let the bright beam occlude geometry behind it or cast its own shadow.
-    mat.writesToDepthBuffer = false
+    mat.emission.contents = UIColor(red: 1, green: 0.95, blue: 0.6, alpha: 0.35)
+    mat.diffuse.contents = UIColor(red: 1, green: 0.9, blue: 0.5, alpha: 0.2)
+    mat.transparency = 0.35
     cylinder.materials = [mat]
     let node = SCNNode(geometry: cylinder)
-    node.castsShadow = false
-    node.renderingOrder = core ? 20 : 19
     node.pivot = SCNMatrix4MakeTranslation(0, -Float(cylinder.height) * 0.5, 0)
     return node
   }
 
   private func updateRay(from sunPos: SCNVector3, to center: SCNVector3) {
+    guard let ray = rigNode?.childNode(withName: Self.rayNodeName, recursively: false),
+      let cylinder = ray.geometry as? SCNCylinder
+    else { return }
     let dx = center.x - sunPos.x
     let dy = center.y - sunPos.y
     let dz = center.z - sunPos.z
     let dist = sqrt(dx * dx + dy * dy + dz * dz)
     guard dist > 0.01 else { return }
-
-    // Core beam and its halo share the exact same stretch/orient transform so they stay aligned.
-    for name in [Self.rayNodeName, Self.rayGlowNodeName] {
-      guard let node = rigNode?.childNode(withName: name, recursively: false),
-        let cylinder = node.geometry as? SCNCylinder
-      else { continue }
-      cylinder.height = CGFloat(dist)
-      node.pivot = SCNMatrix4MakeTranslation(0, -Float(dist) * 0.5, 0)
-      node.position = sunPos
-      node.look(at: center, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 1, 0))
-    }
+    cylinder.height = CGFloat(dist)
+    ray.pivot = SCNMatrix4MakeTranslation(0, -Float(dist) * 0.5, 0)
+    ray.position = sunPos
+    ray.look(at: center, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 1, 0))
   }
 
   private func notifySunPositionChanged() {

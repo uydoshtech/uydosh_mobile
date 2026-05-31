@@ -910,6 +910,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   private func computeNorthScreenAngleRad() -> CGFloat? {
     guard viewerTab == .threeD, !isOrthographicPlanView else { return nil }
+    // `projectPoint` asserts ("scene failed. Null argument") once the scene is torn down, so never
+    // call it after dismissal has nil'd it out.
+    guard sceneView.scene != nil else { return nil }
     return CompassScreenProjection.northScreenAngleRad(
       sceneView: sceneView,
       roomCenter: orbitTarget,
@@ -2568,6 +2571,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     debugOverlayNode = nil
     displayMode = .fullRoom
     modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+    // Hiding the panel stops its playback timer (see `isHidden` didSet) — otherwise a tick can fire
+    // mid-dismiss and call `projectPoint` on the now-nil scene, asserting on the main thread.
+    sunSimulationPanel.isHidden = true
     sunSimulationController.detach()
     sceneView.scene = nil
     loadedScene = nil
