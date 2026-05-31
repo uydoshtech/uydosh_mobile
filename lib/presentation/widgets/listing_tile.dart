@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
@@ -13,13 +14,14 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
-import "package:uy_dosh/base/util/listing_contact_redaction.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -31,7 +33,6 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
-import "package:uy_dosh/presentation/widgets/photo_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
@@ -39,7 +40,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
-    required this.listing, super.key,
+    required this.listing,
+    super.key,
     this.forceFavorite, // Optional parameter
     this.onFavoriteRemoved, // Optional callback
     this.onFavoriteRemovalFailed, // Optional rollback callback (favorites screen)
@@ -56,7 +58,7 @@ class ListingTile extends StatefulWidget {
   final bool? forceFavorite; // New parameter to force heart to be red
   final VoidCallback? onFavoriteRemoved; // Callback when favorite is removed
   final VoidCallback?
-  onFavoriteRemovalFailed; // Callback when optimistic removal must be rolled back
+      onFavoriteRemovalFailed; // Callback when optimistic removal must be rolled back
   final bool showHeartIcon; // New parameter to control heart icon visibility
   /// When true, renders a small non-interactive filled heart in the top-right
   /// of the tile if the listing is currently in the user's favorites.
@@ -64,7 +66,7 @@ class ListingTile extends StatefulWidget {
   final bool showFavoriteIndicator;
   final bool showActiveStatus; // Show active/inactive badge in top-right corner
   final int?
-  searchLineId; // Line ID used for search (helps order transfer stations)
+      searchLineId; // Line ID used for search (helps order transfer stations)
 
   @override
   State<ListingTile> createState() => _ListingTileState();
@@ -80,7 +82,6 @@ class _ListingTileState extends State<ListingTile> {
     const _ListingViewCountState(count: null, loading: false),
   );
   Timer? _viewCountDelayTimer;
-  String? _cachedFormattedMoveInDate;
   List<Amenity>? _cachedSortedAmenities;
   // Cached merged listenable for the favorite-related state. Allocating a
   // `_CombiningListenable` per build (in build()) caused every visible tile
@@ -92,11 +93,10 @@ class _ListingTileState extends State<ListingTile> {
   static const _viewCountLoadDelay = Duration(milliseconds: 300);
 
   void _updateCachedValues() {
-    _cachedFormattedMoveInDate = _computeFormattedMoveInDate();
-    _cachedSortedAmenities = widget.listing.amenities != null &&
-            widget.listing.amenities!.isNotEmpty
-        ? _computeSortedAmenities(widget.listing.amenities!)
-        : null;
+    _cachedSortedAmenities =
+        widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty
+            ? _computeSortedAmenities(widget.listing.amenities!)
+            : null;
   }
 
   Listenable _buildFavoriteListenable() => Listenable.merge([
@@ -123,7 +123,6 @@ class _ListingTileState extends State<ListingTile> {
   void didUpdateWidget(covariant ListingTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.listing.id != widget.listing.id ||
-        oldWidget.listing.moveInDate != widget.listing.moveInDate ||
         oldWidget.listing.amenities != widget.listing.amenities) {
       _updateCachedValues();
     }
@@ -265,7 +264,6 @@ class _ListingTileState extends State<ListingTile> {
     // the feed to also rebuild on ANY `ThemeState.notifyListeners()` call —
     // e.g. `ThemeState.initialize()` firing after the feed rendered — for
     // zero correctness benefit.
-    final descriptionSnippet = _descriptionSnippetForPublicTile();
     final borderRadius = BorderRadius.circular(12);
     final scheme = Theme.of(context).colorScheme;
     final bg = scheme.surface;
@@ -279,45 +277,43 @@ class _ListingTileState extends State<ListingTile> {
 
     final cardWidget = RepaintBoundary(
       child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.lerp(
-                    bg,
-                    scheme.onSurface,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 0.06
-                        : 0.03,
-                  )!,
-                  bg,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: lightShadow,
-                  offset: const Offset(-3, -3),
-                  blurRadius: 10,
-                ),
-                BoxShadow(
-                  color: darkShadow,
-                  offset: const Offset(6, 6),
-                  blurRadius: 14,
-                ),
-              ],
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.lerp(
+                bg,
+                scheme.onSurface,
+                Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.03,
+              )!,
+              bg,
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: lightShadow,
+              offset: const Offset(-3, -3),
+              blurRadius: 10,
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  HapticFeedbackUtils.lightImpact();
-                  context.pushListingDetail(widget.listing.id);
-                },
-                borderRadius: borderRadius,
-                child: Stack(
-                  children: [
+            BoxShadow(
+              color: darkShadow,
+              offset: const Offset(6, 6),
+              blurRadius: 14,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedbackUtils.lightImpact();
+              context.pushListingDetail(widget.listing.id);
+            },
+            borderRadius: borderRadius,
+            child: Stack(
+              children: [
                 // Active/Inactive badge and views count in top-right corner (for my listings)
                 if (widget.showActiveStatus)
                   Positioned(
@@ -377,7 +373,8 @@ class _ListingTileState extends State<ListingTile> {
                           decoration: BoxDecoration(
                             color: widget.listing.isActive
                                 ? AppColors.statusActive.withValues(alpha: 0.2)
-                                : AppColors.statusInactive.withValues(alpha: 0.2),
+                                : AppColors.statusInactive
+                                    .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: widget.listing.isActive
@@ -405,11 +402,12 @@ class _ListingTileState extends State<ListingTile> {
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  padding: const EdgeInsets.all(8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top row with listing type, price, and date
+                      // Badges (type, gender, price, 3D) span the full card
+                      // width above the photo; favorite heart at the far end.
                       Row(
                         children: [
                           // Listing Type and Price
@@ -450,22 +448,10 @@ class _ListingTileState extends State<ListingTile> {
                                   ),
                                   const SizedBox(width: 6),
                                 ],
-                                // Photo indicator icon
-                                if (widget.listing.photos != null &&
-                                    widget.listing.photos!.isNotEmpty) ...[
-                                  const PhotoIcon(
-                                    size: 18,
-                                    padding: EdgeInsets.all(4),
-                                    borderRadius: 8,
-                                  ),
-                                ],
                                 // 3D room scan (available on iOS; show indicator on web too)
                                 if ((kIsWeb || isIPhoneFormFactor(context)) &&
                                     (widget.listing.pointCloudUrl?.isNotEmpty ??
                                         false)) ...[
-                                  if (widget.listing.photos != null &&
-                                      widget.listing.photos!.isNotEmpty)
-                                    const SizedBox(width: 6),
                                   const Room3dIconBadge(
                                     size: 18,
                                     padding: EdgeInsets.all(4),
@@ -478,26 +464,66 @@ class _ListingTileState extends State<ListingTile> {
                           // or compact indicator on home / feeds ([FavoriteHeartToggle]).
                           if (widget.showHeartIcon ||
                               widget.showFavoriteIndicator)
-                            FavoriteHeartToggle(
-                              listenable: _favoriteListenable,
-                              shouldShow: (ctx) =>
-                                  PeerInteractionEligibility
-                                      .mayInteractWithPublisher(
-                                publisherUserId: widget.listing.userId,
-                              ),
-                              resolveIsFavorite: (ctx) =>
-                                  widget.showHeartIcon
-                                      ? (widget.forceFavorite ??
-                                          FavoritesState().isFavorite(
-                                            widget.listing.id,
-                                          ))
-                                      : FavoritesState().isFavorite(
+                            Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: FavoriteHeartToggle(
+                                listenable: _favoriteListenable,
+                                shouldShow: (ctx) => PeerInteractionEligibility
+                                    .mayInteractWithPublisher(
+                                  publisherUserId: widget.listing.userId,
+                                ),
+                                resolveIsFavorite: (ctx) => widget.showHeartIcon
+                                    ? (widget.forceFavorite ??
+                                        FavoritesState().isFavorite(
                                           widget.listing.id,
-                                        ),
-                              hiddenBuilder: (_) => const SizedBox.shrink(),
-                              onToggle: _onListingFavoriteToggle,
-                              builder: (context, ui) {
-                                if (widget.showHeartIcon) {
+                                        ))
+                                    : FavoritesState().isFavorite(
+                                        widget.listing.id,
+                                      ),
+                                hiddenBuilder: (_) => const SizedBox.shrink(),
+                                onToggle: _onListingFavoriteToggle,
+                                builder: (context, ui) {
+                                  if (widget.showHeartIcon) {
+                                    return SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.center,
+                                        children: [
+                                          GestureDetector(
+                                            behavior: HitTestBehavior.opaque,
+                                            onTap: ui.onTap,
+                                            child: const SizedBox(
+                                              width: 48,
+                                              height: 48,
+                                            ),
+                                          ),
+                                          IgnorePointer(
+                                            child: AnimatedBuilder(
+                                              animation: ui.pulse.listenable,
+                                              builder: (context, child) {
+                                                return Transform.scale(
+                                                  scale: ui.pulse.scale,
+                                                  child: ThemeIcon(
+                                                    ui.isFavorite
+                                                        ? Icons.favorite
+                                                        : Icons.favorite_border,
+                                                    color: ui.isFavorite
+                                                        ? AppColors
+                                                            .favoriteActive
+                                                        : AppColors
+                                                            .favoriteInactive,
+                                                    size: 20,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
                                   return SizedBox(
                                     width: 20,
                                     height: 20,
@@ -519,6 +545,32 @@ class _ListingTileState extends State<ListingTile> {
                                             builder: (context, child) {
                                               return Transform.scale(
                                                 scale: ui.pulse.scale,
+                                                child: child,
+                                              );
+                                            },
+                                            child: AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 300,
+                                              ),
+                                              reverseDuration: const Duration(
+                                                milliseconds: 180,
+                                              ),
+                                              switchInCurve: Curves.elasticOut,
+                                              switchOutCurve: Curves.easeInBack,
+                                              transitionBuilder:
+                                                  (child, animation) =>
+                                                      ScaleTransition(
+                                                scale: animation,
+                                                child: child,
+                                              ),
+                                              child: SizedBox(
+                                                key: ValueKey(
+                                                  ui.isFavorite
+                                                      ? "fav-on"
+                                                      : "fav-off",
+                                                ),
+                                                width: 20,
+                                                height: 20,
                                                 child: ThemeIcon(
                                                   ui.isFavorite
                                                       ? Icons.favorite
@@ -529,278 +581,143 @@ class _ListingTileState extends State<ListingTile> {
                                                           .favoriteInactive,
                                                   size: 20,
                                                 ),
-                                              );
-                                            },
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   );
-                                }
-                                return SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    alignment: Alignment.center,
-                                    children: [
-                                      GestureDetector(
-                                        behavior: HitTestBehavior.opaque,
-                                        onTap: ui.onTap,
-                                        child: const SizedBox(
-                                          width: 48,
-                                          height: 48,
-                                        ),
-                                      ),
-                                      IgnorePointer(
-                                        child: AnimatedBuilder(
-                                          animation: ui.pulse.listenable,
-                                          builder: (context, child) {
-                                            return Transform.scale(
-                                              scale: ui.pulse.scale,
-                                              child: child,
-                                            );
-                                          },
-                                          child: AnimatedSwitcher(
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            reverseDuration: const Duration(
-                                              milliseconds: 180,
-                                            ),
-                                            switchInCurve: Curves.elasticOut,
-                                            switchOutCurve: Curves.easeInBack,
-                                            transitionBuilder:
-                                                (child, animation) =>
-                                                    ScaleTransition(
-                                              scale: animation,
-                                              child: child,
-                                            ),
-                                            child: SizedBox(
-                                              key: ValueKey(
-                                                ui.isFavorite
-                                                    ? "fav-on"
-                                                    : "fav-off",
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                              child: ThemeIcon(
-                                                ui.isFavorite
-                                                    ? Icons.favorite
-                                                    : Icons.favorite_border,
-                                                color: ui.isFavorite
-                                                    ? AppColors.favoriteActive
-                                                    : AppColors
-                                                          .favoriteInactive,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
+                                },
+                              ),
                             ),
                         ],
                       ),
-                      // Title
                       const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.only(
-                          right: 40,
-                        ), // Add right padding to avoid arrow overlap
-                        child: Text(
-                          ListingUtils.usesPresetListingTitle(
-                                widget.listing.listingTypeId,
-                              )
-                              ? L10n.get(
-                                  ListingUtils.presetListingTitleL10nKey(
-                                    listingTypeId:
-                                        widget.listing.listingTypeId,
-                                    gender: widget.listing.gender,
-                                  ),
-                                )
-                              : widget.listing.title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: _getTitleTextColor(),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      // Description
-                      if (descriptionSnippet != null) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.only(
-                            right: 40,
-                          ), // Add right padding to avoid arrow overlap
-                          child: Text(
-                            descriptionSnippet,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: _getDescriptionTextColor(),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      // Location and subway (optional); price/amenities/date are not gated on these
-                      if (widget.listing.location != null ||
-                          widget.listing.subwayStation != null ||
-                          (widget.listing.privateRoom ?? false) ||
-                          (widget.listing.moveInDate != null &&
-                              widget.listing.moveInDate!.isNotEmpty))
-                        ListenableBuilder(
-                          listenable: LanguageState(),
-                          builder: (context, child) {
-                            final hasLocation =
-                                widget.listing.location != null;
-                            final hasStation =
-                                widget.listing.subwayStation != null;
-                            final hasPrivateRoom =
-                                widget.listing.privateRoom ?? false;
-                            final hasMoveInDate =
-                                widget.listing.moveInDate != null &&
-                                    widget.listing.moveInDate!.isNotEmpty;
-                            return Column(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _buildThumbnail(context),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (hasLocation || hasStation)
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      if (hasLocation) ...[
-                                        const ThemeIcon(
-                                          Icons.location_on,
-                                          color: AppColors.error,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Flexible(
-                                          child: Text(
-                                            _shortenDistrictSuffix(
-                                              _getLocalizedName(
-                                                nameUz: widget
-                                                    .listing
-                                                    .location!
-                                                    .nameUz,
-                                                nameRu: widget
-                                                    .listing
-                                                    .location!
-                                                    .nameRu,
-                                                nameEn: widget
-                                                    .listing
-                                                    .location!
-                                                    .nameEn,
-                                              ),
+                                // Title
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.only(
+                                    right: 40,
+                                  ), // Add right padding to avoid arrow overlap
+                                  child: Text(
+                                    ListingUtils.usesPresetListingTitle(
+                                      widget.listing.listingTypeId,
+                                    )
+                                        ? L10n.get(
+                                            ListingUtils
+                                                .presetListingTitleL10nKey(
+                                              listingTypeId:
+                                                  widget.listing.listingTypeId,
+                                              gender: widget.listing.gender,
                                             ),
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: _getLocationTextColor(),
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                      if (hasLocation && hasStation)
-                                        const SizedBox(width: 12),
-                                      if (hasStation)
-                                        Flexible(
-                                          child: _buildSubwayStationDisplay(
-                                            widget.listing.subwayStation!,
-                                          ),
-                                        ),
-                                    ],
+                                          )
+                                        : widget.listing.title,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: _getTitleTextColor(),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                if (hasPrivateRoom || hasMoveInDate) ...[
-                                  if (hasLocation || hasStation)
-                                    const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      if (hasPrivateRoom) ...[
-                                        ThemeIcon(
-                                          CupertinoIcons.lock_fill,
-                                          size: 20,
-                                          color: _getPrivateRoomIconColor(),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          L10n.get("private_room"),
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: _getPrivateRoomTextColor(),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                      if (hasPrivateRoom && hasMoveInDate)
-                                        const SizedBox(width: 12),
-                                      if (hasMoveInDate) ...[
-                                        ThemeIcon(
-                                          CupertinoIcons.square_arrow_right,
-                                          size: 22,
-                                          color: _getDateTextColor(),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Flexible(
-                                          child: Text(
-                                            hasPrivateRoom
-                                                ? (_cachedFormattedMoveInDate ??
-                                                    "")
-                                                : "${L10n.get("move_in_date_label")} ${_cachedFormattedMoveInDate ?? ""}",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: _getDateTextColor(),
-                                              fontWeight: FontWeight.w500,
+                                ),
+                                const SizedBox(height: 12),
+                                // Location and metro on separate lines.
+                                if (widget.listing.location != null ||
+                                    widget.listing.subwayStation != null)
+                                  ListenableBuilder(
+                                    listenable: LanguageState(),
+                                    builder: (context, child) {
+                                      final hasLocation =
+                                          widget.listing.location != null;
+                                      final hasStation =
+                                          widget.listing.subwayStation != null;
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (hasLocation)
+                                            Row(
+                                              children: [
+                                                const ThemeIcon(
+                                                  Icons.location_on,
+                                                  color: AppColors.error,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Text(
+                                                    _shortenDistrictSuffix(
+                                                      _getLocalizedName(
+                                                        nameUz: widget.listing
+                                                            .location!.nameUz,
+                                                        nameRu: widget.listing
+                                                            .location!.nameRu,
+                                                        nameEn: widget.listing
+                                                            .location!.nameEn,
+                                                      ),
+                                                    ),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color:
+                                                          _getLocationTextColor(),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
+                                          if (hasStation) ...[
+                                            if (hasLocation)
+                                              const SizedBox(height: 8),
+                                            _buildSubwayStationDisplay(
+                                              widget.listing.subwayStation!,
+                                            ),
+                                          ],
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                if (widget.listing.amenities != null &&
+                                    widget.listing.amenities!.isNotEmpty) ...[
+                                  if (widget.listing.location != null ||
+                                      widget.listing.subwayStation != null)
+                                    const SizedBox(height: 12),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 40),
+                                    child: Wrap(
+                                      spacing: 10,
+                                      runSpacing: 8,
+                                      children: (_cachedSortedAmenities ?? [])
+                                          .map(
+                                            (amenity) => ThemeIcon(
+                                              _getAmenityIcon(amenity),
+                                              size: 18,
+                                              color: _getAmenityIconColor(),
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
                                   ),
                                 ],
                               ],
-                            );
-                          },
-                        ),
-                      if (widget.listing.amenities != null &&
-                          widget.listing.amenities!.isNotEmpty) ...[
-                        if (widget.listing.location != null ||
-                            widget.listing.subwayStation != null ||
-                            (widget.listing.privateRoom ?? false) ||
-                            (widget.listing.moveInDate != null &&
-                                widget.listing.moveInDate!.isNotEmpty))
-                          const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 40),
-                          child: Wrap(
-                            spacing: 10,
-                            runSpacing: 8,
-                            children: (_cachedSortedAmenities ?? [])
-                                .map(
-                                  (amenity) => ThemeIcon(
-                                    _getAmenityIcon(amenity),
-                                    size: 18,
-                                    color: _getAmenityIconColor(),
-                                  ),
-                                )
-                                .toList(),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -818,9 +735,9 @@ class _ListingTileState extends State<ListingTile> {
                   ),
                 ),
               ],
-                ),
-              ),
             ),
+          ),
+        ),
       ),
     );
 
@@ -847,48 +764,6 @@ class _ListingTileState extends State<ListingTile> {
         return AppColors.metroLine4;
       default:
         return AppColors.metroLine1;
-    }
-  }
-
-  String _computeFormattedMoveInDate() {
-    if (widget.listing.moveInDate == null ||
-        widget.listing.moveInDate!.isEmpty) {
-      return "";
-    }
-
-    try {
-      final date = DateTime.parse(widget.listing.moveInDate!);
-      final now = DateTime.now();
-      final difference = date.difference(now).inDays;
-
-      if (difference == 0) {
-        return L10n.get("today");
-      } else if (difference == 1) {
-        return L10n.get("tomorrow");
-      } else if (difference > 0 && difference <= 7) {
-        return L10n.plural("in_days", difference);
-      } else {
-        // Format as "MMM dd, yyyy" for dates more than a week away
-        final monthKeys = [
-          "january",
-          "february",
-          "march",
-          "april",
-          "may",
-          "june",
-          "july",
-          "august",
-          "september",
-          "october",
-          "november",
-          "december",
-        ];
-        final localizedMonth = L10n.get(monthKeys[date.month - 1]);
-        return "${localizedMonth.substring(0, 3)} ${date.day}, ${date.year}";
-      }
-    } catch (e) {
-      // If parsing fails, return empty string instead of the raw invalid value
-      return "";
     }
   }
 
@@ -997,21 +872,68 @@ class _ListingTileState extends State<ListingTile> {
   }
 
   // Theme-dependent color method for description text
-  Color _getDescriptionTextColor() {
-    if (ThemeState().isBlueTheme) {
-      // Secondary-tier text on blue theme: softer than the white title
-      // so body copy recedes and establishes a clear hierarchy.
-      return _blueThemeSecondary;
+  /// Leading photo thumbnail shown on the left of the tile. Uses the primary
+  /// photo when available (falling back to the first), otherwise renders a
+  /// neutral placeholder so every tile keeps a consistent left column.
+  Widget _buildThumbnail(BuildContext context) {
+    // Square thumbnail: portrait photos are center-cropped (BoxFit.cover) to a
+    // square so a tall card never stretches the image into a thin vertical strip.
+    const double thumbSize = 110;
+    final scheme = Theme.of(context).colorScheme;
+    final photos = widget.listing.photos;
+    final hasPhoto = photos != null && photos.isNotEmpty;
+
+    Widget content;
+    if (hasPhoto) {
+      content = CachedNetworkImage(
+        imageUrl: _buildPhotoUrl(_primaryPhotoUrl(photos)),
+        fit: BoxFit.cover,
+        memCacheWidth: 320,
+        memCacheHeight: 320,
+        fadeInDuration: const Duration(milliseconds: 250),
+        fadeInCurve: Curves.easeOut,
+        placeholder: (context, url) => ColoredBox(
+          color: scheme.onSurface.withValues(alpha: 0.06),
+        ),
+        errorWidget: (context, url, error) => _thumbnailPlaceholder(scheme),
+      );
     } else {
-      return Colors.black; // Default text for light theme
+      content = _thumbnailPlaceholder(scheme);
     }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: thumbSize,
+        height: thumbSize,
+        child: content,
+      ),
+    );
   }
 
-  String? _descriptionSnippetForPublicTile() {
-    final raw = widget.listing.description;
-    if (raw == null || raw.isEmpty) return null;
-    final s = ListingContactRedaction.stripForPublicDisplay(raw);
-    return s.isEmpty ? null : s;
+  Widget _thumbnailPlaceholder(ColorScheme scheme) => ColoredBox(
+        color: scheme.onSurface.withValues(alpha: 0.06),
+        child: Center(
+          child: ThemeIcon(
+            Icons.photo_outlined,
+            size: 32,
+            color: scheme.onSurface.withValues(alpha: 0.35),
+          ),
+        ),
+      );
+
+  String _primaryPhotoUrl(List<Photo> photos) {
+    final primary = photos.where((p) => p.isPrimary);
+    return (primary.isNotEmpty ? primary.first : photos.first).photoUrl;
+  }
+
+  /// Resolves a stored photo path to a full URL. Absolute URLs are returned
+  /// unchanged; relative paths are prefixed with the API base path.
+  String _buildPhotoUrl(String photoUrl) {
+    if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) {
+      return photoUrl;
+    }
+    return "${EnvironmentUtil.basePath}$photoUrl";
   }
 
   // Theme-dependent color method for location and metro text
@@ -1026,39 +948,12 @@ class _ListingTileState extends State<ListingTile> {
     }
   }
 
-  // Theme-dependent color method for date text
-  Color _getDateTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return Colors.black; // Default text for light theme
-    }
-  }
-
   // Theme-dependent color method for arrow icon
   Color _getArrowIconColor() {
     if (ThemeState().isBlueTheme) {
       return AppColors.textLight.withValues(alpha: 0.5);
     } else {
       return AppColors.textGrey400; // Default grey for light theme
-    }
-  }
-
-  // Theme-dependent color method for private room icon
-  Color _getPrivateRoomIconColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return AppColors.primary;
-    }
-  }
-
-  // Theme-dependent color method for private room text
-  Color _getPrivateRoomTextColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight;
-    } else {
-      return Colors.black;
     }
   }
 
@@ -1079,11 +974,10 @@ class _ListingTileState extends State<ListingTile> {
         line: transferInfo["connectedStationLine"],
       );
 
-      final mainStation =
-          (widget.searchLineId != null &&
-                  connectedStation.line == widget.searchLineId)
-              ? connectedStation
-              : station;
+      final mainStation = (widget.searchLineId != null &&
+              connectedStation.line == widget.searchLineId)
+          ? connectedStation
+          : station;
       final transferStation =
           (mainStation.id == station.id) ? connectedStation : station;
 

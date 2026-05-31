@@ -4,14 +4,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 class ListingTileSkeleton extends StatelessWidget {
   const ListingTileSkeleton({super.key});
 
-  /// Each text-line skeleton is [ _skeletonLineStep ] narrower than the one
-  /// above so the right edges line up on a diagonal (see listing tile layout).
-  static const _skeletonLineStep = 24.0;
-  static const _skeletonLine3Width = 216.0;
-  static const _skeletonLine2Width = 240.0;
-  static const _skeletonLine1Width =
-      _skeletonLine2Width + _skeletonLineStep; // 264
-
   @override
   Widget build(BuildContext context) {
     final baseColor = _getBaseSkeletonColor(context);
@@ -59,11 +51,13 @@ class ListingTileSkeleton extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              // Match `ListingTile`'s vertical rhythm to avoid skeleton being taller.
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              // Match `ListingTile`'s padding so the skeleton lines up with
+              // the real tile (left thumbnail + content column).
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Badges row spanning the full width above the photo.
                   Row(
                     children: [
                       _SkeletonBox(
@@ -96,57 +90,64 @@ class ListingTileSkeleton extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _SkeletonBox(
-                    width: _skeletonLine1Width,
-                    height: 14,
-                    radius: 7,
-                    color: baseColor,
-                  ),
-                  const SizedBox(height: 8),
-                  _SkeletonBox(
-                    width: _skeletonLine2Width,
-                    height: 12,
-                    radius: 6,
-                    color: baseColor,
-                  ),
-                  const SizedBox(height: 10),
-                  _SkeletonBox(
-                    width: _skeletonLine3Width,
-                    height: 12,
-                    radius: 6,
-                    color: baseColor,
-                  ),
-                  // Add a small optional "meta" row so the skeleton matches the
-                  // average real-tile height without becoming overly tall.
-                  const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _SkeletonBox(
-                        width: 17,
-                        height: 17,
-                        radius: 6,
+                        width: 110,
+                        height: 110,
+                        radius: 12,
                         color: baseColor,
                       ),
-                      const SizedBox(width: 8),
-                      _SkeletonBox(
-                        width: 17,
-                        height: 17,
-                        radius: 6,
-                        color: baseColor,
-                      ),
-                      const SizedBox(width: 8),
-                      _SkeletonBox(
-                        width: 17,
-                        height: 17,
-                        radius: 6,
-                        color: baseColor,
-                      ),
-                      const SizedBox(width: 10),
-                      _SkeletonBox(
-                        width: 120,
-                        height: 12,
-                        radius: 6,
-                        color: baseColor,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _SkeletonBox(
+                              width: 150,
+                              height: 14,
+                              radius: 7,
+                              color: baseColor,
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                _SkeletonBox(
+                                  width: 17,
+                                  height: 17,
+                                  radius: 6,
+                                  color: baseColor,
+                                ),
+                                const SizedBox(width: 8),
+                                _SkeletonBox(
+                                  width: 110,
+                                  height: 12,
+                                  radius: 6,
+                                  color: baseColor,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                _SkeletonBox(
+                                  width: 17,
+                                  height: 17,
+                                  radius: 6,
+                                  color: baseColor,
+                                ),
+                                const SizedBox(width: 8),
+                                _SkeletonBox(
+                                  width: 90,
+                                  height: 12,
+                                  radius: 6,
+                                  color: baseColor,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

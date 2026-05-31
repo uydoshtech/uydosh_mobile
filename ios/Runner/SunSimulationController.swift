@@ -8,6 +8,7 @@ final class SunSimulationController {
   static let lightNodeName = "UydoshSunLight"
   static let rayNodeName = "UydoshSunRay"
   static let ambientNodeName = "UydoshSunAmbient"
+  static let fillLightNodeName = "UydoshSunFill"
 
   private(set) var isEnabled = false
   private(set) var azimuthDeg: Float = SunPositionMath.TimePreset.noon.azimuthDeg
@@ -54,10 +55,20 @@ final class SunSimulationController {
     ambientNode.name = Self.ambientNodeName
     let ambient = SCNLight()
     ambient.type = .ambient
-    ambient.intensity = 420
+    ambient.intensity = Self.ambientIntensity(forDirectional: lightIntensity)
     ambient.color = UIColor(red: 0.88, green: 0.91, blue: 0.96, alpha: 1)
     ambientNode.light = ambient
     rig.addChildNode(ambientNode)
+
+    let fillNode = SCNNode()
+    fillNode.name = Self.fillLightNodeName
+    let fill = SCNLight()
+    fill.type = .directional
+    fill.intensity = Self.fillLightIntensity(forDirectional: lightIntensity)
+    fill.color = UIColor(red: 0.82, green: 0.86, blue: 0.94, alpha: 1)
+    fill.castsShadow = false
+    fillNode.light = fill
+    rig.addChildNode(fillNode)
 
     let sun = SCNNode()
     sun.name = Self.sunNodeName
@@ -79,8 +90,9 @@ final class SunSimulationController {
     directional.intensity = lightIntensity
     directional.castsShadow = true
     directional.shadowMode = .deferred
-    directional.shadowSampleCount = 8
-    directional.shadowRadius = 2
+    directional.shadowSampleCount = 12
+    directional.shadowRadius = 6
+    directional.shadowColor = UIColor(red: 0.28, green: 0.30, blue: 0.36, alpha: 1)
     directional.automaticallyAdjustsShadowProjection = true
     if #available(iOS 13.0, *) {
       directional.shadowMapSize = CGSize(width: 1024, height: 1024)
@@ -156,6 +168,10 @@ final class SunSimulationController {
   func setLightIntensity(_ value: CGFloat) {
     lightIntensity = min(3000, max(200, value))
     lightNode?.light?.intensity = lightIntensity
+    rigNode?.childNode(withName: Self.ambientNodeName, recursively: true)?
+      .light?.intensity = Self.ambientIntensity(forDirectional: lightIntensity)
+    rigNode?.childNode(withName: Self.fillLightNodeName, recursively: true)?
+      .light?.intensity = Self.fillLightIntensity(forDirectional: lightIntensity)
   }
 
   func updateSunPosition() {
@@ -178,6 +194,22 @@ final class SunSimulationController {
     let sunPos = sunNode.position
     lightNode.position = sunPos
     lightNode.look(at: roomCenter, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+
+    if let fillNode = rigNode?.childNode(withName: Self.fillLightNodeName, recursively: false) {
+      let fx = roomCenter.x - (sunPos.x - roomCenter.x)
+      let fy = max(roomCenter.y + sunRadius * 0.35, sunPos.y * 0.25)
+      let fz = roomCenter.z - (sunPos.z - roomCenter.z)
+      fillNode.position = SCNVector3(fx, fy, fz)
+      fillNode.look(at: roomCenter, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+    }
+  }
+
+  private static func ambientIntensity(forDirectional directional: CGFloat) -> CGFloat {
+    520 + directional * 0.22
+  }
+
+  private static func fillLightIntensity(forDirectional directional: CGFloat) -> CGFloat {
+    260 + directional * 0.12
   }
 
   func refreshShadowCasters() {

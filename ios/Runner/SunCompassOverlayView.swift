@@ -15,6 +15,14 @@ final class SunCompassOverlayView: UIView {
     didSet { setNeedsDisplay() }
   }
 
+  /// When true, overlay accepts taps to open north-orientation correction (listing owner).
+  var isOrientationEditable: Bool = false {
+    didSet {
+      isUserInteractionEnabled = isOrientationEditable
+      setNeedsDisplay()
+    }
+  }
+
   private let valuesLabel = UILabel()
 
   override init(frame: CGRect) {
@@ -108,6 +116,13 @@ final class SunCompassOverlayView: UIView {
     ctx.move(to: center)
     ctx.addLine(to: sunTip)
     ctx.strokePath()
+
+    if isOrientationEditable {
+      ctx.setStrokeColor(UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.55).cgColor)
+      ctx.setLineWidth(1.25)
+      ctx.addEllipse(in: CGRect(x: center.x - radius - 2, y: center.y - radius - 2, width: (radius + 2) * 2, height: (radius + 2) * 2))
+      ctx.strokePath()
+    }
   }
 
   private func drawCardinal(

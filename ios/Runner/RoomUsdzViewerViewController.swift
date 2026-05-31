@@ -737,8 +737,18 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     sunCompassOverlay.translatesAutoresizingMaskIntoConstraints = false
     sunCompassOverlay.usesTrueNorth = worldPlusXTrueBearingDeg != nil
+    sunCompassOverlay.isAccessibilityElement = true
+    sunCompassOverlay.accessibilityLabel = strings.compassOrientation.title
+    let compassTap = UITapGestureRecognizer(target: self, action: #selector(compassOverlayTapped))
+    sunCompassOverlay.addGestureRecognizer(compassTap)
     view.addSubview(sunCompassOverlay)
     refreshSunCompassLabels()
+    updateNorthAdjustButtonVisibility()
+  }
+
+  @objc private func compassOverlayTapped() {
+    guard isListingOwner, listingId > 0 else { return }
+    presentNorthCorrectionEditor()
   }
 
   @objc private func sunToggleTapped() {
@@ -924,38 +934,36 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     viewerTabControl.apportionsSegmentWidthsByContent = true
     viewerTabControl.addTarget(self, action: #selector(viewerTabChanged), for: .valueChanged)
 
-    let iconCfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+    let iconCfg = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
     let threeDIcon = UIImage(systemName: "rotate.3d.fill", withConfiguration: iconCfg)
       ?? UIImage(systemName: "cube.fill", withConfiguration: iconCfg)
     let planIcon = UIImage(systemName: "map.fill", withConfiguration: iconCfg)
       ?? UIImage(systemName: "square.grid.2x2.fill", withConfiguration: iconCfg)
 
+    let tabTitleFont = UIFont.systemFont(ofSize: 12, weight: .semibold)
+    viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
+    viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
     if let threeDIcon {
       viewerTabControl.setImage(threeDIcon, forSegmentAt: ViewerTab.threeD.rawValue)
-    } else {
-      viewerTabControl.setTitle(strings.floorPlan.tab3DView, forSegmentAt: ViewerTab.threeD.rawValue)
     }
     if let planIcon {
       viewerTabControl.setImage(planIcon, forSegmentAt: ViewerTab.floorPlan.rawValue)
-    } else {
-      viewerTabControl.setTitle(strings.floorPlan.tabFloorPlan, forSegmentAt: ViewerTab.floorPlan.rawValue)
     }
-
-    viewerTabControl.setWidth(40, forSegmentAt: ViewerTab.threeD.rawValue)
-    viewerTabControl.setWidth(40, forSegmentAt: ViewerTab.floorPlan.rawValue)
 
     if #available(iOS 13.0, *) {
       viewerTabControl.overrideUserInterfaceStyle = .dark
       viewerTabControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
       viewerTabControl.selectedSegmentTintColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
-      viewerTabControl.setTitleTextAttributes(
-        [.foregroundColor: UIColor.white.withAlphaComponent(0.92)],
-        for: .selected
-      )
-      viewerTabControl.setTitleTextAttributes(
-        [.foregroundColor: UIColor.white.withAlphaComponent(0.55)],
-        for: .normal
-      )
+      let selectedAttrs: [NSAttributedString.Key: Any] = [
+        .foregroundColor: UIColor.white.withAlphaComponent(0.92),
+        .font: tabTitleFont,
+      ]
+      let normalAttrs: [NSAttributedString.Key: Any] = [
+        .foregroundColor: UIColor.white.withAlphaComponent(0.55),
+        .font: tabTitleFont,
+      ]
+      viewerTabControl.setTitleTextAttributes(selectedAttrs, for: .selected)
+      viewerTabControl.setTitleTextAttributes(normalAttrs, for: .normal)
     }
     viewerTabControl.tintColor = UIColor.white.withAlphaComponent(0.92)
     viewerTabControl.accessibilityLabel = "\(strings.floorPlan.tab3DView), \(strings.floorPlan.tabFloorPlan)"
@@ -964,7 +972,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     viewerTabContainer.addSubview(viewerTabControl)
 
     NSLayoutConstraint.activate([
-      viewerTabContainer.widthAnchor.constraint(equalToConstant: 96),
       viewerTabContainer.heightAnchor.constraint(equalToConstant: 40),
       viewerTabControl.topAnchor.constraint(equalTo: viewerTabContainer.topAnchor, constant: 4),
       viewerTabControl.leadingAnchor.constraint(equalTo: viewerTabContainer.leadingAnchor, constant: 4),
@@ -974,6 +981,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     ])
 
     navigationItem.titleView = viewerTabContainer
+    viewerTabContainer.layoutIfNeeded()
+    viewerTabControl.sizeToFit()
+    let tabBarWidth = max(viewerTabControl.bounds.width + 8, 180)
+    viewerTabContainer.frame = CGRect(x: 0, y: 0, width: tabBarWidth, height: 40)
   }
 
   private func updateViewerTabAccessibility() {
@@ -1018,6 +1029,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       removeAutoRotateAnimation()
       isAutoRotating = false
     }
+    updateNorthAdjustButtonVisibility()
   }
 
   private func setupModeControl() {
@@ -1325,6 +1337,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func applyStylizedWallMaterial(_ material: SCNMaterial, diffuseTint: UIColor) {
     material.lightingModel = .physicallyBased
     material.diffuse.contents = diffuseTint
+    material.ambient.contents = diffuseTint.withAlphaComponent(0.45)
     material.metalness.contents = NSNumber(value: 0.0)
     material.roughness.contents = NSNumber(value: Double(Self.stylizedWallRoughness))
   }
@@ -1358,12 +1371,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
           m.diffuse.contents = floorTint
+          m.ambient.contents = floorTint.withAlphaComponent(0.4)
           return m
         }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
           m.diffuse.contents = furnitureTint
+          m.ambient.contents = furnitureTint.withAlphaComponent(0.38)
           return m
         }
       } else if isWallSurface(node) {
@@ -1612,6 +1627,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func updateNorthAdjustButtonVisibility() {
     let canEdit = isListingOwner && listingId > 0
     floorPlanTabView?.setNorthAdjustEnabled(canEdit)
+    sunCompassOverlay.isOrientationEditable = canEdit && viewerTab == .threeD
+    sunCompassOverlay.accessibilityHint = canEdit
+      ? strings.compassOrientation.message
+      : nil
   }
 
   private func presentNorthCorrectionEditor() {
