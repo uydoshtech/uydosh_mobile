@@ -2,8 +2,11 @@ import "dart:io";
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
 /// Medium-sized centered preview for a single uploaded photo.
 ///
@@ -11,35 +14,94 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 /// inspect the photo without leaving the form. Supports both already-uploaded
 /// remote photos (use [PhotoPreviewDialog.network]) and freshly-picked local
 /// files that haven't been uploaded yet (use [PhotoPreviewDialog.file]).
+///
+/// When [onMakePrimary] is provided (edit/create reorder mode) and the photo
+/// isn't already primary, a "Make primary" action is rendered at the bottom of
+/// the image. Tapping it invokes the callback and closes the dialog.
 class PhotoPreviewDialog extends StatelessWidget {
-  const PhotoPreviewDialog._({required this.imageProvider});
+  const PhotoPreviewDialog._({
+    required this.imageProvider,
+    this.onMakePrimary,
+    this.isPrimary = false,
+  });
 
-  factory PhotoPreviewDialog.network(String url) {
+  factory PhotoPreviewDialog.network(
+    String url, {
+    VoidCallback? onMakePrimary,
+    bool isPrimary = false,
+  }) {
     return PhotoPreviewDialog._(
       imageProvider: CachedNetworkImageProvider(url),
+      onMakePrimary: onMakePrimary,
+      isPrimary: isPrimary,
     );
   }
 
-  factory PhotoPreviewDialog.file(File file) {
-    return PhotoPreviewDialog._(imageProvider: FileImage(file));
+  factory PhotoPreviewDialog.file(
+    File file, {
+    VoidCallback? onMakePrimary,
+    bool isPrimary = false,
+  }) {
+    return PhotoPreviewDialog._(
+      imageProvider: FileImage(file),
+      onMakePrimary: onMakePrimary,
+      isPrimary: isPrimary,
+    );
   }
 
   final ImageProvider imageProvider;
 
-  static Future<void> show(BuildContext context, {required ImageProvider image}) {
+  /// Optional "make this photo primary" action. When non-null and the photo is
+  /// not already primary, a button is shown at the bottom of the image.
+  final VoidCallback? onMakePrimary;
+
+  /// Whether this photo is already the primary one (hides the action so we
+  /// don't offer a no-op).
+  final bool isPrimary;
+
+  static Future<void> show(
+    BuildContext context, {
+    required ImageProvider image,
+    VoidCallback? onMakePrimary,
+    bool isPrimary = false,
+  }) {
     return showDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.72),
-      builder: (_) => PhotoPreviewDialog._(imageProvider: image),
+      builder: (_) => PhotoPreviewDialog._(
+        imageProvider: image,
+        onMakePrimary: onMakePrimary,
+        isPrimary: isPrimary,
+      ),
     );
   }
 
-  static Future<void> showNetwork(BuildContext context, String url) {
-    return show(context, image: CachedNetworkImageProvider(url));
+  static Future<void> showNetwork(
+    BuildContext context,
+    String url, {
+    VoidCallback? onMakePrimary,
+    bool isPrimary = false,
+  }) {
+    return show(
+      context,
+      image: CachedNetworkImageProvider(url),
+      onMakePrimary: onMakePrimary,
+      isPrimary: isPrimary,
+    );
   }
 
-  static Future<void> showFile(BuildContext context, File file) {
-    return show(context, image: FileImage(file));
+  static Future<void> showFile(
+    BuildContext context,
+    File file, {
+    VoidCallback? onMakePrimary,
+    bool isPrimary = false,
+  }) {
+    return show(
+      context,
+      image: FileImage(file),
+      onMakePrimary: onMakePrimary,
+      isPrimary: isPrimary,
+    );
   }
 
   @override
@@ -49,6 +111,7 @@ class PhotoPreviewDialog extends StatelessWidget {
     // around the image so it doesn't read as a full-screen viewer.
     final maxWidth = media.size.width * 0.7;
     final maxHeight = media.size.height * 0.5;
+    final showMakePrimary = onMakePrimary != null && !isPrimary;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -102,6 +165,48 @@ class PhotoPreviewDialog extends StatelessWidget {
                 padding: const EdgeInsets.all(4),
               ),
             ),
+            if (showMakePrimary)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 12,
+                child: Center(
+                  child: ThreeDPillButton(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(999)),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    neumorphicSoftUi: true,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      onMakePrimary!();
+                      Navigator.of(context).pop();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const ThemeIcon(
+                          Icons.star,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          L10n.get("make_photo_primary"),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

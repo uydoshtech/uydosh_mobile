@@ -96,6 +96,25 @@ class _PhotoUploaderState extends State<PhotoUploader>
   int get _totalNewPhotoSlotsUsed =>
       widget.existingPhotos.length + widget.selectedPhotos.length;
 
+  /// True when the parent drives a caller-owned order and accepts reorders, so
+  /// "make primary" can be expressed as moving a tile to slot 0.
+  bool get _canReorder =>
+      widget.orderedItems != null && widget.onReorderItems != null;
+
+  /// Moves the item currently at [orderedIndex] to the front of the order
+  /// (slot 0 == primary) and notifies the parent. No-op when already first or
+  /// when reordering isn't available.
+  void _makePrimaryViaReorder(int orderedIndex) {
+    if (!_canReorder || orderedIndex <= 0) return;
+    final items = widget.orderedItems!;
+    if (orderedIndex >= items.length) return;
+    final newOrder = List<PhotoItem>.from(items);
+    final moved = newOrder.removeAt(orderedIndex);
+    newOrder.insert(0, moved);
+    HapticFeedbackUtils.selectionClick();
+    widget.onReorderItems!(newOrder);
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
@@ -536,6 +555,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                       originalIndex < 0 ? 0 : originalIndex,
                       treatAsPrimary: canReorder ? isFirst : false,
                       allowTapToPrimary: !canReorder,
+                      orderedIndex: index,
                     );
                   }
                   item as NewPhotoItem;
@@ -548,6 +568,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                         : (_primaryNewPhotoIndex == originalIndex &&
                             !widget.existingPhotos.any((p) => p.isPrimary)),
                     allowTapToPrimary: !canReorder,
+                    orderedIndex: index,
                   );
                 },
               ),
@@ -580,6 +601,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     int index, {
     bool treatAsPrimary = false,
     bool allowTapToPrimary = true,
+    int? orderedIndex,
   }) {
     final photo = widget.existingPhotos[index];
     final isDeleting = widget.deletingPhotoIds.contains(photo.id);
@@ -613,6 +635,11 @@ class _PhotoUploaderState extends State<PhotoUploader>
                         PhotoPreviewDialog.showNetwork(
                           context,
                           _buildPhotoUrl(photo.networkDisplayPhotoUrl),
+                          isPrimary: treatAsPrimary,
+                          onMakePrimary:
+                              (_canReorder && orderedIndex != null)
+                                  ? () => _makePrimaryViaReorder(orderedIndex)
+                                  : null,
                         );
                       }
                     },
@@ -721,6 +748,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
     int index, {
     bool treatAsPrimary = false,
     bool allowTapToPrimary = true,
+    int? orderedIndex,
   }) {
     final photoPath = widget.selectedPhotos[index];
     // Mirror the existing-photo logic: in reorder mode the visual position
@@ -756,7 +784,14 @@ class _PhotoUploaderState extends State<PhotoUploader>
                 if (allowTapToPrimary) {
                   _makeNewPhotoPrimary(index);
                 } else {
-                  PhotoPreviewDialog.showFile(context, File(photoPath));
+                  PhotoPreviewDialog.showFile(
+                    context,
+                    File(photoPath),
+                    isPrimary: treatAsPrimary,
+                    onMakePrimary: (_canReorder && orderedIndex != null)
+                        ? () => _makePrimaryViaReorder(orderedIndex)
+                        : null,
+                  );
                 }
               },
               child: ColoredBox(

@@ -645,6 +645,7 @@ class AppStrings {
       "cannot_delete_last_photo": "Cannot delete the last photo",
       "tap_photo_to_make_primary": "Tap photo to make primary",
       "drag_photo_to_reorder": "Drag to reorder. First photo is primary.",
+      "make_photo_primary": "Make primary",
       "making_primary": "Making primary...",
       "add_photo": "Add Photo",
       "take_photo": "Take Photo",
@@ -2310,6 +2311,7 @@ class AppStrings {
       "tap_photo_to_make_primary":
           "Нажмите на фото, чтобы сделать его основным",
       "drag_photo_to_reorder": "Перетащите для сортировки. Первое — основное.",
+      "make_photo_primary": "Сделать основным",
       "making_primary": "Создание основного...",
       "add_photo": "Добавить фото",
       "take_photo": "Сделать фото",
@@ -4001,6 +4003,7 @@ class AppStrings {
       "cannot_delete_last_photo": "Oxirgi rasmni o'chirib bo'lmaydi",
       "tap_photo_to_make_primary": "Rasmni asosiy sifatida belgilash",
       "drag_photo_to_reorder": "Tartib uchun suring. Birinchisi — asosiy.",
+      "make_photo_primary": "Asosiy qilish",
       "making_primary": "Asosiy sifatida belgilash...",
       "add_photo": "Rasm qo'shish",
       "take_photo": "Rasm olish",
