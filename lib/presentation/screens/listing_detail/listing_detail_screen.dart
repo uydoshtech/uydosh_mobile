@@ -834,7 +834,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         return;
       }
       await UserListingState().initialize();
-      final isOwner = UserListingState().isOwner(listingDetail.user.id);
+      final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
+      final isAdmin = role == "admin";
+      // Admins get the same edit privileges as the owner (north orientation slider + metrics backfill).
+      final canEditAsOwner = UserListingState().isOwner(listingDetail.user.id) || isAdmin;
       final metricsMissing = listingDetail.roomScanFloorLongM == null ||
           listingDetail.roomScanFloorShortM == null ||
           listingDetail.roomScanHeightM == null ||
@@ -843,10 +846,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         url,
         listingId: listingDetail.id,
         languageCode: LanguageState().currentLanguage,
-        publishMetricsIfMissing: isOwner && metricsMissing,
+        publishMetricsIfMissing: canEditAsOwner && metricsMissing,
         worldPlusXBearingDeg: listingDetail.roomScanWorldPlusXBearingDeg,
         northCorrectionDeg: listingDetail.roomScanNorthCorrectionDeg,
-        isListingOwner: isOwner,
+        isListingOwner: canEditAsOwner,
       );
       if (!mounted) return;
       if (!ok) {

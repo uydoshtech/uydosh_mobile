@@ -282,13 +282,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private var viewerTab: ViewerTab = .threeD
-  private let viewerTabControl = UISegmentedControl(items: ["", ""])
   private let viewerTabContainer = UIView()
+  private let viewerTabSelection = UIView()
+  private var viewerTabItems: [(button: UIButton, icon: UIImageView, label: UILabel)] = []
   private var floorPlanTabView: FloorPlanTab?
   private var floorPlanStateManager = FloorPlanStateManager()
   private var dimensionEditController: DimensionEditController?
-  private var compassOrientationEditController: CompassOrientationEditController?
-  private var isNorthPanelExpanded: Bool { compassOrientationEditController?.isExpanded == true }
+  private let northOrientationPanel: CompassOrientationAdjustPanel
+  private var northPanelTopConstraint: NSLayoutConstraint?
+  private var northPanelCommittedCorrection: Double = 0
+  private var isNorthPanelExpanded: Bool { !northOrientationPanel.isHidden }
   private var dimensionEditStrings: DimensionEditDialogStrings = .englishFallback
   private let sunSimulationController = SunSimulationController()
   private let sunToggleButton = UIButton(type: .system)
@@ -317,6 +320,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     self.metricsMessenger = metricsMessenger
     self.dismissFlutterResult = dismissFlutterResult
     sunSimulationPanel = SunSimulationPanel(strings: strings.sunSimulation)
+    northOrientationPanel = CompassOrientationAdjustPanel(strings: strings.compassOrientation)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -362,12 +366,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
     floorPlanTab.onAdjustNorthTapped = { [weak self] in
       self?.toggleNorthCorrectionPanel()
-    }
-    compassOrientationEditController = CompassOrientationEditController(
-      strings: strings.compassOrientation
-    )
-    compassOrientationEditController?.onVisibilityChanged = { [weak self] in
-      self?.updateNorthPanelAppearance()
     }
     updateNorthAdjustButtonVisibility()
 
@@ -514,8 +512,24 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       ]
     }()
 
+    let northPanelBottom = northOrientationPanel.bottomAnchor.constraint(
+      equalTo: modeMaterialsToolbarContainer.topAnchor,
+      constant: -10
+    )
+    northPanelTopConstraint = northPanelBottom
+
     NSLayoutConstraint.activate(
       [
+        northPanelBottom,
+        northOrientationPanel.leadingAnchor.constraint(
+          equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+          constant: 16
+        ),
+        northOrientationPanel.trailingAnchor.constraint(
+          equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+          constant: -16
+        ),
+
         sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
         sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
         sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -544,7 +558,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
 
         sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
-        sunCompassOverlay.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor),
+        sunCompassOverlay.heightAnchor.constraint(equalToConstant: 108),
+        sunCompassOverlay.widthAnchor.constraint(equalToConstant: 88),
         sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 12),
         sunCompassOverlay.trailingAnchor.constraint(
           lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor,
@@ -587,6 +602,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
+    updateViewerTabSelection(animated: false)
     if viewerTab == .threeD {
       bringInteractiveOverlaysToFront()
     }
@@ -744,12 +760,18 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunCompassOverlay.accessibilityLabel = strings.compassOrientation.title
     sunCompassOverlay.addTarget(self, action: #selector(compassOverlayTapped), for: .touchUpInside)
     view.addSubview(sunCompassOverlay)
+
+    northOrientationPanel.translatesAutoresizingMaskIntoConstraints = false
+    northOrientationPanel.isHidden = true
+    northOrientationPanel.delegate = self
+    view.addSubview(northOrientationPanel)
+
     refreshSunCompassLabels()
     updateNorthAdjustButtonVisibility()
   }
 
   @objc private func compassOverlayTapped() {
-    guard isListingOwner, listingId > 0 else { return }
+    guard sunCompassOverlay.acceptsOrientationTaps else { return }
     toggleNorthCorrectionPanel()
   }
 
@@ -822,13 +844,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private func refreshSunCompassLabels() {
-    let s = strings.sunSimulation
     let northAngle = computeNorthScreenAngleRad()
     sunCompassOverlay.update(
       azimuthDeg: sunSimulationController.azimuthDeg,
       elevationDeg: sunSimulationController.elevationDeg,
-      azimuthFormat: s.azimuthFormat,
-      elevationFormat: s.elevationFormat,
+      azimuthFormat: strings.sunSimulation.azimuthFormat,
+      elevationFormat: strings.sunSimulation.elevationFormat,
       northScreenAngleRad: northAngle
     )
   }
@@ -923,157 +944,142 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     setZoom(fovDegrees: cam.fieldOfView + Self.zoomFovStepDegrees, animated: true)
   }
 
+  // Custom pill switch (instead of UISegmentedControl). A UISegmentedControl
+  // hosted in the nav-bar titleView drops baked icon+label images on some iOS
+  // versions/themes, so we draw a sliding-thumb switch with plain views.
   private func setupViewerTabControl() {
     viewerTabContainer.translatesAutoresizingMaskIntoConstraints = false
-    viewerTabContainer.backgroundColor = UIColor.black.withAlphaComponent(0.35)
-    viewerTabContainer.layer.cornerRadius = 12
+    viewerTabContainer.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
+    viewerTabContainer.layer.cornerRadius = 16
+    viewerTabContainer.clipsToBounds = true
     if #available(iOS 13.0, *) {
       viewerTabContainer.layer.cornerCurve = .continuous
+      viewerTabContainer.overrideUserInterfaceStyle = .dark
     }
 
-    viewerTabControl.translatesAutoresizingMaskIntoConstraints = false
-    viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
-    viewerTabControl.apportionsSegmentWidthsByContent = true
-    viewerTabControl.addTarget(self, action: #selector(viewerTabChanged), for: .valueChanged)
+    viewerTabSelection.backgroundColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
+    viewerTabSelection.layer.cornerRadius = 13
+    viewerTabSelection.isUserInteractionEnabled = false
+    if #available(iOS 13.0, *) {
+      viewerTabSelection.layer.cornerCurve = .continuous
+    }
+    viewerTabContainer.addSubview(viewerTabSelection)
 
     let iconCfg = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
-    let threeDIcon = UIImage(systemName: "rotate.3d.fill", withConfiguration: iconCfg)
-      ?? UIImage(systemName: "cube.fill", withConfiguration: iconCfg)
-    let planIcon = UIImage(systemName: "map.fill", withConfiguration: iconCfg)
-      ?? UIImage(systemName: "square.grid.2x2.fill", withConfiguration: iconCfg)
-
-    let tabTitleFont = UIFont.systemFont(ofSize: 12, weight: .semibold)
-    let tabLabelColor = UIColor.white.withAlphaComponent(0.88)
-    configureViewerTabSegment(
-      at: ViewerTab.threeD.rawValue,
-      icon: threeDIcon,
-      title: strings.floorPlan.tab3DView,
-      font: tabTitleFont,
-      labelColor: tabLabelColor
-    )
-    configureViewerTabSegment(
-      at: ViewerTab.floorPlan.rawValue,
-      icon: planIcon,
-      title: strings.floorPlan.tabFloorPlan,
-      font: tabTitleFont,
-      labelColor: tabLabelColor
-    )
-
-    if #available(iOS 13.0, *) {
-      viewerTabControl.overrideUserInterfaceStyle = .dark
-      viewerTabControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
-      viewerTabControl.selectedSegmentTintColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
-      let selectedAttrs: [NSAttributedString.Key: Any] = [
-        .foregroundColor: UIColor.white.withAlphaComponent(0.92),
-        .font: tabTitleFont,
-      ]
-      let normalAttrs: [NSAttributedString.Key: Any] = [
-        .foregroundColor: UIColor.white.withAlphaComponent(0.55),
-        .font: tabTitleFont,
-      ]
-      viewerTabControl.setTitleTextAttributes(selectedAttrs, for: .selected)
-      viewerTabControl.setTitleTextAttributes(normalAttrs, for: .normal)
+    func symbol(_ names: [String]) -> UIImage? {
+      for name in names {
+        if let image = UIImage(systemName: name, withConfiguration: iconCfg) {
+          return image.withRenderingMode(.alwaysTemplate)
+        }
+      }
+      return nil
     }
-    viewerTabControl.tintColor = UIColor.white.withAlphaComponent(0.92)
-    viewerTabControl.accessibilityLabel = "\(strings.floorPlan.tab3DView), \(strings.floorPlan.tabFloorPlan)"
-    updateViewerTabAccessibility()
+    let threeDIcon = symbol(["rotate.3d", "cube.transparent", "cube.fill", "cube"])
+    let planIcon = symbol(["map.fill", "square.split.bottomrightquarter.fill", "square.grid.2x2.fill"])
 
-    viewerTabContainer.addSubview(viewerTabControl)
+    let configs: [(icon: UIImage?, title: String, tag: Int)] = [
+      (threeDIcon, strings.floorPlan.tab3DView, ViewerTab.threeD.rawValue),
+      (planIcon, strings.floorPlan.tabFloorPlan, ViewerTab.floorPlan.rawValue),
+    ]
 
+    let stack = UIStackView()
+    stack.axis = .horizontal
+    stack.distribution = .fillEqually
+    stack.translatesAutoresizingMaskIntoConstraints = false
+
+    for config in configs {
+      let item = makeViewerTabButton(icon: config.icon, title: config.title)
+      item.button.tag = config.tag
+      item.button.addTarget(self, action: #selector(viewerTabButtonTapped(_:)), for: .touchUpInside)
+      stack.addArrangedSubview(item.button)
+      viewerTabItems.append(item)
+    }
+
+    viewerTabContainer.addSubview(stack)
     NSLayoutConstraint.activate([
-      viewerTabContainer.heightAnchor.constraint(equalToConstant: 40),
-      viewerTabControl.topAnchor.constraint(equalTo: viewerTabContainer.topAnchor, constant: 4),
-      viewerTabControl.leadingAnchor.constraint(equalTo: viewerTabContainer.leadingAnchor, constant: 4),
-      viewerTabControl.trailingAnchor.constraint(equalTo: viewerTabContainer.trailingAnchor, constant: -4),
-      viewerTabControl.bottomAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor, constant: -4),
-      viewerTabControl.heightAnchor.constraint(equalToConstant: 32),
+      viewerTabContainer.heightAnchor.constraint(equalToConstant: 36),
+      viewerTabContainer.widthAnchor.constraint(equalToConstant: 176),
+      stack.topAnchor.constraint(equalTo: viewerTabContainer.topAnchor),
+      stack.bottomAnchor.constraint(equalTo: viewerTabContainer.bottomAnchor),
+      stack.leadingAnchor.constraint(equalTo: viewerTabContainer.leadingAnchor),
+      stack.trailingAnchor.constraint(equalTo: viewerTabContainer.trailingAnchor),
     ])
 
+    viewerTabContainer.accessibilityLabel = "\(strings.floorPlan.tab3DView), \(strings.floorPlan.tabFloorPlan)"
+
     navigationItem.titleView = viewerTabContainer
+    viewerTabContainer.frame = CGRect(x: 0, y: 0, width: 176, height: 36)
     viewerTabContainer.layoutIfNeeded()
-    viewerTabControl.sizeToFit()
-    let tabBarWidth = max(viewerTabControl.bounds.width + 8, 148)
-    viewerTabContainer.frame = CGRect(x: 0, y: 0, width: tabBarWidth, height: 40)
+    updateViewerTabSelection(animated: false)
+    updateViewerTabAccessibility()
   }
 
-  /// UISegmentedControl hides `setTitle` when `setImage` is also set — bake icon + label into one image.
-  private func configureViewerTabSegment(
-    at index: Int,
+  private func makeViewerTabButton(
     icon: UIImage?,
-    title: String,
-    font: UIFont,
-    labelColor: UIColor
-  ) {
-    if let icon {
-      let content = Self.makeSegmentIconTitleImage(
-        icon: icon,
-        title: title,
-        font: font,
-        color: labelColor
-      )
-      viewerTabControl.setImage(content, forSegmentAt: index)
-      viewerTabControl.setTitle(nil, forSegmentAt: index)
+    title: String
+  ) -> (button: UIButton, icon: UIImageView, label: UILabel) {
+    let button = UIButton(type: .custom)
+    button.backgroundColor = .clear
+
+    let iconView = UIImageView(image: icon)
+    iconView.contentMode = .scaleAspectFit
+    iconView.setContentHuggingPriority(.required, for: .horizontal)
+
+    let label = UILabel()
+    label.text = title
+    label.font = .systemFont(ofSize: 13, weight: .semibold)
+
+    let row = UIStackView(arrangedSubviews: [iconView, label])
+    row.axis = .horizontal
+    row.spacing = 5
+    row.alignment = .center
+    row.isUserInteractionEnabled = false
+    row.translatesAutoresizingMaskIntoConstraints = false
+    button.addSubview(row)
+
+    NSLayoutConstraint.activate([
+      row.centerXAnchor.constraint(equalTo: button.centerXAnchor),
+      row.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+      iconView.widthAnchor.constraint(equalToConstant: 15),
+      iconView.heightAnchor.constraint(equalToConstant: 15),
+    ])
+
+    return (button, iconView, label)
+  }
+
+  /// Slides the selection thumb behind the active tab and updates icon/label emphasis.
+  private func updateViewerTabSelection(animated: Bool) {
+    guard viewerTab.rawValue < viewerTabItems.count else { return }
+    for (index, item) in viewerTabItems.enumerated() {
+      let selected = index == viewerTab.rawValue
+      let alpha: CGFloat = selected ? 0.95 : 0.5
+      item.icon.tintColor = UIColor.white.withAlphaComponent(alpha)
+      item.label.textColor = UIColor.white.withAlphaComponent(alpha)
+    }
+    viewerTabContainer.layoutIfNeeded()
+    let targetFrame = viewerTabItems[viewerTab.rawValue].button.frame.insetBy(dx: 3, dy: 3)
+    guard !targetFrame.isNull, targetFrame.width > 0 else { return }
+    let apply = { self.viewerTabSelection.frame = targetFrame }
+    if animated {
+      UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut], animations: apply)
     } else {
-      viewerTabControl.setImage(nil, forSegmentAt: index)
-      viewerTabControl.setTitle(title, forSegmentAt: index)
+      apply()
     }
   }
 
-  private static func makeSegmentIconTitleImage(
-    icon: UIImage,
-    title: String,
-    font: UIFont,
-    color: UIColor
-  ) -> UIImage {
-    let spacing: CGFloat = 5
-    let horizontalPadding: CGFloat = 10
-    let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
-    let titleSize = (title as NSString).size(withAttributes: attributes)
-    let tintedIcon = icon.withTintColor(color, renderingMode: .alwaysOriginal)
-    let iconSize = tintedIcon.size
-    let contentWidth = iconSize.width + spacing + titleSize.width
-    let contentHeight = max(iconSize.height, titleSize.height)
-    let size = CGSize(width: contentWidth + horizontalPadding * 2, height: contentHeight + 8)
-
-    let format = UIGraphicsImageRendererFormat()
-    format.scale = UIScreen.main.scale
-    format.opaque = false
-    let renderer = UIGraphicsImageRenderer(size: size, format: format)
-    let baked = renderer.image { _ in
-      let midY = size.height * 0.5
-      tintedIcon.draw(
-        in: CGRect(
-          x: horizontalPadding,
-          y: midY - iconSize.height * 0.5,
-          width: iconSize.width,
-          height: iconSize.height
-        )
-      )
-      (title as NSString).draw(
-        at: CGPoint(
-          x: horizontalPadding + iconSize.width + spacing,
-          y: midY - titleSize.height * 0.5
-        ),
-        withAttributes: attributes
-      )
-    }
-    // Preserve our baked colors; otherwise UISegmentedControl treats the
-    // composite as a template and re-tints it (icon + label vanish on iOS 13+).
-    return baked.withRenderingMode(.alwaysOriginal)
+  @objc private func viewerTabButtonTapped(_ sender: UIButton) {
+    let next = ViewerTab(rawValue: sender.tag) ?? .threeD
+    guard next != viewerTab else { return }
+    viewerTab = next
+    updateViewerTabSelection(animated: true)
+    updateViewerTabAccessibility()
+    applyViewerTab(next, animated: true)
   }
 
   private func updateViewerTabAccessibility() {
-    viewerTabControl.accessibilityValue = viewerTab == .threeD
+    viewerTabContainer.accessibilityValue = viewerTab == .threeD
       ? strings.floorPlan.tab3DView
       : strings.floorPlan.tabFloorPlan
-  }
-
-  @objc private func viewerTabChanged() {
-    let next = ViewerTab(rawValue: viewerTabControl.selectedSegmentIndex) ?? .threeD
-    guard next != viewerTab else { return }
-    viewerTab = next
-    updateViewerTabAccessibility()
-    applyViewerTab(next, animated: true)
   }
 
   private func applyViewerTab(_ tab: ViewerTab, animated: Bool) {
@@ -1104,11 +1110,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else if let floorPlanTabView {
       view.bringSubviewToFront(floorPlanTabView)
       if isNorthPanelExpanded {
-        let layout = northPanelLayoutAnchor()
-        compassOrientationEditController?.updateTopAnchor(layout.anchor, constant: layout.constant)
-        if let panel = compassOrientationEditController?.panelView {
-          view.bringSubviewToFront(panel)
-        }
+        updateNorthPanelTopAnchor()
+        view.bringSubviewToFront(northOrientationPanel)
       }
     }
     if tab == .threeD {
@@ -1126,8 +1129,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
     view.bringSubviewToFront(sunSimulationPanel)
     view.bringSubviewToFront(sunCompassOverlay)
-    if let panel = compassOrientationEditController?.panelView, panel.superview != nil {
-      view.bringSubviewToFront(panel)
+    if !northOrientationPanel.isHidden {
+      view.bringSubviewToFront(northOrientationPanel)
     }
   }
 
@@ -1697,6 +1700,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     dimensionsLineStack.isHidden = false
     hintContainer.backgroundColor = UIColor.black.withAlphaComponent(0.52)
     hintContainer.isUserInteractionEnabled = true
+    if isNorthPanelExpanded {
+      updateNorthPanelTopAnchor()
+    }
     publishMetricsToFlutterIfNeeded(metrics: metrics)
     #if DEBUG
     logFootprintDebug(metrics)
@@ -1744,8 +1750,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   private func updateNorthAdjustButtonVisibility() {
     let canEdit = isListingOwner && listingId > 0
+    let canEditOn3D = canEdit && viewerTab == .threeD
     floorPlanTabView?.setNorthAdjustEnabled(canEdit)
-    sunCompassOverlay.isOrientationEditable = canEdit && viewerTab == .threeD
+    sunCompassOverlay.isOrientationEditable = canEditOn3D
+    sunCompassOverlay.acceptsOrientationTaps = canEditOn3D
     sunCompassOverlay.accessibilityHint = canEdit
       ? strings.compassOrientation.message
       : nil
@@ -1762,22 +1770,12 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     )
   }
 
-  private func northPanelLayoutAnchor() -> (anchor: NSLayoutYAxisAnchor, constant: CGFloat) {
-    if viewerTab == .threeD {
-      return (sunCompassOverlay.bottomAnchor, 8)
-    }
-    return (view.safeAreaLayoutGuide.topAnchor, 8)
-  }
-
-  private func toggleNorthCorrectionPanel() {
-    guard isListingOwner, let controller = compassOrientationEditController else { return }
-    let layout = northPanelLayoutAnchor()
-    controller.toggleInlinePanel(
-      in: view,
-      topAnchor: layout.anchor,
-      topConstant: layout.constant,
-      presenter: self,
-      currentCorrection: floorPlanStateManager.northCorrectionDeg,
+  private func northPanelCallbacks() -> (
+    onPreview: (Double) -> Void,
+    onCommit: (Double) -> Void,
+    onReset: () -> Void
+  ) {
+    (
       onPreview: { [weak self] value in
         self?.floorPlanStateManager.previewNorthCorrection(value)
         self?.refreshSunOrientationContext()
@@ -1797,8 +1795,76 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.refreshSunOrientationContext()
       }
     )
+  }
+
+  private func updateNorthPanelTopAnchor() {
+    northPanelTopConstraint?.isActive = false
+    let bottom = northOrientationPanel.bottomAnchor.constraint(
+      equalTo: modeMaterialsToolbarContainer.topAnchor,
+      constant: -10
+    )
+    northPanelTopConstraint = bottom
+    bottom.isActive = true
+  }
+
+  private func showNorthCorrectionPanel() {
+    guard isListingOwner else { return }
+    northPanelCommittedCorrection = floorPlanStateManager.northCorrectionDeg
+    updateNorthPanelTopAnchor()
+    northOrientationPanel.beginSession(committedCorrection: northPanelCommittedCorrection)
+    northOrientationPanel.isHidden = false
+    northOrientationPanel.alpha = 1
     bringInteractiveOverlaysToFront()
     updateNorthPanelAppearance()
+  }
+
+  private func hideNorthCorrectionPanel(revertPreview: Bool) {
+    guard !northOrientationPanel.isHidden else { return }
+    if revertPreview {
+      northPanelCallbacks().onPreview(northPanelCommittedCorrection)
+    }
+    northOrientationPanel.isHidden = true
+    updateNorthPanelAppearance()
+  }
+
+  private func toggleNorthCorrectionPanel() {
+    guard isListingOwner else { return }
+    if isNorthPanelExpanded {
+      hideNorthCorrectionPanel(revertPreview: true)
+    } else {
+      showNorthCorrectionPanel()
+    }
+  }
+
+  private func showNorthCorrectionConfirmationToast() {
+    let toast = UILabel()
+    toast.text = strings.compassOrientation.updated
+    toast.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+    toast.textColor = .white
+    toast.backgroundColor = UIColor(white: 0.12, alpha: 0.92)
+    toast.textAlignment = .center
+    toast.layer.cornerRadius = 14
+    toast.clipsToBounds = true
+    toast.alpha = 0
+    toast.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(toast)
+    NSLayoutConstraint.activate([
+      toast.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      toast.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 56),
+      toast.heightAnchor.constraint(equalToConstant: 34),
+      toast.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+    ])
+    toast.layoutIfNeeded()
+    toast.bounds = toast.bounds.insetBy(dx: -16, dy: 0)
+    UIView.animate(withDuration: 0.2, animations: {
+      toast.alpha = 1
+    }) { _ in
+      UIView.animate(withDuration: 0.25, delay: 1.0, options: [], animations: {
+        toast.alpha = 0
+      }) { _ in
+        toast.removeFromSuperview()
+      }
+    }
   }
 
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
@@ -2397,7 +2463,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     floorPlanStateManager.clear()
     floorPlanTabView?.canvas.clearModel()
     viewerTab = .threeD
-    viewerTabControl.selectedSegmentIndex = ViewerTab.threeD.rawValue
+    updateViewerTabSelection(animated: false)
     updateViewerTabAccessibility()
     isOrthographicPlanView = false
     debugOverlayNode = nil
@@ -2523,6 +2589,29 @@ extension RoomUsdzViewerViewController: FloorPlanCanvasDelegate {
       applyDisplayMode(displayMode)
     }
     sunSimulationController.refreshShadowCasters()
+  }
+}
+
+extension RoomUsdzViewerViewController: CompassOrientationAdjustPanelDelegate {
+  func northPanel(_ panel: CompassOrientationAdjustPanel, didPreviewCorrection degrees: Double) {
+    northPanelCallbacks().onPreview(degrees)
+  }
+
+  func northPanelDidApply(_ panel: CompassOrientationAdjustPanel, correction degrees: Double) {
+    northPanelCommittedCorrection = degrees
+    northPanelCallbacks().onCommit(degrees)
+    hideNorthCorrectionPanel(revertPreview: false)
+    showNorthCorrectionConfirmationToast()
+  }
+
+  func northPanelDidReset(_ panel: CompassOrientationAdjustPanel) {
+    northPanelCommittedCorrection = 0
+    northPanelCallbacks().onReset()
+    showNorthCorrectionConfirmationToast()
+  }
+
+  func northPanelDidDismiss(_ panel: CompassOrientationAdjustPanel, revertPreview: Bool) {
+    hideNorthCorrectionPanel(revertPreview: revertPreview)
   }
 }
 

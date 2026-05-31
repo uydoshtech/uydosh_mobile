@@ -77,22 +77,19 @@ final class CompassOrientationEditController: CompassOrientationAdjustPanelDeleg
     panel.delegate = self
   }
 
-  func attachIfNeeded(to hostView: UIView, topAnchor: NSLayoutYAxisAnchor, topConstant: CGFloat) {
+  /// Mount once under the viewer root view; visibility toggled with [showPanel] / [hidePanel].
+  func installIfNeeded(in hostView: UIView) {
     guard panel.superview == nil else { return }
     self.hostView = hostView
     panel.translatesAutoresizingMaskIntoConstraints = false
+    panel.alpha = 0
     hostView.addSubview(panel)
-    let top = panel.topAnchor.constraint(equalTo: topAnchor, constant: topConstant)
+    let top = panel.topAnchor.constraint(equalTo: hostView.safeAreaLayoutGuide.topAnchor, constant: 8)
     panelTopConstraint = top
     NSLayoutConstraint.activate([
       top,
+      panel.leadingAnchor.constraint(equalTo: hostView.safeAreaLayoutGuide.leadingAnchor, constant: 16),
       panel.trailingAnchor.constraint(equalTo: hostView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-      panel.leadingAnchor.constraint(
-        greaterThanOrEqualTo: hostView.safeAreaLayoutGuide.leadingAnchor,
-        constant: 16
-      ),
-      panel.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
-      panel.widthAnchor.constraint(greaterThanOrEqualToConstant: 248),
     ])
   }
 
@@ -104,7 +101,46 @@ final class CompassOrientationEditController: CompassOrientationAdjustPanelDeleg
     top.isActive = true
   }
 
-  func toggleInlinePanel(
+  func showPanel(
+    topAnchor: NSLayoutYAxisAnchor,
+    topConstant: CGFloat,
+    presenter: UIViewController,
+    currentCorrection: Double,
+    onPreview: @escaping (Double) -> Void,
+    onCommit: @escaping (Double) -> Void,
+    onReset: @escaping () -> Void
+  ) {
+    guard let hostView else { return }
+    self.presenter = presenter
+    self.onPreview = onPreview
+    self.onCommit = onCommit
+    self.onReset = onReset
+    committedCorrection = currentCorrection
+    updateTopAnchor(topAnchor, constant: topConstant)
+
+    panel.beginSession(committedCorrection: currentCorrection)
+    panel.isHidden = false
+    hostView.bringSubviewToFront(panel)
+    UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
+      self.panel.alpha = 1
+    }
+    onVisibilityChanged?()
+  }
+
+  func hidePanel(revertPreview: Bool) {
+    guard !panel.isHidden else { return }
+    if revertPreview {
+      onPreview?(committedCorrection)
+    }
+    UIView.animate(withDuration: 0.18, delay: 0, options: [.curveEaseIn]) {
+      self.panel.alpha = 0
+    } completion: { _ in
+      self.panel.isHidden = true
+      self.onVisibilityChanged?()
+    }
+  }
+
+  func togglePanel(
     in hostView: UIView,
     topAnchor: NSLayoutYAxisAnchor,
     topConstant: CGFloat,
@@ -114,31 +150,20 @@ final class CompassOrientationEditController: CompassOrientationAdjustPanelDeleg
     onCommit: @escaping (Double) -> Void,
     onReset: @escaping () -> Void
   ) {
-    attachIfNeeded(to: hostView, topAnchor: topAnchor, topConstant: topConstant)
-    updateTopAnchor(topAnchor, constant: topConstant)
-    self.presenter = presenter
-    self.onPreview = onPreview
-    self.onCommit = onCommit
-    self.onReset = onReset
-    committedCorrection = currentCorrection
-
+    installIfNeeded(in: hostView)
     if isExpanded {
-      dismissInlinePanel(revertPreview: true)
+      hidePanel(revertPreview: true)
       return
     }
-
-    panel.beginSession(committedCorrection: currentCorrection)
-    panel.isHidden = false
-    hostView.bringSubviewToFront(panel)
-    onVisibilityChanged?()
-  }
-
-  func dismissInlinePanel(revertPreview: Bool) {
-    if revertPreview {
-      onPreview?(committedCorrection)
-    }
-    panel.isHidden = true
-    onVisibilityChanged?()
+    showPanel(
+      topAnchor: topAnchor,
+      topConstant: topConstant,
+      presenter: presenter,
+      currentCorrection: currentCorrection,
+      onPreview: onPreview,
+      onCommit: onCommit,
+      onReset: onReset
+    )
   }
 
   func showConfirmation(from presenter: UIViewController) {
@@ -179,8 +204,7 @@ final class CompassOrientationEditController: CompassOrientationAdjustPanelDeleg
   func northPanelDidApply(_ panel: CompassOrientationAdjustPanel, correction degrees: Double) {
     committedCorrection = degrees
     onCommit?(degrees)
-    panel.isHidden = true
-    onVisibilityChanged?()
+    hidePanel(revertPreview: false)
     if let presenter {
       showConfirmation(from: presenter)
     }
@@ -189,17 +213,12 @@ final class CompassOrientationEditController: CompassOrientationAdjustPanelDeleg
   func northPanelDidReset(_ panel: CompassOrientationAdjustPanel) {
     committedCorrection = 0
     onReset?()
-    onVisibilityChanged?()
     if let presenter {
       showConfirmation(from: presenter)
     }
   }
 
   func northPanelDidDismiss(_ panel: CompassOrientationAdjustPanel, revertPreview: Bool) {
-    if revertPreview {
-      onPreview?(committedCorrection)
-    }
-    panel.isHidden = true
-    onVisibilityChanged?()
+    hidePanel(revertPreview: revertPreview)
   }
 }

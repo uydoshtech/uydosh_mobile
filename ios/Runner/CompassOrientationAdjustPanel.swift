@@ -15,7 +15,6 @@ final class CompassOrientationAdjustPanel: UIView {
   private let stack = UIStackView()
   private let valueLabel = UILabel()
   private let slider = UISlider()
-  private let resetButton = UIButton(type: .system)
   private let doneButton = UIButton(type: .system)
   private let closeButton = UIButton(type: .system)
   private var suppressCallbacks = false
@@ -60,7 +59,7 @@ final class CompassOrientationAdjustPanel: UIView {
 
     stack.translatesAutoresizingMaskIntoConstraints = false
     stack.axis = .vertical
-    stack.spacing = 10
+    stack.spacing = 6
     stack.alignment = .fill
     addSubview(stack)
 
@@ -81,7 +80,7 @@ final class CompassOrientationAdjustPanel: UIView {
 
     let messageLabel = UILabel()
     messageLabel.text = strings.message
-    messageLabel.font = UIFont.systemFont(ofSize: 11, weight: .regular)
+    messageLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular)
     messageLabel.textColor = UIColor.white.withAlphaComponent(0.58)
     messageLabel.numberOfLines = 2
 
@@ -108,7 +107,7 @@ final class CompassOrientationAdjustPanel: UIView {
     header.addArrangedSubview(UIView())
     header.addArrangedSubview(closeButton)
 
-    valueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 32, weight: .semibold)
+    valueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 22, weight: .semibold)
     valueLabel.textColor = UIColor(red: 1, green: 0.82, blue: 0.45, alpha: 1)
     valueLabel.textAlignment = .center
 
@@ -128,16 +127,13 @@ final class CompassOrientationAdjustPanel: UIView {
       tickRow.addArrangedSubview(label)
     }
 
-    configureActionButton(resetButton, title: strings.reset, primary: false)
-    resetButton.addTarget(self, action: #selector(resetTapped), for: .touchUpInside)
-
     configureActionButton(doneButton, title: strings.apply, primary: true)
     doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
 
-    let buttonRow = UIStackView(arrangedSubviews: [resetButton, doneButton])
+    let buttonRow = UIStackView(arrangedSubviews: [doneButton])
     buttonRow.axis = .horizontal
     buttonRow.spacing = 8
-    buttonRow.distribution = .fillEqually
+    buttonRow.distribution = .fill
 
     stack.addArrangedSubview(header)
     stack.addArrangedSubview(valueLabel)
@@ -146,11 +142,11 @@ final class CompassOrientationAdjustPanel: UIView {
     stack.addArrangedSubview(buttonRow)
 
     NSLayoutConstraint.activate([
-      stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+      stack.topAnchor.constraint(equalTo: topAnchor, constant: 10),
       stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
       stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-      stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
-      buttonRow.heightAnchor.constraint(equalToConstant: 36),
+      stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+      buttonRow.heightAnchor.constraint(equalToConstant: 34),
     ])
   }
 
@@ -186,11 +182,5 @@ final class CompassOrientationAdjustPanel: UIView {
     let value = Double(slider.value).rounded()
     sessionCommittedCorrection = value
     delegate?.northPanelDidApply(self, correction: value)
-  }
-
-  @objc private func resetTapped() {
-    setCorrection(0, notify: true)
-    sessionCommittedCorrection = 0
-    delegate?.northPanelDidReset(self)
   }
 }

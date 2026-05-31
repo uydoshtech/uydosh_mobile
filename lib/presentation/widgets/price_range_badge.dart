@@ -103,7 +103,7 @@ class PriceRangeBadge extends StatelessWidget {
 
         return Container(
           padding:
-              padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(8),
