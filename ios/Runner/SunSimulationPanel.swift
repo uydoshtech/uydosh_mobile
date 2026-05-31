@@ -9,8 +9,6 @@ struct SunSimulationStrings {
   let morning: String
   let noon: String
   let evening: String
-  let today: String
-  let now: String
   let azimuthFormat: String
   let elevationFormat: String
 
@@ -23,8 +21,6 @@ struct SunSimulationStrings {
     morning: String,
     noon: String,
     evening: String,
-    today: String,
-    now: String,
     azimuthFormat: String,
     elevationFormat: String
   ) {
@@ -36,8 +32,6 @@ struct SunSimulationStrings {
     self.morning = morning
     self.noon = noon
     self.evening = evening
-    self.today = today
-    self.now = now
     self.azimuthFormat = azimuthFormat
     self.elevationFormat = elevationFormat
   }
@@ -52,8 +46,6 @@ struct SunSimulationStrings {
       morning: dict["sunPresetMorning"] ?? "Morning",
       noon: dict["sunPresetNoon"] ?? "Noon",
       evening: dict["sunPresetEvening"] ?? "Evening",
-      today: dict["sunToday"] ?? "Today",
-      now: dict["sunNow"] ?? "Now",
       azimuthFormat: dict["sunAzimuthFormat"] ?? "Az %d°",
       elevationFormat: dict["sunElevationFormat"] ?? "El %d°"
     )
@@ -68,8 +60,6 @@ struct SunSimulationStrings {
     morning: "Morning",
     noon: "Noon",
     evening: "Evening",
-    today: "Today",
-    now: "Now",
     azimuthFormat: "Az %d°",
     elevationFormat: "El %d°"
   )
@@ -80,6 +70,17 @@ protocol SunSimulationPanelDelegate: AnyObject {
   func sunPanel(_ panel: SunSimulationPanel, didChangeElevation degrees: Float)
   func sunPanel(_ panel: SunSimulationPanel, didChangeIntensity value: CGFloat)
   func sunPanel(_ panel: SunSimulationPanel, didSelectPreset preset: SunPositionMath.TimePreset)
+  /// The user grabbed the timeline / play / now controls. The host should end any externally
+  /// driven animation (e.g. the intro cinematic) so it doesn't double-drive the sun.
+  func sunPanelDidTakeManualControl(_ panel: SunSimulationPanel)
+  /// Fired whenever the simulated time-of-day changes (scrub, play, "now", or a preset), so the
+  /// host can drive the analog clock overlay. Minutes are since local midnight.
+  func sunPanel(
+    _ panel: SunSimulationPanel,
+    didChangeTimeMinute minute: Double,
+    sunriseMinute: Double,
+    sunsetMinute: Double
+  )
 }
 
 /// Collapsible sunlight controls (sliders + time-of-day presets).
@@ -96,23 +97,29 @@ final class SunSimulationPanel: UIView {
   private let presetStack = UIStackView()
   private var suppressCallbacks = false
 
-  // "Today" solar mode: animate the real sun path for the property's location & today's date.
-  private let todayButton = UIButton(type: .system)
+  // Solar timeline: drives the real sun path for the property's location & today's date.
   private let solarContainer = UIStackView()
-  private let solarInfoLabel = UILabel()
   private let timeSlider = UISlider()
-  private let nowButton = UIButton(type: .system)
+  private let timeLabelsRow = UIStackView()
   private let playButton = UIButton(type: .system)
-  private var solarMode = false
   private var isPlaying = false
   private var animationTimer: Timer?
   private var sunriseMinute: Double = 6 * 60
   private var sunsetMinute: Double = 20 * 60
 
+  /// Minutes in a full day — the timeline spans 00:00…24:00 regardless of the daylight window.
+  private static let dayMinutes: Double = 24 * 60
+
   /// Property location (defaults to central Tashkent — the app's market).
   var siteLatitude = SolarPosition.tashkentLatitude
   var siteLongitude = SolarPosition.tashkentLongitude
   var siteTimeZone = SolarPosition.tashkentTimeZone
+
+  /// Daylight bounds of the currently primed day (minutes since midnight), for the clock arc.
+  var daylightSunriseMinute: Double { sunriseMinute }
+  var daylightSunsetMinute: Double { sunsetMinute }
+  /// The time-of-day the timeline currently points at (minutes since midnight).
+  var currentTimelineMinute: Double { Double(timeSlider.value) }
 
   init(strings: SunSimulationStrings) {
     self.strings = strings
@@ -156,6 +163,23 @@ final class SunSimulationPanel: UIView {
     suppressCallbacks = false
   }
 
+  /// Reflects an externally-driven animation (e.g. the intro cinematic) on the play/pause button
+  /// WITHOUT starting the panel's own playback timer — keeping the two animators from overlapping.
+  func setExternalPlayback(active: Bool) {
+    if active {
+      animationTimer?.invalidate()
+      animationTimer = nil
+    }
+    guard isPlaying != active else { return }
+    isPlaying = active
+    updatePlayButtonAppearance()
+  }
+
+  /// Moves the timeline thumb to mirror an externally-driven sun sweep (clamped to daylight).
+  func syncTimeline(toMinute minute: Double) {
+    timeSlider.value = Float(clampToDaylight(minute))
+  }
+
   private func setup() {
     translatesAutoresizingMaskIntoConstraints = false
     backgroundColor = UIColor(red: 0.17, green: 0.17, blue: 0.19, alpha: 0.94)
@@ -170,37 +194,18 @@ final class SunSimulationPanel: UIView {
 
     stack.translatesAutoresizingMaskIntoConstraints = false
     stack.axis = .vertical
-    stack.spacing = 8
+    stack.spacing = 5
     stack.alignment = .fill
     addSubview(stack)
 
-    stack.addArrangedSubview(makeSliderRow(
-      title: strings.azimuthLabel,
-      slider: azimuthSlider,
-      valueLabel: azimuthValueLabel,
-      min: 0,
-      max: 360,
-      value: SunPositionMath.TimePreset.noon.azimuthDeg,
-      action: #selector(azimuthChanged)
-    ))
-    stack.addArrangedSubview(makeSliderRow(
-      title: strings.elevationLabel,
-      slider: elevationSlider,
-      valueLabel: elevationValueLabel,
-      min: 0,
-      max: 90,
-      value: SunPositionMath.TimePreset.noon.elevationDeg,
-      action: #selector(elevationChanged)
-    ))
-    stack.addArrangedSubview(makeSliderRow(
-      title: strings.intensityLabel,
-      slider: intensitySlider,
-      valueLabel: nil,
-      min: 400,
-      max: 2600,
-      value: 1400,
-      action: #selector(intensityChanged)
-    ))
+    // Azimuth / elevation sliders are kept as backing storage (updated via setAzimuth/
+    // setElevation) but no longer shown — the timeline drives the sun instead.
+    configureBackingSlider(azimuthSlider, min: 0, max: 360,
+                           value: SunPositionMath.TimePreset.noon.azimuthDeg,
+                           action: #selector(azimuthChanged))
+    configureBackingSlider(elevationSlider, min: 0, max: 90,
+                           value: SunPositionMath.TimePreset.noon.elevationDeg,
+                           action: #selector(elevationChanged))
 
     presetStack.axis = .horizontal
     presetStack.spacing = 8
@@ -211,56 +216,66 @@ final class SunSimulationPanel: UIView {
     stack.addArrangedSubview(presetStack)
 
     setupSolarControls()
-    stack.addArrangedSubview(todayButton)
     stack.addArrangedSubview(solarContainer)
 
     NSLayoutConstraint.activate([
-      stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-      stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-      stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-      stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+      stack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+      stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+      stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+      stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
     ])
+
+    // The solar timeline spans the full 24-hour day; daylight bounds still drive the clock arc.
+    recomputeDaylight()
+    timeSlider.minimumValue = 0
+    timeSlider.maximumValue = Float(SunSimulationPanel.dayMinutes)
+    timeSlider.value = Float(currentMinuteOfDay())
+    rebuildTimeRuler()
+  }
+
+  private func configureBackingSlider(
+    _ slider: UISlider,
+    min: Float,
+    max: Float,
+    value: Float,
+    action: Selector
+  ) {
+    slider.minimumValue = min
+    slider.maximumValue = max
+    slider.value = value
+    slider.addTarget(self, action: action, for: .valueChanged)
   }
 
   private func setupSolarControls() {
-    todayButton.setTitle(strings.today, for: .normal)
-    todayButton.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-    todayButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
-    todayButton.layer.cornerRadius = 10
-    if #available(iOS 13.0, *) {
-      todayButton.layer.cornerCurve = .continuous
-    }
-    todayButton.addTarget(self, action: #selector(todayTapped), for: .touchUpInside)
-    updateTodayButtonAppearance()
-
     solarContainer.axis = .vertical
     solarContainer.spacing = 6
-    solarContainer.isHidden = true
+    solarContainer.isHidden = false
 
-    solarInfoLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 12, weight: .semibold)
-    solarInfoLabel.textColor = UIColor(red: 1, green: 0.85, blue: 0.5, alpha: 1)
-    solarInfoLabel.textAlignment = .center
-
-    timeSlider.minimumValue = Float(sunriseMinute)
-    timeSlider.maximumValue = Float(sunsetMinute)
-    timeSlider.value = Float((sunriseMinute + sunsetMinute) / 2)
+    timeSlider.minimumValue = 0
+    timeSlider.maximumValue = Float(SunSimulationPanel.dayMinutes)
+    timeSlider.value = Float(SunSimulationPanel.dayMinutes / 2)
     timeSlider.tintColor = UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 1)
     timeSlider.addTarget(self, action: #selector(timeScrubbed), for: .valueChanged)
     timeSlider.addTarget(self, action: #selector(timeScrubBegan), for: .touchDown)
 
-    configureSolarIconButton(nowButton, systemName: "location.fill", title: strings.now)
-    nowButton.addTarget(self, action: #selector(nowTapped), for: .touchUpInside)
-
     configureSolarIconButton(playButton, systemName: "play.fill", title: nil)
     playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
 
-    let controlsRow = UIStackView(arrangedSubviews: [nowButton, timeSlider, playButton])
+    // Play control sits on its own row, right-aligned; the timeline gets the row below.
+    let spacer = UIView()
+    spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    let controlsRow = UIStackView(arrangedSubviews: [spacer, playButton])
     controlsRow.axis = .horizontal
     controlsRow.spacing = 8
     controlsRow.alignment = .center
 
-    solarContainer.addArrangedSubview(solarInfoLabel)
+    timeLabelsRow.axis = .horizontal
+    timeLabelsRow.distribution = .equalSpacing
+    timeLabelsRow.alignment = .fill
+
     solarContainer.addArrangedSubview(controlsRow)
+    solarContainer.addArrangedSubview(timeSlider)
+    solarContainer.addArrangedSubview(timeLabelsRow)
   }
 
   private func configureSolarIconButton(_ button: UIButton, systemName: String, title: String?) {
@@ -282,56 +297,12 @@ final class SunSimulationPanel: UIView {
     button.setContentCompressionResistancePriority(.required, for: .horizontal)
   }
 
-  private func makeSliderRow(
-    title: String,
-    slider: UISlider,
-    valueLabel: UILabel?,
-    min: Float,
-    max: Float,
-    value: Float,
-    action: Selector
-  ) -> UIStackView {
-    let titleLabel = UILabel()
-    titleLabel.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
-    titleLabel.textColor = UIColor.white.withAlphaComponent(0.75)
-    titleLabel.text = title
-
-    slider.minimumValue = min
-    slider.maximumValue = max
-    slider.value = value
-    slider.addTarget(self, action: action, for: .valueChanged)
-    slider.tintColor = UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 1)
-
-    let row = UIStackView()
-    row.axis = .vertical
-    row.spacing = 4
-
-    let header = UIStackView(arrangedSubviews: [titleLabel])
-    if let valueLabel {
-      valueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
-      valueLabel.textColor = UIColor.white.withAlphaComponent(0.9)
-      valueLabel.textAlignment = .right
-      valueLabel.setContentHuggingPriority(.required, for: .horizontal)
-      header.addArrangedSubview(valueLabel)
-      if title.contains("Azimuth") || title == strings.azimuthLabel {
-        valueLabel.text = String(format: strings.azimuthFormat, Int(value.rounded()))
-      } else if title == strings.elevationLabel {
-        valueLabel.text = String(format: strings.elevationFormat, Int(value.rounded()))
-      }
-    }
-    header.axis = .horizontal
-    header.distribution = .equalSpacing
-
-    row.addArrangedSubview(header)
-    row.addArrangedSubview(slider)
-    return row
-  }
-
   private func presetButton(_ title: String, preset: SunPositionMath.TimePreset) -> UIButton {
     let b = UIButton(type: .system)
-    b.setTitle(title, for: .normal)
-    b.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
-    b.setTitleColor(UIColor.white.withAlphaComponent(0.92), for: .normal)
+    let cfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    b.setImage(UIImage(systemName: presetIconName(preset), withConfiguration: cfg), for: .normal)
+    b.tintColor = UIColor.white.withAlphaComponent(0.92)
+    b.accessibilityLabel = title
     b.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
     b.layer.cornerRadius = 10
     if #available(iOS 13.0, *) {
@@ -341,6 +312,14 @@ final class SunSimulationPanel: UIView {
     b.tag = presetTag(preset)
     b.addTarget(self, action: #selector(presetTapped(_:)), for: .touchUpInside)
     return b
+  }
+
+  private func presetIconName(_ preset: SunPositionMath.TimePreset) -> String {
+    switch preset {
+    case .morning: return "sunrise.fill"
+    case .noon: return "sun.max.fill"
+    case .evening: return "sunset.fill"
+    }
   }
 
   private func presetTag(_ preset: SunPositionMath.TimePreset) -> Int {
@@ -364,7 +343,7 @@ final class SunSimulationPanel: UIView {
     let v = azimuthSlider.value
     azimuthValueLabel.text = String(format: strings.azimuthFormat, Int(v.rounded()))
     guard !suppressCallbacks else { return }
-    exitSolarMode()
+    stopPlayback()
     delegate?.sunPanel(self, didChangeAzimuth: v)
   }
 
@@ -372,7 +351,7 @@ final class SunSimulationPanel: UIView {
     let v = elevationSlider.value
     elevationValueLabel.text = String(format: strings.elevationFormat, Int(v.rounded()))
     guard !suppressCallbacks else { return }
-    exitSolarMode()
+    stopPlayback()
     delegate?.sunPanel(self, didChangeElevation: v)
   }
 
@@ -383,52 +362,30 @@ final class SunSimulationPanel: UIView {
 
   @objc private func presetTapped(_ sender: UIButton) {
     guard let preset = presetFromTag(sender.tag) else { return }
-    exitSolarMode()
+    stopPlayback()
     setAzimuth(preset.azimuthDeg, notify: false)
     setElevation(preset.elevationDeg, notify: false)
     delegate?.sunPanel(self, didSelectPreset: preset)
+    // Presets bypass the solar timeline, so point the clock at a representative daylight time.
+    let minute = representativeMinute(for: preset)
+    timeSlider.value = Float(clampToDaylight(minute))
+    emitTimeChanged(minute)
   }
 
-  // MARK: - Today (real solar path) mode
-
-  @objc private func todayTapped() {
-    if solarMode {
-      exitSolarMode()
-    } else {
-      enterSolarMode()
+  /// A clock-friendly time-of-day for each preset (morning / noon / evening) within daylight.
+  private func representativeMinute(for preset: SunPositionMath.TimePreset) -> Double {
+    let span = max(1, sunsetMinute - sunriseMinute)
+    switch preset {
+    case .morning: return sunriseMinute + span * 0.2
+    case .noon: return sunriseMinute + span * 0.5
+    case .evening: return sunsetMinute - span * 0.12
     }
   }
 
-  private func enterSolarMode() {
-    solarMode = true
-    recomputeDaylight()
-    timeSlider.minimumValue = Float(sunriseMinute)
-    timeSlider.maximumValue = Float(sunsetMinute)
-    let start = clampToDaylight(currentMinuteOfDay())
-    timeSlider.value = Float(start)
-    solarContainer.isHidden = false
-    updateTodayButtonAppearance()
-    applySolar(atMinute: start)
-  }
-
-  private func exitSolarMode() {
-    guard solarMode else { return }
-    stopPlayback()
-    solarMode = false
-    solarContainer.isHidden = true
-    updateTodayButtonAppearance()
-  }
-
-  @objc private func nowTapped() {
-    recomputeDaylight()
-    timeSlider.minimumValue = Float(sunriseMinute)
-    timeSlider.maximumValue = Float(sunsetMinute)
-    let minute = clampToDaylight(currentMinuteOfDay())
-    timeSlider.value = Float(minute)
-    applySolar(atMinute: minute)
-  }
+  // MARK: - Solar timeline controls
 
   @objc private func timeScrubBegan() {
+    delegate?.sunPanelDidTakeManualControl(self)
     stopPlayback()
   }
 
@@ -437,6 +394,8 @@ final class SunSimulationPanel: UIView {
   }
 
   @objc private func playTapped() {
+    // End any externally driven animation first so only one animator drives the sun.
+    delegate?.sunPanelDidTakeManualControl(self)
     if isPlaying {
       stopPlayback()
     } else {
@@ -447,13 +406,12 @@ final class SunSimulationPanel: UIView {
   private func startPlayback() {
     isPlaying = true
     updatePlayButtonAppearance()
-    // Sweep the full daylight span in ~14s, looping back to sunrise at the end.
-    let span = max(1, sunsetMinute - sunriseMinute)
-    let stepPerTick = span / (14.0 / 0.05)
+    // Sweep the full 24-hour day in ~28s, looping back to midnight at the end.
+    let stepPerTick = SunSimulationPanel.dayMinutes / (28.0 / 0.05)
     let timer = Timer(timeInterval: 0.05, repeats: true) { [weak self] _ in
       guard let self else { return }
       var next = Double(self.timeSlider.value) + stepPerTick
-      if next >= self.sunsetMinute { next = self.sunriseMinute }
+      if next >= SunSimulationPanel.dayMinutes { next = 0 }
       self.timeSlider.value = Float(next)
       self.applySolar(atMinute: next)
     }
@@ -482,14 +440,19 @@ final class SunSimulationPanel: UIView {
 
     setAzimuth(azimuth, notify: false)
     setElevation(elevation, notify: false)
-    solarInfoLabel.text = String(
-      format: "%@ · %@ · %@",
-      formatTime(minute: minute),
-      String(format: strings.azimuthFormat, Int(pos.azimuthDeg.rounded())),
-      String(format: strings.elevationFormat, Int(max(0, pos.elevationDeg).rounded()))
-    )
     delegate?.sunPanel(self, didChangeAzimuth: azimuth)
     delegate?.sunPanel(self, didChangeElevation: elevation)
+    emitTimeChanged(minute)
+  }
+
+  /// Notifies the host of the current simulated time-of-day so it can drive the analog clock.
+  private func emitTimeChanged(_ minute: Double) {
+    delegate?.sunPanel(
+      self,
+      didChangeTimeMinute: minute,
+      sunriseMinute: sunriseMinute,
+      sunsetMinute: sunsetMinute
+    )
   }
 
   private func recomputeDaylight() {
@@ -526,24 +489,44 @@ final class SunSimulationPanel: UIView {
     return start.addingTimeInterval(minute * 60)
   }
 
-  private func formatTime(minute: Double) -> String {
-    let total = Int(minute.rounded())
-    return String(format: "%02d:%02d", (total / 60) % 24, total % 60)
-  }
-
-  private func updateTodayButtonAppearance() {
-    if solarMode {
-      todayButton.backgroundColor = UIColor(red: 0.36, green: 0.28, blue: 0.18, alpha: 1)
-      todayButton.setTitleColor(UIColor(red: 1, green: 0.9, blue: 0.7, alpha: 1), for: .normal)
-    } else {
-      todayButton.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
-      todayButton.setTitleColor(UIColor.white.withAlphaComponent(0.92), for: .normal)
-    }
-  }
-
   private func updatePlayButtonAppearance() {
     let cfg = UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)
     let name = isPlaying ? "pause.fill" : "play.fill"
     playButton.setImage(UIImage(systemName: name, withConfiguration: cfg), for: .normal)
+  }
+
+  // MARK: - Hour-of-day ruler
+
+  /// Rebuilds the row of hour labels under the timeline across the full 24-hour day
+  /// (12 a.m. → 12 a.m.), spaced every few hours so they never crowd the panel.
+  private func rebuildTimeRuler() {
+    timeLabelsRow.arrangedSubviews.forEach {
+      timeLabelsRow.removeArrangedSubview($0)
+      $0.removeFromSuperview()
+    }
+
+    let step = 3
+    var hour = 0
+    while hour <= 24 {
+      timeLabelsRow.addArrangedSubview(makeHourLabel(hour))
+      hour += step
+    }
+  }
+
+  private func makeHourLabel(_ hour: Int) -> UILabel {
+    let label = UILabel()
+    label.font = UIFont.systemFont(ofSize: 9, weight: .medium)
+    label.textColor = UIColor.white.withAlphaComponent(0.5)
+    label.textAlignment = .center
+    label.text = formatHourLabel(hour)
+    return label
+  }
+
+  private func formatHourLabel(_ hour24: Int) -> String {
+    let normalized = ((hour24 % 24) + 24) % 24
+    let suffix = normalized < 12 ? "a.m." : "p.m."
+    var hour12 = normalized % 12
+    if hour12 == 0 { hour12 = 12 }
+    return "\(hour12) \(suffix)"
   }
 }

@@ -95,9 +95,20 @@ final class SunCompassOverlayView: UIControl {
     drawCardinal("W", angle: northRad - .pi / 2, center: center, radius: radius, color: UIColor.white.withAlphaComponent(0.75))
 
     let sunRad = northRad + CGFloat(azimuthDeg) * .pi / 180
+    let sunCoreRadius: CGFloat = 4.5
+
+    // Arrow shaft + head grow outward from the sun glyph toward the sun's azimuth.
     let sunTip = point(onCircle: center, radius: radius - 4, angle: sunRad)
-    let sunBaseL = point(onCircle: center, radius: radius - 14, angle: sunRad, lateral: -3)
-    let sunBaseR = point(onCircle: center, radius: radius - 14, angle: sunRad, lateral: 3)
+    let shaftStart = point(onCircle: center, radius: sunCoreRadius + 1.5, angle: sunRad)
+    ctx.setStrokeColor(UIColor(red: 1, green: 0.85, blue: 0.3, alpha: 0.95).cgColor)
+    ctx.setLineWidth(2)
+    ctx.setLineCap(.round)
+    ctx.move(to: shaftStart)
+    ctx.addLine(to: sunTip)
+    ctx.strokePath()
+
+    let sunBaseL = point(onCircle: center, radius: radius - 11, angle: sunRad, lateral: -3.5)
+    let sunBaseR = point(onCircle: center, radius: radius - 11, angle: sunRad, lateral: 3.5)
     ctx.setFillColor(UIColor(red: 1, green: 0.82, blue: 0.2, alpha: 1).cgColor)
     ctx.move(to: sunTip)
     ctx.addLine(to: sunBaseL)
@@ -105,11 +116,8 @@ final class SunCompassOverlayView: UIControl {
     ctx.closePath()
     ctx.fillPath()
 
-    ctx.setStrokeColor(UIColor(red: 1, green: 0.9, blue: 0.4, alpha: 0.5).cgColor)
-    ctx.setLineWidth(1.5)
-    ctx.move(to: center)
-    ctx.addLine(to: sunTip)
-    ctx.strokePath()
+    // Sun icon at the very center, drawn last so the arrow reads as emanating from it.
+    drawSunGlyph(ctx, center: center, coreRadius: sunCoreRadius)
 
     if isOrientationEditable {
       ctx.setStrokeColor(UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.55).cgColor)
@@ -117,6 +125,29 @@ final class SunCompassOverlayView: UIControl {
       ctx.addEllipse(in: CGRect(x: center.x - radius - 2, y: center.y - radius - 2, width: (radius + 2) * 2, height: (radius + 2) * 2))
       ctx.strokePath()
     }
+  }
+
+  /// Small yellow sun (core disk + short rays) for the center of the compass.
+  private func drawSunGlyph(_ ctx: CGContext, center: CGPoint, coreRadius: CGFloat) {
+    let yellow = UIColor(red: 1, green: 0.82, blue: 0.2, alpha: 1)
+
+    ctx.setStrokeColor(yellow.withAlphaComponent(0.9).cgColor)
+    ctx.setLineWidth(1)
+    ctx.setLineCap(.round)
+    let rayInner = coreRadius + 1.5
+    let rayOuter = coreRadius + 3.5
+    for i in 0..<8 {
+      let a = CGFloat(i) * .pi / 4
+      ctx.move(to: CGPoint(x: center.x + cos(a) * rayInner, y: center.y + sin(a) * rayInner))
+      ctx.addLine(to: CGPoint(x: center.x + cos(a) * rayOuter, y: center.y + sin(a) * rayOuter))
+    }
+    ctx.strokePath()
+
+    ctx.setFillColor(yellow.cgColor)
+    ctx.addEllipse(
+      in: CGRect(x: center.x - coreRadius, y: center.y - coreRadius, width: coreRadius * 2, height: coreRadius * 2)
+    )
+    ctx.fillPath()
   }
 
   private func drawCardinal(

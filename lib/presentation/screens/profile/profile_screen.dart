@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:ui" show ImageFilter;
 
 import "package:dio/dio.dart";
 import "package:firebase_auth/firebase_auth.dart";
@@ -26,6 +27,7 @@ import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -46,6 +48,7 @@ import "package:uy_dosh/presentation/screens/profile/profile_header_section.dart
 import "package:uy_dosh/presentation/screens/profile/profile_listings_section.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_settings_section.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_stats_section.dart";
+import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -725,6 +728,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
+                  floatingActionButton: _SupportChatFab(
+                    onPressed: () => _openSupportChat(context),
+                  ),
                   body: _shouldShowProfileFetchError(data)
                       ? _buildErrorState(data.errorMessage, context)
                       : _buildProfileContent(profile),
@@ -1057,6 +1063,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _openSupportChat(BuildContext context) {
+    HapticFeedbackUtils.impact();
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const SupportChatScreen(),
+      ),
+    );
+  }
+
   Future<void> _openEditProfileScreen(
     BuildContext context,
     UserProfile profile,
@@ -1088,4 +1103,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _EmptyRequest implements IJsonEncodable {
   @override
   Map<String, dynamic> toJson() => {};
+}
+
+/// Glass pill FAB that opens support chat from the profile screen. Mirrors the
+/// frosted style used by the archived-chats entry point in the messages inbox.
+class _SupportChatFab extends StatelessWidget {
+  const _SupportChatFab({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final themeState = ThemeState();
+        final scheme = Theme.of(context).colorScheme;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
+        final iconColor =
+            themeState.isBlueTheme ? Colors.white : themeState.cardIconColor;
+        final textColor =
+            themeState.isBlueTheme ? Colors.white : themeState.textColor;
+
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final enableGlass =
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+        final baseTint =
+            themeState.isLightTheme ? scheme.surface : themeState.cardColor;
+
+        const radius = BorderRadius.all(Radius.circular(999));
+
+        return Semantics(
+          button: true,
+          label: L10n.get("menu_contact_support"),
+          child: Material(
+            type: MaterialType.transparency,
+            child: ClipRRect(
+              borderRadius: radius,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: enableGlass ? 18 : 0,
+                  sigmaY: enableGlass ? 18 : 0,
+                ),
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: onPressed,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: radius,
+                      color: baseTint.withValues(alpha: isDark ? 0.14 : 0.18),
+                      border: Border.all(
+                        color: (themeState.isBlueTheme
+                                ? Colors.white
+                                : scheme.onSurface)
+                            .withValues(
+                          alpha: themeState.isBlueTheme ? 0.18 : 0.10,
+                        ),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.22 : 0.10),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.support_agent,
+                            size: 22,
+                            color: iconColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            L10n.get("menu_contact_support"),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

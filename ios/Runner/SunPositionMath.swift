@@ -8,40 +8,64 @@ enum RoomSceneAppearance {
   static let skyBackgroundColor = skyBackgroundColor(azimuthDeg: 180, elevationDeg: 70)
 
   static func skyBackgroundColor(azimuthDeg: Float, elevationDeg: Float) -> UIColor {
-    let el = min(90, max(0, elevationDeg))
+    // Allow negative elevation (sun below horizon) so deep night renders dark.
+    let el = min(90, elevationDeg)
 
-    // Elevation-driven base sky (0° = horizon/night, 90° = zenith blue).
-    let night = rgb(0.07, 0.09, 0.16)
-    let twilight = rgb(0.22, 0.28, 0.42)
-    let dawn = rgb(0.52, 0.68, 0.88)
-    let midday = rgb(0.48, 0.72, 0.94)
-    let zenith = rgb(0.34, 0.58, 0.84)
+    // --- Cool base sky, driven by elevation (deep night → daytime blue → zenith). ---
+    let deepNight = rgb(0.03, 0.04, 0.09)
+    let night = rgb(0.06, 0.08, 0.17)
+    let blueHour = rgb(0.14, 0.17, 0.34)
+    let horizon = rgb(0.42, 0.50, 0.66)
+    let dayLow = rgb(0.52, 0.70, 0.92)
+    let midday = rgb(0.46, 0.71, 0.95)
+    let zenith = rgb(0.30, 0.56, 0.86)
 
     let base: UIColor
     switch el {
+    case ..<(-12):
+      base = deepNight
+    case ..<(-6):
+      base = lerpColor(deepNight, night, t: (el + 12) / 6)
+    case ..<(-1):
+      base = lerpColor(night, blueHour, t: (el + 6) / 5)
     case ..<6:
-      base = lerpColor(night, twilight, t: el / 6)
-    case 6..<18:
-      base = lerpColor(twilight, dawn, t: (el - 6) / 12)
-    case 18..<45:
-      base = lerpColor(dawn, midday, t: (el - 18) / 27)
-    case 45..<72:
-      base = lerpColor(midday, zenith, t: (el - 45) / 27)
+      base = lerpColor(blueHour, horizon, t: (el + 1) / 7)
+    case ..<16:
+      base = lerpColor(horizon, dayLow, t: (el - 6) / 10)
+    case ..<45:
+      base = lerpColor(dayLow, midday, t: (el - 16) / 29)
     default:
-      base = zenith
+      base = lerpColor(midday, zenith, t: min(1, (el - 45) / 30))
     }
 
-    // Golden-hour warmth when the sun is low; morning (E) vs evening (W) tint.
-    let warmWeight = max(0, (32 - el) / 32)
-    guard warmWeight > 0.02 else { return base }
-
+    // --- Twilight tints layered on the base, strongest near the horizon. ---
+    // Two overlapping bands give a natural progression as the sun crosses the horizon:
+    //   gold (sun just above)  →  pink/violet afterglow (sun just below).
     let az = normalizedAzimuth(azimuthDeg)
-    let morningWarmth = gaussian(az, center: 90, sigma: 38)
-    let eveningWarmth = gaussian(az, center: 270, sigma: 38)
-    let morningTint = rgb(0.96, 0.62, 0.38)
-    let eveningTint = rgb(0.88, 0.42, 0.34)
-    let warmTint = lerpColor(morningTint, eveningTint, t: eveningWarmth / max(morningWarmth + eveningWarmth, 0.001))
-    return lerpColor(base, warmTint, t: warmWeight * 0.58)
+    let goldWeight = gaussian(el, center: 2, sigma: 7)
+    let glowWeight = gaussian(el, center: -5, sigma: 5)
+
+    var sky = base
+
+    if goldWeight > 0.02 {
+      let east = gaussian(az, center: 90, sigma: 52)
+      let west = gaussian(az, center: 270, sigma: 52)
+      let morningGold = rgb(0.99, 0.72, 0.45)
+      let eveningGold = rgb(0.96, 0.50, 0.32)
+      let gold = lerpColor(morningGold, eveningGold, t: west / max(east + west, 0.001))
+      sky = lerpColor(sky, gold, t: goldWeight * 0.62)
+    }
+
+    if glowWeight > 0.02 {
+      let east = gaussian(az, center: 90, sigma: 60)
+      let west = gaussian(az, center: 270, sigma: 60)
+      let dawnGlow = rgb(0.42, 0.38, 0.62)
+      let duskGlow = rgb(0.55, 0.33, 0.49)
+      let glow = lerpColor(dawnGlow, duskGlow, t: west / max(east + west, 0.001))
+      sky = lerpColor(sky, glow, t: glowWeight * 0.5)
+    }
+
+    return sky
   }
 
   private static func rgb(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat) -> UIColor {
@@ -133,7 +157,10 @@ enum SunPositionMath {
       northPlanAngle = worldEastPlanAngleRad + .pi / 2
         + northCorrectionDeg * .pi / 180
     }
-    let eastPlanAngle = northPlanAngle + .pi / 2
+    // Geographic east is 90° clockwise from north. In plan-angle space (CCW-positive,
+    // since worldXZ maps φ → plan direction (cos φ, sin φ)), clockwise means subtracting.
+    // Using +π/2 here mirrors east↔west, which placed the sunrise in the west.
+    let eastPlanAngle = northPlanAngle - .pi / 2
 
     let (ex, ez) = worldXZ(fromPlanAngle: eastPlanAngle)
     let (nx, nz) = worldXZ(fromPlanAngle: northPlanAngle)

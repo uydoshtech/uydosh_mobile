@@ -4,6 +4,9 @@ import UIKit
 /// Regenerates simplified 3D room geometry from EditableFloorPlanModel.
 enum Scene3DRegenerationService {
   static let generatedRootName = "UydoshGeneratedRoot"
+  /// Invisible cap that blocks overhead sunlight without occluding the user's top-down view.
+  /// Name contains "ceiling" so the viewer's shadow/visibility logic treats it like other ceilings.
+  static let shadowCeilingNodeName = "UydoshGeneratedShadowCeiling"
 
   static func regenerate(
     in scene: SCNScene,
@@ -16,7 +19,12 @@ enum Scene3DRegenerationService {
 
     root.addChildNode(buildFloorNode(model: model, stylized: stylizedMaterials))
     if model.ceilingEnabled {
+      // Visible decorative roof — opaque, so it already blocks overhead sunlight.
       root.addChildNode(buildCeilingNode(model: model, stylized: stylizedMaterials))
+    } else if let shadowCeiling = buildShadowCeilingNode(model: model) {
+      // No visible ceiling: add an invisible cap so the sun can't flood the room from above
+      // while keeping the interior open to the user when orbiting overhead.
+      root.addChildNode(shadowCeiling)
     }
     for wallNode in buildWallNodes(model: model, stylized: stylizedMaterials) {
       root.addChildNode(wallNode)
@@ -95,6 +103,26 @@ enum Scene3DRegenerationService {
         ? UIColor(red: 232 / 255, green: 223 / 255, blue: 207 / 255, alpha: 1)
         : UIColor(white: 0.92, alpha: 1)
     )
+    node.geometry = geometry
+    return node
+  }
+
+  /// Invisible, opaque-to-light cap at ceiling height. Hidden from the camera but kept in the
+  /// shadow pass (see `ScanCeilingService.invisibleShadowMaterial`) so overhead sun is blocked.
+  private static func buildShadowCeilingNode(model: EditableFloorPlanModel) -> SCNNode? {
+    let points = model.floorPolygon.compactMap { id -> (x: Float, z: Float)? in
+      guard let v = model.vertex(id) else { return nil }
+      return (Float(v.x), Float(v.z))
+    }
+    guard points.count >= 3 else { return nil }
+
+    let node = SCNNode()
+    node.name = shadowCeilingNodeName
+    node.castsShadow = true
+    node.renderingOrder = -10
+    let y = Float(model.floorY + model.wallHeight) - 0.005
+    let geometry = polygonShape(points: points, y: y)
+    geometry.materials = [ScanCeilingService.invisibleShadowMaterial()]
     node.geometry = geometry
     return node
   }
@@ -182,9 +210,22 @@ enum Scene3DRegenerationService {
     y: Float,
     materialColor: UIColor
   ) -> SCNGeometry {
+    let geometry = polygonShape(points: points, y: y)
+    let material = SCNMaterial()
+    material.diffuse.contents = materialColor
+    material.isDoubleSided = true
+    geometry.materials = [material]
+    return geometry
+  }
+
+  /// Builds a flat, horizontal triangle-fan polygon at height `y`. Material is left to the caller.
+  private static func polygonShape(
+    points: [(x: Float, z: Float)],
+    y: Float
+  ) -> SCNGeometry {
     var vertices: [SCNVector3] = []
     var indices: [Int32] = []
-    guard let first = points.first else {
+    guard !points.isEmpty else {
       return SCNBox(width: 0.01, height: 0.01, length: 0.01, chamferRadius: 0)
     }
 
@@ -205,11 +246,6 @@ enum Scene3DRegenerationService {
 
     let source = SCNGeometrySource(vertices: vertices)
     let element = SCNGeometryElement(indices: indices, primitiveType: .triangles)
-    let geometry = SCNGeometry(sources: [source], elements: [element])
-    let material = SCNMaterial()
-    material.diffuse.contents = materialColor
-    material.isDoubleSided = true
-    geometry.materials = [material]
-    return geometry
+    return SCNGeometry(sources: [source], elements: [element])
   }
 }

@@ -46,7 +46,10 @@ enum ScanCeilingService {
   /// shadow pass (transparent materials are skipped and would let the sun through). It is hidden
   /// from the camera with an empty `colorBufferWriteMask`, and does not write the main depth
   /// buffer so the roof remains see-through when orbiting above the room.
-  private static func invisibleShadowMaterial() -> SCNMaterial {
+  ///
+  /// Shared with `Scene3DRegenerationService` so edited rooms get the same invisible-but-light-
+  /// blocking ceiling as raw scans.
+  static func invisibleShadowMaterial() -> SCNMaterial {
     let material = SCNMaterial()
     material.lightingModel = .constant
     material.diffuse.contents = UIColor.black

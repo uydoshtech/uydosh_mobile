@@ -57,15 +57,23 @@ final class FloorPlanStateManager {
     editableModel?.dimensionAnnotations.first { $0.id == dimensionId }
   }
 
-  func applyDimensionEdit(kind: DimensionEditKind, newValueMeters: Double) {
+  func applyDimensionEdit(annotation: EditableDimensionAnnotation, newValueMeters: Double) {
     guard var model = editableModel else { return }
-    switch kind {
+    switch annotation.type {
     case .overallWidth:
       model = FloorPlanResizeService.applyWidthChange(to: model, newWidth: newValueMeters)
     case .overallLength:
       model = FloorPlanResizeService.applyLengthChange(to: model, newLength: newValueMeters)
     case .wallSegmentLength:
-      return
+      // Editing a wall resizes it together with its parallel wall, keeping the room rectangular.
+      switch annotation.target.editType {
+      case .resizeWidth:
+        model = FloorPlanResizeService.applyWidthChange(to: model, newWidth: newValueMeters)
+      case .resizeLength:
+        model = FloorPlanResizeService.applyLengthChange(to: model, newLength: newValueMeters)
+      case .wallSegmentLength:
+        return
+      }
     }
     editableModel = model
     publishDisplayUpdate()

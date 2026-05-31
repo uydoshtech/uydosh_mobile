@@ -45,6 +45,7 @@
 		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
 		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
 		E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */; };
+		E8A1B3401ED2DC5600515860 /* SunClockOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */; };
 		E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */; };
 		E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */; };
 		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
@@ -129,6 +130,7 @@
 		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
 		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
 		E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunCompassOverlayView.swift; sourceTree = "<group>"; };
+		E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunClockOverlayView.swift; sourceTree = "<group>"; };
 		E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassScreenProjection.swift; sourceTree = "<group>"; };
 		E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanCeilingService.swift; sourceTree = "<group>"; };
 		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
 				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
 				E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */,
+				E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */,
 				E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */,
 				E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
@@ -607,6 +610,7 @@
 				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
 				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
 				E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */,
+				E8A1B3401ED2DC5600515860 /* SunClockOverlayView.swift in Sources */,
 				E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */,
 				E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

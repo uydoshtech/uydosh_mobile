@@ -55,8 +55,12 @@ enum EditableFloorPlanProjector {
       )
     }
 
-    let overallDimensions = DimensionLineService.renderLines(from: model.dimensionAnnotations)
-    let wallSegmentDimensions = DimensionLineService.wallSegmentLines(for: model)
+    let overallDimensions = DimensionLineService.renderLines(
+      from: model.dimensionAnnotations.filter { $0.type != .wallSegmentLength }
+    )
+    let wallSegmentDimensions = DimensionLineService.renderLines(
+      from: model.dimensionAnnotations.filter { $0.type == .wallSegmentLength }
+    )
 
     return FloorPlanModel(
       walls: walls,

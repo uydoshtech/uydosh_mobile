@@ -119,7 +119,7 @@ final class FloorPlanCanvas: UIView {
   }
 
   @objc private func handleTap(_ gr: UITapGestureRecognizer) {
-    guard dimensionMode == .overall else { return }
+    guard dimensionMode != .hidden else { return }
     let point = gr.location(in: self)
     guard let hit = labelHitRegions.first(where: { $0.rect.contains(point) }) else { return }
     highlightedDimensionId = hit.dimensionId
@@ -219,12 +219,12 @@ final class FloorPlanCanvas: UIView {
         highlightedDimensionId: highlightedDimensionId
       )
     case .wallSegments:
-      _ = DimensionLineRenderer.draw(
+      labelHitRegions = DimensionLineRenderer.draw(
         lines: model.wallSegmentDimensions,
         in: ctx,
         transform: transform,
         color: dimensionColor,
-        highlightedDimensionId: nil
+        highlightedDimensionId: highlightedDimensionId
       )
     case .hidden:
       break

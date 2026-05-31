@@ -193,10 +193,17 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var isAutoRotating = true
   private var autoRotateDisplayLink: CADisplayLink?
   private var autoRotateLastTimestamp: CFTimeInterval = 0
-  /// While the model auto-rotates with the sun enabled, sweep the real sun from 00:00 → 12:00
-  /// (one turn = midnight to noon). Local minutes of day; resets each time the spin starts.
-  private static let sunSweepEndMinute: Double = 12 * 60
-  private var sunSweepMinute: Double = 0
+  /// While the model auto-rotates with the sun enabled, loop the real sun through a full day so the
+  /// sky cycles dusk → night → dawn → day → dusk. Local minutes of day [0, 1440); starts at dusk.
+  private static let sunCycleSeconds: TimeInterval = 88.0
+  private static let sunCycleStartMinute: Double = 18 * 60
+  private var sunSweepMinute: Double = sunCycleStartMinute
+  /// Cached so the per-frame sweep doesn't allocate a Calendar every tick.
+  private lazy var sunSweepCalendar: Calendar = {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = SolarPosition.tashkentTimeZone
+    return cal
+  }()
   /// Orbit state (manual mode); camera stays a direct child of `rootNode`, not inside the model wrapper.
   private weak var framingCameraNode: SCNNode?
   private var orbitTarget = SCNVector3Zero
@@ -301,6 +308,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let sunToggleButton = UIButton(type: .system)
   private let sunSimulationPanel: SunSimulationPanel
   private let sunCompassOverlay = SunCompassOverlayView()
+  private let sunClockOverlay = SunClockOverlayView()
   private var isSunPanelExpanded = false
 
   fileprivate init(
@@ -564,8 +572,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
         sunCompassOverlay.heightAnchor.constraint(equalToConstant: 88),
         sunCompassOverlay.widthAnchor.constraint(equalToConstant: 88),
-        sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 12),
-        sunCompassOverlay.trailingAnchor.constraint(
+        sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 6),
+
+        // Analog day-clock sits to the right of the compass rose.
+        sunClockOverlay.topAnchor.constraint(equalTo: sunCompassOverlay.topAnchor),
+        sunClockOverlay.heightAnchor.constraint(equalToConstant: 88),
+        sunClockOverlay.widthAnchor.constraint(equalToConstant: 88),
+        sunClockOverlay.leadingAnchor.constraint(equalTo: sunCompassOverlay.trailingAnchor, constant: 6),
+        sunClockOverlay.trailingAnchor.constraint(
           lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor,
           constant: -16
         ),
@@ -581,10 +595,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         zoomControlsContainer.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -22),
 
         sunSimulationPanel.leadingAnchor.constraint(equalTo: sceneView.leadingAnchor, constant: 12),
-        sunSimulationPanel.trailingAnchor.constraint(
-          lessThanOrEqualTo: sceneView.trailingAnchor,
-          constant: -12
-        ),
+        // Stretch across the viewport so the 24-hour timeline has room to breathe.
+        sunSimulationPanel.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -12),
         sunSimulationPanel.bottomAnchor.constraint(
           equalTo: modeMaterialsToolbarContainer.topAnchor,
           constant: -10
@@ -602,6 +614,15 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     loadScene()
     playBrandMarkEntranceAnimation()
+  }
+
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    // CADisplayLink retains its target, so it must be invalidated here — otherwise dismissing via
+    // swipe or host teardown (anything other than the in-app close button) leaks the controller.
+    removeAutoRotateAnimation()
+    stopOrbitDeceleration()
+    isAutoRotating = false
   }
 
   override func viewDidLayoutSubviews() {
@@ -765,6 +786,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunCompassOverlay.addTarget(self, action: #selector(compassOverlayTapped), for: .touchUpInside)
     view.addSubview(sunCompassOverlay)
 
+    sunClockOverlay.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(sunClockOverlay)
+    // Prime the clock with the timeline's current (real-now) time so it reads correctly before
+    // the sun is ever animated.
+    sunClockOverlay.update(
+      minuteOfDay: sunSimulationPanel.currentTimelineMinute,
+      sunriseMinute: sunSimulationPanel.daylightSunriseMinute,
+      sunsetMinute: sunSimulationPanel.daylightSunsetMinute
+    )
+
     northOrientationPanel.translatesAutoresizingMaskIntoConstraints = false
     northOrientationPanel.isHidden = true
     northOrientationPanel.delegate = self
@@ -784,6 +815,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunSimulationPanel.isHidden = !isSunPanelExpanded
     if isSunPanelExpanded, loadedScene != nil, sunSimulationController.isEnabled == false {
       attachSunSimulationIfNeeded()
+    }
+    // If the opening cinematic is still running, show it as playing right away rather than waiting
+    // for the next sweep frame to flip the button.
+    if isSunPanelExpanded {
+      sunSimulationPanel.setExternalPlayback(active: isAutoRotating)
     }
     updateSunToggleAppearance()
   }
@@ -1098,6 +1134,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       self.hintContainer.isHidden = !show3D || self.dimensionsLineStack.isHidden
       self.sunToggleButton.isHidden = !show3D
       self.sunCompassOverlay.isHidden = !show3D
+      self.sunClockOverlay.isHidden = !show3D
       if !show3D {
         self.sunSimulationPanel.isHidden = true
       } else {
@@ -1133,6 +1170,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
     view.bringSubviewToFront(sunSimulationPanel)
     view.bringSubviewToFront(sunCompassOverlay)
+    view.bringSubviewToFront(sunClockOverlay)
     if !northOrientationPanel.isHidden {
       view.bringSubviewToFront(northOrientationPanel)
     }
@@ -1984,6 +2022,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       sunSimulationController.setEnabled(true)
     }
     sunCompassOverlay.isHidden = false
+    sunClockOverlay.isHidden = false
     updateCameraFromOrbit()
   }
 
@@ -2039,6 +2078,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       self.isOrthographicPlanView = true
       self.sunSimulationController.setEnabled(false)
       self.sunCompassOverlay.isHidden = true
+      self.sunClockOverlay.isHidden = true
     }
 
     if animated {
@@ -2070,6 +2110,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.sunSimulationController.setEnabled(true)
       }
       self.sunCompassOverlay.isHidden = false
+      self.sunClockOverlay.isHidden = false
     }
 
     if animated {
@@ -2180,6 +2221,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.applyScanCeilingIfNeeded()
         self.attachSunSimulationIfNeeded()
         self.startIntroAutoRotationIfNeeded()
+        // Seed the sun/sky at the sweep's starting moment so the scene opens directly at dusk
+        // (the rig attaches at noon) — avoids a one-frame lighting jump before the first tick.
+        if self.sunSimulationController.isEnabled {
+          self.applySunSweep(minute: self.sunSweepMinute)
+        }
       } catch {
         self.presentLoadError(error)
       }
@@ -2192,10 +2238,22 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     autoRotateLastTimestamp = 0
   }
 
+  /// Stops the opening cinematic (camera spin + sun sweep). Pass `reflectOnPanel: true` when the
+  /// stop wasn't triggered by the panel itself, so the play/pause button returns to its idle state.
+  private func endIntroCinematic(reflectOnPanel: Bool) {
+    guard isAutoRotating else { return }
+    removeAutoRotateAnimation()
+    isAutoRotating = false
+    updateCameraFromOrbit()
+    if reflectOnPanel {
+      sunSimulationPanel.setExternalPlayback(active: false)
+    }
+  }
+
   private func startIntroAutoRotationIfNeeded() {
     guard isAutoRotating, framingCameraNode != nil else { return }
     removeAutoRotateAnimation()
-    sunSweepMinute = 0
+    sunSweepMinute = Self.sunCycleStartMinute
     // Orbit the camera around the model center (same pivot as manual pan), not world origin.
     let link = CADisplayLink(target: self, selector: #selector(tickAutoRotate(_:)))
     if #available(iOS 15.0, *) {
@@ -2225,11 +2283,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     orbitYaw += yawSpeed * dt
     updateCameraFromOrbit()
 
-    // Sweep the real sun across the morning (00:00 → 12:00) in lockstep with one full turn.
+    // Loop the real sun through a full day (dusk → dawn → dusk) so the sky cycles while spinning.
     if sunSimulationController.isEnabled {
-      let minutesPerSecond = Self.sunSweepEndMinute / Self.autoRotateSecondsPerTurn
+      let minutesPerSecond = 1440.0 / Self.sunCycleSeconds
       sunSweepMinute += Double(dt) * minutesPerSecond
-      if sunSweepMinute > Self.sunSweepEndMinute { sunSweepMinute = 0 }
+      if sunSweepMinute >= 1440 { sunSweepMinute -= 1440 }
       applySunSweep(minute: sunSweepMinute)
     }
   }
@@ -2237,9 +2295,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   /// Drives the sun rig to the real solar position for today at `minute` (local), and keeps the
   /// compass + sun panel in sync. Used by the rotate-with-sun cinematic.
   private func applySunSweep(minute: Double) {
-    var cal = Calendar(identifier: .gregorian)
-    cal.timeZone = SolarPosition.tashkentTimeZone
-    let date = cal.startOfDay(for: Date()).addingTimeInterval(minute * 60)
+    let date = sunSweepCalendar.startOfDay(for: Date()).addingTimeInterval(minute * 60)
     let pos = SolarPosition.position(
       latitude: SolarPosition.tashkentLatitude,
       longitude: SolarPosition.tashkentLongitude,
@@ -2247,12 +2303,32 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       timeZone: SolarPosition.tashkentTimeZone
     )
     let azimuth = Float(pos.azimuthDeg)
-    let elevation = Float(max(0, pos.elevationDeg))
-    sunSimulationController.setSunAzimuth(degrees: azimuth)
-    sunSimulationController.setSunElevation(degrees: elevation)
-    sunSimulationPanel.setAzimuth(azimuth)
-    sunSimulationPanel.setElevation(elevation)
+    let trueElevation = Float(pos.elevationDeg)
+    let lightElevation = max(0, trueElevation)
+    sunSimulationController.setSunAngles(
+      azimuthDeg: azimuth,
+      elevationDeg: lightElevation,
+      trueElevationDeg: trueElevation
+    )
+    // Only refresh the (hidden during the intro spin) panel sliders when actually visible.
+    if !sunSimulationPanel.isHidden {
+      sunSimulationPanel.setAzimuth(azimuth)
+      sunSimulationPanel.setElevation(lightElevation)
+      // Mirror the running cinematic on the panel so the play/pause button + timeline track it,
+      // instead of the user pressing play and spawning a second (flickering) animator.
+      if isAutoRotating {
+        sunSimulationPanel.setExternalPlayback(active: true)
+        sunSimulationPanel.syncTimeline(toMinute: minute)
+      }
+    }
+    // Sky uses the real (possibly below-horizon) elevation so night reads as night, not dusk.
+    updateSceneSkyBackground(azimuthDeg: azimuth, elevationDeg: trueElevation)
     refreshSunCompassLabels()
+    sunClockOverlay.update(
+      minuteOfDay: minute,
+      sunriseMinute: sunSimulationPanel.daylightSunriseMinute,
+      sunsetMinute: sunSimulationPanel.daylightSunsetMinute
+    )
   }
 
   private func installManualOrbitGestures() {
@@ -2373,11 +2449,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     default:
       return
     }
-    if isAutoRotating {
-      removeAutoRotateAnimation()
-      isAutoRotating = false
-      updateCameraFromOrbit()
-    }
+    endIntroCinematic(reflectOnPanel: true)
     guard framingCameraNode != nil else { return }
 
     let t = gr.translation(in: sceneView)
@@ -2396,11 +2468,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   @objc private func orbitPinch(_ gr: UIPinchGestureRecognizer) {
-    if isAutoRotating {
-      removeAutoRotateAnimation()
-      isAutoRotating = false
-      updateCameraFromOrbit()
-    }
+    endIntroCinematic(reflectOnPanel: true)
     if gr.state == .began {
       stopOrbitDeceleration()
     }
@@ -2440,10 +2508,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   @objc private func sceneTapped() {
-    guard isAutoRotating else { return }
-    removeAutoRotateAnimation()
-    isAutoRotating = false
-    updateCameraFromOrbit()
+    endIntroCinematic(reflectOnPanel: true)
   }
 
   private func presentLoadError(_ error: Error) {
@@ -2665,9 +2730,28 @@ extension RoomUsdzViewerViewController: SunSimulationPanelDelegate {
   }
 
   func sunPanel(_ panel: SunSimulationPanel, didSelectPreset preset: SunPositionMath.TimePreset) {
+    endIntroCinematic(reflectOnPanel: false)
     sunSimulationController.applyPreset(preset)
     panel.setAzimuth(sunSimulationController.azimuthDeg)
     panel.setElevation(sunSimulationController.elevationDeg)
     refreshSunCompassLabels()
+  }
+
+  func sunPanelDidTakeManualControl(_ panel: SunSimulationPanel) {
+    // The panel itself updates its play/pause button on manual control, so don't override it here.
+    endIntroCinematic(reflectOnPanel: false)
+  }
+
+  func sunPanel(
+    _ panel: SunSimulationPanel,
+    didChangeTimeMinute minute: Double,
+    sunriseMinute: Double,
+    sunsetMinute: Double
+  ) {
+    sunClockOverlay.update(
+      minuteOfDay: minute,
+      sunriseMinute: sunriseMinute,
+      sunsetMinute: sunsetMinute
+    )
   }
 }

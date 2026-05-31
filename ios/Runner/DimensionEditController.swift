@@ -111,12 +111,12 @@ final class DimensionEditController {
           if validation.requiresLargeChangeConfirmation {
             self.confirmLargeChange(
               value: validation.valueMeters,
-              kind: annotation.type,
+              annotation: annotation,
               from: presenter,
               onApplied: onApplied
             )
           } else {
-            self.apply(value: validation.valueMeters, kind: annotation.type, from: presenter, onApplied: onApplied)
+            self.apply(value: validation.valueMeters, annotation: annotation, from: presenter, onApplied: onApplied)
           }
         }
       }
@@ -126,7 +126,7 @@ final class DimensionEditController {
 
   private func confirmLargeChange(
     value: Double,
-    kind: DimensionEditKind,
+    annotation: EditableDimensionAnnotation,
     from presenter: UIViewController?,
     onApplied: @escaping () -> Void
   ) {
@@ -138,7 +138,7 @@ final class DimensionEditController {
     alert.addAction(UIAlertAction(title: strings.cancel, style: .cancel))
     alert.addAction(
       UIAlertAction(title: strings.confirmLargeChange, style: .default) { [weak self, weak presenter] _ in
-        self?.apply(value: value, kind: kind, from: presenter, onApplied: onApplied)
+        self?.apply(value: value, annotation: annotation, from: presenter, onApplied: onApplied)
       }
     )
     presenter?.present(alert, animated: true)
@@ -156,11 +156,11 @@ final class DimensionEditController {
 
   private func apply(
     value: Double,
-    kind: DimensionEditKind,
+    annotation: EditableDimensionAnnotation,
     from presenter: UIViewController?,
     onApplied: @escaping () -> Void
   ) {
-    stateManager.applyDimensionEdit(kind: kind, newValueMeters: value)
+    stateManager.applyDimensionEdit(annotation: annotation, newValueMeters: value)
     onApplied()
     showConfirmation(from: presenter)
   }
