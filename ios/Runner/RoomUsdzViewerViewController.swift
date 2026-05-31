@@ -288,6 +288,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var floorPlanStateManager = FloorPlanStateManager()
   private var dimensionEditController: DimensionEditController?
   private var compassOrientationEditController: CompassOrientationEditController?
+  private var isNorthPanelExpanded: Bool { compassOrientationEditController?.isExpanded == true }
   private var dimensionEditStrings: DimensionEditDialogStrings = .englishFallback
   private let sunSimulationController = SunSimulationController()
   private let sunToggleButton = UIButton(type: .system)
@@ -328,11 +329,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     view.backgroundColor = RoomSceneAppearance.skyBackgroundColor
 
     navigationItem.leftBarButtonItem = nil
-    navigationItem.rightBarButtonItem = UIBarButtonItem(
-      barButtonSystemItem: .close,
-      target: self,
-      action: #selector(closeTapped)
-    )
+    navigationItem.rightBarButtonItem = makeCloseBarButtonItem()
     setupModeControl()
     setupViewerTabControl()
 
@@ -364,11 +361,14 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       self?.regenerateSceneFromEditableModel(editableModel)
     }
     floorPlanTab.onAdjustNorthTapped = { [weak self] in
-      self?.presentNorthCorrectionEditor()
+      self?.toggleNorthCorrectionPanel()
     }
     compassOrientationEditController = CompassOrientationEditController(
       strings: strings.compassOrientation
     )
+    compassOrientationEditController?.onVisibilityChanged = { [weak self] in
+      self?.updateNorthPanelAppearance()
+    }
     updateNorthAdjustButtonVisibility()
 
     let tap = UITapGestureRecognizer(target: self, action: #selector(sceneTapped))
@@ -544,6 +544,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
 
         sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
+        sunCompassOverlay.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor),
         sunCompassOverlay.leadingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: 12),
         sunCompassOverlay.trailingAnchor.constraint(
           lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor,
@@ -749,7 +750,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   @objc private func compassOverlayTapped() {
     guard isListingOwner, listingId > 0 else { return }
-    presentNorthCorrectionEditor()
+    toggleNorthCorrectionPanel()
   }
 
   @objc private func sunToggleTapped() {
@@ -1038,7 +1039,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     format.scale = UIScreen.main.scale
     format.opaque = false
     let renderer = UIGraphicsImageRenderer(size: size, format: format)
-    return renderer.image { _ in
+    let baked = renderer.image { _ in
       let midY = size.height * 0.5
       tintedIcon.draw(
         in: CGRect(
@@ -1056,6 +1057,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         withAttributes: attributes
       )
     }
+    // Preserve our baked colors; otherwise UISegmentedControl treats the
+    // composite as a template and re-tints it (icon + label vanish on iOS 13+).
+    return baked.withRenderingMode(.alwaysOriginal)
   }
 
   private func updateViewerTabAccessibility() {
@@ -1099,6 +1103,13 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       bringInteractiveOverlaysToFront()
     } else if let floorPlanTabView {
       view.bringSubviewToFront(floorPlanTabView)
+      if isNorthPanelExpanded {
+        let layout = northPanelLayoutAnchor()
+        compassOrientationEditController?.updateTopAnchor(layout.anchor, constant: layout.constant)
+        if let panel = compassOrientationEditController?.panelView {
+          view.bringSubviewToFront(panel)
+        }
+      }
     }
     if tab == .threeD {
       startIntroAutoRotationIfNeeded()
@@ -1115,6 +1126,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     view.bringSubviewToFront(modeMaterialsToolbarContainer)
     view.bringSubviewToFront(sunSimulationPanel)
     view.bringSubviewToFront(sunCompassOverlay)
+    if let panel = compassOrientationEditController?.panelView, panel.superview != nil {
+      view.bringSubviewToFront(panel)
+    }
   }
 
   private func setupModeControl() {
@@ -1528,6 +1542,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func shouldHideWallLikeSurface(_ node: SCNNode) -> Bool {
     if node.name == "UydoshFramingCamera" { return false }
     let name = (node.name ?? "").lowercased()
+    if name == ScanCeilingService.ceilingNodeName.lowercased() { return true }
+    if name == "uydoshgeneratedceiling" { return true }
     if name.contains("floor") || name.contains("ground") { return false }
     if name.contains("wall") || name.contains("ceiling") { return true }
     if name.contains("door") || name.contains("window") || name.contains("opening") { return true }
@@ -1644,6 +1660,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       }
     }
     updateCameraForDisplayMode()
+    sunSimulationController.refreshShadowCasters()
   }
 
   @objc private func modeChanged() {
@@ -1732,12 +1749,34 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunCompassOverlay.accessibilityHint = canEdit
       ? strings.compassOrientation.message
       : nil
+    updateNorthPanelAppearance()
   }
 
-  private func presentNorthCorrectionEditor() {
+  private func updateNorthPanelAppearance() {
+    let active = isNorthPanelExpanded
+    sunCompassOverlay.layer.borderWidth = active ? 1.5 : 1
+    sunCompassOverlay.layer.borderColor = (
+      active
+        ? UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.85).cgColor
+        : UIColor.white.withAlphaComponent(0.12).cgColor
+    )
+  }
+
+  private func northPanelLayoutAnchor() -> (anchor: NSLayoutYAxisAnchor, constant: CGFloat) {
+    if viewerTab == .threeD {
+      return (sunCompassOverlay.bottomAnchor, 8)
+    }
+    return (view.safeAreaLayoutGuide.topAnchor, 8)
+  }
+
+  private func toggleNorthCorrectionPanel() {
     guard isListingOwner, let controller = compassOrientationEditController else { return }
-    controller.present(
-      from: self,
+    let layout = northPanelLayoutAnchor()
+    controller.toggleInlinePanel(
+      in: view,
+      topAnchor: layout.anchor,
+      topConstant: layout.constant,
+      presenter: self,
       currentCorrection: floorPlanStateManager.northCorrectionDeg,
       onPreview: { [weak self] value in
         self?.floorPlanStateManager.previewNorthCorrection(value)
@@ -1758,6 +1797,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         self.refreshSunOrientationContext()
       }
     )
+    bringInteractiveOverlaysToFront()
+    updateNorthPanelAppearance()
   }
 
   /// Places the camera so the whole model fits the viewport (avoids default “inside the mesh” zoom).
@@ -1862,12 +1903,18 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private func updateCameraForDisplayMode() {
-    switch displayMode {
-    case .furnitureOnly:
-      applyTopDownPlanCamera(animated: true)
-    default:
+    // Legacy orthographic plan view is no longer used for furniture-only mode.
+    if isOrthographicPlanView {
       restorePerspectiveCamera(animated: true)
     }
+    guard displayMode == .furnitureOnly else { return }
+    removeAutoRotateAnimation()
+    isAutoRotating = false
+    if isSunPanelExpanded {
+      sunSimulationController.setEnabled(true)
+    }
+    sunCompassOverlay.isHidden = false
+    updateCameraFromOrbit()
   }
 
   /// Orthographic top-down camera aligned to the floor footprint so on-screen aspect matches dimensions.
@@ -2309,6 +2356,29 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       self?.dismissViewer()
     })
     present(alert, animated: true)
+  }
+
+  /// Compact circular close button styled to match the floating viewer chrome
+  /// (replaces the oversized default `.close` system bar item).
+  private func makeCloseBarButtonItem() -> UIBarButtonItem {
+    let diameter: CGFloat = 30
+    let button = UIButton(type: .system)
+    button.frame = CGRect(x: 0, y: 0, width: diameter, height: diameter)
+    button.backgroundColor = UIColor.black.withAlphaComponent(0.35)
+    button.layer.cornerRadius = diameter / 2
+    button.tintColor = UIColor.white.withAlphaComponent(0.92)
+    if #available(iOS 13.0, *) {
+      let cfg = UIImage.SymbolConfiguration(pointSize: 13, weight: .bold)
+      button.setImage(UIImage(systemName: "xmark", withConfiguration: cfg), for: .normal)
+    } else {
+      button.setTitle("\u{2715}", for: .normal)
+      button.titleLabel?.font = .systemFont(ofSize: 15, weight: .bold)
+    }
+    button.accessibilityLabel = "Close"
+    button.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+    button.widthAnchor.constraint(equalToConstant: diameter).isActive = true
+    button.heightAnchor.constraint(equalToConstant: diameter).isActive = true
+    return UIBarButtonItem(customView: button)
   }
 
   @objc private func closeTapped() {

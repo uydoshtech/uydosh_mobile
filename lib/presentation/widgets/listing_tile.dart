@@ -704,7 +704,14 @@ class _ListingTileState extends State<ListingTile> {
                                                   widget
                                                       .listing.subwayStation!,
                                                 ),
-                                              ],
+                                              ] else if (hasLocation)
+                                                // Reserve the metro-row height
+                                                // (8px gap + 20px icon row) so
+                                                // tiles without a station match
+                                                // the height of those with one.
+                                                const SizedBox(
+                                                  height: 8 + 20,
+                                                ),
                                             ],
                                           );
                                         },
@@ -773,32 +780,30 @@ class _ListingTileState extends State<ListingTile> {
     }
   }
 
+  /// Priority order for amenity icons. Lower index = shown first. The most
+  /// useful "at a glance" features lead so that — once the visible list is
+  /// capped to a single row — the icons that survive are the meaningful ones.
+  static const List<String> _amenityPriority = <String>[
+    "wifi",
+    "air_conditioning",
+    "bed",
+    "oven",
+  ];
+
   List<Amenity> _computeSortedAmenities(List<Amenity> amenities) {
-    // Custom sorting: WiFi first, then air conditioning, then the rest
     final sortedAmenities = List<Amenity>.from(amenities);
 
+    int rank(Amenity a) {
+      final index = _amenityPriority.indexOf(a.code ?? "");
+      // Unprioritised amenities sort after the prioritised ones.
+      return index == -1 ? _amenityPriority.length : index;
+    }
+
     sortedAmenities.sort((a, b) {
-      // WiFi gets highest priority (1)
-      if (a.code == "wifi" && b.code != "wifi") return -1;
-      if (a.code != "wifi" && b.code == "wifi") return 1;
-
-      // Air conditioning gets second priority (2)
-      if (a.code == "air_conditioning" &&
-          b.code != "air_conditioning" &&
-          b.code != "wifi") {
-        return -1;
-      }
-      if (a.code != "air_conditioning" &&
-          b.code == "air_conditioning" &&
-          a.code != "wifi") {
-        return 1;
-      }
-
-      // For all other amenities, sort alphabetically by code
-      // Handle nullable codes safely
-      final aCode = a.code ?? "";
-      final bCode = b.code ?? "";
-      return aCode.compareTo(bCode);
+      final rankCompare = rank(a).compareTo(rank(b));
+      if (rankCompare != 0) return rankCompare;
+      // Stable, predictable order within the same rank.
+      return (a.code ?? "").compareTo(b.code ?? "");
     });
 
     return sortedAmenities;
@@ -968,12 +973,22 @@ class _ListingTileState extends State<ListingTile> {
     );
   }
 
+  /// Max amenity icons shown on the single strip row. Beyond this we render a
+  /// "+N" counter so the strip stays one line and the tile height predictable.
+  static const int _maxVisibleAmenities = 6;
+
   /// Amenity icons (no labels) under a thin divider — a compact strip that
   /// keeps the tile clean while still hinting at the listing's features.
+  /// Capped to [_maxVisibleAmenities] icons (highest-priority first) with a
+  /// "+N" counter for the remainder, so it always fits on a single row.
   Widget _buildAmenityIcons() {
     final amenities = _cachedSortedAmenities ?? const <Amenity>[];
     if (amenities.isEmpty) return const SizedBox.shrink();
     final fg = _getAmenityIconColor();
+
+    final visible = amenities.take(_maxVisibleAmenities).toList();
+    final overflow = amenities.length - visible.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -981,11 +996,21 @@ class _ListingTileState extends State<ListingTile> {
         Container(height: 1, color: _amenityDividerColor()),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 16,
+          spacing: 12,
           runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            for (final amenity in amenities)
+            for (final amenity in visible)
               ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
+            if (overflow > 0)
+              Text(
+                "+$overflow",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: fg,
+                ),
+              ),
           ],
         ),
       ],
@@ -1046,16 +1071,43 @@ class _ListingTileState extends State<ListingTile> {
       content = _thumbnailPlaceholder(scheme);
     }
 
+    // Neumorphic "raised" treatment — same light/dark shadow recipe as the
+    // card itself (scaled down), so the photo looks softly extruded from the
+    // tile surface.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final darkShadow = Colors.black.withValues(alpha: isDark ? 0.45 : 0.22);
+    final lightShadow = Colors.white.withValues(
+      alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
+    );
+    const radius = BorderRadius.all(Radius.circular(14));
+
     // The media sits in a `Positioned.fill` inside a `Stack` so it reports
     // ZERO intrinsic height to the surrounding `IntrinsicHeight`. That makes
     // the info column (not the photo) drive the tile height, and any taller
     // photo is simply `cover`-cropped to fit instead of stretching the tile.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: SizedBox(
-        width: thumbWidth,
-        child: Stack(
-          children: [Positioned.fill(child: content)],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [
+          BoxShadow(
+            color: lightShadow,
+            offset: const Offset(-3, -3),
+            blurRadius: 6,
+          ),
+          BoxShadow(
+            color: darkShadow,
+            offset: const Offset(4, 4),
+            blurRadius: 9,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: SizedBox(
+          width: thumbWidth,
+          child: Stack(
+            children: [Positioned.fill(child: content)],
+          ),
         ),
       ),
     );

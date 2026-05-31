@@ -75,10 +75,9 @@ final class SunCompassOverlayView: UIControl {
 
     NSLayoutConstraint.activate([
       widthAnchor.constraint(equalToConstant: 88),
-      heightAnchor.constraint(equalToConstant: 108),
-      valuesLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
-      valuesLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
-      valuesLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+      valuesLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 3),
+      valuesLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -3),
+      valuesLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -3),
     ])
   }
 

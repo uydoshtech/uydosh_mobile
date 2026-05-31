@@ -39,6 +39,7 @@
 		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
 		E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */; };
 		E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */; };
+		E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */; };
 		E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */; };
 		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
 		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
@@ -121,6 +122,7 @@
 		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
 		E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanNorthOrientation.swift; sourceTree = "<group>"; };
 		E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationEditController.swift; sourceTree = "<group>"; };
+		E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationAdjustPanel.swift; sourceTree = "<group>"; };
 		E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunPositionMath.swift; sourceTree = "<group>"; };
 		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
 		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
 				E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */,
 				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
+				E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */,
 				E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */,
 				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
 				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
@@ -595,6 +598,7 @@
 				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
 				E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */,
 				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,
+				E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */,
 				E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */,
 				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
 				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
