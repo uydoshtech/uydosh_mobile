@@ -116,9 +116,9 @@ final class SunSimulationController {
     directional.intensity = lightIntensity
     directional.castsShadow = true
     directional.shadowMode = .deferred
-    directional.shadowSampleCount = 12
-    directional.shadowRadius = 6
-    directional.shadowColor = Self.baseShadowColor
+    directional.shadowSampleCount = 16
+    directional.shadowRadius = 10
+    directional.shadowColor = Self.baseShadowColor.withAlphaComponent(Self.maxShadowOpacity)
     directional.automaticallyAdjustsShadowProjection = true
     if #available(iOS 13.0, *) {
       directional.shadowMapSize = CGSize(width: 1024, height: 1024)
@@ -250,7 +250,8 @@ final class SunSimulationController {
       // (and stop casting entirely) as the sun nears/drops below the horizon.
       let shadowStrength = Self.shadowStrength(forElevation: el)
       direct.castsShadow = shadowStrength > 0.01
-      direct.shadowColor = Self.baseShadowColor.withAlphaComponent(shadowStrength)
+      direct.shadowColor = Self.baseShadowColor
+        .withAlphaComponent(Self.maxShadowOpacity * shadowStrength)
     }
 
     // Orb tint follows the time of day; fade it out as it sinks below the horizon.
@@ -280,8 +281,13 @@ final class SunSimulationController {
     }
   }
 
-  /// Opaque base tint for cast shadows; its alpha is faded by elevation at dusk/night.
-  private static let baseShadowColor = UIColor(red: 0.28, green: 0.30, blue: 0.36, alpha: 1)
+  /// Warm base tint for cast shadows. Kept warm (not cold blue) so shaded brick/wood still reads
+  /// as the same material; its alpha is scaled by `maxShadowOpacity` and faded at dusk/night.
+  private static let baseShadowColor = UIColor(red: 0.20, green: 0.16, blue: 0.13, alpha: 1)
+
+  /// Cap on cast-shadow opacity so shadows darken surfaces without painting over the underlying
+  /// texture — the floor tiles and wall brick stay visible in shade instead of flattening out.
+  private static let maxShadowOpacity: CGFloat = 0.5
 
   /// Shadow opacity by sun elevation: full when the sun is comfortably up, fading to none as it
   /// nears the horizon (where real shadows lengthen and wash out) and off once it's below.
@@ -407,13 +413,15 @@ final class SunSimulationController {
       if node.geometry != nil {
         let lower = name.lowercased()
         let isDoor = lower.contains("door")
-        // Only true openings/windows let the sun stream through.
-        let isLightOpening = lower.contains("window") || lower.contains("opening")
+        let isOpening = lower.contains("opening")
+        // Only windows let the sun stream through. Doors and open doorways are treated as
+        // permanently closed: they still read as see-through, but block sunlight.
+        let isWindow = lower.contains("window")
         let isSunPart = lower.contains("sun")
-        // Doors are part of the wall: they block light like solid geometry.
-        node.castsShadow = !isLightOpening && !isDoor && !isSunPart
-        if isLightOpening || isDoor {
-          // Doors get the same translucent "opening" look so they read as see-through.
+        let blocksLight = isDoor || isOpening
+        node.castsShadow = !isWindow && !blocksLight && !isSunPart
+        if isWindow || blocksLight {
+          // See-through look so the user can still see into the room through the opening.
           node.renderingOrder = 10
           for mat in node.geometry?.materials ?? [] {
             if mat.transparency > 0.99 {
@@ -422,9 +430,9 @@ final class SunSimulationController {
             mat.isDoubleSided = true
           }
         }
-        if isDoor {
-          // The translucent door material is skipped by the shadow pass, so back it with an
-          // invisible opaque proxy that occludes the sun without occluding the user's view.
+        if blocksLight {
+          // The translucent material is skipped by the shadow pass, so back doors and doorways
+          // with an invisible opaque proxy that occludes the sun without occluding the view.
           ensureLightBlockerProxy(for: node)
         }
       }

@@ -1647,7 +1647,19 @@ class _EditListingScreenState extends State<EditListingScreen>
           }
         } catch (reorderError) {
           logger.d("⚠️ Warning: Failed to persist photo order: $reorderError");
-          // Soft-fail: the photos are uploaded; order is a refinement.
+          // The photos themselves are saved; only the order/primary failed.
+          // Surface it so a silent failure here (e.g. an auth/permission
+          // error on the reorder endpoint) is visible instead of looking like
+          // "the main photo just didn't change".
+          if (mounted) {
+            ToastTheme.showWarning(
+              context,
+              message: L10n.get(
+                "error_reordering_photos",
+                fallback: "Couldn't update the main photo. Please try again.",
+              ),
+            );
+          }
         }
       }
 

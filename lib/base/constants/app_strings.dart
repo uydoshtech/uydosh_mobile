@@ -317,6 +317,8 @@ class AppStrings {
       "error_creating_listing": "Error creating listing. Please try again.",
       "error_updating_listing": "Error updating listing",
       "error_uploading_photos": "Error uploading photos",
+      "error_reordering_photos":
+          "Couldn't update the main photo. Please try again.",
       "error_deactivating_listing": "Error deactivating listing",
       "error_creating_profile": "Error creating profile: {error}",
       "error_updating_profile": "Error updating profile: {error}",
@@ -1975,6 +1977,8 @@ class AppStrings {
           "Ошибка создания объявления. Попробуйте еще раз.",
       "error_updating_listing": "Ошибка при обновлении объявления",
       "error_uploading_photos": "Ошибка загрузки фотографий",
+      "error_reordering_photos":
+          "Не удалось обновить главное фото. Попробуйте еще раз.",
       "error_deactivating_listing": "Ошибка деактивации объявления",
       "error_creating_profile": "Ошибка создания профиля. Попробуйте еще раз.",
       "error_updating_profile": "Ошибка обновления профиля: {error}",
@@ -3668,6 +3672,8 @@ class AppStrings {
           "E'lon yaratishda xatolik. Iltimos, qayta urinib ko'ring.",
       "error_updating_listing": "E'loni yangilashda xatolik",
       "error_uploading_photos": "Fotosuratlarni yuklashda xatolik",
+      "error_reordering_photos":
+          "Asosiy rasmni yangilab bo'lmadi. Qayta urinib ko'ring.",
       "error_deactivating_listing": "E'lonni deaktivlashtirishda xatolik",
       "error_creating_profile": "Profil yaratishda xatolik: {error}",
       "error_updating_profile": "Profildi yangilashda xatolik: {error}",

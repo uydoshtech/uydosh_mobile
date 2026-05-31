@@ -78,7 +78,7 @@ enum Scene3DRegenerationService {
 
     let geometry = polygonShape(points: points, y: Float(model.floorY) + 0.002)
     if stylized {
-      geometry.materials = [FurnitureMaterials.floor()]
+      geometry.materials = [FurnitureMaterials.floor(wallAngleRadians: model.dominantWallAngle)]
     } else {
       let material = SCNMaterial()
       material.diffuse.contents = UIColor(white: 0.82, alpha: 1)
@@ -353,6 +353,24 @@ enum SurfaceShaders {
   _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
   """
 
+  /// Planar projection for the (horizontal) floor onto the world X/Z plane, rotated by
+  /// `triRotation` so the tile grid lines run parallel/perpendicular to the room's walls rather
+  /// than the world axes. No UVs required.
+  static let floorPlanar = """
+  #pragma arguments
+  float triTileMeters;
+  float triRotation;
+  #pragma body
+  float tile = max(triTileMeters, 0.001);
+  float4x4 invView = scn_frame.inverseViewTransform;
+  float3 worldPos = (invView * float4(_surface.position, 1.0)).xyz;
+  float c = cos(triRotation);
+  float s = sin(triRotation);
+  float2 p = worldPos.xz;
+  float2 rp = float2(p.x * c + p.y * s, -p.x * s + p.y * c);
+  _surface.diffuse = u_diffuseTexture.sample(u_diffuseTextureSampler, rp / tile);
+  """
+
   /// Builds a PBR material that projects `texture` via world-space triplanar mapping.
   static func triplanarMaterial(
     texture: UIImage,
@@ -574,12 +592,21 @@ enum FurnitureTextures {
 /// Maps a furniture category to a stylized PBR material. Used by both the live scan view and the
 /// regenerated/edited geometry so an item looks the same in either mode.
 enum FurnitureMaterials {
-  /// Dark wooden floor-tile material, projected triplanar so it maps onto the horizontal floor
-  /// regardless of UVs. Double-sided so the floor renders when viewed from below.
-  static func floor() -> SCNMaterial {
-    let m = SurfaceShaders.triplanarMaterial(
-      texture: FurnitureTextures.darkWoodTile, tileMeters: 2.0, roughness: 0.72, metalness: 0)
+  /// Dark wooden floor-tile material. Projected onto the floor plane and rotated by
+  /// `wallAngleRadians` so the tile lines align with the walls. Double-sided so the floor renders
+  /// when viewed from below.
+  static func floor(wallAngleRadians: Float) -> SCNMaterial {
+    let m = SCNMaterial()
+    m.lightingModel = .physicallyBased
+    m.diffuse.contents = FurnitureTextures.darkWoodTile
+    m.diffuse.wrapS = .repeat
+    m.diffuse.wrapT = .repeat
+    m.roughness.contents = NSNumber(value: 0.72)
+    m.metalness.contents = NSNumber(value: 0.0)
     m.isDoubleSided = true
+    m.shaderModifiers = [.surface: SurfaceShaders.floorPlanar]
+    m.setValue(NSNumber(value: Float(2.0)), forKey: "triTileMeters")
+    m.setValue(NSNumber(value: wallAngleRadians), forKey: "triRotation")
     return m
   }
 

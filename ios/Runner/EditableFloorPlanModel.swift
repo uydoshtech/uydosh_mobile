@@ -229,4 +229,24 @@ struct EditableFloorPlanModel: Equatable {
   func wall(_ id: WallId) -> EditableWall? {
     walls.first { $0.id == id }
   }
+
+  /// Angle (radians, in world X/Z) of the longest wall. Used to align the floor tile grid so its
+  /// lines run parallel/perpendicular to the walls instead of the world axes.
+  var dominantWallAngle: Float {
+    var bestLength: Double = -1
+    var bestAngle: Float = 0
+    for wall in walls {
+      guard let start = vertex(wall.startVertexId), let end = vertex(wall.endVertexId) else {
+        continue
+      }
+      let dx = end.x - start.x
+      let dz = end.z - start.z
+      let length = (dx * dx + dz * dz).squareRoot()
+      if length > bestLength {
+        bestLength = length
+        bestAngle = Float(atan2(dz, dx))
+      }
+    }
+    return bestAngle
+  }
 }

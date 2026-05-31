@@ -1508,6 +1508,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
+    let floorAngle = floorPlanStateManager.editableModel?.dominantWallAngle ?? 0
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
@@ -1528,7 +1529,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       if EditableObjectType.from(nodeName: node.name ?? "") == .television {
         geo.materials = originals.map { _ in FurnitureMaterials.material(for: .television) }
       } else if let b = worldBounds(of: node), isLikelyFloorSlab(b, sceneBounds: sceneBounds) {
-        geo.materials = originals.map { _ in FurnitureMaterials.floor() }
+        geo.materials = originals.map { _ in FurnitureMaterials.floor(wallAngleRadians: floorAngle) }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
         let type = EditableObjectType.from(nodeName: node.name ?? "")
         geo.materials = originals.map { _ in FurnitureMaterials.material(for: type) }
