@@ -1368,6 +1368,36 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     return (minV, maxV)
   }
 
+  /// World-space angle (radians, in X/Z) of the longest wall in the loaded scan. Used to align the
+  /// floor tile grid to the walls. Derived from the wall nodes' world transforms because the scan
+  /// geometry lives in the original (possibly rotated) world space, unlike the aligned editable model.
+  private func dominantWallAngleInScene() -> Float {
+    guard let root = loadedScene?.rootNode else { return 0 }
+    var bestWeight: Float = -1
+    var bestAngle: Float = 0
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil, isWallSurface(node) {
+        let bb = node.boundingBox
+        let extentX = bb.max.x - bb.min.x
+        let extentZ = bb.max.z - bb.min.z
+        // The wall's length runs along whichever horizontal local axis is longer.
+        let axis: simd_float4 = extentX >= extentZ ? simd_float4(1, 0, 0, 0) : simd_float4(0, 0, 1, 0)
+        let dir = node.simdWorldTransform * axis
+        let horizontal = simd_length(simd_float2(dir.x, dir.z))
+        if horizontal > 1e-4 {
+          let weight = max(extentX, extentZ)
+          if weight > bestWeight {
+            bestWeight = weight
+            bestAngle = atan2(dir.z, dir.x)
+          }
+        }
+      }
+      for c in node.childNodes { visit(c) }
+    }
+    visit(root)
+    return bestAngle
+  }
+
   private func worldBounds(of node: SCNNode) -> (min: SCNVector3, max: SCNVector3)? {
     guard node.geometry != nil else { return nil }
     let box = node.boundingBox
@@ -1508,7 +1538,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private func applyFloorAndFurnitureTint() {
     guard let root = loadedScene?.rootNode, let sceneBounds = sceneWorldBounds else { return }
     cacheOriginalMaterialsIfNeeded()
-    let floorAngle = floorPlanStateManager.editableModel?.dominantWallAngle ?? 0
+    let floorAngle = dominantWallAngleInScene()
     SCNTransaction.begin()
     SCNTransaction.animationDuration = 0
     func visit(_ node: SCNNode) {
