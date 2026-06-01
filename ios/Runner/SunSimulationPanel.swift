@@ -68,6 +68,11 @@ struct SunSimulationStrings {
 protocol SunSimulationPanelDelegate: AnyObject {
   func sunPanel(_ panel: SunSimulationPanel, didChangeAzimuth degrees: Float)
   func sunPanel(_ panel: SunSimulationPanel, didChangeElevation degrees: Float)
+  /// Fired by the timeline (scrub/play/"now") with the real solar position, where `trueElevation`
+  /// may dip below 0° at night. Lets the host drive the night sky (dark backdrop, moon, stars)
+  /// that the clamped `didChangeElevation` path would otherwise hide. Geometric lighting elevation
+  /// is still clamped to the horizon by the host.
+  func sunPanel(_ panel: SunSimulationPanel, didAnimateToAzimuth azimuth: Float, trueElevation: Float)
   func sunPanel(_ panel: SunSimulationPanel, didChangeIntensity value: CGFloat)
   func sunPanel(_ panel: SunSimulationPanel, didSelectPreset preset: SunPositionMath.TimePreset)
   /// The user grabbed the timeline / play / now controls. The host should end any externally
@@ -435,12 +440,14 @@ final class SunSimulationPanel: UIView {
     )
     lastSolarElevationDeg = pos.elevationDeg
     let azimuth = Float(pos.azimuthDeg)
-    let elevation = Float(max(0, pos.elevationDeg))
+    let trueElevation = Float(pos.elevationDeg)
+    let elevation = max(0, trueElevation)
 
     setAzimuth(azimuth, notify: false)
     setElevation(elevation, notify: false)
-    delegate?.sunPanel(self, didChangeAzimuth: azimuth)
-    delegate?.sunPanel(self, didChangeElevation: elevation)
+    // Pass the real (possibly below-horizon) elevation so the host can render the night sky;
+    // it clamps the geometric lighting elevation to the horizon itself.
+    delegate?.sunPanel(self, didAnimateToAzimuth: azimuth, trueElevation: trueElevation)
     emitTimeChanged(minute)
   }
 

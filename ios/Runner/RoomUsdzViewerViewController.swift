@@ -2761,6 +2761,18 @@ extension RoomUsdzViewerViewController: SunSimulationPanelDelegate {
     refreshSunCompassLabels()
   }
 
+  func sunPanel(_ panel: SunSimulationPanel, didAnimateToAzimuth azimuth: Float, trueElevation: Float) {
+    // Keep the geometric sun on/above the horizon, but feed the real elevation as the mood driver
+    // so dusk/night (dark sky, fading orb, moon + stars) renders exactly like the intro sweep.
+    sunSimulationController.setSunAngles(
+      azimuthDeg: azimuth,
+      elevationDeg: max(0, trueElevation),
+      trueElevationDeg: trueElevation
+    )
+    updateSceneSkyBackground(azimuthDeg: azimuth, elevationDeg: trueElevation)
+    refreshSunCompassLabels()
+  }
+
   func sunPanel(_ panel: SunSimulationPanel, didChangeIntensity value: CGFloat) {
     sunSimulationController.setLightIntensity(value)
   }

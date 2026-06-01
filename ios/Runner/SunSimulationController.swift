@@ -8,6 +8,8 @@ final class SunSimulationController {
   static let lightNodeName = "UydoshSunLight"
   static let rayNodeName = "UydoshSunRay"
   static let ambientNodeName = "UydoshSunAmbient"
+  static let moonNodeName = "UydoshMoonIndicator"
+  static let starDomeNodeName = "UydoshStarDome"
   /// Invisible opaque cap attached to a door so it blocks sunlight while staying see-through.
   static let lightBlockerProxyName = "UydoshLightBlockerProxy"
 
@@ -27,6 +29,64 @@ final class SunSimulationController {
   _surface.diffuse.rgb = _sunColor;
   _surface.emission.rgb = _sunColor;
   """
+
+  /// Cosmetic only — same spherical falloff trick as the sun, but cooled so the pale disc reads as
+  /// a 3D moon rather than a flat sticker. Carries no light/shadow of its own.
+  private static let moonSurfaceShaderModifier = """
+  #pragma body
+  vec3 _moonViewDir = normalize(_surface.view);
+  vec3 _moonNormal = normalize(_surface.normal);
+  float _moonFacing = clamp(dot(_moonViewDir, _moonNormal), 0.0, 1.0);
+  float _moonCore = pow(_moonFacing, 0.85);
+  vec3 _moonBase = _surface.emission.rgb;
+  vec3 _moonEdge = _moonBase * vec3(0.42, 0.48, 0.62);
+  vec3 _moonColor = mix(_moonEdge, _moonBase, _moonCore);
+  _surface.diffuse.rgb = _moonColor;
+  _surface.emission.rgb = _moonColor;
+  """
+
+  /// Pale base tint for the cosmetic moon disc.
+  private static let moonBaseColor = UIColor(red: 0.86, green: 0.89, blue: 0.96, alpha: 1)
+
+  /// Generated once: a black canvas scattered with faint blue-white dots, used as the sky dome's
+  /// emission texture. With additive blending the black contributes nothing, so only the dots show.
+  private static let starFieldImage: UIImage = makeStarFieldImage()
+
+  private static func makeStarFieldImage() -> UIImage {
+    let size = CGSize(width: 1024, height: 512)
+    let format = UIGraphicsImageRendererFormat.default()
+    format.opaque = true
+    format.scale = 1
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+    return renderer.image { ctx in
+      let cg = ctx.cgContext
+      cg.setFillColor(UIColor.black.cgColor)
+      cg.fill(CGRect(origin: .zero, size: size))
+      // Deterministic PRNG so the starfield is stable across launches.
+      var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
+      func rnd() -> Double {
+        seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+        return Double(seed >> 11) / Double(UInt64(1) << 53)
+      }
+      let starCount = 420
+      for _ in 0..<starCount {
+        let x = rnd() * Double(size.width)
+        let y = rnd() * Double(size.height)
+        let radius = 0.4 + rnd() * 1.1
+        let brightness = 0.5 + rnd() * 0.5
+        let color = UIColor(
+          red: CGFloat(0.80 * brightness),
+          green: CGFloat(0.85 * brightness),
+          blue: CGFloat(1.00 * brightness),
+          alpha: 1
+        )
+        cg.setFillColor(color.cgColor)
+        cg.fillEllipse(in: CGRect(
+          x: x - radius, y: y - radius, width: radius * 2, height: radius * 2
+        ))
+      }
+    }
+  }
   static let fillLightNodeName = "UydoshSunFill"
 
   private(set) var isEnabled = false
@@ -41,6 +101,8 @@ final class SunSimulationController {
   private var rigNode: SCNNode?
   private var sunNode: SCNNode?
   private var lightNode: SCNNode?
+  private var moonNode: SCNNode?
+  private var starDomeNode: SCNNode?
   private var roomCenter = SCNVector3Zero
   private var sunRadius: Float = 8
   private var worldEastPlanAngleRad: Double = 0
@@ -108,6 +170,49 @@ final class SunSimulationController {
     rig.addChildNode(sun)
     sunNode = sun
 
+    // Cosmetic night moon: a pale disc that rides roughly opposite the sun and fades in once the
+    // sun is below the horizon. It carries no light or shadow — purely to fill the night sky.
+    let moon = SCNNode()
+    moon.name = Self.moonNodeName
+    let moonSphere = SCNSphere(radius: max(0.07, CGFloat(sunRadius) * 0.030))
+    moonSphere.segmentCount = 48
+    let moonMat = SCNMaterial()
+    moonMat.lightingModel = .constant
+    moonMat.emission.contents = Self.moonBaseColor
+    moonMat.diffuse.contents = Self.moonBaseColor
+    moonMat.shaderModifiers = [.surface: Self.moonSurfaceShaderModifier]
+    moonSphere.materials = [moonMat]
+    moon.geometry = moonSphere
+    moon.castsShadow = false
+    moon.opacity = 0
+    rig.addChildNode(moon)
+    moonNode = moon
+
+    // Cosmetic starfield: a large inverted sky dome around the room. Renders first, ignores depth,
+    // and uses additive blending so its black body is invisible and only the star texture's dots
+    // brighten the sky (room geometry, drawn after, occludes it). `emission.intensity` ramps the
+    // stars from invisible by day to visible at night (see updateDirectionalLight).
+    let dome = SCNNode()
+    dome.name = Self.starDomeNodeName
+    let domeSphere = SCNSphere(radius: CGFloat(sunRadius) * 1.3)
+    domeSphere.segmentCount = 96
+    let domeMat = SCNMaterial()
+    domeMat.lightingModel = .constant
+    domeMat.diffuse.contents = UIColor.black
+    domeMat.emission.contents = Self.starFieldImage
+    domeMat.emission.intensity = 0
+    domeMat.isDoubleSided = true
+    domeMat.writesToDepthBuffer = false
+    domeMat.readsFromDepthBuffer = false
+    domeMat.blendMode = .add
+    domeSphere.materials = [domeMat]
+    dome.geometry = domeSphere
+    dome.castsShadow = false
+    dome.renderingOrder = -100
+    dome.position = roomCenter
+    rig.addChildNode(dome)
+    starDomeNode = dome
+
     let lightHolder = SCNNode()
     lightHolder.name = Self.lightNodeName
     let directional = SCNLight()
@@ -146,6 +251,8 @@ final class SunSimulationController {
     rigNode = nil
     sunNode = nil
     lightNode = nil
+    moonNode = nil
+    starDomeNode = nil
     scene = nil
     isEnabled = false
   }
@@ -279,6 +386,22 @@ final class SunSimulationController {
         fillLight.intensity = Self.fillLightIntensity(forDirectional: lightIntensity) * max(0.4, scale)
       }
     }
+
+    // Night-only cosmetics: ride the moon opposite the sun and ramp the starfield in after sunset.
+    let nightF = Self.nightFactor(forElevation: el)
+    if let moonNode {
+      moonNode.position = SunPositionMath.sunWorldPosition(
+        roomCenter: roomCenter,
+        compassAzimuthDeg: azimuthDeg + 180,
+        elevationDeg: max(0, -el),
+        radius: sunRadius,
+        worldEastPlanAngleRad: worldEastPlanAngleRad,
+        scanWorldPlusXBearingDeg: scanWorldPlusXBearingDeg,
+        northCorrectionDeg: northCorrectionDeg
+      )
+      moonNode.opacity = CGFloat(nightF)
+    }
+    starDomeNode?.geometry?.firstMaterial?.emission.intensity = CGFloat(nightF) * 0.9
   }
 
   /// Warm base tint for cast shadows. Kept warm (not cold blue) so shaded brick/wood still reads
@@ -352,6 +475,16 @@ final class SunSimulationController {
     case ..<(-4): return 0
     case ..<2: return (el + 4) / 6
     default: return 1
+    }
+  }
+
+  /// Night "darkness" weight driving the cosmetic moon + stars: 0 while the sun is up, ramping in as
+  /// it sinks below the horizon and reaching full once it's ~8° down (well into twilight).
+  private static func nightFactor(forElevation el: Float) -> Float {
+    switch el {
+    case ..<(-8): return 1
+    case ..<0: return -el / 8
+    default: return 0
     }
   }
 
