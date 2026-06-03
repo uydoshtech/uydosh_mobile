@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_parser_review_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
+import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
@@ -63,6 +64,8 @@ class _AdminListingParserReviewScreenState
   final IListingModerationAdminService _moderationService =
       getIt<IListingModerationAdminService>();
   final IListingService _listingService = getIt<IListingService>();
+  final ISubwayStationService _subwayService = getIt<ISubwayStationService>();
+  final ILocationService _locationService = getIt<ILocationService>();
 
   bool _isLoading = false;
   bool _hasError = false;
@@ -70,6 +73,10 @@ class _AdminListingParserReviewScreenState
   ParserReviewBundle? _bundle;
   bool _busy = false;
   bool _rawExpanded = true;
+
+  /// id -> localized name lookups so metro/district render as names, not ids.
+  final Map<int, String> _stationNames = {};
+  final Map<int, String> _locationNames = {};
 
   @override
   void initState() {
@@ -86,6 +93,7 @@ class _AdminListingParserReviewScreenState
     });
     try {
       final bundle = await _reviewService.getParserReview(widget.listingId);
+      await _ensureNameLookups();
       setStateIfMounted(() {
         _bundle = bundle;
         _isLoading = false;
@@ -96,6 +104,78 @@ class _AdminListingParserReviewScreenState
         _errorMessage = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  /// Best-effort load of subway/location reference data so we can show names
+  /// instead of raw ids. Failures are swallowed — we just fall back to ids.
+  Future<void> _ensureNameLookups() async {
+    if (_stationNames.isNotEmpty && _locationNames.isNotEmpty) return;
+    try {
+      final stations = await _subwayService.getSubwayStations();
+      for (final s in stations) {
+        final name = _pickName(s.nameUz, s.nameRu, s.nameEn);
+        if (name.isNotEmpty) _stationNames[s.id] = name;
+      }
+    } catch (_) {
+      // ignore: metro names are optional polish.
+    }
+    try {
+      final locations = await _locationService.getLocations();
+      for (final l in locations) {
+        final name = _pickName(l.nameUz, l.nameRu, l.nameEn);
+        if (name.isNotEmpty) _locationNames[l.id] = name;
+      }
+    } catch (_) {
+      // ignore: location names are optional polish.
+    }
+  }
+
+  String _pickName(String? uz, String? ru, String? en) {
+    switch (LanguageState().currentLanguage) {
+      case "ru":
+        return (ru ?? en ?? uz ?? "").trim();
+      case "en":
+        return (en ?? ru ?? uz ?? "").trim();
+      default:
+        return (uz ?? ru ?? en ?? "").trim();
+    }
+  }
+
+  int? _asId(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
+  String _stationLabel(dynamic v) {
+    final id = _asId(v);
+    if (id != null) {
+      final name = _stationNames[id];
+      if (name != null && name.isNotEmpty) return name;
+    }
+    return _fmt(v);
+  }
+
+  String _locationLabel(dynamic v) {
+    final id = _asId(v);
+    if (id != null) {
+      final name = _locationNames[id];
+      if (name != null && name.isNotEmpty) return name;
+    }
+    return _fmt(v);
+  }
+
+  String _formatValue(String parserKey, dynamic v) {
+    switch (parserKey) {
+      case "gender_preference":
+        return _genderLabel(v);
+      case "metro":
+        return _stationLabel(v);
+      case "district":
+        return _locationLabel(v);
+      default:
+        return _fmt(v);
     }
   }
 
@@ -224,7 +304,7 @@ class _AdminListingParserReviewScreenState
       _FieldRow(
         label: L10n.get(
           "admin_parser_review_field_metro",
-          fallback: "Metro (station id)",
+          fallback: "Metro",
         ),
         parserKey: "metro",
         currentValue: listing["subway_station_id"],
@@ -232,7 +312,7 @@ class _AdminListingParserReviewScreenState
       _FieldRow(
         label: L10n.get(
           "admin_parser_review_field_district",
-          fallback: "District (location id)",
+          fallback: "District",
         ),
         parserKey: "district",
         currentValue: listing["location_id"],
@@ -515,10 +595,8 @@ class _AdminListingParserReviewScreenState
     final secondaryTextColor = themeState.cardSecondaryTextColor;
 
     final parserRaw = bundle.parserSnapshot?.outputJson[row.parserKey];
-    final isGender = row.parserKey == "gender_preference";
-    final parserText = isGender ? _genderLabel(parserRaw) : _fmt(parserRaw);
-    final currentText =
-        isGender ? _genderLabel(row.currentValue) : _fmt(row.currentValue);
+    final parserText = _formatValue(row.parserKey, parserRaw);
+    final currentText = _formatValue(row.parserKey, row.currentValue);
 
     final parserEmpty = parserText == "—";
     final currentEmpty = currentText == "—";
