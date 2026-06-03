@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -9,10 +8,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_listing_parser_review_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -175,21 +171,19 @@ class _AdminListingModerationQueueScreenState
     return "${L10n.get(monthKey)} ${date.year}";
   }
 
-  void _openListingDetail(int listingId) {
+  Future<void> _openListingDetail(int listingId) async {
     if (!mounted) return;
-    Navigator.of(context).push(
+    final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => ListingDetailBloc(getIt<IListingService>()),
-            ),
-            BlocProvider(create: (_) => ListingDetailPageBloc()),
-          ],
-          child: ListingDetailScreen(listingId: listingId),
-        ),
+        builder: (context) =>
+            AdminListingParserReviewScreen(listingId: listingId),
       ),
     );
+    // The review screen pops `true` after a successful approval so the queue
+    // stays in sync without the admin returning to manually refresh.
+    if (result == true) {
+      await _loadFirstPage();
+    }
   }
 
   Widget _monthSeparator(BuildContext context, String label) {
