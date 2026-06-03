@@ -1838,6 +1838,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Объявление опубликовано';
 
   @override
+  String get admin_listing_moderation_approve_confirm_title =>
+      'Одобрить объявление?';
+
+  @override
+  String get admin_listing_moderation_approve_confirm_message =>
+      'Объявление будет опубликовано и станет видно всем.';
+
+  @override
   String get admin_panel_section_gig_moderation => 'Модерация услуг и задач';
 
   @override

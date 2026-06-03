@@ -746,6 +746,8 @@
   "admin_listing_moderation_user": "User",
   "admin_listing_moderation_load_more": "Load more",
   "admin_listing_moderation_approved_toast": "Listing published",
+  "admin_listing_moderation_approve_confirm_title": "Approve listing?",
+  "admin_listing_moderation_approve_confirm_message": "This will publish the listing and make it visible to everyone.",
   "admin_panel_section_gig_moderation": "Approve gigs",
   "admin_gig_moderation_title": "Gig moderation",
   "admin_gig_moderation_tab_offers": "Services",

@@ -1856,6 +1856,14 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_listing_moderation_approved_toast => 'E\'lon e\'lon qilindi';
 
   @override
+  String get admin_listing_moderation_approve_confirm_title =>
+      'E\'lon tasdiqlansinmi?';
+
+  @override
+  String get admin_listing_moderation_approve_confirm_message =>
+      'E\'lon chop etiladi va hammaga ko\'rinadigan bo\'ladi.';
+
+  @override
   String get admin_panel_section_gig_moderation => 'Gig\'larni tasdiqlash';
 
   @override

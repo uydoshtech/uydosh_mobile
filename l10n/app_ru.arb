@@ -738,6 +738,8 @@
   "admin_listing_moderation_user": "Пользователь",
   "admin_listing_moderation_load_more": "Ещё",
   "admin_listing_moderation_approved_toast": "Объявление опубликовано",
+  "admin_listing_moderation_approve_confirm_title": "Одобрить объявление?",
+  "admin_listing_moderation_approve_confirm_message": "Объявление будет опубликовано и станет видно всем.",
   "admin_panel_section_gig_moderation": "Модерация услуг и задач",
   "admin_gig_moderation_title": "Модерация объявлений (гига)",
   "admin_gig_moderation_tab_offers": "Услуги",

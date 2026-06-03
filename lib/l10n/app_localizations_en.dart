@@ -1833,6 +1833,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_listing_moderation_approved_toast => 'Listing published';
 
   @override
+  String get admin_listing_moderation_approve_confirm_title =>
+      'Approve listing?';
+
+  @override
+  String get admin_listing_moderation_approve_confirm_message =>
+      'This will publish the listing and make it visible to everyone.';
+
+  @override
   String get admin_panel_section_gig_moderation => 'Approve gigs';
 
   @override

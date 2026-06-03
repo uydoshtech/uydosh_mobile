@@ -746,6 +746,8 @@
   "admin_listing_moderation_user": "Foydalanuvchi",
   "admin_listing_moderation_load_more": "Yana",
   "admin_listing_moderation_approved_toast": "E'lon e'lon qilindi",
+  "admin_listing_moderation_approve_confirm_title": "E'lon tasdiqlansinmi?",
+  "admin_listing_moderation_approve_confirm_message": "E'lon chop etiladi va hammaga ko'rinadigan bo'ladi.",
   "admin_panel_section_gig_moderation": "Gig'larni tasdiqlash",
   "admin_gig_moderation_title": "Gig moderatsiyasi",
   "admin_gig_moderation_tab_offers": "Xizmatlar",

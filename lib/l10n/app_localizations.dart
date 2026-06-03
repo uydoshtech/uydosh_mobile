@@ -3448,6 +3448,18 @@ abstract class AppLocalizations {
   /// **'Listing published'**
   String get admin_listing_moderation_approved_toast;
 
+  /// No description provided for @admin_listing_moderation_approve_confirm_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve listing?'**
+  String get admin_listing_moderation_approve_confirm_title;
+
+  /// No description provided for @admin_listing_moderation_approve_confirm_message.
+  ///
+  /// In en, this message translates to:
+  /// **'This will publish the listing and make it visible to everyone.'**
+  String get admin_listing_moderation_approve_confirm_message;
+
   /// No description provided for @admin_panel_section_gig_moderation.
   ///
   /// In en, this message translates to:

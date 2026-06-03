@@ -10,6 +10,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listing_parser_review_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
@@ -122,6 +123,16 @@ class _AdminListingModerationQueueScreenState
 
   Future<void> _approve(PendingModerationListing listing) async {
     if (_approvingId != null) return;
+
+    final confirmed = await ConfirmationDialog.show(
+      context: context,
+      titleKey: "admin_listing_moderation_approve_confirm_title",
+      messageKey: "admin_listing_moderation_approve_confirm_message",
+      confirmButtonKey: "admin_listing_moderation_approve",
+      cancelButtonKey: "cancel",
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _approvingId = listing.id);
     try {
       await _service.approveListing(listing.id);

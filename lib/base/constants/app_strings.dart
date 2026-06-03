@@ -1178,6 +1178,9 @@ class AppStrings {
       "admin_listing_moderation_user": "User",
       "admin_listing_moderation_load_more": "Load more",
       "admin_listing_moderation_approved_toast": "Listing published",
+      "admin_listing_moderation_approve_confirm_title": "Approve listing?",
+      "admin_listing_moderation_approve_confirm_message":
+          "This will publish the listing and make it visible to everyone.",
       "admin_parser_review_title": "Parser review",
       "admin_parser_review_loading": "Loading parser review…",
       "admin_parser_review_error": "Couldn't load parser review",
@@ -2887,6 +2890,9 @@ class AppStrings {
       "admin_listing_moderation_user": "Пользователь",
       "admin_listing_moderation_load_more": "Ещё",
       "admin_listing_moderation_approved_toast": "Объявление опубликовано",
+      "admin_listing_moderation_approve_confirm_title": "Одобрить объявление?",
+      "admin_listing_moderation_approve_confirm_message":
+          "Объявление будет опубликовано и станет видно всем.",
       "admin_parser_review_title": "Проверка парсера",
       "admin_parser_review_loading": "Загрузка проверки парсера…",
       "admin_parser_review_error": "Не удалось загрузить проверку парсера",
@@ -4609,6 +4615,9 @@ class AppStrings {
       "admin_listing_moderation_user": "Foydalanuvchi",
       "admin_listing_moderation_load_more": "Yana",
       "admin_listing_moderation_approved_toast": "E'lon e'lon qilindi",
+      "admin_listing_moderation_approve_confirm_title": "E'lon tasdiqlansinmi?",
+      "admin_listing_moderation_approve_confirm_message":
+          "E'lon chop etiladi va hammaga ko'rinadigan bo'ladi.",
       "admin_parser_review_title": "Parser tekshiruvi",
       "admin_parser_review_loading": "Parser tekshiruvi yuklanmoqda…",
       "admin_parser_review_error": "Parser tekshiruvini yuklab bo'lmadi",
