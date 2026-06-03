@@ -1481,6 +1481,33 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     return true
   }
 
+  /// Furniture that does not rest on the floor plane — most notably hanging/upper kitchen
+  /// cabinets and wall shelves — fails `isOnFloorObject`, and because its node name does not
+  /// contain "wall" it is not caught by `isWallSurface` either, so it would otherwise keep the
+  /// raw white/gray scan material. RoomPlan still names these meshes by category (`Cabinet*`,
+  /// `Storage*`, ...), so detect furniture by name and give it the same stylized material as its
+  /// floor-standing counterpart. Structural surfaces and large wall-like slabs are excluded so
+  /// real walls/ceilings/doors are never mistaken for furniture.
+  private func nonFloorFurnitureType(
+    _ node: SCNNode,
+    sceneBounds: (min: SCNVector3, max: SCNVector3)
+  ) -> EditableObjectType? {
+    if shouldHideWallLikeSurface(node) || isWallSurface(node) { return nil }
+    let name = (node.name ?? "").lowercased()
+    if name.contains("floor") || name.contains("ground") || name.contains("ceiling") { return nil }
+    if let b = worldBounds(of: node) {
+      let sceneH = max(sceneBounds.max.y - sceneBounds.min.y, 0.12)
+      if isLikelyFloorSlab(b, sceneBounds: sceneBounds) { return nil }
+      if isLikelyVerticalWallSlab(b, sceneHeight: sceneH) { return nil }
+    }
+    switch EditableObjectType.from(nodeName: node.name ?? "") {
+    case .cabinet, .storage, .table, .appliance, .fixture, .sofa, .bed, .chair:
+      return EditableObjectType.from(nodeName: node.name ?? "")
+    case .television, .unknown:
+      return nil
+    }
+  }
+
   private func cacheOriginalMaterialsIfNeeded() {
     guard !didCacheOriginalMaterials, let root = loadedScene?.rootNode else { return }
     func visit(_ node: SCNNode) {
@@ -1565,6 +1592,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         geo.materials = originals.map { _ in FurnitureMaterials.floor(wallAngleRadians: floorAngle) }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
         let type = EditableObjectType.from(nodeName: node.name ?? "")
+        geo.materials = originals.map { _ in
+          FurnitureMaterials.material(for: type, rotationRadians: floorAngle)
+        }
+      } else if let type = nonFloorFurnitureType(node, sceneBounds: sceneBounds) {
         geo.materials = originals.map { _ in
           FurnitureMaterials.material(for: type, rotationRadians: floorAngle)
         }
