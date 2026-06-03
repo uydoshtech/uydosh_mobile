@@ -190,10 +190,10 @@ class _AdminListingParserReviewScreenState
   String _genderLabel(dynamic v) {
     final n = v is num ? v.toInt() : int.tryParse("$v");
     if (n == 1) {
-      return L10n.get("gender_male", fallback: "Male");
+      return L10n.get("gender_short_male", fallback: "Male");
     }
     if (n == 2) {
-      return L10n.get("gender_female", fallback: "Female");
+      return L10n.get("gender_short_female", fallback: "Female");
     }
     return _fmt(v);
   }
