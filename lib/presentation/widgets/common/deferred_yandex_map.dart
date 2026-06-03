@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -14,9 +15,14 @@ import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 /// or interact with the map at all, so paying that cost up front is pure
 /// battery/heat drain.
 ///
-/// This widget renders a lightweight static placeholder until the user
-/// explicitly taps it. Only then is the live [YandexMapWidget] mounted (and
-/// from then on it stays mounted for the rest of the screen's lifetime).
+/// This widget renders a lightweight static placeholder until either the user
+/// taps it or [autoLoad] is flipped to `true` by the parent. Only then is the
+/// live [YandexMapWidget] mounted (and from then on it stays mounted for the
+/// rest of the screen's lifetime).
+///
+/// Parents that gate the map behind an expandable section can drive [autoLoad]
+/// instead of relying on a manual tap: flip it once the expand animation has
+/// settled so the heavy native view doesn't jank the expansion.
 class DeferredYandexMap extends StatefulWidget {
   const DeferredYandexMap({
     required this.apiKey,
@@ -26,6 +32,7 @@ class DeferredYandexMap extends StatefulWidget {
     this.title,
     this.listingDetail,
     this.height = 200,
+    this.autoLoad = false,
   });
 
   final String apiKey;
@@ -35,12 +42,32 @@ class DeferredYandexMap extends StatefulWidget {
   final double height;
   final ListingDetail? listingDetail;
 
+  /// When `true`, mounts the live map without waiting for a tap.
+  final bool autoLoad;
+
   @override
   State<DeferredYandexMap> createState() => _DeferredYandexMapState();
 }
 
 class _DeferredYandexMapState extends State<DeferredYandexMap> {
   bool _loadMap = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMap = widget.autoLoad;
+  }
+
+  @override
+  void didUpdateWidget(DeferredYandexMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Once the parent signals auto-load (e.g. the section finished expanding),
+    // mount the real map. A rebuild is already in flight from this update, so
+    // mutating the flag directly is enough — no setState needed.
+    if (widget.autoLoad && !_loadMap) {
+      _loadMap = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +84,10 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    // In the blue theme `primary` is a dark navy that is almost identical to
+    // the placeholder background, leaving the map icon invisible. Fall back to
+    // the lighter teal accent there so the icon reads clearly.
+    final accentColor = ThemeState().isBlueTheme ? scheme.secondary : scheme.primary;
     return SizedBox(
       height: widget.height,
       width: double.infinity,
@@ -104,21 +135,21 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
                   children: [
                     ThemeIcon(
                       Icons.map_outlined,
-                      size: 40,
-                      color: scheme.primary,
+                      size: 48,
+                      color: accentColor,
                     ),
                     const SizedBox(height: 10),
                     Text(
                       context.l10n.show_map,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       context.l10n.tap_to_load_map,
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
                     ),

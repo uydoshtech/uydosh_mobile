@@ -1519,9 +1519,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   /// Applies the shared tileable red-brick texture to a scan wall surface using world-space
-  /// triplanar projection (see `SurfaceShaders.triplanar`), so brick shows correctly even on
-  /// meshes without proper UV coordinates.
-  private func applyBrickWallMaterial(_ material: SCNMaterial) {
+  /// triplanar projection rotated about Y by `wallAngleRadians` (see
+  /// `SurfaceShaders.triplanarRotated`), so brick shows correctly on meshes without proper UV
+  /// coordinates while its lines run parallel to the walls (matching the floor tile alignment)
+  /// instead of looking skewed against the world axes in the top-down view.
+  private func applyBrickWallMaterial(_ material: SCNMaterial, wallAngleRadians: Float) {
     material.lightingModel = .physicallyBased
     material.metalness.contents = NSNumber(value: 0.0)
     material.roughness.contents = NSNumber(value: 0.95)
@@ -1529,8 +1531,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     material.diffuse.wrapS = .repeat
     material.diffuse.wrapT = .repeat
     material.ambient.contents = UIColor(white: 0.5, alpha: 1)
-    material.shaderModifiers = [.surface: SurfaceShaders.triplanar]
+    material.shaderModifiers = [.surface: SurfaceShaders.triplanarRotated]
     material.setValue(NSNumber(value: Float(BrickTexture.tileMeters)), forKey: "triTileMeters")
+    material.setValue(NSNumber(value: wallAngleRadians), forKey: "triRotation")
   }
 
   /// Applies the stylized look to a USDZ room scan: brick exterior walls, dark wood-tile floor,
@@ -1562,11 +1565,13 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         geo.materials = originals.map { _ in FurnitureMaterials.floor(wallAngleRadians: floorAngle) }
       } else if isOnFloorObject(node, sceneBounds: sceneBounds) {
         let type = EditableObjectType.from(nodeName: node.name ?? "")
-        geo.materials = originals.map { _ in FurnitureMaterials.material(for: type) }
+        geo.materials = originals.map { _ in
+          FurnitureMaterials.material(for: type, rotationRadians: floorAngle)
+        }
       } else if isWallSurface(node) {
         geo.materials = originals.map { orig in
           let m = orig.copy() as! SCNMaterial
-          applyBrickWallMaterial(m)
+          applyBrickWallMaterial(m, wallAngleRadians: floorAngle)
           return m
         }
       }

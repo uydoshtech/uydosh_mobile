@@ -200,7 +200,11 @@ enum Scene3DRegenerationService {
         material = SCNMaterial()
         material.diffuse.contents = UIColor.systemOrange.withAlphaComponent(0.75)
       } else if stylized {
-        material = FurnitureMaterials.material(for: object.type)
+        // Align directional textures to the box's own facing so wood grain etc. follows the
+        // furniture edges rather than the world axes. The node below is rotated by
+        // `-object.rotationRadians`, so undoing that rotation maps the texture into the box frame.
+        material = FurnitureMaterials.material(
+          for: object.type, rotationRadians: Float(object.rotationRadians))
       } else {
         material = SCNMaterial()
         material.diffuse.contents = UIColor(white: 0.72, alpha: 1)
@@ -353,6 +357,36 @@ enum SurfaceShaders {
   _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
   """
 
+  /// World-space triplanar projection rotated about the vertical (Y) axis by `triRotation`, so the
+  /// horizontal texture direction runs parallel/perpendicular to the room's walls rather than the
+  /// world axes. Used for brick walls: keeps brick courses horizontal on the vertical faces while
+  /// aligning the brick lines with the wall direction when viewed top-down (the same alignment the
+  /// floor gets via `floorPlanar`). No UVs required.
+  static let triplanarRotated = """
+  #pragma arguments
+  float triTileMeters;
+  float triRotation;
+  #pragma body
+  float tile = max(triTileMeters, 0.001);
+  float4x4 invView = scn_frame.inverseViewTransform;
+  float3 worldPos = (invView * float4(_surface.position, 1.0)).xyz;
+  float3 worldNrm = normalize((invView * float4(_surface.normal, 0.0)).xyz);
+  float c = cos(triRotation);
+  float s = sin(triRotation);
+  // Rotate position and normal about the Y axis so the horizontal axes follow the walls.
+  float3 rp = float3(worldPos.x * c + worldPos.z * s, worldPos.y, -worldPos.x * s + worldPos.z * c);
+  float3 rn = float3(worldNrm.x * c + worldNrm.z * s, worldNrm.y, -worldNrm.x * s + worldNrm.z * c);
+  float3 blend = abs(rn);
+  blend /= (blend.x + blend.y + blend.z + 1e-5);
+  float2 uvX = rp.zy / tile;
+  float2 uvY = rp.xz / tile;
+  float2 uvZ = rp.xy / tile;
+  float4 cx = u_diffuseTexture.sample(u_diffuseTextureSampler, uvX);
+  float4 cy = u_diffuseTexture.sample(u_diffuseTextureSampler, uvY);
+  float4 cz = u_diffuseTexture.sample(u_diffuseTextureSampler, uvZ);
+  _surface.diffuse = cx * blend.x + cy * blend.y + cz * blend.z;
+  """
+
   /// Planar projection for the (horizontal) floor onto the world X/Z plane, rotated by
   /// `triRotation` so the tile grid lines run parallel/perpendicular to the room's walls rather
   /// than the world axes. No UVs required.
@@ -371,12 +405,16 @@ enum SurfaceShaders {
   _surface.diffuse = u_diffuseTexture.sample(u_diffuseTextureSampler, rp / tile);
   """
 
-  /// Builds a PBR material that projects `texture` via world-space triplanar mapping.
+  /// Builds a PBR material that projects `texture` via world-space triplanar mapping, rotated
+  /// about the vertical axis by `rotationRadians` so directional textures (e.g. wood grain) run
+  /// parallel to the item's faces / the room's walls instead of the world axes (matching the
+  /// floor-tile alignment). Pass `0` for an item that should stay world-aligned.
   static func triplanarMaterial(
     texture: UIImage,
     tileMeters: Float,
     roughness: CGFloat,
-    metalness: CGFloat
+    metalness: CGFloat,
+    rotationRadians: Float = 0
   ) -> SCNMaterial {
     let m = SCNMaterial()
     m.lightingModel = .physicallyBased
@@ -385,8 +423,9 @@ enum SurfaceShaders {
     m.diffuse.wrapT = .repeat
     m.roughness.contents = NSNumber(value: Double(roughness))
     m.metalness.contents = NSNumber(value: Double(metalness))
-    m.shaderModifiers = [.surface: triplanar]
+    m.shaderModifiers = [.surface: triplanarRotated]
     m.setValue(NSNumber(value: tileMeters), forKey: "triTileMeters")
+    m.setValue(NSNumber(value: rotationRadians), forKey: "triRotation")
     return m
   }
 }
@@ -610,20 +649,26 @@ enum FurnitureMaterials {
     return m
   }
 
-  static func material(for type: EditableObjectType) -> SCNMaterial {
+  /// - Parameter rotationRadians: rotation (about Y) used to align directional textures with the
+  ///   item's facing / the walls, matching the floor and brick alignment. Defaults to world-aligned.
+  static func material(for type: EditableObjectType, rotationRadians: Float = 0) -> SCNMaterial {
     switch type {
     case .table, .cabinet, .storage:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.wood, tileMeters: 0.9, roughness: 0.7, metalness: 0)
+        texture: FurnitureTextures.wood, tileMeters: 0.9, roughness: 0.7, metalness: 0,
+        rotationRadians: rotationRadians)
     case .sofa:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.darkWood, tileMeters: 0.9, roughness: 0.7, metalness: 0)
+        texture: FurnitureTextures.darkWood, tileMeters: 0.9, roughness: 0.7, metalness: 0,
+        rotationRadians: rotationRadians)
     case .chair:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.leather, tileMeters: 0.45, roughness: 0.55, metalness: 0)
+        texture: FurnitureTextures.leather, tileMeters: 0.45, roughness: 0.55, metalness: 0,
+        rotationRadians: rotationRadians)
     case .bed:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.fabricLinen, tileMeters: 0.5, roughness: 0.96, metalness: 0)
+        texture: FurnitureTextures.fabricLinen, tileMeters: 0.5, roughness: 0.96, metalness: 0,
+        rotationRadians: rotationRadians)
     case .television:
       // Solid glossy black via Blinn specular so the panel stays black instead of blowing out
       // to white from environment reflections (which a low-roughness PBR surface would do).
@@ -636,10 +681,12 @@ enum FurnitureMaterials {
       return tv
     case .appliance, .fixture:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.metal, tileMeters: 0.8, roughness: 0.32, metalness: 0.7)
+        texture: FurnitureTextures.metal, tileMeters: 0.8, roughness: 0.32, metalness: 0.7,
+        rotationRadians: rotationRadians)
     case .unknown:
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.darkWood, tileMeters: 0.9, roughness: 0.7, metalness: 0)
+        texture: FurnitureTextures.darkWood, tileMeters: 0.9, roughness: 0.7, metalness: 0,
+        rotationRadians: rotationRadians)
     }
   }
 }

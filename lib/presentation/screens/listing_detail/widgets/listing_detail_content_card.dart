@@ -124,9 +124,18 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
 
   final GlobalKey _inlineLocationExpansionKey = GlobalKey();
 
+  /// Drives [DeferredYandexMap.autoLoad]. Flipped on once the expand/scroll
+  /// animation settles, and reset when the section collapses again.
+  bool _mapAutoLoad = false;
+
   void _onMapExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
-    if (!isExpanded) return;
+    if (!isExpanded) {
+      // Collapsing removes the children (and disposes the map). Reset so the
+      // next expand goes through the placeholder + settle delay again.
+      if (_mapAutoLoad) setState(() => _mapAutoLoad = false);
+      return;
+    }
 
     // After [CustomScrollView] + sliver refactor, scrolling to
     // [ScrollPosition.maxScrollExtent] scrolled past this tile into sections
@@ -134,6 +143,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;
+        // Expand/scroll animation has settled; mount the real map now so the
+        // heavy native MapKit view doesn't jank the expansion.
+        if (!_mapAutoLoad) setState(() => _mapAutoLoad = true);
         final ctx = _inlineLocationExpansionKey.currentContext;
         if (ctx == null || !ctx.mounted) return;
         Scrollable.ensureVisible(
@@ -442,6 +454,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
               apiKey: AppConfig.yandexMapsApiKey,
               height: 250,
               listingDetail: widget.listingDetail,
+              autoLoad: _mapAutoLoad,
             ),
             if (canOpen) ...[
               const SizedBox(height: 16),

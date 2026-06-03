@@ -30,6 +30,7 @@ import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
+import "package:uy_dosh/base/state/support_unread_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -135,6 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "profile");
     _loadProfileScreenLocalSnapshot();
+    unawaited(SupportUnreadState().refresh());
     unawaited(_prefetchFollowCounts());
     unawaited(_refreshTelegramLinkedStatus());
     _registerTelegramBindDeepLinkListener();
@@ -1069,7 +1071,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MaterialPageRoute<void>(
         builder: (context) => const SupportChatScreen(),
       ),
-    );
+    ).then((_) => SupportUnreadState().refresh());
   }
 
   Future<void> _openEditProfileScreen(
@@ -1115,9 +1117,10 @@ class _SupportChatFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeState(),
+      listenable: Listenable.merge([ThemeState(), SupportUnreadState()]),
       builder: (context, _) {
         final themeState = ThemeState();
+        final hasUnread = SupportUnreadState().hasUnread;
         final scheme = Theme.of(context).colorScheme;
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -1136,7 +1139,7 @@ class _SupportChatFab extends StatelessWidget {
 
         const radius = BorderRadius.all(Radius.circular(999));
 
-        return Semantics(
+        final pill = Semantics(
           button: true,
           label: L10n.get("menu_contact_support"),
           child: Material(
@@ -1203,6 +1206,31 @@ class _SupportChatFab extends StatelessWidget {
               ),
             ),
           ),
+        );
+
+        if (!hasUnread) return pill;
+
+        final dotBorderColor =
+            themeState.isLightTheme ? scheme.surface : themeState.cardColor;
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            pill,
+            Positioned(
+              top: -1,
+              right: -1,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF34C759),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: dotBorderColor, width: 2),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );

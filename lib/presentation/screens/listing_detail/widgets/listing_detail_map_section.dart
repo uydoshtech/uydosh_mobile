@@ -41,6 +41,10 @@ class ListingDetailMapSection extends StatefulWidget {
 }
 
 class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
+  /// Drives [DeferredYandexMap.autoLoad]. Flipped on once the expand/scroll
+  /// animation settles, and reset when the section collapses again.
+  bool _mapAutoLoad = false;
+
   static void _maybeAnimateScrollIntoView(
     BuildContext ctx, {
     required double alignment,
@@ -67,16 +71,23 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
 
   void _onExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
-    if (isExpanded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 350), () {
-          if (!mounted) return;
-          final ctx = widget.sectionKey.currentContext;
-          if (ctx == null || !ctx.mounted) return;
-          _maybeAnimateScrollIntoView(ctx, alignment: 1.0);
-        });
-      });
+    if (!isExpanded) {
+      // Collapsing removes the children (and disposes the map). Reset so the
+      // next expand goes through the placeholder + settle delay again.
+      if (_mapAutoLoad) setState(() => _mapAutoLoad = false);
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        // Expand/scroll animation has settled; mount the real map now so the
+        // heavy native MapKit view doesn't jank the expansion.
+        if (!_mapAutoLoad) setState(() => _mapAutoLoad = true);
+        final ctx = widget.sectionKey.currentContext;
+        if (ctx == null || !ctx.mounted) return;
+        _maybeAnimateScrollIntoView(ctx, alignment: 1.0);
+      });
+    });
   }
 
   Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
@@ -247,6 +258,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
                 apiKey: AppConfig.yandexMapsApiKey,
                 height: 250,
                 listingDetail: widget.listingDetail,
+                autoLoad: _mapAutoLoad,
               ),
               const SizedBox(height: 16),
               Center(

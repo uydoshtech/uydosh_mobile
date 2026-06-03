@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
@@ -5,6 +6,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/state/support_unread_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -429,6 +431,14 @@ class _UserSupportChatThreadScreenState
         _messages.addAll(response.messages);
         _isLoading = false;
       });
+      if (_messages.isNotEmpty) {
+        unawaited(
+          SupportUnreadState().markThreadSeen(
+            widget.thread.id,
+            _messages.last.createdAt,
+          ),
+        );
+      }
       _scrollToBottom();
     } catch (e) {
       setStateIfMounted(() => _isLoading = false);
@@ -476,6 +486,12 @@ class _UserSupportChatThreadScreenState
             forceFromSupport: false,
           ));
         });
+        unawaited(
+          SupportUnreadState().markThreadSeen(
+            widget.thread.id,
+            message.createdAt,
+          ),
+        );
         _scrollToBottom();
       }
     } catch (e) {

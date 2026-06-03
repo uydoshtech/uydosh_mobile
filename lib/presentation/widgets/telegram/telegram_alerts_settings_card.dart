@@ -96,12 +96,12 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     try {
       final status = await _service.fetchStatus();
       if (!mounted) return;
+      if (status.alertsEnabled && _waiting) {
+        _onAlertsEnabled();
+        return;
+      }
       setStateIfMounted(() {
         _alertsEnabled = status.alertsEnabled;
-        if (status.alertsEnabled) {
-          _waiting = false;
-          _pollTimer?.cancel();
-        }
       });
     } catch (_) {
       if (!mounted) return;
@@ -109,6 +109,23 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
         _alertsEnabled ??= false;
       });
     }
+  }
+
+  /// Handles the transition to "alerts enabled" while waiting for the user to
+  /// finish opting in via the bot. This is synchronous and guarded by
+  /// `_waiting` so that concurrent callers (the periodic poll timer and the
+  /// app-resume handler) only ever show the success toast once.
+  void _onAlertsEnabled() {
+    if (!_waiting || !mounted) return;
+    _pollTimer?.cancel();
+    setStateIfMounted(() {
+      _alertsEnabled = true;
+      _waiting = false;
+    });
+    ToastTheme.showSuccess(
+      context,
+      message: L10n.get("telegram_alerts_enabled_success"),
+    );
   }
 
   Future<void> _openBot() async {
@@ -173,15 +190,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     try {
       final status = await _service.fetchStatus();
       if (!mounted || !status.alertsEnabled) return;
-      _pollTimer?.cancel();
-      setStateIfMounted(() {
-        _alertsEnabled = true;
-        _waiting = false;
-      });
-      ToastTheme.showSuccess(
-        context,
-        message: L10n.get("telegram_alerts_enabled_success"),
-      );
+      _onAlertsEnabled();
     } catch (_) {}
   }
 

@@ -1300,7 +1300,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               children: [
                 _buildAnimatedFeedTopSpacer(trailingSpacing: 0),
                 SizedBox(
-                  height: constraints.maxHeight,
+                  // Shrink the centering region by the reserved bottom space
+                  // (FAB stack + notify tooltip) so empty/welcome content sits
+                  // higher and never overlaps the floating buttons.
+                  height: (constraints.maxHeight - extraBottomPadding)
+                      .clamp(0.0, constraints.maxHeight),
                   child: Center(child: child),
                 ),
               ],

@@ -321,8 +321,17 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         _hasError = false; // Clear error state on success
       });
 
+      // Everything returned by the favorites endpoint is, by definition, a
+      // favorite. Seed the global FavoritesState so ListingTile hearts render
+      // filled immediately (the /favorites payload doesn't always carry the
+      // per-listing isFavorited flag, so syncFromListings alone isn't enough).
+      final favoritesState = FavoritesState();
+      for (final listing in favoriteListings) {
+        unawaited(favoritesState.addToFavorites(listing.id));
+      }
+
       // We've re-synced with backend; clear the dirty flag.
-      FavoritesState().clearDirty();
+      favoritesState.clearDirty();
       unawaited(_syncGigFavoriteLists(isRefresh: isRefresh));
     } catch (e) {
       logger.d("❌ FavoritesScreen: Error loading favorite listings: $e");
