@@ -21,7 +21,6 @@ enum EditableFloorPlanProjector {
       return planPoint(x: vertex.x, z: vertex.z)
     }
 
-    let bounds = planBounds(model.bounds)
     var doors: [FloorPlanOpening] = []
     var windows: [FloorPlanOpening] = []
     var misc: [FloorPlanOpening] = []
@@ -55,11 +54,22 @@ enum EditableFloorPlanProjector {
       )
     }
 
-    let overallDimensions = DimensionLineService.renderLines(
-      from: model.dimensionAnnotations.filter { $0.type != .wallSegmentLength }
-    )
+    // Overall ("Общие") dimension lines are intentionally not rendered; only per-wall dimensions
+    // remain available. The overall size is still shown in the 3D banner.
+    let overallDimensions: [DimensionLine] = []
     let wallSegmentDimensions = DimensionLineService.renderLines(
       from: model.dimensionAnnotations.filter { $0.type == .wallSegmentLength }
+    )
+
+    // Center / size on the actually-drawn geometry so the plan sits in the middle of the canvas.
+    // The footprint OBB is intentionally excluded: extracted walls may not fill it, which would
+    // otherwise offset the plan toward one side.
+    let bounds = drawnBounds(
+      walls: walls,
+      objects: objects,
+      openings: doors + windows + misc,
+      boundary: boundary,
+      fallback: planBounds(model.bounds)
     )
 
     return FloorPlanModel(
@@ -132,6 +142,38 @@ enum EditableFloorPlanProjector {
 
   private static func planPoint(x: Double, z: Double) -> FloorPlanPoint2D {
     FloorPlanPoint2D(x: CGFloat(x), y: CGFloat(-z))
+  }
+
+  /// Tight bounding box of everything actually rendered. Furniture flagged outside the footprint is
+  /// excluded so a stray object can't drag the centering off; the footprint boundary is only counted
+  /// when there are no walls (the only case it gets drawn).
+  private static func drawnBounds(
+    walls: [FloorPlanWall],
+    objects: [FloorPlanObject],
+    openings: [FloorPlanOpening],
+    boundary: [FloorPlanPoint2D],
+    fallback: FloorPlanBounds
+  ) -> FloorPlanBounds {
+    var points: [FloorPlanPoint2D] = []
+    points.append(contentsOf: walls.flatMap { [$0.start, $0.end] })
+    points.append(contentsOf: objects.filter { !$0.isOutsideBounds }.flatMap { $0.corners })
+    points.append(contentsOf: openings.flatMap { [$0.start, $0.end] })
+    if walls.isEmpty {
+      points.append(contentsOf: boundary)
+    }
+
+    guard let first = points.first else { return fallback }
+    var minX = first.x
+    var maxX = first.x
+    var minY = first.y
+    var maxY = first.y
+    for point in points.dropFirst() {
+      minX = min(minX, point.x)
+      maxX = max(maxX, point.x)
+      minY = min(minY, point.y)
+      maxY = max(maxY, point.y)
+    }
+    return FloorPlanBounds(minX: minX, maxX: maxX, minY: minY, maxY: maxY)
   }
 
   private static func planBounds(_ bounds: EditableFloorPlanBounds) -> FloorPlanBounds {

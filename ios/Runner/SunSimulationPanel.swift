@@ -293,7 +293,7 @@ final class SunSimulationPanel: UIView {
     if #available(iOS 13.0, *) {
       playButton.layer.cornerCurve = .continuous
     }
-    playButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+    playButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
     playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
   }
 
@@ -308,7 +308,7 @@ final class SunSimulationPanel: UIView {
     if #available(iOS 13.0, *) {
       b.layer.cornerCurve = .continuous
     }
-    b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+    b.contentEdgeInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
     b.tag = presetTag(preset)
     b.addTarget(self, action: #selector(presetTapped(_:)), for: .touchUpInside)
     return b

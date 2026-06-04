@@ -20,7 +20,7 @@ final class FloorPlanCanvas: UIView {
     }
   }
 
-  var dimensionMode: FloorPlanDimensionMode = .overall {
+  var dimensionMode: FloorPlanDimensionMode = .hidden {
     didSet { setNeedsDisplay() }
   }
 

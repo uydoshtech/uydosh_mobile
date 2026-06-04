@@ -532,6 +532,7 @@ class _ListingTileState extends State<ListingTile> {
                                     ),
                                     label: _shortListingTypeLabel(
                                       widget.listing.listingType!.code,
+                                      widget.listing.gender,
                                     ),
                                   ),
                                 // Gender Badge
@@ -819,13 +820,6 @@ class _ListingTileState extends State<ListingTile> {
                                         },
                                       ),
                                     ],
-                                    // Amenity chips with overflow counter.
-                                    if (widget.listing.amenities != null &&
-                                        widget.listing.amenities!
-                                            .isNotEmpty) ...[
-                                      const SizedBox(height: 12),
-                                      _buildAmenityIcons(),
-                                    ],
                                   ],
                                 ),
                               ),
@@ -833,6 +827,22 @@ class _ListingTileState extends State<ListingTile> {
                           ],
                         ),
                       ),
+                      // Amenity strip rendered *below* the photo/info row and
+                      // indented to line up under the info column. Keeping it
+                      // out of the `IntrinsicHeight` row means it no longer
+                      // stretches the photo — so the photo stays the same
+                      // height as a tile without amenities.
+                      if (widget.listing.amenities != null &&
+                          widget.listing.amenities!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: _thumbWidth + 12,
+                            right: 24,
+                          ),
+                          child: _buildAmenityIcons(),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -989,11 +999,15 @@ class _ListingTileState extends State<ListingTile> {
       "assets/images/uydosh_light_no_photo_placeholder.png";
 
   /// Short, badge-friendly label for a listing type code (e.g. "Сосед").
-  /// Returns null for unknown codes so the badge stays icon-only.
-  String? _shortListingTypeLabel(String code) {
+  /// The roommate label is gendered where the language distinguishes it
+  /// (ru: "Сосед" / "Соседка"). Returns null for unknown codes so the badge
+  /// stays icon-only.
+  String? _shortListingTypeLabel(String code, int? gender) {
     switch (code) {
       case "roommate_needed":
-        return L10n.get("listing_type_short_roommate_needed");
+        return gender == 2
+            ? L10n.get("listing_type_short_roommate_needed_female")
+            : L10n.get("listing_type_short_roommate_needed");
       case "room_needed":
         return L10n.get("listing_type_short_room_needed");
       default:
@@ -1075,6 +1089,11 @@ class _ListingTileState extends State<ListingTile> {
     );
   }
 
+  /// Fixed width of the leading photo column. Shared between the thumbnail
+  /// and the amenity strip (which indents by this much to line up under the
+  /// info column).
+  static const double _thumbWidth = 118;
+
   /// Max amenity icons shown on the single strip row. Beyond this we render a
   /// "+N" counter so the strip stays one line and the tile height predictable.
   static const int _maxVisibleAmenities = 6;
@@ -1145,7 +1164,7 @@ class _ListingTileState extends State<ListingTile> {
     // We use `Image` with a `CachedNetworkImageProvider` (not the
     // `CachedNetworkImage` widget) so the subtree reports clean intrinsic
     // dimensions for the `IntrinsicHeight` pass.
-    const double thumbWidth = 118;
+    const double thumbWidth = _thumbWidth;
     final scheme = Theme.of(context).colorScheme;
     final photos = widget.listing.photos;
     final hasPhoto = photos != null && photos.isNotEmpty;

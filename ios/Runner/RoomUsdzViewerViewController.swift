@@ -312,7 +312,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let sunSimulationPanel: SunSimulationPanel
   private let sunCompassOverlay = SunCompassOverlayView()
   private let sunClockOverlay = SunClockOverlayView()
-  private var isSunPanelExpanded = false
+  /// Sun timeline starts expanded so the day/night control is visible as soon as the scene opens.
+  private var isSunPanelExpanded = true
 
   fileprivate init(
     fileURL: URL,
@@ -374,7 +375,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       strings: dimensionEditStrings
     )
     floorPlanStateManager.onDisplayModelUpdated = { [weak self] displayModel in
-      self?.floorPlanTabView?.setDisplayModel(displayModel)
+      guard let self else { return }
+      self.floorPlanTabView?.setDisplayModel(displayModel)
+      self.floorPlanTabView?.updateSunAzimuth(self.sunSimulationController.azimuthDeg)
     }
     floorPlanStateManager.onRequires3DRegeneration = { [weak self] editableModel in
       self?.regenerateSceneFromEditableModel(editableModel)
@@ -776,7 +779,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
     sunSimulationPanel.delegate = self
     sunSimulationPanel.translatesAutoresizingMaskIntoConstraints = false
+    // Expanded by default (only collapsed when the user switches to the 2D plan tab).
+    sunSimulationPanel.isHidden = !isSunPanelExpanded
     view.addSubview(sunSimulationPanel)
+    updateSunToggleAppearance()
 
     sunSimulationController.onSunPositionChanged = { [weak self] azimuth, elevation in
       self?.updateSceneSkyBackground(azimuthDeg: azimuth, elevationDeg: elevation)
@@ -895,6 +901,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       elevationFormat: strings.sunSimulation.elevationFormat,
       northScreenAngleRad: northAngle
     )
+    floorPlanTabView?.updateSunAzimuth(sunSimulationController.azimuthDeg)
   }
 
   private func resolvedTrueNorthPlanAngleRad() -> Double {

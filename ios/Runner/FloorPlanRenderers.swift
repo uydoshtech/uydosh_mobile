@@ -613,11 +613,16 @@ struct FloorPlanViewTransform {
     userScale: CGFloat = 1,
     userPan: CGPoint = .zero
   ) -> FloorPlanViewTransform {
-    let contentW = max(model.overallLength, model.bounds.width, 0.5)
-    let contentH = max(model.overallWidth, model.bounds.height, 0.5)
-    let availW = max(size.width - padding * 2, 1)
-    let availH = max(size.height - padding * 2, 1)
-    let baseScale = min(availW / contentW, availH / contentH)
+    // Mirror the 3D top-down orthographic framing (RoomUsdzViewerViewController.applyTopDownPlanCamera)
+    // so the plan appears at the same scale as the 3D view from the top. After alignment the long
+    // footprint edge is horizontal, so `overallLength` maps to width and `overallWidth` to height.
+    // The 3D camera uses orthographicScale == halfHeight (meters), i.e. on-screen scale = viewH / (2*halfHeight).
+    let aspect = max(size.width, 1) / max(size.height, 1)
+    let footprintPadding: CGFloat = 1.12
+    let floorLong = max(model.overallLength, 0.5)
+    let floorShort = max(model.overallWidth, 0.5)
+    let halfHeight = max(floorShort * 0.5, floorLong * 0.5 / aspect) * footprintPadding
+    let baseScale = max(size.height, 1) / (2 * halfHeight)
     let scale = baseScale * userScale
     return FloorPlanViewTransform(
       scale: scale,

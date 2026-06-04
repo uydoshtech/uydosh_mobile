@@ -4,10 +4,12 @@ import UIKit
 final class FloorPlanTab: UIView {
   let canvas = FloorPlanCanvas()
 
+  /// Same compass rose component used on the 3D scene view, reused here for a consistent look.
+  let orientationCompass = SunCompassOverlayView()
+
   private let controlsPanel = UIView()
   private let controlsStack = UIStackView()
   private let dimensionsButton = UIButton(type: .system)
-  private let northButton = UIButton(type: .system)
   private let unitLabel = UILabel()
 
   private var strings: FloorPlanTabStrings
@@ -27,10 +29,26 @@ final class FloorPlanTab: UIView {
 
   func configure(model: FloorPlanModel) {
     canvas.configure(sourceModel: model, autoAlignEnabled: false)
+    updateCompassOrientation(model)
   }
 
   func setDisplayModel(_ model: FloorPlanModel) {
     canvas.setDisplayModel(model)
+    updateCompassOrientation(model)
+  }
+
+  /// Forwards the current sun azimuth so the floor-plan rose matches the 3D scene's compass.
+  func updateSunAzimuth(_ azimuthDeg: Float) {
+    orientationCompass.azimuthDeg = azimuthDeg
+  }
+
+  /// Points the compass rose at the plan's north. Plan coordinates map to screen with a single Y
+  /// flip and no rotation, so the screen-space north angle is the negated plan-space north angle.
+  private func updateCompassOrientation(_ model: FloorPlanModel) {
+    let northPlanAngle = model.orientationTrueNorthPlanAngleRad
+      ?? (model.orientationEastPlanAngleRad + .pi / 2)
+    orientationCompass.usesTrueNorth = model.orientationUsesTrueNorth
+    orientationCompass.northScreenAngleRad = -northPlanAngle
   }
 
   func updateStrings(_ strings: FloorPlanTabStrings) {
@@ -38,9 +56,11 @@ final class FloorPlanTab: UIView {
     applyControlLabels()
   }
 
+  /// The compass rose doubles as the north-adjust control: it only accepts taps (and shows the gold
+  /// editable ring) when north editing is available.
   func setNorthAdjustEnabled(_ enabled: Bool) {
-    northButton.isHidden = !enabled
-    northButton.isEnabled = enabled
+    orientationCompass.acceptsOrientationTaps = enabled
+    orientationCompass.isOrientationEditable = enabled
   }
 
   private func setupViews() {
@@ -48,7 +68,14 @@ final class FloorPlanTab: UIView {
     backgroundColor = .white
 
     canvas.translatesAutoresizingMaskIntoConstraints = false
+    // The 2D plan now uses the shared SunCompassOverlayView rose instead of the canvas-drawn compass.
+    canvas.showOrientationOverlay = false
     addSubview(canvas)
+
+    orientationCompass.translatesAutoresizingMaskIntoConstraints = false
+    orientationCompass.accessibilityLabel = strings.adjustNorth
+    orientationCompass.addTarget(self, action: #selector(compassTapped), for: .touchUpInside)
+    addSubview(orientationCompass)
 
     controlsPanel.translatesAutoresizingMaskIntoConstraints = false
     controlsPanel.backgroundColor = UIColor(red: 0.17, green: 0.17, blue: 0.19, alpha: 1)
@@ -68,11 +95,7 @@ final class FloorPlanTab: UIView {
     controlsPanel.addSubview(controlsStack)
 
     configureControlButton(dimensionsButton, symbol: "ruler", action: #selector(dimensionsTapped))
-    configureControlButton(northButton, symbol: "location.north.line", action: #selector(northTapped))
-
     controlsStack.addArrangedSubview(dimensionsButton)
-    controlsStack.addArrangedSubview(northButton)
-    northButton.isHidden = true
 
     unitLabel.translatesAutoresizingMaskIntoConstraints = false
     unitLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
@@ -85,6 +108,10 @@ final class FloorPlanTab: UIView {
       canvas.leadingAnchor.constraint(equalTo: leadingAnchor),
       canvas.trailingAnchor.constraint(equalTo: trailingAnchor),
       canvas.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+      // Top-right corner, matching the analog clock's vertical position on the 3D view.
+      orientationCompass.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 2),
+      orientationCompass.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16),
 
       controlsPanel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
       controlsPanel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -12),
@@ -121,7 +148,7 @@ final class FloorPlanTab: UIView {
 
   private func applyControlLabels() {
     dimensionsButton.accessibilityLabel = strings.dimensionsOverall
-    northButton.accessibilityLabel = strings.adjustNorth
+    orientationCompass.accessibilityLabel = strings.adjustNorth
     unitLabel.text = strings.unitMeters
     updateToggleStates()
   }
@@ -134,17 +161,19 @@ final class FloorPlanTab: UIView {
     case .hidden: dimTitle = strings.dimensionsHide
     }
     dimensionsButton.setTitle(dimTitle, for: .normal)
-
-    northButton.setTitle(strings.adjustNorth, for: .normal)
   }
 
-  @objc private func northTapped() {
+  @objc private func compassTapped() {
     onAdjustNorthTapped?()
   }
 
+  /// Modes the dimensions button cycles through. "Общие" (overall) is intentionally excluded.
+  private static let selectableDimensionModes: [FloorPlanDimensionMode] = [.hidden, .wallSegments]
+
   @objc private func dimensionsTapped() {
-    let nextRaw = (canvas.dimensionMode.rawValue + 1) % FloorPlanDimensionMode.allCases.count
-    canvas.dimensionMode = FloorPlanDimensionMode(rawValue: nextRaw) ?? .overall
+    let modes = FloorPlanTab.selectableDimensionModes
+    let currentIndex = modes.firstIndex(of: canvas.dimensionMode) ?? 0
+    canvas.dimensionMode = modes[(currentIndex + 1) % modes.count]
     updateToggleStates()
   }
 }
