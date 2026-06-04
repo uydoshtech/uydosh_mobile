@@ -229,8 +229,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private let zoomControlsContainer = UIView()
   private let zoomControlsPanel = UIView()
   private let zoomStack = UIStackView()
-  private let zoomInButton = UIButton(type: .system)
-  private let zoomOutButton = UIButton(type: .system)
+  private let zoomSlider = UISlider()
+  private let zoomMinIcon = UIImageView()
+  private let zoomMaxIcon = UIImageView()
   /// App mark (PNG): bottom-trailing over the 3D viewport, loaded from the
   /// Flutter asset bundle so it stays in sync with the rest of the app.
   /// We swapped to the PNG (away from the SVG-via-CAShapeLayer renderer)
@@ -267,8 +268,16 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private weak var debugOverlayNode: SCNNode?
   private var didCacheOriginalMaterials = false
   private var originalMaterialsByGeometry = [ObjectIdentifier: [SCNMaterial]]()
-  /// Matches `zoomInTapped` / `zoomOutTapped` (FOV change per step).
+  /// Initial zoom-in steps on open are expressed as a FOV delta from the padded fit.
   private static let zoomFovStepDegrees: CGFloat = 7.2
+  /// Zoom slider maps its 0…1 range onto this perspective field-of-view window
+  /// (smaller FOV = more zoomed in). Mirrors the clamp inside `setZoom`.
+  private static let zoomFovMinDegrees: CGFloat = 28
+  private static let zoomFovMaxDegrees: CGFloat = 82
+  /// Orthographic plan view maps the same slider onto this scale window (log-spaced;
+  /// smaller scale = more zoomed in). Mirrors the clamp inside `orbitPinch`.
+  private static let zoomOrthoScaleMin: CGFloat = 0.5
+  private static let zoomOrthoScaleMax: CGFloat = 80
   /// Pill-shaped zoom bar; large enough to read softer than the old 14pt radius.
   private static let zoomControlsPanelCornerRadius: CGFloat = 28
   private static let zoomButtonSize: CGFloat = 38
@@ -711,42 +720,35 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     zoomStack.translatesAutoresizingMaskIntoConstraints = false
     zoomStack.axis = .horizontal
     zoomStack.alignment = .center
-    zoomStack.spacing = 12
+    zoomStack.spacing = 10
 
-    let iconConfig = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
-    zoomInButton.setImage(UIImage(systemName: "plus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
-    zoomOutButton.setImage(UIImage(systemName: "minus.magnifyingglass", withConfiguration: iconConfig), for: .normal)
-
-    let buttonTint = UIColor.white.withAlphaComponent(0.92)
-    for b in [zoomInButton, zoomOutButton] {
-      b.translatesAutoresizingMaskIntoConstraints = false
-      b.tintColor = buttonTint
-      b.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
-      b.layer.cornerRadius = Self.zoomButtonCornerRadius
-      if #available(iOS 13.0, *) {
-        b.layer.cornerCurve = .continuous
-      }
-      b.clipsToBounds = false
-      b.layer.masksToBounds = false
-      b.layer.shadowColor = UIColor.black.cgColor
-      b.layer.shadowOpacity = 0.4
-      b.layer.shadowOffset = CGSize(width: 2, height: 3)
-      b.layer.shadowRadius = 4
-      b.layer.borderWidth = 0.5
-      b.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
-      NSLayoutConstraint.activate([
-        b.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
-        b.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
-      ])
+    let iconConfig = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+    let iconTint = UIColor.white.withAlphaComponent(0.7)
+    zoomMinIcon.image = UIImage(systemName: "minus.magnifyingglass", withConfiguration: iconConfig)
+    zoomMaxIcon.image = UIImage(systemName: "plus.magnifyingglass", withConfiguration: iconConfig)
+    for icon in [zoomMinIcon, zoomMaxIcon] {
+      icon.translatesAutoresizingMaskIntoConstraints = false
+      icon.tintColor = iconTint
+      icon.contentMode = .scaleAspectFit
+      icon.setContentHuggingPriority(.required, for: .horizontal)
+      icon.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
-    zoomInButton.accessibilityLabel = strings.zoomInA11yLabel
-    zoomOutButton.accessibilityLabel = strings.zoomOutA11yLabel
-    zoomInButton.addTarget(self, action: #selector(zoomInTapped), for: .touchUpInside)
-    zoomOutButton.addTarget(self, action: #selector(zoomOutTapped), for: .touchUpInside)
+    // Slider value 0 = fully zoomed out, 1 = fully zoomed in (handle moves right to enlarge).
+    zoomSlider.translatesAutoresizingMaskIntoConstraints = false
+    zoomSlider.minimumValue = 0
+    zoomSlider.maximumValue = 1
+    zoomSlider.value = 0.5
+    zoomSlider.isContinuous = true
+    zoomSlider.minimumTrackTintColor = UIColor.white.withAlphaComponent(0.92)
+    zoomSlider.maximumTrackTintColor = UIColor.white.withAlphaComponent(0.22)
+    zoomSlider.thumbTintColor = .white
+    zoomSlider.accessibilityLabel = strings.zoomInA11yLabel
+    zoomSlider.addTarget(self, action: #selector(zoomSliderChanged(_:)), for: .valueChanged)
 
-    zoomStack.addArrangedSubview(zoomInButton)
-    zoomStack.addArrangedSubview(zoomOutButton)
+    zoomStack.addArrangedSubview(zoomMinIcon)
+    zoomStack.addArrangedSubview(zoomSlider)
+    zoomStack.addArrangedSubview(zoomMaxIcon)
     zoomControlsPanel.addSubview(zoomStack)
 
     NSLayoutConstraint.activate([
@@ -754,6 +756,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       zoomStack.leadingAnchor.constraint(equalTo: zoomControlsPanel.leadingAnchor, constant: Self.bottomToolbarPanelInset),
       zoomStack.trailingAnchor.constraint(equalTo: zoomControlsPanel.trailingAnchor, constant: -Self.bottomToolbarPanelInset),
       zoomStack.bottomAnchor.constraint(equalTo: zoomControlsPanel.bottomAnchor, constant: -Self.bottomToolbarPanelInset),
+      zoomStack.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+      zoomSlider.widthAnchor.constraint(equalToConstant: 150),
     ])
   }
 
@@ -936,13 +940,6 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     guard outer.width > 1, outer.height > 1 else { return }
     zoomControlsContainer.layer.shadowPath =
       UIBezierPath(roundedRect: outer, cornerRadius: panelR).cgPath
-
-    let br = Self.zoomButtonCornerRadius
-    for b in [zoomInButton, zoomOutButton] {
-      let bb = b.bounds
-      guard bb.width > 1, bb.height > 1 else { continue }
-      b.layer.shadowPath = UIBezierPath(roundedRect: bb, cornerRadius: br).cgPath
-    }
   }
 
   private func setZoom(fovDegrees: CGFloat, animated: Bool) {
@@ -971,30 +968,51 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     }
   }
 
-  @objc private func zoomInTapped() {
-    guard let cam = sceneView.pointOfView?.camera else { return }
-    if isOrthographicPlanView {
-      planOrthographicScale = max(0.5, planOrthographicScale * 0.88)
-      SCNTransaction.begin()
-      SCNTransaction.animationDuration = 0.12
-      cam.orthographicScale = Double(planOrthographicScale)
-      SCNTransaction.commit()
-      return
-    }
-    setZoom(fovDegrees: cam.fieldOfView - Self.zoomFovStepDegrees, animated: true)
+  @objc private func zoomSliderChanged(_ slider: UISlider) {
+    endIntroCinematic(reflectOnPanel: true)
+    applyZoomFraction(CGFloat(slider.value), animated: false)
   }
 
-  @objc private func zoomOutTapped() {
+  /// Maps a 0…1 fraction (0 = zoomed out, 1 = zoomed in) onto the live camera.
+  private func applyZoomFraction(_ fraction: CGFloat, animated: Bool) {
     guard let cam = sceneView.pointOfView?.camera else { return }
+    let t = max(0, min(1, fraction))
     if isOrthographicPlanView {
-      planOrthographicScale = min(80, planOrthographicScale * 1.12)
-      SCNTransaction.begin()
-      SCNTransaction.animationDuration = 0.12
-      cam.orthographicScale = Double(planOrthographicScale)
-      SCNTransaction.commit()
+      let lnMax = log(Self.zoomOrthoScaleMax)
+      let lnMin = log(Self.zoomOrthoScaleMin)
+      let scale = exp(lnMax + t * (lnMin - lnMax))
+      planOrthographicScale = scale
+      pinchBaseOrthoScale = scale
+      if animated {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0.12
+        cam.orthographicScale = Double(scale)
+        SCNTransaction.commit()
+      } else {
+        cam.orthographicScale = Double(scale)
+      }
       return
     }
-    setZoom(fovDegrees: cam.fieldOfView + Self.zoomFovStepDegrees, animated: true)
+    let fov = Self.zoomFovMaxDegrees - t * (Self.zoomFovMaxDegrees - Self.zoomFovMinDegrees)
+    pinchBaseFov = fov
+    setZoom(fovDegrees: fov, animated: animated)
+  }
+
+  /// Reflects the camera's current zoom back onto the slider handle (after pinch,
+  /// initial framing, or a projection change) without retriggering `valueChanged`.
+  private func syncZoomSliderToCamera() {
+    guard let cam = sceneView.pointOfView?.camera else { return }
+    let t: CGFloat
+    if isOrthographicPlanView {
+      let lnMax = log(Self.zoomOrthoScaleMax)
+      let lnMin = log(Self.zoomOrthoScaleMin)
+      let clamped = max(Self.zoomOrthoScaleMin, min(Self.zoomOrthoScaleMax, CGFloat(cam.orthographicScale)))
+      t = (log(clamped) - lnMax) / (lnMin - lnMax)
+    } else {
+      let fov = max(Self.zoomFovMinDegrees, min(Self.zoomFovMaxDegrees, cam.fieldOfView))
+      t = (Self.zoomFovMaxDegrees - fov) / (Self.zoomFovMaxDegrees - Self.zoomFovMinDegrees)
+    }
+    zoomSlider.setValue(Float(max(0, min(1, t))), animated: false)
   }
 
   // Custom pill switch (instead of UISegmentedControl). A UISegmentedControl
@@ -2058,6 +2076,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     let initialFov =
       vfovDegrees - Self.zoomFovStepDegrees * CGFloat(Self.initialZoomInSteps)
     setZoom(fovDegrees: initialFov, animated: false)
+    syncZoomSliderToCamera()
 
     view.defaultCameraController.target = centerWorld
 
@@ -2162,6 +2181,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       apply()
     }
+    syncZoomSliderToCamera()
   }
 
   private func restorePerspectiveCamera(animated: Bool) {
@@ -2194,6 +2214,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       apply()
     }
+    syncZoomSliderToCamera()
   }
 
   #if DEBUG
@@ -2556,6 +2577,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       case .changed:
         planOrthographicScale = max(0.5, min(80, pinchBaseOrthoScale / CGFloat(gr.scale)))
         cam.orthographicScale = Double(planOrthographicScale)
+        syncZoomSliderToCamera()
       case .ended, .cancelled, .failed:
         pinchBaseOrthoScale = planOrthographicScale
       default:
@@ -2569,6 +2591,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     case .changed:
       let next = pinchBaseFov / CGFloat(gr.scale)
       setZoom(fovDegrees: next, animated: false)
+      syncZoomSliderToCamera()
     case .ended, .cancelled, .failed:
       pinchBaseFov = cam.fieldOfView
     default:

@@ -113,9 +113,9 @@ final class FloorPlanTab: UIView {
       orientationCompass.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 2),
       orientationCompass.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16),
 
-      controlsPanel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+      controlsPanel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16),
       controlsPanel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -12),
-      controlsPanel.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -16),
+      controlsPanel.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 2),
 
       controlsStack.topAnchor.constraint(equalTo: controlsPanel.topAnchor, constant: 10),
       controlsStack.leadingAnchor.constraint(equalTo: controlsPanel.leadingAnchor, constant: 12),

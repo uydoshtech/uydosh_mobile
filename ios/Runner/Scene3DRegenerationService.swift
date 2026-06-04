@@ -610,11 +610,15 @@ enum FurnitureTextures {
     let renderer = UIGraphicsImageRenderer(size: CGSize(width: dim, height: dim))
     return renderer.image { ctx in
       let cg = ctx.cgContext
-      UIColor(white: 0.62, alpha: 1).setFill()
+      // Mid stainless-steel gray. Kept clearly below white so the appliance reads as a metal
+      // surface and not a blank white box once lit by the scene (which has no IBL, so a pale base
+      // washes out toward white).
+      UIColor(white: 0.46, alpha: 1).setFill()
       cg.fill(CGRect(x: 0, y: 0, width: dim, height: dim))
       for s in 0..<Int(dim) {
         let j = jitter(s)
-        UIColor(white: j > 0 ? 0.85 : 0.45, alpha: 0.08).setStroke()
+        // Stronger, more opaque brushing so the horizontal grain stays visible after lighting.
+        UIColor(white: j > 0 ? 0.74 : 0.26, alpha: 0.22).setStroke()
         let y = CGFloat(s)
         let line = UIBezierPath()
         line.move(to: CGPoint(x: 0, y: y))
@@ -680,8 +684,12 @@ enum FurnitureMaterials {
       tv.metalness.contents = NSNumber(value: 0.0)
       return tv
     case .appliance, .fixture:
+      // Keep metalness at 0 and roughness high: the scene has no lighting environment, so a
+      // low-roughness metallic surface reflects to flat white/gray and the brushed-metal texture
+      // disappears (the same blowout the television case avoids). A matte, non-metallic surface
+      // lets the brushed-steel diffuse texture read like every other furniture material.
       return SurfaceShaders.triplanarMaterial(
-        texture: FurnitureTextures.metal, tileMeters: 0.8, roughness: 0.32, metalness: 0.7,
+        texture: FurnitureTextures.metal, tileMeters: 0.8, roughness: 0.6, metalness: 0.0,
         rotationRadians: rotationRadians)
     case .unknown:
       return SurfaceShaders.triplanarMaterial(

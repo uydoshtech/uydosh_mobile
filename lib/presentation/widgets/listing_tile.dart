@@ -827,21 +827,16 @@ class _ListingTileState extends State<ListingTile> {
                           ],
                         ),
                       ),
-                      // Amenity strip rendered *below* the photo/info row and
-                      // indented to line up under the info column. Keeping it
-                      // out of the `IntrinsicHeight` row means it no longer
-                      // stretches the photo — so the photo stays the same
-                      // height as a tile without amenities.
+                      // Amenity strip rendered *below* the photo/info row,
+                      // spanning the full tile width (divider + icons start
+                      // from the left edge). Keeping it out of the
+                      // `IntrinsicHeight` row means it no longer stretches the
+                      // photo — so the photo stays the same height as a tile
+                      // without amenities.
                       if (widget.listing.amenities != null &&
                           widget.listing.amenities!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: _thumbWidth + 12,
-                            right: 24,
-                          ),
-                          child: _buildAmenityIcons(),
-                        ),
+                        _buildAmenityIcons(),
                       ],
                     ],
                   ),
@@ -1015,13 +1010,15 @@ class _ListingTileState extends State<ListingTile> {
     }
   }
 
-  /// Short gender label (e.g. "Жен."). Null for unspecified gender.
+  /// Gender label for the tile badge. Reads as the object of the listing
+  /// type phrase (ru accusative: "Парня" / "Девушку"), so it pairs with the
+  /// "Ищем Соседа/Соседку" type badge. Null for unspecified gender.
   String? _shortGenderLabel(int gender) {
     switch (gender) {
       case 1:
-        return L10n.get("gender_short_male");
+        return L10n.get("gender_badge_male");
       case 2:
-        return L10n.get("gender_short_female");
+        return L10n.get("gender_badge_female");
       default:
         return null;
     }
