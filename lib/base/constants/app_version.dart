@@ -3,7 +3,7 @@
 
 class AppVersion {
   static const String version = "1.1.256";
-  static const String buildNumber = "322";
+  static const String buildNumber = "323";
   static const String fullVersion = "$version+$buildNumber";
   static const String displayVersion = "Version $version";
 }
