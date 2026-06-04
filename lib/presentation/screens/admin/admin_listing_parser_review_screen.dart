@@ -639,13 +639,13 @@ class _AdminListingParserReviewScreenState
       } else if (parserText != currentText) {
         chip =
             L10n.get("admin_parser_review_chip_changed", fallback: "changed");
-        chipColor = scheme.primary;
+        chipColor = Colors.red;
       } else {
         chip = L10n.get(
           "admin_parser_review_chip_confirmed",
           fallback: "confirmed",
         );
-        chipColor = scheme.onSurfaceVariant;
+        chipColor = Colors.green;
       }
     }
 
