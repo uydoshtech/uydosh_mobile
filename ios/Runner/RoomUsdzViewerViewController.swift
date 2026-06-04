@@ -250,7 +250,9 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private var displayMode: DisplayMode = .fullRoom
-  private let modeControl = UISegmentedControl(items: ["", "", ""])
+  /// Single cycling button (was a 3-segment control): tap advances
+  /// full room → walls only → floor + furniture → full room, swapping its icon.
+  private let modeButton = UIButton(type: .system)
   private let useStylizedMaterials = true
   /// Bottom-centered “glassy” bar: view mode picker (matches zoom panel styling).
   private let modeMaterialsToolbarContainer = UIView()
@@ -1208,66 +1210,62 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   private func setupModeControl() {
-    modeControl.translatesAutoresizingMaskIntoConstraints = false
-    modeControl.isMomentary = false
-    modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
-    modeControl.apportionsSegmentWidthsByContent = true
-
-    let fullIcon = UIImage(systemName: "house.fill")
-    let wallsIcon = UIImage(systemName: "rectangle.split.3x1.fill")
-      ?? UIImage(systemName: "square.split.2x2.fill")
-    let furnitureIcon = UIImage(systemName: "bed.double.fill")
-      ?? UIImage(systemName: "shippingbox.fill")
-      ?? UIImage(systemName: "cube.box.fill")
-
-    if let fullIcon = fullIcon {
-      modeControl.setImage(fullIcon, forSegmentAt: DisplayMode.fullRoom.rawValue)
-    } else {
-      modeControl.setTitle("All", forSegmentAt: DisplayMode.fullRoom.rawValue)
-    }
-    if let wallsIcon = wallsIcon {
-      modeControl.setImage(wallsIcon, forSegmentAt: DisplayMode.wallsOnly.rawValue)
-    } else {
-      modeControl.setTitle("Walls", forSegmentAt: DisplayMode.wallsOnly.rawValue)
-    }
-    if let furnitureIcon = furnitureIcon {
-      modeControl.setImage(furnitureIcon, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
-    } else {
-      modeControl.setTitle("Items", forSegmentAt: DisplayMode.furnitureOnly.rawValue)
-    }
-
-    modeControl.setWidth(38, forSegmentAt: DisplayMode.fullRoom.rawValue)
-    modeControl.setWidth(38, forSegmentAt: DisplayMode.wallsOnly.rawValue)
-    modeControl.setWidth(38, forSegmentAt: DisplayMode.furnitureOnly.rawValue)
-
-    modeControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
-
-    modeControl.isAccessibilityElement = true
-    modeControl.accessibilityLabel = strings.viewModeA11yLabel
-    modeControl.accessibilityHint = strings.viewModeA11yHint
-
-    // Readability on the bottom dark glass panel (no longer inherits nav bar blur).
-    // Selected thumb: medium grey (not near-white) so it matches the old nav-bar
-    // UISegmentedControl look and keeps white SF Symbols legible.
+    modeButton.translatesAutoresizingMaskIntoConstraints = false
+    modeButton.tintColor = UIColor.white.withAlphaComponent(0.92)
+    modeButton.backgroundColor = UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
+    modeButton.layer.cornerRadius = Self.zoomButtonCornerRadius
     if #available(iOS 13.0, *) {
-      modeControl.overrideUserInterfaceStyle = .dark
-      modeControl.backgroundColor = UIColor(red: 0.14, green: 0.14, blue: 0.16, alpha: 1)
-      modeControl.selectedSegmentTintColor = UIColor(red: 0.33, green: 0.33, blue: 0.36, alpha: 1)
-      modeControl.setTitleTextAttributes(
-        [.foregroundColor: UIColor.white.withAlphaComponent(0.92)],
-        for: .selected
-      )
-      modeControl.setTitleTextAttributes(
-        [.foregroundColor: UIColor.white.withAlphaComponent(0.55)],
-        for: .normal
-      )
+      modeButton.layer.cornerCurve = .continuous
     }
-    modeControl.tintColor = UIColor.white.withAlphaComponent(0.92)
 
-    // Same vertical size as circular zoom / materials controls inside the pills.
+    modeButton.addTarget(self, action: #selector(modeButtonTapped), for: .touchUpInside)
+
+    modeButton.isAccessibilityElement = true
+    modeButton.accessibilityLabel = strings.viewModeA11yLabel
+    modeButton.accessibilityHint = strings.viewModeA11yHint
+
     NSLayoutConstraint.activate([
-      modeControl.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+      modeButton.heightAnchor.constraint(equalToConstant: Self.zoomButtonSize),
+      modeButton.widthAnchor.constraint(equalToConstant: Self.zoomButtonSize),
     ])
+
+    updateModeButtonAppearance()
+  }
+
+  private func modeIcon(for mode: DisplayMode) -> UIImage? {
+    let cfg = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+    switch mode {
+    case .fullRoom:
+      return UIImage(systemName: "house.fill", withConfiguration: cfg)
+    case .wallsOnly:
+      return UIImage(systemName: "rectangle.split.3x1.fill", withConfiguration: cfg)
+        ?? UIImage(systemName: "square.split.2x2.fill", withConfiguration: cfg)
+    case .furnitureOnly:
+      return UIImage(systemName: "bed.double.fill", withConfiguration: cfg)
+        ?? UIImage(systemName: "shippingbox.fill", withConfiguration: cfg)
+        ?? UIImage(systemName: "cube.box.fill", withConfiguration: cfg)
+    }
+  }
+
+  private func nextDisplayMode(after mode: DisplayMode) -> DisplayMode {
+    switch mode {
+    case .fullRoom: return .wallsOnly
+    case .wallsOnly: return .furnitureOnly
+    case .furnitureOnly: return .fullRoom
+    }
+  }
+
+  /// Reflects `displayMode` onto the cycling button's icon and VoiceOver value.
+  private func updateModeButtonAppearance() {
+    modeButton.setImage(modeIcon(for: displayMode), for: .normal)
+    switch displayMode {
+    case .fullRoom:
+      modeButton.accessibilityValue = "Full room"
+    case .wallsOnly:
+      modeButton.accessibilityValue = "Walls only"
+    case .furnitureOnly:
+      modeButton.accessibilityValue = "Floor and furniture"
+    }
   }
 
   private func setupModeMaterialsToolbar() {
@@ -1306,7 +1304,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     modeMaterialsStack.spacing = 12
 
     modeMaterialsStack.addArrangedSubview(sunToggleButton)
-    modeMaterialsStack.addArrangedSubview(modeControl)
+    modeMaterialsStack.addArrangedSubview(modeButton)
     modeMaterialsToolbarPanel.addSubview(modeMaterialsStack)
 
     NSLayoutConstraint.activate([
@@ -1630,6 +1628,22 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           applyBrickWallMaterial(m, wallAngleRadians: floorAngle)
           return m
         }
+      } else if !shouldHideWallLikeSurface(node),
+        !(node.name ?? "").lowercased().contains("floor"),
+        !(node.name ?? "").lowercased().contains("ground"),
+        !(worldBounds(of: node).map { isLikelyFloorSlab($0, sceneBounds: sceneBounds) } ?? false)
+      {
+        // Fallback for an interior mesh that matched none of the classes above — typically a
+        // RoomPlan bounding box for a counter/appliance whose node name doesn't map to a known
+        // category. It sits above the floor (fails the floor-object test) and its name resolves to
+        // `.unknown` (so `nonFloorFurnitureType` returns nil), so without this it keeps the raw
+        // white/cream scan material. Give it a textured wood furniture material so nothing renders
+        // untextured. Structural surfaces (walls/ceiling/doors/windows/floor) are excluded above.
+        let inferred = EditableObjectType.from(nodeName: node.name ?? "")
+        let type: EditableObjectType = inferred == .unknown ? .storage : inferred
+        geo.materials = originals.map { _ in
+          FurnitureMaterials.material(for: type, rotationRadians: floorAngle)
+        }
       }
       for c in node.childNodes {
         visit(c)
@@ -1784,7 +1798,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       if !anyHidden {
         // Revert and explain.
         displayMode = .fullRoom
-        modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+        updateModeButtonAppearance()
         setAllGeometryVisible(true)
         let alert = UIAlertController(
           title: nil,
@@ -1799,11 +1813,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     sunSimulationController.refreshShadowCasters()
   }
 
-  @objc private func modeChanged() {
+  @objc private func modeButtonTapped() {
     guard loadedScene != nil else { return }
-    let idx = modeControl.selectedSegmentIndex
-    let next = DisplayMode(rawValue: idx) ?? .fullRoom
+    let next = nextDisplayMode(after: displayMode)
     displayMode = next
+    updateModeButtonAppearance()
     applyDisplayMode(next)
   }
 
@@ -2310,7 +2324,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           )
           self.updateNorthAdjustButtonVisibility()
         }
-        self.displayMode = DisplayMode(rawValue: self.modeControl.selectedSegmentIndex) ?? .fullRoom
+        self.updateModeButtonAppearance()
         self.applyDisplayMode(self.displayMode)
         self.applyScanCeilingIfNeeded()
         self.attachSunSimulationIfNeeded()
@@ -2666,7 +2680,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     isOrthographicPlanView = false
     debugOverlayNode = nil
     displayMode = .fullRoom
-    modeControl.selectedSegmentIndex = DisplayMode.fullRoom.rawValue
+    updateModeButtonAppearance()
     // Hiding the panel stops its playback timer (see `isHidden` didSet) — otherwise a tick can fire
     // mid-dismiss and call `projectPoint` on the now-nil scene, asserting on the main thread.
     sunSimulationPanel.isHidden = true
