@@ -30,6 +30,7 @@ import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
+import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -71,12 +72,17 @@ class _EditListingScreenState extends State<EditListingScreen>
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
+  FixedExtentScrollController? _genderScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
-  int _selectedGender = 1; // From profile (1 = male, 2 = female)
+  // Editable on the edit form (1 = male, 2 = female). Unlike the create flow,
+  // where gender is inferred from the profile and the picker is hidden, here we
+  // seed from the listing being edited and let the user change it.
+  int _selectedGender = 1;
   /// Scalar rent for "roommate needed" (listing type 2).
   double _roommatePrice = 50.0;
+
   /// Budget range for "room needed" (listing type 1).
   double _roomBudgetMin = 50.0;
   double _roomBudgetMax = 50.0;
@@ -177,9 +183,12 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateController.addListener(_markDirty);
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
-    unawaited(_initProfileGender());
+    unawaited(_initGender());
     _listingTypeScrollController = FixedExtentScrollController(
       initialItem: [2, 1].indexOf(_selectedListingTypeId).clamp(0, 1),
+    );
+    _genderScrollController = FixedExtentScrollController(
+      initialItem: [1, 2].indexOf(_selectedGender).clamp(0, 1),
     );
     _metroLineScrollController = FixedExtentScrollController(
       initialItem: _selectedSubwayLine,
@@ -296,9 +305,17 @@ class _EditListingScreenState extends State<EditListingScreen>
     _selectedListingTypeId =
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
 
+    // Seed gender from the listing being edited so the picker shows its current
+    // value. Falls back to male; the profile fallback is resolved in _initGender.
+    final listingGender = widget.listingDetail.gender;
+    _selectedGender = (listingGender == 1 || listingGender == 2)
+        ? listingGender!
+        : 1;
+
     // Seed price fields from the stored listing price (midpoint for room-needed).
-    _roommatePrice =
-        widget.listingDetail.price.toDouble().clamp(_priceSliderMin, _priceSliderMax);
+    _roommatePrice = widget.listingDetail.price
+        .toDouble()
+        .clamp(_priceSliderMin, _priceSliderMax);
     if (_selectedListingTypeId == 1) {
       _deriveBudgetRangeFromRoommatePrice();
     } else {
@@ -329,13 +346,23 @@ class _EditListingScreenState extends State<EditListingScreen>
     _rebuildOrderedPhotos();
   }
 
-  /// Gender is derived from the user profile, not edited on the listing form.
-  Future<void> _initProfileGender() async {
+  /// Resolve the gender picker's initial value. The listing's stored gender wins
+  /// (it's what the user is editing); when the listing has none, fall back to
+  /// the user profile so the picker still starts on a sensible option.
+  Future<void> _initGender() async {
+    final listingGender = widget.listingDetail.gender;
+    if (listingGender == 1 || listingGender == 2) {
+      return; // Already seeded synchronously in _initializeForm.
+    }
     final gender = await _getProfileGender();
     if (!mounted) return;
-    final fallback = widget.listingDetail.gender ?? 1;
-    final resolved = (gender == 1 || gender == 2) ? gender! : fallback;
+    final resolved = (gender == 1 || gender == 2) ? gender! : 1;
+    if (resolved == _selectedGender) return;
     setState(() => _selectedGender = resolved);
+    final idx = [1, 2].indexOf(resolved).clamp(0, 1);
+    if (_genderScrollController?.hasClients ?? false) {
+      _genderScrollController!.jumpToItem(idx);
+    }
   }
 
   /// Get profile gender (1 = male, 2 = female). Returns null if not available.
@@ -581,6 +608,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateController.dispose();
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
+    _genderScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
     // Clean up any ongoing operations
@@ -884,29 +912,54 @@ class _EditListingScreenState extends State<EditListingScreen>
                     child: UydoshFormScrollBody(
                       topPadding: bodyTopPad,
                       children: [
-                        // Listing type (gender is taken from profile, not shown in the form).
-                        LabeledFieldOverlay(
-                          label: L10n.get("listing_type_label"),
-                          child: ListingTypePicker(
-                            selectedListingTypeId:
-                                _selectedListingTypeId,
-                            scrollController:
-                                _listingTypeScrollController,
-                            userGender: _selectedGender,
-                            onListingTypeChanged: (listingTypeId) {
-                              setState(() {
-                                final prevType = _selectedListingTypeId;
-                                _selectedListingTypeId = listingTypeId;
-                                if (prevType == 2 && listingTypeId == 1) {
-                                  _deriveBudgetRangeFromRoommatePrice();
-                                } else if (prevType == 1 && listingTypeId == 2) {
-                                  _deriveRoommatePriceFromBudget();
-                                }
-                              });
-                            },
-                            useThemeColors: true,
-                            showArrows: false,
-                          ),
+                        // Listing type + gender. Unlike the create flow (where
+                        // gender is inferred from the profile and hidden), the
+                        // edit form exposes the gender picker so it can be changed.
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: LabeledFieldOverlay(
+                                label: L10n.get("listing_type_label"),
+                                child: ListingTypePicker(
+                                  selectedListingTypeId: _selectedListingTypeId,
+                                  scrollController: _listingTypeScrollController,
+                                  userGender: _selectedGender,
+                                  onListingTypeChanged: (listingTypeId) {
+                                    setState(() {
+                                      final prevType = _selectedListingTypeId;
+                                      _selectedListingTypeId = listingTypeId;
+                                      if (prevType == 2 && listingTypeId == 1) {
+                                        _deriveBudgetRangeFromRoommatePrice();
+                                      } else if (prevType == 1 &&
+                                          listingTypeId == 2) {
+                                        _deriveRoommatePriceFromBudget();
+                                      }
+                                    });
+                                    _markDirty();
+                                  },
+                                  useThemeColors: true,
+                                  showArrows: false,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: LabeledFieldOverlay(
+                                label: L10n.get("gender"),
+                                child: GenderPicker(
+                                  selectedGender: _selectedGender,
+                                  scrollController: _genderScrollController,
+                                  onGenderChanged: (gender) {
+                                    setState(() => _selectedGender = gender);
+                                    _markDirty();
+                                  },
+                                  useThemeColors: true,
+                                  showArrows: false,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 10),
 
@@ -1017,14 +1070,12 @@ class _EditListingScreenState extends State<EditListingScreen>
                           label: L10n.get("listing_description_label"),
                           child: AnimatedSize(
                             duration: const Duration(milliseconds: 320),
-                            reverseDuration:
-                                const Duration(milliseconds: 320),
+                            reverseDuration: const Duration(milliseconds: 320),
                             curve: Curves.easeInOut,
                             alignment: Alignment.topCenter,
                             clipBehavior: Clip.none,
                             child: UydoshPlateTextFormField(
-                              hintText:
-                                  L10n.get("listing_description_hint"),
+                              hintText: L10n.get("listing_description_hint"),
                               showErrorBorder: _showDescriptionError,
                               controller: _descriptionController,
                               decoration: UydoshPlateFieldDecoration.forHint(
@@ -1041,8 +1092,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                       : Colors.grey[400],
                                 ),
                               ).copyWith(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 12,
                                 ),
@@ -1329,36 +1379,38 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ),
                         const SizedBox(height: 10),
 
-                        // Photos Section
-                        PhotoUploader(
-                          selectedPhotos: _selectedPhotos,
-                          onPhotosChanged: (photos) {
-                            logger.d("=== PHOTO SELECTION CHANGED ===");
-                            logger.d(
-                                "Previous selected photos: $_selectedPhotos");
-                            logger.d("New selected photos: $photos");
-                            setState(() {
-                              _selectedPhotos = photos;
-                              _rebuildOrderedPhotos();
-                            });
-                            logger
-                                .d("Updated _selectedPhotos: $_selectedPhotos");
-                          },
-                          existingPhotos: _existingPhotos,
-                          onDeleteExistingPhoto: _deleteExistingPhoto,
-                          onMakePhotoPrimary: _makePhotoPrimary,
-                          onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
-                          deletingPhotoIds: _deletingPhotoIds,
-                          makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
-                          orderedItems: _orderedPhotos,
-                          onReorderItems: (newOrder) {
-                            setState(() {
-                              _orderedPhotos = newOrder;
-                              _photoOrderDirty = true;
-                            });
-                          },
-                          isRequired: false,
-                        ),
+                        // Photos Section - Only show for roommate needed listings (not for room needed)
+                        if (_selectedListingTypeId !=
+                            1) // Hide for "room needed" (listingTypeId == 1)
+                          PhotoUploader(
+                            selectedPhotos: _selectedPhotos,
+                            onPhotosChanged: (photos) {
+                              logger.d("=== PHOTO SELECTION CHANGED ===");
+                              logger.d(
+                                  "Previous selected photos: $_selectedPhotos");
+                              logger.d("New selected photos: $photos");
+                              setState(() {
+                                _selectedPhotos = photos;
+                                _rebuildOrderedPhotos();
+                              });
+                              logger.d(
+                                  "Updated _selectedPhotos: $_selectedPhotos");
+                            },
+                            existingPhotos: _existingPhotos,
+                            onDeleteExistingPhoto: _deleteExistingPhoto,
+                            onMakePhotoPrimary: _makePhotoPrimary,
+                            onMakeNewPhotoPrimary: _makeNewPhotoPrimary,
+                            deletingPhotoIds: _deletingPhotoIds,
+                            makingPhotoPrimaryIds: _makingPhotoPrimaryIds,
+                            orderedItems: _orderedPhotos,
+                            onReorderItems: (newOrder) {
+                              setState(() {
+                                _orderedPhotos = newOrder;
+                                _photoOrderDirty = true;
+                              });
+                            },
+                            isRequired: false,
+                          ),
 
                         ValueListenableBuilder<bool>(
                           valueListenable:
@@ -1385,8 +1437,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                     const SizedBox(height: 16),
                                     SizedBox(
                                       width: double.infinity,
-                                      child:
-                                          _buildNeumorphicRoomScanButton(),
+                                      child: _buildNeumorphicRoomScanButton(),
                                     ),
                                   ],
                                 );

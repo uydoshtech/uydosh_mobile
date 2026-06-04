@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/cache/amenities_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -166,6 +167,18 @@ class _AdminListingParserReviewScreenState
     return _fmt(v);
   }
 
+  String _amenitiesLabel(dynamic v) {
+    if (v is! List || v.isEmpty) return "—";
+    final lang = LanguageState().currentLanguage;
+    final names = v
+        .map((e) => e.toString())
+        .where((c) => c.isNotEmpty)
+        .map((c) => AmenitiesCache.getAmenityNameByCode(c, lang))
+        .toList()
+      ..sort();
+    return names.isEmpty ? "—" : names.join(", ");
+  }
+
   String _formatValue(String parserKey, dynamic v) {
     switch (parserKey) {
       case "gender_preference":
@@ -174,6 +187,8 @@ class _AdminListingParserReviewScreenState
         return _stationLabel(v);
       case "district":
         return _locationLabel(v);
+      case "amenities":
+        return _amenitiesLabel(v);
       default:
         return _fmt(v);
     }
@@ -340,6 +355,14 @@ class _AdminListingParserReviewScreenState
         ),
         parserKey: "contact_telegram",
         currentValue: listing["contact_telegram"],
+      ),
+      _FieldRow(
+        label: L10n.get(
+          "admin_parser_review_field_amenities",
+          fallback: "Amenities",
+        ),
+        parserKey: "amenities",
+        currentValue: listing["amenities"],
       ),
       _FieldRow(
         label: L10n.get(
@@ -758,7 +781,7 @@ class _AdminListingParserReviewScreenState
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  "${d.fieldName}: ${_fmt(d.oldValue)} → ${_fmt(d.newValue)}  (${d.correctionType})",
+                  "${d.fieldName}: ${_formatValue(d.fieldName, d.oldValue)} → ${_formatValue(d.fieldName, d.newValue)}  (${d.correctionType})",
                   style: TextStyle(fontSize: 13, color: textColor),
                 ),
               ),
