@@ -36,11 +36,13 @@ class ListingRoom3dTile extends StatefulWidget {
   const ListingRoom3dTile({
     required this.listingDetail,
     required this.onTap,
+    this.isLoading = false,
     super.key,
   });
 
   final ListingDetail listingDetail;
   final VoidCallback? onTap;
+  final bool isLoading;
 
   @override
   State<ListingRoom3dTile> createState() => _ListingRoom3dTileState();
@@ -166,10 +168,20 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
                   ),
                 ),
                 const SizedBox(width: 8),
-                ThemeIcon(
-                  Icons.chevron_right,
-                  color: variant,
-                ),
+                if (widget.isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(variant),
+                    ),
+                  )
+                else
+                  ThemeIcon(
+                    Icons.chevron_right,
+                    color: variant,
+                  ),
               ],
             ),
           ),

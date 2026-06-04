@@ -1971,6 +1971,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   Widget _room3dTile(ListingDetail listingDetail) {
     return ListingRoom3dTile(
       listingDetail: listingDetail,
+      isLoading: _isOpeningRoom3d,
       onTap: _isOpeningRoom3d
           ? null
           : () => _openRoom3dViewer(listingDetail),

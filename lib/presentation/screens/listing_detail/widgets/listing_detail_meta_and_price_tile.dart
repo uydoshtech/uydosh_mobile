@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
@@ -23,6 +24,7 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
   bool _priceExpanded = false;
 
   void _togglePriceSection() {
+    HapticFeedbackUtils.selection();
     setState(() => _priceExpanded = !_priceExpanded);
   }
 

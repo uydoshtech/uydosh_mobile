@@ -4,6 +4,7 @@ import "package:uy_dosh/base/cache/amenities_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -177,6 +178,18 @@ class _AdminListingParserReviewScreenState
         .toList()
       ..sort();
     return names.isEmpty ? "—" : names.join(", ");
+  }
+
+  /// Distinct, alphabetically-sorted amenity codes for icon rendering.
+  List<String> _amenityCodes(dynamic v) {
+    if (v is! List) return const [];
+    final codes = v
+        .map((e) => e.toString().trim())
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    return codes;
   }
 
   String _formatValue(String parserKey, dynamic v) {
@@ -701,9 +714,11 @@ class _AdminListingParserReviewScreenState
                       style:
                           TextStyle(fontSize: 10, color: secondaryTextColor),
                     ),
-                    Text(
+                    _buildValue(
+                      row,
+                      parserRaw,
                       parserText,
-                      style: TextStyle(fontSize: 13, color: textColor),
+                      textColor: textColor,
                     ),
                   ],
                 ),
@@ -721,19 +736,65 @@ class _AdminListingParserReviewScreenState
                       style:
                           TextStyle(fontSize: 10, color: secondaryTextColor),
                     ),
-                    Text(
+                    _buildValue(
+                      row,
+                      row.currentValue,
                       currentText,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
+                      textColor: textColor,
+                      bold: true,
                     ),
                   ],
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Renders a field value. Amenities are shown as icons (with the localized
+  /// name as a tooltip) instead of a comma-joined name string.
+  Widget _buildValue(
+    _FieldRow row,
+    dynamic rawValue,
+    String text, {
+    required Color textColor,
+    bool bold = false,
+  }) {
+    if (row.parserKey == "amenities") {
+      final codes = _amenityCodes(rawValue);
+      if (codes.isNotEmpty) {
+        return _buildAmenityIcons(codes, textColor);
+      }
+    }
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+        color: textColor,
+      ),
+    );
+  }
+
+  Widget _buildAmenityIcons(List<String> codes, Color color) {
+    final lang = LanguageState().currentLanguage;
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        children: [
+          for (final code in codes)
+            Tooltip(
+              message: AmenitiesCache.getAmenityNameByCode(code, lang),
+              child: ThemeIcon(
+                AmenityIconHelper.getIcon(code),
+                size: 20,
+                color: color,
+              ),
+            ),
         ],
       ),
     );
