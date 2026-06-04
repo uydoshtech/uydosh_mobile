@@ -238,6 +238,19 @@ final class FloorPlanCanvas: UIView {
         transform: transform
       )
     }
+
+    if FloorPlanDebug.isEnabled {
+      FloorPlanDebugRenderer.draw(in: ctx, model: model, transform: transform)
+      FloorPlanDebug.log(
+        String(
+          format:
+            "canvas bbox minX=%.2f maxX=%.2f minY(−Z)=%.2f maxY(−Z)=%.2f scale=%.2f offsetX=%.1f offsetY=%.1f walls=%d objects=%d",
+          model.bounds.minX, model.bounds.maxX, model.bounds.minY, model.bounds.maxY,
+          transform.scale, transform.centerOffset.x, transform.centerOffset.y,
+          model.walls.count, model.objects.count
+        )
+      )
+    }
   }
 
   func clearHighlight() {

@@ -21,18 +21,45 @@ enum RoomPlanToEditableModelMapper {
     let wallHeight = metrics.heightM
     let wallThickness = 0.12
 
-    let vertices = obbFootprintVertices(from: metrics)
-    guard vertices.count == 4 else { return nil }
-    let scanFootprintBounds = EditableFloorPlanBoundsCalculator.bounds(for: vertices)
+    // OBB footprint corners drive the overall dimension banner (floorLongM × floorShortM) and the
+    // "outside footprint" furniture flag. They are NOT used as the drawn walls anymore.
+    let footprintVertices = obbFootprintVertices(from: metrics)
+    guard footprintVertices.count == 4 else { return nil }
+    let scanFootprintBounds = EditableFloorPlanBoundsCalculator.bounds(for: footprintVertices)
 
-    // Walls follow the scan floor-polygon OBB exactly so the drawn room and all
-    // dimension labels match the 3D view (floorLongM × floorShortM). Furniture is
-    // extracted in world space and flagged if it falls outside this footprint.
-    var walls = exteriorWalls(
-      from: vertices,
-      wallHeight: wallHeight,
-      wallThickness: wallThickness
+    // Walls are projected from the real scanned wall geometry (true top-down X/Z projection) so the
+    // 2D plan preserves the actual multi-room / L-shape outline instead of a bounding rectangle.
+    // When a scan exposes no usable wall meshes we fall back to the OBB rectangle.
+    let extracted = extractWalls(
+      from: scene,
+      wallHeight: wallHeight
     )
+    let usingRealWalls = extracted.walls.count >= 3
+
+    var walls: [EditableWall]
+    var wallVertices: [EditableVertex]
+    if usingRealWalls {
+      walls = extracted.walls
+      wallVertices = extracted.vertices
+    } else {
+      wallVertices = footprintVertices.map { $0 }
+      walls = exteriorWalls(
+        from: wallVertices,
+        wallHeight: wallHeight,
+        wallThickness: wallThickness
+      )
+    }
+
+    // Model vertices = wall endpoints (drawn geometry) + footprint corners (boundary / bounds).
+    var vertices = wallVertices
+    let floorPolygonIds: [VertexId]
+    if usingRealWalls {
+      vertices.append(contentsOf: footprintVertices)
+      floorPolygonIds = footprintVertices.map(\.id)
+    } else {
+      floorPolygonIds = wallVertices.map(\.id)
+    }
+
     var objects = extractObjects(
       from: scene,
       sceneBounds: sceneBounds,
@@ -43,7 +70,7 @@ enum RoomPlanToEditableModelMapper {
 
     var openings = extractOpenings(from: scene, walls: walls, vertices: vertices, wallHeight: wallHeight)
     attachOpeningsToWalls(openings: &openings, walls: &walls)
-    markObjectsOutsideBounds(&objects, vertices: vertices)
+    markObjectsOutsideBounds(&objects, vertices: footprintVertices)
 
     let bounds = EditableFloorPlanBoundsCalculator.bounds(for: vertices)
     let now = Date()
@@ -55,7 +82,7 @@ enum RoomPlanToEditableModelMapper {
       walls: walls,
       openings: openings,
       objects: objects,
-      floorPolygon: vertices.map(\.id),
+      floorPolygon: floorPolygonIds,
       ceilingEnabled: true,
       wallHeight: wallHeight,
       wallThickness: wallThickness,
@@ -77,11 +104,20 @@ enum RoomPlanToEditableModelMapper {
       dimensionAnnotations: []
     )
 
+    logWalls(walls, vertices: vertices, label: usingRealWalls ? "real-geometry" : "obb-fallback")
+
+    // Orient with the same yaw the 3D top-down camera uses (`footprintYaw`) so switching between
+    // 2D and 3D never rotates the model. The longest-wall snap is only applied to the rectangular
+    // fallback (a no-op for the already axis-aligned OBB); real geometry keeps the scan orientation.
     model = EditableFloorPlanAlignService.alignToScanOrientation(
       model,
       footprintYaw: Double(metrics.footprintYaw)
     )
-    model = EditableFloorPlanAlignService.alignToLongestWall(model)
+    if usingRealWalls {
+      model = regularizeWalls(model)
+    } else {
+      model = EditableFloorPlanAlignService.alignToLongestWall(model)
+    }
     model.scanWorldPlusXBearingDeg = worldPlusXTrueBearingDeg
     FloorPlanNorthOrientation.applyTrueNorth(to: &model, correctionDeg: northCorrectionDeg)
     model.dimensionAnnotations = DimensionLineService.annotations(for: model)
@@ -130,6 +166,195 @@ enum RoomPlanToEditableModelMapper {
       makeWall(id: ids[2], start: vertices[2], end: vertices[3], height: wallHeight, thickness: wallThickness),
       makeWall(id: ids[3], start: vertices[3], end: vertices[0], height: wallHeight, thickness: wallThickness),
     ]
+  }
+
+  /// Minimum projected wall length (meters) worth drawing — filters tiny mesh fragments.
+  private static let minWallLengthM = 0.12
+
+  /// Snapping radius (meters) used to merge wall endpoints into shared corner vertices so the plan
+  /// renders as a connected wall network rather than disjoint segments.
+  private static let cornerSnapM = 0.20
+
+  /// Projects every scanned wall mesh onto the X/Z plane and returns the real wall segments plus the
+  /// shared corner vertices they connect to. Each wall keeps its true center, length, thickness and
+  /// rotation taken from the mesh — no bounding-box approximation.
+  private static func extractWalls(
+    from scene: SCNScene,
+    wallHeight: Double
+  ) -> (vertices: [EditableVertex], walls: [EditableWall]) {
+    var segments: [WallSegmentXZ] = []
+    func visit(_ node: SCNNode) {
+      let name = (node.name ?? "").lowercased()
+      if node.geometry != nil, name != "uydoshframingcamera", name.contains("wall"),
+        let segment = wallSegmentXZ(of: node)
+      {
+        segments.append(segment)
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+
+    segments = dedupeWallSegments(segments)
+    guard !segments.isEmpty else { return ([], []) }
+
+    var pool = VertexPool(snap: cornerSnapM)
+    var walls: [EditableWall] = []
+    for segment in segments {
+      let startId = pool.vertexId(x: segment.startX, z: segment.startZ)
+      let endId = pool.vertexId(x: segment.endX, z: segment.endZ)
+      guard startId != endId else { continue }
+      walls.append(
+        EditableWall(
+          id: UUID(),
+          startVertexId: startId,
+          endVertexId: endId,
+          height: wallHeight,
+          thickness: segment.thickness,
+          type: .exterior,
+          openingIds: [],
+          computedLength: segment.length
+        )
+      )
+    }
+    return (pool.vertices, walls)
+  }
+
+  /// Centerline of a single wall mesh in world X/Z, derived from its oriented bottom footprint.
+  private static func wallSegmentXZ(of node: SCNNode) -> WallSegmentXZ? {
+    guard let footprint = orientedBottomFootprintXZ(of: node), footprint.length >= minWallLengthM
+    else { return nil }
+    let half = footprint.length * 0.5
+    let cosA = cos(footprint.rotation)
+    let sinA = sin(footprint.rotation)
+    return WallSegmentXZ(
+      startX: footprint.centerX - cosA * half,
+      startZ: footprint.centerZ - sinA * half,
+      endX: footprint.centerX + cosA * half,
+      endZ: footprint.centerZ + sinA * half,
+      thickness: max(0.05, min(footprint.width, 0.4)),
+      length: footprint.length
+    )
+  }
+
+  /// Removes near-duplicate / collinear-overlapping wall meshes (e.g. inner+outer surfaces), keeping
+  /// the longer segment so each physical wall is drawn once.
+  private static func dedupeWallSegments(_ segments: [WallSegmentXZ]) -> [WallSegmentXZ] {
+    let sorted = segments.sorted { $0.length > $1.length }
+    var kept: [WallSegmentXZ] = []
+    for segment in sorted {
+      let midX = (segment.startX + segment.endX) * 0.5
+      let midZ = (segment.startZ + segment.endZ) * 0.5
+      let angle = atan2(segment.endZ - segment.startZ, segment.endX - segment.startX)
+      let duplicate = kept.contains { other in
+        let otherMidX = (other.startX + other.endX) * 0.5
+        let otherMidZ = (other.startZ + other.endZ) * 0.5
+        guard hypot(midX - otherMidX, midZ - otherMidZ) < 0.30 else { return false }
+        let otherAngle = atan2(other.endZ - other.startZ, other.endX - other.startX)
+        var diff = abs(angle - otherAngle).truncatingRemainder(dividingBy: .pi)
+        diff = min(diff, .pi - diff)
+        return diff < 0.22
+      }
+      if !duplicate { kept.append(segment) }
+    }
+    return kept
+  }
+
+  /// Rectilinear cleanup applied after the plan is aligned to the scan yaw. Scanned wall meshes are
+  /// usually a few degrees off-axis with corners that don't quite meet; this snaps near-axis walls to
+  /// exact horizontal/vertical (preserving genuinely diagonal walls) and clusters endpoint
+  /// coordinates so collinear walls and corners line up. Wall and vertex ids are kept stable so the
+  /// already-attached openings stay valid.
+  private static let wallAxisSnapTol = 12.0 * Double.pi / 180
+  private static let cornerClusterTol = 0.12
+
+  private static func regularizeWalls(_ model: EditableFloorPlanModel) -> EditableFloorPlanModel {
+    guard !model.walls.isEmpty else { return model }
+
+    // 1. Snap each wall to the nearest axis when within tolerance. A corner shared by several walls
+    //    collects one target per wall; we average them so the joint stays connected.
+    var targetSumX: [VertexId: Double] = [:]
+    var targetSumZ: [VertexId: Double] = [:]
+    var targetCount: [VertexId: Int] = [:]
+    for wall in model.walls {
+      guard let start = model.vertex(wall.startVertexId),
+        let end = model.vertex(wall.endVertexId)
+      else { continue }
+      var sx = start.x, sz = start.z, ex = end.x, ez = end.z
+      let len = hypot(ex - sx, ez - sz)
+      if len > 1e-4 {
+        let angle = atan2(ez - sz, ex - sx)
+        let snapped = (angle / (Double.pi / 2)).rounded() * (Double.pi / 2)
+        let delta = atan2(sin(angle - snapped), cos(angle - snapped))
+        if abs(delta) <= wallAxisSnapTol {
+          let midX = (sx + ex) * 0.5
+          let midZ = (sz + ez) * 0.5
+          let half = len * 0.5
+          sx = midX - cos(snapped) * half
+          sz = midZ - sin(snapped) * half
+          ex = midX + cos(snapped) * half
+          ez = midZ + sin(snapped) * half
+        }
+      }
+      targetSumX[wall.startVertexId, default: 0] += sx
+      targetSumZ[wall.startVertexId, default: 0] += sz
+      targetCount[wall.startVertexId, default: 0] += 1
+      targetSumX[wall.endVertexId, default: 0] += ex
+      targetSumZ[wall.endVertexId, default: 0] += ez
+      targetCount[wall.endVertexId, default: 0] += 1
+    }
+
+    var newX: [VertexId: Double] = [:]
+    var newZ: [VertexId: Double] = [:]
+    for (id, count) in targetCount where count > 0 {
+      newX[id] = targetSumX[id]! / Double(count)
+      newZ[id] = targetSumZ[id]! / Double(count)
+    }
+
+    // 2. Cluster the snapped coordinates so collinear walls share an exact line and corners meet.
+    let xMap = snapCoordinates(Array(newX.values), tolerance: cornerClusterTol)
+    let zMap = snapCoordinates(Array(newZ.values), tolerance: cornerClusterTol)
+
+    var updated = model
+    updated.vertices = model.vertices.map { vertex in
+      guard let nx = newX[vertex.id], let nz = newZ[vertex.id] else { return vertex }
+      var moved = vertex
+      moved.x = xMap[nx] ?? nx
+      moved.z = zMap[nz] ?? nz
+      return moved
+    }
+    updated.walls = updated.walls.map { wall in
+      var w = wall
+      if let start = updated.vertex(wall.startVertexId), let end = updated.vertex(wall.endVertexId) {
+        w.computedLength = hypot(end.x - start.x, end.z - start.z)
+      }
+      return w
+    }
+    updated.walls.removeAll { $0.computedLength < 1e-3 }
+    updated.bounds = EditableFloorPlanBoundsCalculator.bounds(for: updated.vertices)
+    return updated
+  }
+
+  /// Groups 1D coordinates that lie within `tolerance` of each other and maps each input value to its
+  /// group mean, so near-equal wall coordinates collapse onto a single shared line.
+  private static func snapCoordinates(_ values: [Double], tolerance: Double) -> [Double: Double] {
+    let sorted = values.sorted()
+    var map: [Double: Double] = [:]
+    guard let first = sorted.first else { return map }
+    var cluster: [Double] = [first]
+    func flush() {
+      let mean = cluster.reduce(0, +) / Double(cluster.count)
+      for value in cluster { map[value] = mean }
+    }
+    for value in sorted.dropFirst() {
+      if value - (cluster.last ?? value) <= tolerance {
+        cluster.append(value)
+      } else {
+        flush()
+        cluster = [value]
+      }
+    }
+    flush()
+    return map
   }
 
   private static func markObjectsOutsideBounds(
@@ -418,6 +643,57 @@ enum RoomPlanToEditableModelMapper {
     var wallId: WallId
     var start: EditableVertex
     var end: EditableVertex
+  }
+
+  private struct WallSegmentXZ {
+    var startX: Double
+    var startZ: Double
+    var endX: Double
+    var endZ: Double
+    var thickness: Double
+    var length: Double
+  }
+
+  /// Accumulates wall endpoints into shared corner vertices, snapping points within `snap` meters to
+  /// an existing vertex so connected walls reference the same corner.
+  private struct VertexPool {
+    private(set) var vertices: [EditableVertex] = []
+    let snap: Double
+
+    init(snap: Double) {
+      self.snap = snap
+    }
+
+    mutating func vertexId(x: Double, z: Double) -> VertexId {
+      if let existing = vertices.first(where: { hypot($0.x - x, $0.z - z) <= snap }) {
+        return existing.id
+      }
+      let vertex = EditableVertex(id: UUID(), x: x, z: z, locked: false)
+      vertices.append(vertex)
+      return vertex.id
+    }
+  }
+
+  // MARK: - Debug
+
+  private static func logWalls(_ walls: [EditableWall], vertices: [EditableVertex], label: String) {
+    guard FloorPlanDebug.isEnabled else { return }
+    func vertex(_ id: VertexId) -> EditableVertex? { vertices.first { $0.id == id } }
+    FloorPlanDebug.log("mapper walls source=\(label) count=\(walls.count)")
+    for (index, wall) in walls.enumerated() {
+      guard let start = vertex(wall.startVertexId), let end = vertex(wall.endVertexId) else { continue }
+      let centerX = (start.x + end.x) * 0.5
+      let centerZ = (start.z + end.z) * 0.5
+      let rotation = atan2(end.z - start.z, end.x - start.x)
+      FloorPlanDebug.log(
+        String(
+          format:
+            "wall[%d] center3D=(%.2f, %.2f) len=%.2f thick=%.2f rotRad=%.3f start=(%.2f, %.2f) end=(%.2f, %.2f)",
+          index, centerX, centerZ, wall.computedLength, wall.thickness, rotation,
+          start.x, start.z, end.x, end.z
+        )
+      )
+    }
   }
 
   private static func longestFloorEdgeXZ(of node: SCNNode, minLength: Double) -> XZEdge? {

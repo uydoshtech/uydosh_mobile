@@ -157,3 +157,14 @@ enum FloorPlanDimensionMode: Int, CaseIterable {
   case wallSegments = 1
   case hidden = 2
 }
+
+/// Temporary diagnostics for the 2D floor-plan projection. Flip `isEnabled` to true to log the
+/// projected bounding box / scale / per-wall geometry and draw debug markers on the canvas.
+enum FloorPlanDebug {
+  static var isEnabled = false
+
+  static func log(_ message: @autoclosure () -> String) {
+    guard isEnabled else { return }
+    NSLog("[FloorPlanDebug] %@", message())
+  }
+}

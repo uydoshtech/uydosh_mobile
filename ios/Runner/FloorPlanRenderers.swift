@@ -541,6 +541,50 @@ enum FloorPlanOrientationOverlayRenderer {
   }
 }
 
+/// Temporary diagnostics overlay: projected wall endpoints, computed 2D bounding box and object
+/// centers. Driven through the same `FloorPlanViewTransform` as every other layer so it reflects the
+/// exact projection being rendered. Toggle via `FloorPlanDebug.isEnabled`.
+enum FloorPlanDebugRenderer {
+  static func draw(
+    in context: CGContext,
+    model: FloorPlanModel,
+    transform: FloorPlanViewTransform
+  ) {
+    context.saveGState()
+
+    let boundsCorners = [
+      FloorPlanPoint2D(x: model.bounds.minX, y: model.bounds.minY),
+      FloorPlanPoint2D(x: model.bounds.maxX, y: model.bounds.minY),
+      FloorPlanPoint2D(x: model.bounds.maxX, y: model.bounds.maxY),
+      FloorPlanPoint2D(x: model.bounds.minX, y: model.bounds.maxY),
+    ].map { transform.planToScreen($0) }
+    context.setStrokeColor(UIColor.systemPink.withAlphaComponent(0.9).cgColor)
+    context.setLineWidth(1)
+    context.setLineDash(phase: 0, lengths: [5, 4])
+    context.move(to: boundsCorners[0])
+    for corner in boundsCorners.dropFirst() { context.addLine(to: corner) }
+    context.closePath()
+    context.strokePath()
+    context.setLineDash(phase: 0, lengths: [])
+
+    context.setFillColor(UIColor.systemRed.cgColor)
+    for wall in model.walls {
+      for endpoint in [wall.start, wall.end] {
+        let p = transform.planToScreen(endpoint)
+        context.fillEllipse(in: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6))
+      }
+    }
+
+    context.setFillColor(UIColor.systemGreen.cgColor)
+    for object in model.objects {
+      let p = transform.planToScreen(object.center)
+      context.fillEllipse(in: CGRect(x: p.x - 2.5, y: p.y - 2.5, width: 5, height: 5))
+    }
+
+    context.restoreGState()
+  }
+}
+
 /// Maps plan coordinates (meters, X/−Z) to screen points using the same pivot and yaw
 /// as `RoomUsdzViewerViewController.applyTopDownPlanCamera`.
 struct FloorPlanViewTransform {
