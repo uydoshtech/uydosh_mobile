@@ -10,7 +10,7 @@ final class FloorPlanTab: UIView {
   private let controlsPanel = UIView()
   private let controlsStack = UIStackView()
   private let dimensionsButton = UIButton(type: .system)
-  private let unitLabel = UILabel()
+  private let objectsButton = UIButton(type: .system)
 
   private var strings: FloorPlanTabStrings
   var onAdjustNorthTapped: (() -> Void)?
@@ -97,11 +97,10 @@ final class FloorPlanTab: UIView {
     configureControlButton(dimensionsButton, symbol: "ruler", action: #selector(dimensionsTapped))
     controlsStack.addArrangedSubview(dimensionsButton)
 
-    unitLabel.translatesAutoresizingMaskIntoConstraints = false
-    unitLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
-    unitLabel.textColor = UIColor.white.withAlphaComponent(0.62)
-    unitLabel.text = strings.unitMeters
-    controlsPanel.addSubview(unitLabel)
+    configureControlButton(objectsButton, symbol: "sofa", action: #selector(objectsTapped))
+    controlsStack.addArrangedSubview(objectsButton)
+    // Furniture/objects start hidden; the user opts in via this toggle.
+    canvas.showObjects = false
 
     NSLayoutConstraint.activate([
       canvas.topAnchor.constraint(equalTo: topAnchor),
@@ -121,9 +120,6 @@ final class FloorPlanTab: UIView {
       controlsStack.leadingAnchor.constraint(equalTo: controlsPanel.leadingAnchor, constant: 12),
       controlsStack.trailingAnchor.constraint(equalTo: controlsPanel.trailingAnchor, constant: -12),
       controlsStack.bottomAnchor.constraint(equalTo: controlsPanel.bottomAnchor, constant: -10),
-
-      unitLabel.topAnchor.constraint(equalTo: controlsPanel.topAnchor, constant: 4),
-      unitLabel.trailingAnchor.constraint(equalTo: controlsPanel.trailingAnchor, constant: -10),
     ])
 
     applyControlLabels()
@@ -149,18 +145,33 @@ final class FloorPlanTab: UIView {
   private func applyControlLabels() {
     dimensionsButton.accessibilityLabel = strings.dimensionsOverall
     orientationCompass.accessibilityLabel = strings.adjustNorth
-    unitLabel.text = strings.unitMeters
     updateToggleStates()
   }
 
   private func updateToggleStates() {
-    let dimTitle: String
+    // Icon-only toggles: text would change width on toggle and make the buttons jerk.
+    // State is conveyed via a filled icon plus a brighter tint when the layer is shown.
+    let iconCfg = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+
+    let dimsActive = canvas.dimensionMode != .hidden
+    dimensionsButton.setImage(UIImage(systemName: "ruler", withConfiguration: iconCfg), for: .normal)
+    dimensionsButton.tintColor = dimsActive
+      ? UIColor.white
+      : UIColor.white.withAlphaComponent(0.55)
+    let dimsLabel: String
     switch canvas.dimensionMode {
-    case .overall: dimTitle = strings.dimensionsOverall
-    case .wallSegments: dimTitle = strings.dimensionsWalls
-    case .hidden: dimTitle = strings.dimensionsHide
+    case .overall: dimsLabel = strings.dimensionsOverall
+    case .wallSegments: dimsLabel = strings.dimensionsWalls
+    case .hidden: dimsLabel = strings.dimensionsHide
     }
-    dimensionsButton.setTitle(dimTitle, for: .normal)
+    dimensionsButton.accessibilityLabel = dimsLabel
+
+    let objectsSymbol = canvas.showObjects ? "sofa.fill" : "sofa"
+    objectsButton.setImage(UIImage(systemName: objectsSymbol, withConfiguration: iconCfg), for: .normal)
+    objectsButton.tintColor = canvas.showObjects
+      ? UIColor.white
+      : UIColor.white.withAlphaComponent(0.55)
+    objectsButton.accessibilityLabel = canvas.showObjects ? strings.hideObjects : strings.showObjects
   }
 
   @objc private func compassTapped() {
@@ -174,6 +185,11 @@ final class FloorPlanTab: UIView {
     let modes = FloorPlanTab.selectableDimensionModes
     let currentIndex = modes.firstIndex(of: canvas.dimensionMode) ?? 0
     canvas.dimensionMode = modes[(currentIndex + 1) % modes.count]
+    updateToggleStates()
+  }
+
+  @objc private func objectsTapped() {
+    canvas.showObjects.toggle()
     updateToggleStates()
   }
 }
