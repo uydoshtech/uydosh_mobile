@@ -197,13 +197,15 @@ final class FloorPlanCanvas: UIView {
     )
 
     if showObjects {
+      // Suppress furniture text labels while dimensions are visible: the two label
+      // sets overlap and look cluttered. Shapes still render so the layout reads clearly.
       FloorPlanObjectRenderer.draw(
         objects: model.objects,
         in: ctx,
         transform: transform,
-        fillColor: UIColor(red: 0.78, green: 0.86, blue: 0.92, alpha: 0.75),
+        fillColor: UIColor(red: 0.78, green: 0.86, blue: 0.92, alpha: 0.35),
         strokeColor: UIColor(red: 0.22, green: 0.38, blue: 0.48, alpha: 1),
-        showLabels: true
+        showLabels: dimensionMode == .hidden
       )
     }
 

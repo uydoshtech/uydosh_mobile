@@ -993,6 +993,18 @@ class _ListingTileState extends State<ListingTile> {
   static const String _noPhotoPlaceholderAssetLight =
       "assets/images/uydosh_light_no_photo_placeholder.png";
 
+  /// Dedicated "no photo yet" artwork for the *room needed* listing type
+  /// (listingTypeId == 1) — a seeker-themed illustration shown instead of the
+  /// generic house when a listing of that type has no photo.
+  static const String _roomNeededPlaceholderAsset =
+      "assets/images/uydosh_room_needed_no_photo_placeholder.png";
+  static const String _roomNeededPlaceholderAssetLight =
+      "assets/images/uydosh_light_room_needed_no_photo_placeholder.png";
+
+  /// Listing type id for "room needed" (see [ListingUtils]). Listings of this
+  /// type use the seeker-themed placeholder above.
+  static const int _roomNeededListingTypeId = 1;
+
   /// Short, badge-friendly label for a listing type code (e.g. "Сосед").
   /// The roommate label is gendered where the language distinguishes it
   /// (ru: "Сосед" / "Соседка"). Returns null for unknown codes so the badge
@@ -1236,8 +1248,16 @@ class _ListingTileState extends State<ListingTile> {
   /// are picked automatically. Falls back to a neutral tile if the asset fails.
   Widget _thumbnailPlaceholder(ColorScheme scheme) {
     final isLight = ThemeState().isLightTheme;
-    final asset =
-        isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
+    final isRoomNeeded =
+        widget.listing.listingTypeId == _roomNeededListingTypeId;
+    final String asset;
+    if (isRoomNeeded) {
+      asset = isLight
+          ? _roomNeededPlaceholderAssetLight
+          : _roomNeededPlaceholderAsset;
+    } else {
+      asset = isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
+    }
     // Backdrop gradient sampled from the artwork's own background so the
     // letterbox area (when the media cell is taller/shorter than the image)
     // blends seamlessly — the illustration is shown with `contain` so its

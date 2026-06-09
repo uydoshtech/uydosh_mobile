@@ -50,7 +50,7 @@ enum FloorPlanObjectRenderer {
 
       context.saveGState()
       let fill = object.isOutsideBounds
-        ? UIColor.systemOrange.withAlphaComponent(0.55)
+        ? UIColor.systemOrange.withAlphaComponent(0.30)
         : fillColor
       let stroke = object.isOutsideBounds
         ? UIColor.systemOrange
