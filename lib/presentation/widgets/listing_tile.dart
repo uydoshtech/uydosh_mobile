@@ -706,7 +706,17 @@ class _ListingTileState extends State<ListingTile> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildThumbnail(context),
+                            // Floor the media/info row height so sparse tiles
+                            // (e.g. title + price only) don't visually shrink
+                            // relative to fuller tiles. `IntrinsicHeight` +
+                            // `stretch` propagate this min height to both the
+                            // photo and the info column.
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: _minMediaRowHeight,
+                              ),
+                              child: _buildThumbnail(context),
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Padding(
@@ -1103,6 +1113,13 @@ class _ListingTileState extends State<ListingTile> {
   /// info column).
   static const double _thumbWidth = 118;
 
+  /// Minimum height of the media/info row. Mirrors the natural height of a
+  /// "full" tile (title + price + location + metro) so that sparse tiles —
+  /// e.g. ones with only a title and price — don't render visibly shorter
+  /// than their neighbours. Applied via a `ConstrainedBox` around the
+  /// thumbnail inside the `IntrinsicHeight` row.
+  static const double _minMediaRowHeight = 120;
+
   /// Max amenity icons shown on the single strip row. Beyond this we render a
   /// "+N" counter so the strip stays one line and the tile height predictable.
   static const int _maxVisibleAmenities = 6;
@@ -1168,11 +1185,10 @@ class _ListingTileState extends State<ListingTile> {
   /// photo when available (falling back to the first), otherwise renders a
   /// neutral placeholder so every tile keeps a consistent left column.
   Widget _buildThumbnail(BuildContext context) {
-    // Fixed-width media column; its height is supplied by the surrounding
-    // `IntrinsicHeight`/stretch so the photo spans the whole info column.
-    // We use `Image` with a `CachedNetworkImageProvider` (not the
-    // `CachedNetworkImage` widget) so the subtree reports clean intrinsic
-    // dimensions for the `IntrinsicHeight` pass.
+    // Fixed square media cell (`thumbWidth` x `thumbWidth`). We use `Image`
+    // with a `CachedNetworkImageProvider` (not the `CachedNetworkImage`
+    // widget) so the subtree reports clean intrinsic dimensions for the
+    // `IntrinsicHeight` pass.
     const double thumbWidth = _thumbWidth;
     final scheme = Theme.of(context).colorScheme;
     final photos = widget.listing.photos;
@@ -1180,9 +1196,8 @@ class _ListingTileState extends State<ListingTile> {
 
     Widget content;
     if (hasPhoto) {
-      // No explicit width/height here: the stretched `SizedBox` supplies tight
-      // constraints (so the image fills the cell), while leaving the image's
-      // intrinsic height finite for the `IntrinsicHeight` measurement pass.
+      // No explicit width/height here: the square `SizedBox` supplies tight
+      // constraints, so the image `cover`-fills the square cell.
       content = Image(
         image: ResizeImage(
           CachedNetworkImageProvider(_buildPhotoUrl(_primaryPhotoUrl(photos))),
@@ -1211,32 +1226,39 @@ class _ListingTileState extends State<ListingTile> {
     );
     const radius = BorderRadius.all(Radius.circular(14));
 
-    // The media sits in a `Positioned.fill` inside a `Stack` so it reports
-    // ZERO intrinsic height to the surrounding `IntrinsicHeight`. That makes
-    // the info column (not the photo) drive the tile height, and any taller
-    // photo is simply `cover`-cropped to fit instead of stretching the tile.
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: lightShadow,
-            offset: const Offset(-3, -3),
-            blurRadius: 6,
-          ),
-          BoxShadow(
-            color: darkShadow,
-            offset: const Offset(4, 4),
-            blurRadius: 9,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: SizedBox(
-          width: thumbWidth,
-          child: Stack(
-            children: [Positioned.fill(child: content)],
+    // The media is a fixed square (`thumbWidth` x `thumbWidth`) so the square
+    // artwork/photos fit the frame exactly (no letterbox, no distortion).
+    // `Align` (vertically centered, `widthFactor: 1`) lets the surrounding
+    // `IntrinsicHeight`/stretch row be taller than the square without
+    // stretching it — the square stays centered and any taller photo is
+    // `cover`-cropped to the square instead.
+    return Align(
+      alignment: Alignment.center,
+      widthFactor: 1,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: lightShadow,
+              offset: const Offset(-3, -3),
+              blurRadius: 6,
+            ),
+            BoxShadow(
+              color: darkShadow,
+              offset: const Offset(4, 4),
+              blurRadius: 9,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: SizedBox(
+            width: thumbWidth,
+            height: thumbWidth,
+            child: Stack(
+              children: [Positioned.fill(child: content)],
+            ),
           ),
         ),
       ),
