@@ -343,12 +343,10 @@ class AuthWizardProfilePage extends StatelessWidget {
                       DropdownOption(
                         value: "national",
                         label: L10n.get("price_display_currency_national"),
-                        icon: Icons.flag,
                       ),
                       DropdownOption(
                         value: "usd",
                         label: L10n.get("price_display_currency_usd"),
-                        icon: Icons.attach_money,
                       ),
                     ],
                   );

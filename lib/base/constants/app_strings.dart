@@ -24,11 +24,12 @@ class AppStrings {
 
       "location": "Location",
       "create_listing": "Create",
-      "create_choice_title": "What do you want to publish?",
+      "create_choice_title": "What are you looking for?",
       "create_choice_housing": "Housing",
       "create_choice_housing_subtitle": "Rent out or find a place",
-      "create_choice_roommate_needed_subtitle": "Find someone to share housing",
-      "create_choice_room_needed_subtitle": "Find a room or place to rent",
+      "create_choice_roommate_needed_subtitle":
+          "Already have a place - looking for roommates",
+      "create_choice_room_needed_subtitle": "Need a room or apartment",
       "create_choice_service": "Service",
       "create_choice_service_subtitle": "Offer or find a service",
       "profile": "Profile",
@@ -428,10 +429,10 @@ class AppStrings {
       "auth_terms_finish_header": "Almost Done",
       "auth_terms_finish_title": "Review the terms",
       "auth_terms_finish_body":
-          "Your profile is ready. Please review the Terms of Service before finishing setup.",
-      "view_terms_of_service": "View Terms of Service",
+          "By continuing, you agree to UyDosh's Terms of Use, Privacy Policy, and Community Rules.",
+      "view_terms_of_service": "View Terms of Use",
       "could_not_open_terms_of_service":
-          "Could not open the Terms of Service. Please try again.",
+          "Could not open the Terms of Use. Please try again.",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
@@ -510,6 +511,12 @@ class AppStrings {
           "You have unsaved changes. If you leave now, they will be lost.",
       "keep_editing": "Continue",
       "leave_without_saving": "Leave",
+      "publish_consent_title": "Before you post",
+      "publish_consent_body":
+          "Please follow UyDosh Community Rules. Do not post fake listings, scam offers, illegal content, offensive content, private documents, or someone else's photos without permission.",
+      "publish_consent_checkbox":
+          "I agree to UyDosh Terms of Use and Community Rules",
+      "publish_consent_continue": "Continue",
 
       "confirm": "Confirm",
       "next": "Next",
@@ -631,9 +638,9 @@ class AppStrings {
       "listing_description_template_roommate_needed_female":
           "Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
 
-      "listing_type_roommate_needed": "Need Roommate",
+      "listing_type_roommate_needed": "Looking for a Roommate",
       "listing_type_roommate_needed_female": "Need Roommate",
-      "listing_type_room_needed": "Need Room",
+      "listing_type_room_needed": "Looking for Housing",
       "listing_type_label": "Listing type",
       "listing_type_short_roommate_needed": "Looking for roommate",
       "listing_type_short_roommate_needed_female": "Looking for roommate",
@@ -1734,11 +1741,11 @@ class AppStrings {
 
       "location": "Район",
       "create_listing": "Создать",
-      "create_choice_title": "Что вы хотите опубликовать?",
+      "create_choice_title": "Что вы ищите?",
       "create_choice_housing": "Жильё",
       "create_choice_housing_subtitle": "Сдать или снять жильё",
-      "create_choice_roommate_needed_subtitle": "Найти соседа для жилья",
-      "create_choice_room_needed_subtitle": "Найти комнату или жильё",
+      "create_choice_roommate_needed_subtitle": "Уже есть жильё — ищу соседей",
+      "create_choice_room_needed_subtitle": "Нужна комната или квартира",
       "create_choice_service": "Услуга",
       "create_choice_service_subtitle": "Предложить или найти услугу",
       "profile": "Профиль",
@@ -2144,7 +2151,7 @@ class AppStrings {
       "auth_terms_finish_header": "Почти готово",
       "auth_terms_finish_title": "Ознакомьтесь с условиями",
       "auth_terms_finish_body":
-          "Ваш профиль готов. Пожалуйста, ознакомьтесь с Условиями использования перед завершением настройки.",
+          "Продолжая, вы соглашаетесь с Условиями использования, Политикой конфиденциальности и Правилами сообщества UyDosh.",
       "view_terms_of_service": "Открыть Условия использования",
       "could_not_open_terms_of_service":
           "Не удалось открыть Условия использования. Попробуйте снова.",
@@ -2229,6 +2236,12 @@ class AppStrings {
           "У вас есть несохранённые изменения. Если выйти сейчас, они будут потеряны.",
       "keep_editing": "Продолжить",
       "leave_without_saving": "Выйти",
+      "publish_consent_title": "Перед публикацией",
+      "publish_consent_body":
+          "Пожалуйста, соблюдайте правила сообщества UyDosh. Не публикуйте фейковые объявления, мошеннические предложения, незаконный контент, оскорбительные материалы, личные документы или чужие фотографии без разрешения.",
+      "publish_consent_checkbox":
+          "Я согласен с Условиями использования и Правилами сообщества UyDosh",
+      "publish_consent_continue": "Продолжить",
 
       "confirm": "Подтвердить",
       "next": "Далее",
@@ -2351,9 +2364,9 @@ class AppStrings {
       "listing_description_template_roommate_needed_female":
           "Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
 
-      "listing_type_roommate_needed": "Ищу соседа",
+      "listing_type_roommate_needed": "Ищу Соседа",
       "listing_type_roommate_needed_female": "Ищу соседку",
-      "listing_type_room_needed": "Ищу жилье",
+      "listing_type_room_needed": "Ищу Жильё",
       "listing_type_label": "Тип объявления",
       "listing_type_short_roommate_needed": "Ищем Соседа",
       "listing_type_short_roommate_needed_female": "Ищем Соседку",
@@ -2478,8 +2491,8 @@ class AppStrings {
       "language_name_uzbek": "Узбекский",
       "language_changed_to": "Язык изменен на {language}",
       "price_display_currency": "Валюта цен",
-      "price_display_currency_national": "🇺🇿 Узбекский сум",
-      "price_display_currency_usd": "🇺🇸 Доллары США (USD)",
+      "price_display_currency_national": "🇺🇿 Сум",
+      "price_display_currency_usd": "🇺🇸 Доллар",
 
       // ===== PROFILE & USER INFO =====
       "gender": "Пол",
@@ -3472,11 +3485,12 @@ class AppStrings {
 
       "location": "Tuman",
       "create_listing": "Yaratish",
-      "create_choice_title": "Nimani e'lon qilmoqchisiz?",
+      "create_choice_title": "Nima qidiryapsiz?",
       "create_choice_housing": "Uy-joy",
       "create_choice_housing_subtitle": "Ijaraga berish yoki topish",
-      "create_choice_roommate_needed_subtitle": "Uy uchun xonadosh topish",
-      "create_choice_room_needed_subtitle": "Xona yoki uy-joy topish",
+      "create_choice_roommate_needed_subtitle":
+          "Uy-joyim bor - xonadoshlar qidiryapman",
+      "create_choice_room_needed_subtitle": "Xona yoki kvartira kerak",
       "create_choice_service": "Xizmat",
       "create_choice_service_subtitle": "Xizmat taklif qilish yoki topish",
       "profile": "Profil",
@@ -3890,7 +3904,7 @@ class AppStrings {
       "auth_terms_finish_header": "Deyarli tayyor",
       "auth_terms_finish_title": "Shartlarni ko'rib chiqing",
       "auth_terms_finish_body":
-          "Profilingiz tayyor. Sozlashni yakunlashdan oldin Foydalanish shartlarini ko'rib chiqing.",
+          "Davom etish orqali siz UyDosh Foydalanish shartlari, Maxfiylik siyosati va Hamjamiyat qoidalariga rozilik bildirasiz.",
       "view_terms_of_service": "Foydalanish shartlarini ko'rish",
       "could_not_open_terms_of_service":
           "Foydalanish shartlarini ochib bo'lmadi. Qayta urinib ko'ring.",
@@ -3974,6 +3988,12 @@ class AppStrings {
           "Saqlanmagan o'zgarishlaringiz bor. Hozir chiqsangiz, ular yo'qoladi.",
       "keep_editing": "Davom etish",
       "leave_without_saving": "Chiqish",
+      "publish_consent_title": "Joylashdan oldin",
+      "publish_consent_body":
+          "Iltimos, UyDosh hamjamiyati qoidalariga amal qiling. Soxta e'lonlar, firibgarlik takliflari, noqonuniy kontent, haqoratomuz kontent, shaxsiy hujjatlar yoki ruxsatsiz boshqa birovning rasmlarini joylamang.",
+      "publish_consent_checkbox":
+          "UyDosh Foydalanish shartlari va Hamjamiyat qoidalariga roziman",
+      "publish_consent_continue": "Davom etish",
 
       "confirm": "Tasdiqlash",
       "next": "Keyingi",
@@ -4095,9 +4115,9 @@ class AppStrings {
       "listing_description_template_roommate_needed_female":
           "Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
 
-      "listing_type_roommate_needed": "Xonadosh qidiraman",
+      "listing_type_roommate_needed": "Xonadosh qidiryapman",
       "listing_type_roommate_needed_female": "Xonadosh qidiraman",
-      "listing_type_room_needed": "Xonadon kerak",
+      "listing_type_room_needed": "Uy-joy qidiryapman",
       "listing_type_label": "E'lon turi",
       "listing_type_short_roommate_needed": "Xonadosh qidiramiz",
       "listing_type_short_roommate_needed_female": "Xonadosh qidiramiz",

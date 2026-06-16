@@ -801,10 +801,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileContent(UserProfile profile) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     return SingleChildScrollView(
       // Pushed route: body already clears the app bar — no
       // [extendBodyBehindAppBar] / status-bar inset (see favorites_screen).
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, 8, 20, 112 + bottomInset),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

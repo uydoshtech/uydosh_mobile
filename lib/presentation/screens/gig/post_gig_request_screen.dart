@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart"
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/publish_consent_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -48,7 +49,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final titleMissing = _titleController.text.trim().isEmpty;
     final categoryMissing = _selectedCategory == null;
     if (titleMissing != _showTitleError ||
@@ -61,6 +62,9 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
     if (titleMissing || categoryMissing) {
       return;
     }
+    final consentAccepted = await PublishConsentGate.ensureAccepted(context);
+    if (!mounted || !consentAccepted) return;
+
     final budget = _budgetController.text.isEmpty
         ? null
         : int.tryParse(_budgetController.text);
@@ -201,7 +205,11 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   ),
                   const SizedBox(height: 24),
                   PrimaryButton(
-                    onPressed: submitting ? null : _submit,
+                    onPressed: submitting
+                        ? null
+                        : () {
+                            _submit();
+                          },
                     isLoading: submitting,
                     height: 54,
                     width: double.infinity,

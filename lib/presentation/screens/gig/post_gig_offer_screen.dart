@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart"
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/publish_consent_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -52,7 +53,7 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final titleMissing = _titleController.text.trim().isEmpty;
     final categoryMissing = _selectedCategory == null;
     final priceText = _priceController.text.trim();
@@ -72,6 +73,9 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
     if (titleMissing || categoryMissing || priceMissing) {
       return;
     }
+    final consentAccepted = await PublishConsentGate.ensureAccepted(context);
+    if (!mounted || !consentAccepted) return;
+
     final price = parsedPrice;
     final minDuration = _minDurationController.text.trim().isEmpty
         ? null
@@ -226,7 +230,11 @@ class _PostGigOfferScreenState extends State<PostGigOfferScreen> {
                   ),
                   const SizedBox(height: 24),
                   PrimaryButton(
-                    onPressed: submitting ? null : _submit,
+                    onPressed: submitting
+                        ? null
+                        : () {
+                            _submit();
+                          },
                     isLoading: submitting,
                     height: 54,
                     width: double.infinity,

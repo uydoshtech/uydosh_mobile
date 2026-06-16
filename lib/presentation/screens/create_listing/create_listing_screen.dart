@@ -44,6 +44,7 @@ import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/publish_consent_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -1146,6 +1147,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
 
     // Metro line and station are now optional - no validation required
+
+    final consentAccepted = await PublishConsentGate.ensureAccepted(context);
+    if (!mounted || !consentAccepted) return;
 
     // Set loading state
     setState(() {
