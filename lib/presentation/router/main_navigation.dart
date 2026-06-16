@@ -687,8 +687,9 @@ class MainNavigationState extends State<MainNavigation>
       context: context,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
+        final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 16),
           child: GlassBottomSheetSurface(
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20),

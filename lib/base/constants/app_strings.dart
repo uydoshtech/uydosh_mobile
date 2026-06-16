@@ -1572,9 +1572,9 @@ class AppStrings {
       "tutorial_profile_description":
           "Your profile and account settings are here.",
       "tutorial_alert_bell_description":
-          "You can add an alert and be notified about new listings matching your search criteria.",
+          "Turn on alerts for new matching listings.",
       "tutorial_notifications_bell_description":
-          "Your saved alerts are here. Tap the bell to manage them anytime.",
+          "Your alerts are here. Tap to manage them.",
 
       // ===== TIME & DATES =====
       "january": "January",
@@ -3309,13 +3309,13 @@ class AppStrings {
           "Включите уведомления в настройках, чтобы получать оповещения.",
       "search_alert_bell_hint": "Получать уведомления о похожих объявлениях",
       "tutorial_search_description":
-          "Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.",
+          "Здесь можно выбрать район, цену и другие фильтры.",
       "tutorial_profile_description":
           "Здесь находятся ваш профиль и настройки аккаунта.",
       "tutorial_alert_bell_description":
-          "Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.",
+          "Включите оповещение о новых объявлениях.",
       "tutorial_notifications_bell_description":
-          "Ваши сохранённые оповещения — здесь. Нажмите на колокольчик, чтобы управлять ими в любое время.",
+          "Ваши оповещения здесь. Нажмите, чтобы управлять ими.",
 
       // ===== TIME & DATES =====
       "january": "Январь",
@@ -5068,9 +5068,9 @@ class AppStrings {
       "tutorial_profile_description":
           "Profilingiz va hisob sozlamalari shu yerda.",
       "tutorial_alert_bell_description":
-          "Qidiruv mezonlaringizga mos yangi e'lonlar chiqsa, bildirishnoma qo'shib xabardor bo'lib turishingiz mumkin.",
+          "Yangi mos e'lonlar uchun bildirishnoma yoqing.",
       "tutorial_notifications_bell_description":
-          "Saqlangan bildirishnomalaringiz shu yerda. Kolokolchani bosib istalgan payt boshqarishingiz mumkin.",
+          "Bildirishnomalaringiz shu yerda. Boshqarish uchun bosing.",
 
       // ===== TIME & DATES =====
       "january": "Yanvar",

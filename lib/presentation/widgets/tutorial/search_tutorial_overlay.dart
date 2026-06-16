@@ -24,6 +24,38 @@ class TutorialTargetWrapperState extends State<TutorialTargetWrapper> {
   Widget build(BuildContext context) => widget.child;
 }
 
+class TutorialOverlayText extends StatelessWidget {
+  const TutorialOverlayText(
+    this.text, {
+    this.fontWeight = FontWeight.w500,
+    super.key,
+  });
+
+  final String text;
+  final FontWeight fontWeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = Theme.of(context).textTheme.titleLarge;
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: base?.copyWith(
+            fontSize: 22,
+            fontWeight: fontWeight,
+            color: Colors.white,
+            height: 1.22,
+          ) ??
+          TextStyle(
+            fontSize: 22,
+            fontWeight: fontWeight,
+            color: Colors.white,
+            height: 1.22,
+          ),
+    );
+  }
+}
+
 /// Displays an overlay tutorial that highlights the search button and explains
 /// its purpose. Finishes automatically (no user interaction required).
 class SearchTutorialOverlay {
@@ -60,20 +92,8 @@ class SearchTutorialOverlay {
             align: ContentAlign.top,
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             builder: (context, controller) {
-              final base = Theme.of(context).textTheme.titleLarge;
-              return Text(
+              return TutorialOverlayText(
                 L10n.get("tutorial_search_description"),
-                textAlign: TextAlign.center,
-                style: base?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ) ??
-                    const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
               );
             },
           ),
@@ -96,20 +116,8 @@ class SearchTutorialOverlay {
               align: ContentAlign.bottom,
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               builder: (context, controller) {
-                final base = Theme.of(context).textTheme.titleLarge;
-                return Text(
+                return TutorialOverlayText(
                   L10n.get("tutorial_profile_description"),
-                  textAlign: TextAlign.center,
-                  style: base?.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                      ) ??
-                      const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white,
-                      ),
                 );
               },
             ),

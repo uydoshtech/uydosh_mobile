@@ -432,7 +432,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               child: ThemeIcon(
                 Icons.groups,
                 color: peopleIconColor,
-                size: 132,
+                size: 198,
               ),
             ),
           ),

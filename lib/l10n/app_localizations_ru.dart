@@ -2680,7 +2680,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutorial_search_description =>
-      'Нажмите здесь, чтобы фильтровать объявления по району, цене, типу комнаты и другим параметрам.';
+      'Здесь можно выбрать район, цену и другие фильтры.';
 
   @override
   String get tutorial_profile_description =>
@@ -2695,11 +2695,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tutorial_alert_bell_description =>
-      'Вы можете добавить уведомление и получать оповещения о новых объявлениях по вашим критериям поиска.';
+      'Включите оповещение о новых объявлениях.';
 
   @override
   String get tutorial_notifications_bell_description =>
-      'Ваши сохранённые оповещения — здесь. Нажмите на колокольчик, чтобы управлять ими в любое время.';
+      'Ваши оповещения здесь. Нажмите, чтобы управлять ими.';
 
   @override
   String get january => 'Январь';

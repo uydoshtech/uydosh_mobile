@@ -243,7 +243,6 @@ class _TutorialHintText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -251,14 +250,9 @@ class _TutorialHintText extends StatelessWidget {
           alignment: const Alignment(0, _verticalPosition),
           child: Opacity(
             opacity: animationValue,
-            child: Text(
+            child: TutorialOverlayText(
               hintText,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

@@ -2726,11 +2726,11 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get tutorial_alert_bell_description =>
-      'Qidiruv mezonlaringizga mos yangi e\'lonlar chiqsa, bildirishnoma qo\'shib xabardor bo\'lib turishingiz mumkin.';
+      'Yangi mos e\'lonlar uchun bildirishnoma yoqing.';
 
   @override
   String get tutorial_notifications_bell_description =>
-      'Saqlangan bildirishnomalaringiz shu yerda. Kolokolchani bosib istalgan payt boshqarishingiz mumkin.';
+      'Bildirishnomalaringiz shu yerda. Boshqarish uchun bosing.';
 
   @override
   String get january => 'Yanvar';

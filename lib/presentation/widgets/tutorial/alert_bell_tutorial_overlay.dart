@@ -73,20 +73,8 @@ class AlertBellTutorialOverlay {
             align: ContentAlign.bottom,
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             builder: (context, controller) {
-              final base = Theme.of(context).textTheme.titleLarge;
-              return Text(
+              return TutorialOverlayText(
                 L10n.get(descriptionKey),
-                textAlign: TextAlign.center,
-                style: base?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ) ??
-                    const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white,
-                    ),
               );
             },
           ),

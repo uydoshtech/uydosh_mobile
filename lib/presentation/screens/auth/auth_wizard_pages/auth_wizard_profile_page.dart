@@ -3,7 +3,6 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
-import "package:uy_dosh/domain/models/country.dart";
 import "package:uy_dosh/domain/models/region.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
@@ -28,9 +27,6 @@ class AuthWizardProfilePage extends StatelessWidget {
     required this.nameController,
     required this.selectedGender,
     required this.onGenderSelected,
-    required this.selectedCountry,
-    required this.onShowCountryPicker,
-    required this.getCountryName,
     required this.selectedRegionId,
     required this.regions,
     required this.onShowRegionPicker,
@@ -67,9 +63,6 @@ class AuthWizardProfilePage extends StatelessWidget {
   final TextEditingController nameController;
   final int? selectedGender;
   final ValueChanged<int?> onGenderSelected;
-  final Country? selectedCountry;
-  final VoidCallback onShowCountryPicker;
-  final String Function(Country) getCountryName;
   final int? selectedRegionId;
   final List<Region> regions;
   final VoidCallback onShowRegionPicker;
@@ -116,9 +109,9 @@ class AuthWizardProfilePage extends StatelessWidget {
   /// [AuthWizardTheme.getSelectedButtonBackgroundColor] is transparent.
   Color _getSelectedSurfaceColor(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // Light theme: primary is black — never use it as a card fill (country /
-    // city shells and pills looked like solid black blocks). Selected tiles use
-    // the same white/off-white plate vocabulary as listing chrome.
+    // Light theme: primary is black — never use it as a card fill for city
+    // shells and pills. Selected tiles use the same white/off-white plate
+    // vocabulary as listing chrome.
     if (ThemeState().isLightTheme) {
       return scheme.surfaceContainerHighest;
     }
@@ -130,7 +123,7 @@ class AuthWizardProfilePage extends StatelessWidget {
   }
 
   /// Raised vs. recessed decoration shared by every card-like tap target on
-  /// this page (gender, role, student, country, city, university). Selection
+  /// this page (gender, role, student, city, university). Selection
   /// is conveyed through depth + a subtle colour tint rather than hard borders.
   BoxDecoration _neumorphicCardDecoration(
     BuildContext context, {
@@ -269,18 +262,9 @@ class AuthWizardProfilePage extends StatelessWidget {
               const SizedBox(height: 16),
               KeyedSubtree(
                 key: regionSectionKey,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _buildCountrySelector(context)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ErrorBorderPulse(
-                        showError: regionMissing,
-                        child: _buildCitySelectorColumn(context),
-                      ),
-                    ),
-                  ],
+                child: ErrorBorderPulse(
+                  showError: regionMissing,
+                  child: _buildCitySelectorColumn(context),
                 ),
               ),
               const SizedBox(height: 32),
@@ -527,33 +511,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     );
   }
 
-  /// Country selector (compact, half-width). Always has a selection since
-  /// Uzbekistan is preselected on mount.
-  Widget _buildCountrySelector(BuildContext context) {
-    return _buildCompactSelectorShell(
-      context,
-      label: L10n.get("country"),
-      isSelected: selectedCountry != null,
-      onTap: onShowCountryPicker,
-      leading: selectedCountry != null
-          ? Text(
-              selectedCountry!.flag,
-              style: const TextStyle(fontSize: 22, height: 1.1),
-            )
-          : ThemeIcon(
-              Icons.public,
-              color: _getOnboardingTextSecondaryColor(context),
-              size: 22,
-            ),
-      value: selectedCountry != null
-          ? getCountryName(selectedCountry!)
-          : L10n.get("tap_to_select_country"),
-    );
-  }
-
-  /// Column that mirrors the country selector's height by using the same
-  /// compact shell, but additionally handles loading / empty states for
-  /// regions.
+  /// City selector column that handles loading / empty states for regions.
   Widget _buildCitySelectorColumn(BuildContext context) {
     if (isLoadingRegions) {
       return _buildLoadingCard(context, L10n.get("loading_regions"));
@@ -576,8 +534,8 @@ class AuthWizardProfilePage extends StatelessWidget {
           regions.firstWhere((r) => r.id == selectedRegionId),
         );
       } catch (_) {
-        // Selected region id no longer in the filtered list (e.g. after
-        // changing country). Fall through to the placeholder.
+        // Selected region id no longer in the list. Fall through to the
+        // placeholder.
         value = null;
       }
     }
@@ -598,9 +556,8 @@ class AuthWizardProfilePage extends StatelessWidget {
     );
   }
 
-  /// Shared compact selector card used for both country and city. Shows a
-  /// small label on top and a `leading + value + chevron` row underneath.
-  /// Designed to fit comfortably in half of the onboarding content width.
+  /// Shared compact selector card. Shows a small label on top and a
+  /// `leading + value + chevron` row underneath.
   Widget _buildCompactSelectorShell(
     BuildContext context, {
     required String label,
