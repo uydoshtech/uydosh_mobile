@@ -24,6 +24,10 @@ class AppColors {
   static const Color warning = Color(0xFFFF9800); // Orange
   static const Color warningLight = Color(0xFFFFB74D);
   static const Color warningDark = Color(0xFFF57C00);
+  static const Color warningMuted = Color(0xFFE49A2D); // Softer amber
+
+  // Brand Colors
+  static const Color telegramBrandBlue = Color(0xFF229ED9);
 
   // Error Colors
   static const Color error = Color(0xFFF44336); // Red

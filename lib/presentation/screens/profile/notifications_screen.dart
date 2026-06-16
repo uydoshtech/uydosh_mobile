@@ -81,6 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   AuthorizationStatus? _pushStatus;
   bool _pushStatusLoading = false;
+  bool _pushEnableExpanded = false;
   bool _isAdmin = false;
 
   bool _pushDebugExpanded = false;
@@ -91,8 +92,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   String? _fcmTokenFull;
   bool _hasBackendSessionToken = false;
 
-  bool get _showPushDebug =>
-      _isAdmin && AdminFeatureFlagsState().showPushDebug;
+  bool get _showPushDebug => _isAdmin && AdminFeatureFlagsState().showPushDebug;
 
   void _onAdminFlagsChanged() {
     setStateIfMounted(() {});
@@ -164,8 +164,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
     final isDenied = status == AuthorizationStatus.denied;
 
-    // Warning-tinted "alert" tile, matching the orange ToastTheme.showWarning toast.
-    final cardBg = AppColors.warning;
+    final cardBg = AppColors.warningMuted;
 
     const fg = Color(0xFF1F1300);
 
@@ -180,113 +179,144 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardBg),
         boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
-      child: Container(
-        width: double.infinity,
+      child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 2),
-                  child: Icon(
-                    Icons.notifications_off_outlined,
-                    size: 20,
-                    color: fg,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    L10n.getWithParams(
-                      "notifications_push_off_title",
-                      params: {
-                        "where": L10n.get(pushOffWhereKey),
-                      },
-                    ),
-                    style: const TextStyle(
-                      color: fg,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                ),
-                if (_pushStatusLoading)
-                  const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(fg),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: PrimaryButton(
-                borderRadius: BorderRadius.circular(12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                surfaceGradientBase: buttonBg,
-                textColor: buttonFg,
-                onPressed: _pushStatusLoading
-                    ? null
-                    : () async {
-                        if (isDenied) {
-                          await openAppSettings();
-                          if (!mounted) return;
-                          await _loadPushStatus();
-                          return;
-                        }
-                        final ok = await push.requestPermissionAndRegister();
-                        if (!mounted) return;
-                        if (ok) {
-                          ToastTheme.showSuccess(
-                            context,
-                            message: L10n.get("notifications_enabled"),
-                          );
-                        } else {
-                          ToastTheme.showInfo(
-                            context,
-                            message:
-                                L10n.get("notifications_enable_in_settings"),
-                          );
-                        }
-                        await _loadPushStatus();
-                      },
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedbackUtils.impact();
+                  setStateIfMounted(
+                    () => _pushEnableExpanded = !_pushEnableExpanded,
+                  );
+                },
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      isDenied
-                          ? Icons.settings_outlined
-                          : Icons.notifications_outlined,
-                      color: buttonFg,
-                      size: 22,
+                    const Padding(
+                      padding: EdgeInsets.only(top: 2),
+                      child: Icon(
+                        Icons.notifications_off_outlined,
+                        size: 20,
+                        color: fg,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Flexible(
+                    const SizedBox(width: 10),
+                    Expanded(
                       child: Text(
-                        isDenied
-                            ? L10n.get("notifications_open_settings")
-                            : L10n.get("menu_enable_notifications"),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: buttonFg,
-                          fontWeight: FontWeight.w600,
+                        L10n.getWithParams(
+                          "notifications_push_off_title",
+                          params: {
+                            "where": L10n.get(pushOffWhereKey),
+                          },
+                        ),
+                        style: const TextStyle(
+                          color: fg,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.1,
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    if (_pushStatusLoading)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(fg),
+                        ),
+                      )
+                    else
+                      AnimatedRotation(
+                        turns: _pushEnableExpanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        child: const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 22,
+                          color: fg,
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ),
-          ],
+              if (_pushEnableExpanded) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    surfaceGradientBase: buttonBg,
+                    textColor: buttonFg,
+                    onPressed: _pushStatusLoading
+                        ? null
+                        : () async {
+                            if (isDenied) {
+                              await openAppSettings();
+                              if (!mounted) return;
+                              await _loadPushStatus();
+                              return;
+                            }
+                            final ok =
+                                await push.requestPermissionAndRegister();
+                            if (!mounted) return;
+                            if (ok) {
+                              ToastTheme.showSuccess(
+                                context,
+                                message: L10n.get("notifications_enabled"),
+                              );
+                            } else {
+                              ToastTheme.showInfo(
+                                context,
+                                message: L10n.get(
+                                  "notifications_enable_in_settings",
+                                ),
+                              );
+                            }
+                            await _loadPushStatus();
+                          },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isDenied
+                              ? Icons.settings_outlined
+                              : Icons.notifications_outlined,
+                          color: buttonFg,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            isDenied
+                                ? L10n.get("notifications_open_settings")
+                                : L10n.get("menu_enable_notifications"),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: buttonFg,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -1253,208 +1283,225 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                 return _alertsExplainerSlot(theme);
                               }
 
-                              final debugIndex = _alerts.length +
-                                  (showExplainer ? 1 : 0);
+                              final debugIndex =
+                                  _alerts.length + (showExplainer ? 1 : 0);
                               if (_showPushDebug && i == debugIndex) {
                                 return _pushDebugPanel(theme);
                               }
 
-                              final a = _alerts[
-                                  i - (showExplainer ? 1 : 0)];
-                              final alertIndex =
-                                  i - (showExplainer ? 1 : 0);
-                        final themeState = ThemeState();
-                        final isRemoving = _itemsBeingRemoved.contains(a.id);
-                        const duration = Duration(milliseconds: 300);
+                              final a = _alerts[i - (showExplainer ? 1 : 0)];
+                              final alertIndex = i - (showExplainer ? 1 : 0);
+                              final themeState = ThemeState();
+                              final isRemoving =
+                                  _itemsBeingRemoved.contains(a.id);
+                              const duration = Duration(milliseconds: 300);
 
-                        final card = Theme(
-                          data: theme.copyWith(
-                            cardTheme: theme.cardTheme.copyWith(
-                              margin: EdgeInsets.zero,
-                              elevation: 0,
-                              surfaceTintColor: Colors.transparent,
-                              color: themeState.isLightTheme
-                                  ? themeState.cardColor
-                                  : (themeState.isBlueTheme
-                                      ? BlueThemeColors.surface
-                                      : theme.colorScheme.surface),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                          child: ListingDetailTileShell(
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(14),
-                                onTap: _bulkWorking
-                                    ? null
-                                    : () {
-                                        HapticFeedbackUtils.selectionClick();
-                                        _openAlertResults(a);
-                                      },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Tooltip(
-                                            message: a.enabled
-                                                ? L10n.get("disable")
-                                                : L10n.get("enable"),
-                                            child: InkResponse(
-                                              radius: 22,
-                                              onTap: _bulkWorking
-                                                  ? null
-                                                  : () {
-                                                      HapticFeedbackUtils
-                                                          .impact();
-                                                      _toggleEnabled(
-                                                        a,
-                                                        !a.enabled,
-                                                      );
-                                                    },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(4),
-                                                child: ThemeIcon(
-                                                  a.enabled
-                                                      ? Icons.notifications
-                                                      : Icons
-                                                          .notifications_off_outlined,
-                                                  color: ThemeState()
-                                                          .isBlueTheme
-                                                      ? (a.enabled
-                                                          ? Colors.white
-                                                          : Colors.white
-                                                              .withValues(
-                                                              alpha: 0.45,
-                                                            ))
-                                                      : (a.enabled
-                                                          ? theme.colorScheme
-                                                              .primary
-                                                          : theme.colorScheme
-                                                              .onSurfaceVariant
-                                                              .withValues(
-                                                              alpha: 0.55,
-                                                            )),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                0,
-                                                4,
-                                                48,
-                                                4,
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    a.enabled
-                                                        ? L10n.get(
-                                                            "notifications_alert_match_header",
-                                                          )
-                                                        : L10n.get(
-                                                            "notifications_alert_match_header_paused",
-                                                          ),
-                                                    style: TextStyle(
-                                                      fontSize: 14.5,
-                                                      height: 1.2,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      letterSpacing: 0.1,
-                                                      color: theme
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 14),
-                                                  _summaryWidget(a, theme),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Positioned(
-                                        top: 0,
-                                        right: 0,
-                                        child: TheDotDropMenuButton<String>(
-                                          enabled: !_bulkWorking,
-                                          padding: EdgeInsets.zero,
-                                          visualScale: 0.8,
-                                          onSelected: (value) {
-                                            if (value == "toggle") {
-                                              _toggleEnabled(a, !a.enabled);
-                                            } else if (value == "delete") {
-                                              _deleteAlertAnimated(
-                                                a,
-                                                index: alertIndex,
-                                              );
-                                            }
-                                          },
-                                          itemBuilder: (menuContext) {
-                                            final isEnabled = a.enabled;
-                                            return [
-                                              PopupMenuItem(
-                                                value: "toggle",
-                                                child: UydoshPopupMenuItemRow(
-                                                  icon: isEnabled
-                                                      ? Icons
-                                                          .notifications_off_outlined
-                                                      : Icons
-                                                          .notifications_active_outlined,
-                                                  text: isEnabled
-                                                      ? L10n.get("disable")
-                                                      : L10n.get("enable"),
-                                                  enabled: true,
-                                                ),
-                                              ),
-                                              PopupMenuItem(
-                                                value: "delete",
-                                                child: UydoshPopupMenuItemRow(
-                                                  icon: Icons.delete_outline,
-                                                  text: L10n.get("delete"),
-                                                  enabled: true,
-                                                  destructive: true,
-                                                ),
-                                              ),
-                                            ];
-                                          },
-                                        ),
-                                      ),
-                                    ],
+                              final card = Theme(
+                                data: theme.copyWith(
+                                  cardTheme: theme.cardTheme.copyWith(
+                                    margin: EdgeInsets.zero,
+                                    elevation: 0,
+                                    surfaceTintColor: Colors.transparent,
+                                    color: themeState.isLightTheme
+                                        ? themeState.cardColor
+                                        : (themeState.isBlueTheme
+                                            ? BlueThemeColors.surface
+                                            : theme.colorScheme.surface),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                                child: ListingDetailTileShell(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(14),
+                                      onTap: _bulkWorking
+                                          ? null
+                                          : () {
+                                              HapticFeedbackUtils
+                                                  .selectionClick();
+                                              _openAlertResults(a);
+                                            },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(14),
+                                        child: Stack(
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Tooltip(
+                                                  message: a.enabled
+                                                      ? L10n.get("disable")
+                                                      : L10n.get("enable"),
+                                                  child: InkResponse(
+                                                    radius: 22,
+                                                    onTap: _bulkWorking
+                                                        ? null
+                                                        : () {
+                                                            HapticFeedbackUtils
+                                                                .impact();
+                                                            _toggleEnabled(
+                                                              a,
+                                                              !a.enabled,
+                                                            );
+                                                          },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4),
+                                                      child: ThemeIcon(
+                                                        a.enabled
+                                                            ? Icons
+                                                                .notifications
+                                                            : Icons
+                                                                .notifications_off_outlined,
+                                                        color: ThemeState()
+                                                                .isBlueTheme
+                                                            ? (a.enabled
+                                                                ? Colors.white
+                                                                : Colors.white
+                                                                    .withValues(
+                                                                    alpha: 0.45,
+                                                                  ))
+                                                            : (a.enabled
+                                                                ? theme
+                                                                    .colorScheme
+                                                                    .primary
+                                                                : theme
+                                                                    .colorScheme
+                                                                    .onSurfaceVariant
+                                                                    .withValues(
+                                                                    alpha: 0.55,
+                                                                  )),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .fromLTRB(
+                                                      0,
+                                                      4,
+                                                      48,
+                                                      4,
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          a.enabled
+                                                              ? L10n.get(
+                                                                  "notifications_alert_match_header",
+                                                                )
+                                                              : L10n.get(
+                                                                  "notifications_alert_match_header_paused",
+                                                                ),
+                                                          style: TextStyle(
+                                                            fontSize: 14.5,
+                                                            height: 1.2,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            letterSpacing: 0.1,
+                                                            color: theme
+                                                                .colorScheme
+                                                                .onSurfaceVariant,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 14),
+                                                        _summaryWidget(
+                                                            a, theme),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Positioned(
+                                              top: 0,
+                                              right: 0,
+                                              child:
+                                                  TheDotDropMenuButton<String>(
+                                                enabled: !_bulkWorking,
+                                                padding: EdgeInsets.zero,
+                                                visualScale: 0.8,
+                                                onSelected: (value) {
+                                                  if (value == "toggle") {
+                                                    _toggleEnabled(
+                                                        a, !a.enabled);
+                                                  } else if (value ==
+                                                      "delete") {
+                                                    _deleteAlertAnimated(
+                                                      a,
+                                                      index: alertIndex,
+                                                    );
+                                                  }
+                                                },
+                                                itemBuilder: (menuContext) {
+                                                  final isEnabled = a.enabled;
+                                                  return [
+                                                    PopupMenuItem(
+                                                      value: "toggle",
+                                                      child:
+                                                          UydoshPopupMenuItemRow(
+                                                        icon: isEnabled
+                                                            ? Icons
+                                                                .notifications_off_outlined
+                                                            : Icons
+                                                                .notifications_active_outlined,
+                                                        text: isEnabled
+                                                            ? L10n.get(
+                                                                "disable")
+                                                            : L10n.get(
+                                                                "enable"),
+                                                        enabled: true,
+                                                      ),
+                                                    ),
+                                                    PopupMenuItem(
+                                                      value: "delete",
+                                                      child:
+                                                          UydoshPopupMenuItemRow(
+                                                        icon: Icons
+                                                            .delete_outline,
+                                                        text:
+                                                            L10n.get("delete"),
+                                                        enabled: true,
+                                                        destructive: true,
+                                                      ),
+                                                    ),
+                                                  ];
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+
+                              final wrapped = _wrapSearchAlertSwipeDelete(
+                                child: card,
+                                alert: a,
+                                alertIndex: alertIndex,
+                              );
+
+                              if (!isRemoving) return wrapped;
+
+                              // Collapse + fade only while removing (match Favorites animation).
+                              return RollUpFadeOut(
+                                  duration: duration, child: wrapped);
+                            },
                           ),
-                        );
-
-                        final wrapped = _wrapSearchAlertSwipeDelete(
-                          child: card,
-                          alert: a,
-                          alertIndex: alertIndex,
-                        );
-
-                        if (!isRemoving) return wrapped;
-
-                        // Collapse + fade only while removing (match Favorites animation).
-                        return RollUpFadeOut(duration: duration, child: wrapped);
-                      },
-                    ),
                   ),
           ),
         ],

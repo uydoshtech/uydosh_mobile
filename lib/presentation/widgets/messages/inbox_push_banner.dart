@@ -1,4 +1,5 @@
-import "package:firebase_messaging/firebase_messaging.dart" show AuthorizationStatus;
+import "package:firebase_messaging/firebase_messaging.dart"
+    show AuthorizationStatus;
 import "package:flutter/material.dart";
 
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -50,9 +51,7 @@ class InboxPushBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Warning-tinted "alert" tile, matching `_pushEnableCard` on the
-    // Notifications screen and ToastTheme.showWarning.
-    final cardBg = AppColors.warning;
+    final cardBg = AppColors.warningMuted;
     const fg = Color(0xFF1F1300);
     const buttonFg = Color(0xFF1F1300);
     final buttonBg = Colors.white.withValues(alpha: 0.18);
@@ -143,14 +142,12 @@ class InboxPushBanner extends StatelessWidget {
                       height: 1.0,
                     ),
                     iconSize: 18,
-                    icon:
-                        _isDenied
-                            ? Icons.settings_outlined
-                            : Icons.notifications_outlined,
-                    text:
-                        _isDenied
-                            ? L10n.get("notifications_open_settings")
-                            : L10n.get("menu_enable_notifications"),
+                    icon: _isDenied
+                        ? Icons.settings_outlined
+                        : Icons.notifications_outlined,
+                    text: _isDenied
+                        ? L10n.get("notifications_open_settings")
+                        : L10n.get("menu_enable_notifications"),
                   ),
                 ),
               ),

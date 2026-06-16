@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/config/telegram_bot_config.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/open_telegram_bot_start_link.dart";
@@ -235,8 +236,8 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
   }
 
   Widget _loadingCard(BuildContext context) {
-    const fg = Color(0xFF0A3050);
-    const cardBg = Color(0xFF4DA3E9);
+    const fg = Colors.white;
+    const cardBg = AppColors.telegramBrandBlue;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -272,8 +273,8 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
   }
 
   Widget _connectedCard(BuildContext context) {
-    const fg = Color(0xFF0D3B1E);
-    const cardBg = Color(0xFFB8E6C8);
+    const fg = Colors.white;
+    const cardBg = AppColors.telegramBrandBlue;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -351,8 +352,8 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
   }
 
   Widget _connectCard(BuildContext context) {
-    const fg = Color(0xFF0A3050);
-    const cardBg = Color(0xFF4DA3E9);
+    const fg = Colors.white;
+    const cardBg = AppColors.telegramBrandBlue;
 
     return DecoratedBox(
       decoration: BoxDecoration(

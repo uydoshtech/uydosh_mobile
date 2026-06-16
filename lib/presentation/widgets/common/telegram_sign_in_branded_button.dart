@@ -1,15 +1,16 @@
 import "package:flutter/foundation.dart" show defaultTargetPlatform;
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 
-/// Pill-shaped Telegram sign-in control: flat `#4DA3E9` background,
+/// Pill-shaped Telegram sign-in control: Telegram brand blue background,
 /// white logo + label.
 ///
 /// [label] should come from localization (e.g. `sign_in_with_telegram`).
 /// Layout mirrors [GoogleSignInBrandedButton] / `SignInWithAppleButton`.
 const double _kTelegramSignInButtonHeight = 44;
 
-const Color _kTelegramSignInBlue = Color(0xFF4DA3E9);
+const Color _kTelegramSignInBlue = AppColors.telegramBrandBlue;
 
 const double _kOauthIconSlotScale = 28 / 44;
 
@@ -23,6 +24,7 @@ class TelegramSignInBrandedButton extends StatefulWidget {
 
   final String label;
   final VoidCallback? onPressed;
+
   /// Draws a red outline around the pill (e.g. for "Link Telegram" CTAs).
   final bool attentionBorder;
 
@@ -47,67 +49,67 @@ class _TelegramSignInBrandedButtonState
     return _wrapAttentionBorder(
       context,
       AnimatedContainer(
-      duration: const Duration(milliseconds: 90),
-      transform: Matrix4.translationValues(
-        0,
-        _pressed && _enabled ? 1 : 0,
-        0,
-      ),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onPressed,
-        onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapUp: _enabled ? (_) => setState(() => _pressed = false) : null,
-        onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          clipBehavior: Clip.hardEdge,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _enabled
-                  ? _kTelegramSignInBlue
-                  : _kTelegramSignInBlue.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: SizedBox(
-              height: height,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _TelegramLogoIcon(height: height),
-                    Expanded(
-                      child: Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            widget.label,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              inherit: false,
-                              color: Colors.white,
-                              fontSize: labelFontSize,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: -0.41,
-                              height: 1.0,
-                              fontFamily: useSfPro ? ".SF Pro Text" : null,
+        duration: const Duration(milliseconds: 90),
+        transform: Matrix4.translationValues(
+          0,
+          _pressed && _enabled ? 1 : 0,
+          0,
+        ),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onPressed,
+          onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapUp: _enabled ? (_) => setState(() => _pressed = false) : null,
+          onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            clipBehavior: Clip.hardEdge,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _enabled
+                    ? _kTelegramSignInBlue
+                    : _kTelegramSignInBlue.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: SizedBox(
+                height: height,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _TelegramLogoIcon(height: height),
+                      Expanded(
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.label,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                inherit: false,
+                                color: Colors.white,
+                                fontSize: labelFontSize,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: -0.41,
+                                height: 1.0,
+                                fontFamily: useSfPro ? ".SF Pro Text" : null,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: _kOauthIconSlotScale * height),
-                  ],
+                      SizedBox(width: _kOauthIconSlotScale * height),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
       ),
-    ),
     );
   }
 

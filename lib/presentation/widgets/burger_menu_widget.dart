@@ -80,6 +80,7 @@ class BurgerMenuWidget extends StatefulWidget {
 class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   String? _cachedGoogleDisplayName;
   String? _cachedGooglePhotoUrl;
+  UserProfile? _cachedUserProfile;
 
   @override
   void initState() {
@@ -103,11 +104,13 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
     final results = await Future.wait([
       SessionManager.getGoogleDisplayName(),
       SessionManager.getGooglePhotoUrl(),
+      SessionManager.getCachedUserProfile(),
     ]);
 
     setStateIfMounted(() {
-      _cachedGoogleDisplayName = results[0];
-      _cachedGooglePhotoUrl = results[1];
+      _cachedGoogleDisplayName = results[0] as String?;
+      _cachedGooglePhotoUrl = results[1] as String?;
+      _cachedUserProfile = results[2] as UserProfile?;
     });
 
     _maybeFetchProfile();
@@ -116,6 +119,14 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
   void _maybeFetchProfile() {
     if (!AuthenticationState().isAuthenticated) return;
     if (!mounted) return;
+    if (_cachedUserProfile != null) return;
+    final currentProfileState = context.read<CurrentUserProfileBloc>().state;
+    final profileRequestInFlightOrLoaded = currentProfileState.maybeMap(
+      loading: (_) => true,
+      loaded: (_) => true,
+      orElse: () => false,
+    );
+    if (profileRequestInFlightOrLoaded) return;
     context.read<CurrentUserProfileBloc>().add(
           const CurrentUserProfileEvent.fetchProfile(),
         );
@@ -149,6 +160,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                             _DrawerProfileHeader(
                               isAuthenticated: isAuthenticated,
                               cachedGoogleDisplayName: _cachedGoogleDisplayName,
+                              cachedUserProfile: _cachedUserProfile,
                               profilePicture: _ProfilePicture(
                                 photoUrl: _cachedGooglePhotoUrl ??
                                     FirebaseAuth.instance.currentUser?.photoURL,
@@ -521,12 +533,14 @@ class _DrawerProfileHeader extends StatelessWidget {
   const _DrawerProfileHeader({
     required this.isAuthenticated,
     required this.cachedGoogleDisplayName,
+    required this.cachedUserProfile,
     required this.profilePicture,
     required this.onOpenProfile,
   });
 
   final bool isAuthenticated;
   final String? cachedGoogleDisplayName;
+  final UserProfile? cachedUserProfile;
   final Widget profilePicture;
   final VoidCallback onOpenProfile;
 
@@ -564,17 +578,17 @@ class _DrawerProfileHeader extends StatelessWidget {
             BlocSelector<CurrentUserProfileBloc, CurrentUserProfileState,
                 _BurgerMenuProfileData>(
               selector: (state) => state.map(
-                initial: (_) => const _BurgerMenuProfileData(
-                  isLoading: true,
+                initial: (_) => _BurgerMenuProfileData(
+                  isLoading: cachedUserProfile == null,
                   hasError: false,
                   errorMessage: "",
-                  profile: null,
+                  profile: cachedUserProfile,
                 ),
-                loading: (_) => const _BurgerMenuProfileData(
-                  isLoading: true,
+                loading: (_) => _BurgerMenuProfileData(
+                  isLoading: cachedUserProfile == null,
                   hasError: false,
                   errorMessage: "",
-                  profile: null,
+                  profile: cachedUserProfile,
                 ),
                 loaded: (loadedState) => _BurgerMenuProfileData(
                   isLoading: false,
