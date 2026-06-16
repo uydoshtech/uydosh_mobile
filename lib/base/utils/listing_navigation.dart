@@ -9,7 +9,7 @@ import "package:uy_dosh/presentation/screens/create_listing/create_listing_scree
 /// Navigation helpers for housing listing create/edit flows.
 extension ListingNavigatorExtensions on BuildContext {
   /// Full-screen create listing (own app bar, back pops to caller).
-  Future<void> pushCreateListing() {
+  Future<void> pushCreateListing({int? listingTypeId}) {
     return Navigator.of(this).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
@@ -19,7 +19,10 @@ extension ListingNavigatorExtensions on BuildContext {
               create: (_) => LocationsBloc(getIt<ILocationService>()),
             ),
           ],
-          child: const CreateListingScreen(showAppBar: true),
+          child: CreateListingScreen(
+            showAppBar: true,
+            initialListingTypeId: listingTypeId,
+          ),
         ),
       ),
     );

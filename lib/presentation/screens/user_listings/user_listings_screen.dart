@@ -336,32 +336,34 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ListenableBuilder(
-              listenable: LanguageState(),
-              builder: (context, _) {
-                return AnimatedBuilder(
-                  animation: _tabController,
-                  builder: (context, _) {
-                    return FavoritesTabRibbon(
-                      tabController: _tabController,
-                      listingsLabel: L10n.get("favorites_tab_listings"),
-                      servicesLabel: L10n.get("favorites_tab_services"),
-                      tasksLabel: L10n.get("favorites_tab_tasks"),
-                    );
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 6),
+            // Services/tasks are temporarily removed from this screen.
+            // ListenableBuilder(
+            //   listenable: LanguageState(),
+            //   builder: (context, _) {
+            //     return AnimatedBuilder(
+            //       animation: _tabController,
+            //       builder: (context, _) {
+            //         return FavoritesTabRibbon(
+            //           tabController: _tabController,
+            //           listingsLabel: L10n.get("favorites_tab_listings"),
+            //           servicesLabel: L10n.get("favorites_tab_services"),
+            //           tasksLabel: L10n.get("favorites_tab_tasks"),
+            //         );
+            //       },
+            //     );
+            //   },
+            // ),
+            // const SizedBox(height: 6),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildListingsTab(),
-                  _buildServicesTab(),
-                  _buildTasksTab(),
-                ],
-              ),
+              child: _buildListingsTab(),
+              // child: TabBarView(
+              //   controller: _tabController,
+              //   children: [
+              //     _buildListingsTab(),
+              //     _buildServicesTab(),
+              //     _buildTasksTab(),
+              //   ],
+              // ),
             ),
           ],
         ),

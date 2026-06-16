@@ -415,93 +415,6 @@ class _ListingTileState extends State<ListingTile> {
             borderRadius: borderRadius,
             child: Stack(
               children: [
-                // Active/Inactive badge and views count in top-right corner (for my listings)
-                if (widget.showActiveStatus)
-                  Positioned(
-                    top: 8,
-                    right: 16,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // View count: only this widget rebuilds when the count
-                        // lands — the rest of the tile (photos, amenities,
-                        // etc.) doesn't get invalidated.
-                        ValueListenableBuilder<_ListingViewCountState>(
-                          valueListenable: _viewCountState,
-                          builder: (context, vc, _) {
-                            if (vc.loading) {
-                              return const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.textGrey600,
-                                ),
-                              );
-                            }
-                            final count = vc.count;
-                            if (count == null) return const SizedBox.shrink();
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const ThemeIcon(
-                                    CupertinoIcons.eye,
-                                    size: 16,
-                                    color: AppColors.textGrey600,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    L10n.plural("listing_views_count", count),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.textGrey600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        // Active/Inactive badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: widget.listing.isActive
-                                ? AppColors.statusActive.withValues(alpha: 0.2)
-                                : AppColors.statusInactive
-                                    .withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: widget.listing.isActive
-                                  ? AppColors.statusActive
-                                  : AppColors.statusInactive,
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            L10n.get(
-                              widget.listing.isActive
-                                  ? "listing_active"
-                                  : "listing_inactive",
-                            ),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: widget.listing.isActive
-                                  ? AppColors.statusActive
-                                  : AppColors.statusInactive,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -763,9 +676,9 @@ class _ListingTileState extends State<ListingTile> {
                                         builder: (context, child) {
                                           final hasLocation =
                                               widget.listing.location != null;
-                                          final hasStation = widget
-                                                  .listing.subwayStation !=
-                                              null;
+                                          final hasStation =
+                                              widget.listing.subwayStation !=
+                                                  null;
                                           return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -814,8 +727,7 @@ class _ListingTileState extends State<ListingTile> {
                                                 if (hasLocation)
                                                   const SizedBox(height: 8),
                                                 _buildSubwayStationDisplay(
-                                                  widget
-                                                      .listing.subwayStation!,
+                                                  widget.listing.subwayStation!,
                                                 ),
                                               ] else if (hasLocation)
                                                 // Reserve the metro-row height
@@ -837,16 +749,14 @@ class _ListingTileState extends State<ListingTile> {
                           ],
                         ),
                       ),
-                      // Amenity strip rendered *below* the photo/info row,
-                      // spanning the full tile width (divider + icons start
-                      // from the left edge). Keeping it out of the
+                      // Footer rendered *below* the photo/info row, spanning
+                      // the full tile width. Keeping it out of the
                       // `IntrinsicHeight` row means it no longer stretches the
-                      // photo — so the photo stays the same height as a tile
-                      // without amenities.
-                      if (widget.listing.amenities != null &&
-                          widget.listing.amenities!.isNotEmpty) ...[
+                      // photo, while owner-only views/status can sit at the
+                      // right edge of the same footer row.
+                      if (_hasTileFooter) ...[
                         const SizedBox(height: 12),
-                        _buildAmenityIcons(),
+                        _buildTileFooter(),
                       ],
                     ],
                   ),
@@ -1056,8 +966,8 @@ class _ListingTileState extends State<ListingTile> {
           widget.listing.price,
           widget.listing.price,
         );
-        final isUsd = PriceDisplaySettingsState().currency ==
-            PriceDisplayCurrency.usd;
+        final isUsd =
+            PriceDisplaySettingsState().currency == PriceDisplayCurrency.usd;
         final unit = L10n.get(
           isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
         );
@@ -1124,8 +1034,37 @@ class _ListingTileState extends State<ListingTile> {
   /// "+N" counter so the strip stays one line and the tile height predictable.
   static const int _maxVisibleAmenities = 6;
 
-  /// Amenity icons (no labels) under a thin divider — a compact strip that
-  /// keeps the tile clean while still hinting at the listing's features.
+  bool get _hasAmenities =>
+      widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty;
+
+  bool get _hasTileFooter => _hasAmenities || widget.showActiveStatus;
+
+  Widget _buildTileFooter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(height: 1, color: _amenityDividerColor()),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _hasAmenities
+                  ? _buildAmenityIcons()
+                  : const SizedBox.shrink(),
+            ),
+            if (widget.showActiveStatus) ...[
+              const SizedBox(width: 12),
+              _buildOwnerFooterStatus(),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Amenity icons (no labels) rendered inside the tile footer — compact,
+  /// but still enough to hint at the listing's features.
   /// Capped to [_maxVisibleAmenities] icons (highest-priority first) with a
   /// "+N" counter for the remainder, so it always fits on a single row.
   Widget _buildAmenityIcons() {
@@ -1136,29 +1075,101 @@ class _ListingTileState extends State<ListingTile> {
     final visible = amenities.take(_maxVisibleAmenities).toList();
     final overflow = amenities.length - visible.length;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final amenity in visible)
+          ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
+        if (overflow > 0)
+          Text(
+            "+$overflow",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: fg,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOwnerFooterStatus() {
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(height: 1, color: _amenityDividerColor()),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final amenity in visible)
-              ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
-            if (overflow > 0)
-              Text(
-                "+$overflow",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: fg,
+        ValueListenableBuilder<_ListingViewCountState>(
+          valueListenable: _viewCountState,
+          builder: (context, vc, _) {
+            if (vc.loading) {
+              return const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.textGrey600,
+                  ),
                 ),
+              );
+            }
+            final count = vc.count;
+            if (count == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const ThemeIcon(
+                    CupertinoIcons.eye,
+                    size: 16,
+                    color: AppColors.textGrey600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    L10n.plural("listing_views_count", count),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textGrey600,
+                    ),
+                  ),
+                ],
               ),
-          ],
+            );
+          },
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: widget.listing.isActive
+                ? AppColors.statusActive.withValues(alpha: 0.2)
+                : AppColors.statusInactive.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: widget.listing.isActive
+                  ? AppColors.statusActive
+                  : AppColors.statusInactive,
+              width: 1,
+            ),
+          ),
+          child: Text(
+            L10n.get(
+              widget.listing.isActive ? "listing_active" : "listing_inactive",
+            ),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: widget.listing.isActive
+                  ? AppColors.statusActive
+                  : AppColors.statusInactive,
+            ),
+          ),
         ),
       ],
     );
@@ -1278,7 +1289,8 @@ class _ListingTileState extends State<ListingTile> {
           ? _roomNeededPlaceholderAssetLight
           : _roomNeededPlaceholderAsset;
     } else {
-      asset = isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
+      asset =
+          isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
     }
     // Backdrop gradient sampled from the artwork's own background so the
     // letterbox area (when the media cell is taller/shorter than the image)

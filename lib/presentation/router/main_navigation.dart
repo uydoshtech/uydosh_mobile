@@ -723,14 +723,30 @@ class MainNavigationState extends State<MainNavigation>
                       ),
                     ),
                     CreateChoiceTile(
-                      emoji: "🏠",
-                      title: L10n.get("create_choice_housing"),
-                      subtitle: L10n.get("create_choice_housing_subtitle"),
+                      emoji: "👥",
+                      title: L10n.get("listing_type_roommate_needed"),
+                      subtitle: L10n.get(
+                        "create_choice_roommate_needed_subtitle",
+                      ),
                       onTap: () {
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
-                        context.pushCreateListing();
+                        context.pushCreateListing(listingTypeId: 2);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    CreateChoiceTile(
+                      emoji: "🏠",
+                      title: L10n.get("listing_type_room_needed"),
+                      subtitle: L10n.get(
+                        "create_choice_room_needed_subtitle",
+                      ),
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        Navigator.of(sheetContext).pop();
+                        if (!mounted) return;
+                        context.pushCreateListing(listingTypeId: 1);
                       },
                     ),
                     if (AppConfig.servicesFeatureEnabled) ...[

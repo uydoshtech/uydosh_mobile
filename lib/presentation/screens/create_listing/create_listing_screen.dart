@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:math" as math;
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -40,7 +39,6 @@ import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.d
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
@@ -56,9 +54,14 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class CreateListingScreen extends StatefulWidget {
-  const CreateListingScreen({super.key, this.showAppBar = false});
+  const CreateListingScreen({
+    super.key,
+    this.showAppBar = false,
+    this.initialListingTypeId,
+  });
 
   final bool showAppBar;
+  final int? initialListingTypeId;
 
   @override
   State<CreateListingScreen> createState() => _CreateListingScreenState();
@@ -71,7 +74,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final TextEditingController _moveInDateController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
-  FixedExtentScrollController? _listingTypeScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
 
@@ -92,6 +94,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   static const double _priceSliderMin = 1.0;
   static const double _priceSliderMax = 1000.0;
+
+  int? get _initialListingTypeId {
+    final id = widget.initialListingTypeId;
+    return id == 1 || id == 2 ? id : null;
+  }
 
   bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
   bool _isPrivateRoom = false; // Add private room toggle
@@ -128,8 +135,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void initState() {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "create_listing");
+    final initialListingTypeId = _initialListingTypeId;
+    if (initialListingTypeId != null) {
+      _selectedListingTypeId = initialListingTypeId;
+      _defaultListingTypeFromProfile = initialListingTypeId;
+    }
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
-    _listingTypeScrollController = FixedExtentScrollController(initialItem: 0);
     _metroLineScrollController = FixedExtentScrollController(
       initialItem: _selectedSubwayLine,
     );
@@ -158,21 +169,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final defaultType = tenantLikeRole ? 1 : 2;
     final defaultGender = (gender == 1 || gender == 2) ? gender! : 1;
     setState(() {
-      _defaultListingTypeFromProfile = defaultType;
-      _selectedListingTypeId = defaultType;
+      final initialListingTypeId = _initialListingTypeId;
+      _defaultListingTypeFromProfile = initialListingTypeId ?? defaultType;
+      _selectedListingTypeId = initialListingTypeId ?? defaultType;
       _defaultGenderFromProfile = defaultGender;
       _selectedGender = defaultGender;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final listingTypeOptions = [2, 1];
-      final listingTypeIndex =
-          listingTypeOptions.indexOf(_selectedListingTypeId);
-      _listingTypeScrollController?.animateToItem(
-        listingTypeIndex >= 0 ? listingTypeIndex : 0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-      );
     });
     _updateTitle();
   }
@@ -351,22 +352,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  /// When switching to "room needed", seed a sensible range from the scalar rent.
-  void _deriveBudgetRangeFromRoommatePrice() {
-    final s = _roommatePrice.clamp(_priceSliderMin, _priceSliderMax);
-    final hi = math.min(_priceSliderMax, math.max(s + 40, s + 10));
-    final lo = math.max(_priceSliderMin, s - 40);
-    _roomBudgetMin = lo >= hi ? math.max(_priceSliderMin, hi - 50) : lo;
-    _roomBudgetMax = hi;
-  }
-
-  /// When switching to "roommate needed", collapse range to a single value.
-  void _deriveRoommatePriceFromBudget() {
-    final mid = (_roomBudgetMin + _roomBudgetMax) / 2;
-    _roommatePrice =
-        ((mid / 10).round() * 10.0).clamp(_priceSliderMin, _priceSliderMax);
-  }
-
   int _priceForCreateRequest() {
     if (_selectedListingTypeId == 2) {
       return _roommatePrice.round();
@@ -456,7 +441,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _descriptionController.dispose();
     _moveInDateController.dispose();
     _locationScrollController?.dispose();
-    _listingTypeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
     super.dispose();
@@ -566,37 +550,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Listing type (gender is taken from profile, not shown in the form).
-        LabeledFieldOverlay(
-          label: L10n.get("listing_type_label"),
-          child: ListingTypePicker(
-            selectedListingTypeId: _selectedListingTypeId,
-            scrollController: _listingTypeScrollController,
-            userGender: _selectedGender,
-            onListingTypeChanged: (listingTypeId) {
-              setState(() {
-                final prevType = _selectedListingTypeId;
-                _selectedListingTypeId = listingTypeId;
-                // Clear photos when switching to "room needed" (listingTypeId == 1)
-                if (listingTypeId == 1) {
-                  _selectedPhotos.clear();
-                  _primaryPhotoIndex = null;
-                }
-                if (_priceTouched) {
-                  if (prevType == 2 && listingTypeId == 1) {
-                    _deriveBudgetRangeFromRoommatePrice();
-                  } else if (prevType == 1 && listingTypeId == 2) {
-                    _deriveRoommatePriceFromBudget();
-                  }
-                }
-              });
-              _updateTitle();
-            },
-            useThemeColors: true,
-            showArrows: false,
-          ),
-        ),
-        const SizedBox(height: 10), // Space between listing type and metro fields
         // Metro Line and Station Selection
         ListingFormMetroSection(
           selectedSubwayLine: _selectedSubwayLine,
