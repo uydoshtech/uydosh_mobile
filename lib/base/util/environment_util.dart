@@ -41,7 +41,7 @@ abstract class EnvironmentUtil {
   /// [termsOfService] for the runtime accessor.
   static const compileTimeTermsOfService = String.fromEnvironment(
     "TERMS_OF_SERVICE",
-    defaultValue: "URL",
+    defaultValue: "https://uydoshtech.github.io/terms-of-service.html",
   );
 
   /// Compile-time default for the Privacy Policy URL. See [privacyPolicy]
@@ -169,8 +169,7 @@ abstract class EnvironmentUtil {
 
   /// Yandex Maps JS API key. Resolves at runtime from Remote Config,
   /// falling back to [compileTimeYandexMapsApiKey].
-  static String get yandexMapsApiKey =>
-      RemoteConfigService.yandexMapsApiKey;
+  static String get yandexMapsApiKey => RemoteConfigService.yandexMapsApiKey;
 
   /// Yandex Geosuggest API key for address autocomplete. Resolves from
   /// Remote Config (`yandex_geosuggest_api_key`), then
@@ -192,8 +191,7 @@ abstract class EnvironmentUtil {
   /// Max number of photos per listing. Resolves at runtime from Remote
   /// Config, falling back to [compileTimeMaxPhotosPerListing] when RC has
   /// not yet provided a value or the stored value is malformed.
-  static int get maxPhotosPerListing =>
-      RemoteConfigService.maxPhotosPerListing;
+  static int get maxPhotosPerListing => RemoteConfigService.maxPhotosPerListing;
 
   /// Max number of photos per gig offer. Resolves at runtime from Remote
   /// Config, falling back to [compileTimeMaxPhotosPerGigOffer] when RC

@@ -2161,25 +2161,25 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_title_1.
   ///
   /// In en, this message translates to:
-  /// **'Find Your Ideal Roommate'**
+  /// **'Find Your People'**
   String get onboarding_title_1;
 
   /// No description provided for @onboarding_subtitle_1.
   ///
   /// In en, this message translates to:
-  /// **'Discover trusted roommates, shared apartments, and better living options across Tashkent — all in one place.'**
+  /// **'Verified neighbors, honest listings\nand shared rentals without outsiders.'**
   String get onboarding_subtitle_1;
 
   /// No description provided for @onboarding_title_2.
   ///
   /// In en, this message translates to:
-  /// **'Search by Metro & District'**
+  /// **'Search Where It Is Convenient to Live'**
   String get onboarding_title_2;
 
   /// No description provided for @onboarding_subtitle_2.
   ///
   /// In en, this message translates to:
-  /// **'Find apartments and roommates faster by choosing your preferred metro stations, metro lines, or districts across Tashkent.'**
+  /// **'Choose a metro station, district, or university —\nwe will show suitable apartments and neighbors nearby.'**
   String get onboarding_subtitle_2;
 
   /// No description provided for @onboarding_title_3.
@@ -2197,13 +2197,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding_title_4.
   ///
   /// In en, this message translates to:
-  /// **'Safe & Verified Community'**
+  /// **'No Realtors or Strangers'**
   String get onboarding_title_4;
 
   /// No description provided for @onboarding_subtitle_4.
   ///
   /// In en, this message translates to:
-  /// **'AI fraud detection, verified profiles, and a community complaint system help you find apartments and roommates with confidence.'**
+  /// **'We are building an honest community:\nverified profiles, complaints, and protection from scammers.'**
   String get onboarding_subtitle_4;
 
   /// No description provided for @onboarding_get_started.

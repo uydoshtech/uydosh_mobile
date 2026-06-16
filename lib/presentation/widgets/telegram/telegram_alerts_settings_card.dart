@@ -64,11 +64,11 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
   bool _opening = false;
   bool _disabling = false;
   bool _waiting = false;
+  bool _connectedExpanded = false;
   Timer? _pollTimer;
   int _pollCount = 0;
 
-  ITelegramBotAlertsService get _service =>
-      getIt<ITelegramBotAlertsService>();
+  ITelegramBotAlertsService get _service => getIt<ITelegramBotAlertsService>();
 
   @override
   void initState() {
@@ -102,6 +102,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
       }
       setStateIfMounted(() {
         _alertsEnabled = status.alertsEnabled;
+        if (!status.alertsEnabled) _connectedExpanded = false;
       });
     } catch (_) {
       if (!mounted) return;
@@ -121,6 +122,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     setStateIfMounted(() {
       _alertsEnabled = true;
       _waiting = false;
+      _connectedExpanded = false;
     });
     ToastTheme.showSuccess(
       context,
@@ -201,7 +203,10 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     try {
       await _service.disableAlerts();
       if (!mounted) return;
-      setStateIfMounted(() => _alertsEnabled = false);
+      setStateIfMounted(() {
+        _alertsEnabled = false;
+        _connectedExpanded = false;
+      });
       ToastTheme.showSuccess(
         context,
         message: L10n.get("telegram_alerts_disabled_success"),
@@ -278,39 +283,68 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const ThemeIcon(Icons.telegram, size: 22, color: fg),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    L10n.get("telegram_alerts_connected"),
-                    style: const TextStyle(
-                      color: fg,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedbackUtils.impact();
+                  setStateIfMounted(
+                    () => _connectedExpanded = !_connectedExpanded,
+                  );
+                },
+                child: Row(
+                  children: [
+                    const ThemeIcon(Icons.telegram, size: 22, color: fg),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        L10n.get("telegram_alerts_connected"),
+                        style: const TextStyle(
+                          color: fg,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
+                    AnimatedRotation(
+                      turns: _connectedExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      child: const Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 22,
+                        color: fg,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_connectedExpanded) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
+                    textColor: fg,
+                    isLoading: _disabling,
+                    onPressed: _disableAlerts,
+                    child: Text(L10n.get("telegram_alerts_disable_button")),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: PrimaryButton(
-                borderRadius: BorderRadius.circular(12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
-                textColor: fg,
-                isLoading: _disabling,
-                onPressed: _disableAlerts,
-                child: Text(L10n.get("telegram_alerts_disable_button")),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -386,7 +420,8 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
               width: double.infinity,
               child: PrimaryButton(
                 borderRadius: BorderRadius.circular(12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
                 textColor: fg,
                 isLoading: _opening,

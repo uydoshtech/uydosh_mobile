@@ -121,6 +121,14 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     );
   }
 
+  String? _formattedTelegramHandle() {
+    final raw = widget.profile.telegram?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final username = raw.startsWith("@") ? raw.substring(1).trim() : raw;
+    if (username.isEmpty) return null;
+    return "@$username";
+  }
+
   Future<void> _pickAndUploadAvatar() async {
     if (_uploadingAvatar || widget.userBlocked) return;
     HapticFeedbackUtils.impact();
@@ -187,6 +195,9 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   Widget build(BuildContext context) {
     final isComplete =
         ProfileCompletionState.completionPercent(widget.profile) >= 100;
+    final displayName =
+        (widget.profile.name ?? widget.cachedGoogleDisplayName ?? "").trim();
+    final telegramHandle = _formattedTelegramHandle();
 
     return Column(
       children: [
@@ -237,9 +248,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   ],
                 ),
               ),
-              if (((widget.profile.name ?? widget.cachedGoogleDisplayName) ??
-                      "")
-                  .isNotEmpty) ...[
+              if (displayName.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text.rich(
                   TextSpan(
@@ -275,9 +284,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                         ),
                       ),
                       TextSpan(
-                        text: widget.profile.name ??
-                            widget.cachedGoogleDisplayName ??
-                            "",
+                        text: displayName,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -287,6 +294,18 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                     ],
                   ),
                   textAlign: TextAlign.center,
+                ),
+              ],
+              if (telegramHandle != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  telegramHandle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ],
               const SizedBox(height: 10),

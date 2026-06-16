@@ -64,9 +64,8 @@ import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.d
 const double _kEmptySearchCtaButtonHeight = 58;
 
 /// Selector payload for the bottom-right search FAB stack: whether the bell
-/// "create alert" FAB should be visible (i.e. a search has run in the
-/// current context) and whether that search returned zero results — used
-/// to surface the [NeumorphicHintBubble] above the bell.
+/// "create alert" FAB should be visible (i.e. a search has run in the current
+/// context and has results) and whether that search returned zero results.
 @immutable
 class _SearchAlertFabState {
   const _SearchAlertFabState({required this.showFab, required this.isEmpty});
@@ -979,7 +978,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   orElse: () => false,
                 );
                 return _SearchAlertFabState(
-                  showFab: inSearchContext && loaded,
+                  showFab: inSearchContext && loaded && !isEmpty,
                   isEmpty: inSearchContext && isEmpty,
                 );
               },
@@ -1154,7 +1153,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Flutter **web** often reports [MediaQuery.padding.bottom] as `0` even when
   /// the curved bar overlaps the body; use at least [_kCurvedBottomBarHeight].
   double _blueShellExtendBodyBottomInset(BuildContext context) {
-    if (!widget.isHomeTabActive || !ThemeState().isBlueTheme || widget.isSearchMode) {
+    if (!widget.isHomeTabActive ||
+        !ThemeState().isBlueTheme ||
+        widget.isSearchMode) {
       return 0;
     }
     final mq = MediaQuery.of(context);
@@ -1191,6 +1192,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return _inlineSearchSpacerExpanded ? _inlineSearchRibbonHeight : 0;
   }
 
+  double _feedTopSpacerVisualHeight({required double trailingSpacing}) {
+    return math.max(
+      0.0,
+      _feedRibbonSpacerHeight() +
+          _inlineSearchRibbonToListGap -
+          trailingSpacing,
+    );
+  }
+
   Widget _buildAnimatedFeedTopSpacer({required double trailingSpacing}) {
     // CommonListView applies `itemSpacing` as bottom padding to each item.
     // If we place a spacer as item 0, it will get that spacing too, which would
@@ -1198,12 +1208,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     //
     // We compensate by subtracting the spacing that will be added after this
     // spacer, so the resulting "visual gap" equals [_inlineSearchRibbonToListGap].
-    final targetHeight = math.max(
-      0.0,
-      _feedRibbonSpacerHeight() +
-          _inlineSearchRibbonToListGap -
-          trailingSpacing,
-    );
+    final targetHeight =
+        _feedTopSpacerVisualHeight(trailingSpacing: trailingSpacing);
     return AnimatedContainer(
       duration: _homeRibbonAnimationDuration(context),
       curve: Curves.easeOutCubic,
@@ -1262,12 +1268,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return _kFabSize;
   }
 
-  /// Extra scroll padding so empty-search CTAs can scroll above the FAB stack.
+  /// Extra bottom clearance so empty-search CTAs stay above the search FAB.
   double _emptySearchExtraBottomScrollPadding(BuildContext context) {
-    final showBellFab = widget.isSearchMode || _inlineSearchActive;
-    return _searchAlertFabStackBottom(context) +
-        _fabColumnHeight(includeBellFab: showBellFab) +
-        16.0;
+    return math.max(
+      0.0,
+      _searchAlertFabStackBottom(context) +
+          _fabColumnHeight(includeBellFab: false) +
+          16.0 -
+          100.0,
+    );
   }
 
   /// Scrollable wrapper so pull-to-refresh works when content is shorter than
@@ -1275,6 +1284,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildPullToRefreshAroundFillChild(
     Widget child, {
     double extraBottomPadding = 0,
+    bool allowUserScroll = true,
   }) {
     final baseTopPad = _feedBaseTopPadding();
     final edgeOffset =
@@ -1288,14 +1298,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         // scrollables during rebuild can trigger a mouse_tracker assertion.
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final topSpacerHeight =
+                _feedTopSpacerVisualHeight(trailingSpacing: 0);
+            final bottomPadding =
+                _feedListBottomPadding(context) + extraBottomPadding;
             return ListView(
               controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: allowUserScroll
+                  ? const AlwaysScrollableScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
                 16.0,
                 baseTopPad,
                 16.0,
-                _feedListBottomPadding(context) + extraBottomPadding,
+                bottomPadding,
               ),
               children: [
                 _buildAnimatedFeedTopSpacer(trailingSpacing: 0),
@@ -1303,7 +1319,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   // Shrink the centering region by the reserved bottom space
                   // (FAB stack + notify tooltip) so empty/welcome content sits
                   // higher and never overlaps the floating buttons.
-                  height: (constraints.maxHeight - extraBottomPadding)
+                  height: (constraints.maxHeight -
+                          baseTopPad -
+                          topSpacerHeight -
+                          bottomPadding)
                       .clamp(0.0, constraints.maxHeight),
                   child: Center(child: child),
                 ),
@@ -1332,7 +1351,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           )
         : BoxDecoration(
             shape: BoxShape.circle,
-            gradient: ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+            gradient:
+                ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
             boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
@@ -1438,11 +1458,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         homeIconColor: _getHomeIconColor(),
         titleColor: _getWelcomeTitleColor(),
         onClearFilters: _handleClearFiltersFromEmptyState,
-        onNotifyMe:
-            _isCreatingSearchAlert ? null : () => unawaited(_subscribeToSearchAlerts()),
+        onNotifyMe: _isCreatingSearchAlert
+            ? null
+            : () => unawaited(_subscribeToSearchAlerts()),
         emptySearchCtaHeight: _kEmptySearchCtaButtonHeight,
       ),
       extraBottomPadding: _emptySearchExtraBottomScrollPadding(context),
+      allowUserScroll: false,
     );
   }
 
@@ -1726,8 +1748,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     try {
       final cachedAlerts = ActiveSearchAlertsState().cachedAlerts;
-      final alerts = cachedAlerts ??
-          await getIt<ISearchAlertService>().listAlerts();
+      final alerts =
+          cachedAlerts ?? await getIt<ISearchAlertService>().listAlerts();
 
       bool sameDouble(double? a, double b) =>
           a != null && (a - b).abs() < 0.0001;

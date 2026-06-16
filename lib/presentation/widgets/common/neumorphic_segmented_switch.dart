@@ -40,6 +40,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
     this.firstSegmentWidthScale = 1,
     this.firstSegmentMinFractionOfBar,
     this.liquidGlass = false,
+    this.forceGlassPlate = false,
     super.key,
   });
 
@@ -52,6 +53,10 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
   /// primary thumb. On the light theme, keeps the same neumorphic track/thumb
   /// as the non-glass path so the control stays pale on white backgrounds.
   final bool liquidGlass;
+
+  /// Forces the [LiquidGlassPlate] branch even on light surfaces. Keep this
+  /// opt-in for controls that intentionally sit on a glass sheet.
+  final bool forceGlassPlate;
 
   /// When true, the first segment is only as wide as its icon + label (with a
   /// sensible minimum tap target); remaining segments split the rest equally.
@@ -69,6 +74,7 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
 
   static const double _thumbInset = 2;
   static const double _tabHorizontalPadding = 6;
+
   /// Mirrors horizontal padding inside [_SegmentedSwitchTab] (label row).
   static const double _tabInnerHorizontalPadding = 6;
   static const double _iconSize = 18;
@@ -145,9 +151,9 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
         final primaryColor = themeState.primaryColor;
         final cardColor = themeState.cardColor;
         final isLightTheme = themeState.isLightTheme;
-        // Blue theme uses frosted glass; light theme keeps a pale neumorphic track
-        // so the control does not read as a dark navy bar on white screens.
-        final useGlassPlate = liquidGlass && !isLightTheme;
+        // Default light-theme controls stay pale unless a caller explicitly
+        // asks for the frosted glass plate.
+        final useGlassPlate = liquidGlass && (forceGlassPlate || !isLightTheme);
         final selectedTextColor = themeState.selectedTabTextColor;
         final unselectedTextColor = themeState.unselectedTabTextColor;
 
@@ -158,8 +164,8 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final totalInner =
-                (constraints.maxWidth - _thumbInset * 2).clamp(0.0, double.infinity);
+            final totalInner = (constraints.maxWidth - _thumbInset * 2)
+                .clamp(0.0, double.infinity);
             final segmentWidths = _segmentWidths(
               context,
               totalInner,
@@ -357,8 +363,7 @@ class _SegmentedSwitchTab<T> extends StatelessWidget {
                   fontSize: 10,
                   height: 1.15,
                   fontWeight: FontWeight.w500,
-                  color:
-                      color.withValues(alpha: isSelected ? 0.88 : 0.72),
+                  color: color.withValues(alpha: isSelected ? 0.88 : 0.72),
                 ),
               ),
             ],

@@ -155,7 +155,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _autoSwitchTimer = null;
 
     if (skipped) {
-      getIt<AppAnalyticsService>().logOnboardingSkipped(pageIndex: _currentPage);
+      getIt<AppAnalyticsService>()
+          .logOnboardingSkipped(pageIndex: _currentPage);
     } else {
       getIt<AppAnalyticsService>().logOnboardingCompleted(pageCount: 3);
     }
@@ -220,93 +221,93 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                   // Page content
                   Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return _buildPage(index, colorScheme, onboardingColors);
-                  },
-                ),
-              ),
-
-              // Bottom section with indicators and buttons
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    // Page indicator
-                    SmoothPageIndicator(
+                    child: PageView.builder(
                       controller: _pageController,
-                      count: 3,
-                      effect: WormEffect(
-                        dotHeight: 8,
-                        dotWidth: 8,
-                        spacing: 8,
-                        dotColor: onboardingColors.textSecondary.withValues(
-                          alpha: 0.3,
-                        ),
-                        activeDotColor: onboardingColors.text,
-                      ),
+                      onPageChanged: _onPageChanged,
+                      itemCount: 3,
+                      itemBuilder: (context, index) {
+                        return _buildPage(index, colorScheme, onboardingColors);
+                      },
                     ),
+                  ),
 
-                    const SizedBox(height: 32),
-
-                    // Navigation buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Bottom section with indicators and buttons
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
                       children: [
-                        // Back button (only show if not on first page)
-                        if (_currentPage > 0)
-                          TextButtonThemedCenteredFactory.iconText(
-                            onPressed: () {
-                              HapticFeedbackUtils.impact();
-                              _pageController.previousPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            icon: Icons.chevron_left,
-                            text: L10n.get("onboarding_back"),
-                          )
-                        else
-                          const SizedBox(width: 60),
+                        // Page indicator
+                        SmoothPageIndicator(
+                          controller: _pageController,
+                          count: 3,
+                          effect: WormEffect(
+                            dotHeight: 8,
+                            dotWidth: 8,
+                            spacing: 8,
+                            dotColor: onboardingColors.textSecondary.withValues(
+                              alpha: 0.3,
+                            ),
+                            activeDotColor: onboardingColors.text,
+                          ),
+                        ),
 
-                        // Next/Get Started button
-                        TextButtonThemedCenteredFactory.textIcon(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            if (_currentPage < 2) {
-                              _pageController.nextPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            } else {
-                              _navigateToMainApp();
-                            }
-                          },
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                          text: L10n.get(
-                            _currentPage < 2
-                                ? "onboarding_next"
-                                : "onboarding_get_started",
-                          ),
-                          icon: Icons.chevron_right,
+                        const SizedBox(height: 32),
+
+                        // Navigation buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Back button (only show if not on first page)
+                            if (_currentPage > 0)
+                              TextButtonThemedCenteredFactory.iconText(
+                                onPressed: () {
+                                  HapticFeedbackUtils.impact();
+                                  _pageController.previousPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                icon: Icons.chevron_left,
+                                text: L10n.get("onboarding_back"),
+                              )
+                            else
+                              const SizedBox(width: 60),
+
+                            // Next/Get Started button
+                            TextButtonThemedCenteredFactory.textIcon(
+                              onPressed: () {
+                                HapticFeedbackUtils.impact();
+                                if (_currentPage < 2) {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                } else {
+                                  _navigateToMainApp();
+                                }
+                              },
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              text: L10n.get(
+                                _currentPage < 2
+                                    ? "onboarding_next"
+                                    : "onboarding_get_started",
+                              ),
+                              icon: Icons.chevron_right,
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  },
+        );
+      },
     );
   }
 
@@ -319,7 +320,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       _OnboardingPage(
         titleKey: "onboarding_title_1",
         descriptionKey: "onboarding_subtitle_1",
-        icon: Icons.home,
+        icon: Icons.groups,
         color: onboardingColors.secondary,
         isFirstPage: true,
       ),
@@ -350,7 +351,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         children: [
           // Image or Icon container
           if (page.isFirstPage)
-            _buildHomeImage(colorScheme, onboardingColors)
+            _buildCommunityImage()
           else
             _buildIconContainer(page, colorScheme),
 
@@ -369,7 +370,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   // Title
                   Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
                       child: Text(
                         L10n.get(page.titleKey),
                         style: TextStyle(
@@ -383,12 +385,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
 
-          const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // Description
                   Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
                       child: Text(
                         L10n.get(page.descriptionKey),
                         style: TextStyle(
@@ -409,138 +412,28 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  Widget _buildHomeImage(
-    ColorScheme colorScheme,
-    OnboardingColors onboardingColors,
-  ) {
+  Widget _buildCommunityImage() {
     final themeState = ThemeState();
-    final houseIconColor =
-        themeState.isLightTheme
-            ? Colors.black
-            : themeState.isBlueTheme
+    final isBlueTheme = themeState.isBlueTheme;
+    final peopleIconColor = themeState.isLightTheme
+        ? Colors.black
+        : isBlueTheme
             ? Colors.white
             : AppColors.primary;
-    final iconContainerBackground =
-        themeState.isBlueTheme
-            ? BlueThemeColors.onboardingSecondary
-            : onboardingColors.surface;
     return AnimatedBuilder(
       animation: _rotateAnimation,
       builder: (context, child) {
         return Transform.rotate(
           angle: _rotateAnimation.value,
-          child: Container(
+          child: SizedBox(
             width: 200,
             height: 200,
-            decoration: BoxDecoration(
-              color: onboardingColors.card,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: onboardingColors.text.withValues(alpha: 0.2),
-                width: 2,
+            child: Center(
+              child: ThemeIcon(
+                Icons.groups,
+                color: peopleIconColor,
+                size: 132,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: onboardingColors.text.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // Background house (without container decoration)
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  child: ThemeIcon(
-                    Icons.home,
-                    color: houseIconColor,
-                    size: 60,
-                  ),
-                ),
-                // Search icon - Updated for light theme
-                Positioned(
-                  top: 30,
-                  right: 30,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: iconContainerBackground,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: onboardingColors.text.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ThemeIcon(
-                      Icons.search,
-                      color:
-                          onboardingColors
-                              .text, // Use theme text color (black for light theme)
-                      size: 24,
-                    ),
-                  ),
-                ),
-                // Location pin - Updated for light theme
-                Positioned(
-                  bottom: 35,
-                  right: 55,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: iconContainerBackground,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: onboardingColors.text.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ThemeIconFactory.display(
-                      icon: Icons.location_on,
-                      color:
-                          onboardingColors
-                              .text, // Use theme text color (black for light theme)
-                      size: 22,
-                    ),
-                  ),
-                ),
-                // Heart icon - Updated for light theme
-                Positioned(
-                  top: 60,
-                  left: 40,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: iconContainerBackground,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: onboardingColors.text.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const ThemeIcon(
-                      Icons.favorite,
-                      color:
-                          AppColors
-                              .favoriteActive, // Keep red heart icon for consistency
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         );
@@ -681,7 +574,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
 /// Colors specifically designed for the onboarding screen
 class OnboardingColors {
-
   const OnboardingColors({
     required this.primary,
     required this.secondary,
@@ -701,7 +593,6 @@ class OnboardingColors {
 }
 
 class _OnboardingPage {
-
   _OnboardingPage({
     required this.titleKey,
     required this.descriptionKey,

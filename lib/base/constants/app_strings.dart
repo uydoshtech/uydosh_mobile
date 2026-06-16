@@ -425,6 +425,13 @@ class AppStrings {
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
+      "auth_terms_finish_header": "Almost Done",
+      "auth_terms_finish_title": "Review the terms",
+      "auth_terms_finish_body":
+          "Your profile is ready. Please review the Terms of Service before finishing setup.",
+      "view_terms_of_service": "View Terms of Service",
+      "could_not_open_terms_of_service":
+          "Could not open the Terms of Service. Please try again.",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
@@ -507,6 +514,7 @@ class AppStrings {
       "confirm": "Confirm",
       "next": "Next",
       "back": "Back",
+      "finish": "Finish",
 
       "complete": "Complete",
 
@@ -709,17 +717,17 @@ class AppStrings {
       "delete": "Delete",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "Find Your Ideal Roommate",
+      "onboarding_title_1": "Find Your People",
       "onboarding_subtitle_1":
-          "Discover trusted roommates, shared apartments, and better living options across Tashkent — all in one place.",
-      "onboarding_title_2": "Search by Metro & District",
+          "Verified neighbors, honest listings\nand shared rentals without outsiders.",
+      "onboarding_title_2": "Search Where It Is Convenient to Live",
       "onboarding_subtitle_2":
-          "Find apartments and roommates faster by choosing your preferred metro stations, metro lines, or districts across Tashkent.",
+          "Choose a metro station, district, or university —\nwe will show suitable apartments and neighbors nearby.",
       "onboarding_title_3": "Search by District",
       "onboarding_subtitle_3": "Convenient search by districts of Tashkent",
-      "onboarding_title_4": "Safe & Verified Community",
+      "onboarding_title_4": "No Realtors or Strangers",
       "onboarding_subtitle_4":
-          "AI fraud detection, verified profiles, and a community complaint system help you find apartments and roommates with confidence.",
+          "We are building an honest community:\nverified profiles, complaints, and protection from scammers.",
 
       "onboarding_get_started": "Get Started",
       "onboarding_skip": "Skip",
@@ -2133,6 +2141,13 @@ class AppStrings {
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
+      "auth_terms_finish_header": "Почти готово",
+      "auth_terms_finish_title": "Ознакомьтесь с условиями",
+      "auth_terms_finish_body":
+          "Ваш профиль готов. Пожалуйста, ознакомьтесь с Условиями использования перед завершением настройки.",
+      "view_terms_of_service": "Открыть Условия использования",
+      "could_not_open_terms_of_service":
+          "Не удалось открыть Условия использования. Попробуйте снова.",
 
       "successfully_signed_in_google": "Успешный вход через Google!",
       "successfully_signed_in_apple": "Успешный вход через Apple!",
@@ -2218,6 +2233,7 @@ class AppStrings {
       "confirm": "Подтвердить",
       "next": "Далее",
       "back": "Назад",
+      "finish": "Готово",
 
       "complete": "Завершить",
 
@@ -2420,17 +2436,17 @@ class AppStrings {
       "delete": "Удалить",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "Найди идеального соседа",
+      "onboarding_title_1": "Найди своих",
       "onboarding_subtitle_1":
-          "Находи проверенных соседей, варианты совместной аренды и лучшие условия проживания по всему Ташкенту — в одном месте.",
-      "onboarding_title_2": "Поиск по метро и районам",
+          "Проверенные соседи, честные объявления\nи совместная аренда без лишних людей.",
+      "onboarding_title_2": "Ищи там, где удобно жить",
       "onboarding_subtitle_2":
-          "Находите квартиры и соседей быстрее, выбирая нужные станции, линии метро или районы по всему Ташкенту.",
+          "Выбирай метро, район или вуз —\nмы покажем подходящие квартиры и соседей рядом.",
       "onboarding_title_3": "Поиск по району",
       "onboarding_subtitle_3": "Удобный поиск по районам Ташкента",
-      "onboarding_title_4": "Безопасное и проверенное сообщество",
+      "onboarding_title_4": "Без риэлторов и чужих",
       "onboarding_subtitle_4":
-          "ИИ-детекция мошенничества, верифицированные профили и система жалоб сообщества помогают уверенно находить квартиры и соседей.",
+          "Мы строим честное комьюнити:\nпроверенные профили, жалобы и защита от мошенников.",
 
       "onboarding_get_started": "Начать",
       "onboarding_skip": "Пропустить",
@@ -3871,6 +3887,13 @@ class AppStrings {
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",
+      "auth_terms_finish_header": "Deyarli tayyor",
+      "auth_terms_finish_title": "Shartlarni ko'rib chiqing",
+      "auth_terms_finish_body":
+          "Profilingiz tayyor. Sozlashni yakunlashdan oldin Foydalanish shartlarini ko'rib chiqing.",
+      "view_terms_of_service": "Foydalanish shartlarini ko'rish",
+      "could_not_open_terms_of_service":
+          "Foydalanish shartlarini ochib bo'lmadi. Qayta urinib ko'ring.",
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
@@ -3955,6 +3978,7 @@ class AppStrings {
       "confirm": "Tasdiqlash",
       "next": "Keyingi",
       "back": "Orqaga",
+      "finish": "Tugatish",
 
       "complete": "Tugatish",
 
@@ -4158,17 +4182,17 @@ class AppStrings {
       "delete": "O'chirish",
 
       // ===== ONBOARDING =====
-      "onboarding_title_1": "Ideal xonadoshingizni toping",
+      "onboarding_title_1": "O‘z odamlaringizni toping",
       "onboarding_subtitle_1":
-          "Toshkent bo‘ylab ishonchli xonadoshlar, qo‘shma ijaralar va yaxshiroq yashash variantlarini bitta joyda toping.",
-      "onboarding_title_2": "Metro va tuman bo‘yicha qidiruv",
+          "Ishonchli qo‘shnilar, halol e’lonlar\nva ortiqcha odamlarsiz birgalikdagi ijara.",
+      "onboarding_title_2": "Yashash qulay bo‘lgan joydan qidiring",
       "onboarding_subtitle_2":
-          "Toshkent bo‘ylab kerakli metro bekatlari, metro liniyalari yoki tumanlarni tanlab, kvartira va xonadoshlarni tezroq toping.",
+          "Metro, tuman yoki universitetni tanlang —\nyaqindagi mos kvartiralar va qo‘shnilarni ko‘rsatamiz.",
       "onboarding_title_3": "Tuman bo'yicha qidiruv",
       "onboarding_subtitle_3": "Toshkent tumanlari bo'yicha qulay qidiruv",
-      "onboarding_title_4": "Xavfsiz va tasdiqlangan hamjamiyat",
+      "onboarding_title_4": "Rieltorlarsiz va begonalarsiz",
       "onboarding_subtitle_4":
-          "AI firibgarlikni aniqlashi, tasdiqlangan profillar va hamjamiyat shikoyat tizimi kvartira va xonadoshlarni ishonch bilan topishga yordam beradi.",
+          "Biz halol hamjamiyat qurmoqdamiz:\ntekshirilgan profillar, shikoyatlar va firibgarlardan himoya.",
 
       "onboarding_get_started": "Boshlash",
       "onboarding_skip": "O'tkazib yuborish",

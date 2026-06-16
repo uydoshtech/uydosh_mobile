@@ -9,16 +9,24 @@ abstract final class UiFeedbackUtils {
 
   static DateTime? _lastSliderTick;
 
+  static void _runOptionalFeedback(void Function() feedback) {
+    try {
+      feedback();
+    } catch (_) {
+      // UI feedback is best-effort; user actions should continue without it.
+    }
+  }
+
   /// Toggles, menu selections, dropdown commits, primary control taps.
   static void tap() {
-    HapticFeedbackUtils.impact();
-    SendSoundUtils.playSelectionSound();
+    _runOptionalFeedback(HapticFeedbackUtils.impact);
+    _runOptionalFeedback(SendSoundUtils.playSelectionSound);
   }
 
   /// Segmented controls, tabs, explicit single-option picks.
   static void selection() {
-    HapticFeedbackUtils.selection();
-    SendSoundUtils.playSelectionSound();
+    _runOptionalFeedback(HapticFeedbackUtils.selection);
+    _runOptionalFeedback(SendSoundUtils.playSelectionSound);
   }
 
   /// Dragging [Slider] / dense scrubbing. One shared throttle for haptic + audio.
@@ -31,7 +39,7 @@ abstract final class UiFeedbackUtils {
       return;
     }
     _lastSliderTick = now;
-    HapticFeedbackUtils.selectionClick();
-    SendSoundUtils.playSelectionSound();
+    _runOptionalFeedback(HapticFeedbackUtils.selectionClick);
+    _runOptionalFeedback(SendSoundUtils.playSelectionSound);
   }
 }

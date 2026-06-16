@@ -43,6 +43,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -60,10 +61,12 @@ class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({
     super.key,
     this.showCustomHeader = true,
+
     /// When non-null, used with [MainNavigation]'s bottom bar: may refresh when
     /// the user switches to this tab (IndexedStack keeps the widget mounted).
     /// Refetch runs only if [UnreadMessagesState] reports unread (e.g. green dot).
     this.mainTabSelected,
+
     /// Non-null on [PushedMessagesInboxScaffold] from task detail: lists only
     /// `gig_request` threads for this id in one scroll (no my/other toggle or
     /// day headers); the pushed scaffold omits the app bar title.
@@ -91,10 +94,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// the auto-default-tab rule below stops overriding their choice on
   /// subsequent conversation refreshes.
   bool _userPickedTab = false;
+
   /// Whether we have already applied the "auto-pick the tab with unreads"
   /// rule for the current login session. Reset on logout so the rule
   /// re-runs on the next sign-in.
   bool _appliedInitialTabRule = false;
+
   /// Cached conversations to show during refresh - prevents blink when returning to screen
   List<ConversationSummary>? _lastDisplayedConversations;
   Timer? _unreadRefreshDebounce;
@@ -139,8 +144,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   /// Duration of the close animation. Matches [RollUpFadeOut]'s default so
   /// the post-anim state commit lines up exactly with the visual collapse.
-  static const Duration _pushBannerCloseDuration =
-      Duration(milliseconds: 300);
+  static const Duration _pushBannerCloseDuration = Duration(milliseconds: 300);
 
   /// `true` once we've at least attempted to load both the OS status and the
   /// dismiss timestamp — guards against showing or hiding the banner before
@@ -388,8 +392,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         status == AuthorizationStatus.provisional;
     var dismissed = false;
     if (dismissedAtMs != null) {
-      final age =
-          DateTime.now().millisecondsSinceEpoch - dismissedAtMs;
+      final age = DateTime.now().millisecondsSinceEpoch - dismissedAtMs;
       dismissed = age >= 0 && age < _pushBannerDismissCooldown.inMilliseconds;
       // Once permission is granted, a stale dismiss flag is just dead state —
       // clear it so a future revoke shows the banner without waiting two
@@ -561,9 +564,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   List<ConversationSummary> _visibleInboxConversations(
     List<ConversationSummary> conversations,
   ) {
-    var list = conversations
-        .where((c) => !_pendingArchiveIds.contains(c.id))
-        .toList();
+    var list =
+        conversations.where((c) => !_pendingArchiveIds.contains(c.id)).toList();
 
     final gigId = widget.filterGigRequestId;
     if (gigId != null) {
@@ -585,19 +587,19 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final backgroundColor = themeState.backgroundColor;
 
         return Scaffold(
-          extendBodyBehindAppBar:
-              widget.showCustomHeader &&
+          extendBodyBehindAppBar: widget.showCustomHeader &&
               (themeState.isBlueTheme || themeState.isLightTheme),
           backgroundColor: backgroundColor,
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
-          floatingActionButton:
-              _hasArchivedChats && widget.filterGigRequestId == null
+          floatingActionButton: _hasArchivedChats &&
+                  widget.filterGigRequestId == null
               ? Padding(
-                // Lift the pill above the main bottom bar.
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _ArchivedChatsFab(onPressed: _openArchivedConversations),
-              )
+                  // Lift the pill above the main bottom bar.
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child:
+                      _ArchivedChatsFab(onPressed: _openArchivedConversations),
+                )
               : null,
         );
       },
@@ -675,10 +677,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final appBarTheme = Theme.of(context).appBarTheme;
     final appBarBackgroundColor =
         appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface;
-    final onBarColor =
-        useLiquidGlass
-            ? (appBarTheme.foregroundColor ?? themeState.textColor)
-            : themeState.textColor;
+    final onBarColor = useLiquidGlass
+        ? (appBarTheme.foregroundColor ?? themeState.textColor)
+        : themeState.textColor;
 
     return UydoshAppBar(
       toolbarHeight: standardAppBarToolbarHeight,
@@ -686,8 +687,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       centerTitle: true,
       title: Text(
         L10n.get("messages"),
-        style:
-            appBarTheme.titleTextStyle?.copyWith(
+        style: appBarTheme.titleTextStyle?.copyWith(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: onBarColor,
@@ -700,15 +700,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      backgroundColor:
-          useLiquidGlass
-              ? liquidGlassAppBarMaterialColor(context)
-              : appBarBackgroundColor,
+      backgroundColor: useLiquidGlass
+          ? liquidGlassAppBarMaterialColor(context)
+          : appBarBackgroundColor,
       surfaceTintColor:
           useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
       elevation: useLiquidGlass ? 0 : null,
       scrolledUnderElevation: useLiquidGlass ? 0 : null,
-      shadowColor: useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
+      shadowColor:
+          useLiquidGlass ? Colors.transparent : appBarTheme.shadowColor,
       forceMaterialTransparency: useLiquidGlass,
       flexibleSpace:
           useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
@@ -795,13 +795,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
-  Color _getEmptyStateIconColor() => ThemeState().isBlueTheme
-      ? AppColors.textLight
-      : AppColors.textGrey400;
+  Color _getEmptyStateIconColor() =>
+      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey400;
 
-  Color _getEmptyStateTextColor() => ThemeState().isBlueTheme
-      ? AppColors.textLight
-      : AppColors.textGrey400;
+  Color _getEmptyStateTextColor() =>
+      ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey400;
 
   /// Bottom padding for inbox scroll content: safe area, plus curved nav overlap
   /// on the Messages main tab (blue shell + [extendBody]), plus
@@ -832,27 +830,25 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     }
 
     // Filter conversations into incoming and outgoing
-    final incomingConversations =
-        conversations
-            .where(
-              (conv) =>
-                  _currentUserId != null &&
-                  conv.participantId == _currentUserId,
-            )
-            .toList();
-    final outgoingConversations =
-        conversations
-            .where(
-              (conv) =>
-                  _currentUserId != null && conv.initiatorId == _currentUserId,
-            )
-            .toList();
+    final incomingConversations = conversations
+        .where(
+          (conv) =>
+              _currentUserId != null && conv.participantId == _currentUserId,
+        )
+        .toList();
+    final outgoingConversations = conversations
+        .where(
+          (conv) =>
+              _currentUserId != null && conv.initiatorId == _currentUserId,
+        )
+        .toList();
 
     final showInboxTabs =
         incomingConversations.isNotEmpty && outgoingConversations.isNotEmpty;
     // Without the toggle, pick the sole non-empty lane regardless of [_selectedTabIndex].
-    final displayIncoming =
-        showInboxTabs ? _selectedTabIndex == 0 : incomingConversations.isNotEmpty;
+    final displayIncoming = showInboxTabs
+        ? _selectedTabIndex == 0
+        : incomingConversations.isNotEmpty;
 
     // Space under glass header / above list: tab strip (8 + 48 + 12) vs strip top only.
     const listTopWithTabs = 68.0;
@@ -867,15 +863,14 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final toggleAnimDuration =
         enableInboxToggleAnim ? inboxToggleAnimDuration : Duration.zero;
 
-    final shellGlassTop =
-        widget.showCustomHeader
-            ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
-                // When we render a liquid-glass app bar (transparent + blurred),
-                // allow content to scroll behind it (like Home) so the header
-                // actually blurs real content instead of a flat background.
-                ? ThemeState().mainShellGlassExtraTopInset(context)
-                : 0.0)
-            : ThemeState().mainShellGlassExtraTopInset(context);
+    final shellGlassTop = widget.showCustomHeader
+        ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
+            // When we render a liquid-glass app bar (transparent + blurred),
+            // allow content to scroll behind it (like Home) so the header
+            // actually blurs real content instead of a flat background.
+            ? ThemeState().mainShellGlassExtraTopInset(context)
+            : 0.0)
+        : ThemeState().mainShellGlassExtraTopInset(context);
 
     return Padding(
       padding: EdgeInsets.only(top: shellGlassTop),
@@ -892,16 +887,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                 // Scrollable inset matches tab strip animation.
                 edgeOffset: 0.0,
                 child: PullToRefreshStretchHaptics(
-                  child:
-                      displayIncoming
-                          ? _buildConversationsList(
-                            incomingConversations,
-                            "incoming",
-                          )
-                          : _buildConversationsList(
-                            outgoingConversations,
-                            "outgoing",
-                          ),
+                  child: displayIncoming
+                      ? _buildConversationsList(
+                          incomingConversations,
+                          "incoming",
+                        )
+                      : _buildConversationsList(
+                          outgoingConversations,
+                          "outgoing",
+                        ),
                 ),
               ),
             ),
@@ -940,18 +934,17 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   ),
                 );
               },
-              child:
-                  showInboxTabs
-                      ? KeyedSubtree(
-                        key: const ValueKey<String>("inbox-tabs-on"),
-                        child: _buildTabButtons(
-                          incomingConversations,
-                          outgoingConversations,
-                        ),
-                      )
-                      : SizedBox.shrink(
-                        key: const ValueKey<String>("inbox-tabs-off"),
+              child: showInboxTabs
+                  ? KeyedSubtree(
+                      key: const ValueKey<String>("inbox-tabs-on"),
+                      child: _buildTabButtons(
+                        incomingConversations,
+                        outgoingConversations,
                       ),
+                    )
+                  : SizedBox.shrink(
+                      key: const ValueKey<String>("inbox-tabs-off"),
+                    ),
             ),
           ),
         ],
@@ -963,12 +956,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Widget _buildGigScopedConversationsList(
     List<ConversationSummary> conversations,
   ) {
-    final shellGlassTop =
-        widget.showCustomHeader
-            ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
-                ? ThemeState().mainShellGlassExtraTopInset(context)
-                : 0.0)
-            : ThemeState().mainShellGlassExtraTopInset(context);
+    final shellGlassTop = widget.showCustomHeader
+        ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
+            ? ThemeState().mainShellGlassExtraTopInset(context)
+            : 0.0)
+        : ThemeState().mainShellGlassExtraTopInset(context);
 
     final sorted = _sortConversationsForInbox(conversations);
 
@@ -1027,8 +1019,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         const radius = BorderRadius.all(Radius.circular(20));
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final scheme = Theme.of(context).colorScheme;
-        final baseTint =
-            isDark ? BlueThemeColors.background : scheme.surface;
+        final baseTint = isDark ? BlueThemeColors.background : scheme.surface;
         final disableAnimations =
             MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final enableGlass =
@@ -1060,7 +1051,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                         decoration: BoxDecoration(
                           borderRadius: radius,
                           // Match the app bar glass: subtle tint + hairline edge.
-                          color: baseTint.withValues(alpha: isDark ? 0.10 : 0.12),
+                          color:
+                              baseTint.withValues(alpha: isDark ? 0.10 : 0.12),
                         ),
                         child: const SizedBox.expand(),
                       ),
@@ -1093,6 +1085,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     const height = 48.0;
     const thumbInset = 2.0;
     const innerRadius = 22.0;
+    final useGlassPlate = themeState.isBlueTheme || themeState.isLightTheme;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1101,6 +1094,116 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final segmentWidth = innerTrack / 2;
         final thumbLeft = thumbInset + _selectedTabIndex * segmentWidth;
 
+        final thumbDecoration = useGlassPlate
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(innerRadius),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    primaryColor.withValues(alpha: 0.38),
+                    primaryColor.withValues(alpha: 0.58),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.20),
+                  width: 0.6,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.28),
+                    blurRadius: 12,
+                    spreadRadius: 0.4,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              )
+            : BoxDecoration(
+                borderRadius: BorderRadius.circular(innerRadius),
+                gradient: ThreeDSurfaceStyle.surfaceGradient(
+                  context,
+                  primaryColor,
+                ),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              );
+
+        final stack = Stack(
+          children: [
+            // Sliding thumb — same pattern as [NeumorphicSegmentedSwitch]:
+            // `left` + `width` so [AnimatedPositioned] interpolates a smooth slide.
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              left: thumbLeft,
+              top: thumbInset,
+              bottom: thumbInset,
+              width: segmentWidth,
+              child: DecoratedBox(decoration: thumbDecoration),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      UiFeedbackUtils.selection();
+                      setState(() {
+                        _selectedTabIndex = 0;
+                        _userPickedTab = true;
+                      });
+                    },
+                    child: Container(
+                      height: height,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(height / 2),
+                      ),
+                      child: _ToggleTabContent(
+                        isSelected: _selectedTabIndex == 0,
+                        label: "Мои\nобъявления",
+                        badgeCount: incomingCount,
+                        selectedTextColor: selectedTextColor,
+                        unselectedTextColor: unselectedTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      UiFeedbackUtils.selection();
+                      setState(() {
+                        _selectedTabIndex = 1;
+                        _userPickedTab = true;
+                      });
+                    },
+                    child: Container(
+                      height: height,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(height / 2),
+                      ),
+                      child: _ToggleTabContent(
+                        isSelected: _selectedTabIndex == 1,
+                        label: "Чужие\nобъявления",
+                        badgeCount: outgoingCount,
+                        selectedTextColor: selectedTextColor,
+                        unselectedTextColor: unselectedTextColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+
+        if (useGlassPlate) {
+          return LiquidGlassPlate(
+            height: height,
+            borderRadius: BorderRadius.circular(height / 2),
+            padding: EdgeInsets.zero,
+            child: stack,
+          );
+        }
+
         return Container(
           height: height,
           decoration: BoxDecoration(
@@ -1108,82 +1211,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             gradient: ThreeDSurfaceStyle.surfaceGradient(context, cardColor),
             boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           ),
-          child: Stack(
-            children: [
-              // Sliding thumb — same pattern as [NeumorphicSegmentedSwitch]:
-              // `left` + `width` so [AnimatedPositioned] interpolates a smooth slide.
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                left: thumbLeft,
-                top: thumbInset,
-                bottom: thumbInset,
-                width: segmentWidth,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(innerRadius),
-                    gradient: ThreeDSurfaceStyle.surfaceGradient(
-                      context,
-                      primaryColor,
-                    ),
-                    boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        UiFeedbackUtils.selection();
-                        setState(() {
-                          _selectedTabIndex = 0;
-                          _userPickedTab = true;
-                        });
-                      },
-                      child: Container(
-                        height: height,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(height / 2),
-                        ),
-                        child: _ToggleTabContent(
-                          isSelected: _selectedTabIndex == 0,
-                          label: "Мои\nобъявления",
-                          badgeCount: incomingCount,
-                          selectedTextColor: selectedTextColor,
-                          unselectedTextColor: unselectedTextColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        UiFeedbackUtils.selection();
-                        setState(() {
-                          _selectedTabIndex = 1;
-                          _userPickedTab = true;
-                        });
-                      },
-                      child: Container(
-                        height: height,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(height / 2),
-                        ),
-                        child: _ToggleTabContent(
-                          isSelected: _selectedTabIndex == 1,
-                          label: "Чужие\nобъявления",
-                          badgeCount: outgoingCount,
-                          selectedTextColor: selectedTextColor,
-                          unselectedTextColor: unselectedTextColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          child: stack,
         );
       },
     );
@@ -1198,12 +1226,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (_currentUserId == null) return;
     _appliedInitialTabRule = true;
 
-    final incoming = visible
-        .where((c) => c.participantId == _currentUserId)
-        .toList();
-    final outgoing = visible
-        .where((c) => c.initiatorId == _currentUserId)
-        .toList();
+    final incoming =
+        visible.where((c) => c.participantId == _currentUserId).toList();
+    final outgoing =
+        visible.where((c) => c.initiatorId == _currentUserId).toList();
 
     final incomingHasUnread = _getUnreadCount(incoming) > 0;
     final outgoingHasUnread = _getUnreadCount(outgoing) > 0;
@@ -1243,25 +1269,24 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   List<ConversationSummary> _sortConversationsForInbox(
     List<ConversationSummary> conversations,
   ) {
-    return List<ConversationSummary>.from(conversations)..sort((a, b) {
-      final aHasUnread =
-          a.unreadCount != null &&
-          a.unreadCount! > 0 &&
-          _currentUserId != null &&
-          a.lastMessageSenderId != _currentUserId;
-      final bHasUnread =
-          b.unreadCount != null &&
-          b.unreadCount! > 0 &&
-          _currentUserId != null &&
-          b.lastMessageSenderId != _currentUserId;
+    return List<ConversationSummary>.from(conversations)
+      ..sort((a, b) {
+        final aHasUnread = a.unreadCount != null &&
+            a.unreadCount! > 0 &&
+            _currentUserId != null &&
+            a.lastMessageSenderId != _currentUserId;
+        final bHasUnread = b.unreadCount != null &&
+            b.unreadCount! > 0 &&
+            _currentUserId != null &&
+            b.lastMessageSenderId != _currentUserId;
 
-      if (aHasUnread && !bHasUnread) return -1;
-      if (!aHasUnread && bHasUnread) return 1;
+        if (aHasUnread && !bHasUnread) return -1;
+        if (!aHasUnread && bHasUnread) return 1;
 
-      final aTime = a.lastMessageAt ?? a.updatedAt;
-      final bTime = b.lastMessageAt ?? b.updatedAt;
-      return bTime.compareTo(aTime);
-    });
+        final aTime = a.lastMessageAt ?? a.updatedAt;
+        final bTime = b.lastMessageAt ?? b.updatedAt;
+        return bTime.compareTo(aTime);
+      });
   }
 
   List<ConversationSummary>? _visibleConversationsFromBloc() {
@@ -1291,92 +1316,94 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
         final destructive = AppColors.error;
         return GlassBottomSheetSurface(
-            borderRadius: radius,
-            child: Material(
-              type: MaterialType.transparency,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: 10 + MediaQuery.viewPaddingOf(sheetCtx).bottom,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 38,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(99),
+          borderRadius: radius,
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: 10 + MediaQuery.viewPaddingOf(sheetCtx).bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ListTileTheme(
+                    data: ListTileThemeData(
+                      visualDensity: VisualDensity.compact,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      minVerticalPadding: 10,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    ListTileTheme(
-                      data: ListTileThemeData(
-                        visualDensity: VisualDensity.compact,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        minVerticalPadding: 10,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (hasUnread)
-                            ListTile(
-                              leading: const ThemeIcon(
-                                Icons.mark_email_read_outlined,
-                              ),
-                              title: Text(
-                                L10n.get("mark_as_read", fallback: "Mark as read"),
-                              ),
-                              onTap: () {
-                                Navigator.of(sheetCtx).pop();
-                                context.read<MessagingBloc>().add(
-                                      MarkMessagesAsRead(
-                                        conversationId: conversation.id,
-                                      ),
-                                    );
-                              },
-                            ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (hasUnread)
                           ListTile(
-                            leading: ThemeIcon(
-                              Icons.archive_outlined,
-                              color: hasUnread ? null : destructive,
+                            leading: const ThemeIcon(
+                              Icons.mark_email_read_outlined,
                             ),
                             title: Text(
-                              L10n.get("archive"),
-                              style: TextStyle(
-                                color: hasUnread ? null : destructive,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              L10n.get("mark_as_read",
+                                  fallback: "Mark as read"),
                             ),
-                            enabled: !hasUnread,
-                            subtitle: hasUnread
-                                ? Text(
-                                    L10n.get("archive_failed_has_unread"),
-                                    style: const TextStyle(fontSize: 12),
-                                  )
-                                : null,
-                            onTap: hasUnread
-                                ? null
-                                : () {
-                                    Navigator.of(sheetCtx).pop();
-                                    _archiveConversation(conversation);
-                                  },
+                            onTap: () {
+                              Navigator.of(sheetCtx).pop();
+                              context.read<MessagingBloc>().add(
+                                    MarkMessagesAsRead(
+                                      conversationId: conversation.id,
+                                    ),
+                                  );
+                            },
                           ),
-                        ],
-                      ),
+                        ListTile(
+                          leading: ThemeIcon(
+                            Icons.archive_outlined,
+                            color: hasUnread ? null : destructive,
+                          ),
+                          title: Text(
+                            L10n.get("archive"),
+                            style: TextStyle(
+                              color: hasUnread ? null : destructive,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          enabled: !hasUnread,
+                          subtitle: hasUnread
+                              ? Text(
+                                  L10n.get("archive_failed_has_unread"),
+                                  style: const TextStyle(fontSize: 12),
+                                )
+                              : null,
+                          onTap: hasUnread
+                              ? null
+                              : () {
+                                  Navigator.of(sheetCtx).pop();
+                                  _archiveConversation(conversation);
+                                },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          );
+          ),
+        );
       },
     );
   }
@@ -1519,43 +1546,39 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       setState(() => _currentUserId = me);
     }
     final rawCtx = conversation.contextType?.trim().toLowerCase();
-    final isGigConversation =
-        (rawCtx != null && rawCtx.startsWith("gig_")) ||
+    final isGigConversation = (rawCtx != null && rawCtx.startsWith("gig_")) ||
         conversation.gigRequestId != null;
     await Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
-        builder:
-            (context) => ChatScreen(
-              conversationId: conversation.id,
-              // Listing-only fields: leave null for gig conversations so
-              // ChatScreen falls back to its gig branches (no "View
-              // listing" / "Complain about listing" actions, etc.).
-              listingId: isGigConversation ? null : conversation.listingId,
-              listingTypeId:
-                  isGigConversation ? null : conversation.listingTypeId,
-              // Server convention: listing owner is always `participant_id`.
-              // For gig conversations the request author is also the
-              // `participant_id` (set authoritatively by the backend), so
-              // this still happens to be correct — but we leave it null for
-              // gig chats since the field is semantically "listing owner".
-              listingOwnerUserId:
-                  isGigConversation ? null : conversation.participantId,
-              conversationContextType: conversation.contextType,
-              conversationParticipantId: conversation.participantId,
-              gigRequestId: conversation.gigRequestId,
-              gigRequestTitle: conversation.gigRequestTitle,
-              listingTitle:
-                  !isGigConversation
-                      ? resolvedConversationListingTitle(conversation)
-                      : null,
-              otherUserInitials: StringUtils.extractInitials(
-                conversation.otherUserName,
-              ),
-              otherUserName: conversation.otherUserName,
-              otherUserId: conversationCounterpartyUserId(conversation, me),
-              otherUserAvatar: conversation.otherUserAvatar,
-            ),
+        builder: (context) => ChatScreen(
+          conversationId: conversation.id,
+          // Listing-only fields: leave null for gig conversations so
+          // ChatScreen falls back to its gig branches (no "View
+          // listing" / "Complain about listing" actions, etc.).
+          listingId: isGigConversation ? null : conversation.listingId,
+          listingTypeId: isGigConversation ? null : conversation.listingTypeId,
+          // Server convention: listing owner is always `participant_id`.
+          // For gig conversations the request author is also the
+          // `participant_id` (set authoritatively by the backend), so
+          // this still happens to be correct — but we leave it null for
+          // gig chats since the field is semantically "listing owner".
+          listingOwnerUserId:
+              isGigConversation ? null : conversation.participantId,
+          conversationContextType: conversation.contextType,
+          conversationParticipantId: conversation.participantId,
+          gigRequestId: conversation.gigRequestId,
+          gigRequestTitle: conversation.gigRequestTitle,
+          listingTitle: !isGigConversation
+              ? resolvedConversationListingTitle(conversation)
+              : null,
+          otherUserInitials: StringUtils.extractInitials(
+            conversation.otherUserName,
+          ),
+          otherUserName: conversation.otherUserName,
+          otherUserId: conversationCounterpartyUserId(conversation, me),
+          otherUserAvatar: conversation.otherUserAvatar,
+        ),
       ),
     );
   }
@@ -1577,11 +1600,20 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       leadingItemCount: _shouldRenderPushBannerRow ? 1 : 0,
       leadingItemBuilder: _shouldRenderPushBannerRow
           ? (context, index) => Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: _pushBannerClosing
-                  ? RollUpFadeOut(
-                      duration: _pushBannerCloseDuration,
-                      child: InboxPushBanner(
+                padding: const EdgeInsets.only(top: 4),
+                child: _pushBannerClosing
+                    ? RollUpFadeOut(
+                        duration: _pushBannerCloseDuration,
+                        child: InboxPushBanner(
+                          key: const ValueKey("inbox_push_banner"),
+                          status:
+                              _pushStatus ?? AuthorizationStatus.notDetermined,
+                          busy: _pushBannerBusy,
+                          onPressed: _onPushBannerPressed,
+                          onDismiss: _onPushBannerDismiss,
+                        ),
+                      )
+                    : InboxPushBanner(
                         key: const ValueKey("inbox_push_banner"),
                         status:
                             _pushStatus ?? AuthorizationStatus.notDetermined,
@@ -1589,16 +1621,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                         onPressed: _onPushBannerPressed,
                         onDismiss: _onPushBannerDismiss,
                       ),
-                    )
-                  : InboxPushBanner(
-                      key: const ValueKey("inbox_push_banner"),
-                      status:
-                          _pushStatus ?? AuthorizationStatus.notDetermined,
-                      busy: _pushBannerBusy,
-                      onPressed: _onPushBannerPressed,
-                      onDismiss: _onPushBannerDismiss,
-                    ),
-            )
+              )
           : null,
     );
   }
@@ -1610,9 +1633,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       title: isIncoming
           ? L10n.get("no_incoming_conversations")
           : L10n.get("no_outgoing_conversations"),
-      subtitle: isIncoming
-          ? L10n.get("no_incoming_conversations_description")
-          : null,
+      subtitle:
+          isIncoming ? L10n.get("no_incoming_conversations_description") : null,
     );
   }
 
@@ -1652,18 +1674,19 @@ class _ArchivedChatsFab extends StatelessWidget {
         final scheme = Theme.of(context).colorScheme;
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
-        final iconColor = themeState.isBlueTheme ? Colors.white : themeState.cardIconColor;
-        final textColor = themeState.isBlueTheme ? Colors.white : themeState.textColor;
+        final iconColor =
+            themeState.isBlueTheme ? Colors.white : themeState.cardIconColor;
+        final textColor =
+            themeState.isBlueTheme ? Colors.white : themeState.textColor;
 
         final disableAnimations =
             MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final enableGlass =
             AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
-        final baseTint =
-            themeState.isBlueTheme
-                ? BlueThemeColors.background
-                : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
+        final baseTint = themeState.isBlueTheme
+            ? BlueThemeColors.background
+            : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
 
         const radius = BorderRadius.all(Radius.circular(999));
 
@@ -1690,13 +1713,17 @@ class _ArchivedChatsFab extends StatelessWidget {
                       borderRadius: radius,
                       color: baseTint.withValues(alpha: isDark ? 0.14 : 0.18),
                       border: Border.all(
-                        color: (themeState.isBlueTheme ? Colors.white : scheme.onSurface)
-                            .withValues(alpha: themeState.isBlueTheme ? 0.18 : 0.10),
+                        color: (themeState.isBlueTheme
+                                ? Colors.white
+                                : scheme.onSurface)
+                            .withValues(
+                                alpha: themeState.isBlueTheme ? 0.18 : 0.10),
                         width: 0.8,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.10),
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.22 : 0.10),
                           blurRadius: 18,
                           offset: const Offset(0, 10),
                         ),
@@ -1710,7 +1737,8 @@ class _ArchivedChatsFab extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.archive_outlined, size: 20, color: iconColor),
+                          Icon(Icons.archive_outlined,
+                              size: 20, color: iconColor),
                           const SizedBox(width: 8),
                           Text(
                             L10n.get("archived_chats"),
@@ -1816,9 +1844,7 @@ class _ToggleTabContent extends StatelessWidget {
                           fontSize: twoLineFontSize,
                           height: twoLineHeight,
                           fontWeight:
-                              isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w600,
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                           color: targetColor,
                         ),
                       ),
@@ -1831,9 +1857,7 @@ class _ToggleTabContent extends StatelessWidget {
                           fontSize: twoLineFontSize,
                           height: twoLineHeight,
                           fontWeight:
-                              isSelected
-                                  ? FontWeight.w700
-                                  : FontWeight.w600,
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                           color: targetColor,
                         ),
                       ),

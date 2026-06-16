@@ -1157,18 +1157,18 @@ class AppLocalizationsUz extends AppLocalizations {
   String get delete => 'O\'chirish';
 
   @override
-  String get onboarding_title_1 => 'Ideal xonadoshingizni toping';
+  String get onboarding_title_1 => 'O‘z odamlaringizni toping';
 
   @override
   String get onboarding_subtitle_1 =>
-      'Toshkent bo‘ylab ishonchli xonadoshlar, qo‘shma ijaralar va yaxshiroq yashash variantlarini bitta joyda toping.';
+      'Ishonchli qo‘shnilar, halol e’lonlar\nva ortiqcha odamlarsiz birgalikdagi ijara.';
 
   @override
-  String get onboarding_title_2 => 'Metro va tuman bo‘yicha qidiruv';
+  String get onboarding_title_2 => 'Yashash qulay bo‘lgan joydan qidiring';
 
   @override
   String get onboarding_subtitle_2 =>
-      'Toshkent bo‘ylab kerakli metro bekatlari, metro liniyalari yoki tumanlarni tanlab, kvartira va xonadoshlarni tezroq toping.';
+      'Metro, tuman yoki universitetni tanlang —\nyaqindagi mos kvartiralar va qo‘shnilarni ko‘rsatamiz.';
 
   @override
   String get onboarding_title_3 => 'Tuman bo\'yicha qidiruv';
@@ -1178,11 +1178,11 @@ class AppLocalizationsUz extends AppLocalizations {
       'Toshkent tumanlari bo\'yicha qulay qidiruv';
 
   @override
-  String get onboarding_title_4 => 'Xavfsiz va tasdiqlangan hamjamiyat';
+  String get onboarding_title_4 => 'Rieltorlarsiz va begonalarsiz';
 
   @override
   String get onboarding_subtitle_4 =>
-      'AI firibgarlikni aniqlashi, tasdiqlangan profillar va hamjamiyat shikoyat tizimi kvartira va xonadoshlarni ishonch bilan topishga yordam beradi.';
+      'Biz halol hamjamiyat qurmoqdamiz:\ntekshirilgan profillar, shikoyatlar va firibgarlardan himoya.';
 
   @override
   String get onboarding_get_started => 'Boshlash';

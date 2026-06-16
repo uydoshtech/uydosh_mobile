@@ -41,10 +41,9 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
 
     final List<BoxShadow> shadows;
     if (widget.neumorphicSoftUi) {
-      shadows =
-          _pressed && enabled
-              ? ThreeDSurfaceStyle.insetRecessedShadows(context)
-              : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context);
+      shadows = _pressed && enabled
+          ? ThreeDSurfaceStyle.insetRecessedShadows(context)
+          : ThreeDSurfaceStyle.neumorphicSoftRaisedShadows(context);
     } else {
       shadows = _pressed || !enabled
           ? ThreeDSurfaceStyle.pressedShadows(context)
@@ -64,20 +63,21 @@ class _ThreeDPillButtonState extends State<ThreeDPillButton> {
                   widget.onPressed?.call();
                 }
               : null,
-          onHighlightChanged: enabled ? (v) => setState(() => _pressed = v) : null,
+          onHighlightChanged:
+              enabled ? (v) => setState(() => _pressed = v) : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 90),
             padding: widget.padding,
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
               color: widget.neumorphicSoftUi ? bg : null,
-              gradient:
-                  widget.neumorphicSoftUi
-                      ? null
-                      : ThreeDSurfaceStyle.surfaceGradient(context, bg),
+              gradient: widget.neumorphicSoftUi
+                  ? null
+                  : ThreeDSurfaceStyle.surfaceGradient(context, bg),
               boxShadow: shadows,
-              border:
-                  widget.borderSide == null ? null : Border.fromBorderSide(widget.borderSide!),
+              border: widget.borderSide == null
+                  ? null
+                  : Border.fromBorderSide(widget.borderSide!),
             ),
             child: Opacity(
               opacity: enabled ? 1 : 0.55,

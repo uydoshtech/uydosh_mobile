@@ -1,8 +1,21 @@
+import "dart:async" show unawaited;
+
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 
 class HapticFeedbackUtils {
   static bool get _enabled => HapticFeedbackState().isEnabled;
+
+  static void _run(Future<void> Function() feedback) {
+    if (!_enabled) {
+      return;
+    }
+    try {
+      unawaited(feedback().catchError((_) {}));
+    } catch (_) {
+      // Haptics are optional feedback; they should never block the real action.
+    }
+  }
 
   /// A short chain of small selection ticks (Threads-style).
   ///
@@ -19,45 +32,33 @@ class HapticFeedbackUtils {
       return;
     }
     for (var i = 0; i < ticks; i++) {
-      Future.delayed(interval * i, HapticFeedback.selectionClick);
+      Future.delayed(
+        interval * i,
+        () => _run(HapticFeedback.selectionClick),
+      );
     }
   }
 
   /// Light haptic for general taps and interactions throughout the app.
   static void impact() {
-    if (!_enabled) {
-      return;
-    }
-    HapticFeedback.lightImpact();
+    _run(HapticFeedback.lightImpact);
   }
 
   /// Light haptic for selection-style interactions (e.g. pickers, spinners).
   static void selection() {
-    if (!_enabled) {
-      return;
-    }
-    HapticFeedback.selectionClick();
+    _run(HapticFeedback.selectionClick);
   }
 
   static void lightImpact() {
-    if (!_enabled) {
-      return;
-    }
-    HapticFeedback.lightImpact();
+    _run(HapticFeedback.lightImpact);
   }
 
   static void selectionClick() {
-    if (!_enabled) {
-      return;
-    }
-    HapticFeedback.selectionClick();
+    _run(HapticFeedback.selectionClick);
   }
 
   /// Strong haptic for splash logo animation only. Use sparingly.
   static void strongImpact() {
-    if (!_enabled) {
-      return;
-    }
-    HapticFeedback.mediumImpact();
+    _run(HapticFeedback.mediumImpact);
   }
 }

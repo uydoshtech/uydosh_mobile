@@ -72,7 +72,9 @@ class LinkedTelegramAccountTile extends StatelessWidget {
     final username = telegramUsername ?? profile.telegram;
     final trimmed = username?.trim();
     if (trimmed == null || trimmed.isEmpty) return null;
-    return trimmed;
+    final normalized =
+        trimmed.startsWith("@") ? trimmed.substring(1).trim() : trimmed;
+    return normalized.isEmpty ? null : normalized;
   }
 
   Widget? _buildAvatar(BuildContext context) {
@@ -179,9 +181,7 @@ class LinkedTelegramAccountTile extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        showUsername
-                            ? "@$username"
-                            : L10n.get("not_specified"),
+                        showUsername ? "@$username" : L10n.get("not_specified"),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

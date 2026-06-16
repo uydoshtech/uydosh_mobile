@@ -81,6 +81,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class ChatScreen extends StatefulWidget {
@@ -170,6 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
+
   /// When non-null, send submits an [EditMessage] for this id instead of posting.
   int? _editingMessageId;
   bool _hasLoadedMessagesForConversation =
@@ -233,6 +235,8 @@ class _ChatScreenState extends State<ChatScreen> {
   ListingAiQuotaSnapshot? _listingAiQuotaRibbon;
 
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
+  static const String _chatTranslateAutoTarget = "";
+  static const double _translateTargetSwitchHeight = 135 * 60 / 145;
 
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
@@ -700,58 +704,40 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                PreferenceSegmentTile(
-                  selected: _targetLanguageOverride == null,
-                  tooltip: L10n.get("chat_translate_picker_auto"),
-                  onTap: () => Navigator.of(sheetContext).pop(""),
-                  leading: Text(
-                    languageFlagForCode(""),
-                    style: const TextStyle(fontSize: 18, height: 1),
-                  ),
-                  label: L10n.get("chat_translate_picker_auto"),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: PreferenceSegmentTile(
-                        selected: _targetLanguageOverride == "uz",
-                        tooltip: L10n.get(languageNameKeyForCode("uz")),
-                        onTap: () => Navigator.of(sheetContext).pop("uz"),
-                        leading: Text(
-                          languageFlagForCode("uz"),
-                          style: const TextStyle(fontSize: 18, height: 1),
+                ListenableBuilder(
+                  listenable: ThemeState(),
+                  builder: (context, _) {
+                    final themeState = ThemeState();
+                    return NeumorphicSegmentedSwitch<String>(
+                      liquidGlass:
+                          themeState.isBlueTheme || themeState.isLightTheme,
+                      forceGlassPlate: true,
+                      height: _translateTargetSwitchHeight,
+                      value:
+                          _targetLanguageOverride ?? _chatTranslateAutoTarget,
+                      onChanged: (next) => Navigator.of(sheetContext).pop(next),
+                      entries: [
+                        SegmentedSwitchEntry(
+                          value: _chatTranslateAutoTarget,
+                          label:
+                              "${languageFlagForCode(_chatTranslateAutoTarget)} "
+                              "${L10n.get("chat_translate_picker_auto")}",
                         ),
-                        label: "UZ",
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: PreferenceSegmentTile(
-                        selected: _targetLanguageOverride == "ru",
-                        tooltip: L10n.get(languageNameKeyForCode("ru")),
-                        onTap: () => Navigator.of(sheetContext).pop("ru"),
-                        leading: Text(
-                          languageFlagForCode("ru"),
-                          style: const TextStyle(fontSize: 18, height: 1),
+                        SegmentedSwitchEntry(
+                          value: "uz",
+                          label: "${languageFlagForCode("uz")} UZ",
                         ),
-                        label: "RU",
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: PreferenceSegmentTile(
-                        selected: _targetLanguageOverride == "en",
-                        tooltip: L10n.get(languageNameKeyForCode("en")),
-                        onTap: () => Navigator.of(sheetContext).pop("en"),
-                        leading: Text(
-                          languageFlagForCode("en"),
-                          style: const TextStyle(fontSize: 18, height: 1),
+                        SegmentedSwitchEntry(
+                          value: "ru",
+                          label: "${languageFlagForCode("ru")} RU",
                         ),
-                        label: "EN",
-                      ),
-                    ),
-                  ],
+                        SegmentedSwitchEntry(
+                          value: "en",
+                          label: "${languageFlagForCode("en")} EN",
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -1147,7 +1133,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                     messageEdited: (message) {
                       setState(() {
-                        final i = _messages.indexWhere((m) => m.id == message.id);
+                        final i =
+                            _messages.indexWhere((m) => m.id == message.id);
                         if (i >= 0) {
                           _messages = List<Message>.from(_messages)
                             ..[i] = message;
@@ -1430,10 +1417,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   : (reactionId) => _setMessageReaction(message, reactionId),
               onClearReaction:
                   isCurrentUser ? null : () => _clearMessageReaction(message),
-              onLongPressEditOwnMessage: isCurrentUser &&
-                      _isOwnTextBubbleForLongPressEdit(message)
-                  ? () => _onLongPressOwnMessageForEdit(message)
-                  : null,
+              onLongPressEditOwnMessage:
+                  isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
+                      ? () => _onLongPressOwnMessageForEdit(message)
+                      : null,
             ),
         };
       },
@@ -1762,11 +1749,10 @@ class _ChatScreenState extends State<ChatScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => BlocProvider(
-            create: (context) =>
-                ListingOwnerProfileBloc(
-                  getIt<IUserProfileService>(),
-                  getIt<IFollowService>(),
-                ),
+            create: (context) => ListingOwnerProfileBloc(
+              getIt<IUserProfileService>(),
+              getIt<IFollowService>(),
+            ),
             child: ListingOwnerProfileScreen(userId: otherUserId),
           ),
         ),

@@ -65,6 +65,7 @@ class MainNavigation extends StatefulWidget {
 class MainNavigationState extends State<MainNavigation>
     with WidgetsBindingObserver, RouteAware {
   late int _currentIndex;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   bool _isAuthenticated = false;
@@ -907,6 +908,10 @@ class MainNavigationState extends State<MainNavigation>
     );
   }
 
+  void _openDrawer() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -917,6 +922,7 @@ class MainNavigationState extends State<MainNavigation>
             themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
+          key: _scaffoldKey,
           backgroundColor: themeState.backgroundColor,
           extendBodyBehindAppBar: useLiquidGlassAppBar,
           // Draw bodies under the curved bar so notch/alpha tints show cards and
@@ -944,16 +950,11 @@ class MainNavigationState extends State<MainNavigation>
               padding: const EdgeInsets.only(left: 8),
               child: Align(
                 alignment: Alignment.center,
-                child: Builder(
-                  builder: (scaffoldContext) {
-                    return _threeDAppBarIconButton(
-                      iconData: Icons.menu,
-                      onPressed: () =>
-                          Scaffold.of(scaffoldContext).openDrawer(),
-                      semanticsLabel: MaterialLocalizations.of(context)
-                          .openAppDrawerTooltip,
-                    );
-                  },
+                child: _threeDAppBarIconButton(
+                  iconData: Icons.menu,
+                  onPressed: _openDrawer,
+                  semanticsLabel:
+                      MaterialLocalizations.of(context).openAppDrawerTooltip,
                 ),
               ),
             ),

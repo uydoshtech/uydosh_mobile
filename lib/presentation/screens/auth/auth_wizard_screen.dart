@@ -10,6 +10,7 @@ import "package:flutter/services.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -43,6 +44,7 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_google_sign_in_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_language_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_profile_page.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_terms_finish_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/auth/phone_sign_in_sheet.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
@@ -82,11 +84,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   /// Keys for [Scrollable.ensureVisible] when profile validation fails, so the
   /// first invalid control is scrolled into view inside the profile
   /// [SingleChildScrollView].
-  final GlobalKey _profileNameKey = GlobalKey(debugLabel: "authWizard_profile_name");
-  final GlobalKey _profileGenderKey = GlobalKey(debugLabel: "authWizard_profile_gender");
-  final GlobalKey _profileRegionKey = GlobalKey(debugLabel: "authWizard_profile_region");
-  final GlobalKey _profileRoleKey = GlobalKey(debugLabel: "authWizard_profile_role");
-  final GlobalKey _profileStudentKey = GlobalKey(debugLabel: "authWizard_profile_student");
+  final GlobalKey _profileNameKey =
+      GlobalKey(debugLabel: "authWizard_profile_name");
+  final GlobalKey _profileGenderKey =
+      GlobalKey(debugLabel: "authWizard_profile_gender");
+  final GlobalKey _profileRegionKey =
+      GlobalKey(debugLabel: "authWizard_profile_region");
+  final GlobalKey _profileRoleKey =
+      GlobalKey(debugLabel: "authWizard_profile_role");
+  final GlobalKey _profileStudentKey =
+      GlobalKey(debugLabel: "authWizard_profile_student");
   final GlobalKey _profileUniversityKey =
       GlobalKey(debugLabel: "authWizard_profile_university");
 
@@ -96,7 +103,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   final TextEditingController _nameController = TextEditingController();
   int? _selectedGender;
   bool? _isStudent;
-  String? _selectedRole; // tenant | landlord | service_requester | service_provider
+  String?
+      _selectedRole; // tenant | landlord | service_requester | service_provider
   // Initialized in initState from LanguageState (saved/device locale).
   String _selectedLanguage = "uz";
 
@@ -153,16 +161,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   /// excluded because it always has a default (Uzbekistan).
   bool get _nameMissing =>
       _showValidationErrors && _nameController.text.trim().isEmpty;
-  bool get _genderMissing =>
-      _showValidationErrors && _selectedGender == null;
+  bool get _genderMissing => _showValidationErrors && _selectedGender == null;
   bool get _regionMissing =>
       _showValidationErrors &&
       _selectedCountryIso2 == "UZ" &&
       _selectedRegionId == null;
-  bool get _roleMissing =>
-      _showValidationErrors && _selectedRole == null;
-  bool get _studentMissing =>
-      _showValidationErrors && _isStudent == null;
+  bool get _roleMissing => _showValidationErrors && _selectedRole == null;
+  bool get _studentMissing => _showValidationErrors && _isStudent == null;
   bool get _universityMissing =>
       _showValidationErrors &&
       (_isStudent ?? false) &&
@@ -173,10 +178,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   StreamSubscription<User?>? _firebaseAuthStateSub;
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId:
-        kIsWeb
-            ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
-            : null,
+    clientId: kIsWeb
+        ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
+        : null,
   );
   // Sign in with Apple is exposed via [AppleAuthService] (kept as a
   // local instance — it's stateless beyond Firebase + Crashlytics
@@ -186,6 +190,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   // Auth state
   bool _isAuthenticating = false;
   bool _isGoogleSignedIn = false;
+  bool _profileCreated = false;
   User? _currentUser;
   _AuthMethod _authMethod = _AuthMethod.google;
 
@@ -195,8 +200,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   /// Returning users used to jump straight home while "Signing in…" was still
   /// visible; hold briefly so the success layout + avatar read clearly first.
-  static const Duration _returningUserHomeNavigationHold =
-      Duration(seconds: 2);
+  static const Duration _returningUserHomeNavigationHold = Duration(seconds: 2);
 
   // Navigation control
   bool _isProgrammaticNavigation = false;
@@ -237,8 +241,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     // Listen to Firebase auth state changes
-    _firebaseAuthStateSub =
-        _auth.authStateChanges().listen((user) {
+    _firebaseAuthStateSub = _auth.authStateChanges().listen((user) {
       if (!mounted) return;
       setState(() {
         _currentUser = user;
@@ -268,7 +271,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
       if (kIsWeb) {
-        final webAuth = DeepLinkService.tryParseTelegramAuthFromCurrentLocation();
+        final webAuth =
+            DeepLinkService.tryParseTelegramAuthFromCurrentLocation();
         if (webAuth != null) {
           clearTelegramOAuthQueryFromBrowserUrl();
           unawaited(_handleTelegramAuthDeepLink(webAuth));
@@ -345,7 +349,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           final hasEmail = (user.email ?? "").trim().isNotEmpty;
           final inferredMethod = hasPhone && !hasEmail
               ? _AuthMethod.phone
-              : (_isAppleProvider(user) ? _AuthMethod.apple : _AuthMethod.google);
+              : (_isAppleProvider(user)
+                  ? _AuthMethod.apple
+                  : _AuthMethod.google);
           _authMethod = inferredMethod;
 
           await _authenticateWithBackend(authMethod: inferredMethod);
@@ -413,6 +419,53 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     );
   }
 
+  Future<void> _openTermsOfService() async {
+    HapticFeedbackUtils.impact();
+    Uri? parseLaunchableUri(String value) {
+      final uri = Uri.tryParse(value.trim());
+      if (uri == null || !uri.hasScheme) return null;
+      return uri;
+    }
+
+    final uri = parseLaunchableUri(EnvironmentUtil.termsOfService) ??
+        parseLaunchableUri(EnvironmentUtil.compileTimeTermsOfService);
+    if (uri == null) {
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("could_not_open_terms_of_service"),
+      );
+      return;
+    }
+
+    final opened = kIsWeb
+        ? await launchUrl(uri, webOnlyWindowName: "_blank")
+        : await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted || opened) return;
+    ToastTheme.showWarning(
+      context,
+      message: L10n.get("could_not_open_terms_of_service"),
+    );
+  }
+
+  void _finishCreateAccountFlow() {
+    HapticFeedbackUtils.impact();
+    _navigateToMainNavigation();
+  }
+
+  Future<void> _goToTermsFinishPage() async {
+    if (!mounted) return;
+    setState(() {
+      _isAuthenticating = false;
+      _profileCreated = true;
+      _currentPage = 3;
+    });
+    await _pageController.animateToPage(
+      3,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   // Google Sign-In method
   Future<void> _signInWithGoogle() async {
     getIt<AppAnalyticsService>().logSignInStarted(method: "google");
@@ -455,7 +508,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (googleUser == null) {
         // User cancelled the sign-in
         if (!kIsWeb) {
-          await _crashlytics.setCustomKey("auth_step", "google_sign_in_cancelled");
+          await _crashlytics.setCustomKey(
+              "auth_step", "google_sign_in_cancelled");
           _crashlytics.log("AuthWizard: google_sign_in_cancelled");
         }
         setStateIfMounted(() {
@@ -466,8 +520,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       // Obtain the auth details from the request
       stage = "google_auth_tokens";
-      final googleAuth =
-          await googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
 
       // Create a new credential
       stage = "firebase_credential";
@@ -578,7 +631,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         method: "google",
         stage: stage,
         errorCode: _extractAuthErrorCode(e),
-        errorType: e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString(),
+        errorType: e.toString().length > 100
+            ? e.toString().substring(0, 100)
+            : e.toString(),
       );
       // Dedicated event for easier GA4 funnel debugging.
       getIt<AppAnalyticsService>().logLoginError(
@@ -600,7 +655,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
             : errorStr;
         ToastTheme.showWarning(
           context,
-          message: L10n.get("google_sign_in_failed").replaceAll("{error}", displayError),
+          message: L10n.get("google_sign_in_failed")
+              .replaceAll("{error}", displayError),
         );
       }
     }
@@ -680,7 +736,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       // (AppleAuthService writes `givenName + familyName` to the
       // Firebase user on first sign-in only).
       final displayName = user.displayName;
-      if (displayName != null && displayName.trim().isNotEmpty &&
+      if (displayName != null &&
+          displayName.trim().isNotEmpty &&
           _nameController.text.isEmpty) {
         _nameController.text = displayName.trim();
       }
@@ -895,7 +952,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
     setStateIfMounted(() {
       _isAuthenticating = true;
-      _isGoogleSignedIn = true; // share "is authenticated" gate with rest of wizard
+      _isGoogleSignedIn =
+          true; // share "is authenticated" gate with rest of wizard
       _currentUser = user;
       _authMethod = _AuthMethod.phone;
     });
@@ -1010,7 +1068,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
       ToastTheme.showWarning(
         context,
-        message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+        message:
+            L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
       );
     } finally {
       setStateIfMounted(() => _isAuthenticating = false);
@@ -1053,7 +1112,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
       ToastTheme.showWarning(
         context,
-        message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+        message:
+            L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
       );
     }
   }
@@ -1135,7 +1195,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showWarning(
           context,
-          message: L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
+          message:
+              L10n.get("telegram_sign_in_failed").replaceAll("{error}", "$e"),
         );
       }
     } finally {
@@ -1144,7 +1205,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   // Authenticate with your backend after Firebase Sign-In - FIRST OCCURRENCE
-  Future<void> _authenticateWithBackend({_AuthMethod authMethod = _AuthMethod.google}) async {
+  Future<void> _authenticateWithBackend(
+      {_AuthMethod authMethod = _AuthMethod.google}) async {
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -1234,9 +1296,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     final user = response["user"];
     if (user != null && user["id"] != null) {
       final rawUserId = user["id"];
-      final parsedUserId = rawUserId is int
-          ? rawUserId
-          : int.tryParse(rawUserId.toString());
+      final parsedUserId =
+          rawUserId is int ? rawUserId : int.tryParse(rawUserId.toString());
       if (parsedUserId != null) {
         await SessionManager.storeBackendUserId(parsedUserId);
         await getIt<AppAnalyticsService>().setUserId(parsedUserId.toString());
@@ -1356,8 +1417,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       return;
     }
 
-    if (_currentPage < 2) {
-      // 3 pages: Language, Google Sign-In, Profile
+    if (_currentPage < 3) {
       setState(() {
         _currentPage++;
       });
@@ -1468,21 +1528,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Get total number of steps based on user needs
   int _getTotalSteps() {
-    // If user is signed in and we know they have a profile, show only 2 steps
-    if (_isGoogleSignedIn && _currentUser != null) {
-      // We"ll need to check if they have a profile
-      // For now, assume 3 steps and let the backend response determine the flow
-      return 3;
-    }
-    return 3; // Default: Language, Google Sign-In, Profile
+    return 4; // Language, sign-in, profile, terms/finish
   }
 
-  /// Index of the last lit progress stripe. OAuth completion is reflected
-  /// immediately after sign-in even while [_currentPage] is still 1 and
-  /// backend auth / page animation is in flight.
+  /// Index of the last lit progress stripe.
   int _getProgressStep() {
+    if (_currentPage >= 3) return 3;
     if (_currentPage >= 2) return 2;
-    if (_currentPage == 1 && _isGoogleSignedIn) return 2;
+    if (_currentPage == 1 && _isGoogleSignedIn) return 1;
     return _currentPage;
   }
 
@@ -1656,7 +1709,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showWarning(
           context,
-          message: L10n.get("error_loading_universities").replaceAll("{error}", error.toString()),
+          message: L10n.get("error_loading_universities")
+              .replaceAll("{error}", error.toString()),
         );
       }
     }
@@ -1703,7 +1757,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       if (mounted) {
         ToastTheme.showWarning(
           context,
-          message: L10n.get("error_loading_regions").replaceAll("{error}", error.toString()),
+          message: L10n.get("error_loading_regions")
+              .replaceAll("{error}", error.toString()),
         );
       }
     }
@@ -1913,10 +1968,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         regionId: _selectedRegionId,
         role: _selectedRole,
         preferredLanguage: _selectedLanguage,
-        avatarUrl:
-            googleAvatarUrl != null && googleAvatarUrl.trim().isNotEmpty
-                ? googleAvatarUrl.trim()
-                : null,
+        avatarUrl: googleAvatarUrl != null && googleAvatarUrl.trim().isNotEmpty
+            ? googleAvatarUrl.trim()
+            : null,
       );
 
       // CRITICAL: Verify the request object has the correct data
@@ -2002,8 +2056,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     message: L10n.get("welcome_back_profile_exists"),
                   );
 
-                  // Navigate to main app directly
-                  _navigateToMainNavigation();
+                  await _goToTermsFinishPage();
                 }
                 return; // Exit early, don"t try to create profile
               } catch (fetchError) {
@@ -2043,8 +2096,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           message: L10n.get("profile_completed_success"),
         );
 
-        // Navigate to main app
-        _navigateToMainNavigation();
+        await _goToTermsFinishPage();
       }
     } catch (e) {
       if (mounted) {
@@ -2055,7 +2107,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // Show error message
         ToastTheme.showWarning(
           context,
-          message: L10n.get("error_creating_profile").replaceAll("{error}", e.toString()),
+          message: L10n.get("error_creating_profile")
+              .replaceAll("{error}", e.toString()),
         );
       }
     }
@@ -2098,6 +2151,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             ),
                             semanticsLabel: L10n.get("close"),
                             onPressed: () {
+                              if (_currentPage == 3) {
+                                _finishCreateAccountFlow();
+                                return;
+                              }
+
                               if (Navigator.of(context).canPop()) {
                                 Navigator.of(context).pop();
                                 return;
@@ -2127,7 +2185,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                   ? L10n.get("auth_wizard_oauth_step_header")
                                   : _currentPage == 2
                                       ? L10n.get("complete_profile")
-                                      : "UyDosh",
+                                      : L10n.get("auth_terms_finish_header"),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
@@ -2152,12 +2210,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           height: 4,
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: BoxDecoration(
-                            color:
-                                index <= _getProgressStep()
-                                    ? _getOnboardingTextColor(context)
-                                    : _getOnboardingTextColor(context).withValues(
-                                        alpha: 0.3,
-                                      ),
+                            color: index <= _getProgressStep()
+                                ? _getOnboardingTextColor(context)
+                                : _getOnboardingTextColor(context).withValues(
+                                    alpha: 0.3,
+                                  ),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -2197,7 +2254,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             // Show error message
                             ToastTheme.showWarning(
                               context,
-                              message: L10n.get("please_complete_previous_steps"),
+                              message:
+                                  L10n.get("please_complete_previous_steps"),
                               duration: const Duration(seconds: 3),
                             );
                             return;
@@ -2240,7 +2298,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           universitySectionKey: _profileUniversityKey,
                           nameController: _nameController,
                           selectedGender: _selectedGender,
-                          onGenderSelected: (v) => setState(() => _selectedGender = v),
+                          onGenderSelected: (v) =>
+                              setState(() => _selectedGender = v),
                           selectedCountry: _selectedCountry,
                           onShowCountryPicker: _showCountryPicker,
                           getCountryName: _getCountryName,
@@ -2248,7 +2307,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           regions: _filteredRegions,
                           onShowRegionPicker: _showRegionPicker,
                           selectedRole: _selectedRole,
-                          onRoleSelected: (v) => setState(() => _selectedRole = v),
+                          onRoleSelected: (v) =>
+                              setState(() => _selectedRole = v),
                           isStudent: _isStudent,
                           onStudentSelected: _onStudentSelected,
                           selectedUniversity: _selectedUniversity,
@@ -2264,6 +2324,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           roleMissing: _roleMissing,
                           studentMissing: _studentMissing,
                           universityMissing: _universityMissing,
+                        ),
+                        AuthWizardTermsFinishPage(
+                          onOpenTermsOfService: _openTermsOfService,
                         ),
                       ],
                     ),
@@ -2289,17 +2352,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     margin: const EdgeInsets.only(bottom: 20),
                     child: Row(
                       children: [
-                        if (_currentPage > 0)
+                        if (_currentPage > 0 && _currentPage != 3)
                           Expanded(
                             child: Builder(
                               builder: (context) {
                                 final label =
                                     Theme.of(context).textTheme.labelLarge;
-                                final textStyle =
-                                    label?.copyWith(
-                                          fontSize: 17,
-                                          height: 1.0,
-                                        ) ??
+                                final textStyle = label?.copyWith(
+                                      fontSize: 17,
+                                      height: 1.0,
+                                    ) ??
                                     const TextStyle(
                                       fontSize: 17,
                                       height: 1.0,
@@ -2336,7 +2398,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               },
                             ),
                           ),
-                        if (_currentPage > 0 && _currentPage != 1)
+                        if (_currentPage > 0 &&
+                            _currentPage != 1 &&
+                            _currentPage != 3)
                           const SizedBox(width: 20),
                         // The Next button is hidden on the Google Sign-In
                         // page (page 1) because navigation happens
@@ -2352,11 +2416,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 final onNext = _getNextButtonAction();
                                 final label =
                                     Theme.of(context).textTheme.labelLarge;
-                                final textStyle =
-                                    label?.copyWith(
-                                          fontSize: 17,
-                                          height: 1.0,
-                                        ) ??
+                                final textStyle = label?.copyWith(
+                                      fontSize: 17,
+                                      height: 1.0,
+                                    ) ??
                                     const TextStyle(
                                       fontSize: 17,
                                       height: 1.0,
@@ -2523,8 +2586,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: AuthWizardTheme
-                                      .getBottomSheetTextColor(),
+                                  color:
+                                      AuthWizardTheme.getBottomSheetTextColor(),
                                   height: 1.2,
                                 ),
                                 maxLines: 1,
@@ -2537,8 +2600,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: AuthWizardTheme
-                                    .getBottomSheetTextColor()
+                                color: AuthWizardTheme.getBottomSheetTextColor()
                                     .withOpacity(0.5),
                               ),
                             ),
@@ -2616,8 +2678,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color:
-                    AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                color: AuthWizardTheme
+                    .getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -2641,30 +2703,29 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   "Region picker: _selectedRegionId updated to: $_selectedRegionId",
                 );
               },
-              children:
-                  _regions.map((region) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
+              children: _regions.map((region) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _getRegionName(region),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AuthWizardTheme
+                            .getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                        height: 1.2,
                       ),
-                      child: Center(
-                        child: Text(
-                          _getRegionName(region),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
-                            height: 1.2,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
 
@@ -2737,8 +2798,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color:
-                    AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                color: AuthWizardTheme
+                    .getBottomSheetTextColor(), // Use black text for better visibility in blue theme
               ),
             ),
           ),
@@ -2762,30 +2823,29 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                   "University picker: _selectedUniversity updated to: ${_selectedUniversity != null ? _getUniversityName(_selectedUniversity!) : "None"} (ID: ${_selectedUniversity?.id})",
                 );
               },
-              children:
-                  _universities.map((university) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
+              children: _universities.map((university) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _getUniversityName(university),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AuthWizardTheme
+                            .getBottomSheetTextColor(), // Use black text for better visibility in blue theme
+                        height: 1.2,
                       ),
-                      child: Center(
-                        child: Text(
-                          _getUniversityName(university),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                AuthWizardTheme.getBottomSheetTextColor(), // Use black text for better visibility in blue theme
-                            height: 1.2,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
 
@@ -2812,9 +2872,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     final buttonBg = isBlue
         ? BlueThemeColors.primary
         : Theme.of(context).colorScheme.surface;
-    final textColor = isBlue
-        ? Colors.white
-        : Theme.of(context).colorScheme.onSurface;
+    final textColor =
+        isBlue ? Colors.white : Theme.of(context).colorScheme.onSurface;
 
     return SizedBox(
       width: double.infinity,
@@ -2850,6 +2909,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return _selectedLanguage.isNotEmpty &&
             _isGoogleSignedIn &&
             _needsProfileCreation();
+      case 3:
+        return _selectedLanguage.isNotEmpty &&
+            _isGoogleSignedIn &&
+            _profileCreated;
       default:
         return false;
     }
@@ -2893,6 +2956,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         // filled (matches [_completeProfile] rules, including region only for
         // Uzbekistan and university only when student).
         return _completeProfile;
+      case 3:
+        return _finishCreateAccountFlow;
       default:
         return null;
     }
@@ -2913,6 +2978,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return "next";
       case 2:
         return "complete";
+      case 3:
+        return "finish";
       default:
         return "next";
     }
@@ -2943,5 +3010,4 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       LanguageState().currentLanguage,
     );
   }
-
 }
