@@ -318,20 +318,36 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       _isAdmin = role == "admin";
       _pinnedStaffRole =
           (role == "manager" || role == "moderator") ? role : null;
-      final resolved = (role != null &&
-              (role == "admin" ||
-                  role == "landlord" ||
-                  role == "tenant" ||
-                  role == "manager" ||
-                  role == "moderator" ||
-                  role == "service_provider" ||
-                  role == "service_requester"))
-          ? role
-          : "tenant";
+      final resolved = _visibleProfileRole(role);
       _selectedRole.value = resolved;
       _baselineRole = resolved;
       _isRoleLoaded.value = true;
     }
+  }
+
+  String _visibleProfileRole(String? role) {
+    return switch (role) {
+      "admin" => "admin",
+      "landlord" => "landlord",
+      "tenant" => "tenant",
+      "manager" => "manager",
+      "moderator" => "moderator",
+      "service_provider" => "landlord",
+      "service_requester" => "tenant",
+      _ => "tenant",
+    };
+  }
+
+  String _roleToSave(String? currentRole) {
+    final selectedRole = _selectedRole.value;
+    if (currentRole == "admin") return "admin";
+    if (currentRole == "service_provider" && selectedRole == "landlord") {
+      return "service_provider";
+    }
+    if (currentRole == "service_requester" && selectedRole == "tenant") {
+      return "service_requester";
+    }
+    return selectedRole;
   }
 
   Future<String?> _fetchRoleFromServer() async {
@@ -669,8 +685,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       // Preserve admin role: check actual role at save time to avoid overwriting
       // when dropdown wasn't loaded yet (race condition)
       final currentRole = await SessionManager.getUserRole();
-      final roleToSave =
-          (currentRole == "admin") ? "admin" : _selectedRole.value;
+      final roleToSave = _roleToSave(currentRole);
 
       final updateRequest = UpdateProfileRequest(
         name: name,
@@ -1009,20 +1024,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                       "role_tenant",
                                     ),
                                     icon: Icons.key,
-                                  ),
-                                  DropdownOption(
-                                    value: "service_requester",
-                                    label: L10n.get(
-                                      "role_service_requester",
-                                    ),
-                                    icon: Icons.assignment_ind,
-                                  ),
-                                  DropdownOption(
-                                    value: "service_provider",
-                                    label: L10n.get(
-                                      "role_service_provider",
-                                    ),
-                                    icon: Icons.home_repair_service,
                                   ),
                                 ],
                               ),

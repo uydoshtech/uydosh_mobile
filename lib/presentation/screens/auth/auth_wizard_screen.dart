@@ -103,8 +103,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   final TextEditingController _nameController = TextEditingController();
   int? _selectedGender;
   bool? _isStudent;
-  String?
-      _selectedRole; // tenant | landlord | service_requester | service_provider
+  String? _selectedRole; // tenant | landlord
   // Initialized in initState from LanguageState (saved/device locale).
   String _selectedLanguage = "uz";
 

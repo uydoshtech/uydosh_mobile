@@ -308,16 +308,6 @@ class AuthWizardProfilePage extends StatelessWidget {
                         label: L10n.get("role_tenant"),
                         icon: Icons.key,
                       ),
-                      DropdownOption(
-                        value: "service_requester",
-                        label: L10n.get("role_service_requester"),
-                        icon: Icons.assignment_ind,
-                      ),
-                      DropdownOption(
-                        value: "service_provider",
-                        label: L10n.get("role_service_provider"),
-                        icon: Icons.home_repair_service,
-                      ),
                     ],
                   ),
                 ),
