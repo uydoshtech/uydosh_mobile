@@ -37,6 +37,7 @@ import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -449,7 +450,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     await UserListingState().initialize();
     if (!mounted) return;
 
-    context.read<ListingDetailPageBloc>().invalidateStaleListingOwnerPresentation(
+    context
+        .read<ListingDetailPageBloc>()
+        .invalidateStaleListingOwnerPresentation(
           listingDetail.user.id,
         );
 
@@ -580,7 +583,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         totalFieldCount: result.totalFieldCount,
         ownerName: _listingAuthorNameFromProfile(ownerProfile),
         ownerAvatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
-        currentUserAvatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
+        currentUserAvatarUrl:
+            _listingAuthorAvatarUrlFromProfile(currentProfile),
       );
     } catch (e) {
       logger.d("Error loading compatibility: $e");
@@ -837,7 +841,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
       final isAdmin = role == "admin";
       // Admins get the same edit privileges as the owner (north orientation slider + metrics backfill).
-      final canEditAsOwner = UserListingState().isOwner(listingDetail.user.id) || isAdmin;
+      final canEditAsOwner =
+          UserListingState().isOwner(listingDetail.user.id) || isAdmin;
       final metricsMissing = listingDetail.roomScanFloorLongM == null ||
           listingDetail.roomScanFloorShortM == null ||
           listingDetail.roomScanHeightM == null ||
@@ -1212,6 +1217,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     final authState = AuthenticationState();
     final isAuthenticated = authState.isAuthenticated;
     final menuEnabled = isAuthenticated;
+    final internalChatDisabled = PeerInteractionEligibility
+        .isInternalListingChatDisabledForPublisherEmail(
+      listingDetail.user.email,
+    );
 
     final items = <ActionMenuItem>[];
 
@@ -1226,8 +1235,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       );
     }
 
-    // Chat option - only show when authenticated and not owner
-    if (!isOwner) {
+    // Chat option - only show when not owner and internal chat is allowed.
+    if (!isOwner && !internalChatDisabled) {
       items.add(
         ActionMenuItem(
           value: "chat",
@@ -1277,8 +1286,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           icon: Icons.edit,
           textKey: "edit",
           onPressed: _editListing,
-          labelFontWeight:
-              isListingStaff && !isOwner ? FontWeight.w600 : null,
+          labelFontWeight: isListingStaff && !isOwner ? FontWeight.w600 : null,
         ),
       );
     }
@@ -1309,8 +1317,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           onPressed: () => _showDeleteConfirmation(listingDetail.id),
           iconColor: Colors.red,
           textColor: Colors.red,
-          labelFontWeight:
-              isListingStaff && !isOwner ? FontWeight.w600 : null,
+          labelFontWeight: isListingStaff && !isOwner ? FontWeight.w600 : null,
         ),
       );
     }
@@ -1832,6 +1839,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                 final onTelegram = telegramAvailable
                     ? () => _openTelegramChat(listingDetail.contactTelegram!)
                     : null;
+                final internalChatDisabled = PeerInteractionEligibility
+                    .isInternalListingChatDisabledForPublisherEmail(
+                  listingDetail.user.email,
+                );
 
                 if (isOwner) {
                   // Admin-as-owner gets a Telegram-only sticky CTA so
@@ -1862,18 +1873,22 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
 
                 return BlocSelector<ListingDetailPageBloc,
                     ListingDetailPageState, String>(
-                  selector: (pageState) =>
-                      _resolvedListingOwnerDisplayLabel(
+                  selector: (pageState) => _resolvedListingOwnerDisplayLabel(
                     listingDetail,
                     pageState,
                   ),
                   builder: (context, ownerResolved) {
+                    if (internalChatDisabled && onTelegram == null) {
+                      return const SizedBox.shrink();
+                    }
                     final l10n = context.l10n;
                     final chatCtaLabel = ownerResolved.isNotEmpty
                         ? l10n.chat_with(ownerResolved)
                         : l10n.uydosh_chat;
                     return ListingDetailContactActionBar(
-                      onMessage: () => _startConversation(listingDetail),
+                      onMessage: internalChatDisabled
+                          ? null
+                          : () => _startConversation(listingDetail),
                       onTelegram: onTelegram,
                       inAppChatCtaLabel: chatCtaLabel,
                     );
@@ -1972,9 +1987,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     return ListingRoom3dTile(
       listingDetail: listingDetail,
       isLoading: _isOpeningRoom3d,
-      onTap: _isOpeningRoom3d
-          ? null
-          : () => _openRoom3dViewer(listingDetail),
+      onTap: _isOpeningRoom3d ? null : () => _openRoom3dViewer(listingDetail),
     );
   }
 
@@ -2278,11 +2291,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BlocProvider(
-          create: (context) =>
-              ListingOwnerProfileBloc(
-                getIt<IUserProfileService>(),
-                getIt<IFollowService>(),
-              ),
+          create: (context) => ListingOwnerProfileBloc(
+            getIt<IUserProfileService>(),
+            getIt<IFollowService>(),
+          ),
           child: ListingOwnerProfileScreen(
             userId: userId,
             phoneNumber: phoneNumber,

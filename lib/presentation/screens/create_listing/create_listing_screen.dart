@@ -751,6 +751,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     onToggleExpanded: () => setState(() {
                       _isDescriptionExpanded = !_isDescriptionExpanded;
                     }),
+                    onTranscriptInserted: () => setState(() {}),
                     layout: DescriptionCounterToolbarLayout.stack,
                     counterVisibleAtFraction: 0.7,
                     debugShowTapBounds: false,

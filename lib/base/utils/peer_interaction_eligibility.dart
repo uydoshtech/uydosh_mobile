@@ -13,6 +13,9 @@ import "package:uy_dosh/base/state/user_listing_state.dart";
 final class PeerInteractionEligibility {
   const PeerInteractionEligibility._();
 
+  static const String _internalChatDisabledPublisherEmail =
+      "uydoshtech@gmail.com";
+
   /// Signed in and not the user who published this entity.
   static bool mayInteractWithPublisher({
     required int publisherUserId,
@@ -24,5 +27,14 @@ final class PeerInteractionEligibility {
         UserListingState().currentUserId ?? viewerUserIdFallback;
     if (resolvedUid != null && resolvedUid == publisherUserId) return false;
     return true;
+  }
+
+  /// Listings imported/published under the UyDosh admin account should not
+  /// accept in-app peer chat, even for staff viewers.
+  static bool isInternalListingChatDisabledForPublisherEmail(
+    String? publisherEmail,
+  ) {
+    return publisherEmail?.trim().toLowerCase() ==
+        _internalChatDisabledPublisherEmail;
   }
 }

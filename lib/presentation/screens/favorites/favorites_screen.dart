@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -37,7 +38,9 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_tab_ribbon.dart";
 
 class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key});
+  const FavoritesScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<FavoritesScreen> createState() => _FavoritesScreenState();
@@ -50,7 +53,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   List<Listing> _favoriteListings = [];
   List<GigOffer> _favoriteOffers = [];
   List<GigRequest> _favoriteRequests = [];
-  final Set<int> _itemsBeingRemoved = {}; // Track items being removed for animation
+  final Set<int> _itemsBeingRemoved =
+      {}; // Track items being removed for animation
   final Map<int, ({Listing listing, int index})> _optimisticallyRemoved =
       {}; // Rollback buffer for optimistic removals
   final Map<int, Timer> _listingRemovalCommitTimers =
@@ -101,7 +105,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     getIt<AppAnalyticsService>().logScreenView(screenName: "favorites");
     _favoriteService = getIt<IFavoriteService>();
     _gigService = getIt<IGigService>();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: AppConfig.servicesFeatureEnabled ? 3 : 1,
+      vsync: this,
+    );
 
     _lastAuthenticated = AuthenticationState().isAuthenticated;
 
@@ -228,6 +235,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   /// `null` if every list is empty.
   int? _firstFavoriteTabWithItems() {
     if (_favoriteListings.isNotEmpty) return 0;
+    if (!AppConfig.servicesFeatureEnabled) return null;
     if (_favoriteOffers.isNotEmpty) return 1;
     if (_favoriteRequests.isNotEmpty) return 2;
     return null;
@@ -314,8 +322,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         } else {
           _favoriteListings.addAll(favoriteListings);
         }
-        _hasMoreData =
-            favoriteListings.length >=
+        _hasMoreData = favoriteListings.length >=
             _pageLimit; // If we got less than limit, no more data
         _isLoading = false;
         _hasError = false; // Clear error state on success
@@ -332,13 +339,16 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
       // We've re-synced with backend; clear the dirty flag.
       favoritesState.clearDirty();
-      unawaited(_syncGigFavoriteLists(isRefresh: isRefresh));
+      if (AppConfig.servicesFeatureEnabled) {
+        unawaited(_syncGigFavoriteLists(isRefresh: isRefresh));
+      } else {
+        _applyInitialFavoriteTabSelectionIfNeeded();
+      }
     } catch (e) {
       logger.d("❌ FavoritesScreen: Error loading favorite listings: $e");
 
       // Check if this is an authentication error
-      final isAuthError =
-          e.toString().contains("401") ||
+      final isAuthError = e.toString().contains("401") ||
           e.toString().contains("Unauthorized") ||
           e.toString().contains("Invalid or expired session token");
 
@@ -358,7 +368,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             "Authentication required. Please log in again to view your favorites.";
       } else if (e.toString().contains("network") ||
           e.toString().contains("connection")) {
-        errorMessage = "Network error. Please check your connection and try again.";
+        errorMessage =
+            "Network error. Please check your connection and try again.";
       } else {
         errorMessage = L10n.get("unable_to_load_favorites");
       }
@@ -372,6 +383,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   Future<void> _syncGigFavoriteLists({required bool isRefresh}) async {
+    if (!AppConfig.servicesFeatureEnabled) return;
     if (!AuthenticationState().isAuthenticated) return;
     try {
       if (isRefresh) {
@@ -510,15 +522,17 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Favorites is no longer a bottom-nav tab — it's reached from the drawer
-    // and from the profile screen, both of which push it as a standalone
-    // route. We give it its own Scaffold + AppBar (back-leading) so a pushed
-    // route always has navigation chrome of its own. The body keeps the
-    // same background as Home's feed so tile shadows continue to read
-    // correctly.
     return ListenableBuilder(
       listenable: AuthenticationState(),
       builder: (context, _) {
+        if (widget.embedded) {
+          return ListenableBuilder(
+            listenable: ThemeState(),
+            builder: (context, child) => _buildBody(),
+          );
+        }
+
+        // Standalone routes from the drawer/profile keep their own AppBar.
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
@@ -550,11 +564,11 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       return _buildErrorState();
     }
 
-    // Pushed route with a normal AppBar: the body already starts below the
-    // toolbar. [mainShellGlassExtraTopInset] is for main-tab feeds where the
-    // list scrolls under the glass shell — adding it here duplicates the status
-    // bar inset from [MediaQuery.padding] and leaves a tall empty strip.
     const listTopPad = 8.0;
+    if (!AppConfig.servicesFeatureEnabled) {
+      return _buildListingsFavoritesTab(listTopPad);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1005,11 +1019,11 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         final baseSize = label?.fontSize ?? 14;
         final textStyle =
             label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-            TextStyle(
-              fontSize: baseSize * 1.2,
-              height: 1.0,
-              fontWeight: FontWeight.w500,
-            );
+                TextStyle(
+                  fontSize: baseSize * 1.2,
+                  height: 1.0,
+                  fontWeight: FontWeight.w500,
+                );
         return PrimaryButtonFactory.iconText(
           onPressed: onPressed,
           icon: Icons.home,

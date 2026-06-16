@@ -19,6 +19,7 @@ class AppConfig {
   static const bool enableHapticFeedback = true;
   static const bool enableSoundEffects = true;
   static const bool enableAnimations = true;
+  static const bool servicesFeatureEnabled = false;
 
   /// Yandex Maps JS API key. Resolved at runtime from Firebase Remote
   /// Config (key: `yandex_maps_api_key`) so it can be rotated without
@@ -46,8 +47,7 @@ class AppConfig {
   /// Config (key: `max_photos_per_gig_offer`). Independent from
   /// [maxPhotosPerListing] so the gigs marketplace can evolve its caps
   /// separately from property listings.
-  static int get maxPhotosPerGigOffer =>
-      EnvironmentUtil.maxPhotosPerGigOffer;
+  static int get maxPhotosPerGigOffer => EnvironmentUtil.maxPhotosPerGigOffer;
 
   /// UZS per 1 USD exchange-rate used for client-side display conversions.
   /// Resolved at runtime from Firebase Remote Config (key: `uzs_per_usd`).

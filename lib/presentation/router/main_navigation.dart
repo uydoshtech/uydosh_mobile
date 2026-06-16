@@ -4,6 +4,7 @@ import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
@@ -32,6 +33,7 @@ import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
 import "package:uy_dosh/presentation/router/main_navigation_widgets.dart";
+import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
@@ -202,7 +204,8 @@ class MainNavigationState extends State<MainNavigation>
     getIt<IPushNotificationService>().markNavigationShellNotReady();
     AuthenticationState().removeListener(_authStateListener);
     UnreadMessagesState().removeListener(_unreadMessagesListener);
-    ActiveSearchAlertsState().removeListener(_maybeShowNotificationsBellTutorial);
+    ActiveSearchAlertsState()
+        .removeListener(_maybeShowNotificationsBellTutorial);
     TutorialState().removeListener(_maybeShowNotificationsBellTutorial);
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
@@ -301,9 +304,9 @@ class MainNavigationState extends State<MainNavigation>
       }
 
       // Auth-gate the protected tabs. Logical indices:
-      //   0 = Housing      (public)
-      //   1 = Services hub (public — gates auth at each action boundary)
-      //   2 = Messages     (auth required)
+      //   0 = Housing
+      //   1 = Favorites while Services is hidden; Services when re-enabled
+      //   2 = Messages (auth required)
       if (!_isAuthenticated && mounted && _currentIndex == 2) {
         debugPrint(
           "🔐 AppRouter: User on messages screen but not authenticated, redirecting to auth wizard",
@@ -340,7 +343,8 @@ class MainNavigationState extends State<MainNavigation>
         );
       }
 
-      final completionPercent = ProfileCompletionState.completionPercent(profile);
+      final completionPercent =
+          ProfileCompletionState.completionPercent(profile);
       if (completionPercent >= 100) return;
 
       _profileCompletionPromptShown = true;
@@ -499,8 +503,7 @@ class MainNavigationState extends State<MainNavigation>
                           ),
                         ),
                       if (hiddenCount > 0) ...[
-                        if (primaryLabels.isNotEmpty)
-                          const SizedBox(height: 4),
+                        if (primaryLabels.isNotEmpty) const SizedBox(height: 4),
                         Text(
                           L10n.getWithParams(
                             "complete_profile_prompt_more",
@@ -637,14 +640,15 @@ class MainNavigationState extends State<MainNavigation>
   // rebuild.
   //
   // Strategy:
-  //   - Tabs whose constructor args don't depend on mutable state (Services)
+  //   - Tabs whose constructor args don't depend on mutable state (Favorites/Services)
   //     are built ONCE in initState and stored as `late final` fields.
   //   - Tabs whose args DO depend on `_currentIndex` (Home, Messages) must be
   //     rebuilt so `isHomeTabActive` / `mainTabSelected` stay accurate.
   //
-  // Logical indices: 0=Housing, 1=Services, 2=Messages.
-  // Create flows (housing + gig) are pushed routes via "+" / drawer, not tabs.
+  // Logical indices: 0=Housing, 1=Favorites/Services, 2=Messages.
+  // Create flows are pushed routes via "+" / drawer, not tabs.
   // ---------------------------------------------------------------------------
+  late final Widget _favoritesTab = const FavoritesScreen(embedded: true);
   late final Widget _servicesTab = const GigHubScreen(embedded: true);
 
   List<Widget> _getScreens() {
@@ -652,7 +656,7 @@ class MainNavigationState extends State<MainNavigation>
       // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
       // the shell AppBar count and the feed stay on the same bloc instance.
       HomeScreen(isHomeTabActive: _currentIndex == 0),
-      _servicesTab,
+      AppConfig.servicesFeatureEnabled ? _servicesTab : _favoritesTab,
       MessagesInboxScreen(
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
@@ -729,20 +733,22 @@ class MainNavigationState extends State<MainNavigation>
                         context.pushCreateListing();
                       },
                     ),
-                    const SizedBox(height: 8),
-                    CreateChoiceTile(
-                      emoji: "🛠",
-                      title: L10n.get("create_choice_service"),
-                      subtitle: L10n.get("create_choice_service_subtitle"),
-                      onTap: () {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(sheetContext).pop();
-                        if (!mounted) return;
-                        context.pushPublishGig(
-                          initialMode: GigPublishMode.service,
-                        );
-                      },
-                    ),
+                    if (AppConfig.servicesFeatureEnabled) ...[
+                      const SizedBox(height: 8),
+                      CreateChoiceTile(
+                        emoji: "🛠",
+                        title: L10n.get("create_choice_service"),
+                        subtitle: L10n.get("create_choice_service_subtitle"),
+                        onTap: () {
+                          HapticFeedbackUtils.impact();
+                          Navigator.of(sheetContext).pop();
+                          if (!mounted) return;
+                          context.pushPublishGig(
+                            initialMode: GigPublishMode.service,
+                          );
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -780,11 +786,10 @@ class MainNavigationState extends State<MainNavigation>
 
   // Get the appropriate title for the current screen
   Widget _getAppBarTitle() {
-    final titleStyle =
-        Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ) ??
+    final titleStyle = Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ) ??
         TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -794,7 +799,10 @@ class MainNavigationState extends State<MainNavigation>
       case 0:
         return HomeListingsAppBarTitle(titleStyle: titleStyle);
       case 1:
-        return L10n.text("menu_gigs", style: titleStyle);
+        return L10n.text(
+          AppConfig.servicesFeatureEnabled ? "menu_gigs" : "favorites_title",
+          style: titleStyle,
+        );
       case 2:
         return L10n.text("conversations", style: titleStyle);
       default:
@@ -839,7 +847,8 @@ class MainNavigationState extends State<MainNavigation>
               context,
               alertBellKey: notificationsBellTutorialKey,
               descriptionKey: "tutorial_notifications_bell_description",
-              onComplete: TutorialState().markNotificationsBellTutorialCompleted,
+              onComplete:
+                  TutorialState().markNotificationsBellTutorialCompleted,
             );
             return;
           }
@@ -888,7 +897,8 @@ class MainNavigationState extends State<MainNavigation>
       listenable: ThemeState(),
       builder: (context, _) {
         final themeState = ThemeState();
-        final useLiquidGlassAppBar = themeState.isBlueTheme || themeState.isLightTheme;
+        final useLiquidGlassAppBar =
+            themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
@@ -897,173 +907,173 @@ class MainNavigationState extends State<MainNavigation>
           // feed — not only [themeState.backgroundColor] (same 0xFF1E3A5F as primary).
           extendBody: themeState.isBlueTheme,
           appBar: UydoshAppBar(
-            backgroundColor:
-                useLiquidGlassAppBar
-                    ? liquidGlassAppBarMaterialColor(context)
-                    : appBarTheme.backgroundColor,
-            surfaceTintColor:
-                useLiquidGlassAppBar ? Colors.transparent : appBarTheme.surfaceTintColor,
+            backgroundColor: useLiquidGlassAppBar
+                ? liquidGlassAppBarMaterialColor(context)
+                : appBarTheme.backgroundColor,
+            surfaceTintColor: useLiquidGlassAppBar
+                ? Colors.transparent
+                : appBarTheme.surfaceTintColor,
             elevation: useLiquidGlassAppBar ? 0 : null,
             scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
-            shadowColor:
-                useLiquidGlassAppBar ? Colors.transparent : appBarTheme.shadowColor,
+            shadowColor: useLiquidGlassAppBar
+                ? Colors.transparent
+                : appBarTheme.shadowColor,
             forceMaterialTransparency: useLiquidGlassAppBar,
-            flexibleSpace:
-                useLiquidGlassAppBar
-                    ? const LiquidGlassAppBarFlexibleSpace()
-                    : null,
+            flexibleSpace: useLiquidGlassAppBar
+                ? const LiquidGlassAppBarFlexibleSpace()
+                : null,
             foregroundColor: appBarTheme.foregroundColor,
-        title: _getAppBarTitle(),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Align(
-            alignment: Alignment.center,
-            child: Builder(
-              builder: (scaffoldContext) {
-                return _threeDAppBarIconButton(
-                  iconData: Icons.menu,
-                  onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
-                  semanticsLabel:
-                      MaterialLocalizations.of(context).openAppDrawerTooltip,
-                );
-              },
-            ),
-          ),
-        ),
-        actions: [
-          ListenableBuilder(
-            listenable: Listenable.merge([
-              AuthenticationState(),
-              ActiveSearchAlertsState(),
-            ]),
-            builder: (context, _) {
-              final signedIn = AuthenticationState().isAuthenticated;
-              if (!signedIn) return const SizedBox.shrink();
-
-              final activeAlerts =
-                  ActiveSearchAlertsState().hasActiveEnabledAlerts;
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: TutorialTargetWrapper(
-                  key: notificationsBellTutorialKey,
-                  child: _threeDAppBarIconButton(
-                    borderRadius: const BorderRadius.all(Radius.circular(999)),
-                    // iconData isn't used when iconWidget is provided; keep a stable default.
-                    iconData: Icons.notifications_none_outlined,
-                    iconWidget: NotificationsBellIcon(active: activeAlerts),
-                    onPressed: () {
-                      context.pushNotifications();
-                    },
-                    semanticsLabel: activeAlerts
-                        ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
-                        : L10n.get("menu_notifications"),
-                  ),
-                ),
-              );
-            },
-          ),
-          // Profile button on the right side with proper margin
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TutorialTargetWrapper(
-              key: profileIconTutorialKey,
-              child: ListenableBuilder(
-                listenable: AuthenticationState(),
-                builder: (context, child) {
-                  final isAuthenticated = AuthenticationState().isAuthenticated;
-
-                  // Show themed circle when user is not authenticated
-                  if (!isAuthenticated) {
+            title: _getAppBarTitle(),
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Align(
+                alignment: Alignment.center,
+                child: Builder(
+                  builder: (scaffoldContext) {
                     return _threeDAppBarIconButton(
-                      borderRadius: const BorderRadius.all(Radius.circular(999)),
-                      iconData: Icons.person_outline,
-                      onPressed: () {
-                        context.pushReplaceAuthWizard().then((_) {
-                          if (mounted) {
-                            setState(() {
-                              _currentIndex = 0;
-                            });
-                          }
-                        });
-                      },
-                      semanticsLabel: L10n.get("profile"),
-                      iconSize: 28,
+                      iconData: Icons.menu,
+                      onPressed: () =>
+                          Scaffold.of(scaffoldContext).openDrawer(),
+                      semanticsLabel: MaterialLocalizations.of(context)
+                          .openAppDrawerTooltip,
                     );
-                  }
+                  },
+                ),
+              ),
+            ),
+            actions: [
+              ListenableBuilder(
+                listenable: Listenable.merge([
+                  AuthenticationState(),
+                  ActiveSearchAlertsState(),
+                ]),
+                builder: (context, _) {
+                  final signedIn = AuthenticationState().isAuthenticated;
+                  if (!signedIn) return const SizedBox.shrink();
 
-                  // Show just the person icon (no circle) when user is authenticated
-                  return ListenableBuilder(
-                    listenable: Listenable.merge([
-                      ThemeState(),
-                      ProfileCompletionState(),
-                    ]),
-                    builder: (context, child) {
-                      final needsCompletion =
-                          ProfileCompletionState().needsProfileCompletion;
-                      final hasAvatar =
-                          resolveAvatarUrl(
-                            ProfileCompletionState().effectiveAvatarUrl,
-                          ) !=
-                          null;
+                  final activeAlerts =
+                      ActiveSearchAlertsState().hasActiveEnabledAlerts;
 
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          _threeDAppBarIconButton(
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(999),
-                            ),
-                            iconData: Icons.person_outline,
-                            onPressed: () => context.pushProfile(),
-                            semanticsLabel: L10n.get("profile"),
-                            iconSize: 28,
-                            padding:
-                                hasAvatar
-                                    ? EdgeInsets.zero
-                                    : const EdgeInsets.all(6),
-                            contentSlotSize:
-                                hasAvatar ? kAppBarAvatarContentSize : 28,
-                            iconWidget: AppBarProfileIcon(
-                              iconSize:
-                                  hasAvatar ? kAppBarAvatarContentSize : 28,
-                              iconColor:
-                                  ThemeState().isBlueTheme
-                                      ? Colors.white
-                                      : Colors.black,
-                            ),
-                          ),
-                          if (needsCompletion)
-                            Positioned(
-                              right: -2,
-                              bottom: -2,
-                              child: Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: AppColors.success,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.white
-                                            : Colors.grey.shade300,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: TutorialTargetWrapper(
+                      key: notificationsBellTutorialKey,
+                      child: _threeDAppBarIconButton(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(999)),
+                        // iconData isn't used when iconWidget is provided; keep a stable default.
+                        iconData: Icons.notifications_none_outlined,
+                        iconWidget: NotificationsBellIcon(active: activeAlerts),
+                        onPressed: () {
+                          context.pushNotifications();
+                        },
+                        semanticsLabel: activeAlerts
+                            ? "${L10n.get("menu_notifications")}, ${L10n.get("notifications_appbar_semantics_active_alerts")}"
+                            : L10n.get("menu_notifications"),
+                      ),
+                    ),
                   );
                 },
               ),
-            ),
+              // Profile button on the right side with proper margin
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: TutorialTargetWrapper(
+                  key: profileIconTutorialKey,
+                  child: ListenableBuilder(
+                    listenable: AuthenticationState(),
+                    builder: (context, child) {
+                      final isAuthenticated =
+                          AuthenticationState().isAuthenticated;
+
+                      // Show themed circle when user is not authenticated
+                      if (!isAuthenticated) {
+                        return _threeDAppBarIconButton(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(999)),
+                          iconData: Icons.person_outline,
+                          onPressed: () {
+                            context.pushReplaceAuthWizard().then((_) {
+                              if (mounted) {
+                                setState(() {
+                                  _currentIndex = 0;
+                                });
+                              }
+                            });
+                          },
+                          semanticsLabel: L10n.get("profile"),
+                          iconSize: 28,
+                        );
+                      }
+
+                      // Show just the person icon (no circle) when user is authenticated
+                      return ListenableBuilder(
+                        listenable: Listenable.merge([
+                          ThemeState(),
+                          ProfileCompletionState(),
+                        ]),
+                        builder: (context, child) {
+                          final needsCompletion =
+                              ProfileCompletionState().needsProfileCompletion;
+                          final hasAvatar = resolveAvatarUrl(
+                                ProfileCompletionState().effectiveAvatarUrl,
+                              ) !=
+                              null;
+
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              _threeDAppBarIconButton(
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(999),
+                                ),
+                                iconData: Icons.person_outline,
+                                onPressed: () => context.pushProfile(),
+                                semanticsLabel: L10n.get("profile"),
+                                iconSize: 28,
+                                padding: hasAvatar
+                                    ? EdgeInsets.zero
+                                    : const EdgeInsets.all(6),
+                                contentSlotSize:
+                                    hasAvatar ? kAppBarAvatarContentSize : 28,
+                                iconWidget: AppBarProfileIcon(
+                                  iconSize:
+                                      hasAvatar ? kAppBarAvatarContentSize : 28,
+                                  iconColor: ThemeState().isBlueTheme
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                              if (needsCompletion)
+                                Positioned(
+                                  right: -2,
+                                  bottom: -2,
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.grey.shade300,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
           drawer: const BurgerMenuWidget(),
           onDrawerChanged: (isOpened) {
             if (isOpened) HapticFeedbackUtils.impact();
@@ -1077,13 +1087,13 @@ class MainNavigationState extends State<MainNavigation>
                 navigationKey: _bottomNavigationKey,
                 isAuthenticated: _isAuthenticated,
                 hasUnreadMessages: UnreadMessagesState().hasUnreadMessages,
-                incomingMessageTravelDotTrigger: _incomingMessageTravelDotTrigger,
+                incomingMessageTravelDotTrigger:
+                    _incomingMessageTravelDotTrigger,
                 onCreatePressed: _showCreateChoiceSheet,
                 onTap: (index) {
                   HapticFeedbackUtils.impact();
 
-                  // Messages (2) is gated inside [CustomCurvedNavigationBar]
-                  // for anonymous users; Services (1) is intentionally public.
+                  // Messages (2) is gated inside [CustomCurvedNavigationBar].
 
                   // Allow navigation to all tabs
                   setState(() {

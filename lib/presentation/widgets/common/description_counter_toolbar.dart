@@ -44,6 +44,7 @@ class DescriptionCounterToolbar extends StatefulWidget {
     this.counterVisibleAtFraction = 0.0,
     this.maxDescriptionLength = 1000,
     this.debugShowTapBounds = false,
+    this.onTranscriptInserted,
   });
 
   final TextEditingController controller;
@@ -77,6 +78,9 @@ class DescriptionCounterToolbar extends StatefulWidget {
   /// When true, draws a visible outline around the action buttons so tap bounds
   /// are obvious while tuning hit targets.
   final bool debugShowTapBounds;
+
+  /// Propagates controller-driven dictation inserts to the owning form.
+  final VoidCallback? onTranscriptInserted;
 
   @override
   State<DescriptionCounterToolbar> createState() =>
@@ -181,6 +185,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
               inlineWithCounter: true,
               maxDescriptionLength: widget.maxDescriptionLength,
               dictationMeter: dictationMeter,
+              onTranscriptInserted: widget.onTranscriptInserted,
             ),
           ),
         ),

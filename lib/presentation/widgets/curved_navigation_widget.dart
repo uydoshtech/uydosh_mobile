@@ -1,7 +1,9 @@
 import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart" show AppColors, BlueThemeColors;
+import "package:uy_dosh/base/constants/app_colors.dart"
+    show AppColors, BlueThemeColors;
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -28,6 +30,7 @@ class CustomCurvedNavigationBar extends StatefulWidget {
 
   final int currentIndex;
   final ValueChanged<int> onTap;
+
   /// [GlobalKey] for the underlying [CurvedNavigationBar] (package state), e.g.
   /// to drive its animation API. Must be passed as [CurvedNavigationBar.key].
   final GlobalKey<CurvedNavigationBarState> navigationKey;
@@ -231,20 +234,23 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }
 
   // Build navigation items. Layout:
-  //   0 = Housing      (public tab)
-  //   1 = Services hub (public tab)
-  //   2 = Messages     (auth required tab)
+  //   0 = Housing
+  //   1 = Favorites while Services is hidden; Services when re-enabled
+  //   2 = Messages (auth required tab)
   //   3 = "+" launcher (never a selected tab; overlay handles taps)
   List<Widget> _buildNavigationItems(
     _NavPalette palette,
     ThemeState themeState,
   ) {
     return <Widget>[
-      _buildNavigationItem(palette, Icons.home, "nav_housing", widget.currentIndex == 0),
+      _buildNavigationItem(
+          palette, Icons.home, "nav_housing", widget.currentIndex == 0),
       _buildNavigationItem(
         palette,
-        Icons.handyman_outlined,
-        "menu_gigs",
+        AppConfig.servicesFeatureEnabled
+            ? Icons.handyman_outlined
+            : CupertinoIcons.suit_heart,
+        AppConfig.servicesFeatureEnabled ? "menu_gigs" : "menu_favorites",
         widget.currentIndex == 1,
       ),
       _buildConversationsItem(palette, themeState),
@@ -305,7 +311,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }
 
   /// Handle a tap on a bar position (when not caught by the "+" overlay).
-  ///   0 = Housing, 1 = Services, 2 = Messages, 3 = "+" create launcher.
+  ///   0 = Housing, 1 = Favorites/Services, 2 = Messages, 3 = "+" create launcher.
   void _handleNavigationTap(int barIndex, bool isAuthenticated) {
     switch (barIndex) {
       case 0:
@@ -332,14 +338,12 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   // Launch authentication wizard
   void _launchAuthWizard(BuildContext context) {
     HapticFeedbackUtils.impact();
-    context
-        .pushReplaceAuthWizard()
-        .then((_) {
-          // After successful authentication, redirect to home screen
-          // This ensures users go to home instead of their original destination
-          if (mounted) {
-            widget.onTap(0); // Navigate to home screen (index 0)
-          }
-        });
+    context.pushReplaceAuthWizard().then((_) {
+      // After successful authentication, redirect to home screen
+      // This ensures users go to home instead of their original destination
+      if (mounted) {
+        widget.onTap(0); // Navigate to home screen (index 0)
+      }
+    });
   }
 }

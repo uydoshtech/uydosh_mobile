@@ -18,8 +18,8 @@ abstract final class AppDomains {
   /// Google Play / Firebase Android applicationId (not a website).
   static const androidApplicationId = 'com.uydosh.app';
 
-  /// macOS bundle id suffix (not a website).
-  static const macosBundleId = 'com.uydosh.app.uyDosh';
+  /// macOS bundle identifier (not a website).
+  static const macosBundleId = 'com.uydosh.app';
 
   static bool isListingLinkHost(String host) {
     final h = host.toLowerCase();

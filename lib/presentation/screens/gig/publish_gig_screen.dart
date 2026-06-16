@@ -1124,6 +1124,8 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                                   visibleAt: _descriptionCounterVisibleAt,
                                   isExpanded: _isDescriptionExpanded,
                                   maxDescriptionLength: _descriptionMaxLength,
+                                  onTranscriptInserted: () =>
+                                      _mutateForm(() {}),
                                   onToggleExpanded: () => _mutateForm(() {
                                     _isDescriptionExpanded =
                                         !_isDescriptionExpanded;
@@ -2285,6 +2287,7 @@ class _GigDescriptionToolbar extends StatefulWidget {
     required this.visibleAt,
     required this.isExpanded,
     required this.onToggleExpanded,
+    this.onTranscriptInserted,
     this.maxDescriptionLength = 1000,
   });
 
@@ -2295,6 +2298,7 @@ class _GigDescriptionToolbar extends StatefulWidget {
   final int visibleAt;
   final bool isExpanded;
   final VoidCallback onToggleExpanded;
+  final VoidCallback? onTranscriptInserted;
   final int maxDescriptionLength;
 
   @override
@@ -2387,6 +2391,7 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
               inlineWithCounter: true,
               maxDescriptionLength: widget.maxDescriptionLength,
               dictationMeter: dictationMeter,
+              onTranscriptInserted: widget.onTranscriptInserted,
             ),
           ),
         ],

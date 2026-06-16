@@ -54,7 +54,8 @@ class AppStrings {
       "compatibility_matches": "Matched preferences:",
       "compatibility_differences": "Potential differences:",
       "compatibility_critical_differences": "Critical differences:",
-      "compatibility_based_on_preferences": "Based on {scored} of {total} preferences",
+      "compatibility_based_on_preferences":
+          "Based on {scored} of {total} preferences",
       "vs": "vs",
       "name": "Name or nickname",
       "im_from": "I'm from:",
@@ -93,7 +94,8 @@ class AppStrings {
       "error_generic_try_again": "An error occurred. Please try again.",
       "error_unable_to_complete_try_again":
           "Unable to complete the request. Please try again.",
-      "error_no_internet": "No internet connection. Please check your network settings.",
+      "error_no_internet":
+          "No internet connection. Please check your network settings.",
       "error_timeout_check_connection":
           "Request timed out. Please check your internet connection and try again.",
       "error_server_try_later": "Server error. Please try again later.",
@@ -128,7 +130,8 @@ class AppStrings {
           "This conversation may contain scam/fraud signals. Be cautious with links, codes, and payment requests.",
       "chat_safety_reason_deposit_to_reserve_room":
           "The user is asking for a deposit to reserve the room.",
-      "chat_safety_reason_suspicious_link": "The user is sharing a suspicious link.",
+      "chat_safety_reason_suspicious_link":
+          "The user is sharing a suspicious link.",
       "chat_safety_reason_off_platform":
           "The user is trying to move the conversation off-platform.",
       "chat_safety_reason_otp_code":
@@ -153,8 +156,7 @@ class AppStrings {
       "admin_listing_owner_conversations_card_title": "Listing chats (admin)",
       "admin_listing_owner_conversations_card_subtitle":
           "See every in-app conversation between guests and this listing's owner.",
-      "admin_listing_owner_conversations_screen_title":
-          "Chats on this listing",
+      "admin_listing_owner_conversations_screen_title": "Chats on this listing",
       "admin_listing_owner_conversations_empty":
           "No listing chats in the app yet.",
       "admin_listing_owner_conversations_error":
@@ -185,7 +187,8 @@ class AppStrings {
       "inbox_push_off_banner_title":
           "Turn on notifications so you don't miss new messages",
       "notifications_enabled": "Notifications enabled",
-      "notifications_enable_in_settings": "Please enable notifications in Settings",
+      "notifications_enable_in_settings":
+          "Please enable notifications in Settings",
       "notifications_appbar_semantics_active_alerts": "Active search alerts",
       "notifications_empty": "No saved alerts yet.",
       "notifications_alerts_explainer":
@@ -206,6 +209,8 @@ class AppStrings {
       "type_message": "Type a message...",
       "conversation_created": "Conversation started",
       "conversation_failed": "Failed to start conversation",
+      "error_listing_chat_disabled":
+          "In-app chat is unavailable for this listing",
       "no_conversations": "No conversations yet",
       "no_messages": "No messages yet",
       "no_messages_description":
@@ -269,17 +274,14 @@ class AppStrings {
           "Are you still looking for a roommate?",
       "quick_question_roommate_move_in_date": "When would someone move in?",
       "quick_question_roommate_household": "Who lives in the flat now?",
-      "quick_question_roommate_rent_terms":
-          "How do rent and bills work?",
-      "quick_question_roommate_meet_soon":
-          "Could we chat or meet soon?",
+      "quick_question_roommate_rent_terms": "How do rent and bills work?",
+      "quick_question_roommate_meet_soon": "Could we chat or meet soon?",
       "quick_question_seeker_move_in_when": "When do you want to move in?",
       "quick_question_seeker_budget": "What is your budget?",
       "quick_question_seeker_how_long": "How long are you looking to rent?",
       "quick_question_seeker_about_you": "Could you tell me about yourself?",
       "quick_question_generic_price": "How much does it cost?",
-      "quick_question_generic_whats_included":
-          "What's included in the price?",
+      "quick_question_generic_whats_included": "What's included in the price?",
       "quick_question_generic_when_available": "When are you available?",
       "quick_question_generic_how_soon": "How soon can we start?",
       "quick_question_generic_arrangement":
@@ -424,7 +426,8 @@ class AppStrings {
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
-      "successfully_signed_in_telegram": "Successfully signed in with Telegram!",
+      "successfully_signed_in_telegram":
+          "Successfully signed in with Telegram!",
 
       // ===== EMPTY STATES =====
       "my_listings_empty_state": "You haven't created any listings yet.",
@@ -624,7 +627,7 @@ class AppStrings {
       "listing_type_label": "Listing type",
       "listing_type_short_roommate_needed": "Looking for roommate",
       "listing_type_short_roommate_needed_female": "Looking for roommate",
-      "listing_type_short_room_needed": "Room",
+      "listing_type_short_room_needed": "Looking for room",
       "gender_short_male": "Male",
       "gender_short_female": "Female",
       "gender_badge_male": "Guy",
@@ -873,9 +876,11 @@ class AppStrings {
       "gigs_hub_open_requests_title": "Open requests",
       "gigs_hub_open_requests_subtitle": "Tasks people are looking to get done",
       "gigs_hub_publish_offer_title": "Publish a service",
-      "gigs_hub_publish_offer_subtitle": "Offer your skills — let clients book you",
+      "gigs_hub_publish_offer_subtitle":
+          "Offer your skills — let clients book you",
       "gigs_hub_publish_title": "Publish",
-      "gigs_hub_publish_subtitle": "A task you need done, or a service you offer",
+      "gigs_hub_publish_subtitle":
+          "A task you need done, or a service you offer",
       "gigs_publish_screen_title": "Publish",
       "gigs_publish_mode_task": "Task",
       "gigs_publish_mode_task_subtitle": "I need something done",
@@ -888,8 +893,7 @@ class AppStrings {
       "gigs_browse_empty": "No services available yet.",
       "gigs_offer_detail_title": "Service",
       "gigs_offer_book_cta": "Book this service",
-      "gigs_offer_book_view_orders_cta":
-          "Booked: chat with {user_name}",
+      "gigs_offer_book_view_orders_cta": "Booked: chat with {user_name}",
       "gigs_offer_edit_cta": "Edit service",
       "gigs_offer_provider_fallback": "Service provider",
       "gigs_offer_provider_completed_jobs": "{count} jobs completed",
@@ -981,18 +985,23 @@ class AppStrings {
       "gigs_status_cancelled": "Cancelled",
       "gigs_status_disputed": "Disputed",
 
-      "gigs_chat_menu_invite_provider_to_book": "Invite to book (needs their OK)",
+      "gigs_chat_menu_invite_provider_to_book":
+          "Invite to book (needs their OK)",
       "gigs_invite_provider_dialog_title": "Invite provider",
       "gigs_invite_provider_dialog_body":
           "They must accept under My bookings before the job is confirmed. Enter the agreed amount if there is no task budget.",
-      "gigs_invite_provider_dialog_field_hint": "Agreed amount (optional if task has a budget)",
+      "gigs_invite_provider_dialog_field_hint":
+          "Agreed amount (optional if task has a budget)",
       "gigs_invite_provider_confirm": "Send invite",
-      "gigs_invite_provider_success_toast": "Invite sent. They can tap Accept under My bookings.",
+      "gigs_invite_provider_success_toast":
+          "Invite sent. They can tap Accept under My bookings.",
       "gigs_invite_provider_failed_toast": "Could not send invite. Try again.",
       "gigs_invite_provider_amount_required":
           "Enter an agreed amount, or add a budget to the task first.",
-      "gigs_invite_provider_owner_only": "Only the person who posted the task can invite.",
-      "gigs_invite_provider_not_open_task": "This task is no longer open for invites.",
+      "gigs_invite_provider_owner_only":
+          "Only the person who posted the task can invite.",
+      "gigs_invite_provider_not_open_task":
+          "This task is no longer open for invites.",
       "gigs_action_accept_booking": "Accept",
       "gigs_action_chat_booking": "Chat",
       "gigs_booking_chat_peer_fallback": "Participant",
@@ -1072,7 +1081,8 @@ class AppStrings {
           "Require approval for new listings and gigs",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
           "When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.",
-      "admin_app_setting_phone_sign_in_enabled_title": "Allow sign-in with phone",
+      "admin_app_setting_phone_sign_in_enabled_title":
+          "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "When off, the auth wizard keeps phone sign-in unavailable and shows an info toast. When on, users can use Firebase SMS verification.",
 
@@ -1128,22 +1138,19 @@ class AppStrings {
           "Destructive operations that reset the database. Use on dev/staging when re-running imports. Cannot be undone.",
       "admin_data_import_clear_listings_button": "Clear listings table",
       "admin_data_import_clear_listings_running": "Clearing listings…",
-      "admin_data_import_clear_listings_confirm_title":
-          "Clear all listings?",
+      "admin_data_import_clear_listings_confirm_title": "Clear all listings?",
       "admin_data_import_clear_listings_confirm_body":
           "This wipes every row in the listings table. All photos, amenities, favorites, complaints, conversations and ingested Telegram messages that reference listings are deleted too. Sequence ids are reset. This cannot be undone.",
       "admin_data_import_clear_listings_done":
           "Cleared {listings_str} (and {ingested_str}).",
       "admin_data_import_clear_ingested_button":
           "Clear ingested Telegram messages",
-      "admin_data_import_clear_ingested_running":
-          "Clearing ingested messages…",
+      "admin_data_import_clear_ingested_running": "Clearing ingested messages…",
       "admin_data_import_clear_ingested_confirm_title":
           "Clear ingested Telegram messages?",
       "admin_data_import_clear_ingested_confirm_body":
           "This wipes every row in the telegram_ingested_messages table. Existing listings are kept. Sequence id is reset. This cannot be undone.",
-      "admin_data_import_clear_ingested_done":
-          "Cleared {ingested_str}.",
+      "admin_data_import_clear_ingested_done": "Cleared {ingested_str}.",
       "listings_count_one": "{count} listing",
       "listings_count_other": "{count} listings",
       "ingested_messages_count_one": "{count} ingested message",
@@ -1173,8 +1180,7 @@ class AppStrings {
       "admin_listing_moderation_summary_oldest": "Longest wait",
       "admin_listing_moderation_days_short": "d",
       "admin_listing_moderation_section_list": "Awaiting review",
-      "admin_listing_moderation_empty":
-          "No listings are waiting for approval.",
+      "admin_listing_moderation_empty": "No listings are waiting for approval.",
       "admin_listing_moderation_open": "View",
       "admin_listing_moderation_approve": "Approve",
       "admin_listing_moderation_id": "ID",
@@ -1748,7 +1754,8 @@ class AppStrings {
       "compatibility_matches": "Совпадающие предпочтения:",
       "compatibility_differences": "Возможные различия:",
       "compatibility_critical_differences": "Критичные различия:",
-      "compatibility_based_on_preferences": "На основе {scored} из {total} предпочтений",
+      "compatibility_based_on_preferences":
+          "На основе {scored} из {total} предпочтений",
       "vs": "vs",
       "name": "Имя или никнейм",
       "im_from": "Я из:",
@@ -1784,10 +1791,12 @@ class AppStrings {
 
       "error_loading_profile": "Не удалось загрузить профиль",
 
-      "error_generic_try_again": "Произошла ошибка. Пожалуйста, попробуйте снова.",
+      "error_generic_try_again":
+          "Произошла ошибка. Пожалуйста, попробуйте снова.",
       "error_unable_to_complete_try_again":
           "Не удалось выполнить запрос. Пожалуйста, попробуйте снова.",
-      "error_no_internet": "Нет подключения к интернету. Проверьте настройки сети.",
+      "error_no_internet":
+          "Нет подключения к интернету. Проверьте настройки сети.",
       "error_timeout_check_connection":
           "Время ожидания истекло. Проверьте интернет-соединение и попробуйте снова.",
       "error_server_try_later": "Ошибка сервера. Пожалуйста, попробуйте позже.",
@@ -1795,10 +1804,12 @@ class AppStrings {
           "Сервис временно недоступен. Пожалуйста, попробуйте позже.",
       "error_invalid_request":
           "Некорректный запрос. Проверьте данные и попробуйте снова.",
-      "error_auth_required": "Требуется авторизация. Пожалуйста, войдите снова.",
+      "error_auth_required":
+          "Требуется авторизация. Пожалуйста, войдите снова.",
       "error_access_denied": "Доступ запрещён. У вас нет прав на это действие.",
       "error_not_found": "Запрошенный ресурс не найден.",
-      "error_conflict": "Ресурс уже существует или конфликтует с текущими данными.",
+      "error_conflict":
+          "Ресурс уже существует или конфликтует с текущими данными.",
       "error_invalid_data": "Переданы некорректные данные. Проверьте ввод.",
       "error_too_many_requests":
           "Слишком много запросов. Подождите немного и попробуйте снова.",
@@ -1842,7 +1853,8 @@ class AppStrings {
           "Чат исчезнет из списков обоих пользователей, продолжить общение в этой ветке будет нельзя. Продолжить?",
       "admin_delete_conversation_success": "Переписка удалена",
       "admin_delete_conversation_error": "Не удалось удалить переписку",
-      "admin_listing_owner_conversations_card_title": "Чаты по объявлению (админ)",
+      "admin_listing_owner_conversations_card_title":
+          "Чаты по объявлению (админ)",
       "admin_listing_owner_conversations_card_subtitle":
           "Все диалоги в приложении между пользователями и автором объявления.",
       "admin_listing_owner_conversations_screen_title":
@@ -1861,8 +1873,7 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
-      "notifications_alert_match_header":
-          "Мы пришлем вам пуш-уведомление на:",
+      "notifications_alert_match_header": "Мы пришлем вам пуш-уведомление на:",
       "notifications_alert_match_header_paused":
           "Приостановлено — без пуш-уведомлений для:",
       "notifications_push_off_title": "Push-уведомления {where} отключены",
@@ -1900,6 +1911,8 @@ class AppStrings {
       "type_message": "Введите сообщение...",
       "conversation_created": "Разговор начат",
       "conversation_failed": "Не удалось начать разговор",
+      "error_listing_chat_disabled":
+          "Чат в приложении недоступен для этого объявления",
       "no_conversations": "Пока нет разговоров",
       "no_messages": "Пока нет сообщений",
       "no_messages_description":
@@ -1959,14 +1972,10 @@ class AppStrings {
       "quick_question_total_price":
           "Какая итоговая цена со всеми коммунальными?",
       "quick_question_can_visit_soon": "Можно прийти посмотреть на днях?",
-      "quick_question_roommate_still_searching":
-          "Вы ещё ищете сожителя?",
-      "quick_question_roommate_move_in_date":
-          "Когда можно было бы заселиться?",
-      "quick_question_roommate_household":
-          "Кто уже живёт в квартире?",
-      "quick_question_roommate_rent_terms":
-          "Как делите аренду и коммунальные?",
+      "quick_question_roommate_still_searching": "Вы ещё ищете сожителя?",
+      "quick_question_roommate_move_in_date": "Когда можно было бы заселиться?",
+      "quick_question_roommate_household": "Кто уже живёт в квартире?",
+      "quick_question_roommate_rent_terms": "Как делите аренду и коммунальные?",
       "quick_question_roommate_meet_soon":
           "Можем познакомиться или созвониться?",
       "quick_question_seeker_move_in_when": "Когда планируете заехать?",
@@ -2096,7 +2105,8 @@ class AppStrings {
       "room_3d_floor_plan_edit_dimension_cancel": "Отмена",
       "room_3d_floor_plan_edit_dimension_apply": "Применить",
       "room_3d_floor_plan_edit_dimension_updated": "Размер обновлён",
-      "room_3d_floor_plan_edit_dimension_large_change_title": "Большое изменение",
+      "room_3d_floor_plan_edit_dimension_large_change_title":
+          "Большое изменение",
       "room_3d_floor_plan_edit_dimension_large_change_message":
           "Новое значение сильно отличается от результата сканирования. Применить исправление?",
       "room_3d_floor_plan_edit_dimension_invalid_title": "Неверное значение",
@@ -2295,8 +2305,7 @@ class AppStrings {
       "ai_allowance_banner_title": "Использование AI-помощника",
       "ai_allowance_meter_translate":
           "Осталось переводов объявлений (UTC-месяц): {count}",
-      "ai_allowance_meter_enhance":
-          "Осталось улучшений описания AI: {count}",
+      "ai_allowance_meter_enhance": "Осталось улучшений описания AI: {count}",
       "ai_allowance_meter_chat": "Осталось переводов в чате: {count}",
       "ai_allowance_meter_unlimited": "Без лимита",
       "ai_allowance_premium_active_until": "AI Premium до {date}",
@@ -2328,11 +2337,11 @@ class AppStrings {
       "listing_type_label": "Тип объявления",
       "listing_type_short_roommate_needed": "Ищем Соседа",
       "listing_type_short_roommate_needed_female": "Ищем Соседку",
-      "listing_type_short_room_needed": "Комната",
+      "listing_type_short_room_needed": "Ищу Комнату",
       "gender_short_male": "Парень",
       "gender_short_female": "Девушка",
       "gender_badge_male": "Парня",
-      "gender_badge_female": "Девушку",
+      "gender_badge_female": "Девушка",
       "listing_photo_coming_soon": "Фото скоро",
       "price_unit_uzs_per_month": "сум/мес",
       "price_unit_usd_per_month": "\$/мес",
@@ -2574,13 +2583,16 @@ class AppStrings {
       "gigs_hub_post_title": "Опубликовать задачу",
       "gigs_hub_post_subtitle": "Опишите задачу — исполнители предложат цену",
       "gigs_hub_my_bookings_title": "Мои заказы",
-      "gigs_hub_my_bookings_subtitle": "Задачи, которые вы заказали или приняли",
+      "gigs_hub_my_bookings_subtitle":
+          "Задачи, которые вы заказали или приняли",
       "gigs_hub_open_requests_title": "Открытые задачи",
       "gigs_hub_open_requests_subtitle": "Задачи от заказчиков",
       "gigs_hub_publish_offer_title": "Опубликовать услугу",
-      "gigs_hub_publish_offer_subtitle": "Предложите свои навыки — клиенты сами вас найдут",
+      "gigs_hub_publish_offer_subtitle":
+          "Предложите свои навыки — клиенты сами вас найдут",
       "gigs_hub_publish_title": "Опубликовать",
-      "gigs_hub_publish_subtitle": "Задача, которую нужно сделать, или услуга, которую вы оказываете",
+      "gigs_hub_publish_subtitle":
+          "Задача, которую нужно сделать, или услуга, которую вы оказываете",
       "gigs_publish_screen_title": "Опубликовать",
       "gigs_publish_mode_task": "Задача",
       "gigs_publish_mode_task_subtitle": "мне нужно что-то сделать",
@@ -2593,8 +2605,7 @@ class AppStrings {
       "gigs_browse_empty": "Пока нет доступных услуг",
       "gigs_offer_detail_title": "Услуга",
       "gigs_offer_book_cta": "Заказать услугу",
-      "gigs_offer_book_view_orders_cta":
-          "Заказано: чат с {user_name}",
+      "gigs_offer_book_view_orders_cta": "Заказано: чат с {user_name}",
       "gigs_offer_edit_cta": "Редактировать услугу",
       "gigs_offer_provider_fallback": "Исполнитель",
       "gigs_offer_provider_completed_jobs": "Выполнено заказов: {count}",
@@ -2609,7 +2620,8 @@ class AppStrings {
       "gigs_post_request_title": "Опубликовать задачу",
       "gigs_post_request_submit": "Опубликовать",
       "gigs_loading": "Загрузка…",
-      "gigs_categories_unavailable": "Категории недоступны. Нажмите, чтобы повторить.",
+      "gigs_categories_unavailable":
+          "Категории недоступны. Нажмите, чтобы повторить.",
       "gigs_post_request_field_category": "Категория",
       "gigs_post_request_field_title": "Название",
       "gigs_post_request_field_description": "Описание (необязательно)",
@@ -2623,8 +2635,7 @@ class AppStrings {
       "gigs_post_field_address_detail": "Подробный адрес (необязательно)",
       "address_suggest_connection_error":
           "Не удалось загрузить подсказки адреса. Проверьте подключение к интернету.",
-      "address_suggest_unavailable":
-          "Подсказки адреса временно недоступны.",
+      "address_suggest_unavailable": "Подсказки адреса временно недоступны.",
       "address_suggest_failed": "Не удалось загрузить подсказки адреса.",
       "gigs_post_field_district": "Район (необязательно)",
       "gigs_post_request_field_remote": "Удалённо",
@@ -2649,13 +2660,15 @@ class AppStrings {
       "gigs_request_delete_message":
           "Задача пропадёт из списка для всех. В приложении это действие нельзя отменить.",
       "gigs_request_delete_success": "Задача удалена.",
-      "gigs_request_delete_failed": "Не удалось удалить задачу. Попробуйте снова.",
+      "gigs_request_delete_failed":
+          "Не удалось удалить задачу. Попробуйте снова.",
       "gigs_offer_delete_menu": "Удалить услугу",
       "gigs_offer_delete_title": "Удалить услугу?",
       "gigs_offer_delete_message":
           "Услуга пропадёт из списка для всех. В приложении это действие нельзя отменить.",
       "gigs_offer_delete_success": "Услуга удалена.",
-      "gigs_offer_delete_failed": "Не удалось удалить услугу. Попробуйте снова.",
+      "gigs_offer_delete_failed":
+          "Не удалось удалить услугу. Попробуйте снова.",
       "gigs_post_offer_field_pricing_type": "Тип цены",
       "gigs_post_offer_field_price": "Цена",
       "gigs_post_offer_field_min_duration": "Минимальная длительность (мин)",
@@ -2696,7 +2709,8 @@ class AppStrings {
       "gigs_invite_provider_confirm": "Отправить приглашение",
       "gigs_invite_provider_success_toast":
           "Приглашение отправлено. Принять можно во вкладке «Мои заказы».",
-      "gigs_invite_provider_failed_toast": "Не удалось отправить. Попробуйте ещё раз.",
+      "gigs_invite_provider_failed_toast":
+          "Не удалось отправить. Попробуйте ещё раз.",
       "gigs_invite_provider_amount_required":
           "Укажите сумму или задайте бюджет в задаче.",
       "gigs_invite_provider_owner_only":
@@ -2717,7 +2731,8 @@ class AppStrings {
       "gigs_request_detail_title": "Задача",
       "gigs_request_description_label": "Об этой задаче",
       "gigs_request_contact_cta": "Написать заказчику",
-      "gigs_request_contact_failed": "Не удалось открыть чат. Попробуйте снова.",
+      "gigs_request_contact_failed":
+          "Не удалось открыть чат. Попробуйте снова.",
       "gigs_request_messages_appbar_semantics": "Чаты по этой задаче",
       "gigs_request_messages_title": "Чаты по задаче",
       "gigs_request_messages_empty": "Пока нет переписки по этой задаче.",
@@ -2753,7 +2768,8 @@ class AppStrings {
           "Показывать контакты в объявлениях",
       "admin_client_settings_show_listing_contacts_description":
           "Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.",
-      "admin_client_settings_show_price_insights": "Показывать ориентир по цене",
+      "admin_client_settings_show_price_insights":
+          "Показывать ориентир по цене",
       "admin_client_settings_show_price_insights_description":
           "Включает блок «Ориентир по цене» (медиана по району/станции) в карточке объявления.",
       "admin_client_settings_show_push_debug": "Показывать отладку push",
@@ -2855,8 +2871,7 @@ class AppStrings {
           "Очистить загруженные сообщения Telegram?",
       "admin_data_import_clear_ingested_confirm_body":
           "Будут удалены все строки из таблицы telegram_ingested_messages. Объявления остаются. ID-секвенс сбросится. Отменить нельзя.",
-      "admin_data_import_clear_ingested_done":
-          "Удалено {ingested_str}.",
+      "admin_data_import_clear_ingested_done": "Удалено {ingested_str}.",
       "listings_count_one": "{count} объявление",
       "listings_count_few": "{count} объявления",
       "listings_count_many": "{count} объявлений",
@@ -2869,8 +2884,7 @@ class AppStrings {
       "admin_reassign_ownership_success": "Владелец обновлён",
       "admin_reassign_owner_menu": "Сменить владельца",
       "admin_reassign_owner_dialog_title": "Смена владельца",
-      "admin_reassign_owner_search_placeholder":
-          "Поиск по id, email или имени",
+      "admin_reassign_owner_search_placeholder": "Поиск по id, email или имени",
       "admin_reassign_owner_from_user": "ID владельца: {id}",
       "admin_reassign_owner_listing_id": "ID объявления: {id}",
       "admin_reassign_owner_gig_offer_id": "ID предложения: {id}",
@@ -2889,8 +2903,7 @@ class AppStrings {
       "admin_listing_moderation_summary_oldest": "Дольше всего",
       "admin_listing_moderation_days_short": "дн.",
       "admin_listing_moderation_section_list": "Ожидают проверки",
-      "admin_listing_moderation_empty":
-          "Нет объявлений, ожидающих одобрения.",
+      "admin_listing_moderation_empty": "Нет объявлений, ожидающих одобрения.",
       "admin_listing_moderation_open": "Открыть",
       "admin_listing_moderation_approve": "Одобрить",
       "admin_listing_moderation_id": "ID",
@@ -2936,10 +2949,8 @@ class AppStrings {
       "admin_gig_moderation_tab_requests": "Задачи",
       "admin_gig_moderation_section_offers": "Услуги на проверке",
       "admin_gig_moderation_section_requests": "Задачи на проверке",
-      "admin_gig_moderation_empty_offers":
-          "Нет услуг, ожидающих одобрения.",
-      "admin_gig_moderation_empty_requests":
-          "Нет задач, ожидающих одобрения.",
+      "admin_gig_moderation_empty_offers": "Нет услуг, ожидающих одобрения.",
+      "admin_gig_moderation_empty_requests": "Нет задач, ожидающих одобрения.",
       "admin_gig_moderation_provider": "Исполнитель",
       "admin_gig_moderation_client": "Заказчик",
       "admin_gig_moderation_approved_offer_toast": "Услуга опубликована",
@@ -3349,7 +3360,8 @@ class AppStrings {
       "telegram_alerts_connected": "Уведомления в Telegram включены",
       "telegram_alerts_disable_button": "Отключить уведомления в Telegram",
       "telegram_alerts_disabled_success": "Уведомления в Telegram отключены",
-      "telegram_alerts_disable_failed": "Не удалось отключить уведомления в Telegram",
+      "telegram_alerts_disable_failed":
+          "Не удалось отключить уведомления в Telegram",
       "apple_sign_in_failed": "Ошибка входа через Apple: {error}",
 
       // ===== PHONE AUTHENTICATION =====
@@ -3470,7 +3482,8 @@ class AppStrings {
       "compatibility_matches": "Mos keladigan xususiyatlar:",
       "compatibility_differences": "Ehtimoliy farqlar:",
       "compatibility_critical_differences": "Muhim farqlar:",
-      "compatibility_based_on_preferences": "{total} ta afzallikdan {scored} tasiga asoslangan",
+      "compatibility_based_on_preferences":
+          "{total} ta afzallikdan {scored} tasiga asoslangan",
       "vs": "vs",
       "name": "Ism yoki taxallus",
       "im_from": "Men:",
@@ -3506,13 +3519,15 @@ class AppStrings {
 
       "error_loading_profile": "Profildi yuklash imkoni yo'q",
 
-      "error_generic_try_again": "Xatolik yuz berdi. Iltimos, qayta urinib ko‘ring.",
+      "error_generic_try_again":
+          "Xatolik yuz berdi. Iltimos, qayta urinib ko‘ring.",
       "error_unable_to_complete_try_again":
           "So‘rovni bajarib bo‘lmadi. Iltimos, qayta urinib ko‘ring.",
       "error_no_internet": "Internet yo‘q. Tarmoq sozlamalarini tekshiring.",
       "error_timeout_check_connection":
           "So‘rov vaqti tugadi. Internet aloqangizni tekshirib, qayta urinib ko‘ring.",
-      "error_server_try_later": "Server xatoligi. Iltimos, keyinroq urinib ko‘ring.",
+      "error_server_try_later":
+          "Server xatoligi. Iltimos, keyinroq urinib ko‘ring.",
       "error_service_unavailable_try_later":
           "Xizmat vaqtincha ishlamayapti. Iltimos, keyinroq urinib ko‘ring.",
       "error_invalid_request":
@@ -3522,7 +3537,8 @@ class AppStrings {
       "error_not_found": "So‘ralgan resurs topilmadi.",
       "error_conflict":
           "Resurs allaqachon mavjud yoki joriy ma’lumotlar bilan ziddiyatda.",
-      "error_invalid_data": "Noto‘g‘ri ma’lumot yuborildi. Kiritishni tekshiring.",
+      "error_invalid_data":
+          "Noto‘g‘ri ma’lumot yuborildi. Kiritishni tekshiring.",
       "error_too_many_requests":
           "So‘rovlar juda ko‘p. Biroz kuting va qayta urinib ko‘ring.",
       "error_request_cancelled": "So‘rov bekor qilindi.",
@@ -3576,7 +3592,8 @@ class AppStrings {
           "E‘lon chatlarini yuklab bo‘lmadi.",
       "admin_listing_owner_conversations_retry": "Qayta urinish",
       "admin_listing_owner_conversations_closed_badge": "Yopilgan",
-      "chat_translate_picker_title": "Ushbu chatni quyidagi tilga tarjima qilish",
+      "chat_translate_picker_title":
+          "Ushbu chatni quyidagi tilga tarjima qilish",
       "chat_translate_picker_auto": "Avto (mening tilim)",
       "chat_translating": "Tarjima qilinmoqda…",
       "chat_translation_quota_exceeded":
@@ -3626,6 +3643,8 @@ class AppStrings {
       "type_message": "Xabar yozing...",
       "conversation_created": "Suhbat boshlandi",
       "conversation_failed": "Suhbat boshlanmadi",
+      "error_listing_chat_disabled":
+          "Bu e'lon uchun ilova ichidagi chat mavjud emas",
       "no_conversations": "Hali suhbatlar yo'q",
       "no_messages": "Hali xabarlar yo'q",
       "no_messages_description":
@@ -3689,23 +3708,19 @@ class AppStrings {
           "Hali ham xonadosh qidiryapsizmi?",
       "quick_question_roommate_move_in_date":
           "Xonadosh qachon ko'chib kelishi mumkin?",
-      "quick_question_roommate_household":
-          "Hozir kvartirada kimlar yashaydi?",
+      "quick_question_roommate_household": "Hozir kvartirada kimlar yashaydi?",
       "quick_question_roommate_rent_terms":
           "Ijara va kommunal to'lovlar qanday bo'ladi?",
       "quick_question_roommate_meet_soon":
           "Suhbatlashish yoki uchrashish mumkinmi?",
-      "quick_question_seeker_move_in_when":
-          "Qachon ko'chib kelmoqchisiz?",
+      "quick_question_seeker_move_in_when": "Qachon ko'chib kelmoqchisiz?",
       "quick_question_seeker_budget": "Byudjetingiz qancha?",
-      "quick_question_seeker_how_long":
-          "Qancha muddatga ijaraga qidiryapsiz?",
+      "quick_question_seeker_how_long": "Qancha muddatga ijaraga qidiryapsiz?",
       "quick_question_seeker_about_you":
           "O'zingiz haqingizda biroz gapirib bering?",
       "quick_question_generic_price": "Narxi qancha?",
       "quick_question_generic_whats_included": "Narxga nimalar kiradi?",
-      "quick_question_generic_when_available":
-          "Qachon bo'sh vaqtingiz bor?",
+      "quick_question_generic_when_available": "Qachon bo'sh vaqtingiz bor?",
       "quick_question_generic_how_soon": "Qanchalik tez boshlash mumkin?",
       "quick_question_generic_arrangement": "Qanday tashkil qilish qulay?",
       "quick_question_generic_clarify_details":
@@ -3713,8 +3728,7 @@ class AppStrings {
       "quick_question_offerer_scope": "Aynan nima qilish kerak?",
       "quick_question_offerer_deadline": "Buni qachongacha tugatish kerak?",
       "quick_question_offerer_where": "Bu qayerda bo'lishi kerak?",
-      "quick_question_offerer_budget":
-          "Qancha byudjet bo'lishini o'ylagansiz?",
+      "quick_question_offerer_budget": "Qancha byudjet bo'lishini o'ylagansiz?",
       "quick_question_offerer_materials":
           "Materiallarni o'zingiz taminlaysizmi, yoki men olib kelamanmi?",
       "quick_question_offerer_visit":
@@ -3836,7 +3850,8 @@ class AppStrings {
       "room_3d_floor_plan_edit_dimension_confirm_large_change": "Qo'llash",
       "room_3d_floor_plan_unit_meters": "metr",
       "room_3d_sun_toggle_label": "Quyosh nuri",
-      "room_3d_sun_toggle_hint": "Quyosh simulyatsiyasi boshqaruvlarini ko'rsatish/yashirish",
+      "room_3d_sun_toggle_hint":
+          "Quyosh simulyatsiyasi boshqaruvlarini ko'rsatish/yashirish",
       "room_3d_sun_azimuth_label": "Azimut",
       "room_3d_sun_elevation_label": "Balandlik",
       "room_3d_sun_intensity_label": "Yorqinlik",
@@ -3853,8 +3868,7 @@ class AppStrings {
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
-      "successfully_signed_in_apple":
-          "Apple orqali muvaffaqiyatli kirdingiz!",
+      "successfully_signed_in_apple": "Apple orqali muvaffaqiyatli kirdingiz!",
       "successfully_signed_in_telegram":
           "Telegram orqali muvaffaqiyatli kirdingiz!",
 
@@ -3952,7 +3966,8 @@ class AppStrings {
       "theme_color": "Mavzu rangi",
       "switch_theme": "Mavzuni almashtirish",
       "tooltips_toggle": "Maslahatlar",
-      "tooltips_toggle_description": "Foydali maslahatlar va tooltiplarni ko'rsatish",
+      "tooltips_toggle_description":
+          "Foydali maslahatlar va tooltiplarni ko'rsatish",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
@@ -4024,8 +4039,7 @@ class AppStrings {
       "ai_allowance_banner_title": "AI yordamchisi",
       "ai_allowance_meter_translate":
           "Qolgan e'lon tarjimalari (UTC oy): {count}",
-      "ai_allowance_meter_enhance":
-          "Qolgan AI yaxshilashlar: {count}",
+      "ai_allowance_meter_enhance": "Qolgan AI yaxshilashlar: {count}",
       "ai_allowance_meter_chat": "Chat tarjimalari qoldi: {count}",
       "ai_allowance_meter_unlimited": "Cheksiz",
       "ai_allowance_premium_active_until": "AI Premium {date} gacha",
@@ -4057,7 +4071,7 @@ class AppStrings {
       "listing_type_label": "E'lon turi",
       "listing_type_short_roommate_needed": "Xonadosh qidiramiz",
       "listing_type_short_roommate_needed_female": "Xonadosh qidiramiz",
-      "listing_type_short_room_needed": "Xona",
+      "listing_type_short_room_needed": "Xona qidiryapman",
       "gender_short_male": "Yigit",
       "gender_short_female": "Qiz",
       "gender_badge_male": "Yigit",
@@ -4305,13 +4319,16 @@ class AppStrings {
       "gigs_hub_post_title": "Vazifa joylash",
       "gigs_hub_post_subtitle": "Sizga nima kerakligini yozing — taklif olasiz",
       "gigs_hub_my_bookings_title": "Mening buyurtmalarim",
-      "gigs_hub_my_bookings_subtitle": "Siz buyurtma qilgan yoki qabul qilgan vazifalar",
+      "gigs_hub_my_bookings_subtitle":
+          "Siz buyurtma qilgan yoki qabul qilgan vazifalar",
       "gigs_hub_open_requests_title": "Ochiq vazifalar",
       "gigs_hub_open_requests_subtitle": "Bajaruvchi izlayotgan vazifalar",
       "gigs_hub_publish_offer_title": "Xizmat e'lon qilish",
-      "gigs_hub_publish_offer_subtitle": "Mahoratingizni taklif qiling — mijozlar topadi",
+      "gigs_hub_publish_offer_subtitle":
+          "Mahoratingizni taklif qiling — mijozlar topadi",
       "gigs_hub_publish_title": "Joylash",
-      "gigs_hub_publish_subtitle": "Bajarilishi kerak vazifa yoki siz taklif qilayotgan xizmat",
+      "gigs_hub_publish_subtitle":
+          "Bajarilishi kerak vazifa yoki siz taklif qilayotgan xizmat",
       "gigs_publish_screen_title": "Joylash",
       "gigs_publish_mode_task": "Vazifa",
       "gigs_publish_mode_task_subtitle": "Menga nimadir qilish kerak",
@@ -4336,7 +4353,8 @@ class AppStrings {
       "gigs_post_request_title": "Vazifa joylash",
       "gigs_post_request_submit": "Joylash",
       "gigs_loading": "Yuklanmoqda…",
-      "gigs_categories_unavailable": "Kategoriyalar mavjud emas. Qayta urinib ko'ring.",
+      "gigs_categories_unavailable":
+          "Kategoriyalar mavjud emas. Qayta urinib ko'ring.",
       "gigs_post_request_field_category": "Kategoriya",
       "gigs_post_request_field_title": "Sarlavha",
       "gigs_post_request_field_description": "Tavsif (ixtiyoriy)",
@@ -4350,8 +4368,7 @@ class AppStrings {
       "gigs_post_field_address_detail": "Batafsil manzil (ixtiyoriy)",
       "address_suggest_connection_error":
           "Manzil takliflarini yuklab bo‘lmadi. Internet aloqasini tekshiring.",
-      "address_suggest_unavailable":
-          "Manzil takliflari vaqtincha mavjud emas.",
+      "address_suggest_unavailable": "Manzil takliflari vaqtincha mavjud emas.",
       "address_suggest_failed": "Manzil takliflarini yuklab bo‘lmadi.",
       "gigs_post_field_district": "Tuman (ixtiyoriy)",
       "gigs_post_request_field_remote": "Masofadan",
@@ -4376,13 +4393,15 @@ class AppStrings {
       "gigs_request_delete_message":
           "U hamma uchun ro'yxatdan yo'qoladi. Ilovada bekor qilib bo'lmaydi.",
       "gigs_request_delete_success": "Vazifa o'chirildi.",
-      "gigs_request_delete_failed": "Vazifani o'chirib bo'lmadi. Qayta urinib ko'ring.",
+      "gigs_request_delete_failed":
+          "Vazifani o'chirib bo'lmadi. Qayta urinib ko'ring.",
       "gigs_offer_delete_menu": "Xizmatni o'chirish",
       "gigs_offer_delete_title": "Xizmatni o'chirasizmi?",
       "gigs_offer_delete_message":
           "U hamma uchun ro'yxatdan yo'qoladi. Ilovada bekor qilib bo'lmaydi.",
       "gigs_offer_delete_success": "Xizmat o'chirildi.",
-      "gigs_offer_delete_failed": "Xizmatni o'chirib bo'lmadi. Qayta urinib ko'ring.",
+      "gigs_offer_delete_failed":
+          "Xizmatni o'chirib bo'lmadi. Qayta urinib ko'ring.",
       "gigs_post_offer_field_pricing_type": "Narx turi",
       "gigs_post_offer_field_price": "Narx",
       "gigs_post_offer_field_min_duration": "Minimal davomiylik (daqiqa)",
@@ -4416,7 +4435,8 @@ class AppStrings {
       "gigs_status_cancelled": "Bekor qilindi",
       "gigs_status_disputed": "Nizoli",
 
-      "gigs_chat_menu_invite_provider_to_book": "Bron qilishga taklif (tasdiqlashi kerak)",
+      "gigs_chat_menu_invite_provider_to_book":
+          "Bron qilishga taklif (tasdiqlashi kerak)",
       "gigs_invite_provider_dialog_title": "Bajaruvchini taklif qilish",
       "gigs_invite_provider_dialog_body":
           "Ish tasdiqlanishidan oldin u «Buyurtmalarim»da Qabul tugmasini bosishi kerak. Vazifada summasi bo‘lmasa, kelishilgan miqdorni kiriting.",
@@ -4425,7 +4445,8 @@ class AppStrings {
       "gigs_invite_provider_confirm": "Taklif yuborish",
       "gigs_invite_provider_success_toast":
           "Taklif yuborildi. «Buyurtmalarim»da qabul qilishi mumkin.",
-      "gigs_invite_provider_failed_toast": "Yuborib bo‘lmadi. Qayta urinib ko‘ring.",
+      "gigs_invite_provider_failed_toast":
+          "Yuborib bo‘lmadi. Qayta urinib ko‘ring.",
       "gigs_invite_provider_amount_required":
           "Summani kiriting yoki oldin vazifaga byudjet qo‘shing.",
       "gigs_invite_provider_owner_only":
@@ -4446,7 +4467,8 @@ class AppStrings {
       "gigs_request_detail_title": "Vazifa",
       "gigs_request_description_label": "Vazifa haqida",
       "gigs_request_contact_cta": "Buyurtmachiga yozish",
-      "gigs_request_contact_failed": "Chatni ochib bo'lmadi. Qayta urinib ko'ring.",
+      "gigs_request_contact_failed":
+          "Chatni ochib bo'lmadi. Qayta urinib ko'ring.",
       "gigs_request_messages_appbar_semantics": "Ushbu vazifa bo'yicha chatlar",
       "gigs_request_messages_title": "Vazifa chatlari",
       "gigs_request_messages_empty": "Bu vazifa bo'yicha hali chat yo'q.",
@@ -4586,8 +4608,7 @@ class AppStrings {
           "Yuklangan Telegram xabarlarini tozalaysizmi?",
       "admin_data_import_clear_ingested_confirm_body":
           "Bu telegram_ingested_messages jadvalidagi barcha qatorlarni o'chiradi. E'lonlar saqlanib qoladi. ID-sekvens qayta boshlanadi. Qaytarib bo'lmaydi.",
-      "admin_data_import_clear_ingested_done":
-          "{ingested_str} tozalandi.",
+      "admin_data_import_clear_ingested_done": "{ingested_str} tozalandi.",
       "listings_count_other": "{count} e'lon",
       "ingested_messages_count_other": "{count} yuklangan xabar",
       "admin_data_import_clear_confirm_action": "Tozalash",
@@ -4608,18 +4629,15 @@ class AppStrings {
       "admin_panel_section_listing_complaints": "Shikoyatli e'lonlar",
       "admin_panel_section_listing_moderation": "E'lonlarni tasdiqlash",
       "admin_listing_moderation_title": "Tasdiq kutilmoqda",
-      "admin_listing_moderation_loading":
-          "Moderatsiya navbati yuklanmoqda…",
+      "admin_listing_moderation_loading": "Moderatsiya navbati yuklanmoqda…",
       "admin_listing_moderation_error": "Navbat yuklanmadi",
       "admin_listing_moderation_retry": "Qayta urinish",
       "admin_listing_moderation_summary_total": "Navbatda",
       "admin_listing_moderation_summary_today": "Bugun",
       "admin_listing_moderation_summary_oldest": "Eng uzoq",
       "admin_listing_moderation_days_short": "kun",
-      "admin_listing_moderation_section_list":
-          "Ko'rib chiqish kutilmoqda",
-      "admin_listing_moderation_empty":
-          "Tasdiq kutilayotgan e'lonlar yo'q.",
+      "admin_listing_moderation_section_list": "Ko'rib chiqish kutilmoqda",
+      "admin_listing_moderation_empty": "Tasdiq kutilayotgan e'lonlar yo'q.",
       "admin_listing_moderation_open": "Ochish",
       "admin_listing_moderation_approve": "Tasdiqlash",
       "admin_listing_moderation_id": "ID",
@@ -4868,7 +4886,8 @@ class AppStrings {
           "Chiqishni xohlaysizmi? Profilingizga kirish uchun qaytadan tizimga kirishingiz kerak bo'ladi.",
       "logout": "Chiqish",
       "logout_success": "Muvaffaqiyatli chiqildi",
-      "session_expired": "Sessiya muddati tugadi. Iltimos, qayta tizimga kiring.",
+      "session_expired":
+          "Sessiya muddati tugadi. Iltimos, qayta tizimga kiring.",
 
       // ===== DELETE ACCOUNT =====
       "delete_account": "Hisobni o'chirish",
@@ -4992,7 +5011,8 @@ class AppStrings {
           "{station} bekati allaqachon {line} liniyasi bo‘yicha bildirishnomangizga kiradi.",
       "search_alert_permission":
           "Bildirishnomalar uchun sozlamalarda ruxsat bering.",
-      "search_alert_bell_hint": "O'xshash e'lonlar haqida bildirishnomalar olish",
+      "search_alert_bell_hint":
+          "O'xshash e'lonlar haqida bildirishnomalar olish",
       "tutorial_search_description":
           "E'lonlarni tuman, narx, xona turi va boshqa parametrlar bo'yicha filtrlash uchun bosing.",
       "tutorial_profile_description":
@@ -5047,8 +5067,7 @@ class AppStrings {
       "unlink_telegram_confirmation_title": "Telegramni uzish?",
       "unlink_telegram_confirmation_message":
           "Endi ushbu hisobga Telegram orqali kira olmaysiz. Profildagi foydalanuvchi nomi qoladi.",
-      "telegram_account_in_use":
-          "Bu Telegram boshqa UyDosh hisobiga ulangan",
+      "telegram_account_in_use": "Bu Telegram boshqa UyDosh hisobiga ulangan",
       "telegram_link_failed": "Telegramni ulab bo'lmadi: {error}",
       "telegram_bind_not_available":
           "Telegramni ulash hozircha mavjud emas. Ilovani yangilang yoki keyinroq urinib ko'ring.",
@@ -5058,7 +5077,8 @@ class AppStrings {
           "Telegram orqali kirish serverda vaqtincha ishlamayapti.",
       "telegram_login_continue_in_browser":
           "Brauzerda kirishni yakunlang, so‘ng ilovaga qayting.",
-      "telegram_sign_in_failed": "Telegram orqali kirish amalga oshmadi: {error}",
+      "telegram_sign_in_failed":
+          "Telegram orqali kirish amalga oshmadi: {error}",
       "could_not_open_telegram": "Telegramni ochib bo‘lmadi",
       "telegram_alerts_enable_title": "Telegramda bildirishnomalar?",
       "telegram_alerts_enable_body":
@@ -5076,9 +5096,12 @@ class AppStrings {
       "telegram_alerts_settings_waiting":
           "@uydosh_bot da obuna bo‘ling, so‘ng bu yerga qayting.",
       "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan",
-      "telegram_alerts_disable_button": "Telegram bildirishnomalarini o‘chirish",
-      "telegram_alerts_disabled_success": "Telegram bildirishnomalari o‘chirildi",
-      "telegram_alerts_disable_failed": "Telegram bildirishnomalarini o‘chirib bo‘lmadi",
+      "telegram_alerts_disable_button":
+          "Telegram bildirishnomalarini o‘chirish",
+      "telegram_alerts_disabled_success":
+          "Telegram bildirishnomalari o‘chirildi",
+      "telegram_alerts_disable_failed":
+          "Telegram bildirishnomalarini o‘chirib bo‘lmadi",
       "apple_sign_in_failed": "Apple orqali kirishda xatolik: {error}",
 
       // ===== PHONE AUTHENTICATION =====

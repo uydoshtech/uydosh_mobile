@@ -23,6 +23,7 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     this.inlineWithCounter = false,
     this.maxDescriptionLength = 1000,
     this.dictationMeter,
+    this.onTranscriptInserted,
   });
 
   final TextEditingController controller;
@@ -31,6 +32,10 @@ class ListingDescriptionDictateButton extends StatefulWidget {
 
   /// When set (e.g. by [DescriptionCounterToolbar]), level + timer UI can update.
   final DictationMeterController? dictationMeter;
+
+  /// Called after a transcript is inserted programmatically so parent field
+  /// chrome/layout can rebuild even when the field itself is not focused.
+  final VoidCallback? onTranscriptInserted;
 
   @override
   State<ListingDescriptionDictateButton> createState() =>
@@ -262,6 +267,7 @@ class _ListingDescriptionDictateButtonState
       text: next,
       selection: TextSelection.collapsed(offset: next.length),
     );
+    widget.onTranscriptInserted?.call();
   }
 
   @override

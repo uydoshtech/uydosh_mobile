@@ -6,6 +6,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
+import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -51,8 +52,7 @@ abstract final class ConversationEntryFlow {
     required Future<void> Function(
       ConversationSummary summary,
       int currentUserId,
-    )
-        pushExistingThread,
+    ) pushExistingThread,
   }) async {
     try {
       if (!AuthFlow.requireAuth(context)) return;
@@ -67,6 +67,14 @@ abstract final class ConversationEntryFlow {
 
       if (currentUserId == listingDetail.user.id) {
         ToastReporting.errorKey(context, "error_cannot_message_self");
+        return;
+      }
+
+      if (PeerInteractionEligibility
+          .isInternalListingChatDisabledForPublisherEmail(
+        listingDetail.user.email,
+      )) {
+        ToastReporting.errorKey(context, "error_listing_chat_disabled");
         return;
       }
 
@@ -236,8 +244,7 @@ abstract final class ConversationEntryFlow {
     final containsExact = message.contains(
       "Conversation already exists for this listing and participants",
     );
-    final containsPartial =
-        message.contains("Conversation already exists");
+    final containsPartial = message.contains("Conversation already exists");
     final containsGeneric = message.contains("already exists");
     final isDio400 =
         message.contains("DioException") && message.contains("400");
