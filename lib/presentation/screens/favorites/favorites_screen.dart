@@ -625,6 +625,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             final tile = ListingTile(
               key: ValueKey("fav-${listing.id}-tile"),
               listing: listing,
+              forceFavorite: true,
               showHeartIcon: false,
               showFavoriteIndicator: true,
               onFavoriteRemoved: () {

@@ -688,87 +688,84 @@ class MainNavigationState extends State<MainNavigation>
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
-        return Padding(
-          padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 16),
-          child: GlassBottomSheetSurface(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
-            child: Material(
-              type: MaterialType.transparency,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.18,
-                          ),
-                          borderRadius: BorderRadius.circular(99),
+        return GlassBottomSheetSurface(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.18,
                         ),
+                        borderRadius: BorderRadius.circular(99),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        L10n.get("create_choice_title"),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                  ),
+                  const SizedBox(height: 14),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      L10n.get("create_choice_title"),
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    CreateChoiceTile(
-                      emoji: "👥",
-                      title: L10n.get("listing_type_roommate_needed"),
-                      subtitle: L10n.get(
-                        "create_choice_roommate_needed_subtitle",
-                      ),
-                      onTap: () {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(sheetContext).pop();
-                        if (!mounted) return;
-                        context.pushCreateListing(listingTypeId: 2);
-                      },
+                  ),
+                  CreateChoiceTile(
+                    emoji: "👥",
+                    title: L10n.get("listing_type_roommate_needed"),
+                    subtitle: L10n.get(
+                      "create_choice_roommate_needed_subtitle",
                     ),
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(sheetContext).pop();
+                      if (!mounted) return;
+                      context.pushCreateListing(listingTypeId: 2);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CreateChoiceTile(
+                    emoji: "🏠",
+                    title: L10n.get("listing_type_room_needed"),
+                    subtitle: L10n.get(
+                      "create_choice_room_needed_subtitle",
+                    ),
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(sheetContext).pop();
+                      if (!mounted) return;
+                      context.pushCreateListing(listingTypeId: 1);
+                    },
+                  ),
+                  if (AppConfig.servicesFeatureEnabled) ...[
                     const SizedBox(height: 8),
                     CreateChoiceTile(
-                      emoji: "🏠",
-                      title: L10n.get("listing_type_room_needed"),
-                      subtitle: L10n.get(
-                        "create_choice_room_needed_subtitle",
-                      ),
+                      emoji: "🛠",
+                      title: L10n.get("create_choice_service"),
+                      subtitle: L10n.get("create_choice_service_subtitle"),
                       onTap: () {
                         HapticFeedbackUtils.impact();
                         Navigator.of(sheetContext).pop();
                         if (!mounted) return;
-                        context.pushCreateListing(listingTypeId: 1);
+                        context.pushPublishGig(
+                          initialMode: GigPublishMode.service,
+                        );
                       },
                     ),
-                    if (AppConfig.servicesFeatureEnabled) ...[
-                      const SizedBox(height: 8),
-                      CreateChoiceTile(
-                        emoji: "🛠",
-                        title: L10n.get("create_choice_service"),
-                        subtitle: L10n.get("create_choice_service_subtitle"),
-                        onTap: () {
-                          HapticFeedbackUtils.impact();
-                          Navigator.of(sheetContext).pop();
-                          if (!mounted) return;
-                          context.pushPublishGig(
-                            initialMode: GigPublishMode.service,
-                          );
-                        },
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),

@@ -495,9 +495,11 @@ class _ListingTileState extends State<ListingTile> {
                                         FavoritesState().isFavorite(
                                           widget.listing.id,
                                         ))
-                                    : FavoritesState().isFavorite(
-                                        widget.listing.id,
-                                      ),
+                                    : widget.forceFavorite == true
+                                        ? true
+                                        : FavoritesState().isFavorite(
+                                            widget.listing.id,
+                                          ),
                                 hiddenBuilder: (_) => const SizedBox.shrink(),
                                 onToggle: _onListingFavoriteToggle,
                                 builder: (context, ui) {
