@@ -28,6 +28,10 @@ class ListingDetailThemeHelper {
     return AppColors.primary;
   }
 
+  /// Frosted glass tiles on listing detail (matches inbox + alerts).
+  static bool get useGlassTiles =>
+      ThemeState().isBlueTheme || ThemeState().isLightTheme;
+
   static Color get locationTextColor {
     if (ThemeState().isBlueTheme) return AppColors.textLight;
     return AppColors.textDark87;

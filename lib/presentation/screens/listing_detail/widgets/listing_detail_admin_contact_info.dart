@@ -66,6 +66,7 @@ class ListingDetailAdminContactInfo extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
+        useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

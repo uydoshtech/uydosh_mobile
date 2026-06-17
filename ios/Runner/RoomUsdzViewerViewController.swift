@@ -569,10 +569,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         floorPlanTab.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         floorPlanTab.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
 
-        hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 10),
+        hintStack.topAnchor.constraint(equalTo: hintContainer.topAnchor, constant: 8),
         hintStack.leadingAnchor.constraint(equalTo: hintContainer.leadingAnchor, constant: 14),
         hintStack.trailingAnchor.constraint(equalTo: hintContainer.trailingAnchor, constant: -14),
-        hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -10),
+        hintStack.bottomAnchor.constraint(equalTo: hintContainer.bottomAnchor, constant: -8),
 
         hintContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
         hintContainer.trailingAnchor.constraint(equalTo: hintStack.trailingAnchor, constant: 14),
@@ -584,7 +584,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           lessThanOrEqualTo: view.safeAreaLayoutGuide.widthAnchor,
           constant: -32
         ),
-        hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+        hintContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2),
 
         sunCompassOverlay.topAnchor.constraint(equalTo: hintContainer.topAnchor),
         sunCompassOverlay.heightAnchor.constraint(equalToConstant: 88),

@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -19,6 +20,7 @@ class ListingDetailViewSimilarTile extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
+        useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,

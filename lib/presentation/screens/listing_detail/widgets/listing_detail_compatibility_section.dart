@@ -357,6 +357,7 @@ class _ListingDetailCompatibilitySectionState
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
     return ListingDetailTileShell(
+      useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(

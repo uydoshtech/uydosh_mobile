@@ -481,6 +481,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   @override
   Widget build(BuildContext context) {
     return ListingDetailTileShell(
+      useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
       child: Padding(
         // Tighter top: reduces gap between image tile and title/description row only.
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),

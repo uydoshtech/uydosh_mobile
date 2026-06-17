@@ -4,6 +4,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 
 /// Meta chips and optional area price stats in one [ListingDetailTileShell].
@@ -50,6 +51,7 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
         return SizedBox(
           width: double.infinity,
           child: ListingDetailTileShell(
+            useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(13, 10, 13, 10),
               child: Column(

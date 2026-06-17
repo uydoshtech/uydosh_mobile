@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 
@@ -53,6 +54,7 @@ class _ListingDetailComplaintsCardState
   @override
   Widget build(BuildContext context) {
     return ListingDetailTileShell(
+      useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: SizedBox(
