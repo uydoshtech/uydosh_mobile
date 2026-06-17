@@ -135,11 +135,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return b ? _cookingSlugAtHome : _cookingSlugDoesNot;
   }
 
-  /// API [noise_level]: 1 = quiet … 5 = loud; slider uses the same mapping
-  /// (left → right, see labels).
-  int _committedNoiseApiValue() =>
-      _noiseLevel.value ?? widget.profile.noiseLevel ?? 1;
-
   static const String _employedSlugYes = "employed_yes";
   static const String _employedSlugNo = "employed_no";
 
@@ -414,7 +409,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       addLabel("sleep_time", fallback: "Sleep time");
     if (p.cleanliness != _cleanliness.value)
       addLabel("cleanliness", fallback: "Cleanliness");
-    if (p.noiseLevel != _committedNoiseApiValue())
+    if (p.noiseLevel != _noiseLevel.value)
       addLabel("noise_level", fallback: "Noise level");
     if (p.sociability != _sociability.value)
       addLabel("sociability", fallback: "Sociability");
@@ -501,7 +496,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
     if (p.employed != _employedBoolFromSlug(_employed.value)) return true;
     if (p.cleanliness != _cleanliness.value) return true;
-    if (p.noiseLevel != _committedNoiseApiValue()) return true;
+    if (p.noiseLevel != _noiseLevel.value) return true;
     if (p.sociability != _sociability.value) return true;
     if (p.guestsAllowed != _guestsBoolFromSlug(_guestsAllowed.value)) {
       return true;
@@ -672,7 +667,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         aboutMe: aboutMeToSend,
         employed: _employedBoolFromSlug(_employed.value),
         cleanliness: _cleanliness.value,
-        noiseLevel: _committedNoiseApiValue(),
+        noiseLevel: _noiseLevel.value,
         sociability: _sociability.value,
         guestsAllowed: _guestsBoolFromSlug(_guestsAllowed.value),
         smokingPreference: _smokingPreference.value,
@@ -695,7 +690,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         "  - employed: ${_employedBoolFromSlug(_employed.value)}",
       );
       logger.d("  - cleanliness: ${_cleanliness.value}");
-      logger.d("  - noiseLevel: ${_committedNoiseApiValue()}");
+      logger.d("  - noiseLevel: ${_noiseLevel.value}");
       logger.d("  - sociability: ${_sociability.value}");
       logger.d(
         "  - guestsAllowed: ${_guestsBoolFromSlug(_guestsAllowed.value)}",

@@ -12,6 +12,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/gig_favorites_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/gig/gig_offer.dart";
@@ -565,42 +566,54 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     }
 
     const listTopPad = 8.0;
+    final shellTopPad = _embeddedShellTopPadding();
     if (!AppConfig.servicesFeatureEnabled) {
-      return _buildListingsFavoritesTab(listTopPad);
+      return Padding(
+        padding: EdgeInsets.only(top: shellTopPad),
+        child: _buildListingsFavoritesTab(listTopPad),
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ListenableBuilder(
-          listenable: LanguageState(),
-          builder: (context, _) {
-            return AnimatedBuilder(
-              animation: _tabController,
-              builder: (context, _) {
-                return FavoritesTabRibbon(
-                  tabController: _tabController,
-                  listingsLabel: L10n.get("favorites_tab_listings"),
-                  servicesLabel: L10n.get("favorites_tab_services"),
-                  tasksLabel: L10n.get("favorites_tab_tasks"),
-                );
-              },
-            );
-          },
-        ),
-        const SizedBox(height: 6),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildListingsFavoritesTab(listTopPad),
-              _buildOffersFavoritesTab(listTopPad),
-              _buildRequestsFavoritesTab(listTopPad),
-            ],
+    return Padding(
+      padding: EdgeInsets.only(top: shellTopPad),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListenableBuilder(
+            listenable: LanguageState(),
+            builder: (context, _) {
+              return AnimatedBuilder(
+                animation: _tabController,
+                builder: (context, _) {
+                  return FavoritesTabRibbon(
+                    tabController: _tabController,
+                    listingsLabel: L10n.get("favorites_tab_listings"),
+                    servicesLabel: L10n.get("favorites_tab_services"),
+                    tasksLabel: L10n.get("favorites_tab_tasks"),
+                  );
+                },
+              );
+            },
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildListingsFavoritesTab(listTopPad),
+                _buildOffersFavoritesTab(listTopPad),
+                _buildRequestsFavoritesTab(listTopPad),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  double _embeddedShellTopPadding() {
+    if (!widget.embedded) return 0;
+    return ThemeState().mainShellGlassExtraTopInset(context) + kToolbarHeight;
   }
 
   Widget _buildListingsFavoritesTab(double topPad) {
