@@ -60,6 +60,7 @@ class ProfileSliderControl extends StatelessWidget {
         contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
         forceLtrScale: true,
         invertTrack: invertTrack,
+        onChangeStart: value == null ? (v) => onChanged(v) : null,
         scaleStartLabel: scaleStartLabel,
         scaleEndLabel: scaleEndLabel,
       ),

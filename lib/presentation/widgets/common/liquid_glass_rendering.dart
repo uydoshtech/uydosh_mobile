@@ -61,8 +61,9 @@ abstract final class LiquidGlassRendering {
   }
 
   /// Fallback fill when blur is off (reduce motion / accessibility).
-  static Color bottomSheetFillColor(ColorScheme scheme, {required bool isDark}) =>
-      scheme.surface.withValues(alpha: isDark ? 0.82 : 0.78);
+  static Color bottomSheetFillColor(ColorScheme scheme,
+          {required bool isDark}) =>
+      scheme.surface.withValues(alpha: isDark ? 0.82 : 0.90);
 
   /// Gradient for large panels (bottom sheets).
   static LinearGradient panelGradient({
@@ -78,9 +79,9 @@ abstract final class LiquidGlassRendering {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        Colors.white.withValues(alpha: isDark ? 0.05 : 0.22),
-        surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
-        baseSurface.withValues(alpha: isDark ? 0.22 : 0.28),
+        Colors.white.withValues(alpha: isDark ? 0.05 : 0.58),
+        surfaceTint.withValues(alpha: isDark ? 0.22 : 0.72),
+        baseSurface.withValues(alpha: isDark ? 0.22 : 0.68),
       ],
       stops: const [0.0, 0.5, 1.0],
     );

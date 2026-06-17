@@ -24,6 +24,7 @@ class UydoshSlider extends StatelessWidget {
     this.invertTrack = false,
     this.scaleStartLabel,
     this.scaleEndLabel,
+    this.onChangeStart,
   });
 
   final String label;
@@ -48,6 +49,7 @@ class UydoshSlider extends StatelessWidget {
   /// are non-null).
   final String? scaleStartLabel;
   final String? scaleEndLabel;
+  final ValueChanged<int>? onChangeStart;
 
   @override
   Widget build(BuildContext context) {
@@ -56,18 +58,16 @@ class UydoshSlider extends StatelessWidget {
     final isLightTheme = currentTheme == AppTheme.lightTheme;
     final isBlueTheme = currentTheme == AppTheme.blueTheme;
     final clamped = value.clamp(min, max);
-    final selectedValueText =
-        labels != null &&
-                clamped >= min &&
-                clamped <= max &&
-                (clamped - min) < labels!.length
-            ? labels![clamped - min]
-            : clamped.toString();
+    final selectedValueText = labels != null &&
+            clamped >= min &&
+            clamped <= max &&
+            (clamped - min) < labels!.length
+        ? labels![clamped - min]
+        : clamped.toString();
     final selectedValueBorderColor = isBlueTheme
         ? Colors.white
         : (isLightTheme ? Colors.black : theme.colorScheme.onSurface);
-    final trackValue =
-        invertTrack ? (max + min - clamped) : clamped;
+    final trackValue = invertTrack ? (max + min - clamped) : clamped;
 
     return Padding(
       padding: contentPadding ?? const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -79,12 +79,9 @@ class UydoshSlider extends StatelessWidget {
               if (icon != null) ...[
                 ThemeIcon(
                   icon,
-                  color:
-                      isBlueTheme
-                          ? Colors.white
-                          : (isLightTheme
-                              ? Colors.grey[600]
-                              : Colors.grey[400]),
+                  color: isBlueTheme
+                      ? Colors.white
+                      : (isLightTheme ? Colors.grey[600] : Colors.grey[400]),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -94,12 +91,9 @@ class UydoshSlider extends StatelessWidget {
                   label,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color:
-                        isBlueTheme
-                            ? Colors.white
-                            : (isLightTheme
-                                ? Colors.grey[800]
-                                : Colors.grey[200]),
+                    color: isBlueTheme
+                        ? Colors.white
+                        : (isLightTheme ? Colors.grey[800] : Colors.grey[200]),
                   ),
                 ),
               ),
@@ -172,6 +166,12 @@ class UydoshSlider extends StatelessWidget {
                       max: max.toDouble(),
                       divisions: divisions ?? (max - min),
                       label: selectedValueText,
+                      onChangeStart: (newValue) {
+                        final rounded = newValue.round();
+                        final api =
+                            invertTrack ? (max + min - rounded) : rounded;
+                        onChangeStart?.call(api);
+                      },
                       onChanged: (newValue) {
                         UiFeedbackUtils.sliderTick();
                         final rounded = newValue.round();
@@ -224,10 +224,9 @@ class UydoshSlider extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(max - min + 1, (i) {
-                            final n = invertTrack ? (max - i) : (min + i);
-                            return n;
-                          })
-                          .map((n) {
+                        final n = invertTrack ? (max - i) : (min + i);
+                        return n;
+                      }).map((n) {
                         return Text(
                           n.toString(),
                           style: theme.textTheme.bodySmall?.copyWith(

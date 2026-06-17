@@ -34,8 +34,7 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
           L10n.get("select_theme"),
           style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
-        backgroundColor:
-            Theme.of(context).appBarTheme.backgroundColor ??
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
             Theme.of(context).colorScheme.primary,
         foregroundColor:
             Theme.of(context).appBarTheme.foregroundColor ?? Colors.white,
@@ -44,13 +43,12 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
             listenable: AnimationSettingsState(),
             builder: (context, _) {
               final enableMotion = AnimationSettingsState().uiAnimationsEnabled;
-              final style =
-                  enableMotion
-                      ? null
-                      : const AnimationStyle(
-                          duration: Duration.zero,
-                          reverseDuration: Duration.zero,
-                        );
+              final style = enableMotion
+                  ? null
+                  : const AnimationStyle(
+                      duration: Duration.zero,
+                      reverseDuration: Duration.zero,
+                    );
 
               return PopupMenuButton<String>(
                 onOpened: UiFeedbackUtils.tap,
@@ -59,51 +57,76 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
                   _changeTheme(themeName);
                 },
                 popUpAnimationStyle: style,
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: AppTheme.lightTheme,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              L10n.get("light_theme"),
-                              style: Theme.of(context).popupMenuTheme.textStyle,
-                            ),
-                          ],
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: AppTheme.systemTheme,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: const ThemeIcon(
+                            Icons.settings_suggest,
+                            size: 12,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: AppTheme.blueTheme,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              L10n.get("blue_theme"),
-                              style: Theme.of(context).popupMenuTheme.textStyle,
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        Text(
+                          L10n.get("system_theme"),
+                          style: Theme.of(context).popupMenuTheme.textStyle,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: AppTheme.lightTheme,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          L10n.get("light_theme"),
+                          style: Theme.of(context).popupMenuTheme.textStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: AppTheme.blueTheme,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          L10n.get("blue_theme"),
+                          style: Theme.of(context).popupMenuTheme.textStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(

@@ -404,6 +404,12 @@ class MainNavigationState extends State<MainNavigation>
       context: context,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
+        final isLightTheme = theme.brightness == Brightness.light;
+        final promptPrimaryTextColor =
+            isLightTheme ? Colors.black : theme.colorScheme.onSurface;
+        final promptSecondaryTextColor = isLightTheme
+            ? Colors.black.withValues(alpha: 0.78)
+            : theme.colorScheme.onSurfaceVariant;
         return Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: GlassBottomSheetSurface(
@@ -440,7 +446,7 @@ class MainNavigationState extends State<MainNavigation>
                             final themeState = ThemeState();
                             final iconColor = themeState.isBlueTheme
                                 ? Colors.white
-                                : theme.colorScheme.onSurface;
+                                : promptPrimaryTextColor;
                             return ThemeIcon(
                               Icons.person,
                               color: iconColor,
@@ -453,6 +459,7 @@ class MainNavigationState extends State<MainNavigation>
                           child: Text(
                             L10n.get("complete_profile_prompt_title"),
                             style: theme.textTheme.titleLarge?.copyWith(
+                              color: promptPrimaryTextColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -463,7 +470,7 @@ class MainNavigationState extends State<MainNavigation>
                     Text(
                       L10n.get("complete_profile_prompt_body"),
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: promptSecondaryTextColor,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -472,8 +479,8 @@ class MainNavigationState extends State<MainNavigation>
                       child: LinearProgressIndicator(
                         value: completionPercent / 100,
                         minHeight: 8,
-                        backgroundColor: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.2),
+                        backgroundColor:
+                            promptSecondaryTextColor.withValues(alpha: 0.2),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           ThemeState().isBlueTheme
                               ? Colors.white
@@ -485,6 +492,7 @@ class MainNavigationState extends State<MainNavigation>
                     Text(
                       "$completionPercent%",
                       style: theme.textTheme.bodyMedium?.copyWith(
+                        color: promptPrimaryTextColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -493,6 +501,7 @@ class MainNavigationState extends State<MainNavigation>
                       Text(
                         L10n.get("missing_fields_title"),
                         style: theme.textTheme.bodyMedium?.copyWith(
+                          color: promptPrimaryTextColor,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -501,7 +510,7 @@ class MainNavigationState extends State<MainNavigation>
                         Text(
                           primaryLabels,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: promptSecondaryTextColor,
                           ),
                         ),
                       if (hiddenCount > 0) ...[
@@ -512,7 +521,7 @@ class MainNavigationState extends State<MainNavigation>
                             params: {"count": hiddenCount.toString()},
                           ),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: promptSecondaryTextColor,
                           ),
                         ),
                       ],

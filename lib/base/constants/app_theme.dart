@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 
 /// Theme manager for switching between different app themes
 class AppTheme {
+  static const String systemTheme = "system";
   static const String blueTheme = "blue";
   static const String lightTheme = "light";
   static const String messagingTheme = "messaging";
@@ -20,7 +21,8 @@ class AppTheme {
   static const double menuOverlaySurfaceOpacity = 0.92;
 
   /// Padding inside popup menus (Material default: 8 vertical).
-  static const EdgeInsets popupMenuPadding = EdgeInsets.symmetric(vertical: 8.0);
+  static const EdgeInsets popupMenuPadding =
+      EdgeInsets.symmetric(vertical: 8.0);
 
   /// Elevation for [PopupMenuThemeData] and [DropdownButton] menus ([kElevationToShadow] includes 16).
   static const int menuPanelElevation = 16;
@@ -30,7 +32,7 @@ class AppTheme {
 
   /// Get the current theme data based on theme name
   static ThemeData getTheme(String themeName) {
-    switch (themeName) {
+    switch (resolveTheme(themeName)) {
       case blueTheme:
         return _getBlueTheme();
       case messagingTheme:
@@ -41,9 +43,37 @@ class AppTheme {
     }
   }
 
+  /// Convert a stored preference into a concrete app theme.
+  static String resolveTheme(String themeName) {
+    if (themeName != systemTheme) {
+      return normalizeThemeName(themeName);
+    }
+
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return brightness == Brightness.dark ? blueTheme : lightTheme;
+  }
+
+  /// Normalize legacy and unknown theme names.
+  static String normalizeThemeName(String themeName) {
+    switch (themeName) {
+      case "purple":
+        return blueTheme;
+      case systemTheme:
+      case blueTheme:
+      case lightTheme:
+      case messagingTheme:
+        return themeName;
+      default:
+        return blueTheme;
+    }
+  }
+
   /// Get the display name for a theme
   static String getThemeDisplayName(String themeName) {
     switch (themeName) {
+      case systemTheme:
+        return "System Theme";
       case blueTheme:
         return "Blue Theme";
       case messagingTheme:
@@ -86,7 +116,8 @@ class AppTheme {
 
       // Cursor and text selection theme for better visibility in blue theme
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: Colors.white, // White cursor for better visibility on dark background
+        cursorColor: Colors
+            .white, // White cursor for better visibility on dark background
         selectionColor: Colors.white.withOpacity(
           0.3,
         ), // Semi-transparent white for selection
@@ -151,7 +182,8 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: BlueThemeColors.inputFocused, width: 2),
+          borderSide:
+              const BorderSide(color: BlueThemeColors.inputFocused, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -216,7 +248,8 @@ class AppTheme {
       ),
 
       // Icon theme
-      iconTheme: const IconThemeData(color: BlueThemeColors.textPrimary, size: 24),
+      iconTheme:
+          const IconThemeData(color: BlueThemeColors.textPrimary, size: 24),
       primaryIconTheme: const IconThemeData(
         color: BlueThemeColors.textPrimary,
         size: 24,
@@ -331,9 +364,8 @@ class AppTheme {
 
       // AppBar theme
       appBarTheme: const AppBarTheme(
-        backgroundColor:
-            LightThemeColors
-                .surface, // Light gray surface instead of hardcoded purple
+        backgroundColor: LightThemeColors
+            .surface, // Light gray surface instead of hardcoded purple
         foregroundColor:
             LightThemeColors.textPrimary, // Black text on light background
         elevation: 1, // Slight elevation for light theme
@@ -342,9 +374,8 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
-          color:
-              LightThemeColors
-                  .textPrimary, // Explicitly set title text to black
+          color: LightThemeColors
+              .textPrimary, // Explicitly set title text to black
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -357,9 +388,8 @@ class AppTheme {
             10, // Maximum elevation for the most prominent shadows in light theme
         margin: const EdgeInsets.all(8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        shadowColor:
-            LightThemeColors
-                .cardShadow, // Explicitly set shadow color for better control
+        shadowColor: LightThemeColors
+            .cardShadow, // Explicitly set shadow color for better control
       ),
 
       // Button themes
@@ -427,7 +457,8 @@ class AppTheme {
       ),
 
       // Icon theme
-      iconTheme: const IconThemeData(color: LightThemeColors.iconPrimary, size: 24),
+      iconTheme:
+          const IconThemeData(color: LightThemeColors.iconPrimary, size: 24),
 
       // Popup menu theme - White background with light theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
@@ -514,7 +545,8 @@ class AppTheme {
 
       // Cursor and text selection theme for better visibility
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: Colors.white, // White cursor for better visibility on dark background
+        cursorColor: Colors
+            .white, // White cursor for better visibility on dark background
         selectionColor: Colors.white.withValues(
           alpha: 0.3,
         ), // Semi-transparent white for selection

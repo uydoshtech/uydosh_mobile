@@ -16,7 +16,7 @@ class ThemeSwitcherWidget extends StatefulWidget {
   });
 
   final Function(String)?
-  onThemeChanged; // Made optional for backward compatibility
+      onThemeChanged; // Made optional for backward compatibility
 
   @override
   State<ThemeSwitcherWidget> createState() => _ThemeSwitcherWidgetState();
@@ -29,7 +29,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
   @override
   void initState() {
     super.initState();
-    _selectedTheme = _themeState.currentTheme;
+    _selectedTheme = _themeState.selectedTheme;
   }
 
   @override
@@ -73,6 +73,7 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
               ),
             ),
             const SizedBox(height: 16),
+            _buildThemeOption(AppTheme.systemTheme),
             _buildThemeOption(AppTheme.lightTheme),
             _buildThemeOption(AppTheme.blueTheme),
             const SizedBox(height: 16),
@@ -131,6 +132,11 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
     // Use localized strings instead of hardcoded display names
     String displayName;
     switch (themeName) {
+      case AppTheme.systemTheme:
+        displayName = AppStrings.get(
+          "system_theme",
+          _getCurrentLanguage(context),
+        );
       case AppTheme.lightTheme:
         displayName = AppStrings.get(
           "light_theme",
@@ -151,6 +157,8 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
     // Get theme color for indicator
     Color themeColor;
     switch (themeName) {
+      case AppTheme.systemTheme:
+        themeColor = Theme.of(context).colorScheme.primary;
       case AppTheme.lightTheme:
         themeColor = Colors.white;
       case AppTheme.blueTheme:
@@ -179,10 +187,14 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
             });
           }
         },
-        title: Text(displayName, style: const TextStyle(color: Colors.white)),
+        title: Text(
+          displayName,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
         subtitle: Text(
           "${AppStrings.get("theme_color", _getCurrentLanguage(context))}: ${themeColor.toString()}",
-          style: const TextStyle(color: Colors.white70),
+          style:
+              TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         secondary: Container(
           width: 40,
@@ -196,7 +208,9 @@ class _ThemeSwitcherWidgetState extends State<ThemeSwitcherWidget> {
             ),
           ),
           child: ThemeIcon(
-            Icons.palette,
+            themeName == AppTheme.systemTheme
+                ? Icons.settings_suggest
+                : Icons.palette,
             color:
                 themeName == AppTheme.lightTheme ? Colors.black : Colors.white,
             size: 20,
@@ -228,7 +242,7 @@ class ThemeSwitcherButton extends StatelessWidget {
 
   final String? currentTheme; // Made optional to use global state
   final Function(String)?
-  onThemeChanged; // Made optional for backward compatibility
+      onThemeChanged; // Made optional for backward compatibility
 
   @override
   Widget build(BuildContext context) {
@@ -253,10 +267,9 @@ class ThemeSwitcherButton extends StatelessWidget {
   void _showThemeDialog(BuildContext context, String currentTheme) {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            child: ThemeSwitcherWidget(onThemeChanged: onThemeChanged),
-          ),
+      builder: (context) => Dialog(
+        child: ThemeSwitcherWidget(onThemeChanged: onThemeChanged),
+      ),
     );
   }
 

@@ -23,7 +23,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_info_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_menu_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/theme_toggle_sun_moon.dart";
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -195,10 +194,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Get localized theme name based on current language
   String _getLocalizedThemeName(String themeCode) {
     switch (themeCode) {
+      case AppTheme.systemTheme:
+        return L10n.get("system_theme");
       case AppTheme.blueTheme:
         return L10n.get("blue_theme");
       default:
         return L10n.get("light_theme");
+    }
+  }
+
+  Future<void> _changeThemeFromSettings(
+    BuildContext context,
+    String themeName,
+  ) async {
+    await ThemeState().changeTheme(themeName);
+    if (!context.mounted) return;
+
+    ToastTheme.showSuccess(
+      context,
+      message: AppStrings.getWithParams(
+        "theme_changed_to",
+        LanguageState().currentLanguage,
+        params: {"theme": _getLocalizedThemeName(themeName)},
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildThemePopupItem(
+    BuildContext context,
+    String themeName,
+  ) {
+    return PopupMenuItem(
+      value: themeName,
+      child: Row(
+        children: [
+          ThemeIcon(
+            _getThemeIcon(themeName),
+            size: 20,
+            color: Theme.of(context).popupMenuTheme.textStyle?.color,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _getLocalizedThemeName(themeName),
+            style: Theme.of(context).popupMenuTheme.textStyle,
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getThemeIcon(String themeName) {
+    switch (themeName) {
+      case AppTheme.systemTheme:
+        return Icons.settings_suggest;
+      case AppTheme.lightTheme:
+        return Icons.light_mode;
+      default:
+        return Icons.dark_mode;
     }
   }
 
@@ -347,30 +399,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           subtitle: Text(
-            _getLocalizedThemeName(ThemeState().currentTheme),
+            _getLocalizedThemeName(ThemeState().selectedTheme),
             style: TextStyle(color: _getSecondaryTextColor()),
           ),
           iconColor: _getIconColor(),
           trailingColor: _getSecondaryIconColor(),
-          trailing: ThemeToggleSunMoon(
-            iconColor: _getIconColor(),
-            size: 35,
-            onToggled: () {
-              if (context.mounted) {
-                ToastTheme.showSuccess(
-                  context,
-                  message: AppStrings.getWithParams(
-                    "theme_changed_to",
-                    LanguageState().currentLanguage,
-                    params: {
-                      "theme": L10n.get(
-                        ThemeState().isBlueTheme ? "blue_theme" : "light_theme",
-                      ),
-                    },
-                  ),
-                );
-              }
+          trailing: PopupMenuButton<String>(
+            icon: ThemeIcon(
+              _getThemeIcon(ThemeState().selectedTheme),
+              color: _getSecondaryIconColor(),
+            ),
+            onOpened: HapticFeedbackUtils.selection,
+            onSelected: (themeName) {
+              HapticFeedbackUtils.selection();
+              _changeThemeFromSettings(context, themeName);
             },
+            itemBuilder: (context) => [
+              _buildThemePopupItem(context, AppTheme.systemTheme),
+              _buildThemePopupItem(context, AppTheme.lightTheme),
+              _buildThemePopupItem(context, AppTheme.blueTheme),
+            ],
           ),
         );
       },

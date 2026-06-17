@@ -1362,18 +1362,18 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                         icon: Icons.not_interested,
                       ),
                       DropdownOption(
-                        value: "like_pets",
-                        label: L10n.get(
-                          "pets_like_pets",
-                        ),
-                        icon: Icons.pets,
-                      ),
-                      DropdownOption(
                         value: "dont_like_pets",
                         label: L10n.get(
                           "pets_dont_like_pets",
                         ),
                         icon: Icons.block,
+                      ),
+                      DropdownOption(
+                        value: "like_pets",
+                        label: L10n.get(
+                          "pets_like_pets",
+                        ),
+                        icon: Icons.pets,
                       ),
                       DropdownOption(
                         value: "have_cat",
