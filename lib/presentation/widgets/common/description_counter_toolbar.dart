@@ -135,10 +135,10 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
 
   static const double _actionSpacing = 6;
   static const double _footerHeight = 22;
+  static const double _footerSlotHeight = 34;
 
-  /// Inline [TextButton]s use 8px horizontal padding; offset the actions row so
-  /// the first chip aligns with description [contentPadding], not padding+12.
-  static const double _inlineActionsLeadingInset = 8;
+  /// Pull inline toolbar actions toward the plate edge, leaving a small gutter.
+  static const double _inlineActionsLeadingInset = 14;
 
   Widget _wrapAction(Widget child) {
     if (!widget.debugShowTapBounds) return child;
@@ -152,44 +152,44 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
     return Transform.translate(
       offset: const Offset(-_inlineActionsLeadingInset, 0),
       child: Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _wrapAction(
-          SizedBox(
-            height: _footerHeight,
-            child: ListingDescriptionAiEnhanceButton(
-              controller: widget.controller,
-              inlineWithCounter: true,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _wrapAction(
+            SizedBox(
+              height: _footerHeight,
+              child: ListingDescriptionTemplateButton(
+                controller: widget.controller,
+                listingTypeId: widget.listingTypeId,
+                gender: widget.gender,
+                inlineWithCounter: true,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: _actionSpacing),
-        _wrapAction(
-          SizedBox(
-            height: _footerHeight,
-            child: ListingDescriptionTemplateButton(
-              controller: widget.controller,
-              listingTypeId: widget.listingTypeId,
-              gender: widget.gender,
-              inlineWithCounter: true,
+          const SizedBox(width: _actionSpacing),
+          _wrapAction(
+            SizedBox(
+              height: _footerHeight,
+              child: ListingDescriptionAiEnhanceButton(
+                controller: widget.controller,
+                inlineWithCounter: true,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: _actionSpacing),
-        _wrapAction(
-          SizedBox(
-            height: _footerHeight,
-            child: ListingDescriptionDictateButton(
-              controller: widget.controller,
-              inlineWithCounter: true,
-              maxDescriptionLength: widget.maxDescriptionLength,
-              dictationMeter: dictationMeter,
-              onTranscriptInserted: widget.onTranscriptInserted,
+          const SizedBox(width: _actionSpacing),
+          _wrapAction(
+            SizedBox(
+              height: _footerHeight,
+              child: ListingDescriptionDictateButton(
+                controller: widget.controller,
+                inlineWithCounter: true,
+                maxDescriptionLength: widget.maxDescriptionLength,
+                dictationMeter: dictationMeter,
+                onTranscriptInserted: widget.onTranscriptInserted,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
@@ -285,32 +285,34 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
       builder: (context, meterDisabled, _) {
         final showMeterUi = !meterDisabled;
         final slot = showMeterUi ? _dictationMeter : null;
-        final inner = _buildInner(color, slot);
-
-        final content = Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (showMeterUi)
-              ListenableBuilder(
-                listenable: _dictationMeter,
-                builder: (context, _) {
-                  if (!_dictationMeter.active) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 4, right: 4, top: 2),
-                    child: ListingDescriptionDictationMeterRow(
-                      controller: _dictationMeter,
+        return SizedBox(
+          height: _footerSlotHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              if (showMeterUi)
+                Positioned(
+                  left: 4,
+                  right: 4,
+                  bottom: _footerSlotHeight,
+                  child: IgnorePointer(
+                    child: ListenableBuilder(
+                      listenable: _dictationMeter,
+                      builder: (context, _) {
+                        if (!_dictationMeter.active) {
+                          return const SizedBox.shrink();
+                        }
+                        return ListingDescriptionDictationMeterRow(
+                          controller: _dictationMeter,
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            inner,
-          ],
+                  ),
+                ),
+              Positioned.fill(child: _buildInner(color, slot)),
+            ],
+          ),
         );
-
-        return content;
       },
     );
   }

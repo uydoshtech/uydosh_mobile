@@ -249,8 +249,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         gender: _searchFiltersState.selectedGender,
         minPrice: _searchFiltersState.minPrice,
         maxPrice: _searchFiltersState.maxPrice,
-        privateRoomOnly: _searchFiltersState.selectedListingTypeId == 2 &&
-            _searchFiltersState.privateRoom,
+        privateRoomOnly: _searchFiltersState.privateRoom,
         withPhotoOnly: _searchFiltersState.withPhoto,
       );
 
@@ -653,10 +652,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       _searchFiltersState.setListingTypeId(
                         listingTypeId,
                       );
-                      if (listingTypeId != 2 &&
-                          _searchFiltersState.privateRoom) {
-                        _searchFiltersState.setPrivateRoom(false);
-                      }
                       setState(() {});
                     },
                     onGenderChanged: (gender) {
@@ -784,7 +779,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final gender = _searchFiltersState.selectedGender;
     final minPrice = _searchFiltersState.minPrice;
     final maxPrice = _searchFiltersState.maxPrice;
-    final privateRoom = listingTypeId == 2 && _searchFiltersState.privateRoom;
+    final privateRoom = _searchFiltersState.privateRoom;
     final withPhoto = _searchFiltersState.withPhoto;
 
     // Debug logging to see what values are being passed

@@ -17,6 +17,10 @@ class PriceRangePicker extends StatefulWidget {
     this.maxPrice = 1000.0,
     this.initialMinPrice = 0.0,
     this.initialMaxPrice = 500.0,
+    this.initialVisibleMaxPrice = 500.0,
+    this.maxExpansionStep = 100.0,
+    this.maxExpansionCooldown = const Duration(milliseconds: 650),
+    this.initialValueExpandsVisibleMax = true,
     this.useSinglePrice = false,
     this.showErrorBorder = false,
     this.useGlassPlate = false,
@@ -27,8 +31,26 @@ class PriceRangePicker extends StatefulWidget {
   final double maxPrice;
   final double initialMinPrice;
   final double initialMaxPrice;
+
+  /// The right edge shown when the picker first opens. Dragging the upper
+  /// handle to this edge expands the visible scale by [maxExpansionStep] until
+  /// [maxPrice] is reached.
+  final double initialVisibleMaxPrice;
+
+  /// Amount by which the visible max grows when the user reaches the right edge.
+  /// Set to 0 or less to keep the slider fixed at [initialVisibleMaxPrice].
+  final double maxExpansionStep;
+
+  /// Minimum pause between automatic max-scale expansions while dragging.
+  final Duration maxExpansionCooldown;
+
+  /// When true, an initial value above [initialVisibleMaxPrice] opens enough
+  /// scale to show that value. Useful for edit forms with existing high prices.
+  final bool initialValueExpandsVisibleMax;
+
   /// When true, shows a single handle and passes the same price for both min and max.
   final bool useSinglePrice;
+
   /// When true, draws a pulsing red outline to highlight a missing selection.
   final bool showErrorBorder;
   final bool useGlassPlate;
@@ -40,6 +62,8 @@ class PriceRangePicker extends StatefulWidget {
 class _PriceRangePickerState extends State<PriceRangePicker> {
   late double _minPrice;
   late double _maxPrice;
+  late double _visibleMaxPrice;
+  DateTime? _lastMaxExpansionAt;
 
   /// USD-scale tick (matches how listings store the small "USD-index" amounts).
   static const double _stepUsd = 10.0;
@@ -47,6 +71,49 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   /// UZS-display tick. 10.000 keeps the slider feeling native to UZS users
   /// without producing a wall of zeroes — labels render as `K`/`M` further down.
   static const double _stepUzs = 10000.0;
+
+  static double _clampDouble(double value, double min, double max) {
+    return value.clamp(min, max).toDouble();
+  }
+
+  double _initialVisibleMaxFor(double selectedUpper) {
+    final base = _clampDouble(
+      widget.initialVisibleMaxPrice,
+      widget.minPrice,
+      widget.maxPrice,
+    );
+    final selected = _clampDouble(
+      selectedUpper,
+      widget.minPrice,
+      widget.maxPrice,
+    );
+    final step = widget.maxExpansionStep;
+    if (!widget.initialValueExpandsVisibleMax) return base;
+    if (step <= 0 || selected <= base) return base;
+
+    final stepsNeeded = ((selected - base) / step).ceil();
+    return _clampDouble(
+        base + (stepsNeeded * step), widget.minPrice, widget.maxPrice);
+  }
+
+  void _maybeExpandVisibleMaxFor(double selectedUpper) {
+    final step = widget.maxExpansionStep;
+    if (step <= 0 || _visibleMaxPrice >= widget.maxPrice) return;
+    if (selectedUpper < _visibleMaxPrice) return;
+
+    final now = DateTime.now();
+    final last = _lastMaxExpansionAt;
+    if (last != null && now.difference(last) < widget.maxExpansionCooldown) {
+      return;
+    }
+    _lastMaxExpansionAt = now;
+
+    _visibleMaxPrice = _clampDouble(
+      _visibleMaxPrice + step,
+      widget.minPrice,
+      widget.maxPrice,
+    );
+  }
 
   /// Nearest step to [v], then nudged into [[rangeMin], [rangeMax]] so we never
   /// round *outside* the track (e.g. 12.600 → nearest 10k is 10.000 < min 12.600).
@@ -81,16 +148,30 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
       _minPrice = initialPrice.clamp(widget.minPrice, widget.maxPrice);
       _maxPrice = _minPrice;
     } else {
-      _minPrice = widget.initialMinPrice.clamp(widget.minPrice, widget.maxPrice);
-      _maxPrice = widget.initialMaxPrice.clamp(widget.minPrice, widget.maxPrice);
+      _minPrice =
+          widget.initialMinPrice.clamp(widget.minPrice, widget.maxPrice);
+      _maxPrice =
+          widget.initialMaxPrice.clamp(widget.minPrice, widget.maxPrice);
     }
+    _visibleMaxPrice = _initialVisibleMaxFor(_maxPrice);
   }
 
   @override
   void didUpdateWidget(PriceRangePicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialMinPrice != widget.initialMinPrice ||
-        oldWidget.initialMaxPrice != widget.initialMaxPrice) {
+    final boundsOrModeChanged = oldWidget.minPrice != widget.minPrice ||
+        oldWidget.maxPrice != widget.maxPrice ||
+        oldWidget.initialVisibleMaxPrice != widget.initialVisibleMaxPrice ||
+        oldWidget.maxExpansionStep != widget.maxExpansionStep ||
+        oldWidget.maxExpansionCooldown != widget.maxExpansionCooldown ||
+        oldWidget.initialValueExpandsVisibleMax !=
+            widget.initialValueExpandsVisibleMax ||
+        oldWidget.useSinglePrice != widget.useSinglePrice;
+    final initialValuesChanged =
+        oldWidget.initialMinPrice != widget.initialMinPrice ||
+            oldWidget.initialMaxPrice != widget.initialMaxPrice;
+
+    if (boundsOrModeChanged || initialValuesChanged) {
       setState(() {
         if (widget.useSinglePrice) {
           final price = widget.initialMinPrice.clamp(
@@ -105,6 +186,17 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
             widget.maxPrice,
           );
           _maxPrice = widget.initialMaxPrice.clamp(
+            widget.minPrice,
+            widget.maxPrice,
+          );
+        }
+        final nextVisible = _initialVisibleMaxFor(_maxPrice);
+        if (boundsOrModeChanged) {
+          _visibleMaxPrice = nextVisible;
+          _lastMaxExpansionAt = null;
+        } else {
+          _visibleMaxPrice = _clampDouble(
+            _visibleMaxPrice < nextVisible ? nextVisible : _visibleMaxPrice,
             widget.minPrice,
             widget.maxPrice,
           );
@@ -155,7 +247,12 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         final step = isUzsDisplay && rate > 0 ? _stepUzs : _stepUsd;
 
         final scaledRangeMin = widget.minPrice * scale;
-        final scaledRangeMax = widget.maxPrice * scale;
+        final rangeMax = _clampDouble(
+          _visibleMaxPrice,
+          widget.minPrice,
+          widget.maxPrice,
+        );
+        final scaledRangeMax = rangeMax * scale;
         final divisions = ((scaledRangeMax - scaledRangeMin) / step).round();
 
         var scaledMin = _snapToStepInRange(
@@ -197,7 +294,8 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
               if (!widget.useSinglePrice)
                 Container(
                   width: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
                   alignment: Alignment.center,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
@@ -215,7 +313,6 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                     ),
                   ),
                 ),
-
               Expanded(
                 child: SliderTheme(
                   data: UydoshSliderChrome.priceRangeTrack(
@@ -247,6 +344,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                             setState(() {
                               _minPrice = newUsd;
                               _maxPrice = newUsd;
+                              _maybeExpandVisibleMaxFor(newUsd);
                             });
                             widget.onPriceRangeChanged(newUsd, newUsd);
                           },
@@ -288,6 +386,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                               setState(() {
                                 _minPrice = newUsdMin;
                                 _maxPrice = newUsdMax;
+                                _maybeExpandVisibleMaxFor(newUsdMax);
                               });
                               widget.onPriceRangeChanged(newUsdMin, newUsdMax);
                             },
@@ -295,7 +394,6 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                         ),
                 ),
               ),
-
               Container(
                 width: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),

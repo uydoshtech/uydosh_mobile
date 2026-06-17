@@ -1539,6 +1539,8 @@ class AppStrings {
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Amenities",
+      "amenities_header_roommate_needed": "The apartment has:",
+      "amenities_header_need_room": "I need:",
       "photos": "Photos",
       "primary": "Primary",
       "wifi": "Wi-Fi",
@@ -3288,6 +3290,8 @@ class AppStrings {
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Удобства",
+      "amenities_header_roommate_needed": "В квартире имеются:",
+      "amenities_header_need_room": "Мне нужно:",
       "photos": "Фотографии",
       "primary": "Основное",
       "wifi": "Wi-Fi",
@@ -5052,6 +5056,8 @@ class AppStrings {
 
       // ===== AMENITIES & FEATURES =====
       "amenities": "Qulayliklar",
+      "amenities_header_roommate_needed": "Kvartirada bor:",
+      "amenities_header_need_room": "Menga kerak:",
       "photos": "Rasmlar",
       "primary": "Asosiy",
       "wifi": "Wi-Fi",

@@ -24,8 +24,8 @@ class SearchFiltersState extends ChangeNotifier {
   int _selectedStationId =
       0; // Store the actual station ID instead of just index
   int _selectedGender = 1; // 1 = male, 2 = female
-  double _minPrice = 0.0; // Default min price
-  double _maxPrice = 1000.0; // Default max price
+  double _minPrice = 10.0; // Default min price
+  double _maxPrice = 500.0; // Default visible max price
   bool _privateRoom = false; // Default to false (show all)
   bool _withPhoto = false;
   bool _isInitialized = false;
@@ -128,7 +128,8 @@ class SearchFiltersState extends ChangeNotifier {
       final map = await getIt<IUserSearchFiltersService>().fetchMe();
       final raw = map["search_filters"];
       if (raw is Map) {
-        await _applyServerFiltersToStateAndPrefs(Map<String, dynamic>.from(raw));
+        await _applyServerFiltersToStateAndPrefs(
+            Map<String, dynamic>.from(raw));
         _profileDefaultsApplied = true;
         _hadSavedFilters = true;
       } else {
@@ -147,7 +148,8 @@ class SearchFiltersState extends ChangeNotifier {
     }
   }
 
-  Future<void> _applyServerFiltersToStateAndPrefs(Map<String, dynamic> m) async {
+  Future<void> _applyServerFiltersToStateAndPrefs(
+      Map<String, dynamic> m) async {
     int readInt(String key, int fallback, {int min = 0, int max = 999999}) {
       final v = m[key];
       if (v is num) {
@@ -175,8 +177,8 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedStationIndex = readInt("station_index", 0, min: 0, max: 9999);
     _selectedStationId = readInt("station_id", 0, min: 0, max: 999999);
     _selectedGender = readInt("gender", 1, min: 1, max: 2);
-    _minPrice = readDouble("min_price", 0.0);
-    _maxPrice = readDouble("max_price", 1000.0);
+    _minPrice = readDouble("min_price", 10.0);
+    _maxPrice = readDouble("max_price", 500.0);
     if (_minPrice > _maxPrice) {
       final t = _minPrice;
       _minPrice = _maxPrice;
@@ -306,8 +308,8 @@ class SearchFiltersState extends ChangeNotifier {
       _selectedGender = savedGender ?? 1;
 
       // Load price range
-      _minPrice = prefs.getDouble("search_min_price") ?? 0.0;
-      _maxPrice = prefs.getDouble("search_max_price") ?? 1000.0;
+      _minPrice = prefs.getDouble("search_min_price") ?? 10.0;
+      _maxPrice = prefs.getDouble("search_max_price") ?? 500.0;
 
       // Load private room preference
       _privateRoom = prefs.getBool("search_private_room") ?? false;
@@ -315,7 +317,8 @@ class SearchFiltersState extends ChangeNotifier {
       _withPhoto = prefs.getBool("search_with_photo") ?? false;
 
       // Mark whether we need to apply profile defaults (when no saved values)
-      _profileDefaultsApplied = savedListingTypeId != null && savedGender != null;
+      _profileDefaultsApplied =
+          savedListingTypeId != null && savedGender != null;
 
       // Record whether the user already had any persisted filter so the home
       // load can decide between building fresh defaults and keeping saved ones.
@@ -415,9 +418,9 @@ class SearchFiltersState extends ChangeNotifier {
         _selectedGender = gender;
       }
 
-      // "Max / default" range: the full slider range, i.e. no price restriction.
-      _minPrice = 0.0;
-      _maxPrice = 1000.0;
+      // Default visible range; users can expand the max in +100 steps.
+      _minPrice = 10.0;
+      _maxPrice = 500.0;
 
       await _enqueuePrefsWrite((prefs) async {
         await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
@@ -490,10 +493,10 @@ class SearchFiltersState extends ChangeNotifier {
     try {
       final response = await getIt<IOAuthApiClient>()
           .post<Map<String, dynamic>, _EmptyRequest>(
-            "/users/verify-session",
-            (json) => json as Map<String, dynamic>,
-            data: _EmptyRequest(),
-          );
+        "/users/verify-session",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
       final user = response["user"];
       role = user is Map<String, dynamic> ? user["role"] as String? : null;
       if (role != null) await SessionManager.storeUserRole(role);
@@ -695,8 +698,8 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedGender = 1;
     _profileDefaultsApplied = false; // Allow profile defaults to re-apply
     _hadSavedFilters = false; // Allow defaults to rebuild on next home load
-    _minPrice = 0.0;
-    _maxPrice = 1000.0;
+    _minPrice = 10.0;
+    _maxPrice = 500.0;
     _privateRoom = false;
     _withPhoto = false;
 
@@ -750,9 +753,11 @@ class SearchFiltersState extends ChangeNotifier {
           "search_listing_type_id",
           snapshot.selectedListingTypeId,
         );
-        await prefs.setInt("search_location_index", snapshot.selectedLocationIndex);
+        await prefs.setInt(
+            "search_location_index", snapshot.selectedLocationIndex);
         await prefs.setInt("search_subway_line", snapshot.selectedSubwayLine);
-        await prefs.setInt("search_station_index", snapshot.selectedStationIndex);
+        await prefs.setInt(
+            "search_station_index", snapshot.selectedStationIndex);
         await prefs.setInt("search_station_id", snapshot.selectedStationId);
         await prefs.setInt("search_gender", snapshot.selectedGender);
         await prefs.setDouble("search_min_price", snapshot.minPrice);

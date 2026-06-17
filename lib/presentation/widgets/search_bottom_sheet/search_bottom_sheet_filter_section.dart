@@ -78,13 +78,15 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canFilterPrivateRoom = searchFiltersState.selectedListingTypeId == 2;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Price Range ([PriceRangePicker] already uses 3D plate chrome)
         PriceRangePicker(
+          minPrice: 10,
+          maxPrice: 1000,
+          initialVisibleMaxPrice: 500,
+          maxExpansionStep: 100,
           initialMinPrice: searchFiltersState.minPrice,
           initialMaxPrice: searchFiltersState.maxPrice,
           onPriceRangeChanged: onPriceRangeChanged,
@@ -95,21 +97,19 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (canFilterPrivateRoom) ...[
-              Expanded(
-                child: _SearchSheetFilterToggle(
-                  icon: Icons.lock_outline,
-                  label: L10n.get("search_filter_private_room"),
-                  value: searchFiltersState.privateRoom,
-                  emphasized: searchFiltersState.privateRoom,
-                  onChanged: (value) {
-                    UiFeedbackUtils.tap();
-                    onPrivateRoomChanged(value);
-                  },
-                ),
+            Expanded(
+              child: _SearchSheetFilterToggle(
+                icon: Icons.lock_outline,
+                label: L10n.get("search_filter_private_room"),
+                value: searchFiltersState.privateRoom,
+                emphasized: searchFiltersState.privateRoom,
+                onChanged: (value) {
+                  UiFeedbackUtils.tap();
+                  onPrivateRoomChanged(value);
+                },
               ),
-              const SizedBox(width: 12),
-            ],
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: _SearchSheetFilterToggle(
                 icon: Icons.photo_camera_outlined,

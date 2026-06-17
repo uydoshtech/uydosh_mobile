@@ -54,6 +54,7 @@ class _ListingDescriptionDictateButtonState
   final Stopwatch _recordStopwatch = Stopwatch();
 
   static const Duration _maxRecordDuration = Duration(minutes: 1);
+  static const double _inlineIconSlotSize = 18;
 
   static double _normalizeDbToLevel(double db) {
     const minDb = -52.0;
@@ -270,16 +271,29 @@ class _ListingDescriptionDictateButtonState
     widget.onTranscriptInserted?.call();
   }
 
+  Widget _buildStatusIcon(BuildContext context, Color accent) {
+    return SizedBox.square(
+      dimension: _inlineIconSlotSize,
+      child: Center(
+        child: _uploading
+            ? ListingDescriptionAssistant.inlineProgress(
+                context,
+                size: 14,
+                strokeWidth: 1.8,
+              )
+            : ThemeIcon(
+                _recording ? Icons.stop_circle : Icons.mic_none_outlined,
+                size: _inlineIconSlotSize,
+                color: _recording ? Colors.redAccent : accent,
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = ListingDescriptionAssistant.accentColor(context);
-    final icon = _uploading
-        ? ListingDescriptionAssistant.inlineProgress(context)
-        : ThemeIcon(
-            _recording ? Icons.stop_circle : Icons.mic_none_outlined,
-            size: 18,
-            color: _recording ? Colors.redAccent : accent,
-          );
+    final icon = _buildStatusIcon(context, accent);
 
     final labelStyle =
         (Theme.of(context).textTheme.labelLarge ?? const TextStyle())
@@ -287,10 +301,10 @@ class _ListingDescriptionDictateButtonState
 
     final child = Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 2),
+          padding: const EdgeInsets.only(top: 1),
           child: icon,
         ),
         const SizedBox(width: 6),
