@@ -98,12 +98,10 @@ jobs:
         with:
           ruby-version: "3.1"
           bundler-cache: true
-          bundler: "2.5.23"
+          # Newer Bundler handles default gems like `logger` correctly on Ruby 3.1.
+          bundler: latest
 
       - name: Show bundled CocoaPods version
-        env:
-          # ActiveSupport expects Logger to be loaded in this Ruby build.
-          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           ruby -v
@@ -114,9 +112,6 @@ jobs:
         run: flutter pub get
 
       - name: Install CocoaPods deps (verbose)
-        env:
-          # ActiveSupport expects Logger to be loaded in this Ruby build.
-          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           set -x
@@ -232,8 +227,6 @@ jobs:
         env:
           BUILD_NAME: ${{ inputs.build_name || env.BUILD_NAME }}
           BUILD_NUMBER: ${{ inputs.build_number || env.BUILD_NUMBER }}
-          # Flutter invokes CocoaPods internally; ensure Logger is loaded for ActiveSupport/CocoaPods.
-          RUBYOPT: "-rlogger"
           DEVELOPMENT_TEAM: D5THR62Q33
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: Apple Distribution
