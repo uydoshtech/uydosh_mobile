@@ -39,9 +39,14 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_tab_ribbon.dart";
 
 class FavoritesScreen extends StatefulWidget {
-  const FavoritesScreen({super.key, this.embedded = false});
+  const FavoritesScreen({
+    super.key,
+    this.embedded = false,
+    this.tabVisible = true,
+  });
 
   final bool embedded;
+  final bool tabVisible;
 
   @override
   State<FavoritesScreen> createState() => _FavoritesScreenState();
@@ -100,6 +105,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   // whole favorites list to reset + re-fetch on every notification.
   bool _lastAuthenticated = false;
 
+  bool get _isVisible => !widget.embedded || widget.tabVisible;
+
   @override
   void initState() {
     super.initState();
@@ -141,7 +148,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       setState(() {});
       if (isAuth) {
         // Logged back in: refresh.
-        _loadFavoriteListings(isRefresh: true);
+        if (_isVisible) {
+          _loadFavoriteListings(isRefresh: true);
+        }
       }
     };
 
@@ -152,8 +161,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       if (!AuthenticationState().isAuthenticated) return;
       if (!FavoritesState().isDirty) return;
 
-      final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
-      if (!isCurrent) {
+      if (!_isVisible) {
         _needsSyncFromDirty = true;
         return;
       }
@@ -166,11 +174,26 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     _initializeAndLoadFavorites();
   }
 
+  @override
+  void didUpdateWidget(covariant FavoritesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.tabVisible && widget.tabVisible) {
+      unawaited(_initializeAndLoadFavorites());
+      if (_needsSyncFromDirty &&
+          AuthenticationState().isAuthenticated &&
+          FavoritesState().isDirty) {
+        _needsSyncFromDirty = false;
+        _loadFavoriteListings(isRefresh: true);
+      }
+    }
+  }
+
   Future<void> _initializeAndLoadFavorites() async {
     // Wait for authentication state to be fully initialized
     if (!AuthenticationState().isInitialized) {
       await AuthenticationState().initialize();
     }
+    if (!mounted || !_isVisible) return;
 
     // Only load favorites if user is authenticated
     if (AuthenticationState().isAuthenticated) {
@@ -183,7 +206,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     super.didChangeDependencies();
     // Only reload favorites if we haven't initialized yet and user is authenticated
     if (!_hasInitialized &&
-        (ModalRoute.of(context)?.isCurrent ?? false) &&
+        _isVisible &&
         AuthenticationState().isAuthenticated) {
       _loadFavoriteListings(isRefresh: true);
     }
@@ -191,7 +214,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     // If something was favorited elsewhere (home) while this tab wasn't current,
     // sync once when we become visible again.
     if (_needsSyncFromDirty &&
-        (ModalRoute.of(context)?.isCurrent ?? false) &&
+        _isVisible &&
         AuthenticationState().isAuthenticated &&
         FavoritesState().isDirty) {
       _needsSyncFromDirty = false;

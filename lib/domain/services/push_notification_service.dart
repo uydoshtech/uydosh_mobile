@@ -1,5 +1,8 @@
+import "dart:async";
+
 import "package:firebase_messaging/firebase_messaging.dart";
-import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import "package:flutter/foundation.dart"
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -90,6 +93,7 @@ class PushNotificationService implements IPushNotificationService {
   final IOAuthApiClient _oauthApiClient;
   bool _handlersSetup = false;
   RemoteMessage? _pendingNotificationTap;
+
   /// When false, [FirebaseMessaging.onMessageOpenedApp] must not push routes yet —
   /// the root [Navigator] may still be showing splash; pushing chat first makes
   /// `QuickSplashScreen`'s `pushReplacement` replace the chat route (user bounces
@@ -99,6 +103,7 @@ class PushNotificationService implements IPushNotificationService {
   DateTime? _lastRoutedTapAt;
   bool _registerInFlight = false;
   int _registerRetryAttempt = 0;
+  Timer? _registerRetryTimer;
 
   static bool get _isSupported =>
       !kIsWeb &&
@@ -144,7 +149,8 @@ class PushNotificationService implements IPushNotificationService {
     }
 
     try {
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler);
 
       // Set up handlers early. Even if permission is not granted yet, this
       // keeps `onTokenRefresh` wired for the moment APNs/FCM delivers a token
@@ -152,8 +158,10 @@ class PushNotificationService implements IPushNotificationService {
       _setupMessageHandlers();
 
       // Do NOT request permission here (would show iOS system modal on launch).
-      final settings = await FirebaseMessaging.instance.getNotificationSettings();
-      logger.d("📲 FCM permission status (no prompt): ${settings.authorizationStatus.name}");
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
+      logger.d(
+          "📲 FCM permission status (no prompt): ${settings.authorizationStatus.name}");
 
       final initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
@@ -324,12 +332,10 @@ class PushNotificationService implements IPushNotificationService {
           settings: RouteSettings(name: targetName),
           builder: (_) => ChatScreen(
             conversationId: conversationId,
-            listingId:
-                (listingId != null && listingId > 0) ? listingId : null,
+            listingId: (listingId != null && listingId > 0) ? listingId : null,
             otherUserInitials: StringUtils.extractInitials(senderName),
             otherUserName: senderName,
-            otherUserId:
-                (senderId != null && senderId > 0) ? senderId : null,
+            otherUserId: (senderId != null && senderId > 0) ? senderId : null,
             otherUserAvatar: null,
           ),
         ),
@@ -403,6 +409,9 @@ class PushNotificationService implements IPushNotificationService {
     final sessionToken = await SessionManager.getToken();
     if (sessionToken == null || sessionToken.isEmpty) {
       logger.d("📲 Skipping FCM token registration: no backend session token");
+      _registerRetryTimer?.cancel();
+      _registerRetryTimer = null;
+      _registerRetryAttempt = 0;
       return;
     }
 
@@ -458,6 +467,8 @@ class PushNotificationService implements IPushNotificationService {
       );
 
       _registerRetryAttempt = 0;
+      _registerRetryTimer?.cancel();
+      _registerRetryTimer = null;
       logger.d(
         "📲 FCM token registered with backend "
         "(platform=$platform, device=${device.deviceModel ?? "?"})",
@@ -505,7 +516,9 @@ class PushNotificationService implements IPushNotificationService {
       _ => 60,
     };
     logger.d("📲 Scheduling FCM token registration retry in ${seconds}s");
-    Future<void>.delayed(Duration(seconds: seconds), () async {
+    _registerRetryTimer?.cancel();
+    _registerRetryTimer = Timer(Duration(seconds: seconds), () async {
+      _registerRetryTimer = null;
       await registerTokenWithBackend();
     });
   }
@@ -541,8 +554,8 @@ class PushNotificationService implements IPushNotificationService {
       return {"ok": false, "error": "missing_token"};
     }
     try {
-      final res =
-          await _oauthApiClient.post<Map<String, dynamic>, _SendPushTestRequest>(
+      final res = await _oauthApiClient
+          .post<Map<String, dynamic>, _SendPushTestRequest>(
         "/users/me/push-test",
         (json) => (json as Map).cast<String, dynamic>(),
         data: _SendPushTestRequest(token: t),

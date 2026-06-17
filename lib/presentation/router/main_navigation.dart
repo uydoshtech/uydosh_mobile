@@ -194,6 +194,7 @@ class MainNavigationState extends State<MainNavigation>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    routeObserver.unsubscribe(this);
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
       routeObserver.subscribe(this, route);
@@ -641,23 +642,22 @@ class MainNavigationState extends State<MainNavigation>
   // rebuild.
   //
   // Strategy:
-  //   - Tabs whose constructor args don't depend on mutable state (Favorites/Services)
-  //     are built ONCE in initState and stored as `late final` fields.
-  //   - Tabs whose args DO depend on `_currentIndex` (Home, Messages) must be
-  //     rebuilt so `isHomeTabActive` / `mainTabSelected` stay accurate.
+  //   - Tabs whose constructor args don't depend on mutable state can be built
+  //     once, but data-heavy tabs receive a visibility flag so they can defer
+  //     their initial fetch while IndexedStack keeps them mounted off-screen.
   //
   // Logical indices: 0=Housing, 1=Favorites/Services, 2=Messages.
   // Create flows are pushed routes via "+" / drawer, not tabs.
   // ---------------------------------------------------------------------------
-  late final Widget _favoritesTab = const FavoritesScreen(embedded: true);
-  late final Widget _servicesTab = const GigHubScreen(embedded: true);
 
   List<Widget> _getScreens() {
     final screens = <Widget>[
       // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
       // the shell AppBar count and the feed stay on the same bloc instance.
       HomeScreen(isHomeTabActive: _currentIndex == 0),
-      AppConfig.servicesFeatureEnabled ? _servicesTab : _favoritesTab,
+      AppConfig.servicesFeatureEnabled
+          ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)
+          : FavoritesScreen(embedded: true, tabVisible: _currentIndex == 1),
       MessagesInboxScreen(
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,

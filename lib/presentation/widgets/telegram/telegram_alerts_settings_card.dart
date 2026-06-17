@@ -58,7 +58,6 @@ class TelegramAlertsSettingsCard extends StatefulWidget {
 
 class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     with WidgetsBindingObserver {
-  static const _pollInterval = Duration(seconds: 2);
   static const _maxPolls = 30;
 
   bool? _alertsEnabled;
@@ -174,12 +173,25 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
         _pollCount = 0;
       });
       _pollTimer?.cancel();
-      _pollTimer = Timer.periodic(_pollInterval, (_) {
-        unawaited(_pollOnce());
-      });
+      _scheduleNextPoll();
     } finally {
       setStateIfMounted(() => _opening = false);
     }
+  }
+
+  Duration _pollDelayForAttempt(int completedPolls) {
+    if (completedPolls < 10) return const Duration(seconds: 2);
+    if (completedPolls < 20) return const Duration(seconds: 4);
+    return const Duration(seconds: 8);
+  }
+
+  void _scheduleNextPoll() {
+    if (!_waiting || !mounted) return;
+    _pollTimer?.cancel();
+    _pollTimer = Timer(_pollDelayForAttempt(_pollCount), () {
+      _pollTimer = null;
+      unawaited(_pollOnce());
+    });
   }
 
   Future<void> _pollOnce() async {
@@ -192,9 +204,15 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
     }
     try {
       final status = await _service.fetchStatus();
-      if (!mounted || !status.alertsEnabled) return;
+      if (!mounted) return;
+      if (!status.alertsEnabled) {
+        _scheduleNextPoll();
+        return;
+      }
       _onAlertsEnabled();
-    } catch (_) {}
+    } catch (_) {
+      _scheduleNextPoll();
+    }
   }
 
   Future<void> _disableAlerts() async {

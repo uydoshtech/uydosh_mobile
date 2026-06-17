@@ -614,148 +614,136 @@ class _ListingTileState extends State<ListingTile> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      // Media on the left stretches to match the content
-                      // height (IntrinsicHeight) — matching the design where
-                      // the photo spans the full info column.
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Floor the media/info row height so sparse tiles
-                            // (e.g. title + price only) don't visually shrink
-                            // relative to fuller tiles. `IntrinsicHeight` +
-                            // `stretch` propagate this min height to both the
-                            // photo and the info column.
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                minHeight: _minMediaRowHeight,
-                              ),
-                              child: _buildThumbnail(context),
+                      // Fixed media cell plus flexible details. Avoid
+                      // IntrinsicHeight here; this tile is a hot feed row and
+                      // intrinsic layout adds an extra measurement pass.
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Floor the media/info row height so sparse tiles
+                          // (e.g. title + price only) don't visually shrink
+                          // relative to fuller tiles.
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: _minMediaRowHeight,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Padding(
-                                // Keep text clear of the centered chevron.
-                                padding: const EdgeInsets.only(right: 24),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Title
-                                    Text(
-                                      ListingUtils.usesPresetListingTitle(
-                                        widget.listing.listingTypeId,
-                                      )
-                                          ? L10n.get(
-                                              ListingUtils
-                                                  .presetListingTitleL10nKey(
-                                                listingTypeId: widget
-                                                    .listing.listingTypeId,
-                                                gender: widget.listing.gender,
-                                              ),
-                                            )
-                                          : widget.listing.title,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: _getTitleTextColor(),
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                            child: _buildThumbnail(context),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Padding(
+                              // Keep text clear of the centered chevron.
+                              padding: const EdgeInsets.only(right: 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Title
+                                  Text(
+                                    ListingUtils.usesPresetListingTitle(
+                                      widget.listing.listingTypeId,
+                                    )
+                                        ? L10n.get(
+                                            ListingUtils
+                                                .presetListingTitleL10nKey(
+                                              listingTypeId:
+                                                  widget.listing.listingTypeId,
+                                              gender: widget.listing.gender,
+                                            ),
+                                          )
+                                        : widget.listing.title,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: _getTitleTextColor(),
                                     ),
-                                    // Prominent monthly-price card.
-                                    if (widget.listing.price > 0) ...[
-                                      const SizedBox(height: 10),
-                                      _buildPriceCard(),
-                                    ],
-                                    // Location and metro on separate lines.
-                                    if (widget.listing.location != null ||
-                                        widget.listing.subwayStation !=
-                                            null) ...[
-                                      const SizedBox(height: 12),
-                                      ListenableBuilder(
-                                        listenable: LanguageState(),
-                                        builder: (context, child) {
-                                          final hasLocation =
-                                              widget.listing.location != null;
-                                          final hasStation =
-                                              widget.listing.subwayStation !=
-                                                  null;
-                                          return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              if (hasLocation)
-                                                Row(
-                                                  children: [
-                                                    const ThemeIcon(
-                                                      Icons.location_on,
-                                                      color: AppColors.error,
-                                                      size: 20,
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Expanded(
-                                                      child: Text(
-                                                        _shortenDistrictSuffix(
-                                                          _getLocalizedName(
-                                                            nameUz: widget
-                                                                .listing
-                                                                .location!
-                                                                .nameUz,
-                                                            nameRu: widget
-                                                                .listing
-                                                                .location!
-                                                                .nameRu,
-                                                            nameEn: widget
-                                                                .listing
-                                                                .location!
-                                                                .nameEn,
-                                                          ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          color:
-                                                              _getLocationTextColor(),
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              if (hasStation) ...[
-                                                if (hasLocation)
-                                                  const SizedBox(height: 8),
-                                                _buildSubwayStationDisplay(
-                                                  widget.listing.subwayStation!,
-                                                ),
-                                              ] else if (hasLocation)
-                                                // Reserve the metro-row height
-                                                // (8px gap + 20px icon row) so
-                                                // tiles without a station match
-                                                // the height of those with one.
-                                                const SizedBox(
-                                                  height: 8 + 20,
-                                                ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                    ],
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  // Prominent monthly-price card.
+                                  if (widget.listing.price > 0) ...[
+                                    const SizedBox(height: 10),
+                                    _buildPriceCard(),
                                   ],
-                                ),
+                                  // Location and metro on separate lines.
+                                  if (widget.listing.location != null ||
+                                      widget.listing.subwayStation != null) ...[
+                                    const SizedBox(height: 12),
+                                    ListenableBuilder(
+                                      listenable: LanguageState(),
+                                      builder: (context, child) {
+                                        final hasLocation =
+                                            widget.listing.location != null;
+                                        final hasStation =
+                                            widget.listing.subwayStation !=
+                                                null;
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (hasLocation)
+                                              Row(
+                                                children: [
+                                                  const ThemeIcon(
+                                                    Icons.location_on,
+                                                    color: AppColors.error,
+                                                    size: 20,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
+                                                    child: Text(
+                                                      _shortenDistrictSuffix(
+                                                        _getLocalizedName(
+                                                          nameUz: widget.listing
+                                                              .location!.nameUz,
+                                                          nameRu: widget.listing
+                                                              .location!.nameRu,
+                                                          nameEn: widget.listing
+                                                              .location!.nameEn,
+                                                        ),
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color:
+                                                            _getLocationTextColor(),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            if (hasStation) ...[
+                                              if (hasLocation)
+                                                const SizedBox(height: 8),
+                                              _buildSubwayStationDisplay(
+                                                widget.listing.subwayStation!,
+                                              ),
+                                            ] else if (hasLocation)
+                                              // Reserve the metro-row height
+                                              // (8px gap + 20px icon row) so
+                                              // tiles without a station match
+                                              // the height of those with one.
+                                              const SizedBox(
+                                                height: 8 + 20,
+                                              ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       // Footer rendered *below* the photo/info row, spanning
                       // the full tile width. Keeping it out of the
-                      // `IntrinsicHeight` row means it no longer stretches the
-                      // photo, while owner-only views/status can sit at the
-                      // right edge of the same footer row.
+                      // media row means owner-only views/status can sit at the
+                      // right edge without affecting the photo.
                       if (_hasTileFooter) ...[
                         const SizedBox(height: 12),
                         _buildTileFooter(),

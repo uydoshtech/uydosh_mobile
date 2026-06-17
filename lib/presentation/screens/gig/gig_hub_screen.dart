@@ -43,12 +43,17 @@ import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 /// bar (rendered with [embedded] = true so it doesn't draw its own
 /// [Scaffold]/[AppBar]).
 class GigHubScreen extends StatelessWidget {
-  const GigHubScreen({super.key, this.embedded = false});
+  const GigHubScreen({
+    super.key,
+    this.embedded = false,
+    this.tabVisible = true,
+  });
 
   /// When true, the screen renders only its body content, suitable for use
   /// inside a tab host (e.g. `MainNavigation`) that already provides the
   /// surrounding [Scaffold] and [AppBar].
   final bool embedded;
+  final bool tabVisible;
 
   @override
   Widget build(BuildContext context) {
@@ -57,23 +62,22 @@ class GigHubScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-              GigOffersBloc(getIt<IGigService>())..add(const FetchGigOffers()),
+          create: (_) => GigOffersBloc(getIt<IGigService>()),
         ),
         BlocProvider(
-          create: (_) => GigRequestsBloc(getIt<IGigService>())
-            ..add(const FetchGigRequests()),
+          create: (_) => GigRequestsBloc(getIt<IGigService>()),
         ),
       ],
-      child: _GigHubBody(embedded: embedded),
+      child: _GigHubBody(embedded: embedded, tabVisible: tabVisible),
     );
   }
 }
 
 class _GigHubBody extends StatefulWidget {
-  const _GigHubBody({required this.embedded});
+  const _GigHubBody({required this.embedded, required this.tabVisible});
 
   final bool embedded;
+  final bool tabVisible;
 
   @override
   State<_GigHubBody> createState() => _GigHubBodyState();
@@ -91,8 +95,12 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
   /// snapshot of `gig_categories` shipped with the app. Synchronous, so
   /// the chip ribbon renders on the first frame with no loading state.
   final List<GigCategory> _categories = GigCategoryCache.getOrdered();
+  bool _hasLoadedInitialFeeds = false;
+
+  bool get _isVisible => !widget.embedded || widget.tabVisible;
 
   void _onAuthForPendingBookings() {
+    if (!_isVisible) return;
     unawaited(PendingGigBookingsState().refresh());
   }
 
@@ -102,15 +110,28 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     AuthenticationState().addListener(_onAuthForPendingBookings);
     UserListingState().initialize();
-    unawaited(UserListingState().refreshUserId());
-    unawaited(PendingGigBookingsState().refresh());
+    if (_isVisible) {
+      unawaited(UserListingState().refreshUserId());
+      unawaited(PendingGigBookingsState().refresh());
+    }
     _scrollController.addListener(_onScroll);
     getIt<GigHubFeedsRefreshNotifier>().addListener(_onPublishFlowClosed);
+    _loadInitialFeedsIfVisible();
+  }
+
+  @override
+  void didUpdateWidget(covariant _GigHubBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.tabVisible && widget.tabVisible) {
+      unawaited(UserListingState().refreshUserId());
+      unawaited(PendingGigBookingsState().refresh());
+      _loadInitialFeedsIfVisible();
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && _isVisible) {
       unawaited(PendingGigBookingsState().refresh());
     }
   }
@@ -128,6 +149,10 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
   /// Refetch feeds after a publish flow closes (see [GigHubFeedsRefreshSignal]).
   void _onPublishFlowClosed() {
     if (!mounted) return;
+    if (!_isVisible) {
+      _hasLoadedInitialFeeds = false;
+      return;
+    }
     final signal = getIt<GigHubFeedsRefreshNotifier>().lastSignal;
     if (signal.refreshServices) {
       context.read<GigOffersBloc>().add(
@@ -146,6 +171,17 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
           );
     }
     unawaited(PendingGigBookingsState().refresh());
+  }
+
+  void _loadInitialFeedsIfVisible() {
+    if (!_isVisible || _hasLoadedInitialFeeds) return;
+    _hasLoadedInitialFeeds = true;
+    context.read<GigOffersBloc>().add(
+          FetchGigOffers(categoryId: _selectedCategoryId),
+        );
+    context.read<GigRequestsBloc>().add(
+          FetchGigRequests(categoryId: _selectedCategoryId),
+        );
   }
 
   void _onScroll() {
@@ -290,8 +326,7 @@ class _GigHubBodyState extends State<_GigHubBody> with WidgetsBindingObserver {
         final signedIn = AuthenticationState().isAuthenticated;
         final shellBottomInset = _mainShellExtendBodyBottomInset(context);
         // Single "My bookings" control (label + circular button) when signed in.
-        final bottomClearance =
-            (signedIn ? 104.0 : 16.0) + shellBottomInset;
+        final bottomClearance = (signedIn ? 104.0 : 16.0) + shellBottomInset;
 
         final scrollable = UydoshRefreshIndicator.mainShell(
           onRefresh: _onRefresh,

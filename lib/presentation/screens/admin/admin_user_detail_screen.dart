@@ -657,7 +657,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
           ],
         ),
       ),
-    );
+    ).whenComplete(reasonController.dispose);
   }
 
   Future<void> _blockUser({String? reason, DateTime? blockedUntil}) async {

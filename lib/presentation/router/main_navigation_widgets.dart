@@ -29,6 +29,12 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
   static const double _bulletDiscDy = 0.5;
   static const double _countTallyDy = 1;
 
+  bool _isLoaded(ListingsState state) =>
+      state.maybeMap(loaded: (_) => true, orElse: () => false);
+
+  int? _totalFor(ListingsState state) =>
+      state.maybeMap(loaded: (s) => s.total, orElse: () => null);
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -40,19 +46,20 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
           listenable: LanguageState(),
           builder: (context, _) {
             return BlocConsumer<ListingsBloc, ListingsState>(
+              listenWhen: (previous, current) =>
+                  _isLoaded(previous) != _isLoaded(current),
               listener: (context, state) {
                 final isInlineActive = HomeInlineSearchState().isActive;
-                final nextReady = state.maybeMap(
-                  loaded: (_) => isInlineActive,
-                  orElse: () => false,
-                );
+                final nextReady = _isLoaded(state) && isInlineActive;
                 if (nextReady != _countReady && mounted) {
                   setState(() => _countReady = nextReady);
                 }
               },
+              buildWhen: (previous, current) =>
+                  _isLoaded(previous) != _isLoaded(current) ||
+                  _totalFor(previous) != _totalFor(current),
               builder: (context, state) {
-                final total =
-                    state.maybeMap(loaded: (s) => s.total, orElse: () => null);
+                final total = _totalFor(state);
                 final showCount =
                     inlineActive && _countReady && total != null && total > 0;
 

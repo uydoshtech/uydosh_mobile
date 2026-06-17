@@ -105,6 +105,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Timer? _unreadRefreshDebounce;
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
+  bool _hasLoadedInitialInboxData = false;
 
   /// Conversations the user just archived but whose commit is still inside the
   /// 5s undo window. They are hidden from every list/badge computation; the
@@ -176,8 +177,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "messages_inbox");
     _initializeUser();
-    _loadConversations();
-    _refreshArchivedChatsFlag();
+    _loadInitialInboxDataIfVisible();
     WidgetsBinding.instance.addObserver(this);
 
     // Listen for authentication state changes to refresh conversations when user logs in
@@ -187,7 +187,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     _unreadMessagesListener = _onUnreadMessagesChanged;
     UnreadMessagesState().addListener(_unreadMessagesListener);
 
-    _refreshPushBannerVisibility();
+    if (widget.mainTabSelected != false) {
+      _refreshPushBannerVisibility();
+    }
   }
 
   @override
@@ -201,6 +203,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return;
     }
     if (oldWidget.mainTabSelected ?? false) {
+      return;
+    }
+    if (!_hasLoadedInitialInboxData) {
+      _loadInitialInboxDataIfVisible();
+      _refreshPushBannerVisibility();
       return;
     }
     if (!UnreadMessagesState().hasUnreadMessages) {
@@ -229,8 +236,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       if (isAuthenticated) {
         // Refresh user ID and conversations when authentication state changes
         _initializeUser();
-        _loadConversations();
-        _refreshArchivedChatsFlag();
+        if (_isInboxVisibleAndActive()) {
+          _loadInitialInboxDataIfVisible();
+          _refreshPushBannerVisibility();
+        } else {
+          _hasLoadedInitialInboxData = false;
+        }
       } else {
         // Clear conversations when user logs out
         logger.d(
@@ -261,6 +272,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    routeObserver.unsubscribe(this);
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
       routeObserver.subscribe(this, route);
@@ -269,7 +281,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && _isInboxVisibleAndActive()) {
       // Refresh conversations when app becomes active again
       _loadConversations();
       _refreshArchivedChatsFlag();
@@ -283,6 +295,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   @override
   void didPopNext() {
     // Called when returning to this screen from another screen (e.g. ChatScreen)
+    if (!_isInboxVisibleAndActive()) return;
     _loadConversations();
     // User may have archived/unarchived from ChatScreen's overflow menu, or
     // their last archived chat may have been auto-unarchived by a reply.
@@ -292,8 +305,15 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   void _loadConversations() {
     logger.d("🔍 [MessagesInboxScreen] Loading conversations...");
     if (mounted) {
+      _hasLoadedInitialInboxData = true;
       context.read<ConversationsBloc>().add(const ConversationsRefresh());
     }
+  }
+
+  void _loadInitialInboxDataIfVisible() {
+    if (widget.mainTabSelected == false) return;
+    _loadConversations();
+    _refreshArchivedChatsFlag();
   }
 
   /// Ask the server whether any archived conversation exists from either

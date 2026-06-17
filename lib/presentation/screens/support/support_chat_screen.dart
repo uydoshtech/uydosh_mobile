@@ -88,11 +88,14 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     try {
       final thread = await getIt<ISupportChatService>().createThread();
       if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) => _UserSupportChatThreadScreen(thread: thread),
-        ),
-      ).then((_) => _fetchThreads());
+      Navigator.of(context)
+          .push(
+            MaterialPageRoute<void>(
+              builder: (context) =>
+                  _UserSupportChatThreadScreen(thread: thread),
+            ),
+          )
+          .then((_) => _fetchThreads());
     } catch (e) {
       if (!mounted) return;
       ToastTheme.showError(context, message: e.toString());
@@ -102,11 +105,13 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   }
 
   void _openThread(SupportChatThread thread) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => _UserSupportChatThreadScreen(thread: thread),
-      ),
-    ).then((_) => _fetchThreads());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (context) => _UserSupportChatThreadScreen(thread: thread),
+          ),
+        )
+        .then((_) => _fetchThreads());
   }
 
   @override
@@ -208,7 +213,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                   ThemeIcon(
                     Icons.support_agent,
                     size: 64,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -369,7 +377,6 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       ),
     );
   }
-
 }
 
 class _UserSupportChatThreadScreen extends StatefulWidget {
@@ -395,14 +402,16 @@ class _UserSupportChatThreadScreenState
   @override
   void initState() {
     super.initState();
-    getIt<AppAnalyticsService>().logScreenView(screenName: "support_chat_thread");
+    getIt<AppAnalyticsService>()
+        .logScreenView(screenName: "support_chat_thread");
     _loadMessages();
     _loadCurrentUserInitials();
   }
 
   Future<void> _loadCurrentUserInitials() async {
     try {
-      final profile = await getIt<IUserProfileService>().getCurrentUserProfile();
+      final profile =
+          await getIt<IUserProfileService>().getCurrentUserProfile();
       setStateIfMounted(() {
         _currentUserInitials = StringUtils.extractInitials(profile.name);
       });
@@ -419,6 +428,7 @@ class _UserSupportChatThreadScreenState
   }
 
   Future<void> _loadMessages() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final response = await getIt<ISupportChatService>().getUserMessages(
@@ -426,7 +436,8 @@ class _UserSupportChatThreadScreenState
         page: 1,
         limit: 100,
       );
-      setStateIfMounted(() {
+      if (!mounted) return;
+      setState(() {
         _messages.clear();
         _messages.addAll(response.messages);
         _isLoading = false;
@@ -441,7 +452,8 @@ class _UserSupportChatThreadScreenState
       }
       _scrollToBottom();
     } catch (e) {
-      setStateIfMounted(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }
@@ -449,7 +461,7 @@ class _UserSupportChatThreadScreenState
   void _scrollToBottom() {
     if (_scrollController.hasClients && _messages.isNotEmpty) {
       Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
+        if (mounted && _scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 200),
@@ -527,26 +539,28 @@ class _UserSupportChatThreadScreenState
           body: Column(
             children: [
               Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _messages.isEmpty
-                    ? Center(
-                        child: Text(
-                          L10n.get("admin_support_chat_no_messages"),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _messages.isEmpty
+                        ? Center(
+                            child: Text(
+                              L10n.get("admin_support_chat_no_messages"),
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _messages.length,
+                            itemBuilder: (context, index) {
+                              final msg = _messages[index];
+                              return _buildMessageBubble(context, msg);
+                            },
                           ),
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = _messages[index];
-                          return _buildMessageBubble(context, msg);
-                        },
-                      ),
               ),
               if (widget.thread.status == "open")
                 _buildInputBar(context)
@@ -659,10 +673,9 @@ class _UserSupportChatThreadScreenState
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
-                  borderRadius:
-                      themeState.isBlueTheme
-                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
-                          : const BorderRadius.all(Radius.circular(24)),
+                  borderRadius: themeState.isBlueTheme
+                      ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                      : const BorderRadius.all(Radius.circular(24)),
                   maxLines: 3,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,
@@ -683,22 +696,21 @@ class _UserSupportChatThreadScreenState
                   width: 28,
                   height: 28,
                   child: Center(
-                    child:
-                        _isSending
-                            ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  themeState.sendButtonColor,
-                                ),
+                    child: _isSending
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                themeState.sendButtonColor,
                               ),
-                            )
-                            : ThemeIcon(
-                              Icons.send,
-                              color: themeState.sendButtonColor,
                             ),
+                          )
+                        : ThemeIcon(
+                            Icons.send,
+                            color: themeState.sendButtonColor,
+                          ),
                   ),
                 ),
               ),

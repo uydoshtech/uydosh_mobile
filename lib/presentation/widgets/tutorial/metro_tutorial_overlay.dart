@@ -13,6 +13,8 @@ class MetroTutorialOverlay {
 
   static Timer? _cycleTimer;
   static OverlayEntry? _overlayEntry;
+  static ValueNotifier<bool>? _finishRequested;
+  static ValueNotifier<bool>? _isStationPhase;
 
   /// Whether the metro tutorial overlay is currently visible. Lets sibling
   /// widgets (e.g. the inline metro hint bubble) suppress themselves so they
@@ -29,15 +31,15 @@ class MetroTutorialOverlay {
     int Function()? getStationCount,
     VoidCallback? onComplete,
   }) {
-    _cycleTimer?.cancel();
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    _teardownOverlay();
 
     // Ensure line 1 is selected so station picker is visible
     onCycleToLine(1);
 
     final finishRequested = ValueNotifier<bool>(false);
     final isStationPhase = ValueNotifier<bool>(false);
+    _finishRequested = finishRequested;
+    _isStationPhase = isStationPhase;
     final overlay = Overlay.of(context);
     _overlayEntry = OverlayEntry(
       builder: (overlayContext) => _MetroTutorialOverlayContent(
@@ -46,12 +48,7 @@ class MetroTutorialOverlay {
         finishRequested: finishRequested,
         isStationPhase: isStationPhase,
         onDismiss: () {
-          finishRequested.dispose();
-          isStationPhase.dispose();
-          _cycleTimer?.cancel();
-          _cycleTimer = null;
-          _overlayEntry?.remove();
-          _overlayEntry = null;
+          _teardownOverlay();
           onComplete?.call();
         },
       ),
@@ -119,10 +116,18 @@ class MetroTutorialOverlay {
 
   /// Stops the metro line cycling and removes the overlay.
   static void stopCycling() {
+    _teardownOverlay();
+  }
+
+  static void _teardownOverlay() {
     _cycleTimer?.cancel();
     _cycleTimer = null;
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _finishRequested?.dispose();
+    _finishRequested = null;
+    _isStationPhase?.dispose();
+    _isStationPhase = null;
   }
 }
 
@@ -146,7 +151,8 @@ class _MetroTutorialOverlayContent extends StatefulWidget {
       _MetroTutorialOverlayContentState();
 }
 
-class _MetroTutorialOverlayContentState extends State<_MetroTutorialOverlayContent>
+class _MetroTutorialOverlayContentState
+    extends State<_MetroTutorialOverlayContent>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
   late final Animation<double> _animation;
@@ -284,13 +290,18 @@ class _TwoRectanglesMaskPainter extends CustomPainter {
 
     Rect? combinedRect;
     if (lineRect != null && stationRect != null) {
-      final top = lineRect.top < stationRect.top ? lineRect.top : stationRect.top;
-      final bottom = lineRect.bottom > stationRect.bottom ? lineRect.bottom : stationRect.bottom;
+      final top =
+          lineRect.top < stationRect.top ? lineRect.top : stationRect.top;
+      final bottom = lineRect.bottom > stationRect.bottom
+          ? lineRect.bottom
+          : stationRect.bottom;
       combinedRect = Rect.fromLTRB(0, top, size.width, bottom);
     } else if (lineRect != null) {
-      combinedRect = Rect.fromLTRB(0, lineRect.top, size.width, lineRect.bottom);
+      combinedRect =
+          Rect.fromLTRB(0, lineRect.top, size.width, lineRect.bottom);
     } else if (stationRect != null) {
-      combinedRect = Rect.fromLTRB(0, stationRect.top, size.width, stationRect.bottom);
+      combinedRect =
+          Rect.fromLTRB(0, stationRect.top, size.width, stationRect.bottom);
     }
 
     if (combinedRect == null) return;

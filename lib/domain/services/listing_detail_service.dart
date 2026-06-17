@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 abstract class IListingDetailService {
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
+
   /// Persists a translated description for [listingId] (requires auth).
   Future<void> saveDescriptionTranslation({
     required int listingId,
@@ -32,6 +33,9 @@ class ListingDetailService implements IListingDetailService {
   ListingDetailService(this._oauthApiClient);
 
   final IOAuthApiClient _oauthApiClient;
+  static const Duration _viewCountCacheTtl = Duration(minutes: 1);
+  static final Map<int, _CachedViewCount> _viewCountCache = {};
+  static final Map<int, Future<int>> _viewCountInFlight = {};
 
   @override
   Future<ListingDetail> getListingDetail(
@@ -92,6 +96,7 @@ class ListingDetailService implements IListingDetailService {
         basePath: EnvironmentUtil.basePath,
         data: EmptyListingRequest(),
       );
+      _viewCountCache.remove(listingId);
     } catch (e) {
       logger.d("Error recording listing view: $e");
       // Fire-and-forget - don't rethrow
@@ -141,6 +146,31 @@ class ListingDetailService implements IListingDetailService {
 
   @override
   Future<int> getListingViewCount(int listingId) async {
+    final cached = _viewCountCache[listingId];
+    if (cached != null && !cached.isExpired) {
+      return cached.count;
+    }
+
+    final inFlight = _viewCountInFlight[listingId];
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final request = _fetchListingViewCount(listingId);
+    _viewCountInFlight[listingId] = request;
+    try {
+      final count = await request;
+      _viewCountCache[listingId] = _CachedViewCount(
+        count: count,
+        expiresAt: DateTime.now().add(_viewCountCacheTtl),
+      );
+      return count;
+    } finally {
+      _viewCountInFlight.remove(listingId);
+    }
+  }
+
+  Future<int> _fetchListingViewCount(int listingId) async {
     try {
       final response = await _oauthApiClient.get<Map<String, dynamic>>(
         "/listings/$listingId/view-count",
@@ -178,4 +208,13 @@ class ListingDetailService implements IListingDetailService {
       rethrow;
     }
   }
+}
+
+class _CachedViewCount {
+  const _CachedViewCount({required this.count, required this.expiresAt});
+
+  final int count;
+  final DateTime expiresAt;
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
 }

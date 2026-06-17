@@ -386,7 +386,6 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
       ),
     );
   }
-
 }
 
 class _AdminSupportChatThreadScreen extends StatefulWidget {
@@ -422,6 +421,7 @@ class _AdminSupportChatThreadScreenState
   }
 
   Future<void> _loadMessages() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final response = await getIt<ISupportChatService>().getMessages(
@@ -429,14 +429,16 @@ class _AdminSupportChatThreadScreenState
         page: 1,
         limit: 100,
       );
-      setStateIfMounted(() {
+      if (!mounted) return;
+      setState(() {
         _messages.clear();
         _messages.addAll(response.messages);
         _isLoading = false;
       });
       _scrollToBottom();
     } catch (e) {
-      setStateIfMounted(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       ToastTheme.showError(context, message: e.toString());
     }
   }
@@ -444,7 +446,7 @@ class _AdminSupportChatThreadScreenState
   void _scrollToBottom() {
     if (_scrollController.hasClients && _messages.isNotEmpty) {
       Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
+        if (mounted && _scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 200),
@@ -687,10 +689,9 @@ class _AdminSupportChatThreadScreenState
                   textColor: inputFieldTextColor,
                   hintColor: inputFieldHintColor,
                   cursorColor: inputFieldTextColor,
-                  borderRadius:
-                      themeState.isBlueTheme
-                          ? ThreeDSurfaceStyle.wheelPickerPlateRadius
-                          : const BorderRadius.all(Radius.circular(24)),
+                  borderRadius: themeState.isBlueTheme
+                      ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+                      : const BorderRadius.all(Radius.circular(24)),
                   maxLines: 3,
                   minLines: 1,
                   textCapitalization: TextCapitalization.sentences,
@@ -726,7 +727,8 @@ class _AdminSupportChatThreadScreenState
                               ),
                             ),
                           )
-                        : ThemeIcon(Icons.send, color: themeState.sendButtonColor),
+                        : ThemeIcon(Icons.send,
+                            color: themeState.sendButtonColor),
                   ),
                 ),
               ),

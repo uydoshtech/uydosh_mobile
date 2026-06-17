@@ -15,11 +15,10 @@ import "package:yandex_mapkit/yandex_mapkit.dart";
 class MapPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = Colors.grey[300]!
-          ..strokeWidth = 1.0
-          ..style = PaintingStyle.stroke;
+    final paint = Paint()
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
 
     // Draw grid lines to simulate map tiles
     const gridSize = 20.0;
@@ -35,10 +34,9 @@ class MapPatternPainter extends CustomPainter {
     }
 
     // Draw some random "buildings" or "roads"
-    final buildingPaint =
-        Paint()
-          ..color = Colors.grey[400]!
-          ..style = PaintingStyle.fill;
+    final buildingPaint = Paint()
+      ..color = Colors.grey[400]!
+      ..style = PaintingStyle.fill;
 
     // Add some random rectangles to simulate buildings
     final random = DateTime.now().millisecondsSinceEpoch;
@@ -95,6 +93,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     super.initState();
     _initializeIcon();
     _initializeMapWithDelay();
+  }
+
+  @override
+  void dispose() {
+    _mapController = null;
+    super.dispose();
   }
 
   Future<void> _initializeIcon() async {
@@ -177,10 +181,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             if (_isMapReady || kIsWeb)
               kIsWeb
                   ? _buildWebFallback(
-                    context,
-                    centerPoint["latitude"]!,
-                    centerPoint["longitude"]!,
-                  )
+                      context,
+                      centerPoint["latitude"]!,
+                      centerPoint["longitude"]!,
+                    )
                   : _buildMobileMap(context, centerPoint, mapObjects),
             // Zoom controls (only when map is ready)
             if (!kIsWeb && _isMapReady) _buildZoomControls(),
@@ -344,6 +348,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         tiltGesturesEnabled: true, // Enable tilt gestures
         fastTapEnabled: true, // Enable fast tap for better responsiveness
         onMapCreated: (controller) {
+          if (!mounted) return;
           // Store controller for zoom controls
           _mapController = controller;
 
@@ -464,8 +469,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         }
 
         // Fallback to name-based lookup
-        final stationName =
-            listing.subwayStation?.nameEn ??
+        final stationName = listing.subwayStation?.nameEn ??
             listing.subwayStation?.nameRu ??
             listing.subwayStation?.nameUz;
 
@@ -498,8 +502,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         }
 
         // Fallback to name-based lookup
-        final locationName =
-            listing.location?.nameEn ??
+        final locationName = listing.location?.nameEn ??
             listing.location?.nameRu ??
             listing.location?.nameUz;
 
@@ -563,10 +566,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     const solidBlack = Color(0xFF000000); // Pitch black
 
     // Draw a solid black circle background first to ensure complete opacity
-    final circlePaint =
-        Paint()
-          ..color = solidBlack
-          ..style = PaintingStyle.fill;
+    final circlePaint = Paint()
+      ..color = solidBlack
+      ..style = PaintingStyle.fill;
 
     final center = Offset(size / 2, size / 2);
     final radius = size * 0.4; // Make it a bit smaller than the canvas
@@ -631,7 +633,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const ThemeIcon(Icons.add, color: Colors.black87, size: 24),
+                  child: const ThemeIcon(Icons.add,
+                      color: Colors.black87, size: 24),
                 ),
               ),
             ),

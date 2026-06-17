@@ -128,9 +128,9 @@ class _MessageBubbleState extends State<MessageBubble>
   /// Lets the pill sit further right when badge inset is already clamped to 0.
   static const double _reactionToolbarShiftTowardTrailingEndPx = 52;
 
-  late AnimationController _scaleAnimationController;
-  late AnimationController _fadeAnimationController;
-  late AnimationController _reactionAppearPulseController;
+  AnimationController? _scaleAnimationController;
+  AnimationController? _fadeAnimationController;
+  AnimationController? _reactionAppearPulseController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<double> _reactionAppearPulseScale;
@@ -170,82 +170,43 @@ class _MessageBubbleState extends State<MessageBubble>
   void initState() {
     super.initState();
 
-    // Scale animation controller (for the shake/elastic effect)
-    _scaleAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    // Fade animation controller (for the fade-in effect)
-    _fadeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    // Create a stretch and shrink animation
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _scaleAnimationController,
-        curve: Curves.elasticOut,
-      ),
-    );
-
-    // Create a fade-in animation (from 0.5 to 1.0 opacity)
-    _fadeAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _fadeAnimationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _reactionAppearPulseController = AnimationController(
-      duration: const Duration(milliseconds: 700),
-      vsync: this,
-    );
-    _reactionAppearPulseScale = TweenSequence<double>(
-      [
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 1.14).chain(
-            CurveTween(curve: Curves.easeOutCubic),
-          ),
-          weight: 23,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.14, end: 1.0).chain(
-            CurveTween(curve: Curves.easeInCubic),
-          ),
-          weight: 23,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 1.11).chain(
-            CurveTween(curve: Curves.easeOutCubic),
-          ),
-          weight: 21,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.11, end: 1.0).chain(
-            CurveTween(curve: Curves.easeInOut),
-          ),
-          weight: 33,
-        ),
-      ],
-    ).animate(
-      CurvedAnimation(
-        parent: _reactionAppearPulseController,
-        curve: Curves.linear,
-      ),
-    );
-    _reactionAppearPulseController.value = 1.0;
-
     // Only start the animation if this is the latest message
     if (widget.isLatest) {
+      // Scale animation controller (for the shake/elastic effect)
+      _scaleAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 500),
+        vsync: this,
+      );
+
+      // Fade animation controller (for the fade-in effect)
+      _fadeAnimationController = AnimationController(
+        duration: const Duration(milliseconds: 500),
+        vsync: this,
+      );
+
+      // Create a stretch and shrink animation
+      _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _scaleAnimationController!,
+          curve: Curves.elasticOut,
+        ),
+      );
+
+      // Create a fade-in animation (from 0.5 to 1.0 opacity)
+      _fadeAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _fadeAnimationController!,
+          curve: Curves.easeInOut,
+        ),
+      );
+
       // Start scale animation immediately
-      _scaleAnimationController.forward();
+      _scaleAnimationController!.forward();
 
       // Start fade animation with a slight delay (100ms) to create overlap
       _startupFadeTimer = Timer(const Duration(milliseconds: 100), () {
         if (!mounted) return;
-        _fadeAnimationController.forward();
+        _fadeAnimationController?.forward();
       });
 
       // Wait for both animations to complete (scale takes 500ms, fade starts at 100ms and takes 500ms, so total is 600ms)
@@ -254,9 +215,52 @@ class _MessageBubbleState extends State<MessageBubble>
         widget.onAnimationComplete?.call();
       });
     } else {
-      // For older messages, set to final state immediately
-      _scaleAnimationController.value = 1.0;
-      _fadeAnimationController.value = 1.0;
+      // Older messages are static rows; avoid allocating idle controllers.
+      _scaleAnimation = const AlwaysStoppedAnimation<double>(1);
+      _fadeAnimation = const AlwaysStoppedAnimation<double>(1);
+    }
+
+    if (_reactionsEnabled) {
+      _reactionAppearPulseController = AnimationController(
+        duration: const Duration(milliseconds: 700),
+        vsync: this,
+      );
+      _reactionAppearPulseScale = TweenSequence<double>(
+        [
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.0, end: 1.14).chain(
+              CurveTween(curve: Curves.easeOutCubic),
+            ),
+            weight: 23,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.14, end: 1.0).chain(
+              CurveTween(curve: Curves.easeInCubic),
+            ),
+            weight: 23,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.0, end: 1.11).chain(
+              CurveTween(curve: Curves.easeOutCubic),
+            ),
+            weight: 21,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.11, end: 1.0).chain(
+              CurveTween(curve: Curves.easeInOut),
+            ),
+            weight: 33,
+          ),
+        ],
+      ).animate(
+        CurvedAnimation(
+          parent: _reactionAppearPulseController!,
+          curve: Curves.linear,
+        ),
+      );
+      _reactionAppearPulseController!.value = 1.0;
+    } else {
+      _reactionAppearPulseScale = const AlwaysStoppedAnimation<double>(1);
     }
   }
 
@@ -264,9 +268,9 @@ class _MessageBubbleState extends State<MessageBubble>
   void dispose() {
     _startupFadeTimer?.cancel();
     _startupCompleteTimer?.cancel();
-    _scaleAnimationController.dispose();
-    _fadeAnimationController.dispose();
-    _reactionAppearPulseController.dispose();
+    _scaleAnimationController?.dispose();
+    _fadeAnimationController?.dispose();
+    _reactionAppearPulseController?.dispose();
     super.dispose();
   }
 
@@ -280,15 +284,14 @@ class _MessageBubbleState extends State<MessageBubble>
     final totalIncreased = _totalReactionCount(widget.message) >
         _totalReactionCount(oldWidget.message);
     final shouldFeedback = myReactionAppeared ||
-        (totalIncreased &&
-            (widget.isCurrentUser || !myReactionAppeared));
+        (totalIncreased && (widget.isCurrentUser || !myReactionAppeared));
     if (!mounted) return;
     if (shouldFeedback) {
       HapticFeedbackUtils.tapticChain();
       SendSoundUtils.playSendSound();
     }
     if (_reactionsEnabled && next != null && next != prev) {
-      _reactionAppearPulseController.forward(from: 0);
+      _reactionAppearPulseController?.forward(from: 0);
     }
   }
 
@@ -358,8 +361,7 @@ class _MessageBubbleState extends State<MessageBubble>
                                     const SizedBox(height: 4),
                                     _TranslationToggleRow(
                                       translation: widget.translation!,
-                                      isShowingOriginal:
-                                          widget.showOriginal,
+                                      isShowingOriginal: widget.showOriginal,
                                       textColor: textColor,
                                       onTap: widget.onToggleTranslation,
                                     ),
@@ -398,7 +400,8 @@ class _MessageBubbleState extends State<MessageBubble>
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          context.l10n.chat_message_edited_label,
+                                          context
+                                              .l10n.chat_message_edited_label,
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontStyle: FontStyle.italic,
@@ -756,8 +759,7 @@ class _MessageBubbleState extends State<MessageBubble>
       // [_bubbleAnchorKey] sits inside [ChatBubbleWithTail]'s padded container,
       // so [o.dy] is the inner content top — subtract vertical inset to match
       // the visible frosted / painted bubble edge for overlap placement.
-      final bubbleTop =
-          o.dy - ChatBubbleWithTail.innerVerticalPadding;
+      final bubbleTop = o.dy - ChatBubbleWithTail.innerVerticalPadding;
       final bubbleW = bubbleBox.size.width;
       final badgeEndInset = _reactionToolbarTrailingEndInset(bubbleW);
       final toolbarEndInset = math.max(
@@ -813,9 +815,9 @@ class _MessageBubbleState extends State<MessageBubble>
         onRemoved: entry.remove,
         onEmojiChosen: (reactionId, {required matchesOpeningSelection}) =>
             _applyReactionChoice(
-              reactionId,
-              matchesOpeningSelection: matchesOpeningSelection,
-            ),
+          reactionId,
+          matchesOpeningSelection: matchesOpeningSelection,
+        ),
       ),
     );
     overlay.insert(entry);
@@ -870,7 +872,8 @@ class _MessageBubbleState extends State<MessageBubble>
     String reactionId, {
     bool matchesOpeningSelection = false,
   }) async {
-    final mine = _reactionKeysEqualNullable(widget.message.myReaction, reactionId);
+    final mine =
+        _reactionKeysEqualNullable(widget.message.myReaction, reactionId);
     if (mine || matchesOpeningSelection) {
       await widget.onClearReaction?.call();
     } else {
@@ -936,9 +939,7 @@ class _MessageBubbleState extends State<MessageBubble>
         spacing: 6,
         runSpacing: 2,
         alignment: wrapAlignment ??
-            (widget.isCurrentUser
-                ? WrapAlignment.end
-                : WrapAlignment.start),
+            (widget.isCurrentUser ? WrapAlignment.end : WrapAlignment.start),
         children: [
           for (final e in entries)
             GestureDetector(
@@ -1411,8 +1412,8 @@ class _ReactionToolbarOverlayAnimatedState
                                 HapticFeedbackUtils.tapticChain();
                                 final applyReaction = widget.onEmojiChosen;
                                 final reactionId = id;
-                                final matchesOpening =
-                                    _MessageBubbleState._reactionKeysEqualNullable(
+                                final matchesOpening = _MessageBubbleState
+                                    ._reactionKeysEqualNullable(
                                   widget.selectedReactionId,
                                   reactionId,
                                 );
@@ -1430,12 +1431,12 @@ class _ReactionToolbarOverlayAnimatedState
                                   horizontal: 6,
                                   vertical: 4,
                                 ),
-                                child:
-                                    _MessageBubbleState._reactionRibbonEmojiBody(
+                                child: _MessageBubbleState
+                                    ._reactionRibbonEmojiBody(
                                   reactionId: id,
                                   emojiSize: 20,
-                                  selected:
-                                      _MessageBubbleState._reactionKeysEqualNullable(
+                                  selected: _MessageBubbleState
+                                      ._reactionKeysEqualNullable(
                                     widget.selectedReactionId,
                                     id,
                                   ),
