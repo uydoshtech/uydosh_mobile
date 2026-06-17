@@ -95,7 +95,8 @@ abstract class RemoteConfigService {
   static const canonicalShareWebBase = AppDomains.shareWebBase;
 
   static final RegExp _legacyShareWebHost = RegExp(
-    '://(?:www\\.)?${RegExp.escape(AppDomains.legacyWebHost)}(?=/|\$)',
+    '://(?:www\\.)?(?:${RegExp.escape(AppDomains.marketingWebHost)}|'
+    '${RegExp.escape(AppDomains.legacyWebHost)})(?=/|\$)',
     caseSensitive: false,
   );
 

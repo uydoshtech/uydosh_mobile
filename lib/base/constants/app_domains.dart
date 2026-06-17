@@ -1,16 +1,20 @@
 /// Canonical public domains and app store identifiers.
 ///
-/// **Website / share links** use [webHost] (`uydosh.com`).
+/// **Website / share links** use [webHost] (`api.uydosh.com`).
 /// **Store package / bundle IDs** use [androidApplicationId] (`com.uydosh.app`) —
-/// do not change those to `uydosh.com`; they are unrelated to the public URL.
+/// do not change those to `api.uydosh.com`; they are unrelated to the public URL.
 abstract final class AppDomains {
   /// Hostname for https share links and universal links (no scheme).
-  static const webHost = 'uydosh.com';
+  static const webHost = 'api.uydosh.com';
 
-  /// Base URL for shareable listing links (`https://uydosh.com/listing/123`).
+  /// Base URL for shareable listing links (`https://api.uydosh.com/listing/123`).
   static const shareWebBase = 'https://$webHost';
 
-  static const supportEmail = 'support@$webHost';
+  /// Marketing/support domain. This may differ from the deep-link host while
+  /// the API host handles Universal Links / App Links.
+  static const marketingWebHost = 'uydosh.com';
+
+  static const supportEmail = 'support@$marketingWebHost';
 
   /// Previous marketing domain; still accepted when opening old shared links.
   static const legacyWebHost = 'uydosh.app';
@@ -23,6 +27,10 @@ abstract final class AppDomains {
 
   static bool isListingLinkHost(String host) {
     final h = host.toLowerCase();
-    return h == webHost || h == 'www.$webHost' || h == legacyWebHost || h == 'www.$legacyWebHost';
+    return h == webHost ||
+        h == marketingWebHost ||
+        h == 'www.$marketingWebHost' ||
+        h == legacyWebHost ||
+        h == 'www.$legacyWebHost';
   }
 }

@@ -147,7 +147,7 @@ class DeepLinkService {
       "${EnvironmentUtil.shareWebBase}/listing/$listingId";
 
   /// Parses a URI and returns the listing ID if valid.
-  /// Handles both uydosh://listing/123 and https://uydosh.com/listing/123.
+  /// Handles both uydosh://listing/123 and https://api.uydosh.com/listing/123.
   static int? parseListingId(Uri uri) {
     // Custom scheme: uydosh://listing/123
     if (uri.scheme == _scheme && uri.host == _host) {
@@ -155,7 +155,7 @@ class DeepLinkService {
       if (segments.isEmpty) return null;
       return int.tryParse(segments.first);
     }
-    // HTTPS: https://uydosh.com/listing/123 (also legacy uydosh.app links)
+    // HTTPS: https://api.uydosh.com/listing/123 (also legacy web hosts)
     if ((uri.scheme == "https" || uri.scheme == "http") &&
         uri.pathSegments.length >= 2 &&
         AppDomains.isListingLinkHost(uri.host)) {

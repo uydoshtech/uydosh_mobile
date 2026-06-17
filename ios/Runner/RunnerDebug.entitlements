@@ -6,8 +6,8 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:uydosh.com</string>
-		<string>applinks:uydosh.com?mode=developer</string>
+		<string>applinks:api.uydosh.com</string>
+		<string>applinks:api.uydosh.com?mode=developer</string>
 		<string>applinks:app3016986242-login.tg.dev</string>
 		<string>applinks:app3016986242-login.tg.dev?mode=developer</string>
 		<string>webcredentials:app3016986242-login.tg.dev</string>

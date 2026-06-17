@@ -67,12 +67,12 @@
                     android:scheme="https"
                     android:host="app2183690589-login.tg.dev"/>
             </intent-filter>
-            <!-- App Links: https://uydosh.com/listing/123 (for messengers) -->
+            <!-- App Links: https://api.uydosh.com/listing/123 (for messengers) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https" android:host="uydosh.com" android:pathPrefix="/listing/"/>
+                <data android:scheme="https" android:host="api.uydosh.com" android:pathPrefix="/listing/"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
