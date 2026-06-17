@@ -1151,6 +1151,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
   }
 
+  Future<String> _getRequiredFirebaseIdToken(User currentUser) async {
+    final idToken = await currentUser.getIdToken();
+    if (idToken == null || idToken.trim().isEmpty) {
+      throw Exception(L10n.get("firebase_user_not_found"));
+    }
+    return idToken;
+  }
+
   // Authenticate with your backend after Firebase Sign-In - FIRST OCCURRENCE
   Future<void> _authenticateWithBackend(
       {_AuthMethod authMethod = _AuthMethod.google}) async {
@@ -1168,16 +1176,20 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d("🔍 Current page: $_currentPage");
       logger.d("🔍 Is Google signed in: $_isGoogleSignedIn");
 
+      final idToken = await _getRequiredFirebaseIdToken(currentUser);
+
       // Call backend via Dio (AuthService)
       final response = authMethod == _AuthMethod.phone
           ? await _authService.firebasePhoneAuth(
               firebaseUid: currentUser.uid,
               phoneNumber: currentUser.phoneNumber ?? "",
+              idToken: idToken,
               avatarUrl: currentUser.photoURL,
             )
           : await _authService.firebaseAuth(
               email: currentUser.email ?? "",
               firebaseUid: currentUser.uid,
+              idToken: idToken,
               avatarUrl: currentUser.photoURL,
             );
 
@@ -1389,15 +1401,19 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
+      final idToken = await _getRequiredFirebaseIdToken(currentUser);
+
       final response = _authMethod == _AuthMethod.phone
           ? await _authService.firebasePhoneAuth(
               firebaseUid: currentUser.uid,
               phoneNumber: currentUser.phoneNumber ?? "",
+              idToken: idToken,
               avatarUrl: currentUser.photoURL,
             )
           : await _authService.firebaseAuth(
               email: currentUser.email ?? "",
               firebaseUid: currentUser.uid,
+              idToken: idToken,
               avatarUrl: currentUser.photoURL,
             );
 

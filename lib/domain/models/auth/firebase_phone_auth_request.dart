@@ -4,10 +4,12 @@ class FirebasePhoneAuthRequest implements IJsonEncodable {
   FirebasePhoneAuthRequest({
     required this.firebaseUid,
     required this.phoneNumber,
+    required this.idToken,
     this.avatarUrl,
   });
 
   final String firebaseUid;
+  final String idToken;
 
   /// E.164-formatted phone number, e.g. `+998901234567`. Must match the number
   /// that was verified by `FirebaseAuth.verifyPhoneNumber` on the client.
@@ -19,9 +21,10 @@ class FirebasePhoneAuthRequest implements IJsonEncodable {
 
   @override
   Map<String, dynamic> toJson() => {
-    "firebase_uid": firebaseUid,
-    "phone_number": phoneNumber,
-    if (avatarUrl != null && avatarUrl!.trim().isNotEmpty)
-      "avatar_url": avatarUrl!.trim(),
-  };
+        "firebase_uid": firebaseUid,
+        "phone_number": phoneNumber,
+        "id_token": idToken,
+        if (avatarUrl != null && avatarUrl!.trim().isNotEmpty)
+          "avatar_url": avatarUrl!.trim(),
+      };
 }

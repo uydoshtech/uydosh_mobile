@@ -11,11 +11,13 @@ import "package:uy_dosh/domain/models/auth/firebase_phone_auth_request.dart";
 abstract class IAuthService {
   Future<AuthResponse> register(String email);
   Future<AuthResponse> login(String email);
+
   /// Authenticate with backend using Firebase credentials.
   /// Returns raw response with sessionToken, user, profileExists.
   Future<Map<String, dynamic>> firebaseAuth({
     required String email,
     required String firebaseUid,
+    required String idToken,
     String? avatarUrl,
   });
 
@@ -25,6 +27,7 @@ abstract class IAuthService {
   Future<Map<String, dynamic>> firebasePhoneAuth({
     required String firebaseUid,
     required String phoneNumber,
+    required String idToken,
     String? avatarUrl,
   });
 
@@ -92,7 +95,6 @@ class _TelegramIdTokenRequest implements IJsonEncodable {
 }
 
 class AuthService implements IAuthService {
-
   AuthService(this._apiClient, this._oauthApiClient);
   final IPublicApiClient _apiClient;
   final IOAuthApiClient _oauthApiClient;
@@ -149,15 +151,18 @@ class AuthService implements IAuthService {
   Future<Map<String, dynamic>> firebaseAuth({
     required String email,
     required String firebaseUid,
+    required String idToken,
     String? avatarUrl,
   }) async {
     try {
       final request = FirebaseAuthRequest(
         email: email,
         firebaseUid: firebaseUid,
+        idToken: idToken,
         avatarUrl: avatarUrl,
       );
-      final response = await _apiClient.post<Map<String, dynamic>, FirebaseAuthRequest>(
+      final response =
+          await _apiClient.post<Map<String, dynamic>, FirebaseAuthRequest>(
         "/users/firebase-auth",
         (json) => json as Map<String, dynamic>,
         data: request,
@@ -172,16 +177,18 @@ class AuthService implements IAuthService {
   Future<Map<String, dynamic>> firebasePhoneAuth({
     required String firebaseUid,
     required String phoneNumber,
+    required String idToken,
     String? avatarUrl,
   }) async {
     try {
       final request = FirebasePhoneAuthRequest(
         firebaseUid: firebaseUid,
         phoneNumber: phoneNumber,
+        idToken: idToken,
         avatarUrl: avatarUrl,
       );
-      final response = await _apiClient
-          .post<Map<String, dynamic>, FirebasePhoneAuthRequest>(
+      final response =
+          await _apiClient.post<Map<String, dynamic>, FirebasePhoneAuthRequest>(
         "/users/firebase-phone-auth",
         (json) => json as Map<String, dynamic>,
         data: request,
@@ -200,12 +207,10 @@ class AuthService implements IAuthService {
     // etc.). All non-fatal: account deletion will still work, it just
     // won't be able to revoke the Apple session at Apple's side.
     try {
-      await _oauthApiClient
-          .post<Map<String, dynamic>, _AppleBindRequest>(
+      await _oauthApiClient.post<Map<String, dynamic>, _AppleBindRequest>(
         "/users/apple-bind",
-        (json) => json is Map
-            ? Map<String, dynamic>.from(json)
-            : <String, dynamic>{},
+        (json) =>
+            json is Map ? Map<String, dynamic>.from(json) : <String, dynamic>{},
         data: _AppleBindRequest(authorizationCode: authorizationCode),
       );
     } catch (e) {
@@ -263,7 +268,8 @@ class AuthService implements IAuthService {
       if (token.isEmpty) {
         throw Exception("Telegram id_token is empty");
       }
-      return await _apiClient.post<Map<String, dynamic>, _TelegramIdTokenRequest>(
+      return await _apiClient
+          .post<Map<String, dynamic>, _TelegramIdTokenRequest>(
         "/users/telegram-auth",
         (json) => json as Map<String, dynamic>,
         data: _TelegramIdTokenRequest(idToken: token),
