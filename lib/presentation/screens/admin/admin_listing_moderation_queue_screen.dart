@@ -597,22 +597,6 @@ class _AdminListingModerationQueueScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (item.listingTypeLabel != null &&
-                              item.listingTypeLabel!.isNotEmpty)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 4, bottom: 10),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  item.listingTypeLabel!,
-                                  style: TextStyle(
-                                    color: secondaryTextColor,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ),
                           Row(
                             children: [
                               Expanded(

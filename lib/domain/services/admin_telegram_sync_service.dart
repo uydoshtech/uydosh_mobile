@@ -49,6 +49,7 @@ class TelegramSyncStats {
   final List<int> missingIds;
   final String duplicatePolicy;
   final String? chatKey;
+
   /// How many Telegram message ids this sync wrote (listing import scopes to these when supported).
   final int? syncedTelegramMessageIdsCount;
 }
@@ -90,6 +91,7 @@ class TelegramListingImportStats {
   final int skippedNoListingType;
   final int skippedFailed;
   final List<String> errors;
+
   /// Present when import was limited to specific `telegram_message_id`s from the sync run.
   final int? scopedToTelegramMessageIds;
 }
@@ -142,12 +144,12 @@ class _TelegramSyncPostBody implements IJsonEncodable {
 
   @override
   dynamic toJson() => {
-    "chat": chat,
-    "limit": limit,
-    "newestFirst": newestFirst,
-    if (importUserId != null) "importUserId": importUserId,
-    "skipListingImport": skipListingImport,
-  };
+        "chat": chat,
+        "limit": limit,
+        "newestFirst": newestFirst,
+        if (importUserId != null) "importUserId": importUserId,
+        "skipListingImport": skipListingImport,
+      };
 }
 
 class ClearListingsResult {
@@ -170,6 +172,7 @@ class ClearListingsResult {
 
   final int listingsDeleted;
   final int listingsRemaining;
+
   /// TRUNCATE ... CASCADE on `listings` also wipes `telegram_ingested_messages`
   /// (it has a FK reference), so we surface that impact in the response.
   final int ingestedMessagesDeleted;
@@ -201,7 +204,41 @@ class _EmptyRequest implements IJsonEncodable {
   dynamic toJson() => <String, dynamic>{};
 }
 
+class TelegramChannelsResponse {
+  TelegramChannelsResponse({
+    required this.channels,
+    this.channel,
+  });
+
+  factory TelegramChannelsResponse.fromJson(Map<String, dynamic> json) {
+    return TelegramChannelsResponse(
+      channels: (json["channels"] as List<dynamic>?)
+              ?.map((e) => e?.toString() ?? "")
+              .where((e) => e.trim().isNotEmpty)
+              .toList() ??
+          [],
+      channel: json["channel"] as String?,
+    );
+  }
+
+  final List<String> channels;
+  final String? channel;
+}
+
+class _AddTelegramChannelBody implements IJsonEncodable {
+  const _AddTelegramChannelBody({required this.channel});
+
+  final String channel;
+
+  @override
+  dynamic toJson() => {"channel": channel};
+}
+
 abstract class IAdminTelegramSyncService {
+  Future<TelegramChannelsResponse> getChannels();
+
+  Future<TelegramChannelsResponse> addChannel(String channel);
+
   Future<TelegramSyncRunResult> runSync({
     required String chat,
     required int limit,
@@ -235,6 +272,41 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
   static const Duration _exportReceiveTimeout = Duration(minutes: 30);
 
   @override
+  Future<TelegramChannelsResponse> getChannels() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/telegram/channels",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      final map =
+          _requireJsonMap(response, "Unexpected telegram channels response");
+      return TelegramChannelsResponse.fromJson(map);
+    } catch (e) {
+      logger.d("Load telegram channels error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramChannelsResponse> addChannel(String channel) async {
+    try {
+      final response = await _oauthApiClient.post<dynamic, IJsonEncodable>(
+        "/admin/telegram/channels",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _AddTelegramChannelBody(channel: channel),
+      );
+      final map =
+          _requireJsonMap(response, "Unexpected telegram channels response");
+      return TelegramChannelsResponse.fromJson(map);
+    } catch (e) {
+      logger.d("Add telegram channel error: $e");
+      rethrow;
+    }
+  }
+
+  @override
   Future<TelegramSyncRunResult> runSync({
     required String chat,
     required int limit,
@@ -259,7 +331,8 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
           sendTimeout: const Duration(minutes: 2),
         ),
       );
-      final map = _requireJsonMap(response, "Unexpected telegram sync response");
+      final map =
+          _requireJsonMap(response, "Unexpected telegram sync response");
       return TelegramSyncRunResult.fromJson(map);
     } catch (e) {
       logger.d("Telegram sync error: $e");
@@ -306,7 +379,8 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
           sendTimeout: const Duration(minutes: 1),
         ),
       );
-      final map = _requireJsonMap(response, "Unexpected clear listings response");
+      final map =
+          _requireJsonMap(response, "Unexpected clear listings response");
       return ClearListingsResult.fromJson(map);
     } catch (e) {
       logger.d("Clear all listings error: $e");
@@ -327,7 +401,8 @@ class AdminTelegramSyncService implements IAdminTelegramSyncService {
           sendTimeout: const Duration(minutes: 1),
         ),
       );
-      final map = _requireJsonMap(response, "Unexpected clear ingested messages response");
+      final map = _requireJsonMap(
+          response, "Unexpected clear ingested messages response");
       return ClearIngestedMessagesResult.fromJson(map);
     } catch (e) {
       logger.d("Clear ingested messages error: $e");

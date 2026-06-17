@@ -1107,6 +1107,16 @@ class AppStrings {
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Custom chat (@handle or id)",
       "admin_telegram_sync_channel_custom": "Custom…",
+      "admin_telegram_sync_channels_loading": "Loading channels…",
+      "admin_telegram_sync_add_channel": "Add channel",
+      "admin_telegram_sync_add_channel_title": "Add Telegram channel",
+      "admin_telegram_sync_add_channel_label": "Channel handle",
+      "admin_telegram_sync_add_channel_helper":
+          "Paste @handle, t.me/handle, or a numeric chat id.",
+      "admin_telegram_sync_add_channel_invalid":
+          "Enter a valid channel handle or id without spaces.",
+      "admin_telegram_sync_add_channel_save": "Add",
+      "admin_telegram_sync_add_channel_done": "Added {channel}.",
       "admin_telegram_sync_limit_label": "Message limit",
       "admin_telegram_sync_import_user_label": "Listing owner user ID",
       "admin_telegram_sync_import_user_sync_only":
@@ -2842,6 +2852,16 @@ class AppStrings {
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_chat_custom_label": "Другой чат (@handle или id)",
       "admin_telegram_sync_channel_custom": "Другой…",
+      "admin_telegram_sync_channels_loading": "Загрузка каналов…",
+      "admin_telegram_sync_add_channel": "Добавить канал",
+      "admin_telegram_sync_add_channel_title": "Добавить Telegram-канал",
+      "admin_telegram_sync_add_channel_label": "Канал",
+      "admin_telegram_sync_add_channel_helper":
+          "Вставьте @handle, t.me/handle или числовой id чата.",
+      "admin_telegram_sync_add_channel_invalid":
+          "Введите канал или id без пробелов.",
+      "admin_telegram_sync_add_channel_save": "Добавить",
+      "admin_telegram_sync_add_channel_done": "Добавлен {channel}.",
       "admin_telegram_sync_limit_label": "Лимит сообщений",
       "admin_telegram_sync_import_user_label": "ID владельца объявлений",
       "admin_telegram_sync_import_user_sync_only":
@@ -4594,6 +4614,16 @@ class AppStrings {
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Boshqa chat (@handle yoki id)",
       "admin_telegram_sync_channel_custom": "Boshqa…",
+      "admin_telegram_sync_channels_loading": "Kanallar yuklanmoqda…",
+      "admin_telegram_sync_add_channel": "Kanal qo‘shish",
+      "admin_telegram_sync_add_channel_title": "Telegram kanal qo‘shish",
+      "admin_telegram_sync_add_channel_label": "Kanal handle",
+      "admin_telegram_sync_add_channel_helper":
+          "@handle, t.me/handle yoki raqamli chat id kiriting.",
+      "admin_telegram_sync_add_channel_invalid":
+          "Bo‘sh joysiz to‘g‘ri kanal yoki id kiriting.",
+      "admin_telegram_sync_add_channel_save": "Qo‘shish",
+      "admin_telegram_sync_add_channel_done": "{channel} qo‘shildi.",
       "admin_telegram_sync_limit_label": "Xabar limiti",
       "admin_telegram_sync_import_user_label": "E’lon egasi user ID",
       "admin_telegram_sync_import_user_sync_only":

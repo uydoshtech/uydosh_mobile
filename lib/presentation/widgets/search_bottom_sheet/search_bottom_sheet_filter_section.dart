@@ -17,7 +17,10 @@ import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 /// Primary filters: listing type and gender pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
   const SearchBottomSheetPrimaryFilters({
-    required this.searchFiltersState, required this.onListingTypeChanged, required this.onGenderChanged, super.key,
+    required this.searchFiltersState,
+    required this.onListingTypeChanged,
+    required this.onGenderChanged,
+    super.key,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -75,6 +78,8 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canFilterPrivateRoom = searchFiltersState.selectedListingTypeId == 2;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -90,19 +95,21 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: _SearchSheetFilterToggle(
-                icon: Icons.lock_outline,
-                label: L10n.get("search_filter_private_room"),
-                value: searchFiltersState.privateRoom,
-                emphasized: searchFiltersState.privateRoom,
-                onChanged: (value) {
-                  UiFeedbackUtils.tap();
-                  onPrivateRoomChanged(value);
-                },
+            if (canFilterPrivateRoom) ...[
+              Expanded(
+                child: _SearchSheetFilterToggle(
+                  icon: Icons.lock_outline,
+                  label: L10n.get("search_filter_private_room"),
+                  value: searchFiltersState.privateRoom,
+                  emphasized: searchFiltersState.privateRoom,
+                  onChanged: (value) {
+                    UiFeedbackUtils.tap();
+                    onPrivateRoomChanged(value);
+                  },
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
+              const SizedBox(width: 12),
+            ],
             Expanded(
               child: _SearchSheetFilterToggle(
                 icon: Icons.photo_camera_outlined,
@@ -129,18 +136,17 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
               final baseSize = label?.fontSize ?? 14;
               final textStyle =
                   label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-                  TextStyle(
-                    fontSize: baseSize * 1.2,
-                    height: 1.0,
-                    fontWeight: FontWeight.w500,
-                  );
+                      TextStyle(
+                        fontSize: baseSize * 1.2,
+                        height: 1.0,
+                        fontWeight: FontWeight.w500,
+                      );
               return PrimaryButtonFactory.iconText(
                 onPressed: onPrimaryPressed,
                 icon: primaryIcon,
-                text:
-                    primaryLabelKey == "apply"
-                        ? context.l10n.apply
-                        : L10n.get(primaryLabelKey),
+                text: primaryLabelKey == "apply"
+                    ? context.l10n.apply
+                    : L10n.get(primaryLabelKey),
                 width: double.infinity,
                 borderRadius: BorderRadius.circular(20),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -217,14 +223,12 @@ class _SearchSheetFilterToggle extends StatelessWidget {
             value: value,
             activeAccentColor: border,
             activeTrackColor: border.withValues(alpha: 0.3),
-            inactiveThumbColor:
-                isDark
-                    ? theme.colorScheme.onSurfaceVariant.withOpacity(0.7)
-                    : Colors.grey.shade600,
-            inactiveTrackColor:
-                isDark
-                    ? theme.colorScheme.onSurfaceVariant.withOpacity(0.3)
-                    : Colors.grey.shade300,
+            inactiveThumbColor: isDark
+                ? theme.colorScheme.onSurfaceVariant.withOpacity(0.7)
+                : Colors.grey.shade600,
+            inactiveTrackColor: isDark
+                ? theme.colorScheme.onSurfaceVariant.withOpacity(0.3)
+                : Colors.grey.shade300,
             onChanged: onChanged,
           ),
         ],

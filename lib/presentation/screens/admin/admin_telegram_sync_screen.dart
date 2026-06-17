@@ -86,10 +86,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// Default listing owner after Telegram sync (admin user id 1 in production).
   static const int _kDefaultListingOwnerUserId = 1;
 
-  /// Telegram channels the daily cron scrapes. Rendered as items in the chat
-  /// dropdown; picking one sets [_chatController]. Keep in sync with
-  /// `env.TG_CHATS` in `uydosh_backend/.github/workflows/telegram-sync.yml`.
-  static const List<String> _kKnownChannels = [
+  /// Fallback Telegram channels for the import dropdown while the admin-managed
+  /// list is loading or unavailable.
+  static const List<String> _kDefaultKnownChannels = [
     "@roommateuz",
     "@tashkentpodselenie",
   ];
@@ -147,15 +146,19 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   final IAdminUserService _adminUserService = getIt<IAdminUserService>();
   final IAdminAreaPriceCacheService _areaPriceCacheService =
       getIt<IAdminAreaPriceCacheService>();
-  final _chatController = TextEditingController(text: _kKnownChannels.first);
+  final _chatController =
+      TextEditingController(text: _kDefaultKnownChannels.first);
   final _exportMaxRowsController = TextEditingController(text: "100000");
 
   /// Current selection in the chat dropdown. Holds either a handle from
-  /// [_kKnownChannels] or [_kCustomChannelSentinel] when the admin wants to
+  /// [_knownChannels] or [_kCustomChannelSentinel] when the admin wants to
   /// type a one-off chat target.
-  String _selectedChannel = _kKnownChannels.first;
+  String _selectedChannel = _kDefaultKnownChannels.first;
+  final List<String> _knownChannels = [..._kDefaultKnownChannels];
 
   final List<AdminUser> _adminUsers = [];
+  bool _loadingChannels = false;
+  String? _channelsError;
   bool _loadingAdmins = true;
   String? _adminsError;
   int? _selectedImportUserId;
@@ -166,6 +169,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   bool _newestFirst = true;
   bool _skipListingImport = false;
   bool _running = false;
+  bool _addingChannel = false;
   bool _exporting = false;
   bool _clearingListings = false;
   bool _clearingIngested = false;
@@ -183,6 +187,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     _messageLimitScrollController = FixedExtentScrollController(
       initialItem: limitIndex >= 0 ? limitIndex : 0,
     );
+    _loadTelegramChannels();
     _loadAdmins();
   }
 
@@ -192,6 +197,42 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
     _chatController.dispose();
     _exportMaxRowsController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTelegramChannels() async {
+    setState(() {
+      _loadingChannels = true;
+      _channelsError = null;
+    });
+    try {
+      final response = await _service.getChannels();
+      final channels = response.channels.isNotEmpty
+          ? response.channels
+          : _kDefaultKnownChannels;
+      setStateIfMounted(() {
+        _knownChannels
+          ..clear()
+          ..addAll(channels);
+        _loadingChannels = false;
+        if (_selectedChannel != _kCustomChannelSentinel &&
+            !_knownChannels.contains(_selectedChannel)) {
+          _selectKnownChannel(_knownChannels.first);
+        }
+      });
+    } catch (e) {
+      setStateIfMounted(() {
+        _loadingChannels = false;
+        _channelsError = e.toString();
+      });
+    }
+  }
+
+  void _selectKnownChannel(String channel) {
+    _selectedChannel = channel;
+    _chatController.text = channel;
+    _chatController.selection = TextSelection.fromPosition(
+      TextPosition(offset: channel.length),
+    );
   }
 
   Future<void> _loadAdmins() async {
@@ -237,6 +278,134 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
       return "#${u.id}";
     }
     return "$mail · #${u.id}";
+  }
+
+  String _normalizeTelegramChannelInput(String raw) {
+    var value = raw.trim();
+    value = value.replaceFirst(
+        RegExp(r"^https?://t\.me/", caseSensitive: false), "");
+    value = value.replaceFirst(RegExp(r"^t\.me/", caseSensitive: false), "");
+    value = value
+        .split(RegExp(r"[?#]"))
+        .first
+        .replaceFirst(RegExp(r"^/+"), "")
+        .trim();
+    if (value.isEmpty) return "";
+    if (!value.startsWith("@") &&
+        RegExp(r"^[a-zA-Z][a-zA-Z0-9_]{4,31}$").hasMatch(value)) {
+      return "@$value";
+    }
+    return value;
+  }
+
+  Future<void> _showAddChannelDialog() async {
+    final controller = TextEditingController();
+    String? errorText;
+    final channel = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return UydoshAlertDialog(
+              title: Text(L10n.get("admin_telegram_sync_add_channel_title")),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: L10n.get(
+                    "admin_telegram_sync_add_channel_label",
+                  ),
+                  helperText: L10n.get(
+                    "admin_telegram_sync_add_channel_helper",
+                  ),
+                  errorText: errorText,
+                ),
+              ),
+              actions: [
+                TextButtonThemed(
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text(L10n.get("cancel")),
+                ),
+                PrimaryButton(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  surfaceGradientBase: ThemeState().isBlueTheme
+                      ? BlueThemeColors.buttonPrimary
+                      : ThemeState().cardColor,
+                  textColor: ThemeState().isBlueTheme
+                      ? BlueThemeColors.textPrimary
+                      : theme.colorScheme.onSurface,
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    final normalized =
+                        _normalizeTelegramChannelInput(controller.text);
+                    if (normalized.isEmpty ||
+                        normalized.length > 128 ||
+                        RegExp(r"\s").hasMatch(normalized)) {
+                      setDialogState(() {
+                        errorText = L10n.get(
+                          "admin_telegram_sync_add_channel_invalid",
+                        );
+                      });
+                      return;
+                    }
+                    Navigator.of(ctx).pop(normalized);
+                  },
+                  child: Text(L10n.get("admin_telegram_sync_add_channel_save")),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    controller.dispose();
+    if (channel == null) return;
+    await _addTelegramChannel(channel);
+  }
+
+  Future<void> _addTelegramChannel(String channel) async {
+    setStateIfMounted(() {
+      _addingChannel = true;
+      _channelsError = null;
+      _errorText = null;
+    });
+    try {
+      final response = await _service.addChannel(channel);
+      final channels = response.channels.isNotEmpty
+          ? response.channels
+          : [..._knownChannels, channel];
+      final requestedSelection = response.channel ?? channel;
+      final selected = channels.firstWhere(
+        (item) => item.toLowerCase() == requestedSelection.toLowerCase(),
+        orElse: () => requestedSelection,
+      );
+      setStateIfMounted(() {
+        _knownChannels
+          ..clear()
+          ..addAll(channels);
+        _selectKnownChannel(selected);
+        _addingChannel = false;
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.getWithParams(
+          "admin_telegram_sync_add_channel_done",
+          params: {"channel": selected},
+        ),
+      );
+    } catch (e) {
+      setStateIfMounted(() {
+        _addingChannel = false;
+        _channelsError = e.toString();
+        _errorText = e.toString();
+      });
+    }
   }
 
   Future<void> _run() async {
@@ -751,7 +920,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                         dropdownIconColor:
                             isBlue ? BlueThemeColors.textPrimary : null,
                         items: [
-                          for (final handle in _kKnownChannels)
+                          for (final handle in _knownChannels)
                             DropdownMenuItem<String>(
                               value: handle,
                               child: Text(
@@ -774,11 +943,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                                 setState(() {
                                   _selectedChannel = v;
                                   if (v != _kCustomChannelSentinel) {
-                                    _chatController.text = v;
-                                    _chatController.selection =
-                                        TextSelection.fromPosition(
-                                      TextPosition(offset: v.length),
-                                    );
+                                    _selectKnownChannel(v);
                                   } else {
                                     _chatController.clear();
                                   }
@@ -786,6 +951,39 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                               },
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GhostButtonFactory.iconTextCentered(
+                        onPressed:
+                            (_running || _addingChannel || _loadingChannels)
+                                ? null
+                                : _showAddChannelDialog,
+                        icon: Icons.add,
+                        text: _loadingChannels
+                            ? L10n.get("admin_telegram_sync_channels_loading")
+                            : L10n.get("admin_telegram_sync_add_channel"),
+                        isLoading: _addingChannel,
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        neumorphicSoftUi: true,
+                        neumorphicFillColor:
+                            isBlue ? BlueThemeColors.surface : null,
+                      ),
+                    ),
+                    if (_channelsError != null) ...[
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        _channelsError!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                     if (_selectedChannel == _kCustomChannelSentinel) ...[
                       const SizedBox(height: 12),
                       NeumorphicInsetContainer(

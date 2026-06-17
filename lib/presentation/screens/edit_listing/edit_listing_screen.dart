@@ -80,6 +80,7 @@ class _EditListingScreenState extends State<EditListingScreen>
   // where gender is inferred from the profile and the picker is hidden, here we
   // seed from the listing being edited and let the user change it.
   int _selectedGender = 1;
+
   /// Scalar rent for "roommate needed" (listing type 2).
   double _roommatePrice = 50.0;
 
@@ -89,6 +90,8 @@ class _EditListingScreenState extends State<EditListingScreen>
   static const double _priceSliderMin = 1.0;
   static const double _priceSliderMax = 1000.0;
   bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
+  bool get _canSelectPrivateRoom => _selectedListingTypeId == 2;
+  bool get _privateRoomForSave => _canSelectPrivateRoom && _isPrivateRoom;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -304,13 +307,15 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Convert string code to integer ID: "roommate_needed" -> 2, "room_needed" -> 1
     _selectedListingTypeId =
         widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
+    if (!_canSelectPrivateRoom) {
+      _isPrivateRoom = false;
+    }
 
     // Seed gender from the listing being edited so the picker shows its current
     // value. Falls back to male; the profile fallback is resolved in _initGender.
     final listingGender = widget.listingDetail.gender;
-    _selectedGender = (listingGender == 1 || listingGender == 2)
-        ? listingGender!
-        : 1;
+    _selectedGender =
+        (listingGender == 1 || listingGender == 2) ? listingGender! : 1;
 
     // Seed price fields from the stored listing price (midpoint for room-needed).
     _roommatePrice = widget.listingDetail.price
@@ -691,7 +696,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("listing_price_label", fallback: "Price");
     }
 
-    if (_isPrivateRoom != (baseline.privateRoom ?? false)) {
+    if (_privateRoomForSave != (baseline.privateRoom ?? false)) {
       addLabel("private_room", fallback: "Private room");
     }
 
@@ -776,7 +781,7 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     if (_priceForUpdateRequest() != d.price) return true;
 
-    if (_isPrivateRoom != (d.privateRoom ?? false)) return true;
+    if (_privateRoomForSave != (d.privateRoom ?? false)) return true;
 
     if (_moveInDateValue != _baselineMoveInDate(d)) return true;
 
@@ -923,7 +928,8 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 label: L10n.get("listing_type_label"),
                                 child: ListingTypePicker(
                                   selectedListingTypeId: _selectedListingTypeId,
-                                  scrollController: _listingTypeScrollController,
+                                  scrollController:
+                                      _listingTypeScrollController,
                                   userGender: _selectedGender,
                                   onListingTypeChanged: (listingTypeId) {
                                     setState(() {
@@ -931,6 +937,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                       _selectedListingTypeId = listingTypeId;
                                       if (prevType == 2 && listingTypeId == 1) {
                                         _deriveBudgetRangeFromRoommatePrice();
+                                        _isPrivateRoom = false;
                                       } else if (prevType == 1 &&
                                           listingTypeId == 2) {
                                         _deriveRoommatePriceFromBudget();
@@ -1289,91 +1296,95 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              // Private Room Toggle (50% width)
-                              Expanded(
-                                child: Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  decoration: ThreeDSurfaceStyle
-                                      .wheelPickerPlateDecoration(
-                                    context,
-                                    theme: theme,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12.0,
-                                      vertical: 16.0,
+                              if (_canSelectPrivateRoom) ...[
+                                const SizedBox(width: 12),
+                                // Private Room Toggle (50% width)
+                                Expanded(
+                                  child: Container(
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: ThreeDSurfaceStyle
+                                        .wheelPickerPlateDecoration(
+                                      context,
+                                      theme: theme,
                                     ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        ThemeIcon(
-                                          Icons.lock_outline,
-                                          color: _isPrivateRoom
-                                              ? _getBorderColor()
-                                              : (Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7)
-                                                  : Colors.grey[600]),
-                                          size: 22,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                L10n.get("private_room")
-                                                    .replaceFirst(" ", "\n"),
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      ThemeState().isLightTheme
-                                                          ? Colors.black
-                                                          : theme.colorScheme
-                                                              .onSurfaceVariant,
-                                                ),
-                                              ),
-                                            ],
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                        vertical: 16.0,
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          ThemeIcon(
+                                            Icons.lock_outline,
+                                            color: _isPrivateRoom
+                                                ? _getBorderColor()
+                                                : (Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.7)
+                                                    : Colors.grey[600]),
+                                            size: 22,
                                           ),
-                                        ),
-                                        NeumorphicToggle(
-                                          value: _isPrivateRoom,
-                                          activeAccentColor: _getBorderColor(),
-                                          activeTrackColor: _getBorderColor()
-                                              .withValues(alpha: 0.3),
-                                          inactiveThumbColor:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7)
-                                                  : Colors.grey.shade600,
-                                          inactiveTrackColor:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.3)
-                                                  : Colors.grey.shade300,
-                                          onChanged: (value) {
-                                            HapticFeedbackUtils.impact();
-                                            setState(() {
-                                              _isPrivateRoom = value;
-                                            });
-                                          },
-                                        ),
-                                      ],
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  L10n.get("private_room")
+                                                      .replaceFirst(" ", "\n"),
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: ThemeState()
+                                                            .isLightTheme
+                                                        ? Colors.black
+                                                        : theme.colorScheme
+                                                            .onSurfaceVariant,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          NeumorphicToggle(
+                                            value: _isPrivateRoom,
+                                            activeAccentColor:
+                                                _getBorderColor(),
+                                            activeTrackColor: _getBorderColor()
+                                                .withValues(alpha: 0.3),
+                                            inactiveThumbColor:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.7)
+                                                    : Colors.grey.shade600,
+                                            inactiveTrackColor:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.3)
+                                                    : Colors.grey.shade300,
+                                            onChanged: (value) {
+                                              HapticFeedbackUtils.impact();
+                                              setState(() {
+                                                _isPrivateRoom = value;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
@@ -1623,7 +1634,7 @@ class _EditListingScreenState extends State<EditListingScreen>
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Add move-in date
-        privateRoom: _isPrivateRoom, // Add private room preference
+        privateRoom: _privateRoomForSave,
         photoPaths: null, // Don"t upload photos during listing update
       );
 
