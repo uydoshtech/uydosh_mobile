@@ -100,14 +100,12 @@ jobs:
           bundler-cache: true
           bundler: "2.5.23"
 
-      - name: Install CocoaPods (standalone, runner-local)
+      - name: Show bundled CocoaPods version
         run: |
           set -euo pipefail
           ruby -v
           gem --version
-          # Install CocoaPods into the runner user's gem home to avoid Ruby/Bundler conflicts.
-          gem install cocoapods -v 1.16.2 --no-document
-          echo "$(ruby -e 'print Gem.user_dir')/bin" >> "$GITHUB_PATH"
+          bundle exec pod --version
 
       - name: Install dependencies
         run: flutter pub get
@@ -119,11 +117,11 @@ jobs:
         run: |
           set -euo pipefail
           set -x
-          pod --version
-          pod env
+          bundle exec pod --version
+          bundle exec pod env
           cd ios
           # Show full output to diagnose CI failures.
-          pod install --repo-update --verbose
+          bundle exec pod install --repo-update --verbose
 
       - name: Install Distribution certificate and App Store profile
         env:
