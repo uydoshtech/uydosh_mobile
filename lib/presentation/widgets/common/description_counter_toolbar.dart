@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/debug_tap_bounds.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_ai_enhance_button.dart";
@@ -24,8 +25,10 @@ enum DescriptionCounterToolbarLayout {
 /// [ListingDescriptionDictateButton] (see [ListingDescriptionAssistant]).
 ///
 /// * The AI-enhance, template suggestion, and dictate actions on the left.
-/// * A `currentLength / maxLength` counter that turns red at 90% usage.
-/// * An expand/collapse chevron with haptic + UI sound feedback.
+/// * A `currentLength / maxLength` counter that turns red at 90% usage, shown
+///   on a second footer row when visible so it does not crowd the action row.
+///   The counter aligns with the template icon on row 1.
+/// * An expand/collapse chevron pinned to the right of the action row.
 ///
 /// Two visual layouts are supported — see [DescriptionCounterToolbarLayout].
 class DescriptionCounterToolbar extends StatefulWidget {
@@ -135,10 +138,37 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
 
   static const double _actionSpacing = 6;
   static const double _footerHeight = 22;
-  static const double _footerSlotHeight = 34;
+  static const double _footerVerticalPadding = 12;
+  static const double _counterRowGap = 2;
+  static const double _counterTextRowHeight = 14;
+  static const double _activeFooterSlotHeight = 44;
 
   /// Pull inline toolbar actions toward the plate edge, leaving a small gutter.
   static const double _inlineActionsLeadingInset = 14;
+
+  /// Matches inline [TextButton] horizontal padding on assistant toolbar buttons.
+  static const double _inlineActionButtonHorizontalPadding = 8;
+
+  /// Lines row-2 counter text up with the template icon on row 1.
+  static const double _counterRowLeadingOffset =
+      _inlineActionButtonHorizontalPadding - _inlineActionsLeadingInset;
+
+  double _footerContentHeight({required bool showCounterText}) {
+    var height = _footerHeight;
+    if (showCounterText) {
+      height += _counterRowGap + _counterTextRowHeight;
+    }
+    return height;
+  }
+
+  double _footerSlotHeightFor({required bool recording, required bool showCounterText}) {
+    final contentHeight = _footerContentHeight(showCounterText: showCounterText);
+    if (recording) {
+      return _activeFooterSlotHeight +
+          (showCounterText ? _counterRowGap + _counterTextRowHeight : 0);
+    }
+    return _footerVerticalPadding + contentHeight;
+  }
 
   Widget _wrapAction(Widget child) {
     if (!widget.debugShowTapBounds) return child;
@@ -194,82 +224,98 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
     );
   }
 
-  Widget _buildCounterColumn(Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (_showCounterText) ...[
-          Text(
-            "${widget.currentLength}/${widget.maxLength}",
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 4),
-        ],
-        Semantics(
-          button: true,
-          label:
-              widget.isExpanded ? "Collapse description" : "Expand description",
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              UiFeedbackUtils.tap();
-              widget.onToggleExpanded();
-            },
-            child: SizedBox(
-              width: 44,
-              height: _footerHeight,
-              child: Center(
-                child: AnimatedRotation(
-                  turns: widget.isExpanded ? 0.5 : 0.0,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOut,
-                  child: const Icon(
-                    Icons.expand_more,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+  Widget _buildCounterText(Color color) {
+    return Text(
+      "${L10n.get("listing_description_character_count")}"
+      "${widget.currentLength} / ${widget.maxLength}",
+      style: TextStyle(
+        color: color,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+
+  Widget _buildExpandChevron({required double counterRight}) {
+    return Transform.translate(
+      offset: Offset(-counterRight, 0),
+      child: Semantics(
+        button: true,
+        label:
+            widget.isExpanded ? "Collapse description" : "Expand description",
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            UiFeedbackUtils.tap();
+            widget.onToggleExpanded();
+          },
+          child: SizedBox(
+            width: 44,
+            height: _footerHeight,
+            child: Center(
+              child: AnimatedRotation(
+                turns: widget.isExpanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeInOut,
+                child: const Icon(
+                  Icons.expand_more,
+                  size: 18,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildInner(Color color, DictationMeterController? dictateMeterSlot) {
-    final counterWidget = _buildCounterColumn(color);
-    final counter = widget.layout == DescriptionCounterToolbarLayout.stack
-        ? Transform.translate(
-            offset: Offset(widget.stackCounterRightOffset, 0),
-            child: counterWidget,
-          )
-        : counterWidget;
+    final counterRight = widget.layout == DescriptionCounterToolbarLayout.stack
+        ? widget.stackCounterRightOffset
+        : 0.0;
+    final showCounterText = _showCounterText;
 
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: SizedBox(
-        height: _footerHeight,
+        height: _footerContentHeight(showCounterText: showCounterText),
         width: double.infinity,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: _buildActionsRow(dictateMeterSlot),
-                ),
+            SizedBox(
+              height: _footerHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: _buildActionsRow(dictateMeterSlot),
+                      ),
+                    ),
+                  ),
+                  _buildExpandChevron(counterRight: counterRight),
+                ],
               ),
             ),
-            counter,
+            if (showCounterText) ...[
+              const SizedBox(height: _counterRowGap),
+              SizedBox(
+                height: _counterTextRowHeight,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Transform.translate(
+                    offset: const Offset(_counterRowLeadingOffset, 0),
+                    child: _buildCounterText(color),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -285,33 +331,37 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
       builder: (context, meterDisabled, _) {
         final showMeterUi = !meterDisabled;
         final slot = showMeterUi ? _dictationMeter : null;
-        return SizedBox(
-          height: _footerSlotHeight,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              if (showMeterUi)
-                Positioned(
-                  left: 4,
-                  right: 4,
-                  bottom: _footerSlotHeight,
-                  child: IgnorePointer(
-                    child: ListenableBuilder(
-                      listenable: _dictationMeter,
-                      builder: (context, _) {
-                        if (!_dictationMeter.active) {
-                          return const SizedBox.shrink();
-                        }
-                        return ListingDescriptionDictationMeterRow(
-                          controller: _dictationMeter,
-                        );
-                      },
+        return ListenableBuilder(
+          listenable: _dictationMeter,
+          builder: (context, _) {
+            final recording = showMeterUi && _dictationMeter.active;
+            final showCounterText = _showCounterText;
+            final footerSlotHeight = _footerSlotHeightFor(
+              recording: recording,
+              showCounterText: showCounterText,
+            );
+            return SizedBox(
+              height: footerSlotHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: 4,
+                    right: 4,
+                    bottom: footerSlotHeight,
+                    child: IgnorePointer(
+                      child: recording
+                          ? ListingDescriptionDictationMeterRow(
+                              controller: _dictationMeter,
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ),
-                ),
-              Positioned.fill(child: _buildInner(color, slot)),
-            ],
-          ),
+                  Positioned.fill(child: _buildInner(color, slot)),
+                ],
+              ),
+            );
+          },
         );
       },
     );

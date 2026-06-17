@@ -46,7 +46,7 @@ class ListingFormAmenitiesSection extends StatelessWidget {
         theme: theme,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

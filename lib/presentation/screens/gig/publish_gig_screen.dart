@@ -2311,10 +2311,27 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
 
   static const double _actionSpacing = 6;
   static const double _footerHeight = 22;
+  static const double _counterRowGap = 2;
+  static const double _counterTextRowHeight = 14;
   static const double _inlineActionsLeadingInset = 8;
+
+  /// Matches inline [TextButton] horizontal padding on assistant toolbar buttons.
+  static const double _inlineActionButtonHorizontalPadding = 8;
+
+  /// Lines row-2 counter text up with the template icon on row 1.
+  static const double _counterRowLeadingOffset =
+      _inlineActionButtonHorizontalPadding - _inlineActionsLeadingInset;
 
   /// Matches [DescriptionCounterToolbar.stackCounterRightOffset] on create listing.
   static const double _stackCounterRightOffset = -18;
+
+  double _footerContentHeight({required bool showCounterText}) {
+    var height = _footerHeight;
+    if (showCounterText) {
+      height += _counterRowGap + _counterTextRowHeight;
+    }
+    return height;
+  }
 
   void _onDictationMeterServerDisabled() {
     if (ClientListingDictationMeterConfig.dictationMeterDisabled.value) {
@@ -2399,52 +2416,99 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
     );
   }
 
-  Widget _buildCounterColumn(Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (_showCounterText) ...[
-          Text(
-            "${widget.currentLength}/${widget.maxLength}",
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 4),
-        ],
-        Semantics(
-          button: true,
-          label: widget.isExpanded
-              ? "Collapse description"
-              : "Expand description",
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              UiFeedbackUtils.tap();
-              widget.onToggleExpanded();
-            },
-            child: SizedBox(
-              width: 44,
-              height: _footerHeight,
-              child: Center(
-                child: AnimatedRotation(
-                  turns: widget.isExpanded ? 0.5 : 0.0,
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeInOut,
-                  child: const Icon(
-                    Icons.expand_more,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+  Widget _buildCounterText(Color color) {
+    return Text(
+      "${L10n.get("listing_description_character_count")}"
+      "${widget.currentLength} / ${widget.maxLength}",
+      style: TextStyle(
+        color: color,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+
+  Widget _buildExpandChevron() {
+    return Transform.translate(
+      offset: const Offset(-_stackCounterRightOffset, 0),
+      child: Semantics(
+        button: true,
+        label: widget.isExpanded
+            ? "Collapse description"
+            : "Expand description",
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            UiFeedbackUtils.tap();
+            widget.onToggleExpanded();
+          },
+          child: SizedBox(
+            width: 44,
+            height: _footerHeight,
+            child: Center(
+              child: AnimatedRotation(
+                turns: widget.isExpanded ? 0.5 : 0.0,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeInOut,
+                child: const Icon(
+                  Icons.expand_more,
+                  size: 18,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(Color color, DictationMeterController? slot) {
+    final showCounterText = _showCounterText;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: SizedBox(
+        height: _footerContentHeight(showCounterText: showCounterText),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: _footerHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: _buildActionsRow(slot),
+                      ),
+                    ),
+                  ),
+                  _buildExpandChevron(),
+                ],
+              ),
+            ),
+            if (showCounterText) ...[
+              const SizedBox(height: _counterRowGap),
+              SizedBox(
+                height: _counterTextRowHeight,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Transform.translate(
+                    offset: const Offset(_counterRowLeadingOffset, 0),
+                    child: _buildCounterText(color),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -2477,32 +2541,7 @@ class _GigDescriptionToolbarState extends State<_GigDescriptionToolbar> {
                   );
                 },
               ),
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 8),
-              child: SizedBox(
-                height: _footerHeight,
-                width: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: _buildActionsRow(slot),
-                        ),
-                      ),
-                    ),
-                    Transform.translate(
-                      offset: const Offset(_stackCounterRightOffset, 0),
-                      child: _buildCounterColumn(color),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildFooter(color, slot),
           ],
         );
       },

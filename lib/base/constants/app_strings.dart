@@ -602,6 +602,7 @@ class AppStrings {
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
       "listing_description_dictate": "Dictate",
+      "listing_description_character_count": "Characters: ",
       "listing_description_dictate_mic_denied":
           "Microphone access is needed to dictate.",
       "listing_description_dictate_failed":
@@ -2339,6 +2340,7 @@ class AppStrings {
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
       "listing_description_dictate": "Диктовка",
+      "listing_description_character_count": "Символов: ",
       "listing_description_dictate_mic_denied":
           "Для диктовки нужен доступ к микрофону.",
       "listing_description_dictate_failed":
@@ -4101,6 +4103,7 @@ class AppStrings {
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
       "listing_description_dictate": "Diktat",
+      "listing_description_character_count": "Belgilar: ",
       "listing_description_dictate_mic_denied":
           "Dictaphone uchun mikrofonga ruxsat kerak.",
       "listing_description_dictate_failed":
