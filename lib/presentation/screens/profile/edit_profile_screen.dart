@@ -757,727 +757,738 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     final theme = Theme.of(context);
     return ListenableBuilder(
       listenable: _formListenables,
-      builder: (context, _) {
-        return PopScope(
-          canPop: !_isFormDirty(),
-          onPopInvokedWithResult: _onPopInvoked,
-          child: Scaffold(
-            // Unified soft-UI background so neumorphic shadows on the cards
-            // blend seamlessly with the page instead of clashing with a
-            // contrasting scaffold tone.
-            backgroundColor: theme.colorScheme.surface,
-            appBar: UydoshAppBar(
-              leading: ThreeDAppBarIconButton.backLeading(context),
-              title: Text(
-                L10n.get("edit_profile"),
-                style: theme.appBarTheme.titleTextStyle,
-              ),
-              backgroundColor: theme.appBarTheme.backgroundColor ??
-                  theme.colorScheme.primary,
-              foregroundColor: theme.appBarTheme.foregroundColor ??
-                  theme.colorScheme.onPrimary,
-              elevation: 0,
-              actions: [
+      child: Scaffold(
+        // Unified soft-UI background so neumorphic shadows on the cards
+        // blend seamlessly with the page instead of clashing with a
+        // contrasting scaffold tone.
+        backgroundColor: theme.colorScheme.surface,
+        appBar: UydoshAppBar(
+          leading: ThreeDAppBarIconButton.backLeading(context),
+          title: Text(
+            L10n.get("edit_profile"),
+            style: theme.appBarTheme.titleTextStyle,
+          ),
+          backgroundColor:
+              theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
+          foregroundColor:
+              theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+          elevation: 0,
+          actions: [
+            _buildAppBarSaveAction(theme),
+          ],
+        ),
+        body: KeyboardDismissScope(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name Field
+                _buildTextField(
+                  label: L10n.get("name"),
+                  controller: _nameController,
+                  icon: Icons.person,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Gender Selector
+                _buildGenderSelector(context),
+
+                const SizedBox(height: 24),
+
+                // Region Selector
+                _buildRegionSelector(context),
+
+                const SizedBox(height: 24),
+
+                // Student status (like onboarding wizard)
+                _buildStudentSelector(context),
+
+                // University Selector (only show when user selects "I'm a student")
                 ValueListenableBuilder<bool>(
-                  valueListenable: _isLoading,
-                  builder: (context, isLoading, _) {
-                    if (isLoading) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: IconButton(
-                          onPressed: null,
-                          icon: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                theme.appBarTheme.foregroundColor ??
-                                    theme.colorScheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                          tooltip: L10n.get("save_changes"),
+                  valueListenable: _isStudent,
+                  builder: (context, isStudent, _) => isStudent
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 24),
+                            _buildUniversitySelector(context),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+
+                const SizedBox(height: 24),
+
+                // About Me Field
+                _buildTextField(
+                  label: L10n.get("about_me"),
+                  controller: _aboutMeController,
+                  icon: Icons.info,
+                  maxLines: 3,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Telegram (OAuth link — same flow as profile page)
+                _buildTelegramSection(context),
+
+                const SizedBox(height: 24),
+
+                // Language (visible to other users - what language you speak)
+                ValueListenableBuilder<String>(
+                  valueListenable: _selectedLanguage,
+                  builder: (context, selectedLanguage, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get("language"),
+                    value: selectedLanguage,
+                    onChanged: (value) {
+                      if (value != null) {
+                        _selectedLanguage.value = value;
+                        LanguageState().setLanguage(value);
+                      }
+                    },
+                    icon: CupertinoIcons.globe,
+                    options: const [
+                      DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
+                      DropdownOption(value: "ru", label: "🇷🇺 Русский"),
+                      DropdownOption(value: "en", label: "🇺🇸 English"),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Price display currency (UZS or USD)
+                ListenableBuilder(
+                  listenable: PriceDisplaySettingsState(),
+                  builder: (context, _) {
+                    final currency = PriceDisplaySettingsState().currencySlug;
+                    return ProfileDropdownControl(
+                      label: L10n.get("price_display_currency"),
+                      value: currency,
+                      onChanged: (value) async {
+                        if (value == null) return;
+                        _baselinePriceDisplay ??=
+                            PriceDisplaySettingsState().currency;
+                        await PriceDisplaySettingsState().setCurrency(
+                          value == "usd"
+                              ? PriceDisplayCurrency.usd
+                              : PriceDisplayCurrency.national,
+                        );
+                      },
+                      icon: Icons.payments,
+                      options: [
+                        DropdownOption(
+                          value: "national",
+                          label: L10n.get("price_display_currency_national"),
                         ),
-                      );
-                    }
-                    if (!_isFormDirty()) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: FadeTransition(
-                        opacity: _savePulseOpacity,
-                        child: IconButton(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            _saveProfile();
-                          },
-                          icon: const ThemeIcon(Icons.save),
-                          tooltip: L10n.get("save_changes"),
+                        DropdownOption(
+                          value: "usd",
+                          label: L10n.get("price_display_currency_usd"),
                         ),
-                      ),
+                      ],
                     );
                   },
                 ),
+
+                const SizedBox(height: 24),
+
+                // Role Dropdown (landlord / tenant; admin option when user is admin)
+                ValueListenableBuilder<bool>(
+                  valueListenable: _isRoleLoaded,
+                  builder: (context, isRoleLoaded, _) => isRoleLoaded
+                      ? ValueListenableBuilder<String>(
+                          valueListenable: _selectedRole,
+                          builder: (context, selectedRole, _) =>
+                              ProfileDropdownControl(
+                            label: L10n.get(
+                              "select_your_primary_role",
+                            ),
+                            value: selectedRole,
+                            onChanged: (value) =>
+                                _selectedRole.value = value ?? "tenant",
+                            icon: Icons.badge,
+                            options: [
+                              if (_isAdmin)
+                                DropdownOption(
+                                  value: "admin",
+                                  label: L10n.get(
+                                    "role_admin",
+                                  ),
+                                  icon: Icons.admin_panel_settings,
+                                ),
+                              if (_pinnedStaffRole == "manager")
+                                DropdownOption(
+                                  value: "manager",
+                                  label: L10n.get(
+                                    "role_manager",
+                                  ),
+                                  icon: Icons.supervisor_account_outlined,
+                                ),
+                              if (_pinnedStaffRole == "moderator")
+                                DropdownOption(
+                                  value: "moderator",
+                                  label: L10n.get(
+                                    "role_moderator",
+                                  ),
+                                  icon: Icons.shield_outlined,
+                                ),
+                              DropdownOption(
+                                value: "landlord",
+                                label: L10n.get(
+                                  "role_landlord",
+                                ),
+                                icon: Icons.home_work,
+                              ),
+                              DropdownOption(
+                                value: "tenant",
+                                label: L10n.get(
+                                  "role_tenant",
+                                ),
+                                icon: Icons.key,
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildRoleLoadingPlaceholder(context),
+                ),
+
+                const SizedBox(height: 24),
+
+                // New Profile Fields Section
+                Text(
+                  L10n.get(
+                    "lifestyle_preferences",
+                  ),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: _getLifestyleHeaderColor(),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Employed (dropdown; stored as bool? on API)
+                ValueListenableBuilder<String?>(
+                  valueListenable: _employed,
+                  builder: (context, employed, _) => ProfileDropdownControl(
+                    label: L10n.get("work"),
+                    value: employed,
+                    onChanged: (value) => _employed.value = value,
+                    icon: Icons.work,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get("not_specified"),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: _employedSlugYes,
+                        label: L10n.get("employed"),
+                        icon: Icons.work,
+                      ),
+                      DropdownOption(
+                        value: _employedSlugNo,
+                        label: L10n.get("not_employed"),
+                        icon: Icons.work_off_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Wake-up Time Dropdown
+                ValueListenableBuilder<String?>(
+                  valueListenable: _wakeupTime,
+                  builder: (context, wakeupTime, _) => ProfileDropdownControl(
+                    label: L10n.get(
+                      "wakeup_time",
+                    ),
+                    value: wakeupTime,
+                    onChanged: (value) => _wakeupTime.value = value,
+                    icon: Icons.wb_sunny,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: "morning",
+                        label: L10n.get(
+                          "morning",
+                        ),
+                        icon: Icons.wb_sunny_outlined,
+                      ),
+                      DropdownOption(
+                        value: "evening",
+                        label: L10n.get(
+                          "evening",
+                        ),
+                        icon: Icons.wb_twilight,
+                      ),
+                      DropdownOption(
+                        value: "night",
+                        label: L10n.get("night"),
+                        icon: Icons.nights_stay_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Sleep Time Dropdown
+                ValueListenableBuilder<String?>(
+                  valueListenable: _sleepTime,
+                  builder: (context, sleepTime, _) => ProfileDropdownControl(
+                    label: L10n.get(
+                      "sleep_time",
+                    ),
+                    value: sleepTime,
+                    onChanged: (value) => _sleepTime.value = value,
+                    icon: Icons.bedtime,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: "morning",
+                        label: L10n.get(
+                          "morning",
+                        ),
+                        icon: Icons.wb_sunny_outlined,
+                      ),
+                      DropdownOption(
+                        value: "evening",
+                        label: L10n.get(
+                          "evening",
+                        ),
+                        icon: Icons.wb_twilight,
+                      ),
+                      DropdownOption(
+                        value: "night",
+                        label: L10n.get("night"),
+                        icon: Icons.nights_stay_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Cleanliness Slider
+                ValueListenableBuilder<int?>(
+                  valueListenable: _cleanliness,
+                  builder: (context, cleanliness, _) => ProfileSliderControl(
+                    label: L10n.get(
+                      "cleanliness",
+                    ),
+                    value: cleanliness,
+                    onChanged: (value) => _cleanliness.value = value,
+                    min: 1,
+                    max: 5,
+                    icon: Icons.cleaning_services,
+                    labels: [
+                      L10n.get("very_messy"),
+                      L10n.get("messy"),
+                      L10n.get("average"),
+                      L10n.get("clean"),
+                      L10n.get("very_clean"),
+                    ],
+                    scaleStartLabel: L10n.get("very_messy"),
+                    scaleEndLabel: L10n.get("very_clean"),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Noise: inverted track (loud/noisy on the left); API still
+                // 1 = quiet … 5 = loud.
+                ValueListenableBuilder<int?>(
+                  valueListenable: _noiseLevel,
+                  builder: (context, noiseLevel, _) => ProfileSliderControl(
+                    label: L10n.get(
+                      "noise_level",
+                    ),
+                    value: noiseLevel,
+                    onChanged: (value) => _noiseLevel.value = value,
+                    min: 1,
+                    max: 5,
+                    icon: Icons.volume_up,
+                    labels: [
+                      L10n.get("very_quiet"),
+                      L10n.get("quiet"),
+                      L10n.get("average"),
+                      L10n.get("loud"),
+                      L10n.get("very_loud"),
+                    ],
+                    scaleStartLabel: L10n.get("very_loud"),
+                    scaleEndLabel: L10n.get("very_quiet"),
+                    invertTrack: true,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Sociability Slider
+                ValueListenableBuilder<int?>(
+                  valueListenable: _sociability,
+                  builder: (context, sociability, _) => ProfileSliderControl(
+                    label: L10n.get(
+                      "sociability",
+                    ),
+                    value: sociability,
+                    onChanged: (value) => _sociability.value = value,
+                    min: 1,
+                    max: 5,
+                    icon: Icons.people,
+                    labels: [
+                      L10n.get(
+                        "very_introverted",
+                      ),
+                      L10n.get("introverted"),
+                      L10n.get("balanced"),
+                      L10n.get("extroverted"),
+                      L10n.get(
+                        "very_extroverted",
+                      ),
+                    ],
+                    scaleStartLabel: L10n.get("very_introverted"),
+                    scaleEndLabel: L10n.get("very_extroverted"),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Guests allowed (dropdown; stored as bool? on API)
+                ValueListenableBuilder<String?>(
+                  valueListenable: _guestsAllowed,
+                  builder: (context, guestsAllowed, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get(
+                      "guests",
+                    ),
+                    value: guestsAllowed,
+                    onChanged: (value) => _guestsAllowed.value = value,
+                    icon: Icons.group_add,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: _guestsSlugYes,
+                        label: L10n.get(
+                          "guests_permitted",
+                        ),
+                        icon: Icons.group_add,
+                      ),
+                      DropdownOption(
+                        value: _guestsSlugNo,
+                        label: L10n.get(
+                          "guests_not_permitted",
+                        ),
+                        icon: Icons.block,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Smoking Preference Dropdown
+                ValueListenableBuilder<String?>(
+                  valueListenable: _smokingPreference,
+                  builder: (context, smokingPreference, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get(
+                      "smoking_preference",
+                    ),
+                    value: smokingPreference,
+                    onChanged: (value) => _smokingPreference.value = value,
+                    icon: Icons.smoking_rooms,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: "non-smoker",
+                        label: L10n.get(
+                          "non_smoker",
+                        ),
+                        icon: Icons.smoke_free,
+                      ),
+                      DropdownOption(
+                        value: "occasional",
+                        label: L10n.get(
+                          "occasional_smoker",
+                        ),
+                        icon: Icons.smoking_rooms_outlined,
+                      ),
+                      DropdownOption(
+                        value: "regular",
+                        label: L10n.get(
+                          "regular_smoker",
+                        ),
+                        icon: Icons.smoking_rooms,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Alcohol Preference Dropdown
+                ValueListenableBuilder<String?>(
+                  valueListenable: _alcoholPreference,
+                  builder: (context, alcoholPreference, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get(
+                      "alcohol_preference",
+                    ),
+                    value: alcoholPreference,
+                    onChanged: (value) => _alcoholPreference.value = value,
+                    icon: Icons.local_bar,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: "non-drinker",
+                        label: L10n.get(
+                          "non_drinker",
+                        ),
+                        icon: Icons.no_drinks,
+                      ),
+                      DropdownOption(
+                        value: "occasional",
+                        label: L10n.get(
+                          "occasional_drinker",
+                        ),
+                        icon: Icons.wine_bar_outlined,
+                      ),
+                      DropdownOption(
+                        value: "regular",
+                        label: L10n.get(
+                          "regular_drinker",
+                        ),
+                        icon: Icons.local_bar,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Cooking habits (dropdown; stored as bool on API)
+                ValueListenableBuilder<String?>(
+                  valueListenable: _cookingHabits,
+                  builder: (context, cookingHabits, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get(
+                      "cooking_habits",
+                    ),
+                    value: cookingHabits,
+                    onChanged: (value) => _cookingHabits.value = value,
+                    icon: Icons.restaurant,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: _cookingSlugAtHome,
+                        label: L10n.get(
+                          "cook",
+                        ),
+                        icon: Icons.restaurant,
+                      ),
+                      DropdownOption(
+                        value: _cookingSlugDoesNot,
+                        label: L10n.get(
+                          "dont_cook",
+                        ),
+                        icon: Icons.takeout_dining,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Pets preference (like / dislike / have cat / have dog)
+                ValueListenableBuilder<String?>(
+                  valueListenable: _petsPreference,
+                  builder: (context, petsPreference, _) =>
+                      ProfileDropdownControl(
+                    label: L10n.get(
+                      "pets_preference",
+                    ),
+                    value: petsPreference,
+                    onChanged: (value) => _petsPreference.value = value,
+                    icon: Icons.pets,
+                    options: [
+                      DropdownOption(
+                        value: null,
+                        label: L10n.get(
+                          "not_specified",
+                        ),
+                        icon: Icons.not_interested,
+                      ),
+                      DropdownOption(
+                        value: "like_pets",
+                        label: L10n.get(
+                          "pets_like_pets",
+                        ),
+                        icon: Icons.pets,
+                      ),
+                      DropdownOption(
+                        value: "dont_like_pets",
+                        label: L10n.get(
+                          "pets_dont_like_pets",
+                        ),
+                        icon: Icons.block,
+                      ),
+                      DropdownOption(
+                        value: "have_cat",
+                        label: L10n.get(
+                          "pets_have_cat",
+                        ),
+                        icon: Icons.cruelty_free,
+                      ),
+                      DropdownOption(
+                        value: "have_dog",
+                        label: L10n.get(
+                          "pets_have_dog",
+                        ),
+                        icon: Icons.pets_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Save Button - only visible when there are unsaved changes
+                // (or while a save is in progress), with a gentle pulse to
+                // draw the user's attention.
+                _buildBottomSaveButton(),
               ],
             ),
-            body: KeyboardDismissScope(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                keyboardDismissBehavior: KeyboardDismissScope.scrollBehavior,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name Field
-                    _buildTextField(
-                      label: L10n.get("name"),
-                      controller: _nameController,
-                      icon: Icons.person,
-                    ),
+          ),
+        ),
+      ),
+      builder: (context, child) {
+        return PopScope(
+          canPop: !_isFormDirty(),
+          onPopInvokedWithResult: _onPopInvoked,
+          child: child!,
+        );
+      },
+    );
+  }
 
-                    const SizedBox(height: 24),
-
-                    // Gender Selector
-                    _buildGenderSelector(context),
-
-                    const SizedBox(height: 24),
-
-                    // Region Selector
-                    _buildRegionSelector(context),
-
-                    const SizedBox(height: 24),
-
-                    // Student status (like onboarding wizard)
-                    _buildStudentSelector(context),
-
-                    // University Selector (only show when user selects "I'm a student")
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isStudent,
-                      builder: (context, isStudent, _) => isStudent
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 24),
-                                _buildUniversitySelector(context),
-                              ],
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // About Me Field
-                    _buildTextField(
-                      label: L10n.get("about_me"),
-                      controller: _aboutMeController,
-                      icon: Icons.info,
-                      maxLines: 3,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Telegram (OAuth link — same flow as profile page)
-                    _buildTelegramSection(context),
-
-                    const SizedBox(height: 24),
-
-                    // Language (visible to other users - what language you speak)
-                    ValueListenableBuilder<String>(
-                      valueListenable: _selectedLanguage,
-                      builder: (context, selectedLanguage, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get("language"),
-                        value: selectedLanguage,
-                        onChanged: (value) {
-                          if (value != null) {
-                            _selectedLanguage.value = value;
-                            LanguageState().setLanguage(value);
-                          }
-                        },
-                        icon: CupertinoIcons.globe,
-                        options: const [
-                          DropdownOption(value: "uz", label: "🇺🇿 O'zbekcha"),
-                          DropdownOption(value: "ru", label: "🇷🇺 Русский"),
-                          DropdownOption(value: "en", label: "🇺🇸 English"),
-                        ],
+  Widget _buildAppBarSaveAction(ThemeData theme) {
+    return ListenableBuilder(
+      listenable: _formListenables,
+      builder: (context, _) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _isLoading,
+          builder: (context, isLoading, _) {
+            if (isLoading) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: IconButton(
+                  onPressed: null,
+                  icon: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.appBarTheme.foregroundColor ??
+                            theme.colorScheme.onPrimary,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Price display currency (UZS or USD)
-                    ListenableBuilder(
-                      listenable: PriceDisplaySettingsState(),
-                      builder: (context, _) {
-                        final currency =
-                            PriceDisplaySettingsState().currencySlug;
-                        return ProfileDropdownControl(
-                          label: L10n.get("price_display_currency"),
-                          value: currency,
-                          onChanged: (value) async {
-                            if (value == null) return;
-                            _baselinePriceDisplay ??=
-                                PriceDisplaySettingsState().currency;
-                            await PriceDisplaySettingsState().setCurrency(
-                              value == "usd"
-                                  ? PriceDisplayCurrency.usd
-                                  : PriceDisplayCurrency.national,
-                            );
-                          },
-                          icon: Icons.payments,
-                          options: [
-                            DropdownOption(
-                              value: "national",
-                              label:
-                                  L10n.get("price_display_currency_national"),
-                            ),
-                            DropdownOption(
-                              value: "usd",
-                              label: L10n.get("price_display_currency_usd"),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Role Dropdown (landlord / tenant; admin option when user is admin)
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isRoleLoaded,
-                      builder: (context, isRoleLoaded, _) => isRoleLoaded
-                          ? ValueListenableBuilder<String>(
-                              valueListenable: _selectedRole,
-                              builder: (context, selectedRole, _) =>
-                                  ProfileDropdownControl(
-                                label: L10n.get(
-                                  "select_your_primary_role",
-                                ),
-                                value: selectedRole,
-                                onChanged: (value) =>
-                                    _selectedRole.value = value ?? "tenant",
-                                icon: Icons.badge,
-                                options: [
-                                  if (_isAdmin)
-                                    DropdownOption(
-                                      value: "admin",
-                                      label: L10n.get(
-                                        "role_admin",
-                                      ),
-                                      icon: Icons.admin_panel_settings,
-                                    ),
-                                  if (_pinnedStaffRole == "manager")
-                                    DropdownOption(
-                                      value: "manager",
-                                      label: L10n.get(
-                                        "role_manager",
-                                      ),
-                                      icon: Icons.supervisor_account_outlined,
-                                    ),
-                                  if (_pinnedStaffRole == "moderator")
-                                    DropdownOption(
-                                      value: "moderator",
-                                      label: L10n.get(
-                                        "role_moderator",
-                                      ),
-                                      icon: Icons.shield_outlined,
-                                    ),
-                                  DropdownOption(
-                                    value: "landlord",
-                                    label: L10n.get(
-                                      "role_landlord",
-                                    ),
-                                    icon: Icons.home_work,
-                                  ),
-                                  DropdownOption(
-                                    value: "tenant",
-                                    label: L10n.get(
-                                      "role_tenant",
-                                    ),
-                                    icon: Icons.key,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : _buildRoleLoadingPlaceholder(context),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // New Profile Fields Section
-                    Text(
-                      L10n.get(
-                        "lifestyle_preferences",
-                      ),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: _getLifestyleHeaderColor(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Employed (dropdown; stored as bool? on API)
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _employed,
-                      builder: (context, employed, _) => ProfileDropdownControl(
-                        label: L10n.get("work"),
-                        value: employed,
-                        onChanged: (value) => _employed.value = value,
-                        icon: Icons.work,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get("not_specified"),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: _employedSlugYes,
-                            label: L10n.get("employed"),
-                            icon: Icons.work,
-                          ),
-                          DropdownOption(
-                            value: _employedSlugNo,
-                            label: L10n.get("not_employed"),
-                            icon: Icons.work_off_outlined,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Wake-up Time Dropdown
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _wakeupTime,
-                      builder: (context, wakeupTime, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "wakeup_time",
-                        ),
-                        value: wakeupTime,
-                        onChanged: (value) => _wakeupTime.value = value,
-                        icon: Icons.wb_sunny,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: "morning",
-                            label: L10n.get(
-                              "morning",
-                            ),
-                            icon: Icons.wb_sunny_outlined,
-                          ),
-                          DropdownOption(
-                            value: "evening",
-                            label: L10n.get(
-                              "evening",
-                            ),
-                            icon: Icons.wb_twilight,
-                          ),
-                          DropdownOption(
-                            value: "night",
-                            label: L10n.get("night"),
-                            icon: Icons.nights_stay_outlined,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Sleep Time Dropdown
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _sleepTime,
-                      builder: (context, sleepTime, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "sleep_time",
-                        ),
-                        value: sleepTime,
-                        onChanged: (value) => _sleepTime.value = value,
-                        icon: Icons.bedtime,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: "morning",
-                            label: L10n.get(
-                              "morning",
-                            ),
-                            icon: Icons.wb_sunny_outlined,
-                          ),
-                          DropdownOption(
-                            value: "evening",
-                            label: L10n.get(
-                              "evening",
-                            ),
-                            icon: Icons.wb_twilight,
-                          ),
-                          DropdownOption(
-                            value: "night",
-                            label: L10n.get("night"),
-                            icon: Icons.nights_stay_outlined,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Cleanliness Slider
-                    ValueListenableBuilder<int?>(
-                      valueListenable: _cleanliness,
-                      builder: (context, cleanliness, _) =>
-                          ProfileSliderControl(
-                        label: L10n.get(
-                          "cleanliness",
-                        ),
-                        value: cleanliness,
-                        onChanged: (value) => _cleanliness.value = value,
-                        min: 1,
-                        max: 5,
-                        icon: Icons.cleaning_services,
-                        labels: [
-                          L10n.get("very_messy"),
-                          L10n.get("messy"),
-                          L10n.get("average"),
-                          L10n.get("clean"),
-                          L10n.get("very_clean"),
-                        ],
-                        scaleStartLabel: L10n.get("very_messy"),
-                        scaleEndLabel: L10n.get("very_clean"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Noise: inverted track (loud/noisy on the left); API still
-                    // 1 = quiet … 5 = loud.
-                    ValueListenableBuilder<int?>(
-                      valueListenable: _noiseLevel,
-                      builder: (context, noiseLevel, _) => ProfileSliderControl(
-                        label: L10n.get(
-                          "noise_level",
-                        ),
-                        value: noiseLevel,
-                        onChanged: (value) => _noiseLevel.value = value,
-                        min: 1,
-                        max: 5,
-                        icon: Icons.volume_up,
-                        labels: [
-                          L10n.get("very_quiet"),
-                          L10n.get("quiet"),
-                          L10n.get("average"),
-                          L10n.get("loud"),
-                          L10n.get("very_loud"),
-                        ],
-                        scaleStartLabel: L10n.get("very_loud"),
-                        scaleEndLabel: L10n.get("very_quiet"),
-                        invertTrack: true,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Sociability Slider
-                    ValueListenableBuilder<int?>(
-                      valueListenable: _sociability,
-                      builder: (context, sociability, _) =>
-                          ProfileSliderControl(
-                        label: L10n.get(
-                          "sociability",
-                        ),
-                        value: sociability,
-                        onChanged: (value) => _sociability.value = value,
-                        min: 1,
-                        max: 5,
-                        icon: Icons.people,
-                        labels: [
-                          L10n.get(
-                            "very_introverted",
-                          ),
-                          L10n.get("introverted"),
-                          L10n.get("balanced"),
-                          L10n.get("extroverted"),
-                          L10n.get(
-                            "very_extroverted",
-                          ),
-                        ],
-                        scaleStartLabel: L10n.get("very_introverted"),
-                        scaleEndLabel: L10n.get("very_extroverted"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Guests allowed (dropdown; stored as bool? on API)
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _guestsAllowed,
-                      builder: (context, guestsAllowed, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "guests",
-                        ),
-                        value: guestsAllowed,
-                        onChanged: (value) => _guestsAllowed.value = value,
-                        icon: Icons.group_add,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: _guestsSlugYes,
-                            label: L10n.get(
-                              "guests_permitted",
-                            ),
-                            icon: Icons.group_add,
-                          ),
-                          DropdownOption(
-                            value: _guestsSlugNo,
-                            label: L10n.get(
-                              "guests_not_permitted",
-                            ),
-                            icon: Icons.block,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Smoking Preference Dropdown
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _smokingPreference,
-                      builder: (context, smokingPreference, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "smoking_preference",
-                        ),
-                        value: smokingPreference,
-                        onChanged: (value) => _smokingPreference.value = value,
-                        icon: Icons.smoking_rooms,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: "non-smoker",
-                            label: L10n.get(
-                              "non_smoker",
-                            ),
-                            icon: Icons.smoke_free,
-                          ),
-                          DropdownOption(
-                            value: "occasional",
-                            label: L10n.get(
-                              "occasional_smoker",
-                            ),
-                            icon: Icons.smoking_rooms_outlined,
-                          ),
-                          DropdownOption(
-                            value: "regular",
-                            label: L10n.get(
-                              "regular_smoker",
-                            ),
-                            icon: Icons.smoking_rooms,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Alcohol Preference Dropdown
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _alcoholPreference,
-                      builder: (context, alcoholPreference, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "alcohol_preference",
-                        ),
-                        value: alcoholPreference,
-                        onChanged: (value) => _alcoholPreference.value = value,
-                        icon: Icons.local_bar,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: "non-drinker",
-                            label: L10n.get(
-                              "non_drinker",
-                            ),
-                            icon: Icons.no_drinks,
-                          ),
-                          DropdownOption(
-                            value: "occasional",
-                            label: L10n.get(
-                              "occasional_drinker",
-                            ),
-                            icon: Icons.wine_bar_outlined,
-                          ),
-                          DropdownOption(
-                            value: "regular",
-                            label: L10n.get(
-                              "regular_drinker",
-                            ),
-                            icon: Icons.local_bar,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Cooking habits (dropdown; stored as bool on API)
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _cookingHabits,
-                      builder: (context, cookingHabits, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "cooking_habits",
-                        ),
-                        value: cookingHabits,
-                        onChanged: (value) => _cookingHabits.value = value,
-                        icon: Icons.restaurant,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: _cookingSlugAtHome,
-                            label: L10n.get(
-                              "cook",
-                            ),
-                            icon: Icons.restaurant,
-                          ),
-                          DropdownOption(
-                            value: _cookingSlugDoesNot,
-                            label: L10n.get(
-                              "dont_cook",
-                            ),
-                            icon: Icons.takeout_dining,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Pets preference (like / dislike / have cat / have dog)
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _petsPreference,
-                      builder: (context, petsPreference, _) =>
-                          ProfileDropdownControl(
-                        label: L10n.get(
-                          "pets_preference",
-                        ),
-                        value: petsPreference,
-                        onChanged: (value) => _petsPreference.value = value,
-                        icon: Icons.pets,
-                        options: [
-                          DropdownOption(
-                            value: null,
-                            label: L10n.get(
-                              "not_specified",
-                            ),
-                            icon: Icons.not_interested,
-                          ),
-                          DropdownOption(
-                            value: "like_pets",
-                            label: L10n.get(
-                              "pets_like_pets",
-                            ),
-                            icon: Icons.pets,
-                          ),
-                          DropdownOption(
-                            value: "dont_like_pets",
-                            label: L10n.get(
-                              "pets_dont_like_pets",
-                            ),
-                            icon: Icons.block,
-                          ),
-                          DropdownOption(
-                            value: "have_cat",
-                            label: L10n.get(
-                              "pets_have_cat",
-                            ),
-                            icon: Icons.cruelty_free,
-                          ),
-                          DropdownOption(
-                            value: "have_dog",
-                            label: L10n.get(
-                              "pets_have_dog",
-                            ),
-                            icon: Icons.pets_outlined,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Save Button - only visible when there are unsaved changes
-                    // (or while a save is in progress), with a gentle pulse to
-                    // draw the user's attention.
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isLoading,
-                      builder: (context, isLoading, _) {
-                        if (!isLoading && !_isFormDirty()) {
-                          return const SizedBox.shrink();
-                        }
-                        final button = SizedBox(
-                          width: double.infinity,
-                          child: GhostButtonFactory.iconText(
-                            onPressed: isLoading ? null : _saveProfile,
-                            icon: Icons.save,
-                            text: isLoading
-                                ? L10n.get("saving")
-                                : L10n.get("save_changes"),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            isLoading: isLoading,
-                            neumorphicSoftUi: true,
-                          ),
-                        );
-                        if (isLoading) return button;
-                        return FadeTransition(
-                          opacity: _savePulseOpacity,
-                          child: button,
-                        );
-                      },
-                    ),
-                  ],
+                  ),
+                  tooltip: L10n.get("save_changes"),
+                ),
+              );
+            }
+            if (!_isFormDirty()) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: FadeTransition(
+                opacity: _savePulseOpacity,
+                child: IconButton(
+                  onPressed: () {
+                    HapticFeedbackUtils.impact();
+                    _saveProfile();
+                  },
+                  icon: const ThemeIcon(Icons.save),
+                  tooltip: L10n.get("save_changes"),
                 ),
               ),
-            ),
-          ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSaveButton() {
+    return ListenableBuilder(
+      listenable: _formListenables,
+      builder: (context, _) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _isLoading,
+          builder: (context, isLoading, _) {
+            if (!isLoading && !_isFormDirty()) {
+              return const SizedBox.shrink();
+            }
+            final button = SizedBox(
+              width: double.infinity,
+              child: GhostButtonFactory.iconText(
+                onPressed: isLoading ? null : _saveProfile,
+                icon: Icons.save,
+                text: isLoading ? L10n.get("saving") : L10n.get("save_changes"),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                isLoading: isLoading,
+                neumorphicSoftUi: true,
+              ),
+            );
+            if (isLoading) return button;
+            return FadeTransition(
+              opacity: _savePulseOpacity,
+              child: button,
+            );
+          },
         );
       },
     );
