@@ -27,7 +27,7 @@ abstract class EnvironmentUtil {
   /// override it on the very first successful fetch.
   static const compileTimeBasePath = String.fromEnvironment(
     "API_BASE_PATH",
-    defaultValue: "http://18.224.97.94:3000",
+    defaultValue: "https://api.uydosh.com",
   );
 
   /// Compile-time default for the shareable https web base. See

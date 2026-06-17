@@ -115,20 +115,5 @@
 	<string>This app uses your location to show nearby listings and metro stations.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- HTTP only for the default API/media host (see EnvironmentUtil.compileTimeBasePath).
-	     If Remote Config points api_base_path at another http host, add it here too. -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>18.224.97.94</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-				<key>NSIncludesSubdomains</key>
-				<false/>
-			</dict>
-		</dict>
-	</dict>
 </dict>
 </plist>
