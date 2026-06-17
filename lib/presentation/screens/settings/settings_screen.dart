@@ -84,7 +84,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Color _getCardColor(BuildContext context) {
     final bg = _getBackgroundColor(context);
     // Slight lift from background for neumorphic cards.
-    return Color.lerp(bg, Colors.white, ThemeState().isBlueTheme ? 0.06 : 0.12) ??
+    return Color.lerp(
+            bg, Colors.white, ThemeState().isBlueTheme ? 0.06 : 0.12) ??
         bg;
   }
 
@@ -92,8 +93,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isBlue = ThemeState().isBlueTheme;
     final darkShadow =
         (isBlue ? Colors.black : const Color(0xFF0B1220)).withValues(
-          alpha: isBlue ? 0.28 : 0.12,
-        );
+      alpha: isBlue ? 0.28 : 0.12,
+    );
     final lightShadow = Colors.white.withValues(alpha: isBlue ? 0.10 : 0.75);
 
     return [
@@ -221,10 +222,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
       ),
       body: ColoredBox(
-        color:
-            _getBackgroundColor(
-              context,
-            ), // Set background color to match app bar
+        color: _getBackgroundColor(
+          context,
+        ), // Set background color to match app bar
         child: ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
@@ -279,17 +279,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _openPrivacyPolicy(context);
                   },
                 ),
-                // _buildMenuItem(
-                //   icon: Icons.description,
-                //   titleKey: "menu_user_license_agreement",
-                //   onTap: () {
-                //     _showLegalDialog(
-                //       context,
-                //       titleKey: "user_license_agreement_title",
-                //       bodyKey: "user_license_agreement_body",
-                //     );
-                //   },
-                // ),
               ],
             ),
 
@@ -574,13 +563,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         titleKey,
         style: TextStyle(fontWeight: FontWeight.w500, color: _getTextColor()),
       ),
-      subtitle:
-          subtitleKey != null
-              ? L10n.text(
-                subtitleKey,
-                style: TextStyle(color: _getSecondaryTextColor()),
-              )
-              : null,
+      subtitle: subtitleKey != null
+          ? L10n.text(
+              subtitleKey,
+              style: TextStyle(color: _getSecondaryTextColor()),
+            )
+          : null,
       onTap: onTap,
       iconColor: _getIconColor(),
       textColor: _getTextColor(),

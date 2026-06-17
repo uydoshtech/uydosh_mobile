@@ -1,8 +1,10 @@
 import "dart:async" show unawaited;
 
 import "package:audioplayers/audioplayers.dart";
-import "package:flutter/foundation.dart" show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import "package:flutter/foundation.dart"
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:uy_dosh/base/state/sound_effects_state.dart";
+import "package:uy_dosh/base/utils/audio_playback_environment.dart";
 
 enum UiSound {
   refresh,
@@ -33,7 +35,8 @@ class SoundService {
   Future<void>? _initFuture;
 
   final Map<UiSound, DateTime> _lastPlayedAt = <UiSound, DateTime>{};
-  final Map<AudioPlayer, Future<void>> _opChainByPlayer = <AudioPlayer, Future<void>>{};
+  final Map<AudioPlayer, Future<void>> _opChainByPlayer =
+      <AudioPlayer, Future<void>>{};
 
   /// Best-effort warm-up of sound assets/players to reduce "first play" latency.
   ///
@@ -42,6 +45,7 @@ class SoundService {
   Future<void> preload() async {
     if (!_isEnabled()) return;
     if (kIsWeb) return;
+    if (await AudioPlaybackEnvironment.shouldSkipAudioPlayback()) return;
     try {
       await _ensureInitialized();
       await Future.wait([
@@ -57,7 +61,8 @@ class SoundService {
   }
 
   Future<void> _prime(AudioPlayer player, String asset) async {
-    _opChainByPlayer[player] = (_opChainByPlayer[player] ?? Future<void>.value()).then((_) async {
+    _opChainByPlayer[player] =
+        (_opChainByPlayer[player] ?? Future<void>.value()).then((_) async {
       try {
         await player.setSource(AssetSource(asset));
         // Some platforms keep an internal handle "hot" after stop.
@@ -137,16 +142,19 @@ class SoundService {
   }
 
   void playSuccess() {
-    play(UiSound.success, volume: 0.22, throttle: const Duration(milliseconds: 250));
+    play(UiSound.success,
+        volume: 0.22, throttle: const Duration(milliseconds: 250));
   }
 
   void playError() {
     // Errors can happen in bursts; throttle harder.
-    play(UiSound.error, volume: 0.18, throttle: const Duration(milliseconds: 600));
+    play(UiSound.error,
+        volume: 0.18, throttle: const Duration(milliseconds: 600));
   }
 
   void playLike() {
-    play(UiSound.like, volume: 0.10, throttle: const Duration(milliseconds: 80));
+    play(UiSound.like,
+        volume: 0.10, throttle: const Duration(milliseconds: 80));
   }
 
   void playIncomingMessage() {
@@ -176,6 +184,7 @@ class SoundService {
   }
 
   Future<void> _playImpl(UiSound sound, {double? volume}) async {
+    if (await AudioPlaybackEnvironment.shouldSkipAudioPlayback()) return;
     try {
       await _ensureInitialized();
     } catch (_) {
@@ -199,7 +208,8 @@ class SoundService {
 
     // Serialize stop→play per player to avoid "stutter" caused by overlapping
     // refresh triggers or rapid replays.
-    _opChainByPlayer[player] = (_opChainByPlayer[player] ?? Future<void>.value()).then((_) async {
+    _opChainByPlayer[player] =
+        (_opChainByPlayer[player] ?? Future<void>.value()).then((_) async {
       try {
         if (volume != null) await player.setVolume(volume);
         try {
@@ -219,4 +229,3 @@ class SoundService {
     }
   }
 }
-

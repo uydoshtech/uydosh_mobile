@@ -5,6 +5,7 @@ import "package:flutter/foundation.dart"
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import "package:flutter/services.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
+import "package:uy_dosh/base/utils/audio_playback_environment.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 
 /// Utility for playing the message send confirmation sound at full volume.
@@ -16,9 +17,10 @@ class SendSoundUtils {
   /// Uses low-latency mode and throttling for smooth scroll feedback.
   static final AudioPlayer _selectionPlayer = AudioPlayer();
   static DateTime? _lastBundledClickAt;
+
   /// Short taps / sliders: keep responsive.
-  static const Duration _bundledClickMinInterval =
-      Duration(milliseconds: 60);
+  static const Duration _bundledClickMinInterval = Duration(milliseconds: 60);
+
   /// Wheels often settle in bursts; a longer gap avoids clicks piling up.
   static const Duration _wheelBundledClickMinInterval =
       Duration(milliseconds: 120);
@@ -34,8 +36,9 @@ class SendSoundUtils {
 
   static Future<Source> _clickSource() async {
     if (!kIsWeb) return AssetSource(_clickAssetNative);
-    _webClickSoundBytesFuture ??=
-        rootBundle.load(_clickAssetWebBundle).then((bd) => bd.buffer.asUint8List());
+    _webClickSoundBytesFuture ??= rootBundle
+        .load(_clickAssetWebBundle)
+        .then((bd) => bd.buffer.asUint8List());
     final bytes = await _webClickSoundBytesFuture!;
     return BytesSource(bytes, mimeType: "audio/wav");
   }
@@ -95,6 +98,8 @@ class SendSoundUtils {
   }
 
   static Future<void> _playSendSoundImpl() async {
+    if (await AudioPlaybackEnvironment.shouldSkipAudioPlayback()) return;
+
     // SystemSound works reliably on Android; no-op on iOS
     if (defaultTargetPlatform == TargetPlatform.android) {
       try {
@@ -161,9 +166,15 @@ class SendSoundUtils {
       return;
     }
     _lastBundledClickAt = now;
-    _ensureSelectionPlayerReady();
     _selectionAssetChain = _selectionAssetChain.then((_) async {
       try {
+        if (await AudioPlaybackEnvironment.shouldSkipAudioPlayback()) {
+          if (hapticImpactImmediatelyBeforePlay) {
+            HapticFeedbackUtils.impact();
+          }
+          return;
+        }
+        _ensureSelectionPlayerReady();
         try {
           await _selectionPlayer.stop();
         } catch (_) {}
