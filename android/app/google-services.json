@@ -7,6 +7,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:626930983094:android:3b998f8b2855b0a9580617",
+        "android_client_info": {
+          "package_name": "com.campus.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2_3GcIIQIUPQffXapchtK-o3GeHWXTgQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "626930983094-fmdr5eqq8ulo4k9dmqott0tgdd91ukkl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.uydosh.app.uyDosh"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:626930983094:android:d1a48e441d9aafc2580617",
         "android_client_info": {
           "package_name": "com.uydosh.app"
@@ -19,6 +55,14 @@
           "android_info": {
             "package_name": "com.uydosh.app",
             "certificate_hash": "26c082328b40339668a698d7c92342d42ad51184"
+          }
+        },
+        {
+          "client_id": "626930983094-6s796l30o6tu1ljds2r3a3hgs53leahg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.uydosh.app",
+            "certificate_hash": "9a9dd4cba35abd57bac9b49895d7e5e299e6d9e8"
           }
         },
         {
@@ -50,7 +94,7 @@
               "client_id": "626930983094-fmdr5eqq8ulo4k9dmqott0tgdd91ukkl.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.uydosh.app"
+                "bundle_id": "com.uydosh.app.uyDosh"
               }
             }
           ]
