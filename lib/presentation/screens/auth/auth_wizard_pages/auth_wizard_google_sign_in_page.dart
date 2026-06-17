@@ -54,7 +54,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
   final VoidCallback onSignInWithPhone;
   final VoidCallback onSignInWithTelegram;
 
-  /// When false, the phone option is visually subdued but still explains itself via toast on tap.
+  /// When false, the phone sign-in affordance (and its "or" separator) is hidden.
   final bool phoneSignInEnabled;
 
   Color _getOnboardingTextColor(BuildContext context) =>
@@ -161,37 +161,36 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            color: _getOnboardingTextSecondaryColor(context)
-                                .withValues(alpha: 0.4),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            L10n.get("auth_separator_or"),
-                            style: TextStyle(
-                              color: _getOnboardingTextSecondaryColor(context),
-                              fontSize: 13,
+                    if (phoneSignInEnabled) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: _getOnboardingTextSecondaryColor(context)
+                                  .withValues(alpha: 0.4),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: _getOnboardingTextSecondaryColor(context)
-                                .withValues(alpha: 0.4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              L10n.get("auth_separator_or"),
+                              style: TextStyle(
+                                color: _getOnboardingTextSecondaryColor(context),
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Opacity(
-                        opacity: phoneSignInEnabled ? 1.0 : 0.55,
+                          Expanded(
+                            child: Divider(
+                              color: _getOnboardingTextSecondaryColor(context)
+                                  .withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
                         child: GhostButton(
                           onPressed: enabled ? onSignInWithPhone : null,
                           width: buttonWidth,
@@ -222,7 +221,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                   if (isGoogleSignedIn && currentUser != null) ...[
                     Builder(

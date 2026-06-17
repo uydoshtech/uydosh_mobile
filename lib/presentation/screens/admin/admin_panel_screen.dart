@@ -28,6 +28,8 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
+const _kAdminCategoryExpandDuration = Duration(milliseconds: 200);
+
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
 
@@ -43,10 +45,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   /// Expanded category indices (0–3: management, maps, analytics, settings).
   final Set<int> _expandedCategories = {0};
 
+  final ScrollController _scrollController = ScrollController();
+  Timer? _scrollToEndTimer;
+
   @override
   void initState() {
     super.initState();
     unawaited(PendingListingModerationState().refresh());
+  }
+
+  @override
+  void dispose() {
+    _scrollToEndTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _openListingModerationQueue() async {
@@ -59,14 +71,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     unawaited(PendingListingModerationState().refresh());
   }
 
-  void _toggleCategory(int index) {
+  void _toggleCategory(int index, {required bool isLastBlock}) {
     HapticFeedbackUtils.selectionClick();
+    final wasExpanded = _expandedCategories.contains(index);
     setState(() {
-      if (_expandedCategories.contains(index)) {
+      if (wasExpanded) {
         _expandedCategories.remove(index);
       } else {
         _expandedCategories.add(index);
       }
+    });
+
+    if (isLastBlock && !wasExpanded) {
+      _scrollToEndAfterExpand();
+    }
+  }
+
+  void _scrollToEndAfterExpand() {
+    _scrollToEndTimer?.cancel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scrollToEndTimer = Timer(_kAdminCategoryExpandDuration, () {
+        if (!mounted || !_scrollController.hasClients) return;
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      });
     });
   }
 
@@ -113,6 +145,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         return Scaffold(
           appBar: appBar,
           body: ListView(
+            controller: _scrollController,
             padding: const EdgeInsets.all(20.0),
             children: [
               _AdminCategoryCard(
@@ -120,7 +153,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 headerIcon: Icons.manage_accounts,
                 titleKey: "admin_panel_category_management",
                 expanded: _expandedCategories.contains(0),
-                onHeaderTap: () => _toggleCategory(0),
+                onHeaderTap: () =>
+                    _toggleCategory(0, isLastBlock: !isAdmin),
                 children: [
                   if (isAdmin) ...[
                     _AdminMenuRow(
@@ -215,7 +249,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.map_outlined,
                   titleKey: "admin_panel_category_maps",
                   expanded: _expandedCategories.contains(1),
-                  onHeaderTap: () => _toggleCategory(1),
+                  onHeaderTap: () =>
+                      _toggleCategory(1, isLastBlock: false),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.map_outlined,
@@ -264,7 +299,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.insights_outlined,
                   titleKey: "admin_panel_category_analytics",
                   expanded: _expandedCategories.contains(2),
-                  onHeaderTap: () => _toggleCategory(2),
+                  onHeaderTap: () =>
+                      _toggleCategory(2, isLastBlock: false),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.analytics_outlined,
@@ -301,7 +337,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.settings_outlined,
                   titleKey: "admin_panel_category_settings",
                   expanded: _expandedCategories.contains(3),
-                  onHeaderTap: () => _toggleCategory(3),
+                  onHeaderTap: () =>
+                      _toggleCategory(3, isLastBlock: true),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.import_export,
@@ -483,7 +520,7 @@ class _AdminCategoryCard extends StatelessWidget {
                       ),
                       AnimatedRotation(
                         turns: expanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 200),
+                        duration: _kAdminCategoryExpandDuration,
                         child: ThemeIcon(
                           Icons.keyboard_arrow_down,
                           color: accent.withValues(alpha: 0.9),
@@ -497,7 +534,7 @@ class _AdminCategoryCard extends StatelessWidget {
             ),
             ClipRect(
               child: AnimatedSize(
-                duration: const Duration(milliseconds: 200),
+                duration: _kAdminCategoryExpandDuration,
                 curve: Curves.easeInOut,
                 alignment: Alignment.topCenter,
                 child: expanded

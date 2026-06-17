@@ -34,13 +34,9 @@ class CurvedNavActiveOrb extends StatelessWidget {
           children: [
             Positioned.fill(
               child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                    context,
-                    baseColor,
-                  ),
-                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                decoration: ThreeDSurfaceStyle.navActiveOrbDecoration(
+                  context,
+                  baseColor,
                 ),
               ),
             ),
@@ -50,6 +46,10 @@ class CurvedNavActiveOrb extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
                     theme.brightness,
+                    highlightAlpha: ThreeDSurfaceStyle.navActiveOrbHighlightAlpha(
+                      baseColor,
+                      theme.brightness,
+                    ),
                   ),
                 ),
               ),

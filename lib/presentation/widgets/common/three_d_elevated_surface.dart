@@ -17,6 +17,7 @@ class ThreeDElevatedSurface extends StatelessWidget {
     this.useFlatHighlightColor = false,
     /// Frosted glass matching the messages inbox tab switch thumb.
     this.useLiquidGlass = false,
+    this.liquidGlassShadows,
   });
 
   final Color baseColor;
@@ -25,6 +26,9 @@ class ThreeDElevatedSurface extends StatelessWidget {
   final BorderRadius borderRadius;
   final bool useFlatHighlightColor;
   final bool useLiquidGlass;
+
+  /// Outer drop shadow for the glass shell. Defaults to the switch-thumb shadow.
+  final List<BoxShadow>? liquidGlassShadows;
 
   @override
   Widget build(BuildContext context) {
@@ -38,16 +42,18 @@ class ThreeDElevatedSurface extends StatelessWidget {
         margin: margin,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
-          boxShadow: LiquidGlassRendering.switchThumbGlassShadows(),
+          boxShadow: liquidGlassShadows ??
+              LiquidGlassRendering.elevatedTileGlassShadows(context),
         ),
         child: ClipRRect(
           borderRadius: borderRadius,
           clipBehavior: Clip.antiAlias,
           child: LiquidGlassRendering.backdropBlur(
             enabled: enableGlass,
-            sigma: LiquidGlassRendering.switchGlassBlurSigma,
+            sigma: LiquidGlassRendering.elevatedTileGlassBlurSigma(context),
             child: DecoratedBox(
-              decoration: LiquidGlassRendering.switchThumbGlassDecoration(
+              decoration: LiquidGlassRendering.elevatedTileGlassDecoration(
+                context: context,
                 tintColor: baseColor,
                 borderRadius: borderRadius,
               ),

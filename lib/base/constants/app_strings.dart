@@ -1101,7 +1101,7 @@ class AppStrings {
       "admin_app_setting_phone_sign_in_enabled_title":
           "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "When off, the auth wizard keeps phone sign-in unavailable and shows an info toast. When on, users can use Firebase SMS verification.",
+          "When off, phone sign-in is hidden on the auth wizard. When on, users can sign in with Firebase SMS verification.",
 
       "admin_panel_section_telegram_sync": "Data import",
       "admin_telegram_sync_title": "Data import",
@@ -2849,7 +2849,7 @@ class AppStrings {
       "admin_app_setting_phone_sign_in_enabled_title":
           "Разрешить вход по номеру телефона",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "Когда выключено, мастер входа не даёт войти по телефону и показывает подсказку. Когда включено — доступна проверка по SMS через Firebase.",
+          "Когда выключено, вход по телефону скрыт в мастере авторизации. Когда включено — доступна проверка по SMS через Firebase.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_telegram_sync_title": "Импорт данных",
@@ -4614,7 +4614,7 @@ class AppStrings {
       "admin_app_setting_phone_sign_in_enabled_title":
           "Telefon raqami bilan kirishga ruxsat",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "O'chiq bo'lsa, kirish oynasida telefon orqali kirish ishlamaydi va ma'lumot toast'i chiqadi. Yoqiq bo'lsa — Firebase SMS tasdig'i ishlaydi.",
+          "O'chiq bo'lsa, kirish oynasida telefon orqali kirish yashiriladi. Yoqiq bo'lsa — Firebase SMS tasdig'i ishlaydi.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_telegram_sync_title": "Maʼlumot importi",

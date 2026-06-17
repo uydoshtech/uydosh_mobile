@@ -128,15 +128,60 @@ abstract final class ThreeDSurfaceStyle {
     );
   }
 
+  /// Active-tab orb on the curved bottom bar — sphere gradient + depth, no halo.
+  static BoxDecoration navActiveOrbDecoration(BuildContext context, Color base) {
+    final isDarkBase = base.computeLuminance() < 0.15;
+    return BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: isDarkBase
+          ? LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color.lerp(base, Colors.white, 0.16)!,
+                base,
+                Color.lerp(base, Colors.black, 0.38)!,
+              ],
+              stops: const [0.0, 0.38, 1.0],
+            )
+          : surfaceGradient(context, base),
+      boxShadow: isDarkBase
+          ? [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.14),
+                blurRadius: 6,
+                offset: const Offset(-2, -2),
+              ),
+            ]
+          : elevatedShadows(context),
+    );
+  }
+
+  /// Specular wash strength for [navActiveOrbDecoration] highlights.
+  static double navActiveOrbHighlightAlpha(Color base, Brightness brightness) {
+    if (base.computeLuminance() < 0.15) {
+      return brightness == Brightness.dark ? 0.24 : 0.28;
+    }
+    return brightness == Brightness.dark ? 0.22 : 0.45;
+  }
+
   /// Top-left specular wash on dark orb surfaces ([SearchFloatingActionButton]).
-  static Gradient surfaceRadialHighlightGradient(Brightness brightness) {
+  static Gradient surfaceRadialHighlightGradient(
+    Brightness brightness, {
+    double? highlightAlpha,
+  }) {
+    final topAlpha = highlightAlpha ??
+        (brightness == Brightness.dark ? 0.22 : 0.45);
     return RadialGradient(
       center: const Alignment(-0.55, -0.62),
       radius: 1.05,
       colors: [
-        Colors.white.withValues(
-          alpha: brightness == Brightness.dark ? 0.22 : 0.45,
-        ),
+        Colors.white.withValues(alpha: topAlpha),
         Colors.white.withValues(alpha: 0.06),
         Colors.transparent,
       ],

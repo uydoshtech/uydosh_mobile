@@ -2,7 +2,7 @@ import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
-    show AppColors, BlueThemeColors;
+    show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -81,11 +81,11 @@ class _NavPalette {
     }
     if (theme.isLightTheme) {
       return _NavPalette(
-        curvedBarColor: Colors.grey[600]!,
-        activeOrbBase: Colors.black,
+        curvedBarColor: LightThemeColors.navigationSelected,
+        activeOrbBase: LightThemeColors.navigationSelected,
         notchBackground: Colors.white,
         unselectedLabelText: Colors.white,
-        disabled: Colors.black.withValues(alpha: 0.4),
+        disabled: Colors.white.withValues(alpha: 0.4),
       );
     }
     return _NavPalette(

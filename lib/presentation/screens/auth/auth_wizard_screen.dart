@@ -880,15 +880,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   Future<void> _signInWithPhone() async {
     if (_isAuthenticating) return;
 
-    if (!ClientPhoneSignInConfig.phoneSignInEnabled.value) {
-      if (!mounted) return;
-      ToastTheme.showInfo(
-        context,
-        message: L10n.get("phone_sign_in_under_construction"),
-      );
-      return;
-    }
-
     getIt<AppAnalyticsService>().logSignInStarted(method: "phone");
 
     final user = await PhoneSignInSheet.show(context);

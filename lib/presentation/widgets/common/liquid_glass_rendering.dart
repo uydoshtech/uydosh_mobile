@@ -2,6 +2,7 @@ import "dart:ui" show ImageFilter, TileMode;
 
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
 /// Shared liquid-glass rendering helpers (drawer, bottom sheets, plates).
 ///
@@ -64,6 +65,59 @@ abstract final class LiquidGlassRendering {
           offset: const Offset(0, 4),
         ),
       ];
+
+  /// Frosted glass for feed/detail tiles. Blue theme keeps the switch-thumb
+  /// tint; light theme uses a pale [plateGradient] so tiles don't read as
+  /// dark slabs on a white canvas.
+  static BoxDecoration elevatedTileGlassDecoration({
+    required BuildContext context,
+    required BorderRadius borderRadius,
+    required Color tintColor,
+  }) {
+    if (ThemeState().isLightTheme) {
+      return BoxDecoration(
+        borderRadius: borderRadius,
+        gradient: plateGradient(context: context, isDark: false),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.14),
+          width: 0.6,
+        ),
+      );
+    }
+
+    return switchThumbGlassDecoration(
+      tintColor: tintColor,
+      borderRadius: borderRadius,
+    );
+  }
+
+  static double elevatedTileGlassBlurSigma(BuildContext context) {
+    if (ThemeState().isLightTheme) {
+      return plateBlurSigma + 4;
+    }
+    return switchGlassBlurSigma;
+  }
+
+  static List<BoxShadow> elevatedTileGlassShadows(BuildContext context) {
+    if (ThemeState().isLightTheme) {
+      final lightShadow = Colors.white.withValues(
+        alpha: neumorphicLightShadowAlpha(context),
+      );
+      return [
+        BoxShadow(
+          color: lightShadow,
+          offset: const Offset(-3, -3),
+          blurRadius: 10,
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.20),
+          offset: const Offset(6, 6),
+          blurRadius: 14,
+        ),
+      ];
+    }
+    return switchThumbGlassShadows();
+  }
 
   /// Neumorphic top-left highlight strength (listing cards, 3D buttons).
   static double neumorphicLightShadowAlpha(BuildContext context) {

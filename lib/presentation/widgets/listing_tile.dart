@@ -30,6 +30,9 @@ import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -368,6 +371,9 @@ class _ListingTileState extends State<ListingTile> {
     final scheme = Theme.of(context).colorScheme;
     final bg = scheme.surface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeState = ThemeState();
+    final useLiquidGlass =
+        themeState.isBlueTheme || themeState.isLightTheme;
     final darkShadow = Colors.black.withValues(
       alpha: isDark ? 0.45 : 0.20,
     );
@@ -375,45 +381,14 @@ class _ListingTileState extends State<ListingTile> {
       alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
     );
 
-    final cardWidget = RepaintBoundary(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.lerp(
-                bg,
-                scheme.onSurface,
-                Theme.of(context).brightness == Brightness.dark ? 0.06 : 0.03,
-              )!,
-              bg,
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: lightShadow,
-              offset: const Offset(-3, -3),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: darkShadow,
-              offset: const Offset(6, 6),
-              blurRadius: 14,
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              HapticFeedbackUtils.lightImpact();
-              context.pushListingDetail(widget.listing.id);
-            },
-            onLongPress: () => unawaited(_onTileLongPress()),
-            borderRadius: borderRadius,
-            child: Stack(
+    final tileInkWell = InkWell(
+      onTap: () {
+        HapticFeedbackUtils.lightImpact();
+        context.pushListingDetail(widget.listing.id);
+      },
+      onLongPress: () => unawaited(_onTileLongPress()),
+      borderRadius: borderRadius,
+      child: Stack(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(12),
@@ -766,10 +741,55 @@ class _ListingTileState extends State<ListingTile> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
+
+    final cardSurface = useLiquidGlass
+        ? ThreeDElevatedSurface(
+            baseColor: themeState.primaryColor,
+            useLiquidGlass: true,
+            borderRadius: borderRadius,
+            liquidGlassShadows: themeState.isBlueTheme
+                ? ThreeDSurfaceStyle.elevatedShadows(context)
+                : null,
+            child: tileInkWell,
+          )
+        : DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(
+                    bg,
+                    scheme.onSurface,
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 0.06
+                        : 0.03,
+                  )!,
+                  bg,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: lightShadow,
+                  offset: const Offset(-3, -3),
+                  blurRadius: 10,
+                ),
+                BoxShadow(
+                  color: darkShadow,
+                  offset: const Offset(6, 6),
+                  blurRadius: 14,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: tileInkWell,
+            ),
+          );
+
+    final cardWidget = RepaintBoundary(child: cardSurface);
 
     if (_isFeatured) {
       return AnimatedFeaturedBorder(
