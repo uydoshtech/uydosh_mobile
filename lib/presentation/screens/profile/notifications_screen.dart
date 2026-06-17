@@ -30,7 +30,7 @@ import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -1296,35 +1296,30 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                   _itemsBeingRemoved.contains(a.id);
                               const duration = Duration(milliseconds: 300);
 
-                              final card = Theme(
-                                data: theme.copyWith(
-                                  cardTheme: theme.cardTheme.copyWith(
-                                    margin: EdgeInsets.zero,
-                                    elevation: 0,
-                                    surfaceTintColor: Colors.transparent,
-                                    color: themeState.isLightTheme
-                                        ? themeState.cardColor
-                                        : (themeState.isBlueTheme
-                                            ? BlueThemeColors.surface
-                                            : theme.colorScheme.surface),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                ),
-                                child: ListingDetailTileShell(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(14),
-                                      onTap: _bulkWorking
-                                          ? null
-                                          : () {
-                                              HapticFeedbackUtils
-                                                  .selectionClick();
-                                              _openAlertResults(a);
-                                            },
-                                      child: Padding(
+                              final useLiquidGlass = themeState.isBlueTheme ||
+                                  themeState.isLightTheme;
+                              final surfaceColor = themeState.isLightTheme
+                                  ? themeState.cardColor
+                                  : (themeState.isBlueTheme
+                                      ? BlueThemeColors.surface
+                                      : theme.colorScheme.surface);
+
+                              final card = ThreeDElevatedSurface(
+                                baseColor: useLiquidGlass
+                                    ? themeState.primaryColor
+                                    : surfaceColor,
+                                useLiquidGlass: useLiquidGlass,
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(14)),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: _bulkWorking
+                                      ? null
+                                      : () {
+                                          HapticFeedbackUtils.selectionClick();
+                                          _openAlertResults(a);
+                                        },
+                                  child: Padding(
                                         padding: const EdgeInsets.all(14),
                                         child: Stack(
                                           clipBehavior: Clip.none,
@@ -1484,8 +1479,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                           ],
                                         ),
                                       ),
-                                    ),
-                                  ),
                                 ),
                               );
 

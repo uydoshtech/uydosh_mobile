@@ -588,13 +588,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
       return _buildErrorState();
     }
 
-    const listTopPad = 8.0;
+    const listContentGap = 8.0;
     final shellTopPad = _embeddedShellTopPadding();
     if (!AppConfig.servicesFeatureEnabled) {
-      return Padding(
-        padding: EdgeInsets.only(top: shellTopPad),
-        child: _buildListingsFavoritesTab(listTopPad),
-      );
+      return _buildListingsFavoritesTab(_shellAwareListTopPadding());
     }
 
     return Padding(
@@ -623,9 +620,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildListingsFavoritesTab(listTopPad),
-                _buildOffersFavoritesTab(listTopPad),
-                _buildRequestsFavoritesTab(listTopPad),
+                _buildListingsFavoritesTab(listContentGap),
+                _buildOffersFavoritesTab(listContentGap),
+                _buildRequestsFavoritesTab(listContentGap),
               ],
             ),
           ),
@@ -634,9 +631,18 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     );
   }
 
+  /// Status-bar inset only — matches Home / Messages / Gig hub embedded tabs.
   double _embeddedShellTopPadding() {
     if (!widget.embedded) return 0;
-    return ThemeState().mainShellGlassExtraTopInset(context) + kToolbarHeight;
+    return ThemeState().mainShellGlassExtraTopInset(context);
+  }
+
+  static const double _listContentGap = 8.0;
+
+  /// Single list top inset: status bar (+ small gap) when embedded, like Home.
+  double _shellAwareListTopPadding() {
+    if (!widget.embedded) return _listContentGap;
+    return _embeddedShellTopPadding() + _listContentGap;
   }
 
   Widget _buildListingsFavoritesTab(double topPad) {
@@ -946,16 +952,16 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   }
 
   Widget _buildEmptyState() {
-    const refreshEdge = 8.0;
+    final listTopPad = _shellAwareListTopPadding();
     return UydoshRefreshIndicator.mainShell(
       onRefresh: () => _loadFavoriteListings(isRefresh: true),
-      edgeOffset: refreshEdge,
+      edgeOffset: listTopPad,
       child: PullToRefreshStretchHaptics(
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              padding: EdgeInsets.fromLTRB(32.0, listTopPad, 32.0, 0),
               sliver: SliverFillRemaining(
                 hasScrollBody: false,
                 child: Column(

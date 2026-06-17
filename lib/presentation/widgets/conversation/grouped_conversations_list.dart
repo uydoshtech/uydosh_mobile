@@ -591,9 +591,14 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
         final groupUnreadCount = _getGroupUnreadCount(conversations);
 
+        final useLiquidGlass =
+            themeState.isBlueTheme || themeState.isLightTheme;
+        final glassTintColor = themeState.primaryColor;
+
         return ThreeDElevatedSurface(
-          baseColor: cardColor,
+          baseColor: useLiquidGlass ? glassTintColor : cardColor,
           margin: EdgeInsets.zero,
+          useLiquidGlass: useLiquidGlass,
           child: Column(
             children: [
               // Group header. Custom Row layout (rather than [ListTile]) so we
@@ -793,7 +798,9 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                         conversations: conversations,
                         avatarColor: avatarColor,
                         avatarIconColor: avatarIconColor,
-                        ringColor: cardColor,
+                        ringColor: useLiquidGlass
+                            ? glassTintColor.withValues(alpha: 0.48)
+                            : cardColor,
                       ),
                     ),
                   ),

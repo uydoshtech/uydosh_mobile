@@ -1,6 +1,11 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/pending_listing_moderation_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_complaints_screen.dart";
@@ -18,6 +23,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.da
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -36,6 +42,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   /// Expanded category indices (0–3: management, maps, analytics, settings).
   final Set<int> _expandedCategories = {0};
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(PendingListingModerationState().refresh());
+  }
+
+  Future<void> _openListingModerationQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AdminListingModerationQueueScreen(),
+      ),
+    );
+    if (!mounted) return;
+    unawaited(PendingListingModerationState().refresh());
+  }
 
   void _toggleCategory(int index) {
     HapticFeedbackUtils.selectionClick();
@@ -154,16 +176,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       },
                     ),
                   ],
-                  _AdminMenuRow(
-                    icon: Icons.verified_outlined,
-                    titleKey: "admin_panel_section_listing_moderation",
-                    iconColor: iconColor,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const AdminListingModerationQueueScreen(),
-                        ),
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      PendingListingModerationState(),
+                      ThemeState(),
+                    ]),
+                    builder: (context, _) {
+                      final pendingState = PendingListingModerationState();
+                      return _AdminMenuRow(
+                        icon: Icons.verified_outlined,
+                        titleKey: "admin_panel_section_listing_moderation",
+                        iconColor: iconColor,
+                        showNotificationDot: pendingState.hasPendingListings,
+                        notificationDotTrigger: pendingState.dotTrigger,
+                        onTap: _openListingModerationQueue,
                       );
                     },
                   ),
@@ -508,16 +534,24 @@ class _AdminMenuRow extends StatelessWidget {
     required this.titleKey,
     required this.iconColor,
     required this.onTap,
+    this.showNotificationDot = false,
+    this.notificationDotTrigger = 0,
   });
 
   final IconData icon;
   final String titleKey;
   final Color iconColor;
   final VoidCallback onTap;
+  final bool showNotificationDot;
+  final int notificationDotTrigger;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final unreadColor = ThemeState().unreadIndicatorColor;
+    final dotBorderColor = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surface
+        : Colors.white;
 
     return InkWell(
       onTap: () {
@@ -539,6 +573,17 @@ class _AdminMenuRow extends StatelessWidget {
                 ),
               ),
             ),
+            if (showNotificationDot) ...[
+              PulseThenBlinkDotWidget(
+                trigger: notificationDotTrigger,
+                color: unreadColor,
+                size: 10,
+                blinkDuration: const Duration(milliseconds: 750),
+                borderColor: dotBorderColor,
+                borderWidth: 1.5,
+              ),
+              const SizedBox(width: 8),
+            ],
             ThemeIcon(
               Icons.arrow_forward_ios,
               size: 16,

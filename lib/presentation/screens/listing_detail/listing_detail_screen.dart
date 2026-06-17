@@ -24,6 +24,7 @@ import "package:uy_dosh/base/util/theme_helper.dart"
     show ThemeHelper, liquidGlassAppBarMaterialColor;
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
+import "package:uy_dosh/base/services/room_scan_metrics_hydration_service.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
@@ -222,6 +223,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late PageController _pageController;
   late ScrollController _scrollController;
   bool _isOpeningRoom3d = false;
+  int? _roomScanMetricsHydrationListingId;
 
   /// Cached so [ListenableBuilder] around the app bar menu does not restart
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
@@ -467,6 +469,54 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _loadCompatibility(listingDetail.user.id);
     }
     _loadSimilarListingsCount(listingDetail);
+    unawaited(_hydrateRoomScanMetricsIfNeeded(listingDetail));
+  }
+
+  /// Details tile reads metrics from the API; legacy scans often have USDZ but
+  /// null DB columns. Compute from the cached USDZ so dimensions show without
+  /// opening the 3D viewer first.
+  Future<void> _hydrateRoomScanMetricsIfNeeded(
+    ListingDetail listingDetail,
+  ) async {
+    if (kIsWeb || !isIOSDevice) return;
+    final raw = listingDetail.pointCloudUrl;
+    if (raw == null || raw.isEmpty) return;
+    if (!listingDetail.roomScanMetricsMissing) return;
+    if (_roomScanMetricsHydrationListingId == listingDetail.id) return;
+    _roomScanMetricsHydrationListingId = listingDetail.id;
+    try {
+      final metrics = await RoomScanMetricsHydrationService.computeFromRemoteUrl(
+        absoluteUrl: _buildPhotoUrl(raw),
+        listingId: listingDetail.id,
+      );
+      if (!mounted || metrics == null) return;
+      context.read<ListingDetailBloc>().add(
+            ListingDetailEvent.updateListingDetail(
+              listingDetail: listingDetail.withRoomScanMetrics(metrics),
+            ),
+          );
+      await UserListingState().initialize();
+      if (!mounted) return;
+      final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
+      final canBackfill =
+          UserListingState().isOwner(listingDetail.user.id) || role == "admin";
+      if (canBackfill) {
+        try {
+          await getIt<IListingService>().patchRoomScanMetricsIfMissing(
+            listingId: listingDetail.id,
+            metrics: metrics,
+          );
+        } catch (e, st) {
+          logger.d("Room scan metrics backfill on detail load failed: $e\n$st");
+        }
+      }
+    } catch (e, st) {
+      logger.d("Room scan metrics hydration on detail load failed: $e\n$st");
+    } finally {
+      if (_roomScanMetricsHydrationListingId == listingDetail.id) {
+        _roomScanMetricsHydrationListingId = null;
+      }
+    }
   }
 
   /// Loads how many active listings match the "similar" filter for this
@@ -843,10 +893,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       // Admins get the same edit privileges as the owner (north orientation slider + metrics backfill).
       final canEditAsOwner =
           UserListingState().isOwner(listingDetail.user.id) || isAdmin;
-      final metricsMissing = listingDetail.roomScanFloorLongM == null ||
-          listingDetail.roomScanFloorShortM == null ||
-          listingDetail.roomScanHeightM == null ||
-          listingDetail.roomScanFloorAreaM2 == null;
+      final metricsMissing = listingDetail.roomScanMetricsMissing;
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
         listingId: listingDetail.id,

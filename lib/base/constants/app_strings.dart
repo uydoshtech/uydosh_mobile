@@ -173,7 +173,7 @@ class AppStrings {
       "menu_notifications": "Notifications",
       "menu_enable_notifications": "Enable notifications",
       "notifications_alert_match_header":
-          "We'll send you a push notification for:",
+          "You will receive a push notification to:",
       "notifications_alert_match_header_paused":
           "Paused — no push notifications for:",
       "notifications_push_off_title": "Push alerts are turned off {where}.",
@@ -1902,7 +1902,7 @@ class AppStrings {
       "menu_messages": "Сообщения",
       "menu_notifications": "Уведомления",
       "menu_enable_notifications": "Включить уведомления",
-      "notifications_alert_match_header": "Мы пришлем вам пуш-уведомление на:",
+      "notifications_alert_match_header": "Вы получите пуш-уведомление на:",
       "notifications_alert_match_header_paused":
           "Приостановлено — без пуш-уведомлений для:",
       "notifications_push_off_title": "Push-уведомления {where} отключены",
@@ -3660,7 +3660,7 @@ class AppStrings {
       "menu_notifications": "Bildirishnomalar",
       "menu_enable_notifications": "Bildirishnomalarni yoqish",
       "notifications_alert_match_header":
-          "Quyidagilar bo‘yicha sizga push-bildirishnoma yuboramiz:",
+          "Siz push-bildirishnomani quyidagiga olasiz:",
       "notifications_alert_match_header_paused":
           "Vaqtincha to‘xtatilgan — quyidagilar bo‘yicha push-bildirishnoma yuborilmaydi:",
       "notifications_push_off_title":

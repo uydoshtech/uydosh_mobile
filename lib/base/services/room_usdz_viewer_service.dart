@@ -140,21 +140,12 @@ class RoomUsdzViewerService {
     }
   }
 
-  static Future<bool> _downloadAndPresentImpl(
+  /// Downloads USDZ to the per-listing temp cache. Returns null on non-iOS.
+  static Future<File?> downloadUsdToCache(
     String absoluteUrl, {
     required int listingId,
-    required String languageCode,
-    required bool publishMetricsIfMissing,
-    double? worldPlusXBearingDeg,
-    double? northCorrectionDeg,
-    bool isListingOwner = false,
   }) async {
-    if (publishMetricsIfMissing) {
-      _ensureRoomScanMetricsSink();
-    }
-    if (isListingOwner) {
-      _ensureRoomScanNorthCorrectionSink();
-    }
+    if (!isIOSDevice) return null;
     final temp = await getTemporaryDirectory();
     final file = File("${temp.path}/uydosh_room_$listingId.usdz");
     final sessionToken = await SessionManager.getToken();
@@ -184,6 +175,29 @@ class RoomUsdzViewerService {
     if (!file.existsSync() || file.lengthSync() == 0) {
       throw StateError("Downloaded USDZ is missing or empty");
     }
+    return file;
+  }
+
+  static Future<bool> _downloadAndPresentImpl(
+    String absoluteUrl, {
+    required int listingId,
+    required String languageCode,
+    required bool publishMetricsIfMissing,
+    double? worldPlusXBearingDeg,
+    double? northCorrectionDeg,
+    bool isListingOwner = false,
+  }) async {
+    if (publishMetricsIfMissing) {
+      _ensureRoomScanMetricsSink();
+    }
+    if (isListingOwner) {
+      _ensureRoomScanNorthCorrectionSink();
+    }
+    final file = await downloadUsdToCache(
+      absoluteUrl,
+      listingId: listingId,
+    );
+    if (file == null) return false;
     final strings = <String, String>{
       "title": L10n.getForLanguage("room_3d_viewer_title", languageCode),
       "dimensionsCaption":

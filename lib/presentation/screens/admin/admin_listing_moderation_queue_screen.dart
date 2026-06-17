@@ -1,6 +1,9 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/pending_listing_moderation_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
@@ -88,6 +91,7 @@ class _AdminListingModerationQueueScreenState
         _totalPages = res.totalPages;
         _isLoading = false;
       });
+      unawaited(PendingListingModerationState().refresh());
     } catch (e) {
       setStateIfMounted(() {
         _hasError = true;

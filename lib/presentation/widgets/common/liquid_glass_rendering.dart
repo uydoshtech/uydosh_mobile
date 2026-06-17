@@ -31,6 +31,40 @@ abstract final class LiquidGlassRendering {
   /// Smaller controls (filter ribbon, FAB) sitting on blurred surfaces.
   static const double plateBlurSigma = 14;
 
+  /// Backdrop blur on the messages inbox tab switch and matching glass tiles.
+  static const double switchGlassBlurSigma = 18;
+
+  /// Frosted fill for the active thumb on segmented switches and glass tiles.
+  static BoxDecoration switchThumbGlassDecoration({
+    required Color tintColor,
+    required BorderRadius borderRadius,
+  }) {
+    return BoxDecoration(
+      borderRadius: borderRadius,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          tintColor.withValues(alpha: 0.38),
+          tintColor.withValues(alpha: 0.58),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.20),
+        width: 0.6,
+      ),
+    );
+  }
+
+  static List<BoxShadow> switchThumbGlassShadows() => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.28),
+          blurRadius: 12,
+          spreadRadius: 0.4,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
   /// Neumorphic top-left highlight strength (listing cards, 3D buttons).
   static double neumorphicLightShadowAlpha(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
