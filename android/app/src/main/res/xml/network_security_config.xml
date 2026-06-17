@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Temporary cleartext allowance for the current API host. Prefer HTTPS for store releases. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain>18.224.97.94</domain>
+    </domain-config>
+</network-security-config>
