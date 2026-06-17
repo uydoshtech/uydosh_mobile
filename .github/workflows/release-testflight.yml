@@ -101,6 +101,9 @@ jobs:
           bundler: "2.5.23"
 
       - name: Show bundled CocoaPods version
+        env:
+          # ActiveSupport expects Logger to be loaded in this Ruby build.
+          RUBYOPT: "-rlogger"
         run: |
           set -euo pipefail
           ruby -v
