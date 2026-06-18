@@ -604,7 +604,7 @@ class _ListingTileState extends State<ListingTile> {
                             ),
                             child: _buildThumbnail(context),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 20),
                           Expanded(
                             child: Padding(
                               // Keep text clear of the centered chevron.

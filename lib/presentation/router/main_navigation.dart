@@ -746,7 +746,7 @@ class MainNavigationState extends State<MainNavigation>
                   ),
                   const SizedBox(height: 8),
                   CreateChoiceTile(
-                    emoji: "👥",
+                    emoji: "🤝",
                     title: L10n.get("create_choice_group_forming"),
                     subtitle: L10n.get(
                       "create_choice_group_forming_subtitle",

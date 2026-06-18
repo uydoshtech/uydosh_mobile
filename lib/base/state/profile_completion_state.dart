@@ -149,10 +149,11 @@ class ProfileCompletionState extends ChangeNotifier {
   static int _calculateProfileCompletionPercent(UserProfile profile) {
     // Students (inferred from having a university set) contribute an extra
     // completed field, so the denominator grows to match. Non-students are
-    // evaluated against the base 16 fields — university is not required.
+    // evaluated against the base 15 fields — university and linked Telegram
+    // are not required.
     final isStudent =
         profile.university != null || profile.universityId != null;
-    final totalFields = isStudent ? 17 : 16;
+    final totalFields = isStudent ? 16 : 15;
     final completedFields = _countCompletedProfileFields(profile);
     return ((completedFields / totalFields) * 100).round();
   }
@@ -174,7 +175,6 @@ class ProfileCompletionState extends ChangeNotifier {
       completedFields++;
     }
     if (_hasText(profile.aboutMe)) completedFields++;
-    if (_hasText(profile.telegram)) completedFields++;
     if (profile.employed != null) completedFields++;
     if (profile.cleanliness != null) completedFields++;
     if (profile.noiseLevel != null) completedFields++;
@@ -205,6 +205,8 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Aligned with _countCompletedProfileFields. University is intentionally
   /// omitted — it's optional for non-students and always present for students
   /// (the edit form enforces selection), so it can never be "missing".
+  /// Linked Telegram is also omitted — it's optional and should not trigger
+  /// completion prompts.
   static List<String> getMissingFields(UserProfile profile) {
     final missing = <String>[];
     if (!_hasText(profile.name)) missing.add("name");
@@ -212,7 +214,6 @@ class ProfileCompletionState extends ChangeNotifier {
     if (!_hasOriginCountryOrRegion(profile)) missing.add("region");
     if (profile.employed == null) missing.add("employed");
     if (!_hasText(profile.aboutMe)) missing.add("aboutMe");
-    if (!_hasText(profile.telegram)) missing.add("telegram");
     if (profile.cleanliness == null) missing.add("cleanliness");
     if (profile.noiseLevel == null) missing.add("noiseLevel");
     if (profile.sociability == null) missing.add("sociability");

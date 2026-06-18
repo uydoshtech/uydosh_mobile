@@ -604,9 +604,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _loadCompatibility(listingDetail.user.id);
     }
     _loadSimilarListingsCount(listingDetail);
-    if (!isOwner) {
-      _loadNearbyMatchesCount(listingDetail);
-    }
+    _loadNearbyMatchesCount(listingDetail);
     unawaited(_hydrateRoomScanMetricsIfNeeded(listingDetail));
   }
 
@@ -2406,8 +2404,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
               padding: const EdgeInsets.only(top: 4),
               child: compatibilitySection,
             ),
-          if (!isOwner &&
-              ListingDetailNearbyMatchesHelper.canShowForListing(listingDetail))
+          if (ListingDetailNearbyMatchesHelper.canShowForListing(listingDetail))
             BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
                 ({int? count, int? listingId})>(
               selector: (s) => (

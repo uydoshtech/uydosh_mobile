@@ -27,7 +27,7 @@ class ListingTypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = ListingTypeHelper.getColor(listingTypeCode);
+    final style = ListingTypeHelper.getBadgeStyle(listingTypeCode);
     final icon = ListingTypeHelper.getIcon(listingTypeCode);
     final text = ListingTypeHelper.getText(context, listingTypeCode);
 
@@ -35,22 +35,22 @@ class ListingTypeBadge extends StatelessWidget {
       padding:
           padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: style.background,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1),
+        border: Border.all(color: style.border, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showIcon) ...[
-            ThemeIcon(icon, color: color, size: 18),
+            ThemeIcon(icon, color: style.foreground, size: 18),
             if (showText) const SizedBox(width: 4),
           ],
           if (showText)
             Text(
               text,
               style: TextStyle(
-                color: color,
+                color: style.foreground,
                 fontSize: fontSize ?? 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -61,11 +61,68 @@ class ListingTypeBadge extends StatelessWidget {
   }
 }
 
+/// Foreground, border, and fill colors for a listing-type badge.
+class ListingTypeBadgeStyle {
+  const ListingTypeBadgeStyle({
+    required this.foreground,
+    required this.border,
+    required this.background,
+  });
+
+  final Color foreground;
+  final Color border;
+  final Color background;
+}
+
 /// Helper class for listing type utilities
 /// Centralizes all listing type logic: colors, icons, text, and ID mapping
 class ListingTypeHelper {
+  /// High-contrast badge palette for the light theme (pale card surfaces).
+  static const _lightRoomNeeded = ListingTypeBadgeStyle(
+    foreground: Color(0xFF1565C0),
+    border: Color(0xFF1565C0),
+    background: Color(0xFFE3F2FD),
+  );
+  static const _lightRoommateNeeded = ListingTypeBadgeStyle(
+    foreground: Color(0xFFE65100),
+    border: Color(0xFFE65100),
+    background: Color(0xFFFFF3E0),
+  );
+  static const _lightGroupForming = ListingTypeBadgeStyle(
+    foreground: Color(0xFF6A1B9A),
+    border: Color(0xFF6A1B9A),
+    background: Color(0xFFF3E5F5),
+  );
+
+  /// Badge colors tuned for the current theme.
+  static ListingTypeBadgeStyle getBadgeStyle(String code) {
+    if (ThemeState().isLightTheme) {
+      return switch (code) {
+        "room_needed" => _lightRoomNeeded,
+        "roommate_needed" => _lightRoommateNeeded,
+        "group_forming" => _lightGroupForming,
+        _ => const ListingTypeBadgeStyle(
+          foreground: Colors.grey,
+          border: Colors.grey,
+          background: Color(0xFFF5F5F5),
+        ),
+      };
+    }
+
+    final color = getColor(code);
+    return ListingTypeBadgeStyle(
+      foreground: color,
+      border: color,
+      background: color.withValues(alpha: 0.1),
+    );
+  }
+
   /// Get the color for a listing type code
   static Color getColor(String code) {
+    if (ThemeState().isLightTheme) {
+      return getBadgeStyle(code).foreground;
+    }
+
     // Check if we"re in blue theme to use better contrasting colors
     if (ThemeState().isBlueTheme) {
       switch (code) {

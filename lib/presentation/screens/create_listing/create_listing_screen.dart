@@ -88,7 +88,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// Roommate listing (type 2): single rent amount.
   double _roommatePrice = 10.0;
 
-  /// Room-needed listing (type 1): budget range (API still stores one `price`).
+  /// Room-needed and group-forming listings: budget range (API stores midpoint).
   double _roomBudgetMin = 10.0;
   double _roomBudgetMax = 50.0;
 
@@ -111,7 +111,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _groupSizeTarget = 3;
 
   bool get _pricePickerSingleHandle =>
-      _selectedListingTypeId == 2 || _isGroupFormingFlow;
+      _selectedListingTypeId == ListingTypeIds.roommateNeeded;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -587,6 +587,37 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return ((_roomBudgetMin + _roomBudgetMax) / 2).round();
   }
 
+  Widget _buildGroupSizePickerItem(int personCount) {
+    return Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...List.generate(
+              personCount,
+              (_) => const Padding(
+                padding: EdgeInsets.only(right: 2),
+                child: ThemeIcon(Icons.person_outline, size: 16),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              L10n.getWithParams(
+                "group_size_target_option",
+                params: {"count": "$personCount"},
+              ),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Generate title based on listing type and gender
   String _generateTitle() {
     return L10n.get(
@@ -854,14 +885,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 },
                 children: List<Widget>.generate(
                   5,
-                  (index) => Center(
-                    child: Text(
-                      L10n.getWithParams(
-                        "group_size_target_option",
-                        params: {"count": "${index + 2}"},
-                      ),
-                    ),
-                  ),
+                  (index) => _buildGroupSizePickerItem(index + 2),
                 ),
               ),
             ),

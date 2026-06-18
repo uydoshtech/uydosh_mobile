@@ -292,7 +292,9 @@ class CreateChoiceTile extends StatelessWidget {
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: isDark
+                            ? theme.colorScheme.onSurfaceVariant
+                            : theme.colorScheme.onSurface,
                       ),
                     ),
                   ],
