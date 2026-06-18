@@ -239,7 +239,11 @@ class _ListingDetailCompatibilitySectionState
 
   Color _getCompatibilityPercentColor() {
     if (widget.compatibilityPercent == null) return _getDescriptionTextColor();
-    if (widget.compatibilityPercent! >= 80) return AppColors.success;
+    if (widget.compatibilityPercent! >= 80) {
+      return ThemeState().isLightTheme
+          ? AppColors.successDark
+          : AppColors.success;
+    }
     if (widget.compatibilityPercent! >= 60) return AppColors.warning;
     return AppColors.error;
   }

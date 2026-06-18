@@ -1206,14 +1206,19 @@ class _ListingTileState extends State<ListingTile> {
 
     Widget content;
     if (hasPhoto) {
-      // No explicit width/height here: the square `SizedBox` supplies tight
-      // constraints, so the image `cover`-fills the square cell.
+      // Decode cap: one bound only (or maxWidth/maxHeight on the provider).
+      // Both width *and* height on [ResizeImage] use `ResizeImagePolicy.exact`
+      // and squash non-square photos before [BoxFit.cover] can crop them.
+      final dpr = MediaQuery.devicePixelRatioOf(context);
+      final decodePx = (thumbWidth * dpr).round();
       content = Image(
-        image: ResizeImage(
-          CachedNetworkImageProvider(_buildPhotoUrl(_primaryPhotoUrl(photos))),
-          width: 320,
-          height: 320,
+        image: CachedNetworkImageProvider(
+          _buildPhotoUrl(_primaryPhotoUrl(photos)),
+          maxWidth: decodePx,
+          maxHeight: decodePx,
         ),
+        width: thumbWidth,
+        height: thumbWidth,
         fit: BoxFit.cover,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           if (wasSynchronouslyLoaded || frame != null) return child;

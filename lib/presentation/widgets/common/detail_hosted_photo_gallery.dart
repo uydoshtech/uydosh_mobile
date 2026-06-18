@@ -72,7 +72,6 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                                     imageUrl: buildPhotoUrl(rawUrl),
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
-                                    memCacheHeight: 320,
                                     fadeInDuration:
                                         const Duration(milliseconds: 300),
                                     fadeInCurve: Curves.easeOut,
@@ -98,12 +97,11 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                                 ColoredBox(
                                   color: Colors.black.withValues(alpha: 0.12),
                                 ),
-                                Center(
+                                Positioned.fill(
                                   child: CachedNetworkImage(
                                     imageUrl: buildPhotoUrl(rawUrl),
                                     fit: BoxFit.contain,
                                     memCacheWidth: 720,
-                                    memCacheHeight: 720,
                                     fadeInDuration:
                                         const Duration(milliseconds: 300),
                                     fadeInCurve: Curves.easeOut,

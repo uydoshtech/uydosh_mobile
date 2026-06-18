@@ -29,6 +29,9 @@ class ListingDetailPageState {
     this.similarListingsCount,
     this.similarListingsCountListingId,
     this.isLoadingSimilarListingsCount = false,
+    this.nearbyMatchesCount,
+    this.nearbyMatchesCountListingId,
+    this.isLoadingNearbyMatchesCount = false,
   });
 
   final bool isToggling;
@@ -60,6 +63,11 @@ class ListingDetailPageState {
   final int? similarListingsCountListingId;
   final bool isLoadingSimilarListingsCount;
 
+  /// Cross-type listings near the current one (seeker ↔ offer). Hidden when 0.
+  final int? nearbyMatchesCount;
+  final int? nearbyMatchesCountListingId;
+  final bool isLoadingNearbyMatchesCount;
+
   ListingDetailPageState copyWith({
     bool? isToggling,
     bool? isDeleting,
@@ -85,6 +93,9 @@ class ListingDetailPageState {
     int? similarListingsCount,
     int? similarListingsCountListingId,
     bool? isLoadingSimilarListingsCount,
+    int? nearbyMatchesCount,
+    int? nearbyMatchesCountListingId,
+    bool? isLoadingNearbyMatchesCount,
   }) {
     return ListingDetailPageState(
       isToggling: isToggling ?? this.isToggling,
@@ -125,6 +136,11 @@ class ListingDetailPageState {
           similarListingsCountListingId ?? this.similarListingsCountListingId,
       isLoadingSimilarListingsCount: isLoadingSimilarListingsCount ??
           this.isLoadingSimilarListingsCount,
+      nearbyMatchesCount: nearbyMatchesCount ?? this.nearbyMatchesCount,
+      nearbyMatchesCountListingId:
+          nearbyMatchesCountListingId ?? this.nearbyMatchesCountListingId,
+      isLoadingNearbyMatchesCount: isLoadingNearbyMatchesCount ??
+          this.isLoadingNearbyMatchesCount,
     );
   }
 
@@ -155,7 +171,10 @@ class ListingDetailPageState {
         other.currentUserAvatarUrl == currentUserAvatarUrl &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
-        other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount;
+        other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount &&
+        other.nearbyMatchesCount == nearbyMatchesCount &&
+        other.nearbyMatchesCountListingId == nearbyMatchesCountListingId &&
+        other.isLoadingNearbyMatchesCount == isLoadingNearbyMatchesCount;
   }
 
   bool _listEquals<T>(List<T> a, List<T> b) {
@@ -188,6 +207,9 @@ class ListingDetailPageState {
         similarListingsCount,
         similarListingsCountListingId,
         isLoadingSimilarListingsCount,
+        nearbyMatchesCount,
+        nearbyMatchesCountListingId,
+        isLoadingNearbyMatchesCount,
       ]);
 }
 
@@ -220,6 +242,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         similarListingsCount: s.similarListingsCount,
         similarListingsCountListingId: s.similarListingsCountListingId,
         isLoadingSimilarListingsCount: s.isLoadingSimilarListingsCount,
+        nearbyMatchesCount: s.nearbyMatchesCount,
+        nearbyMatchesCountListingId: s.nearbyMatchesCountListingId,
+        isLoadingNearbyMatchesCount: s.isLoadingNearbyMatchesCount,
       ),
     );
   }
@@ -353,5 +378,24 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
 
   void setSimilarListingsCountError() => emit(
         state.copyWith(isLoadingSimilarListingsCount: false),
+      );
+
+  void setLoadingNearbyMatchesCount(int listingId) => emit(
+        state.copyWith(
+          isLoadingNearbyMatchesCount: true,
+          nearbyMatchesCountListingId: listingId,
+        ),
+      );
+
+  void setNearbyMatchesCount(int listingId, int count) => emit(
+        state.copyWith(
+          nearbyMatchesCount: count,
+          nearbyMatchesCountListingId: listingId,
+          isLoadingNearbyMatchesCount: false,
+        ),
+      );
+
+  void setNearbyMatchesCountError() => emit(
+        state.copyWith(isLoadingNearbyMatchesCount: false),
       );
 }

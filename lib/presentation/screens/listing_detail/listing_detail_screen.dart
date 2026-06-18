@@ -87,6 +87,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/room_3d_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_loading_placeholder.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_error_placeholder.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_nearby_matches_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_nearby_matches_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_view_similar_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
@@ -502,6 +504,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _loadCompatibility(listingDetail.user.id);
     }
     _loadSimilarListingsCount(listingDetail);
+    if (!isOwner) {
+      _loadNearbyMatchesCount(listingDetail);
+    }
     unawaited(_hydrateRoomScanMetricsIfNeeded(listingDetail));
   }
 
@@ -594,6 +599,44 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       logger.d("Error loading similar listings count: $e");
       if (!mounted) return;
       pageBloc.setSimilarListingsCountError();
+    }
+  }
+
+  /// Loads how many active listings match the cross-type "nearby matches"
+  /// filter — complementary listing type at the same station or district.
+  Future<void> _loadNearbyMatchesCount(ListingDetail listingDetail) async {
+    if (!ListingDetailNearbyMatchesHelper.canShowForListing(listingDetail)) {
+      return;
+    }
+
+    final pageBloc = context.read<ListingDetailPageBloc>();
+    if (pageBloc.state.isLoadingNearbyMatchesCount &&
+        pageBloc.state.nearbyMatchesCountListingId == listingDetail.id) {
+      return;
+    }
+    pageBloc.setLoadingNearbyMatchesCount(listingDetail.id);
+
+    try {
+      final filters =
+          ListingDetailNearbyMatchesHelper.searchFilters(listingDetail);
+
+      final response = await getIt<IListingService>().getListings(
+        page: 1,
+        limit: 1,
+        listingTypeId: filters.complementaryListingTypeId,
+        subwayStationId: filters.subwayStationId,
+        locationId: filters.locationId,
+        gender: filters.gender,
+      );
+
+      final count = response.total > 0 ? 1 : 0;
+
+      if (!mounted) return;
+      pageBloc.setNearbyMatchesCount(listingDetail.id, count);
+    } catch (e) {
+      logger.d("Error loading nearby matches count: $e");
+      if (!mounted) return;
+      pageBloc.setNearbyMatchesCountError();
     }
   }
 
@@ -2093,6 +2136,28 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     return (min: minRounded.toDouble(), max: maxRounded.toDouble());
   }
 
+  void _openNearbyMatches(ListingDetail listingDetail) {
+    final filters =
+        ListingDetailNearbyMatchesHelper.searchFilters(listingDetail);
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => ListingsBloc(getIt<IListingService>()),
+          child: HomeScreen(
+            listingTypeId: filters.complementaryListingTypeId,
+            subwayStationId: filters.subwayStationId,
+            locationId: filters.locationId,
+            gender: filters.gender,
+            isSearchMode: true,
+            useExplicitFiltersOnly: true,
+            isHomeTabActive: false,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _openSimilarResults(ListingDetail listingDetail) {
     final listingTypeId = listingDetail.listingTypeId;
     final gender = listingDetail.gender;
@@ -2117,6 +2182,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
           ),
         ),
       ),
+    );
+  }
+
+  Widget _nearbyMatchesTile(ListingDetail listingDetail) {
+    return ListingDetailNearbyMatchesTile(
+      listingDetail: listingDetail,
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        _openNearbyMatches(listingDetail);
+      },
     );
   }
 
@@ -2224,6 +2299,25 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: compatibilitySection,
+            ),
+          if (!isOwner &&
+              ListingDetailNearbyMatchesHelper.canShowForListing(listingDetail))
+            BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+                ({int? count, int? listingId})>(
+              selector: (s) => (
+                count: s.nearbyMatchesCount,
+                listingId: s.nearbyMatchesCountListingId,
+              ),
+              builder: (context, matches) {
+                final isFresh = matches.listingId == listingDetail.id;
+                if (isFresh && (matches.count ?? -1) <= 0) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _nearbyMatchesTile(listingDetail),
+                );
+              },
             ),
           BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
               ({int? count, int? listingId})>(
