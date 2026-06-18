@@ -368,6 +368,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         context,
         message: L10n.get("telegram_unlinked_success"),
       );
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("telegram_unlinked_relink_hint"),
+      );
     } on DioException catch (e) {
       if (!mounted) return;
       final backendCode = _backendErrorCode(e);

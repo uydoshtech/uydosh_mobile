@@ -16,16 +16,37 @@ final class PeerInteractionEligibility {
   static const String _internalChatDisabledPublisherEmail =
       "uydoshtech@gmail.com";
 
+  /// True when the signed-in viewer is the publisher of this entity.
+  ///
+  /// Pass [viewerUserIdFallback] while [UserListingState] is still hydrating so
+  /// we do not briefly treat the publisher as a guest viewer (e.g. "Chat with
+  /// yourself" on listing detail).
+  static bool isPublisher({
+    required int publisherUserId,
+    int? viewerUserIdFallback,
+  }) {
+    if (UserListingState().isOwner(publisherUserId)) return true;
+    final resolvedUid =
+        UserListingState().currentUserId ?? viewerUserIdFallback;
+    return resolvedUid != null && resolvedUid == publisherUserId;
+  }
+
   /// Signed in and not the user who published this entity.
   static bool mayInteractWithPublisher({
     required int publisherUserId,
     int? viewerUserIdFallback,
   }) {
     if (!AuthenticationState().isAuthenticated) return false;
-    if (UserListingState().isOwner(publisherUserId)) return false;
+    if (isPublisher(
+      publisherUserId: publisherUserId,
+      viewerUserIdFallback: viewerUserIdFallback,
+    )) {
+      return false;
+    }
     final resolvedUid =
         UserListingState().currentUserId ?? viewerUserIdFallback;
-    if (resolvedUid != null && resolvedUid == publisherUserId) return false;
+    // Viewer identity not ready yet — hide peer actions until we know.
+    if (resolvedUid == null) return false;
     return true;
   }
 

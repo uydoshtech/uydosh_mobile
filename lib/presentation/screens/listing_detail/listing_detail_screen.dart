@@ -230,6 +230,35 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
   final GlobalKey _compatibilitySectionKey = GlobalKey();
 
+  /// Session uid fallback while [UserListingState] has not finished hydrating.
+  int? _sessionUserId;
+
+  bool _isListingOwner(int listingUserId) =>
+      PeerInteractionEligibility.isPublisher(
+        publisherUserId: listingUserId,
+        viewerUserIdFallback: _sessionUserId,
+      );
+
+  /// In-app chat CTA for guests (login prompt) or signed-in non-owners only.
+  bool _canShowInAppListingChat(ListingDetail listingDetail) {
+    if (PeerInteractionEligibility
+        .isInternalListingChatDisabledForPublisherEmail(
+      listingDetail.user.email,
+    )) {
+      return false;
+    }
+    if (!AuthenticationState().isAuthenticated) return true;
+    return PeerInteractionEligibility.mayInteractWithPublisher(
+      publisherUserId: listingDetail.user.id,
+      viewerUserIdFallback: _sessionUserId,
+    );
+  }
+
+  Future<void> _hydrateSessionUserId() async {
+    final id = await SessionManager.getUserId();
+    if (mounted) setState(() => _sessionUserId = id);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -239,6 +268,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     // Refresh user ID to ensure we have the current user
     UserListingState().refreshUserId();
+    unawaited(_hydrateSessionUserId());
 
     // Initialize favorites state
     FavoritesState().initialize();
@@ -371,7 +401,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
 
     // If user is the owner, they can"t have favorites, so no need to check
-    if (userListingState.isOwner(listingUserId)) {
+    if (_isListingOwner(listingUserId)) {
       return;
     }
 
@@ -458,7 +488,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           listingDetail.user.id,
         );
 
-    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    final isOwner = _isListingOwner(listingDetail.user.id);
     if (isOwner) {
       _loadViewCount(listingDetail.id);
       _loadOwnerName(listingDetail.user.id);
@@ -499,7 +529,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       if (!mounted) return;
       final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
       final canBackfill =
-          UserListingState().isOwner(listingDetail.user.id) || role == "admin";
+          _isListingOwner(listingDetail.user.id) || role == "admin";
       if (canBackfill) {
         try {
           await getIt<IListingService>().patchRoomScanMetricsIfMissing(
@@ -892,7 +922,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
       final isAdmin = role == "admin";
       // Admins get the same edit privileges as the owner (north orientation slider + metrics backfill).
       final canEditAsOwner =
-          UserListingState().isOwner(listingDetail.user.id) || isAdmin;
+          _isListingOwner(listingDetail.user.id) || isAdmin;
       final metricsMissing = listingDetail.roomScanMetricsMissing;
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
@@ -1258,16 +1288,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     ListingDetail listingDetail, {
     required bool isListingStaff,
     required bool isStrictAdmin,
-  }) {
-    final userListingState = UserListingState();
-    final isOwner = userListingState.isOwner(listingDetail.user.id);
+  }  ) {
+    final isOwner = _isListingOwner(listingDetail.user.id);
     final authState = AuthenticationState();
     final isAuthenticated = authState.isAuthenticated;
     final menuEnabled = isAuthenticated;
-    final internalChatDisabled = PeerInteractionEligibility
-        .isInternalListingChatDisabledForPublisherEmail(
-      listingDetail.user.email,
-    );
 
     final items = <ActionMenuItem>[];
 
@@ -1283,7 +1308,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     }
 
     // Chat option - only show when not owner and internal chat is allowed.
-    if (!isOwner && !internalChatDisabled) {
+    if (_canShowInAppListingChat(listingDetail)) {
       items.add(
         ActionMenuItem(
           value: "chat",
@@ -1877,8 +1902,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
             return ListenableBuilder(
               listenable: UserListingState(),
               builder: (context, _) {
-                final isOwner =
-                    UserListingState().isOwner(listingDetail.user.id);
+                final isOwner = _isListingOwner(listingDetail.user.id);
                 final telegramHandle =
                     listingDetail.contactTelegram?.trim() ?? "";
                 final telegramAvailable =
@@ -1886,10 +1910,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                 final onTelegram = telegramAvailable
                     ? () => _openTelegramChat(listingDetail.contactTelegram!)
                     : null;
-                final internalChatDisabled = PeerInteractionEligibility
-                    .isInternalListingChatDisabledForPublisherEmail(
-                  listingDetail.user.email,
-                );
 
                 if (isOwner) {
                   // Admin-as-owner gets a Telegram-only sticky CTA so
@@ -1925,7 +1945,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                     pageState,
                   ),
                   builder: (context, ownerResolved) {
-                    if (internalChatDisabled && onTelegram == null) {
+                    final showInAppChat =
+                        _canShowInAppListingChat(listingDetail);
+                    if (!showInAppChat && onTelegram == null) {
                       return const SizedBox.shrink();
                     }
                     final l10n = context.l10n;
@@ -1933,9 +1955,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                         ? l10n.chat_with(ownerResolved)
                         : l10n.uydosh_chat;
                     return ListingDetailContactActionBar(
-                      onMessage: internalChatDisabled
-                          ? null
-                          : () => _startConversation(listingDetail),
+                      onMessage: showInAppChat
+                          ? () => _startConversation(listingDetail)
+                          : null,
                       onTelegram: onTelegram,
                       inAppChatCtaLabel: chatCtaLabel,
                     );
@@ -1966,7 +1988,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
   Widget? _buildCompatibilitySection(
     ListingDetail listingDetail,
   ) {
-    final isOwner = UserListingState().isOwner(listingDetail.user.id);
+    final isOwner = _isListingOwner(listingDetail.user.id);
     if (isOwner) return null;
 
     // Scoped to the compatibility fields of pageState so async compatibility
@@ -2127,7 +2149,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
         // — a meaningful win on this screen because the owner toolbar, photo
         // carousel, compatibility panel, and map card all do non-trivial
         // work per frame when visible.
-        final isOwner = UserListingState().isOwner(listingDetail.user.id);
+        final isOwner = _isListingOwner(listingDetail.user.id);
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
         final show3d = (kIsWeb || isIOSDevice) &&

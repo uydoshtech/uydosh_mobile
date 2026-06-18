@@ -1636,6 +1636,8 @@ class AppStrings {
       "telegram_account_linked": "Telegram account linked",
       "telegram_linked_success": "Telegram linked to your account",
       "telegram_unlinked_success": "Telegram unlinked from your account",
+      "telegram_unlinked_relink_hint":
+          "To connect again, use Link Telegram in your profile—not Sign in with Telegram on the login screen.",
       "telegram_already_linked": "Telegram is already linked to this account",
       "telegram_not_linked": "Telegram is not linked to this account",
       "telegram_only_sign_in_method":
@@ -3398,6 +3400,8 @@ class AppStrings {
       "telegram_account_linked": "Telegram привязан",
       "telegram_linked_success": "Telegram привязан к вашему аккаунту",
       "telegram_unlinked_success": "Telegram отвязан от вашего аккаунта",
+      "telegram_unlinked_relink_hint":
+          "Чтобы снова подключить Telegram, используйте «Привязать Telegram» в профиле — не «Войти через Telegram» на экране входа.",
       "telegram_already_linked": "Telegram уже привязан к этому аккаунту",
       "telegram_not_linked": "Telegram не привязан к этому аккаунту",
       "telegram_only_sign_in_method":
@@ -5175,6 +5179,8 @@ class AppStrings {
       "telegram_account_linked": "Telegram hisobi ulangan",
       "telegram_linked_success": "Telegram hisobingizga ulandi",
       "telegram_unlinked_success": "Telegram hisobingizdan uzildi",
+      "telegram_unlinked_relink_hint":
+          "Qayta ulash uchun profildagi «Telegramni ulash» tugmasidan foydalaning — kirish ekranidagi «Telegram orqali kirish» emas.",
       "telegram_already_linked": "Telegram allaqachon ushbu hisobga ulangan",
       "telegram_not_linked": "Telegram ushbu hisobga ulanmagan",
       "telegram_only_sign_in_method":

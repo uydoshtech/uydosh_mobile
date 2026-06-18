@@ -910,9 +910,15 @@ class _ListingTileState extends State<ListingTile> {
   /// matching `MessagingThemeColors.textSecondary`/`iconSecondary`.
   static const Color _blueThemeSecondary = Color(0xFFB3C0CC);
 
-  /// Shared green accent for the price badge + the prominent price card so the
-  /// two read as the same colour family across all themes.
+  /// Green accent for the price card on dark (blue) tile backgrounds.
   static const Color _accentGreen = Color(0xFF35C26B);
+
+  /// Darker sibling of [_accentGreen] for light-theme tiles (stronger contrast
+  /// on pale surfaces).
+  static const Color _accentGreenLightTheme = Color(0xFF25884B);
+
+  Color _priceAccentGreen() =>
+      ThemeState().isLightTheme ? _accentGreenLightTheme : _accentGreen;
 
   /// Branded illustration shown in the media slot when a listing has no photo.
   /// Resolution-aware (`2.0x` / `3.0x` variants live alongside the base asset).
@@ -981,22 +987,23 @@ class _ListingTileState extends State<ListingTile> {
         final unit = L10n.get(
           isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
         );
+        final priceGreen = _priceAccentGreen();
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
           decoration: BoxDecoration(
-            color: _accentGreen.withValues(alpha: 0.12),
+            color: priceGreen.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: _accentGreen.withValues(alpha: 0.6),
+              color: priceGreen.withValues(alpha: 0.6),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const ThemeIcon(
+              ThemeIcon(
                 Icons.payments,
                 size: 16,
-                color: _accentGreen,
+                color: priceGreen,
                 useThemeColor: false,
               ),
               const SizedBox(width: 6),
@@ -1005,10 +1012,10 @@ class _ListingTileState extends State<ListingTile> {
                   amount,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: _accentGreen,
+                    color: priceGreen,
                   ),
                 ),
               ),
@@ -1018,7 +1025,7 @@ class _ListingTileState extends State<ListingTile> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: _accentGreen.withValues(alpha: 0.85),
+                  color: priceGreen.withValues(alpha: 0.85),
                 ),
               ),
             ],
