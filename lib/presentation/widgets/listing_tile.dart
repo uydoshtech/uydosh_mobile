@@ -1040,10 +1040,6 @@ class _ListingTileState extends State<ListingTile> {
   /// thumbnail inside the `IntrinsicHeight` row.
   static const double _minMediaRowHeight = 120;
 
-  /// Max amenity icons shown on the single strip row. Beyond this we render a
-  /// "+N" counter so the strip stays one line and the tile height predictable.
-  static const int _maxVisibleAmenities = 6;
-
   bool get _hasAmenities =>
       widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty;
 
@@ -1075,32 +1071,18 @@ class _ListingTileState extends State<ListingTile> {
 
   /// Amenity icons (no labels) rendered inside the tile footer — compact,
   /// but still enough to hint at the listing's features.
-  /// Capped to [_maxVisibleAmenities] icons (highest-priority first) with a
-  /// "+N" counter for the remainder, so it always fits on a single row.
   Widget _buildAmenityIcons() {
     final amenities = _cachedSortedAmenities ?? const <Amenity>[];
     if (amenities.isEmpty) return const SizedBox.shrink();
     final fg = _getAmenityIconColor();
-
-    final visible = amenities.take(_maxVisibleAmenities).toList();
-    final overflow = amenities.length - visible.length;
 
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        for (final amenity in visible)
+        for (final amenity in amenities)
           ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
-        if (overflow > 0)
-          Text(
-            "+$overflow",
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: fg,
-            ),
-          ),
       ],
     );
   }
