@@ -1666,13 +1666,13 @@ class AppStrings {
       "telegram_alerts_enabled_success": "Telegram alerts are on",
       "telegram_alerts_enable_failed":
           "Could not open Telegram alerts setup. Try again later.",
-      "telegram_alerts_settings_title": "Telegram alerts",
+      "telegram_alerts_settings_title": "Telegram notifications are off",
       "telegram_alerts_settings_body":
           "Open @uydosh_bot in Telegram and subscribe to get message and search alerts here.",
       "telegram_alerts_settings_button": "Enable Telegram notifications",
       "telegram_alerts_settings_waiting":
           "Subscribe in @uydosh_bot, then return here.",
-      "telegram_alerts_connected": "Telegram alerts are on",
+      "telegram_alerts_connected": "Telegram notifications are on",
       "telegram_alerts_disable_button": "Turn off notifications",
       "telegram_alerts_disabled_success": "Telegram alerts turned off",
       "telegram_alerts_disable_failed": "Could not turn off Telegram alerts",
@@ -3428,13 +3428,13 @@ class AppStrings {
       "telegram_alerts_enabled_success": "Уведомления в Telegram включены",
       "telegram_alerts_enable_failed":
           "Не удалось открыть настройку Telegram-уведомлений. Попробуйте позже.",
-      "telegram_alerts_settings_title": "Уведомления в Telegram",
+      "telegram_alerts_settings_title": "Уведомления в Телеграм отключены",
       "telegram_alerts_settings_body":
           "Откройте @uydosh_bot в Telegram и подпишитесь на уведомления о сообщениях и совпадениях по поиску.",
       "telegram_alerts_settings_button": "Включить Телеграм уведомления",
       "telegram_alerts_settings_waiting":
           "Подпишитесь в @uydosh_bot, затем вернитесь сюда.",
-      "telegram_alerts_connected": "Уведомления в Telegram включены",
+      "telegram_alerts_connected": "Уведомления в Телеграм включены",
       "telegram_alerts_disable_button": "Отключить уведомления",
       "telegram_alerts_disabled_success": "Уведомления в Telegram отключены",
       "telegram_alerts_disable_failed":
@@ -5205,7 +5205,7 @@ class AppStrings {
       "telegram_alerts_enabled_success": "Telegram bildirishnomalari yoqildi",
       "telegram_alerts_enable_failed":
           "Telegram bildirishnomalarini yoqib bo‘lmadi. Keyinroq urinib ko‘ring.",
-      "telegram_alerts_settings_title": "Telegram bildirishnomalari",
+      "telegram_alerts_settings_title": "Telegram bildirishnomalari o‘chirilgan",
       "telegram_alerts_settings_body":
           "Telegramda @uydosh_bot ni oching va bildirishnomalarga obuna bo‘ling — xabarlar va qidiruv mosliklari shu yerda keladi.",
       "telegram_alerts_settings_button":
