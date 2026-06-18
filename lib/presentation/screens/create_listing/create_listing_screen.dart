@@ -597,10 +597,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             _buildOverlappingPersonIcons(personCount),
             const SizedBox(width: 8),
             Text(
-              L10n.getWithParams(
-                "group_size_target_option",
-                params: {"count": "$personCount"},
-              ),
+              L10n.plural("group_size_target_option", personCount),
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -626,7 +623,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           personCount,
           (index) => Positioned(
             left: index * step,
-            child: const ThemeIcon(Icons.person_outline, size: iconSize),
+            child: ThemeIcon(
+              index.isEven ? Icons.person_outline : Icons.person,
+              size: iconSize,
+            ),
           ),
         ),
       ),

@@ -69,10 +69,11 @@ void main() {
   });
 
   group("ListingUtils.usesPresetListingTitle", () {
-    test("true for types 1 and 2 only", () {
+    test("true for types 1, 2, and 3 only", () {
       expect(ListingUtils.usesPresetListingTitle(1), isTrue);
       expect(ListingUtils.usesPresetListingTitle(2), isTrue);
-      expect(ListingUtils.usesPresetListingTitle(3), isFalse);
+      expect(ListingUtils.usesPresetListingTitle(3), isTrue);
+      expect(ListingUtils.usesPresetListingTitle(4), isFalse);
     });
   });
 
@@ -96,6 +97,13 @@ void main() {
       expect(
         ListingUtils.presetListingTitleL10nKey(listingTypeId: 1, gender: 2),
         "title_female_room",
+      );
+    });
+
+    test("group forming (3) uses fixed title", () {
+      expect(
+        ListingUtils.presetListingTitleL10nKey(listingTypeId: 3),
+        "title_group_forming",
       );
     });
 

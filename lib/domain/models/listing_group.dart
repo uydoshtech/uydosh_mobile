@@ -50,6 +50,8 @@ class ListingGroupContext {
       !hasPendingJoinRequest &&
       isRecruiting &&
       groupSpotsOpen > 0;
+
+  bool get hasGroupChat => groupConversationId != null;
 }
 
 class ListingGroupJoinRequest {

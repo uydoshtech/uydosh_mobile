@@ -306,16 +306,27 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }) {
     final ctx = listingDetail.groupContext;
     if (isOwner) {
+      final hasChat = ctx?.hasGroupChat == true;
       return ListingGroupFormingActionBar(
         listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_open_chat"),
-        onPrimary: () => _openGroupChat(listingDetail),
-        secondaryLabel: L10n.get("group_manage_requests"),
-        onSecondary: () => showListingGroupJoinRequestsSheet(
-          context: context,
-          listingId: listingDetail.id,
-          onChanged: _reloadListingDetail,
-        ),
+        primaryLabel: hasChat
+            ? L10n.get("group_open_chat")
+            : L10n.get("group_manage_requests"),
+        onPrimary: hasChat
+            ? () => _openGroupChat(listingDetail)
+            : () => showListingGroupJoinRequestsSheet(
+                  context: context,
+                  listingId: listingDetail.id,
+                  onChanged: _reloadListingDetail,
+                ),
+        secondaryLabel: hasChat ? L10n.get("group_manage_requests") : null,
+        onSecondary: hasChat
+            ? () => showListingGroupJoinRequestsSheet(
+                  context: context,
+                  listingId: listingDetail.id,
+                  onChanged: _reloadListingDetail,
+                )
+            : null,
       );
     }
     if (ctx?.isMember == true) {

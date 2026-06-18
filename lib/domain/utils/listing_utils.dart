@@ -13,8 +13,8 @@ class ListingUtils {
     return listingDetail.featuredAt != null;
   }
 
-  /// Types 1 (room needed) and 2 (roommate needed) use preset hashtag titles
-  /// on create-listing; same rule for read-only display.
+  /// Types 1 (room needed), 2 (roommate needed), and 3 (group forming) use preset
+  /// hashtag titles on create-listing; same rule for read-only display.
   static bool usesPresetListingTitle(int listingTypeId) {
     return listingTypeId == ListingTypeIds.roomNeeded ||
         listingTypeId == ListingTypeIds.roommateNeeded ||
