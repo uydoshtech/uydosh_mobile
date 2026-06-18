@@ -220,6 +220,29 @@ class _PatchPhoneSignInEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class AdminListingConversationsEnabledResponse {
+  AdminListingConversationsEnabledResponse({required this.enabled});
+
+  factory AdminListingConversationsEnabledResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return AdminListingConversationsEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: false),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchAdminListingConversationsEnabledRequest implements IJsonEncodable {
+  _PatchAdminListingConversationsEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -269,6 +292,12 @@ abstract class IAdminContentModerationSettingsService {
   Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
     required bool enabled,
   });
+
+  Future<AdminListingConversationsEnabledResponse>
+      getAdminListingConversationsEnabledSetting();
+
+  Future<AdminListingConversationsEnabledResponse>
+      setAdminListingConversationsEnabled({required bool enabled});
 }
 
 class AdminContentModerationSettingsService
@@ -623,6 +652,49 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating phone sign-in enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<AdminListingConversationsEnabledResponse>
+      getAdminListingConversationsEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/admin-listing-conversations-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return AdminListingConversationsEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from admin listing conversations setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading admin listing conversations enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<AdminListingConversationsEnabledResponse>
+      setAdminListingConversationsEnabled({required bool enabled}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/admin-listing-conversations-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchAdminListingConversationsEnabledRequest(enabled: enabled),
+      );
+      return AdminListingConversationsEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from admin listing conversations setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating admin listing conversations enabled setting: $e");
       rethrow;
     }
   }

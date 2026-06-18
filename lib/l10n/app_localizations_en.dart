@@ -1571,7 +1571,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_client_settings_show_listing_contacts_description =>
-      'Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.';
+      'Telegram and call buttons in Matching when contacts are set.';
 
   @override
   String get admin_panel_section_content_moderation => 'Client configuration';
@@ -1636,7 +1636,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
-      'When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.';
+      'New listings and gigs hidden until admin approval.';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_title =>
+      'Listing chats (admin)';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_subtitle =>
+      'When on, admins can open every in-app chat thread for a listing from its detail screen.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Data import';

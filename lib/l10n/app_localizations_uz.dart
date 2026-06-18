@@ -1591,7 +1591,7 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_client_settings_show_listing_contacts_description =>
-      'Agar eʼlonda contact_phone/contact_telegram bo‘lsa, «Moslik» bo‘limida Telegram va qo‘ng‘iroq tugmalarini yoqadi.';
+      'Kontaktlar bo\'lsa, «Moslik»da Telegram va qo\'ng\'iroq tugmalari.';
 
   @override
   String get admin_panel_section_content_moderation => 'Klient sozlamalari';
@@ -1656,7 +1656,15 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
-      'Yoqiq bo\'lsa, yangi uy-joy e\'lonlari, xizmatlar va vazifalar admin tasdig\'igacha umumiy qidiruvda ko\'rinmaydi. O\'chiq bo\'lsa — darhol e\'lon qilinadi.';
+      'Yangi e\'lon va giglar admin tasdig\'igacha yashiriladi.';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_title =>
+      'E\'lon chatlari (admin)';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_subtitle =>
+      'Yoqilganda admin e\'lon sahifasidan shu e\'lon bo\'yicha barcha in-app chatlarni ochishi mumkin.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Maʼlumot importi';

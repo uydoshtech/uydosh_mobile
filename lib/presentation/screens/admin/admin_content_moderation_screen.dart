@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_admin_listing_conversations_config.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
@@ -56,6 +57,8 @@ class _AdminContentModerationScreenState
   bool _isSavingModerationQueue = false;
   bool _phoneSignInEnabled = false;
   bool _isSavingPhoneSignIn = false;
+  bool _adminListingConversationsEnabled = false;
+  bool _isSavingAdminListingConversations = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingPushDebug = false;
   bool _isSavingTooltips = false;
@@ -103,6 +106,16 @@ class _AdminContentModerationScreenState
           "Phone sign-in enabled setting skipped (is the API updated?): $e",
         );
       }
+      var adminListingConversationsEnabled = false;
+      try {
+        final adminListingChatsRes =
+            await _settingsService.getAdminListingConversationsEnabledSetting();
+        adminListingConversationsEnabled = adminListingChatsRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Admin listing conversations setting skipped (is the API updated?): $e",
+        );
+      }
       setStateIfMounted(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
@@ -113,6 +126,7 @@ class _AdminContentModerationScreenState
         _listingContactsVisible = contactsRes.visible;
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
         _phoneSignInEnabled = phoneSignInEnabled;
+        _adminListingConversationsEnabled = adminListingConversationsEnabled;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
@@ -125,6 +139,9 @@ class _AdminContentModerationScreenState
         visible: _listingContactsVisible,
       );
       ClientPhoneSignInConfig.applyEnabled(enabled: phoneSignInEnabled);
+      ClientAdminListingConversationsConfig.applyEnabled(
+        value: adminListingConversationsEnabled,
+      );
     } catch (e) {
       setStateIfMounted(() {
         _hasError = true;
@@ -301,6 +318,28 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingPhoneSignIn = false);
+    }
+  }
+
+  Future<void> _onAdminListingConversationsEnabledChanged(bool value) async {
+    if (_isSavingAdminListingConversations) return;
+    setState(() => _isSavingAdminListingConversations = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setAdminListingConversationsEnabled(
+        enabled: value,
+      );
+      setStateIfMounted(() {
+        _adminListingConversationsEnabled = res.enabled;
+      });
+      ClientAdminListingConversationsConfig.applyEnabled(value: res.enabled);
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingAdminListingConversations = false);
     }
   }
 
@@ -535,6 +574,33 @@ class _AdminContentModerationScreenState
               value: _phoneSignInEnabled,
               enabled: !_isSavingPhoneSignIn,
               onChanged: _onPhoneSignInEnabledChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingAdminListingConversations
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.forum_outlined),
+            title: Text(
+              L10n.get("admin_app_setting_listing_owner_conversations_title"),
+            ),
+            subtitle: Text(
+              L10n.get("admin_app_setting_listing_owner_conversations_subtitle"),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: NeumorphicThemeAwareToggle(
+              value: _adminListingConversationsEnabled,
+              enabled: !_isSavingAdminListingConversations,
+              onChanged: _onAdminListingConversationsEnabledChanged,
             ),
           ),
         ),

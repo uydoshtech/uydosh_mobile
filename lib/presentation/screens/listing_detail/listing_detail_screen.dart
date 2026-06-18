@@ -27,6 +27,7 @@ import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/room_scan_metrics_hydration_service.dart";
 import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/config/client_admin_listing_conversations_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
@@ -272,6 +273,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     // Initialize favorites state
     FavoritesState().initialize();
+
+    unawaited(_prefetchAdminListingConversationsIfNeeded());
 
     // Initialize page controller for photo carousel
     _pageController = PageController();
@@ -1498,6 +1501,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
     );
   }
 
+  Future<void> _prefetchAdminListingConversationsIfNeeded() async {
+    final role = await _userRoleFuture;
+    if (role != "admin") return;
+    await ClientAdminListingConversationsConfig.ensureLoaded();
+  }
+
   Future<void> _reassignListingOwner(ListingDetail listingDetail) async {
     final ok = await showReassignOwnerDialog(
       context,
@@ -2270,9 +2279,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
                 if (snapshot.data != "admin") {
                   return const SizedBox.shrink();
                 }
-                return ListingDetailListingOwnerMessagesCard(
-                  onPressed: () =>
-                      _openAdminListingOwnerConversations(listingDetail),
+                return ListenableBuilder(
+                  listenable: ClientAdminListingConversationsConfig.enabled,
+                  builder: (context, _) {
+                    if (!ClientAdminListingConversationsConfig.enabled.value) {
+                      return const SizedBox.shrink();
+                    }
+                    return ListingDetailListingOwnerMessagesCard(
+                      onPressed: () =>
+                          _openAdminListingOwnerConversations(listingDetail),
+                    );
+                  },
                 );
               },
             ),

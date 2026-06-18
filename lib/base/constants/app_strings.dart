@@ -1078,10 +1078,10 @@ class AppStrings {
       "admin_client_settings_show_listing_contacts":
           "Show listing contact details",
       "admin_client_settings_show_listing_contacts_description":
-          "Enables Telegram and phone call buttons in the Matching section when a listing has contact_phone/contact_telegram.",
+          "Telegram and call buttons in Matching when contacts are set.",
       "admin_client_settings_show_price_insights": "Show price insights",
       "admin_client_settings_show_price_insights_description":
-          "Enables the “Price insights” (median nearby rent) block on listing details.",
+          "Median price by area/station on listing details.",
       "admin_client_settings_show_push_debug": "Show push debug panel",
       "admin_client_settings_show_push_debug_description":
           "Shows the push notification debug tools on the Notifications screen (admin only).",
@@ -1107,11 +1107,11 @@ class AppStrings {
       "admin_app_setting_listing_gig_moderation_queue_title":
           "Require approval for new listings and gigs",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
-          "When on, new housing listings, gig services, and gig tasks stay hidden from public browse until an admin approves them. When off, they are published immediately.",
+          "New listings and gigs hidden until admin approval.",
       "admin_app_setting_phone_sign_in_enabled_title":
           "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "When off, phone sign-in is hidden on the auth wizard. When on, users can sign in with Firebase SMS verification.",
+          "Firebase SMS sign-in in the auth wizard.",
 
       "admin_panel_section_telegram_sync": "Data import",
       "admin_telegram_sync_title": "Data import",
@@ -2834,11 +2834,11 @@ class AppStrings {
       "admin_client_settings_show_listing_contacts":
           "Показывать контакты в объявлениях",
       "admin_client_settings_show_listing_contacts_description":
-          "Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.",
+          "Telegram и звонок в «Совместимости» при указанных контактах.",
       "admin_client_settings_show_price_insights":
           "Показывать ориентир по цене",
       "admin_client_settings_show_price_insights_description":
-          "Включает блок «Ориентир по цене» (медиана по району/станции) в карточке объявления.",
+          "Медиана цены по району/станции в карточке объявления.",
       "admin_client_settings_show_push_debug": "Показывать отладку push",
       "admin_client_settings_show_push_debug_description":
           "Показывает инструменты отладки push-уведомлений на экране «Уведомления» (только для админов).",
@@ -2867,11 +2867,15 @@ class AppStrings {
       "admin_app_setting_listing_gig_moderation_queue_title":
           "Ручное одобрение новых объявлений и гигов",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
-          "Когда включено, новые объявления об аренде, услуги и задачи скрыты от общего поиска до одобрения админом. Когда выключено — публикуются сразу.",
+          "Новые объявления и гиги скрыты до одобрения админом.",
       "admin_app_setting_phone_sign_in_enabled_title":
           "Разрешить вход по номеру телефона",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "Когда выключено, вход по телефону скрыт в мастере авторизации. Когда включено — доступна проверка по SMS через Firebase.",
+          "SMS-вход через Firebase в мастере авторизации.",
+      "admin_app_setting_listing_owner_conversations_title":
+          "Чаты по объявлению (админ)",
+      "admin_app_setting_listing_owner_conversations_subtitle":
+          "Когда включено, админ может открыть все in-app диалоги по объявлению с его экрана.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_telegram_sync_title": "Импорт данных",
@@ -4611,11 +4615,11 @@ class AppStrings {
       "admin_client_settings_show_listing_contacts":
           "Eʼlondagi kontaktlarni ko‘rsatish",
       "admin_client_settings_show_listing_contacts_description":
-          "Agar eʼlonda contact_phone/contact_telegram bo‘lsa, «Moslik» bo‘limida Telegram va qo‘ng‘iroq tugmalarini yoqadi.",
+          "Kontaktlar bo'lsa, «Moslik»da Telegram va qo'ng'iroq tugmalari.",
       "admin_client_settings_show_price_insights":
           "Narx bo‘yicha orientirni ko‘rsatish",
       "admin_client_settings_show_price_insights_description":
-          "E’lon tafsilotlarida “Narx bo‘yicha orientir” (yaqin atrof medianasi) blokini yoqadi.",
+          "E’lon kartasida tuman/stansiya bo‘yicha median narx.",
       "admin_client_settings_show_push_debug": "Push debug panelini ko‘rsatish",
       "admin_client_settings_show_push_debug_description":
           "«Bildirishnomalar» ekranida push debug vositalarini ko‘rsatadi (faqat adminlar uchun).",
@@ -4644,11 +4648,15 @@ class AppStrings {
       "admin_app_setting_listing_gig_moderation_queue_title":
           "Yangi e'lon va gig'larni tasdiqlash",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
-          "Yoqiq bo'lsa, yangi uy-joy e'lonlari, xizmatlar va vazifalar admin tasdig'igacha umumiy qidiruvda ko'rinmaydi. O'chiq bo'lsa — darhol e'lon qilinadi.",
+          "Yangi e'lon va giglar admin tasdig'igacha yashiriladi.",
       "admin_app_setting_phone_sign_in_enabled_title":
           "Telefon raqami bilan kirishga ruxsat",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "O'chiq bo'lsa, kirish oynasida telefon orqali kirish yashiriladi. Yoqiq bo'lsa — Firebase SMS tasdig'i ishlaydi.",
+          "Kirish oynasida Firebase SMS orqali kirish.",
+      "admin_app_setting_listing_owner_conversations_title":
+          "E'lon chatlari (admin)",
+      "admin_app_setting_listing_owner_conversations_subtitle":
+          "Yoqilganda admin e'lon sahifasidan shu e'lon bo'yicha barcha in-app chatlarni ochishi mumkin.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_telegram_sync_title": "Maʼlumot importi",

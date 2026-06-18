@@ -99,6 +99,8 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
         },
       );
     }
+    final hasDimensions =
+        line1 != null && lineHeight != null && line2 != null;
     final variant = Theme.of(context).colorScheme.onSurfaceVariant;
     return SizedBox(
       width: double.infinity,
@@ -137,35 +139,43 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
                           ),
                         ],
                       ),
-                      if (line1 != null &&
-                          lineHeight != null &&
-                          line2 != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 6),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.rectangle_outlined,
-                                text: line1,
-                              ),
-                              const SizedBox(height: 4),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.height,
-                                text: lineHeight,
-                              ),
-                              const SizedBox(height: 4),
-                              _room3dDimensionMetricRow(
-                                context: context,
-                                icon: Icons.flip_to_front_outlined,
-                                text: line2,
-                              ),
-                            ],
-                          ),
+                      ClipRect(
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.topCenter,
+                          clipBehavior: Clip.hardEdge,
+                          child: hasDimensions
+                              ? Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 6),
+                                      _room3dDimensionMetricRow(
+                                        context: context,
+                                        icon: Icons.rectangle_outlined,
+                                        text: line1,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      _room3dDimensionMetricRow(
+                                        context: context,
+                                        icon: Icons.height,
+                                        text: lineHeight,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      _room3dDimensionMetricRow(
+                                        context: context,
+                                        icon: Icons.flip_to_front_outlined,
+                                        text: line2,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox(width: double.infinity),
                         ),
+                      ),
                     ],
                   ),
                 ),

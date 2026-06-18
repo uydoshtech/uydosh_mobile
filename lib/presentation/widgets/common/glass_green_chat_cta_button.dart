@@ -78,21 +78,27 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
 
     const glassLeft = Color(0xFF1A3D2E);
     const glassRight = Color(0xFF0F2419);
+    const lightFaceLeft = Color(0xFF000000);
+    const lightFaceRight = Color(0xFF1A1A1A);
 
     final face = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        border: Border.all(
-          color: strokeGreen.withValues(alpha: 0.88),
-          width: 1,
-        ),
+        border: isDark
+            ? Border.all(
+                color: strokeGreen.withValues(alpha: 0.88),
+                width: 1,
+              )
+            : null,
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            glassLeft.withValues(alpha: isDark ? 0.62 : 0.52),
-            glassRight.withValues(alpha: isDark ? 0.48 : 0.40),
-          ],
+          colors: isDark
+              ? [
+                  glassLeft.withValues(alpha: 0.62),
+                  glassRight.withValues(alpha: 0.48),
+                ]
+              : const [lightFaceLeft, lightFaceRight],
         ),
       ),
       child: Center(

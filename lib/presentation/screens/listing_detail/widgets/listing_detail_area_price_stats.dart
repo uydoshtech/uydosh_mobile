@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -95,7 +96,10 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: theme.textTheme.bodySmall?.copyWith(height: 1.35),
+            style: theme.textTheme.bodySmall?.copyWith(
+              height: 1.35,
+              color: ListingDetailThemeHelper.descriptionTextColor,
+            ),
           ),
         ),
       ],
@@ -228,6 +232,7 @@ class ListingDetailAreaPriceStats extends StatelessWidget {
                       context.l10n.listing_area_price_heading,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: ListingDetailThemeHelper.descriptionTextColor,
                       ),
                     ),
                   ),

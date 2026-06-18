@@ -51,6 +51,11 @@ class DeepLinkService {
 
   final GlobalKey<NavigatorState> navigatorKey;
   int? _pendingListingId;
+  /// Listing id from [AppLinks.getInitialLink] — the stream emits the same
+  /// link on cold start; ignore that duplicate until [handlePendingLink] runs.
+  int? _coldStartListingId;
+  int? _lastNavigatedListingId;
+  DateTime? _lastNavigatedListingAt;
   TelegramAuthDeepLink? _pendingTelegramAuth;
   StreamSubscription<Uri>? _linkSubscription;
 
@@ -169,13 +174,27 @@ class DeepLinkService {
   /// Initialize listener. Call from main() after configureDependencies.
   Future<void> initialize() async {
     final appLinks = AppLinks();
+    final bufferedUris = <Uri>[];
+    var initialLinkResolved = false;
+
+    // Subscribe before awaiting getInitialLink so early stream events are not
+    // lost; buffer them until cold-start dedupe state is known.
+    _linkSubscription = appLinks.uriLinkStream.listen((uri) {
+      if (!initialLinkResolved) {
+        bufferedUris.add(uri);
+        return;
+      }
+      _handleIncomingUri(uri, source: "background");
+    });
 
     // Handle cold start: app opened from link
     final initialUri = await appLinks.getInitialLink();
+    initialLinkResolved = true;
     if (initialUri != null) {
       final id = parseListingId(initialUri);
       if (id != null) {
         _pendingListingId = id;
+        _coldStartListingId = id;
       }
       final tg = tryParseTelegramAuth(initialUri);
       if (tg != null) {
@@ -183,27 +202,36 @@ class DeepLinkService {
       }
     }
 
-    // Handle app resumed from background with link
-    _linkSubscription = appLinks.uriLinkStream.listen((uri) {
-      final tgBind = tryParseTelegramBind(uri);
-      if (tgBind != null) {
-        onTelegramBindLink?.call(tgBind);
-        return;
-      }
-      final tg = tryParseTelegramAuth(uri);
-      if (tg != null) {
-        onTelegramAuthLink?.call(tg);
-        return;
-      }
-      final id = parseListingId(uri);
-      if (id != null) {
-        getIt<AppAnalyticsService>().logDeepLinkOpened(
-          listingId: id,
-          source: "background",
-        );
-        _navigateToListing(id);
-      }
-    });
+    for (final uri in bufferedUris) {
+      _handleIncomingUri(uri, source: "background");
+    }
+  }
+
+  void _handleIncomingUri(Uri uri, {required String source}) {
+    final tgBind = tryParseTelegramBind(uri);
+    if (tgBind != null) {
+      onTelegramBindLink?.call(tgBind);
+      return;
+    }
+    final tg = tryParseTelegramAuth(uri);
+    if (tg != null) {
+      onTelegramAuthLink?.call(tg);
+      return;
+    }
+    final id = parseListingId(uri);
+    if (id == null) return;
+
+    // app_links emits the cold-start link on uriLinkStream too; MainNavigation
+    // consumes it once via [handlePendingLink].
+    if (_coldStartListingId == id) {
+      return;
+    }
+
+    getIt<AppAnalyticsService>().logDeepLinkOpened(
+      listingId: id,
+      source: source,
+    );
+    _navigateToListing(id);
   }
 
   void dispose() {
@@ -231,6 +259,16 @@ class DeepLinkService {
 
   /// Navigate to listing detail screen.
   void _navigateToListing(int listingId) {
+    final now = DateTime.now();
+    if (_lastNavigatedListingId == listingId &&
+        _lastNavigatedListingAt != null &&
+        now.difference(_lastNavigatedListingAt!) <
+            const Duration(seconds: 3)) {
+      return;
+    }
+    _lastNavigatedListingId = listingId;
+    _lastNavigatedListingAt = now;
+
     final context = navigatorKey.currentContext;
     if (context == null) return;
     context.pushListingDetail(listingId);
@@ -239,6 +277,7 @@ class DeepLinkService {
   /// Handle pending link (call from MainNavigation when mounted).
   void handlePendingLink() {
     final id = consumePendingListingId();
+    _coldStartListingId = null;
     if (id != null) {
       getIt<AppAnalyticsService>().logDeepLinkOpened(
         listingId: id,

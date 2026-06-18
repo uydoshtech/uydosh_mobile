@@ -1574,7 +1574,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_client_settings_show_listing_contacts_description =>
-      'Включает кнопки Telegram и звонка в блоке «Совместимость», если у объявления заполнены contact_phone/contact_telegram.';
+      'Telegram и звонок в «Совместимости» при указанных контактах.';
 
   @override
   String get admin_panel_section_content_moderation => 'Настройки клиента';
@@ -1640,7 +1640,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
-      'Когда включено, новые объявления об аренде, услуги и задачи скрыты от общего поиска до одобрения админом. Когда выключено — публикуются сразу.';
+      'Новые объявления и гиги скрыты до одобрения админом.';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_title =>
+      'Чаты по объявлению (админ)';
+
+  @override
+  String get admin_app_setting_listing_owner_conversations_subtitle =>
+      'Когда включено, админ может открыть все in-app диалоги по объявлению с его экрана.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Импорт данных';
