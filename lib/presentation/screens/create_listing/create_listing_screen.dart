@@ -594,13 +594,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ...List.generate(
-              personCount,
-              (_) => const Padding(
-                padding: EdgeInsets.only(right: 2),
-                child: ThemeIcon(Icons.person_outline, size: 16),
-              ),
-            ),
+            _buildOverlappingPersonIcons(personCount),
             const SizedBox(width: 8),
             Text(
               L10n.getWithParams(
@@ -613,6 +607,27 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverlappingPersonIcons(int personCount) {
+    const iconSize = 16.0;
+    const overlap = 7.0;
+    final step = iconSize - overlap;
+
+    return SizedBox(
+      width: iconSize + (personCount - 1) * step,
+      height: iconSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: List.generate(
+          personCount,
+          (index) => Positioned(
+            left: index * step,
+            child: const ThemeIcon(Icons.person_outline, size: iconSize),
+          ),
         ),
       ),
     );
