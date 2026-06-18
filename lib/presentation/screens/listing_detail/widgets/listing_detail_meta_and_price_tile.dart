@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_area_price_stats.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_group_budget_stats.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_badges.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -30,7 +32,8 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
   }
 
   bool _shouldShowAreaPriceInsights(ListingDetail listingDetail) {
-    if (listingDetail.listingType.code == "room_needed" ||
+    if (listingDetail.listingType.code == ListingTypeCodes.roomNeeded ||
+        listingDetail.listingType.code == ListingTypeCodes.groupForming ||
         listingDetail.price <= 0) {
       return false;
     }
@@ -40,6 +43,11 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
     return stats.subwayStation != null || stats.location != null;
   }
 
+  bool _shouldShowGroupBudgetPerPerson(ListingDetail listingDetail) {
+    return listingDetail.listingType.code == ListingTypeCodes.groupForming &&
+        listingDetail.price > 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     AdminFeatureFlagsState().ensureLoaded();
@@ -47,7 +55,9 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
       listenable: AdminFeatureFlagsState(),
       builder: (context, _) {
         final listingDetail = widget.listingDetail;
-        final showPrice = _shouldShowAreaPriceInsights(listingDetail);
+        final showAreaPrice = _shouldShowAreaPriceInsights(listingDetail);
+        final showGroupBudget = _shouldShowGroupBudgetPerPerson(listingDetail);
+        final showExpandableSection = showAreaPrice || showGroupBudget;
         return SizedBox(
           width: double.infinity,
           child: ListingDetailTileShell(
@@ -60,9 +70,19 @@ class _ListingDetailMetaAndPriceTileState extends State<ListingDetailMetaAndPric
                 children: [
                   ListingDetailMetaBadges(
                     listingDetail: listingDetail,
-                    onBackgroundTap: showPrice ? _togglePriceSection : null,
+                    onBackgroundTap:
+                        showExpandableSection ? _togglePriceSection : null,
                   ),
-                  if (showPrice)
+                  if (showGroupBudget)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: ListingDetailGroupBudgetStats(
+                        listingDetail: listingDetail,
+                        expanded: _priceExpanded,
+                        onToggle: _togglePriceSection,
+                      ),
+                    )
+                  else if (showAreaPrice)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: ListingDetailAreaPriceStats(

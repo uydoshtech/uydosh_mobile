@@ -68,6 +68,8 @@ abstract class IListingService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
@@ -85,11 +87,14 @@ abstract class IListingService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   });
 
   Future<PageableResponse<Listing>> searchListings({
@@ -289,6 +294,8 @@ class ListingService implements IListingService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
@@ -304,6 +311,8 @@ class ListingService implements IListingService {
         gender: gender,
         locationId: locationId,
         amenityIds: amenityIds,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
         subwayStationId: subwayStationId,
         subwayLineId: subwayLineId,
         moveInDate: moveInDate,
@@ -322,11 +331,14 @@ class ListingService implements IListingService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   }) =>
       _crudService.updateListing(
         listingId: listingId,
@@ -337,11 +349,14 @@ class ListingService implements IListingService {
         gender: gender,
         locationId: locationId,
         amenityIds: amenityIds,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
         subwayStationId: subwayStationId,
         subwayLineId: subwayLineId,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
         photoPaths: photoPaths,
+        groupSizeTarget: groupSizeTarget,
       );
 
   @override

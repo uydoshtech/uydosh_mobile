@@ -6,7 +6,9 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -414,9 +416,12 @@ class ConversationPriceDisplay extends StatelessWidget {
         final formatted = IntFormatUtils.withDotThousands(price);
         return "$formatted $cc";
       }
-      return PriceRangeHelper.formatListingPriceRangeWithCurrency(
-        price,
-        price,
+      final listingTypeCode = conversation.listingTypeId != null
+          ? ListingTypeHelper.getCodeFromId(conversation.listingTypeId!)
+          : ListingTypeCodes.roommateNeeded;
+      return PriceRangeHelper.formatStoredListingPrice(
+        storedPrice: price,
+        listingTypeCode: listingTypeCode,
       );
     }
     return "";

@@ -22,6 +22,7 @@ import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
@@ -953,6 +954,8 @@ class _ListingTileState extends State<ListingTile> {
             : L10n.get("listing_type_short_roommate_needed");
       case "room_needed":
         return L10n.get("listing_type_short_room_needed");
+      case "group_forming":
+        return L10n.get("listing_type_short_group_forming");
       default:
         return null;
     }
@@ -978,9 +981,12 @@ class _ListingTileState extends State<ListingTile> {
     return ListenableBuilder(
       listenable: PriceDisplaySettingsState(),
       builder: (context, _) {
-        final amount = PriceRangeHelper.formatListingPriceRangeWithCurrency(
-          widget.listing.price,
-          widget.listing.price,
+        final amount = PriceRangeHelper.formatStoredListingPrice(
+          storedPrice: widget.listing.price,
+          listingTypeCode:
+              widget.listing.listingType?.code ?? ListingTypeCodes.roommateNeeded,
+          minPrice: widget.listing.minPrice,
+          maxPrice: widget.listing.maxPrice,
         );
         final isUsd =
             PriceDisplaySettingsState().currency == PriceDisplayCurrency.usd;

@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
@@ -6,6 +8,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// A reusable component for displaying price range information
@@ -207,6 +210,62 @@ class PriceRangeHelper {
     final minNat = listingPriceToUzsForDisplay(minUzs);
     final maxNat = listingPriceToUzsForDisplay(maxUzs);
     return formatPriceRange(minNat, maxNat);
+  }
+
+  /// Room-needed and group-forming listings use a budget range; roommate-needed
+  /// listings use a single rent amount.
+  static bool listingTypeUsesPriceRange(String listingTypeCode) {
+    return listingTypeCode == ListingTypeCodes.roomNeeded ||
+        listingTypeCode == ListingTypeCodes.groupForming;
+  }
+
+  /// Reconstructs slider bounds from a stored midpoint when min/max are absent
+  /// (legacy rows). Mirrors [EditListingScreen._deriveBudgetRangeFromRoommatePrice].
+  static ({int min, int max}) deriveBudgetRangeBoundsFromMidpoint(int midpoint) {
+    const sliderMin = 10;
+    const sliderMax = 1000;
+    final s = midpoint.clamp(sliderMin, sliderMax);
+    final hi = math.min(sliderMax, math.max(s + 40, s + 10));
+    final lo = math.max(sliderMin, s - 40);
+    if (lo >= hi) {
+      return (min: math.max(sliderMin, hi - 50), max: hi);
+    }
+    return (min: lo, max: hi);
+  }
+
+  /// Resolves the min/max values to show for a stored listing row.
+  static ({int min, int max}) resolveListingDisplayBounds({
+    required int storedPrice,
+    required String listingTypeCode,
+    int? minPrice,
+    int? maxPrice,
+  }) {
+    if (minPrice != null &&
+        maxPrice != null &&
+        minPrice > 0 &&
+        maxPrice >= minPrice) {
+      return (min: minPrice, max: maxPrice);
+    }
+    if (!listingTypeUsesPriceRange(listingTypeCode)) {
+      return (min: storedPrice, max: storedPrice);
+    }
+    return deriveBudgetRangeBoundsFromMidpoint(storedPrice);
+  }
+
+  /// Formats a listing's stored price for badges and cards.
+  static String formatStoredListingPrice({
+    required int storedPrice,
+    required String listingTypeCode,
+    int? minPrice,
+    int? maxPrice,
+  }) {
+    final bounds = resolveListingDisplayBounds(
+      storedPrice: storedPrice,
+      listingTypeCode: listingTypeCode,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+    );
+    return formatListingPriceRangeWithCurrency(bounds.min, bounds.max);
   }
 
   /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`

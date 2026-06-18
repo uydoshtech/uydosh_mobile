@@ -40,6 +40,11 @@ class AppStrings {
       "group_size_target_option_one": "{count} person total",
       "group_size_target_option_other": "{count} people total",
       "group_budget_per_person_label": "Budget per person range (y.e./mo)",
+      "group_budget_per_person_heading": "Budget per person",
+      "group_budget_per_person_amount_line":
+          "Each member pays {range} per month",
+      "group_budget_total_apartment_line":
+          "Total rent for {count} people: {range} per month",
       "group_request_to_join": "Request to join",
       "group_join_request_sent": "Request sent",
       "group_open_chat": "Open group chat",
@@ -681,6 +686,7 @@ class AppStrings {
       "listing_type_short_roommate_needed": "Looking for roommate",
       "listing_type_short_roommate_needed_female": "Looking for roommate",
       "listing_type_short_room_needed": "Looking for room",
+      "listing_type_short_group_forming": "Seeking group",
       "gender_short_male": "Male",
       "gender_short_female": "Female",
       "gender_badge_male": "Guy",
@@ -1807,6 +1813,11 @@ class AppStrings {
       "group_size_target_option_few": "{count} человека всего",
       "group_size_target_option_many": "{count} человек всего",
       "group_budget_per_person_label": "Диапазон бюджета на человека в месяц",
+      "group_budget_per_person_heading": "Бюджет на человека",
+      "group_budget_per_person_amount_line":
+          "С каждого участника: {range} в месяц",
+      "group_budget_total_apartment_line":
+          "Общая аренда на {count} человек: {range} в месяц",
       "group_request_to_join": "Подать заявку",
       "group_join_request_sent": "Заявка отправлена",
       "group_open_chat": "Открыть групповой чат",
@@ -2458,6 +2469,7 @@ class AppStrings {
       "listing_type_short_roommate_needed": "Ищем Соседа",
       "listing_type_short_roommate_needed_female": "Ищем Соседку",
       "listing_type_short_room_needed": "Ищу Комнату",
+      "listing_type_short_group_forming": "Ищем Группу",
       "gender_short_male": "Парень",
       "gender_short_female": "Девушка",
       "gender_badge_male": "Парня",
@@ -3605,6 +3617,11 @@ class AppStrings {
       "group_size_target_label": "Guruh hajmi (siz bilan)",
       "group_size_target_option_other": "Jami {count} kishi",
       "group_budget_per_person_label": "Har bir kishi uchun byudjet diapazoni (y.e./oy)",
+      "group_budget_per_person_heading": "Har bir kishi uchun byudjet",
+      "group_budget_per_person_amount_line":
+          "Har bir a'zo oyiga {range} to'laydi",
+      "group_budget_total_apartment_line":
+          "{count} kishi uchun umumiy ijara: oyiga {range}",
       "group_request_to_join": "Guruhga qo'shilish",
       "group_join_request_sent": "So'rov yuborildi",
       "group_open_chat": "Guruh chatini ochish",
@@ -4262,6 +4279,7 @@ class AppStrings {
       "listing_type_short_roommate_needed": "Xonadosh qidiramiz",
       "listing_type_short_roommate_needed_female": "Xonadosh qidiramiz",
       "listing_type_short_room_needed": "Xona qidiryapman",
+      "listing_type_short_group_forming": "Guruh qidiramiz",
       "gender_short_male": "Yigit",
       "gender_short_female": "Qiz",
       "gender_badge_male": "Yigit",

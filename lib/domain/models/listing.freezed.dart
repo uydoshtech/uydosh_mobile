@@ -29,6 +29,10 @@ mixin _$Listing {
   int get listingTypeId => throw _privateConstructorUsedError;
   @JsonKey(name: "price")
   int get price => throw _privateConstructorUsedError;
+  @JsonKey(name: "min_price")
+  int? get minPrice => throw _privateConstructorUsedError;
+  @JsonKey(name: "max_price")
+  int? get maxPrice => throw _privateConstructorUsedError;
   @JsonKey(name: "is_active")
   bool get isActive => throw _privateConstructorUsedError;
   @JsonKey(name: "created_at")
@@ -100,6 +104,8 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "title") String title,
       @JsonKey(name: "listing_type_id") int listingTypeId,
       @JsonKey(name: "price") int price,
+      @JsonKey(name: "min_price") int? minPrice,
+      @JsonKey(name: "max_price") int? maxPrice,
       @JsonKey(name: "is_active") bool isActive,
       @JsonKey(name: "created_at") String createdAt,
       @JsonKey(name: "updated_at") String updatedAt,
@@ -153,6 +159,8 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? title = null,
     Object? listingTypeId = null,
     Object? price = null,
+    Object? minPrice = freezed,
+    Object? maxPrice = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -200,6 +208,14 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as int,
+      minPrice: freezed == minPrice
+          ? _value.minPrice
+          : minPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
+      maxPrice: freezed == maxPrice
+          ? _value.maxPrice
+          : maxPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
       isActive: null == isActive
           ? _value.isActive
           : isActive // ignore: cast_nullable_to_non_nullable
@@ -359,6 +375,8 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "title") String title,
       @JsonKey(name: "listing_type_id") int listingTypeId,
       @JsonKey(name: "price") int price,
+      @JsonKey(name: "min_price") int? minPrice,
+      @JsonKey(name: "max_price") int? maxPrice,
       @JsonKey(name: "is_active") bool isActive,
       @JsonKey(name: "created_at") String createdAt,
       @JsonKey(name: "updated_at") String updatedAt,
@@ -413,6 +431,8 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? title = null,
     Object? listingTypeId = null,
     Object? price = null,
+    Object? minPrice = freezed,
+    Object? maxPrice = freezed,
     Object? isActive = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -460,6 +480,14 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as int,
+      minPrice: freezed == minPrice
+          ? _value.minPrice
+          : minPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
+      maxPrice: freezed == maxPrice
+          ? _value.maxPrice
+          : maxPrice // ignore: cast_nullable_to_non_nullable
+              as int?,
       isActive: null == isActive
           ? _value.isActive
           : isActive // ignore: cast_nullable_to_non_nullable
@@ -573,6 +601,8 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "title") required this.title,
       @JsonKey(name: "listing_type_id") required this.listingTypeId,
       @JsonKey(name: "price") required this.price,
+      @JsonKey(name: "min_price") this.minPrice,
+      @JsonKey(name: "max_price") this.maxPrice,
       @JsonKey(name: "is_active") required this.isActive,
       @JsonKey(name: "created_at") required this.createdAt,
       @JsonKey(name: "updated_at") required this.updatedAt,
@@ -620,6 +650,12 @@ class _$ListingImpl implements _Listing {
   @override
   @JsonKey(name: "price")
   final int price;
+  @override
+  @JsonKey(name: "min_price")
+  final int? minPrice;
+  @override
+  @JsonKey(name: "max_price")
+  final int? maxPrice;
   @override
   @JsonKey(name: "is_active")
   final bool isActive;
@@ -713,7 +749,7 @@ class _$ListingImpl implements _Listing {
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
   }
 
   @override
@@ -727,6 +763,10 @@ class _$ListingImpl implements _Listing {
             (identical(other.listingTypeId, listingTypeId) ||
                 other.listingTypeId == listingTypeId) &&
             (identical(other.price, price) || other.price == price) &&
+            (identical(other.minPrice, minPrice) ||
+                other.minPrice == minPrice) &&
+            (identical(other.maxPrice, maxPrice) ||
+                other.maxPrice == maxPrice) &&
             (identical(other.isActive, isActive) ||
                 other.isActive == isActive) &&
             (identical(other.createdAt, createdAt) ||
@@ -789,6 +829,8 @@ class _$ListingImpl implements _Listing {
         title,
         listingTypeId,
         price,
+        minPrice,
+        maxPrice,
         isActive,
         createdAt,
         updatedAt,
@@ -839,6 +881,8 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "title") required final String title,
       @JsonKey(name: "listing_type_id") required final int listingTypeId,
       @JsonKey(name: "price") required final int price,
+      @JsonKey(name: "min_price") final int? minPrice,
+      @JsonKey(name: "max_price") final int? maxPrice,
       @JsonKey(name: "is_active") required final bool isActive,
       @JsonKey(name: "created_at") required final String createdAt,
       @JsonKey(name: "updated_at") required final String updatedAt,
@@ -885,6 +929,12 @@ abstract class _Listing implements Listing {
   @override
   @JsonKey(name: "price")
   int get price;
+  @override
+  @JsonKey(name: "min_price")
+  int? get minPrice;
+  @override
+  @JsonKey(name: "max_price")
+  int? get maxPrice;
   @override
   @JsonKey(name: "is_active")
   bool get isActive;

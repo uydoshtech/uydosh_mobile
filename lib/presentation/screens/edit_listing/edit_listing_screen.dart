@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/photo.dart";
@@ -31,6 +32,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/group_size_target_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
@@ -73,6 +75,7 @@ class _EditListingScreenState extends State<EditListingScreen>
   FixedExtentScrollController? _locationScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
   FixedExtentScrollController? _genderScrollController;
+  FixedExtentScrollController? _groupSizeScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
   int _selectedListingTypeId = 2; // 2 = roommate needed, 1 = room needed
@@ -80,6 +83,10 @@ class _EditListingScreenState extends State<EditListingScreen>
   // where gender is inferred from the profile and the picker is hidden, here we
   // seed from the listing being edited and let the user change it.
   int _selectedGender = 1;
+  int _groupSizeTarget = 3;
+
+  bool get _isGroupFormingFlow =>
+      _selectedListingTypeId == ListingTypeIds.groupForming;
 
   /// Scalar rent for "roommate needed" (listing type 2).
   double _roommatePrice = 50.0;
@@ -91,7 +98,8 @@ class _EditListingScreenState extends State<EditListingScreen>
   static const double _priceSliderMax = 1000.0;
   static const double _priceSliderInitialVisibleMax = 500.0;
   static const double _priceSliderExpansionStep = 100.0;
-  bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
+  bool get _pricePickerSingleHandle =>
+      _selectedListingTypeId == ListingTypeIds.roommateNeeded;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -177,6 +185,17 @@ class _EditListingScreenState extends State<EditListingScreen>
     if (mounted) setState(() {});
   }
 
+  int _listingTypeIdFromDetail(ListingDetail d) {
+    switch (d.listingType.code) {
+      case ListingTypeCodes.roommateNeeded:
+        return ListingTypeIds.roommateNeeded;
+      case ListingTypeCodes.groupForming:
+        return ListingTypeIds.groupForming;
+      default:
+        return ListingTypeIds.roomNeeded;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -199,6 +218,11 @@ class _EditListingScreenState extends State<EditListingScreen>
     _metroStationScrollController = FixedExtentScrollController(
       initialItem: _selectedStationIndex,
     );
+    if (_isGroupFormingFlow) {
+      _groupSizeScrollController = FixedExtentScrollController(
+        initialItem: _groupSizeTarget - GroupSizeTargetPicker.minSize,
+      );
+    }
     _loadLocations();
   }
 
@@ -303,10 +327,15 @@ class _EditListingScreenState extends State<EditListingScreen>
     _showDescriptionError = false;
     _showLocationError = false;
 
-    // Set listing type
-    // Convert string code to integer ID: "roommate_needed" -> 2, "room_needed" -> 1
-    _selectedListingTypeId =
-        widget.listingDetail.listingType.code == "roommate_needed" ? 2 : 1;
+    // Set listing type from the stored listing code.
+    _selectedListingTypeId = _listingTypeIdFromDetail(widget.listingDetail);
+    if (_isGroupFormingFlow) {
+      _isPrivateRoom = false;
+    }
+    _groupSizeTarget = (widget.listingDetail.groupSizeTarget ?? 3).clamp(
+      GroupSizeTargetPicker.minSize,
+      GroupSizeTargetPicker.maxSize,
+    );
     // Seed gender from the listing being edited so the picker shows its current
     // value. Falls back to male; the profile fallback is resolved in _initGender.
     final listingGender = widget.listingDetail.gender;
@@ -317,7 +346,18 @@ class _EditListingScreenState extends State<EditListingScreen>
     _roommatePrice = widget.listingDetail.price
         .toDouble()
         .clamp(_priceSliderMin, _priceSliderMax);
-    if (_selectedListingTypeId == 1) {
+    final storedMin = widget.listingDetail.minPrice;
+    final storedMax = widget.listingDetail.maxPrice;
+    if (storedMin != null &&
+        storedMax != null &&
+        storedMin > 0 &&
+        storedMax >= storedMin) {
+      _roomBudgetMin =
+          storedMin.toDouble().clamp(_priceSliderMin, _priceSliderMax);
+      _roomBudgetMax =
+          storedMax.toDouble().clamp(_priceSliderMin, _priceSliderMax);
+    } else if (_selectedListingTypeId == 1 ||
+        widget.listingDetail.listingType.code == ListingTypeCodes.groupForming) {
       _deriveBudgetRangeFromRoommatePrice();
     } else {
       _roomBudgetMin = _roommatePrice;
@@ -610,6 +650,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _genderScrollController?.dispose();
+    _groupSizeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
     // Clean up any ongoing operations
@@ -639,10 +680,18 @@ class _EditListingScreenState extends State<EditListingScreen>
   }
 
   int _priceForUpdateRequest() {
-    if (_selectedListingTypeId == 2) {
+    if (_selectedListingTypeId == ListingTypeIds.roommateNeeded) {
       return _roommatePrice.round();
     }
     return ((_roomBudgetMin + _roomBudgetMax) / 2).round();
+  }
+
+  ({int min, int max}) _priceBoundsForUpdateRequest() {
+    if (_pricePickerSingleHandle) {
+      final p = _roommatePrice.round();
+      return (min: p, max: p);
+    }
+    return (min: _roomBudgetMin.round(), max: _roomBudgetMax.round());
   }
 
   // Theme-dependent color method for borders
@@ -682,17 +731,22 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("listing_description_label", fallback: "Description");
     }
 
-    final baselineTypeId =
-        baseline.listingType.code == "roommate_needed" ? 2 : 1;
-    if (_selectedListingTypeId != baselineTypeId) {
+    final baselineTypeId = _listingTypeIdFromDetail(baseline);
+    if (!_isGroupFormingFlow && _selectedListingTypeId != baselineTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
+    }
+
+    if (_isGroupFormingFlow &&
+        _groupSizeTarget != (baseline.groupSizeTarget ?? 3)) {
+      addLabel("group_size_target_label", fallback: "Group size");
     }
 
     if (_priceForUpdateRequest() != baseline.price) {
       addLabel("listing_price_label", fallback: "Price");
     }
 
-    if (_isPrivateRoom != (baseline.privateRoom ?? false)) {
+    if (!_isGroupFormingFlow &&
+        _isPrivateRoom != (baseline.privateRoom ?? false)) {
       addLabel("private_room", fallback: "Private room");
     }
 
@@ -772,12 +826,22 @@ class _EditListingScreenState extends State<EditListingScreen>
       return true;
     }
 
-    final baselineTypeId = d.listingType.code == "roommate_needed" ? 2 : 1;
-    if (_selectedListingTypeId != baselineTypeId) return true;
+    final baselineTypeId = _listingTypeIdFromDetail(d);
+    if (!_isGroupFormingFlow && _selectedListingTypeId != baselineTypeId) {
+      return true;
+    }
+
+    if (_isGroupFormingFlow &&
+        _groupSizeTarget != (d.groupSizeTarget ?? 3)) {
+      return true;
+    }
 
     if (_priceForUpdateRequest() != d.price) return true;
 
-    if (_isPrivateRoom != (d.privateRoom ?? false)) return true;
+    if (!_isGroupFormingFlow &&
+        _isPrivateRoom != (d.privateRoom ?? false)) {
+      return true;
+    }
 
     if (_moveInDateValue != _baselineMoveInDate(d)) return true;
 
@@ -913,56 +977,76 @@ class _EditListingScreenState extends State<EditListingScreen>
                     child: UydoshFormScrollBody(
                       topPadding: bodyTopPad,
                       children: [
-                        // Listing type + gender. Unlike the create flow (where
-                        // gender is inferred from the profile and hidden), the
-                        // edit form exposes the gender picker so it can be changed.
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: LabeledFieldOverlay(
-                                label: L10n.get("listing_type_label"),
-                                child: ListingTypePicker(
-                                  selectedListingTypeId: _selectedListingTypeId,
-                                  scrollController:
-                                      _listingTypeScrollController,
-                                  userGender: _selectedGender,
-                                  onListingTypeChanged: (listingTypeId) {
-                                    setState(() {
-                                      final prevType = _selectedListingTypeId;
-                                      _selectedListingTypeId = listingTypeId;
-                                      if (prevType == 2 && listingTypeId == 1) {
-                                        _deriveBudgetRangeFromRoommatePrice();
-                                      } else if (prevType == 1 &&
-                                          listingTypeId == 2) {
-                                        _deriveRoommatePriceFromBudget();
-                                      }
-                                    });
-                                    _markDirty();
-                                  },
-                                  useThemeColors: true,
-                                  showArrows: false,
+                        if (_isGroupFormingFlow) ...[
+                          LabeledFieldOverlay(
+                            label: L10n.get("group_size_target_label"),
+                            child: GroupSizeTargetPicker(
+                              groupSizeTarget: _groupSizeTarget,
+                              scrollController: _groupSizeScrollController,
+                              onChanged: (value) {
+                                setState(() => _groupSizeTarget = value);
+                                _markDirty();
+                              },
+                            ),
+                          ),
+                        ] else ...[
+                          // Listing type + gender. Unlike the create flow (where
+                          // gender is inferred from the profile and hidden), the
+                          // edit form exposes the gender picker so it can be changed.
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: LabeledFieldOverlay(
+                                  label: L10n.get("listing_type_label"),
+                                  child: ListingTypePicker(
+                                    selectedListingTypeId:
+                                        _selectedListingTypeId,
+                                    scrollController:
+                                        _listingTypeScrollController,
+                                    userGender: _selectedGender,
+                                    onListingTypeChanged: (listingTypeId) {
+                                      setState(() {
+                                        final prevType = _selectedListingTypeId;
+                                        _selectedListingTypeId = listingTypeId;
+                                        if (prevType ==
+                                                ListingTypeIds.roommateNeeded &&
+                                            listingTypeId ==
+                                                ListingTypeIds.roomNeeded) {
+                                          _deriveBudgetRangeFromRoommatePrice();
+                                        } else if (prevType ==
+                                                ListingTypeIds.roomNeeded &&
+                                            listingTypeId ==
+                                                ListingTypeIds.roommateNeeded) {
+                                          _deriveRoommatePriceFromBudget();
+                                        }
+                                      });
+                                      _markDirty();
+                                    },
+                                    useThemeColors: true,
+                                    showArrows: false,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: LabeledFieldOverlay(
-                                label: L10n.get("gender"),
-                                child: GenderPicker(
-                                  selectedGender: _selectedGender,
-                                  scrollController: _genderScrollController,
-                                  onGenderChanged: (gender) {
-                                    setState(() => _selectedGender = gender);
-                                    _markDirty();
-                                  },
-                                  useThemeColors: true,
-                                  showArrows: false,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: LabeledFieldOverlay(
+                                  label: L10n.get("gender"),
+                                  child: GenderPicker(
+                                    selectedGender: _selectedGender,
+                                    scrollController: _genderScrollController,
+                                    onGenderChanged: (gender) {
+                                      setState(() => _selectedGender = gender);
+                                      _markDirty();
+                                    },
+                                    useThemeColors: true,
+                                    showArrows: false,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 10),
 
                         // Metro Line and Station Selection (Third Row)
@@ -1021,7 +1105,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ), // Space between location and price range
                         // Price — single handle for roommate needed, range for room needed.
                         LabeledFieldOverlay(
-                          label: L10n.get("listing_price_label"),
+                          label: L10n.get(
+                            _isGroupFormingFlow
+                                ? "group_budget_per_person_label"
+                                : "listing_price_label",
+                          ),
                           child: PriceRangePicker(
                             key: ValueKey<int>(_selectedListingTypeId),
                             minPrice: _priceSliderMin,
@@ -1295,6 +1383,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   ),
                                 ),
                               ),
+                              if (!_isGroupFormingFlow) ...[
                               const SizedBox(width: 12),
                               // Private Room Toggle (50% width)
                               Expanded(
@@ -1380,6 +1469,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   ),
                                 ),
                               ),
+                              ],
                             ],
                           ),
                         ),
@@ -1614,11 +1704,14 @@ class _EditListingScreenState extends State<EditListingScreen>
       final listingService = getIt<IListingService>();
 
       // First, update the listing details (without photos)
+      final priceBounds = _priceBoundsForUpdateRequest();
       await listingService.updateListing(
         listingId: widget.listingDetail.id,
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
         price: _priceForUpdateRequest(),
+        minPrice: priceBounds.min,
+        maxPrice: priceBounds.max,
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,
@@ -1630,8 +1723,9 @@ class _EditListingScreenState extends State<EditListingScreen>
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Add move-in date
-        privateRoom: _isPrivateRoom,
+        privateRoom: _isGroupFormingFlow ? false : _isPrivateRoom,
         photoPaths: null, // Don"t upload photos during listing update
+        groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
       );
 
       // Then, upload new photos separately if any were selected.

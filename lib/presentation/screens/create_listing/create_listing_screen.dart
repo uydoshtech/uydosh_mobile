@@ -34,6 +34,7 @@ import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dar
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
+import "package:uy_dosh/presentation/widgets/common/group_size_target_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
@@ -587,50 +588,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return ((_roomBudgetMin + _roomBudgetMax) / 2).round();
   }
 
-  Widget _buildGroupSizePickerItem(int personCount) {
-    return Center(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildOverlappingPersonIcons(personCount),
-            const SizedBox(width: 8),
-            Text(
-              L10n.plural("group_size_target_option", personCount),
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverlappingPersonIcons(int personCount) {
-    const iconSize = 16.0;
-    const overlap = 7.0;
-    final step = iconSize - overlap;
-
-    return SizedBox(
-      width: iconSize + (personCount - 1) * step,
-      height: iconSize,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: List.generate(
-          personCount,
-          (index) => Positioned(
-            left: index * step,
-            child: ThemeIcon(
-              index.isEven ? Icons.person_outline : Icons.person,
-              size: iconSize,
-            ),
-          ),
-        ),
-      ),
-    );
+  ({int min, int max}) _priceBoundsForCreateRequest() {
+    if (_pricePickerSingleHandle) {
+      final p = _roommatePrice.round();
+      return (min: p, max: p);
+    }
+    return (min: _roomBudgetMin.round(), max: _roomBudgetMax.round());
   }
 
   /// Generate title based on listing type and gender
@@ -888,21 +851,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         if (_isGroupFormingFlow) ...[
           LabeledFieldOverlay(
             label: L10n.get("group_size_target_label"),
-            child: SizedBox(
-              height: 120,
-              child: CupertinoPicker(
-                scrollController: FixedExtentScrollController(
-                  initialItem: _groupSizeTarget - 2,
-                ),
-                itemExtent: 40,
-                onSelectedItemChanged: (index) {
-                  setState(() => _groupSizeTarget = index + 2);
-                },
-                children: List<Widget>.generate(
-                  5,
-                  (index) => _buildGroupSizePickerItem(index + 2),
-                ),
-              ),
+            child: GroupSizeTargetPicker(
+              groupSizeTarget: _groupSizeTarget,
+              onChanged: (value) {
+                setState(() => _groupSizeTarget = value);
+              },
             ),
           ),
           const SizedBox(height: 10),
@@ -1533,10 +1486,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         }
       }
 
+      final priceBounds = _priceBoundsForCreateRequest();
       final createdListing = await listingService.createListing(
         title: _titleController.text.trim(),
         listingTypeId: listingTypeId,
         price: _priceForCreateRequest(),
+        minPrice: priceBounds.min,
+        maxPrice: priceBounds.max,
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
         locationId: selectedLocation.id,

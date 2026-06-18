@@ -20,6 +20,8 @@ abstract class IListingCrudService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
@@ -37,11 +39,14 @@ abstract class IListingCrudService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   });
 
   Future<bool> toggleListingActive(int listingId);
@@ -102,6 +107,8 @@ class ListingCrudService implements IListingCrudService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
@@ -119,6 +126,8 @@ class ListingCrudService implements IListingCrudService {
         title: title,
         listingTypeId: listingTypeId,
         price: price,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
@@ -215,11 +224,14 @@ class ListingCrudService implements IListingCrudService {
     required int gender,
     required int locationId,
     required List<int> amenityIds,
+    int? minPrice,
+    int? maxPrice,
     int? subwayStationId,
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   }) async {
     try {
       final userId = await SessionManager.getUserId();
@@ -231,6 +243,8 @@ class ListingCrudService implements IListingCrudService {
         title: title,
         listingTypeId: listingTypeId,
         price: price,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
         description: description,
         gender: gender,
         subwayStationId: subwayStationId,
@@ -240,6 +254,7 @@ class ListingCrudService implements IListingCrudService {
         moveInDate: moveInDate,
         privateRoom: privateRoom,
         userId: null,
+        groupSizeTarget: groupSizeTarget,
       );
 
       if (kDebugMode) {

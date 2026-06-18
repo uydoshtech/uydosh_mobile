@@ -198,6 +198,7 @@ class ListingDetailMetaBadges extends StatelessWidget {
                     children: [
                       ListingTypeBadge(
                         listingTypeCode: listingDetail.listingType.code,
+                        useShortLabel: true,
                         fontSize: 12,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -248,10 +249,11 @@ class ListingDetailMetaBadges extends StatelessWidget {
                           ),
                         ),
                       ListingPaymentsOutlineBadge(
-                        label: PriceRangeHelper
-                            .formatListingPriceRangeWithCurrency(
-                          listingDetail.price,
-                          listingDetail.price,
+                        label: PriceRangeHelper.formatStoredListingPrice(
+                          storedPrice: listingDetail.price,
+                          listingTypeCode: listingDetail.listingType.code,
+                          minPrice: listingDetail.minPrice,
+                          maxPrice: listingDetail.maxPrice,
                         ),
                         foregroundColor: priceColor,
                         fontSize: 12,

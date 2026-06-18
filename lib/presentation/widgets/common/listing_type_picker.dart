@@ -6,8 +6,10 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -56,8 +58,15 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
   /// is not supplied by the parent.
   int? _resolvedGender;
 
-  List<int> get _listingTypeOptions =>
-      widget.includeUnselected ? [2, 1, 0] : [2, 1];
+  static const _baseListingTypeOptions = [
+    ListingTypeIds.roommateNeeded,
+    ListingTypeIds.groupForming,
+    ListingTypeIds.roomNeeded,
+  ];
+
+  List<int> get _listingTypeOptions => widget.includeUnselected
+      ? [..._baseListingTypeOptions, 0]
+      : _baseListingTypeOptions;
 
   /// Effective user gender (1 = male, 2 = female), preferring the explicit
   /// value from the parent and falling back to the resolved profile gender.
@@ -155,14 +164,71 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
 
   Color _getListingTypeColor(int listingTypeId) {
     switch (listingTypeId) {
-      case 2:
+      case ListingTypeIds.roommateNeeded:
         return AppColors.metroLine1;
-      case 1:
+      case ListingTypeIds.roomNeeded:
         return AppColors.metroLine2;
+      case ListingTypeIds.groupForming:
+        return ListingTypeHelper.getColor(
+          ListingTypeCodes.groupForming,
+        );
       default:
         if (listingTypeId == 0) return Colors.grey;
         return AppColors.metroLine1;
     }
+  }
+
+  String _labelKeyFor(int listingTypeId) {
+    switch (listingTypeId) {
+      case ListingTypeIds.roommateNeeded:
+        return _roommateNeededLabelKey;
+      case ListingTypeIds.groupForming:
+        return "listing_type_short_group_forming";
+      case ListingTypeIds.roomNeeded:
+        return "listing_type_room_needed";
+      default:
+        return widget.unselectedLabelKey;
+    }
+  }
+
+  IconData _iconFor(int listingTypeId) {
+    if (listingTypeId == 0) return Icons.remove_circle_outline;
+    return ListingTypeHelper.getIcon(
+      ListingTypeHelper.getCodeFromId(listingTypeId),
+    );
+  }
+
+  Color _iconColorFor(int listingTypeId) {
+    if (listingTypeId == ListingTypeIds.roommateNeeded) {
+      return _roommateNeededIconColor;
+    }
+    return _getListingTypeColor(listingTypeId);
+  }
+
+  Widget _buildWheelItem(BuildContext context, int listingTypeId) {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ThemeIcon(
+            _iconFor(listingTypeId),
+            color: _iconColorFor(listingTypeId),
+            size: 20,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: L10n.text(
+              _labelKeyFor(listingTypeId),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: _getItemTextColor(context, listingTypeId),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -183,76 +249,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
                 widget.onListingTypeChanged(_listingTypeOptions[index]);
               },
               children: [
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.people,
-                        color: _roommateNeededIconColor,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: L10n.text(
-                          _roommateNeededLabelKey,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: _getItemTextColor(context, 2),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.home,
-                        color: _getListingTypeColor(1),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: L10n.text(
-                          "listing_type_room_needed",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: _getItemTextColor(context, 1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (widget.includeUnselected)
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ThemeIcon(
-                          Icons.remove_circle_outline,
-                          color: _getListingTypeColor(0),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: L10n.text(
-                            widget.unselectedLabelKey,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: _getItemTextColor(context, 0),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                for (final listingTypeId in _listingTypeOptions)
+                  _buildWheelItem(context, listingTypeId),
               ],
             ),
           ),

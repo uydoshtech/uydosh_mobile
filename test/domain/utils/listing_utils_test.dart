@@ -100,10 +100,10 @@ void main() {
       );
     });
 
-    test("group forming (3) uses fixed title", () {
+    test("group forming (3) uses short badge label", () {
       expect(
         ListingUtils.presetListingTitleL10nKey(listingTypeId: 3),
-        "title_group_forming",
+        "listing_type_short_group_forming",
       );
     });
 

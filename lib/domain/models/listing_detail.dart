@@ -14,6 +14,8 @@ class ListingDetail with _$ListingDetail {
     required String title,
     @JsonKey(name: "listing_type_id") required int listingTypeId,
     @JsonKey(name: "price") required int price,
+    @JsonKey(name: "min_price") int? minPrice,
+    @JsonKey(name: "max_price") int? maxPrice,
     @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, required UserDetail user, @JsonKey(name: "listing_type") required ListingTypeDetail listingType, String? description,
     @JsonKey(name: "city_id") int? cityId,
     @JsonKey(name: "description_ru") String? descriptionRu,

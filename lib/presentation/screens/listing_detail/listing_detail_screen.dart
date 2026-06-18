@@ -1032,7 +1032,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return """$title$typeInfo$locationInfo$subwayInfo
 
-${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatListingPriceRangeWithCurrency(price, price)}
+${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatStoredListingPrice(
+  storedPrice: price,
+  listingTypeCode: listingDetail.listingType.code,
+  minPrice: listingDetail.minPrice,
+  maxPrice: listingDetail.maxPrice,
+)}
 
 📱 ${L10n.get("check_out_listing_on_uydosh")}
 

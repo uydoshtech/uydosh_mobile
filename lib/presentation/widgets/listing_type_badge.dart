@@ -15,6 +15,7 @@ class ListingTypeBadge extends StatelessWidget {
     super.key,
     this.showIcon = true,
     this.showText = true,
+    this.useShortLabel = false,
     this.fontSize,
     this.padding,
   });
@@ -22,6 +23,8 @@ class ListingTypeBadge extends StatelessWidget {
   final String listingTypeCode;
   final bool showIcon;
   final bool showText;
+  /// Compact badge copy (e.g. «Ищем Группу» vs «Создать группу»).
+  final bool useShortLabel;
   final double? fontSize;
   final EdgeInsets? padding;
 
@@ -29,7 +32,9 @@ class ListingTypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = ListingTypeHelper.getBadgeStyle(listingTypeCode);
     final icon = ListingTypeHelper.getIcon(listingTypeCode);
-    final text = ListingTypeHelper.getText(context, listingTypeCode);
+    final text = useShortLabel
+        ? ListingTypeHelper.getShortText(context, listingTypeCode)
+        : ListingTypeHelper.getText(context, listingTypeCode);
 
     return Container(
       padding:
@@ -94,6 +99,46 @@ class ListingTypeHelper {
     background: Color(0xFFF3E5F5),
   );
 
+  /// Blue (dark) theme — teal room, orange roommate, lavender group.
+  static const _blueRoomNeeded = ListingTypeBadgeStyle(
+    foreground: BlueThemeColors.secondaryLight,
+    border: BlueThemeColors.secondaryLight,
+    background: Color(0x1A8DD0D8),
+  );
+  static const _blueRoommateNeeded = ListingTypeBadgeStyle(
+    foreground: BlueThemeColors.warning,
+    border: BlueThemeColors.warning,
+    background: Color(0x1AFF9800),
+  );
+  static const _blueGroupForming = ListingTypeBadgeStyle(
+    foreground: Color(0xFFCE93D8),
+    border: Color(0xFFCE93D8),
+    background: Color(0x1ACE93D8),
+  );
+
+  /// Default dark theme — blue room, orange roommate, purple group.
+  static const _darkRoomNeeded = ListingTypeBadgeStyle(
+    foreground: AppColors.secondaryLight,
+    border: AppColors.secondaryLight,
+    background: Color(0x1A64B5F6),
+  );
+  static const _darkRoommateNeeded = ListingTypeBadgeStyle(
+    foreground: AppColors.warning,
+    border: AppColors.warning,
+    background: Color(0x1AFF9800),
+  );
+  static const _darkGroupForming = ListingTypeBadgeStyle(
+    foreground: AppColors.primaryLight,
+    border: AppColors.primaryLight,
+    background: Color(0x1A9B6DFF),
+  );
+
+  static const _fallbackBadge = ListingTypeBadgeStyle(
+    foreground: Colors.grey,
+    border: Colors.grey,
+    background: Color(0x1A9E9E9E),
+  );
+
   /// Badge colors tuned for the current theme.
   static ListingTypeBadgeStyle getBadgeStyle(String code) {
     if (ThemeState().isLightTheme) {
@@ -109,46 +154,26 @@ class ListingTypeHelper {
       };
     }
 
-    final color = getColor(code);
-    return ListingTypeBadgeStyle(
-      foreground: color,
-      border: color,
-      background: color.withValues(alpha: 0.1),
-    );
+    if (ThemeState().isBlueTheme) {
+      return switch (code) {
+        "room_needed" => _blueRoomNeeded,
+        "roommate_needed" => _blueRoommateNeeded,
+        "group_forming" => _blueGroupForming,
+        _ => _fallbackBadge,
+      };
+    }
+
+    return switch (code) {
+      "room_needed" => _darkRoomNeeded,
+      "roommate_needed" => _darkRoommateNeeded,
+      "group_forming" => _darkGroupForming,
+      _ => _fallbackBadge,
+    };
   }
 
   /// Get the color for a listing type code
   static Color getColor(String code) {
-    if (ThemeState().isLightTheme) {
-      return getBadgeStyle(code).foreground;
-    }
-
-    // Check if we"re in blue theme to use better contrasting colors
-    if (ThemeState().isBlueTheme) {
-      switch (code) {
-        case "room_needed":
-          return BlueThemeColors
-              .secondaryLight; // Lighter teal for better contrast
-        case "roommate_needed":
-          return BlueThemeColors.warning; // Green for better contrast
-        case "group_forming":
-          return BlueThemeColors.secondaryLight;
-        default:
-          return BlueThemeColors.iconDisabled;
-      }
-    } else {
-      // Default colors for other themes
-      switch (code) {
-        case "room_needed":
-          return AppColors.primary;
-        case "roommate_needed":
-          return AppColors.warning;
-        case "group_forming":
-          return AppColors.primary;
-        default:
-          return Colors.grey;
-      }
-    }
+    return getBadgeStyle(code).foreground;
   }
 
   /// Get the icon for a listing type code
@@ -178,6 +203,25 @@ class ListingTypeHelper {
         return AppStrings.get("listing_type_group_forming", currentLanguage);
       default:
         return "Unknown";
+    }
+  }
+
+  /// Short badge label for tiles and detail chips (e.g. «Ищем Группу»).
+  static String getShortText(BuildContext context, String code) {
+    final currentLanguage = L10n.currentLanguage;
+
+    switch (code) {
+      case "room_needed":
+        return AppStrings.get("listing_type_short_room_needed", currentLanguage);
+      case "roommate_needed":
+        return AppStrings.get("listing_type_short_roommate_needed", currentLanguage);
+      case "group_forming":
+        return AppStrings.get(
+          "listing_type_short_group_forming",
+          currentLanguage,
+        );
+      default:
+        return getText(context, code);
     }
   }
 
