@@ -1017,6 +1017,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get view_similar_results => 'View similar';
 
   @override
+  String get listing_detail_nearby_room_offers => 'Rooms nearby';
+
+  @override
+  String get listing_detail_nearby_room_seekers => 'People looking nearby';
+
+  @override
+  String get listing_detail_nearby_matches => 'Matches nearby';
+
+  @override
   String get coming_soon => 'Coming soon';
 
   @override

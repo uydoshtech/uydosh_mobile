@@ -1032,6 +1032,16 @@ class AppLocalizationsUz extends AppLocalizations {
   String get view_similar_results => 'O‘xshash e\'lonlar';
 
   @override
+  String get listing_detail_nearby_room_offers => 'Yaqin atrofdagi xonalar';
+
+  @override
+  String get listing_detail_nearby_room_seekers =>
+      'Yaqin atrofda uy qidiruvchilar';
+
+  @override
+  String get listing_detail_nearby_matches => 'Yaqin atrofdagi mos keluvchilar';
+
+  @override
   String get coming_soon => 'Tez orada';
 
   @override

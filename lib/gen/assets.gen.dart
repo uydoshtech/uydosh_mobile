@@ -48,16 +48,36 @@ class $AssetsImagesGen {
   /// File path: assets/images/telegram_logo_white.svg
   String get telegramLogoWhite => 'assets/images/telegram_logo_white.svg';
 
+  /// File path: assets/images/uydosh_light_no_photo_placeholder.png
+  AssetGenImage get uydoshLightNoPhotoPlaceholder =>
+      const AssetGenImage('assets/images/uydosh_light_no_photo_placeholder.png');
+
+  /// File path: assets/images/uydosh_light_room_needed_no_photo_placeholder.png
+  AssetGenImage get uydoshLightRoomNeededNoPhotoPlaceholder =>
+      const AssetGenImage('assets/images/uydosh_light_room_needed_no_photo_placeholder.png');
+
+  /// File path: assets/images/uydosh_no_photo_placeholder.png
+  AssetGenImage get uydoshNoPhotoPlaceholder =>
+      const AssetGenImage('assets/images/uydosh_no_photo_placeholder.png');
+
+  /// File path: assets/images/uydosh_room_needed_no_photo_placeholder.png
+  AssetGenImage get uydoshRoomNeededNoPhotoPlaceholder =>
+      const AssetGenImage('assets/images/uydosh_room_needed_no_photo_placeholder.png');
+
   /// File path: assets/images/vector_orig.svg
   String get vectorOrig => 'assets/images/vector_orig.svg';
 
   /// List of all assets
-  List<String> get values => [
+  List<dynamic> get values => [
         googleGLogo,
         iosDarkRdCtn,
         iosNeutralRdCtn,
         tashkentSubwayMapSimple,
         telegramLogoWhite,
+        uydoshLightNoPhotoPlaceholder,
+        uydoshLightRoomNeededNoPhotoPlaceholder,
+        uydoshNoPhotoPlaceholder,
+        uydoshRoomNeededNoPhotoPlaceholder,
         vectorOrig
       ];
 }

@@ -23,6 +23,7 @@ import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -101,10 +102,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   int? get _initialListingTypeId {
     final id = widget.initialListingTypeId;
-    return id == 1 || id == 2 ? id : null;
+    return id == 1 || id == 2 || id == ListingTypeIds.groupForming ? id : null;
   }
 
-  bool get _pricePickerSingleHandle => _selectedListingTypeId == 2;
+  bool get _isGroupFormingFlow =>
+      _selectedListingTypeId == ListingTypeIds.groupForming;
+
+  int _groupSizeTarget = 3;
+
+  bool get _pricePickerSingleHandle =>
+      _selectedListingTypeId == 2 || _isGroupFormingFlow;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -573,7 +580,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   int _priceForCreateRequest() {
-    if (_selectedListingTypeId == 2) {
+    if (_pricePickerSingleHandle) {
       return _roommatePrice.round();
     }
     // Backend listing row has a single `price`; use midpoint of budget range.
@@ -697,7 +704,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                   title: L10n.text(
-                    "create_listing_title",
+                    _isGroupFormingFlow
+                        ? "create_group_title"
+                        : "create_listing_title",
                     style: appBarTheme.titleTextStyle?.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -829,9 +838,42 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           showError: _showLocationError,
           showArrows: false,
         ),
-        const SizedBox(height: 10), // Space between location and price range
+        const SizedBox(height: 10),
+        if (_isGroupFormingFlow) ...[
+          LabeledFieldOverlay(
+            label: L10n.get("group_size_target_label"),
+            child: SizedBox(
+              height: 120,
+              child: CupertinoPicker(
+                scrollController: FixedExtentScrollController(
+                  initialItem: _groupSizeTarget - 2,
+                ),
+                itemExtent: 40,
+                onSelectedItemChanged: (index) {
+                  setState(() => _groupSizeTarget = index + 2);
+                },
+                children: List<Widget>.generate(
+                  5,
+                  (index) => Center(
+                    child: Text(
+                      L10n.getWithParams(
+                        "group_size_target_option",
+                        params: {"count": "${index + 2}"},
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
         LabeledFieldOverlay(
-          label: L10n.get("listing_price_label"),
+          label: L10n.get(
+            _isGroupFormingFlow
+                ? "group_budget_per_person_label"
+                : "listing_price_label",
+          ),
           child: PriceRangePicker(
             key: ValueKey<int>(_selectedListingTypeId),
             minPrice: _priceSliderMin,
@@ -947,6 +989,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ),
         ),
         const SizedBox(height: 16),
+        if (!_isGroupFormingFlow) ...[
         // Amenities Section
         LabeledFieldOverlay(
           label: L10n.get("amenities"),
@@ -967,6 +1010,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         ),
 
         const SizedBox(height: 16),
+        ],
 
         // Move-in Date and Private Room Row ([IntrinsicHeight] — stretch in scroll).
         IntrinsicHeight(
@@ -1096,6 +1140,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
                 ),
               ),
+              if (!_isGroupFormingFlow) ...[
               const SizedBox(width: 12),
               // Private Room Toggle (50% width)
               Expanded(
@@ -1179,14 +1224,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
                 ),
               ),
+              ],
             ],
           ),
         ),
         const SizedBox(height: 16),
 
-        // Photos Section - Only show for roommate needed listings (not for room needed)
-        if (_selectedListingTypeId !=
-            1) // Hide for "room needed" (listingTypeId == 1)
+        // Photos Section - roommate listings only (not group_forming / room_needed)
+        if (_selectedListingTypeId != 1 && !_isGroupFormingFlow)
           PhotoUploader(
             selectedPhotos: _selectedPhotos,
             onPhotosChanged: (photos) {
@@ -1465,9 +1510,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ? _moveInDateValue
             : null, // Only send date if selected
         privateRoom: _isPrivateRoom,
-        photoPaths: orderedPhotos.isNotEmpty
-            ? orderedPhotos
-            : null, // Upload photos with primary first (only for roommate needed)
+        photoPaths: orderedPhotos.isNotEmpty ? orderedPhotos : null,
+        groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
       );
 
       if (!mounted) return;

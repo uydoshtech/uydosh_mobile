@@ -44,7 +44,9 @@ import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/models/photo_network_display.dart";
@@ -81,6 +83,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_listing_owner_messages_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_forming_action_bar.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_join_requests_sheet.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
@@ -241,6 +245,102 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         publisherUserId: listingUserId,
         viewerUserIdFallback: _sessionUserId,
       );
+
+  bool _isGroupFormingListing(ListingDetail listingDetail) =>
+      listingDetail.listingType.code == ListingTypeCodes.groupForming;
+
+  void _reloadListingDetail() {
+    context.read<ListingDetailBloc>().add(
+          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+        );
+  }
+
+  Future<void> _openGroupChat(ListingDetail listingDetail) async {
+    if (!AuthFlow.requireAuth(context)) return;
+    final conversationId = listingDetail.groupContext?.groupConversationId;
+    if (conversationId == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+        builder: (_) => ChatScreen(
+          conversationId: conversationId,
+          listingId: listingDetail.id,
+          listingTitle: listingDetail.title,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _requestToJoinGroup(ListingDetail listingDetail) async {
+    if (!AuthFlow.requireAuth(context)) return;
+    try {
+      await getIt<IListingGroupService>().createJoinRequest(
+        listingId: listingDetail.id,
+      );
+      if (!mounted) return;
+      ToastReporting.successKey(context, "group_join_request_success");
+      _reloadListingDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ToastReporting.errorMessage(context, e.toString());
+    }
+  }
+
+  Future<void> _withdrawGroupJoinRequest(ListingDetail listingDetail) async {
+    try {
+      await getIt<IListingGroupService>().withdrawJoinRequest(
+        listingId: listingDetail.id,
+      );
+      if (!mounted) return;
+      ToastReporting.successKey(context, "group_join_request_withdrawn");
+      _reloadListingDetail();
+    } catch (e) {
+      if (!mounted) return;
+      ToastReporting.errorMessage(context, e.toString());
+    }
+  }
+
+  Widget _buildGroupFormingActionBar(
+    ListingDetail listingDetail, {
+    required bool isOwner,
+  }) {
+    final ctx = listingDetail.groupContext;
+    if (isOwner) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_open_chat"),
+        onPrimary: () => _openGroupChat(listingDetail),
+        secondaryLabel: L10n.get("group_manage_requests"),
+        onSecondary: () => showListingGroupJoinRequestsSheet(
+          context: context,
+          listingId: listingDetail.id,
+          onChanged: _reloadListingDetail,
+        ),
+      );
+    }
+    if (ctx?.isMember == true) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_open_chat"),
+        onPrimary: () => _openGroupChat(listingDetail),
+      );
+    }
+    if (ctx?.hasPendingJoinRequest == true) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_join_request_sent"),
+        onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
+      );
+    }
+    if (ctx?.canRequestToJoin == true) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_request_to_join"),
+        onPrimary: () => _requestToJoinGroup(listingDetail),
+      );
+    }
+    return const SizedBox.shrink();
+  }
 
   /// In-app chat CTA for guests (login prompt) or signed-in non-owners only.
   bool _canShowInAppListingChat(ListingDetail listingDetail) {
@@ -1955,6 +2055,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatL
               listenable: UserListingState(),
               builder: (context, _) {
                 final isOwner = _isListingOwner(listingDetail.user.id);
+                if (_isGroupFormingListing(listingDetail)) {
+                  return _buildGroupFormingActionBar(
+                    listingDetail,
+                    isOwner: isOwner,
+                  );
+                }
                 final telegramHandle =
                     listingDetail.contactTelegram?.trim() ?? "";
                 final telegramAvailable =

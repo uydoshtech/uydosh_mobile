@@ -85,6 +85,12 @@ mixin _$ListingDetail {
   List<Photo>? get photos => throw _privateConstructorUsedError;
   @JsonKey(name: "area_price_stats")
   AreaPriceStats? get areaPriceStats => throw _privateConstructorUsedError;
+  @JsonKey(name: "group_size_target")
+  int? get groupSizeTarget => throw _privateConstructorUsedError;
+  @JsonKey(name: "group_forming_status")
+  String? get groupFormingStatus => throw _privateConstructorUsedError;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  ListingGroupContext? get groupContext => throw _privateConstructorUsedError;
 
   /// Serializes this ListingDetail to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -140,7 +146,11 @@ abstract class $ListingDetailCopyWith<$Res> {
       LocationDetail? location,
       List<Amenity>? amenities,
       List<Photo>? photos,
-      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats});
+      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "group_size_target") int? groupSizeTarget,
+      @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      ListingGroupContext? groupContext});
 
   $UserDetailCopyWith<$Res> get user;
   $ListingTypeDetailCopyWith<$Res> get listingType;
@@ -200,6 +210,9 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
+    Object? groupSizeTarget = freezed,
+    Object? groupFormingStatus = freezed,
+    Object? groupContext = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -346,6 +359,18 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.areaPriceStats
           : areaPriceStats // ignore: cast_nullable_to_non_nullable
               as AreaPriceStats?,
+      groupSizeTarget: freezed == groupSizeTarget
+          ? _value.groupSizeTarget
+          : groupSizeTarget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupFormingStatus: freezed == groupFormingStatus
+          ? _value.groupFormingStatus
+          : groupFormingStatus // ignore: cast_nullable_to_non_nullable
+              as String?,
+      groupContext: freezed == groupContext
+          ? _value.groupContext
+          : groupContext // ignore: cast_nullable_to_non_nullable
+              as ListingGroupContext?,
     ) as $Val);
   }
 
@@ -458,7 +483,11 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       LocationDetail? location,
       List<Amenity>? amenities,
       List<Photo>? photos,
-      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats});
+      @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "group_size_target") int? groupSizeTarget,
+      @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      ListingGroupContext? groupContext});
 
   @override
   $UserDetailCopyWith<$Res> get user;
@@ -521,6 +550,9 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
+    Object? groupSizeTarget = freezed,
+    Object? groupFormingStatus = freezed,
+    Object? groupContext = freezed,
   }) {
     return _then(_$ListingDetailImpl(
       id: null == id
@@ -667,6 +699,18 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.areaPriceStats
           : areaPriceStats // ignore: cast_nullable_to_non_nullable
               as AreaPriceStats?,
+      groupSizeTarget: freezed == groupSizeTarget
+          ? _value.groupSizeTarget
+          : groupSizeTarget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupFormingStatus: freezed == groupFormingStatus
+          ? _value.groupFormingStatus
+          : groupFormingStatus // ignore: cast_nullable_to_non_nullable
+              as String?,
+      groupContext: freezed == groupContext
+          ? _value.groupContext
+          : groupContext // ignore: cast_nullable_to_non_nullable
+              as ListingGroupContext?,
     ));
   }
 }
@@ -712,7 +756,10 @@ class _$ListingDetailImpl implements _ListingDetail {
       this.location,
       final List<Amenity>? amenities,
       final List<Photo>? photos,
-      @JsonKey(name: "area_price_stats") this.areaPriceStats})
+      @JsonKey(name: "area_price_stats") this.areaPriceStats,
+      @JsonKey(name: "group_size_target") this.groupSizeTarget,
+      @JsonKey(name: "group_forming_status") this.groupFormingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false) this.groupContext})
       : _amenities = amenities,
         _photos = photos;
 
@@ -835,10 +882,19 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   @JsonKey(name: "area_price_stats")
   final AreaPriceStats? areaPriceStats;
+  @override
+  @JsonKey(name: "group_size_target")
+  final int? groupSizeTarget;
+  @override
+  @JsonKey(name: "group_forming_status")
+  final String? groupFormingStatus;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final ListingGroupContext? groupContext;
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupContext: $groupContext)';
   }
 
   @override
@@ -913,7 +969,13 @@ class _$ListingDetailImpl implements _ListingDetail {
                 .equals(other._amenities, _amenities) &&
             const DeepCollectionEquality().equals(other._photos, _photos) &&
             (identical(other.areaPriceStats, areaPriceStats) ||
-                other.areaPriceStats == areaPriceStats));
+                other.areaPriceStats == areaPriceStats) &&
+            (identical(other.groupSizeTarget, groupSizeTarget) ||
+                other.groupSizeTarget == groupSizeTarget) &&
+            (identical(other.groupFormingStatus, groupFormingStatus) ||
+                other.groupFormingStatus == groupFormingStatus) &&
+            (identical(other.groupContext, groupContext) ||
+                other.groupContext == groupContext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -955,7 +1017,10 @@ class _$ListingDetailImpl implements _ListingDetail {
         location,
         const DeepCollectionEquality().hash(_amenities),
         const DeepCollectionEquality().hash(_photos),
-        areaPriceStats
+        areaPriceStats,
+        groupSizeTarget,
+        groupFormingStatus,
+        groupContext
       ]);
 
   /// Create a copy of ListingDetail
@@ -1016,8 +1081,11 @@ abstract class _ListingDetail implements ListingDetail {
       final LocationDetail? location,
       final List<Amenity>? amenities,
       final List<Photo>? photos,
-      @JsonKey(name: "area_price_stats")
-      final AreaPriceStats? areaPriceStats}) = _$ListingDetailImpl;
+      @JsonKey(name: "area_price_stats") final AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "group_size_target") final int? groupSizeTarget,
+      @JsonKey(name: "group_forming_status") final String? groupFormingStatus,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      final ListingGroupContext? groupContext}) = _$ListingDetailImpl;
 
   factory _ListingDetail.fromJson(Map<String, dynamic> json) =
       _$ListingDetailImpl.fromJson;
@@ -1122,6 +1190,15 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "area_price_stats")
   AreaPriceStats? get areaPriceStats;
+  @override
+  @JsonKey(name: "group_size_target")
+  int? get groupSizeTarget;
+  @override
+  @JsonKey(name: "group_forming_status")
+  String? get groupFormingStatus;
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  ListingGroupContext? get groupContext;
 
   /// Create a copy of ListingDetail
   /// with the given fields replaced by the non-null parameter values.

@@ -1936,6 +1936,24 @@ abstract class AppLocalizations {
   /// **'View similar'**
   String get view_similar_results;
 
+  /// No description provided for @listing_detail_nearby_room_offers.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooms nearby'**
+  String get listing_detail_nearby_room_offers;
+
+  /// No description provided for @listing_detail_nearby_room_seekers.
+  ///
+  /// In en, this message translates to:
+  /// **'People looking nearby'**
+  String get listing_detail_nearby_room_seekers;
+
+  /// No description provided for @listing_detail_nearby_matches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches nearby'**
+  String get listing_detail_nearby_matches;
+
   /// No description provided for @coming_soon.
   ///
   /// In en, this message translates to:

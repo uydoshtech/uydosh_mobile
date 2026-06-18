@@ -1,5 +1,6 @@
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 
 part "listing_detail.freezed.dart";
@@ -39,6 +40,10 @@ class ListingDetail with _$ListingDetail {
     List<Amenity>? amenities,
     List<Photo>? photos,
     @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+    @JsonKey(name: "group_size_target") int? groupSizeTarget,
+    @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    ListingGroupContext? groupContext,
   }) = _ListingDetail;
 
   factory ListingDetail.fromJson(Map<String, dynamic> json) =>

@@ -1,3 +1,4 @@
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 
@@ -15,7 +16,9 @@ class ListingUtils {
   /// Types 1 (room needed) and 2 (roommate needed) use preset hashtag titles
   /// on create-listing; same rule for read-only display.
   static bool usesPresetListingTitle(int listingTypeId) {
-    return listingTypeId == 1 || listingTypeId == 2;
+    return listingTypeId == ListingTypeIds.roomNeeded ||
+        listingTypeId == ListingTypeIds.roommateNeeded ||
+        listingTypeId == ListingTypeIds.groupForming;
   }
 
   /// L10n key for the preset title ([CreateListingScreen] rules).
@@ -25,6 +28,9 @@ class ListingUtils {
     int? gender,
   }) {
     final g = (gender == 1 || gender == 2) ? gender! : 1;
+    if (listingTypeId == ListingTypeIds.groupForming) {
+      return "title_group_forming";
+    }
     if (listingTypeId == 2) {
       return g == 1 ? "title_male_roommate" : "title_female_roommate";
     }

@@ -61,6 +61,8 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
           ? null
           : AreaPriceStats.fromJson(
               json['area_price_stats'] as Map<String, dynamic>),
+      groupSizeTarget: (json['group_size_target'] as num?)?.toInt(),
+      groupFormingStatus: json['group_forming_status'] as String?,
     );
 
 Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
@@ -102,6 +104,8 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'amenities': instance.amenities,
       'photos': instance.photos,
       'area_price_stats': instance.areaPriceStats,
+      'group_size_target': instance.groupSizeTarget,
+      'group_forming_status': instance.groupFormingStatus,
     };
 
 _$UserDetailImpl _$$UserDetailImplFromJson(Map<String, dynamic> json) =>

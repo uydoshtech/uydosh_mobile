@@ -3,6 +3,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:uy_dosh/domain/services/listing_service_common.dart"
     show DescriptionTranslationRequest, EmptyListingRequest;
@@ -63,7 +64,14 @@ class ListingDetailService implements IListingDetailService {
           "Expires": "0",
         },
       );
-      return ListingDetail.fromJson(response);
+      final detail = ListingDetail.fromJson(response);
+      final rawGroupContext = response["group_context"];
+      if (rawGroupContext is Map<String, dynamic>) {
+        return detail.copyWith(
+          groupContext: ListingGroupContext.fromJson(rawGroupContext),
+        );
+      }
+      return detail;
     } catch (e) {
       logger.d("Error fetching listing detail: $e");
       rethrow;

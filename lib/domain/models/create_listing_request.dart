@@ -16,6 +16,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     this.moveInDate, // Add move-in date parameter
     this.privateRoom, // Add private room parameter
     this.userId, // Add user ID parameter
+    this.groupSizeTarget,
   });
   final String title;
   final int listingTypeId;
@@ -30,6 +31,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   final String? moveInDate; // Add move-in date field
   final bool? privateRoom; // Add private room field
   final int? userId;
+  final int? groupSizeTarget;
 
   @override
   dynamic toJson() {
@@ -58,6 +60,10 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     // Only include userId if it's not null
     if (userId != null) {
       json["userId"] = userId;
+    }
+
+    if (groupSizeTarget != null) {
+      json["groupSizeTarget"] = groupSizeTarget;
     }
 
     return json;

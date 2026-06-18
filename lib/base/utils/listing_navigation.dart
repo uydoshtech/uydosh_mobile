@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
@@ -26,5 +27,9 @@ extension ListingNavigatorExtensions on BuildContext {
         ),
       ),
     );
+  }
+
+  Future<void> pushCreateGroup() {
+    return pushCreateListing(listingTypeId: ListingTypeIds.groupForming);
   }
 }

@@ -73,6 +73,7 @@ abstract class IListingService {
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   });
 
   Future<ListingDetail> updateListing({
@@ -293,6 +294,7 @@ class ListingService implements IListingService {
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   }) =>
       _crudService.createListing(
         title: title,
@@ -307,6 +309,7 @@ class ListingService implements IListingService {
         moveInDate: moveInDate,
         privateRoom: privateRoom,
         photoPaths: photoPaths,
+        groupSizeTarget: groupSizeTarget,
       );
 
   @override

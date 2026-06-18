@@ -1017,6 +1017,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get view_similar_results => 'Похожие объявления';
 
   @override
+  String get listing_detail_nearby_room_offers => 'Комнаты рядом';
+
+  @override
+  String get listing_detail_nearby_room_seekers => 'Ищут жильё рядом';
+
+  @override
+  String get listing_detail_nearby_matches => 'Подходящие рядом';
+
+  @override
   String get coming_soon => 'Скоро будет';
 
   @override

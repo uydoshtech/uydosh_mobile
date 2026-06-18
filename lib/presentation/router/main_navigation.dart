@@ -746,6 +746,20 @@ class MainNavigationState extends State<MainNavigation>
                   ),
                   const SizedBox(height: 8),
                   CreateChoiceTile(
+                    emoji: "👥",
+                    title: L10n.get("create_choice_group_forming"),
+                    subtitle: L10n.get(
+                      "create_choice_group_forming_subtitle",
+                    ),
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(sheetContext).pop();
+                      if (!mounted) return;
+                      context.pushCreateGroup();
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CreateChoiceTile(
                     emoji: "🏠",
                     title: L10n.get("listing_type_room_needed"),
                     subtitle: L10n.get(

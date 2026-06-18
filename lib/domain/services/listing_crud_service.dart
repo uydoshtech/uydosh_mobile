@@ -25,6 +25,7 @@ abstract class IListingCrudService {
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   });
 
   Future<ListingDetail> updateListing({
@@ -106,6 +107,7 @@ class ListingCrudService implements IListingCrudService {
     String? moveInDate,
     bool? privateRoom,
     List<String>? photoPaths,
+    int? groupSizeTarget,
   }) async {
     try {
       final userId = await SessionManager.getUserId();
@@ -126,6 +128,7 @@ class ListingCrudService implements IListingCrudService {
         moveInDate: moveInDate,
         privateRoom: privateRoom,
         userId: null,
+        groupSizeTarget: groupSizeTarget,
       );
 
       if (kDebugMode) {

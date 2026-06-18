@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -73,6 +74,8 @@ class ListingTypeHelper {
               .secondaryLight; // Lighter teal for better contrast
         case "roommate_needed":
           return BlueThemeColors.warning; // Green for better contrast
+        case "group_forming":
+          return BlueThemeColors.secondaryLight;
         default:
           return BlueThemeColors.iconDisabled;
       }
@@ -83,6 +86,8 @@ class ListingTypeHelper {
           return AppColors.primary;
         case "roommate_needed":
           return AppColors.warning;
+        case "group_forming":
+          return AppColors.primary;
         default:
           return Colors.grey;
       }
@@ -96,6 +101,8 @@ class ListingTypeHelper {
         return Icons.home;
       case "roommate_needed":
         return Icons.people;
+      case "group_forming":
+        return Icons.groups_2_outlined;
       default:
         return Icons.help_outline;
     }
@@ -110,6 +117,8 @@ class ListingTypeHelper {
         return AppStrings.get("listing_type_room_needed", currentLanguage);
       case "roommate_needed":
         return AppStrings.get("listing_type_roommate_needed", currentLanguage);
+      case "group_forming":
+        return AppStrings.get("listing_type_group_forming", currentLanguage);
       default:
         return "Unknown";
     }
@@ -121,7 +130,9 @@ class ListingTypeHelper {
       case "room_needed":
         return 1;
       case "roommate_needed":
-        return 2;
+        return ListingTypeIds.roommateNeeded;
+      case "group_forming":
+        return ListingTypeIds.groupForming;
       default:
         return 0;
     }
@@ -132,8 +143,10 @@ class ListingTypeHelper {
     switch (id) {
       case 1:
         return "room_needed";
-      case 2:
+      case ListingTypeIds.roommateNeeded:
         return "roommate_needed";
+      case ListingTypeIds.groupForming:
+        return "group_forming";
       default:
         return "unknown";
     }
@@ -141,7 +154,7 @@ class ListingTypeHelper {
 
   /// Get all available listing types
   static List<String> getAllCodes() {
-    return ["room_needed", "roommate_needed"];
+    return ["room_needed", "roommate_needed", "group_forming"];
   }
 
   /// Get all listing types with their display information
