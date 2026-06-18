@@ -31,7 +31,8 @@ enum FloorPlanProjectionService {
   static func buildModel(
     scene: SCNScene,
     sceneBounds: (min: SCNVector3, max: SCNVector3),
-    metrics: RoomScanMetricsResult
+    metrics: RoomScanMetricsResult,
+    objectLabels: FloorPlanObjectLabels = .englishFallback
   ) -> FloorPlanModel {
     let sceneHeight = max(sceneBounds.max.y - sceneBounds.min.y, 0.12)
 
@@ -59,7 +60,7 @@ enum FloorPlanProjectionService {
       } else if isLeafGeometry(node),
         isOnFloorObject(node, sceneBounds: sceneBounds, sceneHeight: sceneHeight)
       {
-        if let object = floorObject(from: node) { objects.append(object) }
+        if let object = floorObject(from: node, objectLabels: objectLabels) { objects.append(object) }
       }
 
       for child in node.childNodes { visit(child) }
@@ -126,11 +127,14 @@ enum FloorPlanProjectionService {
     return axisAlignedOpeningFallback(from: node, type: type)
   }
 
-  private static func floorObject(from node: SCNNode) -> FloorPlanObject? {
+  private static func floorObject(
+    from node: SCNNode,
+    objectLabels: FloorPlanObjectLabels
+  ) -> FloorPlanObject? {
     guard let footprint = orientedBottomFootprint(of: node) else { return nil }
     let rawName = node.name ?? "Object"
     let category = objectCategory(from: rawName)
-    let label = displayLabel(for: category, fallback: rawName)
+    let label = objectLabels.label(forCategory: category, fallback: rawName)
 
     return FloorPlanObject(
       center: footprint.center,
@@ -410,24 +414,6 @@ enum FloorPlanProjectionService {
     if n.contains("television") || n.contains("tv") { return "television" }
     if n.contains("bathtub") || n.contains("toilet") || n.contains("sink") { return "fixture" }
     return "object"
-  }
-
-  private static func displayLabel(for category: String, fallback: String) -> String {
-    switch category {
-    case "bed": return "Bed"
-    case "sofa": return "Sofa"
-    case "table": return "Table"
-    case "chair": return "Chair"
-    case "storage": return "Storage"
-    case "cabinet": return "Cabinet"
-    case "appliance": return "Appliance"
-    case "television": return "TV"
-    case "fixture": return "Fixture"
-    case "object":
-      let trimmed = fallback.trimmingCharacters(in: .whitespacesAndNewlines)
-      return trimmed.isEmpty ? "Object" : trimmed
-    default: return category.capitalized
-    }
   }
 
   private static func isOnFloorObject(

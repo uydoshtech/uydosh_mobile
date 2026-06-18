@@ -194,6 +194,104 @@ final class FloorPlanTab: UIView {
   }
 }
 
+struct FloorPlanObjectLabels {
+  let bed: String
+  let sofa: String
+  let table: String
+  let chair: String
+  let storage: String
+  let appliance: String
+  let cabinet: String
+  let television: String
+  let fixture: String
+  let unknown: String
+
+  func label(for type: EditableObjectType) -> String {
+    switch type {
+    case .bed: return bed
+    case .sofa: return sofa
+    case .table: return table
+    case .chair: return chair
+    case .storage: return storage
+    case .appliance: return appliance
+    case .cabinet: return cabinet
+    case .television: return television
+    case .fixture: return fixture
+    case .unknown: return unknown
+    }
+  }
+
+  func label(forCategory category: String, fallback: String) -> String {
+    switch category {
+    case "bed": return bed
+    case "sofa": return sofa
+    case "table": return table
+    case "chair": return chair
+    case "storage": return storage
+    case "cabinet": return cabinet
+    case "appliance": return appliance
+    case "television": return television
+    case "fixture": return fixture
+    case "object":
+      let trimmed = fallback.trimmingCharacters(in: .whitespacesAndNewlines)
+      return trimmed.isEmpty ? unknown : trimmed
+    default: return category.capitalized
+    }
+  }
+
+  init(
+    bed: String,
+    sofa: String,
+    table: String,
+    chair: String,
+    storage: String,
+    appliance: String,
+    cabinet: String,
+    television: String,
+    fixture: String,
+    unknown: String
+  ) {
+    self.bed = bed
+    self.sofa = sofa
+    self.table = table
+    self.chair = chair
+    self.storage = storage
+    self.appliance = appliance
+    self.cabinet = cabinet
+    self.television = television
+    self.fixture = fixture
+    self.unknown = unknown
+  }
+
+  init(dict: [String: String]) {
+    self.init(
+      bed: dict["floorPlanObjectBed"] ?? "Bed",
+      sofa: dict["floorPlanObjectSofa"] ?? "Sofa",
+      table: dict["floorPlanObjectTable"] ?? "Table",
+      chair: dict["floorPlanObjectChair"] ?? "Chair",
+      storage: dict["floorPlanObjectStorage"] ?? "Storage",
+      appliance: dict["floorPlanObjectAppliance"] ?? "Appliance",
+      cabinet: dict["floorPlanObjectCabinet"] ?? "Cabinet",
+      television: dict["floorPlanObjectTelevision"] ?? "TV",
+      fixture: dict["floorPlanObjectFixture"] ?? "Fixture",
+      unknown: dict["floorPlanObjectUnknown"] ?? "Object"
+    )
+  }
+
+  static let englishFallback = FloorPlanObjectLabels(
+    bed: "Bed",
+    sofa: "Sofa",
+    table: "Table",
+    chair: "Chair",
+    storage: "Storage",
+    appliance: "Appliance",
+    cabinet: "Cabinet",
+    television: "TV",
+    fixture: "Fixture",
+    unknown: "Object"
+  )
+}
+
 struct FloorPlanTabStrings {
   let tab3DView: String
   let tabFloorPlan: String
@@ -220,6 +318,7 @@ struct FloorPlanTabStrings {
   let editDimensionInvalidTitle: String
   let editDimensionInvalidMessage: String
   let editDimensionConfirmLargeChange: String
+  let objectLabels: FloorPlanObjectLabels
 
   var dimensionEditDialogStrings: DimensionEditDialogStrings {
     DimensionEditDialogStrings(
@@ -262,7 +361,8 @@ struct FloorPlanTabStrings {
     editDimensionLargeChangeMessage: String,
     editDimensionInvalidTitle: String,
     editDimensionInvalidMessage: String,
-    editDimensionConfirmLargeChange: String
+    editDimensionConfirmLargeChange: String,
+    objectLabels: FloorPlanObjectLabels
   ) {
     self.tab3DView = tab3DView
     self.tabFloorPlan = tabFloorPlan
@@ -289,6 +389,7 @@ struct FloorPlanTabStrings {
     self.editDimensionInvalidTitle = editDimensionInvalidTitle
     self.editDimensionInvalidMessage = editDimensionInvalidMessage
     self.editDimensionConfirmLargeChange = editDimensionConfirmLargeChange
+    self.objectLabels = objectLabels
   }
 
   init?(dict: [String: String]) {
@@ -323,7 +424,8 @@ struct FloorPlanTabStrings {
       editDimensionInvalidTitle: dict["floorPlanEditDimensionInvalidTitle"] ?? "Invalid value",
       editDimensionInvalidMessage: dict["floorPlanEditDimensionInvalidMessage"]
         ?? "Enter a number between 0.5 and 100 meters.",
-      editDimensionConfirmLargeChange: dict["floorPlanEditDimensionConfirmLargeChange"] ?? "Apply"
+      editDimensionConfirmLargeChange: dict["floorPlanEditDimensionConfirmLargeChange"] ?? "Apply",
+      objectLabels: FloorPlanObjectLabels(dict: dict)
     )
   }
 
@@ -353,6 +455,7 @@ struct FloorPlanTabStrings {
       "New value differs significantly from the scanned measurement. Apply correction?",
     editDimensionInvalidTitle: "Invalid value",
     editDimensionInvalidMessage: "Enter a number between 0.5 and 100 meters.",
-    editDimensionConfirmLargeChange: "Apply"
+    editDimensionConfirmLargeChange: "Apply",
+    objectLabels: .englishFallback
   )
 }

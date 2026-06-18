@@ -289,6 +289,26 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_confirm_large_change", languageCode),
       "floorPlanUnitMeters":
           L10n.getForLanguage("room_3d_floor_plan_unit_meters", languageCode),
+      "floorPlanObjectBed":
+          L10n.getForLanguage("room_3d_floor_plan_object_bed", languageCode),
+      "floorPlanObjectSofa":
+          L10n.getForLanguage("room_3d_floor_plan_object_sofa", languageCode),
+      "floorPlanObjectTable":
+          L10n.getForLanguage("room_3d_floor_plan_object_table", languageCode),
+      "floorPlanObjectChair":
+          L10n.getForLanguage("room_3d_floor_plan_object_chair", languageCode),
+      "floorPlanObjectStorage":
+          L10n.getForLanguage("room_3d_floor_plan_object_storage", languageCode),
+      "floorPlanObjectAppliance":
+          L10n.getForLanguage("room_3d_floor_plan_object_appliance", languageCode),
+      "floorPlanObjectCabinet":
+          L10n.getForLanguage("room_3d_floor_plan_object_cabinet", languageCode),
+      "floorPlanObjectTelevision":
+          L10n.getForLanguage("room_3d_floor_plan_object_television", languageCode),
+      "floorPlanObjectFixture":
+          L10n.getForLanguage("room_3d_floor_plan_object_fixture", languageCode),
+      "floorPlanObjectUnknown":
+          L10n.getForLanguage("room_3d_floor_plan_object_unknown", languageCode),
       "sunToggleLabel":
           L10n.getForLanguage("room_3d_sun_toggle_label", languageCode),
       "sunToggleHint":

@@ -3,7 +3,10 @@ import Foundation
 
 /// Projects EditableFloorPlanModel into the read-only FloorPlanModel used by the 2D canvas.
 enum EditableFloorPlanProjector {
-  static func project(_ model: EditableFloorPlanModel) -> FloorPlanModel {
+  static func project(
+    _ model: EditableFloorPlanModel,
+    objectLabels: FloorPlanObjectLabels = .englishFallback
+  ) -> FloorPlanModel {
     let walls = model.walls.compactMap { wall -> FloorPlanWall? in
       guard let start = model.vertex(wall.startVertexId),
         let end = model.vertex(wall.endVertexId)
@@ -49,7 +52,7 @@ enum EditableFloorPlanProjector {
         length: CGFloat(object.length),
         rotation: CGFloat(object.rotationRadians),
         category: object.type.rawValue,
-        label: label(for: object.type),
+        label: objectLabels.label(for: object.type),
         isOutsideBounds: object.isOutsideBounds
       )
     }
@@ -190,21 +193,6 @@ enum EditableFloorPlanProjector {
     case .door: return .door
     case .window: return .window
     case .opening: return .opening
-    }
-  }
-
-  private static func label(for type: EditableObjectType) -> String {
-    switch type {
-    case .bed: return "Bed"
-    case .sofa: return "Sofa"
-    case .table: return "Table"
-    case .chair: return "Chair"
-    case .storage: return "Storage"
-    case .appliance: return "Appliance"
-    case .cabinet: return "Cabinet"
-    case .television: return "TV"
-    case .fixture: return "Fixture"
-    case .unknown: return "Object"
     }
   }
 }

@@ -4,6 +4,7 @@ import SceneKit
 /// Stores the editable floor plan as source of truth and emits display/regeneration updates.
 final class FloorPlanStateManager {
   private(set) var editableModel: EditableFloorPlanModel?
+  var objectLabels: FloorPlanObjectLabels = .englishFallback
 
   var onDisplayModelUpdated: ((FloorPlanModel) -> Void)?
   var onRequires3DRegeneration: ((EditableFloorPlanModel) -> Void)?
@@ -50,7 +51,7 @@ final class FloorPlanStateManager {
 
   func displayModel() -> FloorPlanModel? {
     guard let editableModel else { return nil }
-    return EditableFloorPlanProjector.project(editableModel)
+    return EditableFloorPlanProjector.project(editableModel, objectLabels: objectLabels)
   }
 
   func annotation(for dimensionId: UUID) -> EditableDimensionAnnotation? {

@@ -379,6 +379,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     floorPlanTab.canvas.delegate = self
     view.addSubview(floorPlanTab)
     floorPlanTabView = floorPlanTab
+    floorPlanStateManager.objectLabels = strings.floorPlan.objectLabels
 
     dimensionEditStrings = strings.floorPlan.dimensionEditDialogStrings
     dimensionEditController = DimensionEditController(
