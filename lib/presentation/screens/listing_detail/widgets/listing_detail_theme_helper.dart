@@ -18,6 +18,7 @@ class ListingDetailThemeHelper {
 
   static Color get descriptionTextColor {
     if (ThemeState().isBlueTheme) return AppColors.textLight;
+    if (ThemeState().isLightTheme) return Colors.black;
     return AppColors.textGrey;
   }
 

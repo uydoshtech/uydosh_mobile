@@ -50,6 +50,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -134,10 +135,34 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   List<String> _selectedPhotos = [];
   int? _primaryPhotoIndex; // Track which photo is primary
 
+  /// When true, [Navigator.pop] after a successful create is allowed despite a
+  /// dirty form (same pattern as [EditListingScreen]).
+  bool _allowPopWithoutConfirm = false;
+
+  bool _baselineCaptured = false;
+  String _baselineTitle = "";
+  String _baselineDescription = "";
+  int _baselineListingTypeId = 2;
+  int _baselineGender = 1;
+  double _baselineRoommatePrice = 10.0;
+  double _baselineRoomBudgetMin = 10.0;
+  double _baselineRoomBudgetMax = 50.0;
+  bool _baselinePriceTouched = false;
+  bool _baselinePrivateRoom = false;
+  String _baselineMoveInDateValue = "";
+  int _baselineSelectedSubwayLine = 0;
+  int _baselineSelectedStationIndex = 0;
+  int _baselineSelectedLocationIndex = -1;
+  Set<int> _baselineAmenityIds = {};
+  List<String> _baselineSelectedPhotos = [];
+
   @override
   void initState() {
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "create_listing");
+    _titleController.addListener(_markDirty);
+    _descriptionController.addListener(_markDirty);
+    _moveInDateController.addListener(_markDirty);
     final initialListingTypeId = _initialListingTypeId;
     if (initialListingTypeId != null) {
       _selectedListingTypeId = initialListingTypeId;
@@ -179,6 +204,198 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _selectedGender = defaultGender;
     });
     _updateTitle();
+    _captureBaseline();
+  }
+
+  void _markDirty() {
+    if (mounted) setState(() {});
+  }
+
+  void _captureBaseline() {
+    _baselineTitle = _titleController.text;
+    _baselineDescription = _descriptionController.text;
+    _baselineListingTypeId = _selectedListingTypeId;
+    _baselineGender = _selectedGender;
+    _baselineRoommatePrice = _roommatePrice;
+    _baselineRoomBudgetMin = _roomBudgetMin;
+    _baselineRoomBudgetMax = _roomBudgetMax;
+    _baselinePriceTouched = _priceTouched;
+    _baselinePrivateRoom = _isPrivateRoom;
+    _baselineMoveInDateValue = _moveInDateValue;
+    _baselineSelectedSubwayLine = _selectedSubwayLine;
+    _baselineSelectedStationIndex = _selectedStationIndex;
+    _baselineSelectedLocationIndex = _selectedLocationIndex;
+    _baselineAmenityIds = Set<int>.from(_selectedAmenityIds);
+    _baselineSelectedPhotos = List<String>.from(_selectedPhotos);
+    _baselineCaptured = true;
+  }
+
+  String _normListingText(String? s) => (s ?? "").trim();
+
+  int? _currentLocationId() {
+    if (_selectedLocationIndex < 0 ||
+        _selectedLocationIndex >= _currentLocations.length) {
+      return null;
+    }
+    return _currentLocations[_selectedLocationIndex].id;
+  }
+
+  int? _currentSubwayStationId() {
+    if (_selectedSubwayLine <= 0 || _currentStations.isEmpty) return null;
+    if (_selectedStationIndex < 0 ||
+        _selectedStationIndex >= _currentStations.length) {
+      return null;
+    }
+    return _currentStations[_selectedStationIndex].id;
+  }
+
+  int? _baselineLocationId() {
+    if (_baselineSelectedLocationIndex < 0 ||
+        _baselineSelectedLocationIndex >= _currentLocations.length) {
+      return null;
+    }
+    return _currentLocations[_baselineSelectedLocationIndex].id;
+  }
+
+  int? _baselineSubwayStationId() {
+    if (_baselineSelectedSubwayLine <= 0 || _currentStations.isEmpty) {
+      return null;
+    }
+    if (_baselineSelectedStationIndex < 0 ||
+        _baselineSelectedStationIndex >= _currentStations.length) {
+      return null;
+    }
+    return _currentStations[_baselineSelectedStationIndex].id;
+  }
+
+  bool _amenityIdsMatchBaseline() {
+    if (_baselineAmenityIds.length != _selectedAmenityIds.length) return false;
+    for (final id in _baselineAmenityIds) {
+      if (!_selectedAmenityIds.contains(id)) return false;
+    }
+    return true;
+  }
+
+  bool _photosMatchBaseline() {
+    if (_baselineSelectedPhotos.length != _selectedPhotos.length) return false;
+    for (var i = 0; i < _baselineSelectedPhotos.length; i++) {
+      if (_baselineSelectedPhotos[i] != _selectedPhotos[i]) return false;
+    }
+    return true;
+  }
+
+  bool _isPriceDirty() {
+    if (_priceTouched != _baselinePriceTouched) return true;
+    if (!_priceTouched) return false;
+    if (_selectedListingTypeId == 2) {
+      return _roommatePrice != _baselineRoommatePrice;
+    }
+    return _roomBudgetMin != _baselineRoomBudgetMin ||
+        _roomBudgetMax != _baselineRoomBudgetMax;
+  }
+
+  List<String> _computeChangedFieldLabels() {
+    final changed = <String>[];
+
+    void addLabel(String key, {required String fallback}) {
+      var label = L10n.get(key, fallback: fallback).trim();
+      label = label.replaceAll(RegExp(r":\s*$"), "").trim();
+      changed.add(label.isEmpty ? fallback : label);
+    }
+
+    if (_normListingText(_titleController.text) !=
+        _normListingText(_baselineTitle)) {
+      addLabel("listing_title_label", fallback: "Title");
+    }
+    if (_normListingText(_descriptionController.text) !=
+        _normListingText(_baselineDescription)) {
+      addLabel("listing_description_label", fallback: "Description");
+    }
+    if (_selectedListingTypeId != _baselineListingTypeId) {
+      addLabel("listing_type_label", fallback: "Listing type");
+    }
+    if (_selectedGender != _baselineGender) {
+      addLabel("gender", fallback: "Gender");
+    }
+    if (_isPriceDirty()) {
+      addLabel("listing_price_label", fallback: "Price");
+    }
+    if (_isPrivateRoom != _baselinePrivateRoom) {
+      addLabel("private_room", fallback: "Private room");
+    }
+    if (_moveInDateValue != _baselineMoveInDateValue) {
+      addLabel("move_in_date_label", fallback: "Move-in date");
+    }
+    if (!_isLoadingLocations &&
+        _currentLocationId() != _baselineLocationId()) {
+      addLabel("location", fallback: "Location");
+    }
+    if (!_isLoadingStations) {
+      final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
+      final baseLine =
+          _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
+      if (_currentSubwayStationId() != _baselineSubwayStationId() ||
+          curLine != baseLine) {
+        addLabel("select_metro_line_optional", fallback: "Metro");
+      }
+    }
+    if (!_amenityIdsMatchBaseline()) {
+      addLabel("amenities", fallback: "Amenities");
+    }
+    if (!_photosMatchBaseline()) {
+      addLabel("listing_photos_label", fallback: "Photos");
+    }
+
+    return changed;
+  }
+
+  bool _isFormDirty() {
+    if (!_baselineCaptured) return false;
+
+    if (_normListingText(_titleController.text) !=
+        _normListingText(_baselineTitle)) {
+      return true;
+    }
+    if (_normListingText(_descriptionController.text) !=
+        _normListingText(_baselineDescription)) {
+      return true;
+    }
+    if (_selectedListingTypeId != _baselineListingTypeId) return true;
+    if (_selectedGender != _baselineGender) return true;
+    if (_isPriceDirty()) return true;
+    if (_isPrivateRoom != _baselinePrivateRoom) return true;
+    if (_moveInDateValue != _baselineMoveInDateValue) return true;
+
+    if (!_isLoadingLocations &&
+        _currentLocationId() != _baselineLocationId()) {
+      return true;
+    }
+
+    if (!_isLoadingStations) {
+      final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
+      final baseLine =
+          _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
+      if (_currentSubwayStationId() != _baselineSubwayStationId() ||
+          curLine != baseLine) {
+        return true;
+      }
+    }
+
+    if (!_amenityIdsMatchBaseline()) return true;
+    if (!_photosMatchBaseline()) return true;
+
+    return false;
+  }
+
+  Future<void> _onPopInvoked(bool didPop, dynamic result) async {
+    if (didPop) return;
+    final changedFields = _computeChangedFieldLabels();
+    final leave = await UnsavedChangesDialog.show(
+      context,
+      changedFieldLabels: changedFields,
+    );
+    if (!mounted || !leave) return;
+    Navigator.of(context).pop(result);
   }
 
   Future<String?> _getUserRole() async {
@@ -440,6 +657,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   @override
   void dispose() {
+    _titleController.removeListener(_markDirty);
+    _descriptionController.removeListener(_markDirty);
+    _moveInDateController.removeListener(_markDirty);
     _titleController.dispose();
     _descriptionController.dispose();
     _moveInDateController.dispose();
@@ -465,11 +685,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ? 16.0 + themeState.mainShellGlassExtraTopInset(context)
             : 16.0;
 
-        return Scaffold(
+        return PopScope(
+          canPop: _allowPopWithoutConfirm || !_isFormDirty(),
+          onPopInvokedWithResult: _onPopInvoked,
+          child: Scaffold(
           extendBodyBehindAppBar: useLiquidGlassAppBar,
           appBar: widget.showAppBar
               ? UydoshAppBar(
-                  leading: ThreeDAppBarIconButton.backLeading(context),
+                  leading: ThreeDAppBarIconButton.backLeading(
+                    context,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
                   title: L10n.text(
                     "create_listing_title",
                     style: appBarTheme.titleTextStyle?.copyWith(
@@ -544,6 +770,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               ),
             ),
           ),
+        ),
         );
       },
     );
@@ -805,10 +1032,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               confirmText: L10n.get("ok"),
                             );
                             if (picked != null) {
-                              _moveInDateValue =
-                                  "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                              _moveInDateController.text =
-                                  _formatMoveInDateDisplay(picked);
+                              setState(() {
+                                _moveInDateValue =
+                                    "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                                _moveInDateController.text =
+                                    _formatMoveInDateDisplay(picked);
+                              });
                             }
                           },
                           child: InputDecorator(
@@ -1307,6 +1536,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
       // Return to the screen that opened create, then show housing feed.
       if (widget.showAppBar) {
+        setState(() => _allowPopWithoutConfirm = true);
         Navigator.of(context).pop();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;

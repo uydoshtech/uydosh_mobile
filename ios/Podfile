@@ -519,6 +519,59 @@ post_install do |installer|
     end
   end
 
+  # Long RoomPlan scans exceed the system auto-lock; keep the screen on while capture UI is visible.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: keep screen awake during scan */'
+    unless src.include?(marker)
+      helper = [
+        '',
+        "    #{marker}",
+        '    private var uydoshWasIdleTimerDisabled = false',
+        '',
+        '    private func uydoshKeepScreenAwakeDuringScan() {',
+        '        uydoshWasIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled',
+        '        UIApplication.shared.isIdleTimerDisabled = true',
+        '    }',
+        '',
+        '    private func uydoshRestoreScreenIdleTimer() {',
+        '        UIApplication.shared.isIdleTimerDisabled = uydoshWasIdleTimerDisabled',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    public override func viewDidAppear(_ animated: Bool) {',
+        "#{helper}\n    public override func viewDidAppear(_ animated: Bool) {"
+      )
+
+      if src.include?("super.viewDidAppear(animated)\n        uydoshApplyButtonTitles()")
+        src = src.sub(
+          "super.viewDidAppear(animated)\n        uydoshApplyButtonTitles()",
+          "super.viewDidAppear(animated)\n        uydoshKeepScreenAwakeDuringScan()\n        uydoshApplyButtonTitles()"
+        )
+      else
+        src = src.sub(
+          "super.viewDidAppear(animated)\n        startSession()",
+          "super.viewDidAppear(animated)\n        uydoshKeepScreenAwakeDuringScan()\n        startSession()"
+        )
+      end
+
+      if src.include?("super.viewWillDisappear(animated)\n        uydoshHeadingReader.stop()")
+        src = src.sub(
+          "super.viewWillDisappear(animated)\n        uydoshHeadingReader.stop()",
+          "super.viewWillDisappear(animated)\n        uydoshRestoreScreenIdleTimer()\n        uydoshHeadingReader.stop()"
+        )
+      else
+        src = src.sub(
+          "super.viewWillDisappear(animated)\n        stopSession()",
+          "super.viewWillDisappear(animated)\n        uydoshRestoreScreenIdleTimer()\n        stopSession()"
+        )
+      end
+
+      File.write(room_capture_file, src)
+    end
+  end
+
   # Repair a broken scan-orientation patch from earlier Podfile versions.
   if File.exist?(room_capture_file)
     src = File.read(room_capture_file)

@@ -252,7 +252,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: PrimaryButton(
+                  child: PrimaryButtonFactory.iconTextCentered(
                     borderRadius: BorderRadius.circular(12),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -287,30 +287,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             }
                             await _loadPushStatus();
                           },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isDenied
-                              ? Icons.settings_outlined
-                              : Icons.notifications_outlined,
-                          color: buttonFg,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            isDenied
-                                ? L10n.get("notifications_open_settings")
-                                : L10n.get("menu_enable_notifications"),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: buttonFg,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+                    icon: isDenied
+                        ? Icons.settings_outlined
+                        : Icons.notifications_outlined,
+                    text: isDenied
+                        ? L10n.get("notifications_open_settings")
+                        : L10n.get("menu_enable_notifications"),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

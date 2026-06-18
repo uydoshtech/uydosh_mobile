@@ -1669,11 +1669,11 @@ class AppStrings {
       "telegram_alerts_settings_title": "Telegram alerts",
       "telegram_alerts_settings_body":
           "Open @uydosh_bot in Telegram and subscribe to get message and search alerts here.",
-      "telegram_alerts_settings_button": "Open @uydosh_bot",
+      "telegram_alerts_settings_button": "Enable Telegram notifications",
       "telegram_alerts_settings_waiting":
           "Subscribe in @uydosh_bot, then return here.",
       "telegram_alerts_connected": "Telegram alerts are on",
-      "telegram_alerts_disable_button": "Turn off Telegram alerts",
+      "telegram_alerts_disable_button": "Turn off notifications",
       "telegram_alerts_disabled_success": "Telegram alerts turned off",
       "telegram_alerts_disable_failed": "Could not turn off Telegram alerts",
       "apple_sign_in_failed": "Apple Sign-In failed: {error}",
@@ -3431,11 +3431,11 @@ class AppStrings {
       "telegram_alerts_settings_title": "Уведомления в Telegram",
       "telegram_alerts_settings_body":
           "Откройте @uydosh_bot в Telegram и подпишитесь на уведомления о сообщениях и совпадениях по поиску.",
-      "telegram_alerts_settings_button": "Открыть @uydosh_bot",
+      "telegram_alerts_settings_button": "Включить Телеграм уведомления",
       "telegram_alerts_settings_waiting":
           "Подпишитесь в @uydosh_bot, затем вернитесь сюда.",
       "telegram_alerts_connected": "Уведомления в Telegram включены",
-      "telegram_alerts_disable_button": "Отключить уведомления в Telegram",
+      "telegram_alerts_disable_button": "Отключить уведомления",
       "telegram_alerts_disabled_success": "Уведомления в Telegram отключены",
       "telegram_alerts_disable_failed":
           "Не удалось отключить уведомления в Telegram",
@@ -5208,12 +5208,12 @@ class AppStrings {
       "telegram_alerts_settings_title": "Telegram bildirishnomalari",
       "telegram_alerts_settings_body":
           "Telegramda @uydosh_bot ni oching va bildirishnomalarga obuna bo‘ling — xabarlar va qidiruv mosliklari shu yerda keladi.",
-      "telegram_alerts_settings_button": "@uydosh_bot ni ochish",
+      "telegram_alerts_settings_button":
+          "Telegram bildirishnomalarini yoqish",
       "telegram_alerts_settings_waiting":
           "@uydosh_bot da obuna bo‘ling, so‘ng bu yerga qayting.",
       "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan",
-      "telegram_alerts_disable_button":
-          "Telegram bildirishnomalarini o‘chirish",
+      "telegram_alerts_disable_button": "Bildirishnomalarni o‘chirish",
       "telegram_alerts_disabled_success":
           "Telegram bildirishnomalari o‘chirildi",
       "telegram_alerts_disable_failed":

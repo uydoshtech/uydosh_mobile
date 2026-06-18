@@ -291,7 +291,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
   }
 
   Widget _connectedCard(BuildContext context) {
-    const fg = Colors.white;
+    const fg = Colors.black;
     const cardBg = AppColors.telegramBrandBlue;
 
     return DecoratedBox(
@@ -348,7 +348,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: PrimaryButton(
+                  child: PrimaryButtonFactory.iconTextCentered(
                     borderRadius: BorderRadius.circular(12),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -358,7 +358,11 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
                     textColor: fg,
                     isLoading: _disabling,
                     onPressed: _disableAlerts,
-                    child: Text(L10n.get("telegram_alerts_disable_button")),
+                    icon: Icons.notifications_outlined,
+                    text: L10n.get("telegram_alerts_disable_button"),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -371,6 +375,7 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
 
   Widget _connectCard(BuildContext context) {
     const fg = Colors.white;
+    const buttonFg = Color(0xFF1F1300);
     const cardBg = AppColors.telegramBrandBlue;
 
     return DecoratedBox(
@@ -437,20 +442,19 @@ class _TelegramAlertsSettingsCardState extends State<TelegramAlertsSettingsCard>
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: PrimaryButton(
+              child: PrimaryButtonFactory.iconTextCentered(
                 borderRadius: BorderRadius.circular(12),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 surfaceGradientBase: Colors.white.withValues(alpha: 0.22),
-                textColor: fg,
+                textColor: buttonFg,
                 isLoading: _opening,
                 isDisabled: _waiting,
                 onPressed: _openBot,
-                child: Builder(
-                  builder: (context) => _textWithBoldBotName(
-                    L10n.get("telegram_alerts_settings_button"),
-                    DefaultTextStyle.of(context).style,
-                  ),
+                icon: Icons.notifications_outlined,
+                text: L10n.get("menu_enable_notifications"),
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
