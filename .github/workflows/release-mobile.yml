@@ -1,0 +1,68 @@
+name: Release Mobile (TestFlight + Android)
+
+# Mirrors local: bash tool/release_mobile_tags.sh --bump build --commit
+# 1. Bump version in pubspec + app files, commit, and push
+# 2. Create and push android-* and ios-* tags
+# 3. Tag pushes start release-apk.yml and release-testflight.yml
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type (same as scripts/bump_version.py)"
+        required: true
+        type: choice
+        default: build
+        options:
+          - build
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: release-mobile
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # workflow_dispatch branch selector (Actions → Run workflow)
+          ref: ${{ github.ref }}
+
+      - name: Configure git
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version, commit, and push mobile tags
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          bash tool/release_mobile_tags.sh --bump "${BUMP}" --commit
+
+      - name: Summary
+        run: |
+          set -euo pipefail
+          VERSION_RAW="$(grep -m1 -E '^version:[[:space:]]+' pubspec.yaml | sed -E 's/^version:[[:space:]]+//; s/[[:space:]]*#.*//; s/[[:space:]]+$//')"
+          TAG_SUFFIX="${VERSION_RAW//+/-}"
+          {
+            echo "### Mobile release triggered"
+            echo ""
+            echo "- **Version:** \`${VERSION_RAW}\`"
+            echo "- **Android tag:** \`android-${TAG_SUFFIX}\` → [release-apk workflow](${{ github.server_url }}/${{ github.repository }}/actions/workflows/release-apk.yml)"
+            echo "- **iOS tag:** \`ios-${TAG_SUFFIX}\` → [release-testflight workflow](${{ github.server_url }}/${{ github.repository }}/actions/workflows/release-testflight.yml)"
+            echo ""
+            echo "Build jobs start automatically from the tag pushes above."
+          } >> "${GITHUB_STEP_SUMMARY}"

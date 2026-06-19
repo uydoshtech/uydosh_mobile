@@ -10,7 +10,6 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
@@ -266,7 +265,10 @@ String _formatGigRequestTileBudget(GigRequest request) {
     L10n.getWithParams(
       "gigs_request_budget_fixed",
       params: {
-        "amount": IntFormatUtils.withDotThousands(display.amount),
+        "amount": CurrencyDisplayUtils.formatDisplayAmount(
+          display.amount,
+          display.currencyCode,
+        ),
         "currency": CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode),
       },
     ),

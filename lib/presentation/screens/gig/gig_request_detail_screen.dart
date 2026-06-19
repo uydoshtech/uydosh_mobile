@@ -14,7 +14,6 @@ import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -715,7 +714,10 @@ class _RequestDetailContentState extends State<_RequestDetailContent> {
         L10n.getWithParams(
           "gigs_request_budget_fixed",
           params: {
-            "amount": IntFormatUtils.withDotThousands(display.amount),
+            "amount": CurrencyDisplayUtils.formatDisplayAmount(
+              display.amount,
+              display.currencyCode,
+            ),
             "currency": CurrencyDisplayUtils.isoCodeForBadge(
               display.currencyCode,
             ),

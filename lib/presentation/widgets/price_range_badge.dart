@@ -96,7 +96,13 @@ class PriceRangeBadge extends StatelessWidget {
                     resolvedMin,
                     resolvedMax,
                   )
-                : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
+                : PriceRangeHelper.formatPriceRange(
+                    resolvedMin,
+                    resolvedMax,
+                    uzsCompact:
+                        listingNominalUzs &&
+                        display == PriceDisplayCurrency.national,
+                  );
 
         final backgroundColor =
             badgeBackgroundColor ??
@@ -146,7 +152,18 @@ class PriceRangeBadge extends StatelessWidget {
 class PriceRangeHelper {
   /// Format price range for display
   /// Returns the price range as a string (e.g., "50-250" or "50" when equal)
-  static String formatPriceRange(int minPrice, int maxPrice) {
+  static String formatPriceRange(
+    int minPrice,
+    int maxPrice, {
+    bool uzsCompact = false,
+  }) {
+    if (uzsCompact) {
+      final minStr = formatUzsCompact(minPrice);
+      if (minPrice == maxPrice) {
+        return minStr;
+      }
+      return "$minStr - ${formatUzsCompact(maxPrice)}";
+    }
     final minStr = IntFormatUtils.withDotThousands(minPrice);
     final maxStr = IntFormatUtils.withDotThousands(maxPrice);
     if (minPrice == maxPrice) {
@@ -209,7 +226,7 @@ class PriceRangeHelper {
     }
     final minNat = listingPriceToUzsForDisplay(minUzs);
     final maxNat = listingPriceToUzsForDisplay(maxUzs);
-    return formatPriceRange(minNat, maxNat);
+    return formatPriceRange(minNat, maxNat, uzsCompact: true);
   }
 
   /// Room-needed and group-forming listings use a budget range; roommate-needed
@@ -270,16 +287,7 @@ class PriceRangeHelper {
 
   /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`
   /// (millions). Shared with [PriceRangePicker] and filter chips.
-  static String formatUzsCompact(int uzs) {
-    final snapped = ((uzs + 5000) ~/ 10000) * 10000;
-    if (snapped >= 1000000) {
-      final whole = snapped ~/ 1000000;
-      final tenths = (snapped % 1000000) ~/ 100000;
-      if (tenths == 0) return "${whole}M";
-      return "$whole,${tenths}M";
-    }
-    return "${snapped ~/ 1000}K";
-  }
+  static String formatUzsCompact(int uzs) => IntFormatUtils.formatUzsCompact(uzs);
 
   /// Search filters store bounds on listing USD-index scale (same as
   /// [SearchFiltersState] / [PriceRangePicker] storage).
@@ -399,7 +407,13 @@ class PriceRangeText extends StatelessWidget {
                     resolvedMin,
                     resolvedMax,
                   )
-                : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
+                : PriceRangeHelper.formatPriceRange(
+                    resolvedMin,
+                    resolvedMax,
+                    uzsCompact:
+                        listingNominalUzs &&
+                        display == PriceDisplayCurrency.national,
+                  );
 
         return Text(
           formattedPriceRange,
@@ -470,7 +484,13 @@ class CompactPriceRangeBadge extends StatelessWidget {
                     resolvedMin,
                     resolvedMax,
                   )
-                : PriceRangeHelper.formatPriceRange(resolvedMin, resolvedMax);
+                : PriceRangeHelper.formatPriceRange(
+                    resolvedMin,
+                    resolvedMax,
+                    uzsCompact:
+                        listingNominalUzs &&
+                        display == PriceDisplayCurrency.national,
+                  );
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
         return Container(

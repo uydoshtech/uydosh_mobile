@@ -59,10 +59,15 @@ class PriceBadge extends StatelessWidget {
                     : PriceRangeHelper.listingPriceToUzsForDisplay(price))
                 : price;
 
+        final useUzsCompact =
+            listingNominalUzs && display == PriceDisplayCurrency.national;
         final formattedPrice =
             !listingNominalUzs && resolvedCurrency == "y.e."
                 ? PriceHelper.formatPriceWithYue(resolvedPrice)
-                : PriceHelper.formatPrice(resolvedPrice);
+                : PriceHelper.formatPrice(
+                    resolvedPrice,
+                    uzsCompact: useUzsCompact,
+                  );
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
         return Container(
@@ -105,8 +110,12 @@ class PriceBadge extends StatelessWidget {
 /// Helper class for price utilities
 /// Centralizes all price formatting logic
 class PriceHelper {
-  /// Format price for display with `.` thousands grouping (e.g. 500.000).
-  static String formatPrice(int price) {
+  /// Format price for display. UZS uses compact `K` / `M` labels; other
+  /// currencies use `.` thousands grouping (e.g. 500.000).
+  static String formatPrice(int price, {bool uzsCompact = false}) {
+    if (uzsCompact) {
+      return PriceRangeHelper.formatUzsCompact(price);
+    }
     return IntFormatUtils.withDotThousands(price);
   }
 
@@ -190,10 +199,15 @@ class PriceText extends StatelessWidget {
                     : PriceRangeHelper.listingPriceToUzsForDisplay(price))
                 : price;
 
+        final useUzsCompact =
+            listingNominalUzs && display == PriceDisplayCurrency.national;
         final formattedPrice =
             !listingNominalUzs && resolvedCurrency == "y.e."
                 ? PriceHelper.formatPriceWithYue(resolvedPrice)
-                : PriceHelper.formatPrice(resolvedPrice);
+                : PriceHelper.formatPrice(
+                    resolvedPrice,
+                    uzsCompact: useUzsCompact,
+                  );
 
         return Text(
           formattedPrice,
@@ -251,10 +265,15 @@ class CompactPriceBadge extends StatelessWidget {
                     : PriceRangeHelper.listingPriceToUzsForDisplay(price))
                 : price;
 
+        final useUzsCompact =
+            listingNominalUzs && display == PriceDisplayCurrency.national;
         final formattedPrice =
             !listingNominalUzs && resolvedCurrency == "y.e."
                 ? PriceHelper.formatPriceWithYue(resolvedPrice)
-                : PriceHelper.formatPrice(resolvedPrice);
+                : PriceHelper.formatPrice(
+                    resolvedPrice,
+                    uzsCompact: useUzsCompact,
+                  );
         final backgroundColor = themeState.priceBadgeBackgroundColor;
 
         return Container(

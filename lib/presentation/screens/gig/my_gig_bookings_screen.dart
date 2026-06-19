@@ -10,7 +10,6 @@ import "package:uy_dosh/base/state/pending_gig_bookings_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
@@ -444,7 +443,7 @@ class _BookingTile extends StatelessWidget {
                 );
                 return ListingPaymentsOutlineBadge(
                   label: CurrencyDisplayUtils.stripEmptyCurrencyArtifacts(
-                    "${IntFormatUtils.withDotThousands(display.amount)} ${CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode)}",
+                    "${CurrencyDisplayUtils.formatDisplayAmount(display.amount, display.currencyCode)} ${CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode)}",
                   ),
                 );
               },

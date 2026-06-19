@@ -59,6 +59,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
@@ -795,6 +796,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   Future<void> _loadCompatibility(ListingDetail listingDetail) async {
     final authState = AuthenticationState();
     if (!authState.isAuthenticated) return;
+
+    if (_isGroupFormingListing(listingDetail) &&
+        !ListingGroupProgress.canShowGroupCompatibility(listingDetail)) {
+      return;
+    }
 
     final listingUserId = listingDetail.user.id;
     final pageBloc = context.read<ListingDetailPageBloc>();
@@ -2317,6 +2323,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     // One-on-one compatibility is viewer vs owner; hide for owners. Group
     // compatibility is about the whole forming group — owners need it too.
     if (isOwner && !_isGroupFormingListing(listingDetail)) return null;
+
+    if (_isGroupFormingListing(listingDetail) &&
+        !ListingGroupProgress.canShowGroupCompatibility(listingDetail)) {
+      return null;
+    }
 
     // Scoped to the compatibility fields of pageState so async compatibility
     // calculation emissions only rebuild this section.

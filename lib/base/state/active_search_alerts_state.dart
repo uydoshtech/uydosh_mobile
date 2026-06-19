@@ -16,6 +16,7 @@ class ActiveSearchAlertsState extends ChangeNotifier {
   bool _hasActiveEnabledAlerts = false;
   int _enabledAlertsCount = 0;
   int _celebrationTick = 0;
+  bool _hasHydratedFromServer = false;
   List<SearchAlert>? _cachedAlerts;
 
   bool get hasActiveEnabledAlerts => _hasActiveEnabledAlerts;
@@ -49,10 +50,12 @@ class ActiveSearchAlertsState extends ChangeNotifier {
     final countChanged = _enabledAlertsCount != enabledCount;
     final hasChanged = _hasActiveEnabledAlerts != has;
 
-    // Auto-celebrate when the user gains enabled alerts (e.g. adds a new alert).
-    if (enabledCount > _enabledAlertsCount) {
+    // Auto-celebrate when the user gains enabled alerts (e.g. adds a new alert),
+    // but not on the first server hydration (avoids shake on cold start).
+    if (_hasHydratedFromServer && enabledCount > _enabledAlertsCount) {
       _celebrationTick++;
     }
+    _hasHydratedFromServer = true;
 
     if (!countChanged && !hasChanged) return;
     _enabledAlertsCount = enabledCount;
@@ -72,6 +75,7 @@ class ActiveSearchAlertsState extends ChangeNotifier {
         _hasActiveEnabledAlerts = false;
         _enabledAlertsCount = 0;
         _cachedAlerts = null;
+        _hasHydratedFromServer = false;
         notifyListeners();
         logger.d("ActiveSearchAlertsState: cleared (signed out)");
       }

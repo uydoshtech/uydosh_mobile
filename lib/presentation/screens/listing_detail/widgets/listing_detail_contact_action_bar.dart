@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
@@ -104,10 +105,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        button,
+        SizedBox(width: double.infinity, child: button),
         Positioned(
-          right: -2,
-          top: -2,
+          right: 10,
+          top: -4,
           child: PulseThenBlinkDotWidget(
             trigger: chatNotificationDotTrigger,
             color: unreadColor,
@@ -188,7 +189,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       alpha: isDark ? 0.10 : 0.08,
     );
 
-    final chrome = Stack(
+    final backgroundChrome = Stack(
       children: [
         // Tint + top divider.
         Positioned.fill(
@@ -218,6 +219,25 @@ class ListingDetailContactActionBar extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+
+    // Keep frosted chrome clipped to the rounded footer, but render action
+    // buttons (and their notification dots) outside that clip so badges can
+    // sit on the top-right corner of CTAs.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: _topRadius,
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: enableGlass,
+              sigma: isDark ? 18.0 : 22.0,
+              child: backgroundChrome,
+            ),
+          ),
+        ),
         SafeArea(
           top: false,
           child: Padding(
@@ -226,15 +246,6 @@ class ListingDetailContactActionBar extends StatelessWidget {
           ),
         ),
       ],
-    );
-
-    return ClipRRect(
-      borderRadius: _topRadius,
-      child: LiquidGlassRendering.backdropBlur(
-        enabled: enableGlass,
-        sigma: isDark ? 18.0 : 22.0,
-        child: chrome,
-      ),
     );
   }
 

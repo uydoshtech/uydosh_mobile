@@ -15,6 +15,16 @@ class ListingGroupProgress {
 
   String get ratioLabel => "$current/$target";
 
+  /// Group compatibility needs at least owner + one approved member.
+  static const int minMembersForGroupCompatibility = 2;
+
+  static bool canShowGroupCompatibility(ListingDetail detail) {
+    if (!isGroupFormingDetail(detail)) return false;
+    final progress = fromListingDetail(detail);
+    if (progress == null) return false;
+    return progress.current >= minMembersForGroupCompatibility;
+  }
+
   static bool isGroupFormingListing(Listing listing) {
     return listing.listingTypeId == ListingTypeIds.groupForming ||
         listing.listingType?.code == ListingTypeCodes.groupForming;

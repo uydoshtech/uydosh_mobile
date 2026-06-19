@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
@@ -110,10 +111,10 @@ class _ManageRequestsNotificationDot extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        child,
+        SizedBox(width: double.infinity, child: child),
         Positioned(
           right: 10,
-          top: 6,
+          top: -4,
           child: PulseThenBlinkDotWidget(
             trigger: trigger,
             color: unreadColor,

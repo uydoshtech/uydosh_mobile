@@ -20,7 +20,6 @@ import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_booking.dart";
@@ -640,7 +639,10 @@ class _OfferDetailContentStatefulState
       currencyCode: o.currencyCode,
     );
     final params = {
-      "amount": IntFormatUtils.withDotThousands(display.amount),
+      "amount": CurrencyDisplayUtils.formatDisplayAmount(
+        display.amount,
+        display.currencyCode,
+      ),
       "currency": CurrencyDisplayUtils.isoCodeForBadge(display.currencyCode),
     };
     final String key;

@@ -121,9 +121,14 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
 
 /// Notifications glyph with optional shake when alerts become active.
 class NotificationsBellIcon extends StatefulWidget {
-  const NotificationsBellIcon({required this.active, super.key});
+  const NotificationsBellIcon({
+    required this.active,
+    this.celebrationTick = 0,
+    super.key,
+  });
 
   final bool active;
+  final int celebrationTick;
 
   @override
   State<NotificationsBellIcon> createState() => _NotificationsBellIconState();
@@ -168,21 +173,32 @@ class _NotificationsBellIconState extends State<NotificationsBellIcon>
         weight: 40,
       ),
     ]).animate(_controller);
+
+    if (widget.active && widget.celebrationTick > 0) {
+      _scheduleShake();
+    }
   }
 
   @override
   void didUpdateWidget(covariant NotificationsBellIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!oldWidget.active && widget.active) {
-      // Icon swap first, then shake shortly after to avoid jerking.
-      final requestId = ++_shakeRequestId;
-      Future<void>.delayed(const Duration(milliseconds: 180), () {
-        if (!mounted) return;
-        if (_shakeRequestId != requestId) return;
-        if (!widget.active) return;
-        _controller.forward(from: 0);
-      });
+      _scheduleShake();
+    } else if (widget.celebrationTick != oldWidget.celebrationTick &&
+        widget.celebrationTick > 0) {
+      _scheduleShake();
     }
+  }
+
+  void _scheduleShake() {
+    // Icon swap first, then shake shortly after to avoid jerking.
+    final requestId = ++_shakeRequestId;
+    Future<void>.delayed(const Duration(milliseconds: 180), () {
+      if (!mounted) return;
+      if (_shakeRequestId != requestId) return;
+      if (!widget.active) return;
+      _controller.forward(from: 0);
+    });
   }
 
   @override

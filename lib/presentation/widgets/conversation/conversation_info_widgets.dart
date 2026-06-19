@@ -3,7 +3,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
-import "package:uy_dosh/base/utils/int_format_utils.dart";
+import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
@@ -413,7 +413,7 @@ class ConversationPriceDisplay extends StatelessWidget {
     if (price != null && price > 0) {
       final cc = conversation.priceCurrencyCode?.trim();
       if (cc != null && cc.isNotEmpty) {
-        final formatted = IntFormatUtils.withDotThousands(price);
+        final formatted = CurrencyDisplayUtils.formatDisplayAmount(price, cc);
         return "$formatted $cc";
       }
       final listingTypeCode = conversation.listingTypeId != null

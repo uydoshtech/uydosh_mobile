@@ -989,8 +989,9 @@ class MainNavigationState extends State<MainNavigation>
                   final signedIn = AuthenticationState().isAuthenticated;
                   if (!signedIn) return const SizedBox.shrink();
 
-                  final activeAlerts =
-                      ActiveSearchAlertsState().hasActiveEnabledAlerts;
+                  final alertsState = ActiveSearchAlertsState();
+                  final activeAlerts = alertsState.hasActiveEnabledAlerts;
+                  if (!activeAlerts) return const SizedBox.shrink();
 
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
@@ -1001,7 +1002,10 @@ class MainNavigationState extends State<MainNavigation>
                             const BorderRadius.all(Radius.circular(999)),
                         // iconData isn't used when iconWidget is provided; keep a stable default.
                         iconData: Icons.notifications_none_outlined,
-                        iconWidget: NotificationsBellIcon(active: activeAlerts),
+                        iconWidget: NotificationsBellIcon(
+                          active: activeAlerts,
+                          celebrationTick: alertsState.celebrationTick,
+                        ),
                         onPressed: () {
                           context.pushNotifications();
                         },

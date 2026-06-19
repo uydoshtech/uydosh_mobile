@@ -1,5 +1,6 @@
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/base/utils/int_format_utils.dart";
 
 /// Shared currency affordances for amount fields (gig flows).
 class CurrencyDisplayUtils {
@@ -81,6 +82,15 @@ class CurrencyDisplayUtils {
     return label
         .replaceAll(RegExp(r"\s{2,}(?=/)"), " ")
         .replaceAll(RegExp(r"\s+$"), "");
+  }
+
+  /// Formats a whole-currency amount for read-only UI (listings, gigs, badges).
+  /// UZS uses compact `K` / `M` labels; other currencies keep dot grouping.
+  static String formatDisplayAmount(int amount, String currencyCode) {
+    if (isoCode(currencyCode) == "UZS") {
+      return IntFormatUtils.formatUzsCompact(amount);
+    }
+    return IntFormatUtils.withDotThousands(amount);
   }
 
   static int _uzsToUsdRounded(int uzs) {

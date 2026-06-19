@@ -21,6 +21,19 @@ class IntFormatUtils {
     return buffer.toString();
   }
 
+  /// Snap to the nearest 10.000 UZS and render with `K` (thousands) or `M`
+  /// (millions), e.g. 500_000 → `500K`, 1_500_000 → `1,5M`.
+  static String formatUzsCompact(int uzs) {
+    final snapped = ((uzs + 5000) ~/ 10000) * 10000;
+    if (snapped >= 1000000) {
+      final whole = snapped ~/ 1000000;
+      final tenths = (snapped % 1000000) ~/ 100000;
+      if (tenths == 0) return "${whole}M";
+      return "$whole,${tenths}M";
+    }
+    return "${snapped ~/ 1000}K";
+  }
+
   /// Parses an amount the user may have typed with `.` thousands grouping.
   static int? parseAmountInput(String raw) {
     final d = raw.replaceAll(".", "").trim();
