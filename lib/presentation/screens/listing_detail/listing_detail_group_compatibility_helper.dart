@@ -83,10 +83,7 @@ class _GroupFieldSpec {
 class ListingDetailGroupCompatibilityHelper {
   ListingDetailGroupCompatibilityHelper._();
 
-  static GroupCompatibilityResult calculate(
-    List<UserProfile> participants, {
-    String? budgetDisplay,
-  }) {
+  static GroupCompatibilityResult calculate(List<UserProfile> participants) {
     if (participants.length < 2) {
       return const GroupCompatibilityResult(
         percent: null,
@@ -102,19 +99,9 @@ class ListingDetailGroupCompatibilityHelper {
     final partialMatches = <GroupCompatibilityPartialMatch>[];
     final discussItems = <GroupCompatibilityDiscussItem>[];
 
-    if (budgetDisplay != null && budgetDisplay.trim().isNotEmpty) {
-      fullMatches.add(
-        GroupCompatibilityFullMatch(
-          labelKey: "budget",
-          label: L10n.get("group_budget_per_person_heading"),
-          value: budgetDisplay,
-        ),
-      );
-    }
-
     final specs = _fieldSpecs();
-    var scoredFieldCount = budgetDisplay != null && budgetDisplay.isNotEmpty ? 1 : 0;
-    const totalFieldCount = 13;
+    var scoredFieldCount = 0;
+    const totalFieldCount = 12;
 
     for (final spec in specs) {
       final analysis = _analyzeField(participants, spec);

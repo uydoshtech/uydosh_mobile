@@ -189,8 +189,6 @@ class _ListingDetailCompatibilitySectionState
         return Icons.restaurant;
       case "pets_preference":
         return Icons.pets;
-      case "budget":
-        return Icons.payments;
       case "same_region":
       case "region":
         return Icons.location_on;
@@ -358,10 +356,10 @@ class _ListingDetailCompatibilitySectionState
     required String labelKey,
     required String label,
     required String value,
-    required Color accentColor,
   }) {
-    final iconColor =
-        _useCompactGroupSections ? accentColor : _getDescriptionTextColor();
+    final iconColor = _useCompactGroupSections
+        ? _getIconColor()
+        : _getDescriptionTextColor();
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -392,17 +390,6 @@ class _ListingDetailCompatibilitySectionState
     required Color accentColor,
     required _GroupSectionKind kind,
   }) {
-    if (_useCompactGroupSections) {
-      return Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: accentColor,
-        ),
-      );
-    }
-
     return Row(
       children: [
         Container(
@@ -598,7 +585,10 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupCompatibilityBody() {
-    final total = widget.groupMembers.length;
+    final memberCount = widget.groupMembers.length;
+    final scoredPreferenceCount = widget.scoredFieldCount > 0
+        ? widget.scoredFieldCount
+        : widget.groupFullMatches.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -625,7 +615,7 @@ class _ListingDetailCompatibilitySectionState
             "group_compatibility_full_matches",
             params: {
               "count": widget.groupFullMatches.length.toString(),
-              "total": total.toString(),
+              "total": scoredPreferenceCount.toString(),
             },
           ),
           accentColor: AppColors.success,
@@ -636,7 +626,6 @@ class _ListingDetailCompatibilitySectionState
                   labelKey: item.labelKey,
                   label: item.label,
                   value: item.value,
-                  accentColor: AppColors.success,
                 ),
               )
               .toList(),
@@ -646,7 +635,7 @@ class _ListingDetailCompatibilitySectionState
             "group_compatibility_partial_matches",
             params: {
               "count": _partialSectionAgreeCount().toString(),
-              "total": total.toString(),
+              "total": memberCount.toString(),
             },
           ),
           accentColor: AppColors.warning,
@@ -657,7 +646,6 @@ class _ListingDetailCompatibilitySectionState
                   labelKey: item.labelKey,
                   label: item.label,
                   value: item.value,
-                  accentColor: AppColors.warning,
                 ),
               )
               .toList(),
@@ -672,7 +660,6 @@ class _ListingDetailCompatibilitySectionState
                   labelKey: item.labelKey,
                   label: item.label,
                   value: item.summary,
-                  accentColor: AppColors.error,
                 ),
               )
               .toList(),

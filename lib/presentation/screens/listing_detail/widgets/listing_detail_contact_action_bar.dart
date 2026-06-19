@@ -1,3 +1,4 @@
+import "dart:math" as math;
 import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
@@ -36,13 +37,17 @@ import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 /// When [onMessage] is non-null, [inAppChatCtaLabel] should describe the chat
 /// action for the **current listing owner** (e.g. ARB `chat_with`). When null,
 /// falls back to [AppLocalizations.uydosh_chat].
+enum ListingDetailActionBarNotificationDot { top, primary }
+
 class ListingDetailContactActionBar extends StatelessWidget {
   const ListingDetailContactActionBar({
     this.onMessage,
     this.onTelegram,
     this.inAppChatCtaLabel,
-    this.showChatNotificationDot = false,
-    this.chatNotificationDotTrigger = 0,
+    this.onSecondary,
+    this.secondaryLabel,
+    this.notificationDot,
+    this.notificationDotTrigger = 0,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -52,8 +57,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onTelegram;
   final String? inAppChatCtaLabel;
-  final bool showChatNotificationDot;
-  final int chatNotificationDotTrigger;
+  final VoidCallback? onSecondary;
+  final String? secondaryLabel;
+  final ListingDetailActionBarNotificationDot? notificationDot;
+  final int notificationDotTrigger;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -87,15 +94,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     );
   }
 
-  Widget _chatButton(BuildContext context) {
-    final button = GlassGreenChatCtaButton(
-      onPressed: () => onMessage!.call(),
-      label: inAppChatCtaLabel ?? context.l10n.uydosh_chat,
-      borderRadius: const BorderRadius.all(Radius.circular(12)),
-      height: 48,
-    );
-    if (!showChatNotificationDot) return button;
-
+  Widget _wrapWithNotificationDot(BuildContext context, Widget child) {
     final theme = Theme.of(context);
     final unreadColor = ThemeState().unreadIndicatorColor;
     final dotBorderColor = theme.brightness == Brightness.dark
@@ -105,12 +104,12 @@ class ListingDetailContactActionBar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        SizedBox(width: double.infinity, child: button),
+        child,
         Positioned(
           right: 10,
           top: -4,
           child: PulseThenBlinkDotWidget(
-            trigger: chatNotificationDotTrigger,
+            trigger: notificationDotTrigger,
             color: unreadColor,
             size: 10,
             blinkDuration: const Duration(milliseconds: 750),
@@ -120,6 +119,109 @@ class ListingDetailContactActionBar extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _secondaryButton(BuildContext context, {required double width}) {
+    final accentColor = ListingDetailThemeHelper.iconColor;
+    final secondaryTextColor = _getSecondaryTextColor();
+    final button = _GlassNeumorphicCtaButton(
+      onPressed: () {
+        HapticFeedbackUtils.impact();
+        onSecondary!.call();
+      },
+      icon: Icons.group_outlined,
+      iconColor: accentColor,
+      label: secondaryLabel!,
+      labelColor: secondaryTextColor,
+      borderColor: accentColor,
+      width: width,
+    );
+    if (notificationDot != ListingDetailActionBarNotificationDot.top) {
+      return button;
+    }
+    return _wrapWithNotificationDot(context, button);
+  }
+
+  Widget _chatButton(BuildContext context, {double? width}) {
+    final button = GlassGreenChatCtaButton(
+      onPressed: () => onMessage!.call(),
+      label: inAppChatCtaLabel ?? context.l10n.uydosh_chat,
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+      height: 48,
+      width: width,
+    );
+    if (notificationDot != ListingDetailActionBarNotificationDot.primary) {
+      return button;
+    }
+    return _wrapWithNotificationDot(context, button);
+  }
+
+  bool get _hasSecondaryAction =>
+      onSecondary != null && secondaryLabel != null;
+
+  static const double _ctaHorizontalPadding = 24; // 12px each side
+  static const double _glassNeumorphicLeadingWidth = 28; // 18px icon + 10px gap
+  static const double _chatLeadingWidth = 26; // 18px icon + 8px gap
+
+  double _measureActionLabelWidth(
+    BuildContext context,
+    String label,
+    TextStyle style,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    return painter.width;
+  }
+
+  double _stackedActionsWidth(BuildContext context) {
+    final secondaryTextWidth = _measureActionLabelWidth(
+      context,
+      secondaryLabel!,
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1),
+    );
+    final primaryTextWidth = _measureActionLabelWidth(
+      context,
+      inAppChatCtaLabel ?? context.l10n.uydosh_chat,
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, height: 1),
+    );
+    return math.max(
+      secondaryTextWidth + _ctaHorizontalPadding + _glassNeumorphicLeadingWidth,
+      primaryTextWidth + _ctaHorizontalPadding + _chatLeadingWidth,
+    );
+  }
+
+  /// Stacked CTAs share one centered column width inside the frosted footer,
+  /// matching the single-chat layout (`Center` + content-sized primary).
+  Widget _buildStackedActions(BuildContext context) {
+    final actionWidth = _stackedActionsWidth(context);
+    return SizedBox(
+      width: double.infinity,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: actionWidth,
+              child: _secondaryButton(context, width: actionWidth),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: actionWidth,
+              child: _chatButton(context, width: actionWidth),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBarContent() {
+    if (!_hasSecondaryAction) return _buildActions();
+    return Builder(builder: _buildStackedActions);
   }
 
   Widget _buildActions() {
@@ -134,16 +236,30 @@ class ListingDetailContactActionBar extends StatelessWidget {
     if (!hasTelegram) {
       return SizedBox(
         width: double.infinity,
-        child: Builder(builder: _chatButton),
+        child: Center(
+          child: Builder(builder: (context) => _chatButton(context)),
+        ),
       );
     }
     return Row(
       children: [
         Expanded(child: Builder(builder: _telegramButton)),
         const SizedBox(width: 12),
-        Expanded(child: Builder(builder: _chatButton)),
+        Expanded(
+          child: Builder(
+            builder: (context) => _chatButton(context, width: double.infinity),
+          ),
+        ),
       ],
     );
+  }
+
+  EdgeInsets _barPadding() {
+    if (notificationDot != ListingDetailActionBarNotificationDot.top) {
+      return const EdgeInsets.fromLTRB(16, 10, 16, 10);
+    }
+    // Leave room for the badge that sits slightly above the top CTA.
+    return const EdgeInsets.fromLTRB(16, 14, 16, 10);
   }
 
   /// Opaque fallback for themes that don't use liquid glass chrome.
@@ -157,8 +273,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-          child: _buildActions(),
+          padding: _barPadding(),
+          child: _buildBarContent(),
         ),
       ),
     );
@@ -241,8 +357,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: _buildActions(),
+            padding: _barPadding(),
+            child: _buildBarContent(),
           ),
         ),
       ],
@@ -270,6 +386,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.label,
     required this.labelColor,
     required this.borderColor,
+    this.width,
   });
 
   final VoidCallback onPressed;
@@ -278,6 +395,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final String label;
   final Color labelColor;
   final Color borderColor;
+  final double? width;
 
   @override
   State<_GlassNeumorphicCtaButton> createState() =>
@@ -356,6 +474,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
     );
 
     return SizedBox(
+      width: widget.width,
       height: 48,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 90),

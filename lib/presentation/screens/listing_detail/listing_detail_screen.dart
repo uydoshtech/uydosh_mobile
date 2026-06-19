@@ -335,7 +335,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                 )
             : null,
         showManageRequestsDot: pendingCount > 0,
-        manageRequestsDotOnSecondary: hasChat,
         manageRequestsDotTrigger: pendingCount,
       );
     }
@@ -924,21 +923,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupMembers: groupMembers,
     );
 
-    final bounds = PriceRangeHelper.resolveListingDisplayBounds(
-      storedPrice: listingDetail.price,
-      listingTypeCode: ListingTypeCodes.groupForming,
-      minPrice: listingDetail.minPrice,
-      maxPrice: listingDetail.maxPrice,
-    );
-    final budgetDisplay = PriceRangeHelper.formatListingPriceRangeWithCurrency(
-      bounds.min,
-      bounds.max,
-    );
-
-    final groupResult = ListingDetailGroupCompatibilityHelper.calculate(
-      profiles,
-      budgetDisplay: budgetDisplay,
-    );
+    final groupResult = ListingDetailGroupCompatibilityHelper.calculate(profiles);
 
     if (!mounted) return;
     if (_getCurrentListingUserId() != listingUserId) return;

@@ -52,14 +52,11 @@ void main() {
         ),
       ];
 
-      final result = ListingDetailGroupCompatibilityHelper.calculate(
-        profiles,
-        budgetDisplay: "120-180 \$/month",
-      );
+      final result = ListingDetailGroupCompatibilityHelper.calculate(profiles);
 
       expect(result.percent, isNotNull);
       expect(result.fullMatches.any((m) => m.labelKey == "noise_level"), isTrue);
-      expect(result.fullMatches.any((m) => m.labelKey == "budget"), isTrue);
+      expect(result.fullMatches.any((m) => m.labelKey == "budget"), isFalse);
       expect(result.discussItems, isEmpty);
     });
 
