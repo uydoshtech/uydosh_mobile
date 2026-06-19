@@ -12,9 +12,12 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -72,6 +75,13 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     required this.onCompleteProfile,
     this.currentUserAvatarUrl,
     this.ownerAvatarUrl,
+    this.isGroupCompatibility = false,
+    this.groupMembers = const [],
+    this.groupFullMatches = const [],
+    this.groupPartialMatches = const [],
+    this.groupDiscussItems = const [],
+    this.currentUserId,
+    this.onViewMemberProfile,
     super.key,
   });
 
@@ -94,6 +104,13 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final VoidCallback onCompleteProfile;
   final String? currentUserAvatarUrl;
   final String? ownerAvatarUrl;
+  final bool isGroupCompatibility;
+  final List<ConversationMemberSummary> groupMembers;
+  final List<GroupCompatibilityFullMatch> groupFullMatches;
+  final List<GroupCompatibilityPartialMatch> groupPartialMatches;
+  final List<GroupCompatibilityDiscussItem> groupDiscussItems;
+  final int? currentUserId;
+  final void Function(int userId)? onViewMemberProfile;
 
   @override
   State<ListingDetailCompatibilitySection> createState() =>
@@ -171,6 +188,8 @@ class _ListingDetailCompatibilitySectionState
         return Icons.restaurant;
       case "pets_preference":
         return Icons.pets;
+      case "budget":
+        return Icons.payments;
       case "same_region":
       case "region":
         return Icons.location_on;
@@ -274,6 +293,290 @@ class _ListingDetailCompatibilitySectionState
           fallback: fallback,
         ),
       ),
+    );
+  }
+
+  Widget _buildGroupHeaderAvatars() {
+    return ChatParticipantAvatarStack(
+      participants: widget.groupMembers,
+      currentUserId: widget.currentUserId,
+      avatarSize: 32,
+      maxVisible: 5,
+    );
+  }
+
+  Widget _buildGroupHeaderTitle() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          L10n.get("group_compatibility_title"),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: _getDescriptionTextColor(),
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          L10n.getWithParams(
+            "group_compatibility_subtitle",
+            params: {"count": widget.groupMembers.length.toString()},
+          ),
+          style: TextStyle(
+            fontSize: 13,
+            color: _getDescriptionTextColor().withValues(alpha: 0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGroupFieldRow({
+    required String labelKey,
+    required String label,
+    required String value,
+    required Color accentColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ThemeIcon(
+            _getLifestyleIcon(labelKey),
+            size: 20,
+            color: accentColor,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              "$label: $value",
+              style: TextStyle(
+                fontSize: 14,
+                color: _getDescriptionTextColor(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupSection({
+    required String title,
+    required Color accentColor,
+    required List<Widget> children,
+  }) {
+    if (children.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentColor.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: accentColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupCompatibilitySummaryBar() {
+    final fullCount = widget.groupFullMatches.length;
+    final partialCount = widget.groupPartialMatches.length;
+    final discussCount = widget.groupDiscussItems.length;
+    if (fullCount + partialCount + discussCount == 0) {
+      return const SizedBox.shrink();
+    }
+
+    Widget chip(IconData icon, int count, Color color) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(icon, size: 16, color: color, useThemeColor: false),
+          const SizedBox(width: 4),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _getDescriptionTextColor(),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _getDescriptionTextColor().withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          if (fullCount > 0)
+            chip(Icons.check_circle_outline, fullCount, AppColors.success),
+          if (partialCount > 0)
+            chip(Icons.waves, partialCount, AppColors.warning),
+          if (discussCount > 0)
+            chip(Icons.warning_amber_rounded, discussCount, AppColors.error),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupCompatibilityBody() {
+    final total = widget.groupMembers.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.scoredFieldCount > 0 &&
+            widget.scoredFieldCount < widget.totalFieldCount)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              L10n.getWithParams(
+                "compatibility_based_on_preferences",
+                params: {
+                  "scored": widget.scoredFieldCount.toString(),
+                  "total": widget.totalFieldCount.toString(),
+                },
+              ),
+              style: TextStyle(
+                fontSize: 13,
+                color: _getDescriptionTextColor().withValues(alpha: 0.85),
+              ),
+            ),
+          ),
+        _buildGroupSection(
+          title: L10n.getWithParams(
+            "group_compatibility_full_matches",
+            params: {
+              "count": widget.groupFullMatches.length.toString(),
+              "total": total.toString(),
+            },
+          ),
+          accentColor: AppColors.success,
+          children: widget.groupFullMatches
+              .map(
+                (item) => _buildGroupFieldRow(
+                  labelKey: item.labelKey,
+                  label: item.label,
+                  value: item.value,
+                  accentColor: AppColors.success,
+                ),
+              )
+              .toList(),
+        ),
+        _buildGroupSection(
+          title: L10n.get("group_compatibility_partial_matches"),
+          accentColor: AppColors.warning,
+          children: widget.groupPartialMatches
+              .map(
+                (item) => _buildGroupFieldRow(
+                  labelKey: item.labelKey,
+                  label: item.label,
+                  value: item.value,
+                  accentColor: AppColors.warning,
+                ),
+              )
+              .toList(),
+        ),
+        _buildGroupSection(
+          title: L10n.get("group_compatibility_discuss"),
+          accentColor: AppColors.error,
+          children: widget.groupDiscussItems
+              .map(
+                (item) => _buildGroupFieldRow(
+                  labelKey: item.labelKey,
+                  label: item.label,
+                  value: item.summary,
+                  accentColor: AppColors.error,
+                ),
+              )
+              .toList(),
+        ),
+        if (widget.groupFullMatches.isEmpty &&
+            widget.groupPartialMatches.isEmpty &&
+            widget.groupDiscussItems.isEmpty)
+          UydoshLinkButton(
+            text: L10n.get("complete_profile"),
+            onPressed: widget.onCompleteProfile,
+            color: _getIconColor(),
+            outlined: true,
+            maxLines: 1,
+          ),
+        const SizedBox(height: 14),
+        _buildGroupCompatibilitySummaryBar(),
+        const SizedBox(height: 14),
+        if (widget.onViewMemberProfile != null)
+          GhostButtonFactory.iconText(
+            onPressed: () {
+              HapticFeedbackUtils.impact();
+              _showMemberProfilesSheet(context);
+            },
+            width: double.infinity,
+            icon: Icons.group_outlined,
+            iconSize: 18,
+            text: L10n.get("view_member_profiles"),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            borderColor: _getIconColor(),
+            textColor: _getDescriptionTextColor(),
+            iconColor: _getIconColor(),
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showMemberProfilesSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            itemCount: widget.groupMembers.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final member = widget.groupMembers[index];
+              return ListTile(
+                leading: _buildHeaderAvatar(member.avatarUrl, size: 40),
+                title: Text(member.name),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  widget.onViewMemberProfile?.call(member.userId);
+                },
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -387,7 +690,10 @@ class _ListingDetailCompatibilitySectionState
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (isAuthenticated) ...[
-                _buildOverlappingHeaderAvatars(),
+                if (widget.isGroupCompatibility)
+                  _buildGroupHeaderAvatars()
+                else
+                  _buildOverlappingHeaderAvatars(),
                 const SizedBox(width: 10),
               ] else
                 ThemeIcon(
@@ -403,16 +709,18 @@ class _ListingDetailCompatibilitySectionState
                 ),
               if (!isAuthenticated) const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  L10n.get("compatibility_title"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: _getDescriptionTextColor(),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: widget.isGroupCompatibility && isAuthenticated
+                    ? _buildGroupHeaderTitle()
+                    : Text(
+                        L10n.get("compatibility_title"),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _getDescriptionTextColor(),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
               ),
               if (isAuthenticated) ...[
                 const SizedBox(width: 8),
@@ -476,6 +784,10 @@ class _ListingDetailCompatibilitySectionState
                 valueListenable:
                     ClientListingContactsConfig.showListingContacts,
                 builder: (context, showContacts, _) {
+                  if (widget.isGroupCompatibility) {
+                    return _buildGroupCompatibilityBody();
+                  }
+
                   final hasPhone = showContacts &&
                       (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
                       widget.onPhone != null;

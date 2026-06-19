@@ -1,3 +1,26 @@
+class ListingGroupMember {
+  const ListingGroupMember({
+    required this.userId,
+    required this.name,
+    this.avatarUrl,
+    this.role,
+  });
+
+  factory ListingGroupMember.fromJson(Map<String, dynamic> json) {
+    return ListingGroupMember(
+      userId: (json["user_id"] as num).toInt(),
+      name: json["name"] as String? ?? "User",
+      avatarUrl: json["avatar_url"] as String?,
+      role: json["role"] as String?,
+    );
+  }
+
+  final int userId;
+  final String name;
+  final String? avatarUrl;
+  final String? role;
+}
+
 class ListingGroupContext {
   const ListingGroupContext({
     required this.isGroupForming,

@@ -31,6 +31,8 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
@@ -187,6 +189,8 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _peerProfileFetchInFlight = false;
   bool _inviteBookingInFlight = false;
   int? _peerProfileFetchedForUserId;
+  List<ConversationMemberSummary> _groupParticipants = [];
+  bool _groupMembersFetchInFlight = false;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
   // (Gemini's English string) and the severity, then re-derive the
@@ -252,6 +256,75 @@ class _ChatScreenState extends State<ChatScreen> {
     if (ids.isEmpty) return 0;
     final sorted = ids.toList()..sort();
     return Object.hashAll(sorted);
+  }
+
+  bool get _isGroupChat {
+    final ctx = widget.conversationContextType?.trim().toLowerCase();
+    if (ctx == "listing_group") return true;
+    return widget.listingTypeId == ListingTypeIds.groupForming &&
+        widget.otherUserId == null;
+  }
+
+  Future<void> _loadGroupParticipants() async {
+    if (!_isGroupChat || _groupMembersFetchInFlight) return;
+    _groupMembersFetchInFlight = true;
+    try {
+      final members = await getIt<IMessagingService>().getConversationMembers(
+        widget.conversationId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _groupParticipants = members.isNotEmpty
+            ? members
+            : _participantsFromMessages();
+      });
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error fetching group participants: $e");
+      if (!mounted) return;
+      final fallback = _participantsFromMessages();
+      if (fallback.isNotEmpty) {
+        setState(() => _groupParticipants = fallback);
+      }
+    } finally {
+      _groupMembersFetchInFlight = false;
+    }
+  }
+
+  /// Best-effort roster when the members endpoint is unavailable or empty.
+  List<ConversationMemberSummary> _participantsFromMessages() {
+    final byId = <int, ConversationMemberSummary>{};
+    for (final message in _messages) {
+      if (byId.containsKey(message.senderId)) continue;
+      final sender = message.sender;
+      final profile = sender?.profile;
+      byId[message.senderId] = ConversationMemberSummary(
+        userId: message.senderId,
+        name: profile?.name?.trim().isNotEmpty == true
+            ? profile!.name!.trim()
+            : (sender?.email ?? "User"),
+        avatarUrl: profile?.avatarUrl,
+      );
+    }
+    final me = _currentUserId;
+    final myProfile = _currentUserProfile;
+    if (me != null && myProfile != null) {
+      byId[me] = ConversationMemberSummary(
+        userId: me,
+        name: myProfile.name?.trim().isNotEmpty == true
+            ? myProfile.name!.trim()
+            : "User",
+        avatarUrl: myProfile.avatarUrl,
+      );
+    }
+    return byId.values.toList();
+  }
+
+  void _refreshGroupParticipantsFromMessages() {
+    if (!_isGroupChat) return;
+    final derived = _participantsFromMessages();
+    if (derived.isEmpty) return;
+    if (_groupParticipants.isNotEmpty) return;
+    setState(() => _groupParticipants = derived);
   }
 
   List<MessageGroupListItem> _groupedItemsFor(List<Message> messages) {
@@ -394,7 +467,11 @@ class _ChatScreenState extends State<ChatScreen> {
           );
       if (!mounted) return;
       setState(() => _isAdmin = isAdmin);
-      _refreshPeerAvatarIfPossible();
+      if (_isGroupChat) {
+        unawaited(_loadGroupParticipants());
+      } else {
+        _refreshPeerAvatarIfPossible();
+      }
     } catch (e) {
       logger.d("❌ [ChatScreen] Error initializing chat: $e");
     }
@@ -451,6 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _messages = nextMessages;
     _hasLoadedMessagesForConversation = true;
+    _refreshGroupParticipantsFromMessages();
 
     // Play incoming sound only AFTER the UI has a chance to render the new bubble.
     // Also dedupe if multiple refreshes return the same latest message.
@@ -923,11 +1001,28 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String _getPeerDisplayName(BuildContext context) {
+    if (_isGroupChat) {
+      return _groupHeaderTitle();
+    }
     final name = widget.otherUserName?.trim();
     if (name != null && name.isNotEmpty) {
       return name;
     }
     return L10n.get("chat");
+  }
+
+  String _groupHeaderTitle() {
+    final names = _groupParticipants
+        .map((p) => p.name.trim())
+        .where((n) => n.isNotEmpty)
+        .toList();
+    if (names.isEmpty) {
+      return L10n.get("chat");
+    }
+    if (names.length <= 3) {
+      return names.join(", ");
+    }
+    return "${names.take(2).join(", ")} +${names.length - 2}";
   }
 
   EdgeInsets _messagesListPadding(BuildContext context) {
@@ -1161,6 +1256,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       setState(() {
                         _currentUserProfile = profile;
                       });
+                      if (_isGroupChat && _groupParticipants.isEmpty) {
+                        _refreshGroupParticipantsFromMessages();
+                      }
                     },
                     error: (message) {
                       logger.d(
@@ -1248,9 +1346,14 @@ class _ChatScreenState extends State<ChatScreen> {
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
             subtitle: _chatHeaderSubtitle(),
-            peerAvatarUrl: _peerAvatarUrl,
-            peerInitials: widget.otherUserInitials,
-            onPeerAvatarTap: _navigateToUserProfile,
+            peerAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
+            peerInitials: _isGroupChat ? null : widget.otherUserInitials,
+            groupParticipants:
+                _isGroupChat && _groupParticipants.isNotEmpty
+                    ? _groupParticipants
+                    : null,
+            currentUserId: _currentUserId,
+            onPeerAvatarTap: _isGroupChat ? null : _navigateToUserProfile,
             actionBeforeMenu: widget.gigRequestId != null
                 ? _buildInviteToBookAppBarButton(context)
                 : null,
@@ -1392,8 +1495,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 setStateIfMounted(() => _newMessageIds.remove(message.id));
               },
               currentUserProfile: _currentUserProfile,
-              otherUserInitials: widget.otherUserInitials,
-              otherUserAvatarUrl: _peerAvatarUrl,
+              otherUserInitials:
+                  _isGroupChat ? null : widget.otherUserInitials,
+              otherUserAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
               translation: _translationsById[message.id],
               isTranslating: _translationInFlightIds.contains(message.id),
               // The global "Show original messages" mode flips the default

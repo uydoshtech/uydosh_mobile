@@ -607,10 +607,7 @@ class _ListingTileState extends State<ListingTile> {
                           ),
                           const SizedBox(width: 20),
                           Expanded(
-                            child: Padding(
-                              // Keep text clear of the centered chevron.
-                              padding: const EdgeInsets.only(right: 24),
-                              child: Column(
+                            child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -712,7 +709,6 @@ class _ListingTileState extends State<ListingTile> {
                                   ],
                                 ],
                               ),
-                            ),
                           ),
                         ],
                       ),
@@ -725,19 +721,6 @@ class _ListingTileState extends State<ListingTile> {
                         _buildTileFooter(),
                       ],
                     ],
-                  ),
-                ),
-                // Arrow positioned in the middle of tile height
-                Positioned(
-                  right: 16,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: ThemeIcon(
-                      Icons.arrow_forward_ios,
-                      size: 19.2, // 24 * 0.8 = 19.2
-                      color: _getArrowIconColor(),
-                    ),
                   ),
                 ),
               ],
@@ -1356,15 +1339,6 @@ class _ListingTileState extends State<ListingTile> {
       return _blueThemeSecondary;
     } else {
       return Colors.black; // Default text for light theme
-    }
-  }
-
-  // Theme-dependent color method for arrow icon
-  Color _getArrowIconColor() {
-    if (ThemeState().isBlueTheme) {
-      return AppColors.textLight.withValues(alpha: 0.5);
-    } else {
-      return AppColors.textGrey400; // Default grey for light theme
     }
   }
 

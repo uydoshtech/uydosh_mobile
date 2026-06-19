@@ -45,6 +45,7 @@ import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -75,6 +76,7 @@ import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
@@ -265,7 +267,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         builder: (_) => ChatScreen(
           conversationId: conversationId,
           listingId: listingDetail.id,
+          listingTypeId: listingDetail.listingTypeId,
           listingTitle: listingDetail.title,
+          conversationContextType: "listing_group",
         ),
       ),
     );
@@ -612,7 +616,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       if (AuthenticationState().isAuthenticated) {
         _recordView(listingDetail.id);
       }
-      _loadCompatibility(listingDetail.user.id);
+      _loadCompatibility(listingDetail);
     }
     _loadSimilarListingsCount(listingDetail);
     _loadNearbyMatchesCount(listingDetail);
@@ -780,10 +784,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
   }
 
-  Future<void> _loadCompatibility(int listingUserId) async {
+  Future<void> _loadCompatibility(ListingDetail listingDetail) async {
     final authState = AuthenticationState();
     if (!authState.isAuthenticated) return;
 
+    final listingUserId = listingDetail.user.id;
     final pageBloc = context.read<ListingDetailPageBloc>();
     if (pageBloc.state.isLoadingCompatibility &&
         pageBloc.state.compatibilityListingUserId == listingUserId) {
@@ -794,13 +799,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     try {
       final userProfileService = getIt<IUserProfileService>();
-      final profiles = await Future.wait([
-        userProfileService.getCurrentUserProfile(),
-        userProfileService.getUserProfile(listingUserId),
-      ]);
+      final currentProfile = await userProfileService.getCurrentUserProfile();
 
-      final currentProfile = profiles[0];
-      final ownerProfile = profiles[1];
+      if (_isGroupFormingListing(listingDetail)) {
+        await _loadGroupCompatibility(
+          listingDetail: listingDetail,
+          listingUserId: listingUserId,
+          currentProfile: currentProfile,
+          pageBloc: pageBloc,
+          userProfileService: userProfileService,
+        );
+        return;
+      }
+
+      final ownerProfile =
+          await userProfileService.getUserProfile(listingUserId);
       final result = ListingDetailCompatibilityHelper.calculate(
         currentProfile,
         ownerProfile,
@@ -826,6 +839,109 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       if (!mounted) return;
       pageBloc.setCompatibilityError(e.toString());
     }
+  }
+
+  Future<void> _loadGroupCompatibility({
+    required ListingDetail listingDetail,
+    required int listingUserId,
+    required UserProfile currentProfile,
+    required ListingDetailPageBloc pageBloc,
+    required IUserProfileService userProfileService,
+  }) async {
+    final members =
+        await getIt<IListingGroupService>().listMembers(listingId: listingDetail.id);
+
+    final memberUserIds = members.map((m) => m.userId).toSet();
+    final profiles = <UserProfile>[];
+    final groupMembers = <ConversationMemberSummary>[];
+
+    Future<UserProfile> profileFor(int userId) async {
+      if (userId == currentProfile.userId) return currentProfile;
+      return userProfileService.getUserProfile(userId);
+    }
+
+    if (members.isEmpty) {
+      if (listingUserId != currentProfile.userId) {
+        final ownerProfile = await profileFor(listingUserId);
+        profiles.add(ownerProfile);
+        groupMembers.add(
+          ConversationMemberSummary(
+            userId: ownerProfile.userId,
+            name: ownerProfile.name ?? L10n.get("user"),
+            avatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
+          ),
+        );
+      }
+      if (!profiles.any((p) => p.userId == currentProfile.userId)) {
+        profiles.add(currentProfile);
+        groupMembers.add(
+          ConversationMemberSummary(
+            userId: currentProfile.userId,
+            name: currentProfile.name ?? L10n.get("user"),
+            avatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
+          ),
+        );
+      }
+    } else {
+      final fetchedProfiles = await Future.wait(
+        members.map((m) => profileFor(m.userId)),
+      );
+      profiles.addAll(fetchedProfiles);
+      for (final profile in fetchedProfiles) {
+        groupMembers.add(
+          ConversationMemberSummary(
+            userId: profile.userId,
+            name: profile.name ?? L10n.get("user"),
+            avatarUrl: _listingAuthorAvatarUrlFromProfile(profile),
+          ),
+        );
+      }
+      if (!memberUserIds.contains(currentProfile.userId)) {
+        profiles.add(currentProfile);
+        groupMembers.add(
+          ConversationMemberSummary(
+            userId: currentProfile.userId,
+            name: currentProfile.name ?? L10n.get("user"),
+            avatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
+          ),
+        );
+      }
+    }
+
+    final bounds = PriceRangeHelper.resolveListingDisplayBounds(
+      storedPrice: listingDetail.price,
+      listingTypeCode: ListingTypeCodes.groupForming,
+      minPrice: listingDetail.minPrice,
+      maxPrice: listingDetail.maxPrice,
+    );
+    final budgetDisplay = PriceRangeHelper.formatListingPriceRangeWithCurrency(
+      bounds.min,
+      bounds.max,
+    );
+
+    final groupResult = ListingDetailGroupCompatibilityHelper.calculate(
+      profiles,
+      budgetDisplay: budgetDisplay,
+    );
+
+    if (!mounted) return;
+    if (_getCurrentListingUserId() != listingUserId) return;
+
+    pageBloc.setCompatibilityResult(
+      listingUserId: listingUserId,
+      percent: groupResult.percent,
+      matches: const [],
+      differences: const [],
+      dealbreakers: const [],
+      scoredFieldCount: groupResult.scoredFieldCount,
+      totalFieldCount: groupResult.totalFieldCount,
+      currentUserAvatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
+      isGroupCompatibility: true,
+      groupMembers: groupMembers,
+      groupFullMatches: groupResult.fullMatches,
+      groupPartialMatches: groupResult.partialMatches,
+      groupDiscussItems: groupResult.discussItems,
+    );
   }
 
   Future<void> _openTelegramChat(String handle) async {
@@ -2179,6 +2295,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           int compatibilityTotalFieldCount,
           String? ownerAvatarUrl,
           String? currentUserAvatarUrl,
+          bool isGroupCompatibility,
+          List<ConversationMemberSummary> groupMembers,
+          List<GroupCompatibilityFullMatch> groupFullMatches,
+          List<GroupCompatibilityPartialMatch> groupPartialMatches,
+          List<GroupCompatibilityDiscussItem> groupDiscussItems,
         })>(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
@@ -2191,6 +2312,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         compatibilityTotalFieldCount: s.compatibilityTotalFieldCount,
         ownerAvatarUrl: s.ownerAvatarUrl,
         currentUserAvatarUrl: s.currentUserAvatarUrl,
+        isGroupCompatibility: s.isGroupCompatibility,
+        groupMembers: s.groupMembers,
+        groupFullMatches: s.groupFullMatches,
+        groupPartialMatches: s.groupPartialMatches,
+        groupDiscussItems: s.groupDiscussItems,
       ),
       builder: (context, compat) => ListingDetailCompatibilitySection(
         listingDetail: listingDetail,
@@ -2206,6 +2332,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         totalFieldCount: compat.compatibilityTotalFieldCount,
         currentUserAvatarUrl: compat.currentUserAvatarUrl,
         ownerAvatarUrl: compat.ownerAvatarUrl,
+        isGroupCompatibility: compat.isGroupCompatibility,
+        groupMembers: compat.groupMembers,
+        groupFullMatches: compat.groupFullMatches,
+        groupPartialMatches: compat.groupPartialMatches,
+        groupDiscussItems: compat.groupDiscussItems,
+        currentUserId: _sessionUserId,
+        onViewMemberProfile: (userId) => _navigateToProfile(userId),
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
         onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)

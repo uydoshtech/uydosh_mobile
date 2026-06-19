@@ -15,6 +15,8 @@ abstract class IListingGroupService {
     required int listingId,
   });
 
+  Future<List<ListingGroupMember>> listMembers({required int listingId});
+
   Future<int> approveJoinRequest({
     required int listingId,
     required int requestId,
@@ -52,6 +54,24 @@ class ListingGroupService implements IListingGroupService {
       basePath: EnvironmentUtil.basePath,
       data: const _EmptyBody(),
     );
+  }
+
+  @override
+  Future<List<ListingGroupMember>> listMembers({
+    required int listingId,
+  }) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/listings/$listingId/group/members",
+      (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+    );
+    final data = response["data"];
+    if (data is! List) return const [];
+    return data
+        .map(
+          (e) => ListingGroupMember.fromJson(e as Map<String, dynamic>),
+        )
+        .toList();
   }
 
   @override

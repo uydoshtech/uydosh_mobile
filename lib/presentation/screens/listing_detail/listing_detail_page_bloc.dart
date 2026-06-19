@@ -1,4 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 
 /// Page-level state for listing detail screen. Replaces setState with bloc
@@ -26,6 +28,11 @@ class ListingDetailPageState {
     this.ownerNameListingUserId,
     this.ownerAvatarUrl,
     this.currentUserAvatarUrl,
+    this.isGroupCompatibility = false,
+    this.groupMembers = const [],
+    this.groupFullMatches = const [],
+    this.groupPartialMatches = const [],
+    this.groupDiscussItems = const [],
     this.similarListingsCount,
     this.similarListingsCountListingId,
     this.isLoadingSimilarListingsCount = false,
@@ -55,6 +62,11 @@ class ListingDetailPageState {
   final int? ownerNameListingUserId;
   final String? ownerAvatarUrl;
   final String? currentUserAvatarUrl;
+  final bool isGroupCompatibility;
+  final List<ConversationMemberSummary> groupMembers;
+  final List<GroupCompatibilityFullMatch> groupFullMatches;
+  final List<GroupCompatibilityPartialMatch> groupPartialMatches;
+  final List<GroupCompatibilityDiscussItem> groupDiscussItems;
 
   /// Number of "similar" listings excluding the current one. When this is
   /// known and equal to 0 the UI hides the "view similar" affordance because
@@ -90,6 +102,11 @@ class ListingDetailPageState {
     int? ownerNameListingUserId,
     String? ownerAvatarUrl,
     String? currentUserAvatarUrl,
+    bool? isGroupCompatibility,
+    List<ConversationMemberSummary>? groupMembers,
+    List<GroupCompatibilityFullMatch>? groupFullMatches,
+    List<GroupCompatibilityPartialMatch>? groupPartialMatches,
+    List<GroupCompatibilityDiscussItem>? groupDiscussItems,
     int? similarListingsCount,
     int? similarListingsCountListingId,
     bool? isLoadingSimilarListingsCount,
@@ -130,6 +147,11 @@ class ListingDetailPageState {
           ownerNameListingUserId ?? this.ownerNameListingUserId,
       ownerAvatarUrl: ownerAvatarUrl ?? this.ownerAvatarUrl,
       currentUserAvatarUrl: currentUserAvatarUrl ?? this.currentUserAvatarUrl,
+      isGroupCompatibility: isGroupCompatibility ?? this.isGroupCompatibility,
+      groupMembers: groupMembers ?? this.groupMembers,
+      groupFullMatches: groupFullMatches ?? this.groupFullMatches,
+      groupPartialMatches: groupPartialMatches ?? this.groupPartialMatches,
+      groupDiscussItems: groupDiscussItems ?? this.groupDiscussItems,
       similarListingsCount:
           similarListingsCount ?? this.similarListingsCount,
       similarListingsCountListingId:
@@ -169,6 +191,11 @@ class ListingDetailPageState {
         other.ownerNameListingUserId == ownerNameListingUserId &&
         other.ownerAvatarUrl == ownerAvatarUrl &&
         other.currentUserAvatarUrl == currentUserAvatarUrl &&
+        other.isGroupCompatibility == isGroupCompatibility &&
+        _listEquals(other.groupMembers, groupMembers) &&
+        _listEquals(other.groupFullMatches, groupFullMatches) &&
+        _listEquals(other.groupPartialMatches, groupPartialMatches) &&
+        _listEquals(other.groupDiscussItems, groupDiscussItems) &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
         other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount &&
@@ -304,6 +331,11 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     String? ownerName,
     String? ownerAvatarUrl,
     String? currentUserAvatarUrl,
+    bool isGroupCompatibility = false,
+    List<ConversationMemberSummary> groupMembers = const [],
+    List<GroupCompatibilityFullMatch> groupFullMatches = const [],
+    List<GroupCompatibilityPartialMatch> groupPartialMatches = const [],
+    List<GroupCompatibilityDiscussItem> groupDiscussItems = const [],
   }) =>
       emit(state.copyWith(
         compatibilityPercent: percent,
@@ -319,6 +351,11 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         ownerNameListingUserId: listingUserId,
         ownerAvatarUrl: ownerAvatarUrl,
         currentUserAvatarUrl: currentUserAvatarUrl,
+        isGroupCompatibility: isGroupCompatibility,
+        groupMembers: groupMembers,
+        groupFullMatches: groupFullMatches,
+        groupPartialMatches: groupPartialMatches,
+        groupDiscussItems: groupDiscussItems,
       ));
 
   void setLoadingCompatibility(int listingUserId) => emit(
@@ -332,6 +369,11 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           compatibilityDealbreakers: [],
           compatibilityScoredFieldCount: 0,
           compatibilityTotalFieldCount: 0,
+          isGroupCompatibility: false,
+          groupMembers: [],
+          groupFullMatches: [],
+          groupPartialMatches: [],
+          groupDiscussItems: [],
         ),
       );
 
@@ -345,6 +387,11 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           compatibilityScoredFieldCount: 0,
           compatibilityTotalFieldCount: 0,
           compatibilityError: error,
+          isGroupCompatibility: false,
+          groupMembers: [],
+          groupFullMatches: [],
+          groupPartialMatches: [],
+          groupDiscussItems: [],
         ),
       );
 

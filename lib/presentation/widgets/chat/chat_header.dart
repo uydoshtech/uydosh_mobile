@@ -3,7 +3,9 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart"
     show ThemeHelper, liquidGlassAppBarMaterialColor;
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -18,6 +20,10 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     this.subtitle,
     this.peerAvatarUrl,
     this.peerInitials,
+    /// When set (group chats), renders an overlapping avatar stack instead of
+    /// [peerAvatarUrl] / [peerInitials].
+    this.groupParticipants,
+    this.currentUserId,
     /// Opens the peer's profile (e.g. [ListingOwnerProfileScreen]) when set.
     this.onPeerAvatarTap,
     /// Placed immediately to the left of the 3-dot overflow menu (e.g. gig
@@ -32,6 +38,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
   final String? peerAvatarUrl;
   final String? peerInitials;
+  final List<ConversationMemberSummary>? groupParticipants;
+  final int? currentUserId;
   final List<ActionMenuItem> actionMenuItems;
   final VoidCallback? onPeerAvatarTap;
   final Widget? actionBeforeMenu;
@@ -135,6 +143,14 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _peerAvatar() {
+    final participants = groupParticipants;
+    if (participants != null && participants.isNotEmpty) {
+      return ChatParticipantAvatarStack(
+        participants: participants,
+        currentUserId: currentUserId,
+      );
+    }
+
     final avatar = ChatAvatar(
       isCurrentUser: false,
       initials: peerInitials,
