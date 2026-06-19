@@ -29,6 +29,7 @@ import "package:uy_dosh/base/services/room_usdz_viewer_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/config/client_admin_listing_conversations_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -311,6 +312,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final ctx = listingDetail.groupContext;
     if (isOwner) {
       final hasChat = ctx?.hasGroupChat == true;
+      final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
       return ListingGroupFormingActionBar(
         listingDetail: listingDetail,
         primaryLabel: hasChat
@@ -331,6 +333,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                   onChanged: _reloadListingDetail,
                 )
             : null,
+        showManageRequestsDot: pendingCount > 0,
+        manageRequestsDotOnSecondary: hasChat,
+        manageRequestsDotTrigger: pendingCount,
       );
     }
     if (ctx?.isMember == true) {
@@ -612,6 +617,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (isOwner) {
       _loadViewCount(listingDetail.id);
       _loadOwnerName(listingDetail.user.id);
+      if (_isGroupFormingListing(listingDetail)) {
+        _loadCompatibility(listingDetail);
+      }
     } else {
       if (AuthenticationState().isAuthenticated) {
         _recordView(listingDetail.id);
@@ -896,17 +904,19 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           ),
         );
       }
+      // Preview compatibility for a viewer who has not joined yet, without
+      // adding them to the official member avatars/subtitle.
       if (!memberUserIds.contains(currentProfile.userId)) {
         profiles.add(currentProfile);
-        groupMembers.add(
-          ConversationMemberSummary(
-            userId: currentProfile.userId,
-            name: currentProfile.name ?? L10n.get("user"),
-            avatarUrl: _listingAuthorAvatarUrlFromProfile(currentProfile),
-          ),
-        );
       }
     }
+
+    await _ensureListingOwnerInGroupMembers(
+      listingUserId: listingUserId,
+      profileFor: profileFor,
+      profiles: profiles,
+      groupMembers: groupMembers,
+    );
 
     final bounds = PriceRangeHelper.resolveListingDisplayBounds(
       storedPrice: listingDetail.price,
@@ -942,6 +952,32 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupPartialMatches: groupResult.partialMatches,
       groupDiscussItems: groupResult.discussItems,
     );
+  }
+
+  /// Listing owner is always group member #1; repair display when the API row
+  /// is missing (legacy listings created before owner auto-enrollment).
+  Future<void> _ensureListingOwnerInGroupMembers({
+    required int listingUserId,
+    required Future<UserProfile> Function(int userId) profileFor,
+    required List<UserProfile> profiles,
+    required List<ConversationMemberSummary> groupMembers,
+  }) async {
+    if (groupMembers.any((member) => member.userId == listingUserId)) {
+      return;
+    }
+
+    final ownerProfile = await profileFor(listingUserId);
+    groupMembers.insert(
+      0,
+      ConversationMemberSummary(
+        userId: ownerProfile.userId,
+        name: ownerProfile.name ?? L10n.get("user"),
+        avatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
+      ),
+    );
+    if (!profiles.any((profile) => profile.userId == listingUserId)) {
+      profiles.insert(0, ownerProfile);
+    }
   }
 
   Future<void> _openTelegramChat(String handle) async {
@@ -1694,6 +1730,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     // owner-only weekly promotion cooldown.
     if (isStrictAdmin &&
         !isOwner &&
+        AdminFeatureFlagsState().showListingMoveToTop &&
         ListingUtils.isCurrentlyFeaturedDetail(listingDetail)) {
       items.add(
         ActionMenuItem(
@@ -2277,7 +2314,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ListingDetail listingDetail,
   ) {
     final isOwner = _isListingOwner(listingDetail.user.id);
-    if (isOwner) return null;
+    // One-on-one compatibility is viewer vs owner; hide for owners. Group
+    // compatibility is about the whole forming group — owners need it too.
+    if (isOwner && !_isGroupFormingListing(listingDetail)) return null;
 
     // Scoped to the compatibility fields of pageState so async compatibility
     // calculation emissions only rebuild this section.

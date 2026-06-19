@@ -56,6 +56,8 @@ _$ListingImpl _$$ListingImplFromJson(Map<String, dynamic> json) =>
           ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
           .toList(),
       isFavorited: json['isFavorited'] as bool?,
+      groupSizeTarget: _nullableListingIntFromJson(json['group_size_target']),
+      groupMemberCount: _nullableListingIntFromJson(json['group_member_count']),
     );
 
 Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
@@ -93,6 +95,8 @@ Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
       'amenities': instance.amenities,
       'photos': instance.photos,
       'isFavorited': instance.isFavorited,
+      'group_size_target': instance.groupSizeTarget,
+      'group_member_count': instance.groupMemberCount,
     };
 
 _$SubwayStationDetailImpl _$$SubwayStationDetailImplFromJson(

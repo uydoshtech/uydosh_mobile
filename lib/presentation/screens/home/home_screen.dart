@@ -43,6 +43,8 @@ import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -1852,57 +1854,62 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return UydoshRefreshIndicator.mainShell(
       onRefresh: _onFeedPullRefresh,
       edgeOffset: edgeOffset,
-      child: PullToRefreshStretchHaptics(
-        child: CommonListView(
-          itemSpacing: feedItemSpacing,
-          itemCount: feedEntries.length + 1,
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-            14.0,
-            baseTopPad,
-            14.0,
-            _feedListBottomPadding(context),
+      child: FeedScrollScopeHost(
+        child: PullToRefreshStretchHaptics(
+          child: CommonListView(
+            itemSpacing: feedItemSpacing,
+            itemCount: feedEntries.length + 1,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
+              14.0,
+              baseTopPad,
+              14.0,
+              _feedListBottomPadding(context),
+            ),
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _buildAnimatedFeedTopSpacer(
+                  trailingSpacing: feedItemSpacing,
+                );
+              }
+              final entry = feedEntries[index - 1];
+              final listing = entry.listing;
+              if (listing != null) {
+                return ListingTile(
+                  key: ValueKey(listing.id),
+                  listing: listing,
+                  feedOptimized: true,
+                  forceFavorite:
+                      false, // Home screen listings don't force favorite state
+                  showHeartIcon: false, // Don't show heart icon on home screen
+                  showFavoriteIndicator:
+                      true, // Show small heart when listing is in user favorites
+                  onFavoriteRemoved: null, // No callback needed for home screen
+                );
+              }
+              final day = entry.day!;
+              final isFirst = entry.isFirstDateHeader!;
+              return DateHeaderWidget(
+                key: ValueKey(
+                  "home-feed-day-${day.year}-${day.month}-${day.day}",
+                ),
+                dateString: AppDateUtils.formatDateHeader(day, context),
+                date: day,
+                padding: isFirst
+                    ? const EdgeInsets.only(top: 0, bottom: 0)
+                    : const EdgeInsets.only(top: 0, bottom: 0),
+              );
+            },
+            controller: _scrollController,
+            showRefreshIndicator:
+                false, // Already handled by UydoshRefreshIndicator wrapper
+            showLoadMoreIndicator: hasMore,
+            hasMore: hasMore,
+            loadMoreIndicator: _buildLoadMoreIndicator(),
+            cacheExtent: isAndroidDevice
+                ? 720
+                : 500, // Android skips tile blur — can afford a wider cache
           ),
-          itemBuilder: (context, index) {
-            if (index == 0)
-              return _buildAnimatedFeedTopSpacer(
-                trailingSpacing: feedItemSpacing,
-              );
-            final entry = feedEntries[index - 1];
-            final listing = entry.listing;
-            if (listing != null) {
-              return ListingTile(
-                key: ValueKey(listing.id),
-                listing: listing,
-                forceFavorite:
-                    false, // Home screen listings don't force favorite state
-                showHeartIcon: false, // Don't show heart icon on home screen
-                showFavoriteIndicator:
-                    true, // Show small heart when listing is in user favorites
-                onFavoriteRemoved: null, // No callback needed for home screen
-              );
-            }
-            final day = entry.day!;
-            final isFirst = entry.isFirstDateHeader!;
-            return DateHeaderWidget(
-              key: ValueKey(
-                "home-feed-day-${day.year}-${day.month}-${day.day}",
-              ),
-              dateString: AppDateUtils.formatDateHeader(day, context),
-              date: day,
-              padding: isFirst
-                  ? const EdgeInsets.only(top: 0, bottom: 0)
-                  : const EdgeInsets.only(top: 0, bottom: 0),
-            );
-          },
-          controller: _scrollController,
-          showRefreshIndicator:
-              false, // Already handled by UydoshRefreshIndicator wrapper
-          showLoadMoreIndicator: hasMore,
-          hasMore: hasMore,
-          loadMoreIndicator: _buildLoadMoreIndicator(),
-          cacheExtent:
-              500, // Larger cache for smoother scrolling of large tiles
         ),
       ),
     );

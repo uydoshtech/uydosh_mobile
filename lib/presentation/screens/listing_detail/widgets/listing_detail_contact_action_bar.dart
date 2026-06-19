@@ -11,6 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 
 /// Sticky bottom action bar shown on the listing detail screen for
 /// non-owners. Exposes the two "start a conversation" channels (Telegram
@@ -39,6 +40,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.onMessage,
     this.onTelegram,
     this.inAppChatCtaLabel,
+    this.showChatNotificationDot = false,
+    this.chatNotificationDotTrigger = 0,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -48,6 +51,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final VoidCallback? onMessage;
   final VoidCallback? onTelegram;
   final String? inAppChatCtaLabel;
+  final bool showChatNotificationDot;
+  final int chatNotificationDotTrigger;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -82,11 +87,37 @@ class ListingDetailContactActionBar extends StatelessWidget {
   }
 
   Widget _chatButton(BuildContext context) {
-    return GlassGreenChatCtaButton(
+    final button = GlassGreenChatCtaButton(
       onPressed: () => onMessage!.call(),
       label: inAppChatCtaLabel ?? context.l10n.uydosh_chat,
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       height: 48,
+    );
+    if (!showChatNotificationDot) return button;
+
+    final theme = Theme.of(context);
+    final unreadColor = ThemeState().unreadIndicatorColor;
+    final dotBorderColor = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surface
+        : Colors.white;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        button,
+        Positioned(
+          right: -2,
+          top: -2,
+          child: PulseThenBlinkDotWidget(
+            trigger: chatNotificationDotTrigger,
+            color: unreadColor,
+            size: 10,
+            blinkDuration: const Duration(milliseconds: 750),
+            borderColor: dotBorderColor,
+            borderWidth: 1.5,
+          ),
+        ),
+      ],
     );
   }
 

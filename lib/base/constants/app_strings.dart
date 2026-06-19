@@ -90,9 +90,13 @@ class AppStrings {
       "group_compatibility_title": "Group compatibility:",
       "group_compatibility_subtitle": "Group of {count} people",
       "group_compatibility_full_matches": "Full matches ({count}/{total})",
-      "group_compatibility_partial_matches": "Partially matches",
+      "group_compatibility_partial_matches":
+          "Partially matches ({count} of {total})",
       "group_compatibility_discuss": "Worth discussing",
       "group_compatibility_value_count": "{count} — {value}",
+      "group_compatibility_summary_full": "full matches",
+      "group_compatibility_summary_partial": "partial",
+      "group_compatibility_summary_discuss": "topics to discuss",
       "view_member_profiles": "Participant profiles",
       "vs": "vs",
       "name": "Name or nickname",
@@ -1124,6 +1128,10 @@ class AppStrings {
       "admin_client_settings_show_push_debug": "Show push debug panel",
       "admin_client_settings_show_push_debug_description":
           "Shows the push notification debug tools on the Notifications screen (admin only).",
+      "admin_client_settings_show_listing_move_to_top":
+          "Show move listing to top controls",
+      "admin_client_settings_show_listing_move_to_top_description":
+          "Lets admins promote or remove featured listings from the overflow menu and long-press on feed tiles.",
       "admin_client_config_hide_gemini_listing_ui":
           "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -1870,9 +1878,13 @@ class AppStrings {
       "group_compatibility_title": "Совместимость группы:",
       "group_compatibility_subtitle": "Группа из {count} человек",
       "group_compatibility_full_matches": "Общие совпадения ({count}/{total})",
-      "group_compatibility_partial_matches": "Частично совпадает",
+      "group_compatibility_partial_matches":
+          "Частично совпадает ({count} из {total})",
       "group_compatibility_discuss": "Стоит обсудить",
       "group_compatibility_value_count": "{count} — {value}",
+      "group_compatibility_summary_full": "полных совпадений",
+      "group_compatibility_summary_partial": "частичных",
+      "group_compatibility_summary_discuss": "темы обсудить",
       "view_member_profiles": "Профили участников",
       "vs": "vs",
       "name": "Имя или никнейм",
@@ -2921,6 +2933,10 @@ class AppStrings {
       "admin_client_settings_show_push_debug": "Показывать отладку push",
       "admin_client_settings_show_push_debug_description":
           "Показывает инструменты отладки push-уведомлений на экране «Уведомления» (только для админов).",
+      "admin_client_settings_show_listing_move_to_top":
+          "Показывать управление «поднять в топ»",
+      "admin_client_settings_show_listing_move_to_top_description":
+          "Позволяет админам поднимать или убирать объявления с верха ленты через меню и долгое нажатие на плитку.",
       "admin_client_config_hide_gemini_listing_ui":
           "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -3681,9 +3697,13 @@ class AppStrings {
       "group_compatibility_title": "Guruh mosligi:",
       "group_compatibility_subtitle": "{count} kishilik guruh",
       "group_compatibility_full_matches": "To'liq mos keladi ({count}/{total})",
-      "group_compatibility_partial_matches": "Qisman mos keladi",
+      "group_compatibility_partial_matches":
+          "Qisman mos keladi ({count} dan {total})",
       "group_compatibility_discuss": "Muhokama qilish kerak",
       "group_compatibility_value_count": "{count} — {value}",
+      "group_compatibility_summary_full": "to'liq moslik",
+      "group_compatibility_summary_partial": "qisman",
+      "group_compatibility_summary_discuss": "muhokama qilish",
       "view_member_profiles": "Ishtirokchi profillari",
       "vs": "vs",
       "name": "Ism yoki taxallus",
@@ -4740,6 +4760,10 @@ class AppStrings {
       "admin_client_settings_show_push_debug": "Push debug panelini ko‘rsatish",
       "admin_client_settings_show_push_debug_description":
           "«Bildirishnomalar» ekranida push debug vositalarini ko‘rsatadi (faqat adminlar uchun).",
+      "admin_client_settings_show_listing_move_to_top":
+          "Eʼlonni yuqoriga ko‘tarish boshqaruvini ko‘rsatish",
+      "admin_client_settings_show_listing_move_to_top_description":
+          "Adminlarga overflow menyusi va lenta plitkasida uzoq bosish orqali eʼlonni yuqoriga ko‘tarish yoki olib tashlash imkonini beradi.",
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":

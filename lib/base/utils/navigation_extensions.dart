@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
@@ -13,8 +14,8 @@ import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 /// Navigation helpers to reduce duplication of Navigator.push / MaterialPageRoute.
 extension NavigatorExtensions on BuildContext {
   /// Push listing detail screen with required BlocProvider.
-  void pushListingDetail(int listingId) {
-    Navigator.of(this).push(
+  Future<void> pushListingDetail(int listingId) async {
+    await Navigator.of(this).push(
       MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
           providers: [
@@ -27,6 +28,8 @@ extension NavigatorExtensions on BuildContext {
         ),
       ),
     );
+    // Re-fetch feed tiles so group member counts match the detail screen.
+    HomeRefreshState().forceRefreshNow();
   }
 
   /// Replace current route with listing detail screen.

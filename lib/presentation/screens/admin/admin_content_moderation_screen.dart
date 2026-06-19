@@ -1,3 +1,4 @@
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_admin_listing_conversations_config.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
@@ -61,6 +62,7 @@ class _AdminContentModerationScreenState
   bool _isSavingAdminListingConversations = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingPushDebug = false;
+  bool _isSavingListingMoveToTop = false;
   bool _isSavingTooltips = false;
 
   @override
@@ -362,6 +364,17 @@ class _AdminContentModerationScreenState
       await AdminFeatureFlagsState().setShowPushDebug(value);
     } finally {
       setStateIfMounted(() => _isSavingPushDebug = false);
+    }
+  }
+
+  Future<void> _onShowListingMoveToTopChanged(bool value) async {
+    if (_isSavingListingMoveToTop) return;
+    setState(() => _isSavingListingMoveToTop = true);
+    try {
+      HapticFeedbackUtils.impact();
+      await AdminFeatureFlagsState().setShowListingMoveToTop(value);
+    } finally {
+      setStateIfMounted(() => _isSavingListingMoveToTop = false);
     }
   }
 
@@ -669,6 +682,41 @@ class _AdminContentModerationScreenState
                   value: flags.showPushDebug,
                   enabled: !_isSavingPushDebug,
                   onChanged: _onShowPushDebugChanged,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        ListenableBuilder(
+          listenable: AdminFeatureFlagsState(),
+          builder: (context, _) {
+            final flags = AdminFeatureFlagsState();
+            return _neumorphicRow(
+              ListTile(
+                leading: _isSavingListingMoveToTop
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ThemeIcon(CupertinoIcons.arrow_up_circle),
+                title: Text(
+                  L10n.get("admin_client_settings_show_listing_move_to_top"),
+                ),
+                subtitle: Text(
+                  L10n.get(
+                    "admin_client_settings_show_listing_move_to_top_description",
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: NeumorphicThemeAwareToggle(
+                  value: flags.showListingMoveToTop,
+                  enabled: !_isSavingListingMoveToTop,
+                  onChanged: _onShowListingMoveToTopChanged,
                 ),
               ),
             );

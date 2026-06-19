@@ -267,6 +267,26 @@ class _ListingDetailCompatibilitySectionState
     return AppColors.error;
   }
 
+  bool get _useCompactGroupSections => ThemeState().isLightTheme;
+
+  IconData _groupSectionHeaderIcon(_GroupSectionKind kind) {
+    switch (kind) {
+      case _GroupSectionKind.full:
+        return Icons.check;
+      case _GroupSectionKind.partial:
+        return Icons.waves;
+      case _GroupSectionKind.discuss:
+        return Icons.warning_amber_rounded;
+    }
+  }
+
+  int _partialSectionAgreeCount() {
+    if (widget.groupPartialMatches.isEmpty) return 0;
+    return widget.groupPartialMatches
+        .map((item) => item.agreeCount)
+        .reduce((a, b) => a > b ? a : b);
+  }
+
   Widget _buildHeaderAvatar(String? avatarUrl, {required double size}) {
     final resolvedUrl = resolveAvatarUrl(avatarUrl);
     final fallback = CircleAvatar(
@@ -339,6 +359,8 @@ class _ListingDetailCompatibilitySectionState
     required String value,
     required Color accentColor,
   }) {
+    final iconColor =
+        _useCompactGroupSections ? accentColor : _getDescriptionTextColor();
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -347,7 +369,7 @@ class _ListingDetailCompatibilitySectionState
           ThemeIcon(
             _getLifestyleIcon(labelKey),
             size: 20,
-            color: accentColor,
+            color: iconColor,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -364,31 +386,85 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
-  Widget _buildGroupSection({
+  Widget _buildGroupSectionHeader({
     required String title,
     required Color accentColor,
-    required List<Widget> children,
+    required _GroupSectionKind kind,
   }) {
-    if (children.isEmpty) return const SizedBox.shrink();
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withValues(alpha: 0.35)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+    if (_useCompactGroupSections) {
+      return Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: accentColor,
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.18),
+            shape: BoxShape.circle,
+          ),
+          child: ThemeIcon(
+            _groupSectionHeaderIcon(kind),
+            size: 14,
+            color: accentColor,
+            useThemeColor: false,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
             title,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: accentColor,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGroupSection({
+    required String title,
+    required Color accentColor,
+    required _GroupSectionKind kind,
+    required List<Widget> children,
+  }) {
+    if (children.isEmpty) return const SizedBox.shrink();
+
+    final sectionFillAlpha = _useCompactGroupSections ? 0.12 : 0.04;
+    final sectionBorderColor = _useCompactGroupSections
+        ? accentColor.withValues(alpha: 0.45)
+        : _getDescriptionTextColor().withValues(alpha: 0.14);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _useCompactGroupSections
+            ? accentColor.withValues(alpha: sectionFillAlpha)
+            : _getDescriptionTextColor().withValues(alpha: sectionFillAlpha),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: sectionBorderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGroupSectionHeader(
+            title: title,
+            accentColor: accentColor,
+            kind: kind,
           ),
           const SizedBox(height: 8),
           ...children,
@@ -405,41 +481,117 @@ class _ListingDetailCompatibilitySectionState
       return const SizedBox.shrink();
     }
 
-    Widget chip(IconData icon, int count, Color color) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ThemeIcon(icon, size: 16, color: color, useThemeColor: false),
-          const SizedBox(width: 4),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _getDescriptionTextColor(),
-            ),
+    Widget statColumn({
+      required IconData icon,
+      required int count,
+      required Color color,
+      required String label,
+    }) {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: ThemeIcon(
+                  icon,
+                  size: 14,
+                  color: color,
+                  useThemeColor: false,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      count.toString(),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                        color: _getDescriptionTextColor(),
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.2,
+                        color: _getDescriptionTextColor().withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       );
     }
 
+    final columns = <Widget>[
+      if (fullCount > 0)
+        statColumn(
+          icon: Icons.check,
+          count: fullCount,
+          color: AppColors.success,
+          label: L10n.get("group_compatibility_summary_full"),
+        ),
+      if (partialCount > 0)
+        statColumn(
+          icon: Icons.waves,
+          count: partialCount,
+          color: AppColors.warning,
+          label: L10n.get("group_compatibility_summary_partial"),
+        ),
+      if (discussCount > 0)
+        statColumn(
+          icon: Icons.warning_amber_rounded,
+          count: discussCount,
+          color: AppColors.error,
+          label: L10n.get("group_compatibility_summary_discuss"),
+        ),
+    ];
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
         color: _getDescriptionTextColor().withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: _getDescriptionTextColor().withValues(alpha: 0.12),
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          if (fullCount > 0)
-            chip(Icons.check_circle_outline, fullCount, AppColors.success),
-          if (partialCount > 0)
-            chip(Icons.waves, partialCount, AppColors.warning),
-          if (discussCount > 0)
-            chip(Icons.warning_amber_rounded, discussCount, AppColors.error),
-        ],
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            for (var i = 0; i < columns.length; i++) ...[
+              if (i > 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    color: _getDescriptionTextColor().withValues(alpha: 0.15),
+                  ),
+                ),
+              columns[i],
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -476,6 +628,7 @@ class _ListingDetailCompatibilitySectionState
             },
           ),
           accentColor: AppColors.success,
+          kind: _GroupSectionKind.full,
           children: widget.groupFullMatches
               .map(
                 (item) => _buildGroupFieldRow(
@@ -488,8 +641,15 @@ class _ListingDetailCompatibilitySectionState
               .toList(),
         ),
         _buildGroupSection(
-          title: L10n.get("group_compatibility_partial_matches"),
+          title: L10n.getWithParams(
+            "group_compatibility_partial_matches",
+            params: {
+              "count": _partialSectionAgreeCount().toString(),
+              "total": total.toString(),
+            },
+          ),
           accentColor: AppColors.warning,
+          kind: _GroupSectionKind.partial,
           children: widget.groupPartialMatches
               .map(
                 (item) => _buildGroupFieldRow(
@@ -504,6 +664,7 @@ class _ListingDetailCompatibilitySectionState
         _buildGroupSection(
           title: L10n.get("group_compatibility_discuss"),
           accentColor: AppColors.error,
+          kind: _GroupSectionKind.discuss,
           children: widget.groupDiscussItems
               .map(
                 (item) => _buildGroupFieldRow(
@@ -525,10 +686,8 @@ class _ListingDetailCompatibilitySectionState
             outlined: true,
             maxLines: 1,
           ),
-        const SizedBox(height: 14),
-        _buildGroupCompatibilitySummaryBar(),
-        const SizedBox(height: 14),
-        if (widget.onViewMemberProfile != null)
+        if (widget.onViewMemberProfile != null) ...[
+          const SizedBox(height: 14),
           GhostButtonFactory.iconText(
             onPressed: () {
               HapticFeedbackUtils.impact();
@@ -547,6 +706,9 @@ class _ListingDetailCompatibilitySectionState
               fontWeight: FontWeight.w600,
             ),
           ),
+        ],
+        const SizedBox(height: 14),
+        _buildGroupCompatibilitySummaryBar(),
       ],
     );
   }
@@ -1052,3 +1214,5 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 }
+
+enum _GroupSectionKind { full, partial, discuss }

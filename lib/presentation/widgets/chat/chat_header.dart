@@ -12,6 +12,11 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
+  /// Back control is ~48px wide (8px inset + 40px button); default [AppBar]
+  /// [leadingWidth] (56) + [titleSpacing] (16) leaves a ~24px gap before the
+  /// title row — halved here so avatars sit closer to the back button.
+  static const double _leadingWidth = 52;
+  static const double _titleSpacing = 8;
 
   const ChatHeader({
     required this.displayName,
@@ -64,6 +69,8 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
 
         return UydoshAppBar(
           leading: ThreeDAppBarIconButton.backLeading(context),
+          leadingWidth: _leadingWidth,
+          titleSpacing: _titleSpacing,
           title: Row(
             children: [
               _peerAvatar(),

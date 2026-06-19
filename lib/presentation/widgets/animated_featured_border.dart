@@ -42,10 +42,10 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
     super.didChangeDependencies();
     final shouldTick = TickerMode.of(context);
     if (shouldTick && !_retained) {
-      _SharedFeaturedSweep.instance.retain();
+      SharedFeaturedSweep.instance.retain();
       _retained = true;
     } else if (!shouldTick && _retained) {
-      _SharedFeaturedSweep.instance.release();
+      SharedFeaturedSweep.instance.release();
       _retained = false;
     }
   }
@@ -53,7 +53,7 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
   @override
   void dispose() {
     if (_retained) {
-      _SharedFeaturedSweep.instance.release();
+      SharedFeaturedSweep.instance.release();
       _retained = false;
     }
     super.dispose();
@@ -82,10 +82,10 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
 
     return RepaintBoundary(
       child: AnimatedBuilder(
-        animation: _SharedFeaturedSweep.instance.value,
+        animation: SharedFeaturedSweep.instance.value,
         child: inner,
         builder: (context, child) {
-          final t = _SharedFeaturedSweep.instance.value.value;
+          final t = SharedFeaturedSweep.instance.value.value;
           return DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
@@ -132,14 +132,16 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
 /// tile's route is not on top) is handled by [TickerMode]: tiles call
 /// [release] from `didChangeDependencies` when their context's [TickerMode]
 /// goes false, so the ref count drops naturally.
-class _SharedFeaturedSweep with WidgetsBindingObserver {
-  _SharedFeaturedSweep._() {
+/// Shared ticker for featured listing rings. Exposed so feed scroll hosts can
+/// pause the sweep while the user is flinging the list.
+class SharedFeaturedSweep with WidgetsBindingObserver {
+  SharedFeaturedSweep._() {
     WidgetsBinding.instance.addObserver(this);
     final initial = WidgetsBinding.instance.lifecycleState;
     _appResumed = initial == null || initial == AppLifecycleState.resumed;
   }
 
-  static final _SharedFeaturedSweep instance = _SharedFeaturedSweep._();
+  static final SharedFeaturedSweep instance = SharedFeaturedSweep._();
 
   /// Sweep phase in `[0.0, 1.0)`. Tiles read this through `AnimatedBuilder`.
   final ValueNotifier<double> value = ValueNotifier<double>(0);
@@ -151,6 +153,7 @@ class _SharedFeaturedSweep with WidgetsBindingObserver {
 
   late final Ticker _ticker = Ticker(_onTick);
   int _refCount = 0;
+  int _scrollPauseCount = 0;
   bool _appResumed = true;
   Duration _origin = Duration.zero;
 
@@ -164,6 +167,16 @@ class _SharedFeaturedSweep with WidgetsBindingObserver {
     _updateRunning();
   }
 
+  void pauseForUserScroll() {
+    _scrollPauseCount++;
+    _updateRunning();
+  }
+
+  void resumeFromUserScroll() {
+    if (_scrollPauseCount > 0) _scrollPauseCount--;
+    _updateRunning();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final isResumed = state == AppLifecycleState.resumed;
@@ -174,7 +187,8 @@ class _SharedFeaturedSweep with WidgetsBindingObserver {
   }
 
   void _updateRunning() {
-    final shouldRun = _refCount > 0 && _appResumed;
+    final shouldRun =
+        _refCount > 0 && _appResumed && _scrollPauseCount == 0;
     if (shouldRun && !_ticker.isActive) {
       // Reset origin so the resumed phase doesn't jump after a long pause.
       _origin = Duration.zero;

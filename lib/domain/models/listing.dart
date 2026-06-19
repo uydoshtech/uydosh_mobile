@@ -5,6 +5,14 @@ import "package:uy_dosh/domain/models/photo.dart";
 part "listing.freezed.dart";
 part "listing.g.dart";
 
+int? _nullableListingIntFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 @freezed
 class Listing with _$Listing {
   const factory Listing({
@@ -37,6 +45,10 @@ class Listing with _$Listing {
     @JsonKey(name: "amenities") List<Amenity>? amenities,
     List<Photo>? photos,
     @JsonKey(name: "isFavorited") bool? isFavorited,
+    @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+    int? groupSizeTarget,
+    @JsonKey(name: "group_member_count", fromJson: _nullableListingIntFromJson)
+    int? groupMemberCount,
   }) = _Listing;
 
   factory Listing.fromJson(Map<String, dynamic> json) =>

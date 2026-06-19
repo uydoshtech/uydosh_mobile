@@ -83,6 +83,10 @@ mixin _$Listing {
   List<Photo>? get photos => throw _privateConstructorUsedError;
   @JsonKey(name: "isFavorited")
   bool? get isFavorited => throw _privateConstructorUsedError;
+  @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+  int? get groupSizeTarget => throw _privateConstructorUsedError;
+  @JsonKey(name: "group_member_count", fromJson: _nullableListingIntFromJson)
+  int? get groupMemberCount => throw _privateConstructorUsedError;
 
   /// Serializes this Listing to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -132,7 +136,12 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
       List<Photo>? photos,
-      @JsonKey(name: "isFavorited") bool? isFavorited});
+      @JsonKey(name: "isFavorited") bool? isFavorited,
+      @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+      int? groupSizeTarget,
+      @JsonKey(
+          name: "group_member_count", fromJson: _nullableListingIntFromJson)
+      int? groupMemberCount});
 
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
   $LocationDetailCopyWith<$Res>? get location;
@@ -186,6 +195,8 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? isFavorited = freezed,
+    Object? groupSizeTarget = freezed,
+    Object? groupMemberCount = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -316,6 +327,14 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
           ? _value.isFavorited
           : isFavorited // ignore: cast_nullable_to_non_nullable
               as bool?,
+      groupSizeTarget: freezed == groupSizeTarget
+          ? _value.groupSizeTarget
+          : groupSizeTarget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupMemberCount: freezed == groupMemberCount
+          ? _value.groupMemberCount
+          : groupMemberCount // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 
@@ -403,7 +422,12 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
       List<Photo>? photos,
-      @JsonKey(name: "isFavorited") bool? isFavorited});
+      @JsonKey(name: "isFavorited") bool? isFavorited,
+      @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+      int? groupSizeTarget,
+      @JsonKey(
+          name: "group_member_count", fromJson: _nullableListingIntFromJson)
+      int? groupMemberCount});
 
   @override
   $SubwayStationDetailCopyWith<$Res>? get subwayStation;
@@ -458,6 +482,8 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? isFavorited = freezed,
+    Object? groupSizeTarget = freezed,
+    Object? groupMemberCount = freezed,
   }) {
     return _then(_$ListingImpl(
       id: null == id
@@ -588,6 +614,14 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value.isFavorited
           : isFavorited // ignore: cast_nullable_to_non_nullable
               as bool?,
+      groupSizeTarget: freezed == groupSizeTarget
+          ? _value.groupSizeTarget
+          : groupSizeTarget // ignore: cast_nullable_to_non_nullable
+              as int?,
+      groupMemberCount: freezed == groupMemberCount
+          ? _value.groupMemberCount
+          : groupMemberCount // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -629,7 +663,12 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "listing_type") this.listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
       final List<Photo>? photos,
-      @JsonKey(name: "isFavorited") this.isFavorited})
+      @JsonKey(name: "isFavorited") this.isFavorited,
+      @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+      this.groupSizeTarget,
+      @JsonKey(
+          name: "group_member_count", fromJson: _nullableListingIntFromJson)
+      this.groupMemberCount})
       : _amenities = amenities,
         _photos = photos;
 
@@ -746,10 +785,16 @@ class _$ListingImpl implements _Listing {
   @override
   @JsonKey(name: "isFavorited")
   final bool? isFavorited;
+  @override
+  @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+  final int? groupSizeTarget;
+  @override
+  @JsonKey(name: "group_member_count", fromJson: _nullableListingIntFromJson)
+  final int? groupMemberCount;
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
   }
 
   @override
@@ -817,7 +862,11 @@ class _$ListingImpl implements _Listing {
                 .equals(other._amenities, _amenities) &&
             const DeepCollectionEquality().equals(other._photos, _photos) &&
             (identical(other.isFavorited, isFavorited) ||
-                other.isFavorited == isFavorited));
+                other.isFavorited == isFavorited) &&
+            (identical(other.groupSizeTarget, groupSizeTarget) ||
+                other.groupSizeTarget == groupSizeTarget) &&
+            (identical(other.groupMemberCount, groupMemberCount) ||
+                other.groupMemberCount == groupMemberCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -855,7 +904,9 @@ class _$ListingImpl implements _Listing {
         listingType,
         const DeepCollectionEquality().hash(_amenities),
         const DeepCollectionEquality().hash(_photos),
-        isFavorited
+        isFavorited,
+        groupSizeTarget,
+        groupMemberCount
       ]);
 
   /// Create a copy of Listing
@@ -911,7 +962,12 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "listing_type") final ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
       final List<Photo>? photos,
-      @JsonKey(name: "isFavorited") final bool? isFavorited}) = _$ListingImpl;
+      @JsonKey(name: "isFavorited") final bool? isFavorited,
+      @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+      final int? groupSizeTarget,
+      @JsonKey(
+          name: "group_member_count", fromJson: _nullableListingIntFromJson)
+      final int? groupMemberCount}) = _$ListingImpl;
 
   factory _Listing.fromJson(Map<String, dynamic> json) = _$ListingImpl.fromJson;
 
@@ -1009,6 +1065,12 @@ abstract class _Listing implements Listing {
   @override
   @JsonKey(name: "isFavorited")
   bool? get isFavorited;
+  @override
+  @JsonKey(name: "group_size_target", fromJson: _nullableListingIntFromJson)
+  int? get groupSizeTarget;
+  @override
+  @JsonKey(name: "group_member_count", fromJson: _nullableListingIntFromJson)
+  int? get groupMemberCount;
 
   /// Create a copy of Listing
   /// with the given fields replaced by the non-null parameter values.

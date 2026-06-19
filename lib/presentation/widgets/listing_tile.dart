@@ -9,6 +9,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
@@ -27,6 +28,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/widgets/animated_featured_border.dart";
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_pulse_controller.dart";
@@ -38,6 +40,7 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart"
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
+import "package:uy_dosh/presentation/widgets/group_members_progress_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -58,6 +61,8 @@ class ListingTile extends StatefulWidget {
     this.showActiveStatus =
         false, // Default to false - only show on my listings screen
     this.searchLineId, // Optional parameter to indicate which line was used for search
+    this.feedOptimized =
+        false, // Lighter visuals for long home/search feeds (Android blur off, etc.)
   });
 
   final Listing listing;
@@ -73,6 +78,8 @@ class ListingTile extends StatefulWidget {
   final bool showActiveStatus; // Show active/inactive badge in top-right corner
   final int?
       searchLineId; // Line ID used for search (helps order transfer stations)
+  /// When true, skips the heaviest per-tile effects used in long scroll feeds.
+  final bool feedOptimized;
 
   @override
   State<ListingTile> createState() => _ListingTileState();
@@ -234,6 +241,7 @@ class _ListingTileState extends State<ListingTile> {
   /// the long-press is a silent no-op.
   Future<void> _onTileLongPress() async {
     if (!_isFeatured) return;
+    if (!AdminFeatureFlagsState().showListingMoveToTop) return;
 
     final role = await SessionManager.getUserRole();
     if (role != "admin") return;
@@ -385,7 +393,7 @@ class _ListingTileState extends State<ListingTile> {
     final tileInkWell = InkWell(
       onTap: () {
         HapticFeedbackUtils.lightImpact();
-        context.pushListingDetail(widget.listing.id);
+        unawaited(context.pushListingDetail(widget.listing.id));
       },
       onLongPress: () => unawaited(_onTileLongPress()),
       borderRadius: borderRadius,
@@ -437,6 +445,8 @@ class _ListingTileState extends State<ListingTile> {
                                       widget.listing.gender!,
                                     ),
                                   ),
+                                if (_groupMembersProgressBadge != null)
+                                  _groupMembersProgressBadge!,
                                 // Price is shown only in the prominent price
                                 // card below the title (no header duplicate).
                                 // 3D room scan (available on iOS; show indicator on web too)
@@ -455,138 +465,8 @@ class _ListingTileState extends State<ListingTile> {
                             ),
                           ),
                           // Favorite heart(s): explicit icon on favorites screen,
-                          // or compact indicator on home / feeds ([FavoriteHeartToggle]).
-                          if (widget.showHeartIcon ||
-                              widget.showFavoriteIndicator)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: FavoriteHeartToggle(
-                                listenable: _favoriteListenable,
-                                shouldShow: (ctx) => PeerInteractionEligibility
-                                    .mayInteractWithPublisher(
-                                  publisherUserId: widget.listing.userId,
-                                ),
-                                resolveIsFavorite: (ctx) => widget.showHeartIcon
-                                    ? (widget.forceFavorite ??
-                                        FavoritesState().isFavorite(
-                                          widget.listing.id,
-                                        ))
-                                    : widget.forceFavorite == true
-                                        ? true
-                                        : FavoritesState().isFavorite(
-                                            widget.listing.id,
-                                          ),
-                                hiddenBuilder: (_) => const SizedBox.shrink(),
-                                onToggle: _onListingFavoriteToggle,
-                                builder: (context, ui) {
-                                  if (widget.showHeartIcon) {
-                                    return SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: Stack(
-                                        clipBehavior: Clip.none,
-                                        alignment: Alignment.center,
-                                        children: [
-                                          GestureDetector(
-                                            behavior: HitTestBehavior.opaque,
-                                            onTap: ui.onTap,
-                                            child: const SizedBox(
-                                              width: 48,
-                                              height: 48,
-                                            ),
-                                          ),
-                                          IgnorePointer(
-                                            child: AnimatedBuilder(
-                                              animation: ui.pulse.listenable,
-                                              builder: (context, child) {
-                                                return Transform.scale(
-                                                  scale: ui.pulse.scale,
-                                                  child: ThemeIcon(
-                                                    ui.isFavorite
-                                                        ? Icons.favorite
-                                                        : Icons.favorite_border,
-                                                    color: ui.isFavorite
-                                                        ? AppColors
-                                                            .favoriteActive
-                                                        : AppColors
-                                                            .favoriteInactive,
-                                                    size: 20,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                  return SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      alignment: Alignment.center,
-                                      children: [
-                                        GestureDetector(
-                                          behavior: HitTestBehavior.opaque,
-                                          onTap: ui.onTap,
-                                          child: const SizedBox(
-                                            width: 48,
-                                            height: 48,
-                                          ),
-                                        ),
-                                        IgnorePointer(
-                                          child: AnimatedBuilder(
-                                            animation: ui.pulse.listenable,
-                                            builder: (context, child) {
-                                              return Transform.scale(
-                                                scale: ui.pulse.scale,
-                                                child: child,
-                                              );
-                                            },
-                                            child: AnimatedSwitcher(
-                                              duration: const Duration(
-                                                milliseconds: 300,
-                                              ),
-                                              reverseDuration: const Duration(
-                                                milliseconds: 180,
-                                              ),
-                                              switchInCurve: Curves.elasticOut,
-                                              switchOutCurve: Curves.easeInBack,
-                                              transitionBuilder:
-                                                  (child, animation) =>
-                                                      ScaleTransition(
-                                                scale: animation,
-                                                child: child,
-                                              ),
-                                              child: SizedBox(
-                                                key: ValueKey(
-                                                  ui.isFavorite
-                                                      ? "fav-on"
-                                                      : "fav-off",
-                                                ),
-                                                width: 20,
-                                                height: 20,
-                                                child: ThemeIcon(
-                                                  ui.isFavorite
-                                                      ? Icons.favorite
-                                                      : Icons.favorite_border,
-                                                  color: ui.isFavorite
-                                                      ? AppColors.favoriteActive
-                                                      : AppColors
-                                                          .favoriteInactive,
-                                                  size: 20,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                          // or compact indicator on home / feeds.
+                          _buildFavoriteSlot(),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -731,10 +611,15 @@ class _ListingTileState extends State<ListingTile> {
         ? ThreeDElevatedSurface(
             baseColor: themeState.primaryColor,
             useLiquidGlass: true,
+            enableBackdropBlur: widget.feedOptimized
+                ? LiquidGlassRendering.feedTileBackdropBlurEnabled(context)
+                : true,
             borderRadius: borderRadius,
-            liquidGlassShadows: themeState.isBlueTheme
-                ? ThreeDSurfaceStyle.elevatedShadows(context)
-                : null,
+            liquidGlassShadows: _useCompactFeedShadows
+                ? LiquidGlassRendering.feedTileCompactShadows(context)
+                : themeState.isBlueTheme
+                    ? ThreeDSurfaceStyle.elevatedShadows(context)
+                    : null,
             child: tileInkWell,
           )
         : DecoratedBox(
@@ -754,18 +639,10 @@ class _ListingTileState extends State<ListingTile> {
                   bg,
                 ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: lightShadow,
-                  offset: const Offset(-3, -3),
-                  blurRadius: 10,
-                ),
-                BoxShadow(
-                  color: darkShadow,
-                  offset: const Offset(6, 6),
-                  blurRadius: 14,
-                ),
-              ],
+              boxShadow: _cardBoxShadows(
+                darkShadow: darkShadow,
+                lightShadow: lightShadow,
+              ),
             ),
             child: Material(
               color: Colors.transparent,
@@ -784,6 +661,166 @@ class _ListingTileState extends State<ListingTile> {
     }
 
     return cardWidget;
+  }
+
+  bool get _useCompactFeedShadows =>
+      widget.feedOptimized &&
+      LiquidGlassRendering.feedTileUseCompactShadows(context);
+
+  List<BoxShadow> _cardBoxShadows({
+    required Color darkShadow,
+    required Color lightShadow,
+  }) {
+    if (_useCompactFeedShadows) {
+      return LiquidGlassRendering.feedTileCompactShadows(context);
+    }
+    return [
+      BoxShadow(
+        color: lightShadow,
+        offset: const Offset(-3, -3),
+        blurRadius: 10,
+      ),
+      BoxShadow(
+        color: darkShadow,
+        offset: const Offset(6, 6),
+        blurRadius: 14,
+      ),
+    ];
+  }
+
+  Widget _buildFavoriteSlot() {
+    if (!widget.showHeartIcon && !widget.showFavoriteIndicator) {
+      return const SizedBox.shrink();
+    }
+
+    if (widget.feedOptimized &&
+        widget.showFavoriteIndicator &&
+        !widget.showHeartIcon) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: _FeedFavoriteIndicator(
+          listingId: widget.listing.id,
+          publisherUserId: widget.listing.userId,
+          forceFavorite: widget.forceFavorite,
+        ),
+      );
+    }
+
+    return Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: FavoriteHeartToggle(
+          listenable: _favoriteListenable,
+          shouldShow: (ctx) =>
+              PeerInteractionEligibility.mayInteractWithPublisher(
+            publisherUserId: widget.listing.userId,
+          ),
+          resolveIsFavorite: (ctx) => widget.showHeartIcon
+              ? (widget.forceFavorite ??
+                  FavoritesState().isFavorite(widget.listing.id))
+              : widget.forceFavorite == true
+                  ? true
+                  : FavoritesState().isFavorite(widget.listing.id),
+          hiddenBuilder: (_) => const SizedBox.shrink(),
+          onToggle: _onListingFavoriteToggle,
+          builder: (context, ui) {
+            if (widget.showHeartIcon) {
+              return SizedBox(
+                width: 20,
+                height: 20,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: ui.onTap,
+                      child: const SizedBox(
+                        width: 48,
+                        height: 48,
+                      ),
+                    ),
+                    IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: ui.pulse.listenable,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: ui.pulse.scale,
+                            child: ThemeIcon(
+                              ui.isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: ui.isFavorite
+                                  ? AppColors.favoriteActive
+                                  : AppColors.favoriteInactive,
+                              size: 20,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox(
+              width: 20,
+              height: 20,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: ui.onTap,
+                    child: const SizedBox(
+                      width: 48,
+                      height: 48,
+                    ),
+                  ),
+                  IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: ui.pulse.listenable,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: ui.pulse.scale,
+                          child: child,
+                        );
+                      },
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        reverseDuration: const Duration(milliseconds: 180),
+                        switchInCurve: Curves.elasticOut,
+                        switchOutCurve: Curves.easeInBack,
+                        transitionBuilder: (child, animation) =>
+                            ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
+                        child: SizedBox(
+                          key: ValueKey(
+                            ui.isFavorite ? "fav-on" : "fav-off",
+                          ),
+                          width: 20,
+                          height: 20,
+                          child: ThemeIcon(
+                            ui.isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: ui.isFavorite
+                                ? AppColors.favoriteActive
+                                : AppColors.favoriteInactive,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
   }
 
   Color _getLineColor(int line) {
@@ -958,9 +995,81 @@ class _ListingTileState extends State<ListingTile> {
     }
   }
 
+  GroupMembersProgressBadge? get _groupMembersProgressBadge {
+    final progress = ListingGroupProgress.fromListing(widget.listing);
+    if (progress == null) return null;
+    return GroupMembersProgressBadge(
+      current: progress.current,
+      target: progress.target,
+    );
+  }
+
   /// Prominent monthly-price card shown under the title. The amount respects
   /// the user's currency preference; the unit suffix follows it.
   Widget _buildPriceCard() {
+    Widget card(String amount, String unit) {
+      final priceGreen = _priceAccentGreen();
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        decoration: BoxDecoration(
+          color: priceGreen.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: priceGreen.withValues(alpha: 0.6),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeIcon(
+              Icons.payments,
+              size: 16,
+              color: priceGreen,
+              useThemeColor: false,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                amount,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: priceGreen,
+                ),
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              unit,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: priceGreen.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (widget.feedOptimized) {
+      final amount = PriceRangeHelper.formatStoredListingPrice(
+        storedPrice: widget.listing.price,
+        listingTypeCode:
+            widget.listing.listingType?.code ?? ListingTypeCodes.roommateNeeded,
+        minPrice: widget.listing.minPrice,
+        maxPrice: widget.listing.maxPrice,
+      );
+      final isUsd =
+          PriceDisplaySettingsState().currency == PriceDisplayCurrency.usd;
+      final unit = L10n.get(
+        isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
+      );
+      return card(amount, unit);
+    }
+
     return ListenableBuilder(
       listenable: PriceDisplaySettingsState(),
       builder: (context, _) {
@@ -976,50 +1085,7 @@ class _ListingTileState extends State<ListingTile> {
         final unit = L10n.get(
           isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
         );
-        final priceGreen = _priceAccentGreen();
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          decoration: BoxDecoration(
-            color: priceGreen.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: priceGreen.withValues(alpha: 0.6),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThemeIcon(
-                Icons.payments,
-                size: 16,
-                color: priceGreen,
-                useThemeColor: false,
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  amount,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: priceGreen,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                unit,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: priceGreen.withValues(alpha: 0.85),
-                ),
-              ),
-            ],
-          ),
-        );
+        return card(amount, unit);
       },
     );
   }
@@ -1224,10 +1290,22 @@ class _ListingTileState extends State<ListingTile> {
     // card itself (scaled down), so the photo looks softly extruded from the
     // tile surface.
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final darkShadow = Colors.black.withValues(alpha: isDark ? 0.45 : 0.22);
-    final lightShadow = Colors.white.withValues(
-      alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
-    );
+    final thumbnailShadows = _useCompactFeedShadows
+        ? LiquidGlassRendering.feedTileCompactShadows(context)
+        : [
+            BoxShadow(
+              color: Colors.white.withValues(
+                alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
+              ),
+              offset: const Offset(-3, -3),
+              blurRadius: 6,
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.22),
+              offset: const Offset(4, 4),
+              blurRadius: 9,
+            ),
+          ];
     const radius = BorderRadius.all(Radius.circular(14));
 
     // The media is a fixed square (`thumbWidth` x `thumbWidth`) so the square
@@ -1242,18 +1320,7 @@ class _ListingTileState extends State<ListingTile> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: lightShadow,
-              offset: const Offset(-3, -3),
-              blurRadius: 6,
-            ),
-            BoxShadow(
-              color: darkShadow,
-              offset: const Offset(4, 4),
-              blurRadius: 9,
-            ),
-          ],
+          boxShadow: thumbnailShadows,
         ),
         child: ClipRRect(
           borderRadius: radius,
@@ -1451,6 +1518,63 @@ class _ListingViewCountState {
     return _ListingViewCountState(
       count: count ?? this.count,
       loading: loading ?? this.loading,
+    );
+  }
+}
+
+/// Read-only favorite glyph for the home feed. Skips the pulse controller and
+/// triple-merged listenable used by [FavoriteHeartToggle] — enough for a small
+/// heart that appears only when the listing is already favorited.
+class _FeedFavoriteIndicator extends StatelessWidget {
+  const _FeedFavoriteIndicator({
+    required this.listingId,
+    required this.publisherUserId,
+    this.forceFavorite,
+  });
+
+  final int listingId;
+  final int? publisherUserId;
+  final bool? forceFavorite;
+
+  @override
+  Widget build(BuildContext context) {
+    final publisherId = publisherUserId;
+    if (publisherId == null ||
+        !PeerInteractionEligibility.mayInteractWithPublisher(
+          publisherUserId: publisherId,
+        )) {
+      return const SizedBox(width: 20, height: 20);
+    }
+
+    if (forceFavorite == true) {
+      return const SizedBox(
+        width: 20,
+        height: 20,
+        child: ThemeIcon(
+          Icons.favorite,
+          color: AppColors.favoriteActive,
+          size: 20,
+        ),
+      );
+    }
+
+    return ListenableBuilder(
+      listenable: FavoritesState().listenableFor(listingId),
+      builder: (context, _) {
+        final isFavorite = forceFavorite ?? FavoritesState().isFavorite(listingId);
+        if (!isFavorite) {
+          return const SizedBox(width: 20, height: 20);
+        }
+        return const SizedBox(
+          width: 20,
+          height: 20,
+          child: ThemeIcon(
+            Icons.favorite,
+            color: AppColors.favoriteActive,
+            size: 20,
+          ),
+        );
+      },
     );
   }
 }

@@ -2,7 +2,10 @@ import "dart:ui" show ImageFilter, TileMode;
 
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 
 /// Shared liquid-glass rendering helpers (drawer, bottom sheets, plates).
 ///
@@ -117,6 +120,35 @@ abstract final class LiquidGlassRendering {
       ];
     }
     return switchThumbGlassShadows();
+  }
+
+  /// Backdrop blur on feed [ListingTile]s is visually subtle but extremely
+  /// expensive on Android (each tile samples the layer behind it every frame
+  /// while scrolling). Skip it on Android always, and on other platforms while
+  /// the user is actively scrolling the feed.
+  static bool feedTileBackdropBlurEnabled(BuildContext context) {
+    if (isAndroidDevice) return false;
+    if (!effectsEnabled(context)) return false;
+    if (!AnimationSettingsState().uiAnimationsEnabled) return false;
+    if (FeedScrollScope.isUserScrollingOf(context)) return false;
+    return true;
+  }
+
+  /// Dual neumorphic shadows on every feed row add GPU overdraw during flings.
+  /// Android feed tiles use a single, lighter drop shadow instead.
+  static bool feedTileUseCompactShadows(BuildContext context) {
+    return isAndroidDevice;
+  }
+
+  static List<BoxShadow> feedTileCompactShadows(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
+        blurRadius: 8,
+        offset: const Offset(0, 3),
+      ),
+    ];
   }
 
   /// Neumorphic top-left highlight strength (listing cards, 3D buttons).

@@ -18,6 +18,7 @@ class ThreeDElevatedSurface extends StatelessWidget {
     /// Frosted glass matching the messages inbox tab switch thumb.
     this.useLiquidGlass = false,
     this.liquidGlassShadows,
+    this.enableBackdropBlur = true,
   });
 
   final Color baseColor;
@@ -30,13 +31,17 @@ class ThreeDElevatedSurface extends StatelessWidget {
   /// Outer drop shadow for the glass shell. Defaults to the switch-thumb shadow.
   final List<BoxShadow>? liquidGlassShadows;
 
+  /// When false, keeps the glass tint/gradient but skips [BackdropFilter].
+  final bool enableBackdropBlur;
+
   @override
   Widget build(BuildContext context) {
     if (useLiquidGlass) {
       final disableAnimations =
           MediaQuery.maybeOf(context)?.disableAnimations ?? false;
       final enableGlass = AnimationSettingsState().uiAnimationsEnabled &&
-          !disableAnimations;
+          !disableAnimations &&
+          enableBackdropBlur;
 
       return Container(
         margin: margin,
