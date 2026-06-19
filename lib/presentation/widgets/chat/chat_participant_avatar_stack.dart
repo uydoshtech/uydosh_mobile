@@ -22,13 +22,35 @@ class ChatParticipantAvatarStack extends StatelessWidget {
 
   static const double _overlapFraction = 0.22;
 
+  /// Puts the viewer first so the leftmost avatar is always "you".
+  static List<ConversationMemberSummary> orderWithCurrentUserFirst(
+    List<ConversationMemberSummary> participants,
+    int? currentUserId,
+  ) {
+    if (currentUserId == null || participants.length <= 1) {
+      return participants;
+    }
+
+    final currentUser = <ConversationMemberSummary>[];
+    final others = <ConversationMemberSummary>[];
+    for (final participant in participants) {
+      if (participant.userId == currentUserId) {
+        currentUser.add(participant);
+      } else {
+        others.add(participant);
+      }
+    }
+    return [...currentUser, ...others];
+  }
+
   @override
   Widget build(BuildContext context) {
     if (participants.isEmpty) {
       return ChatAvatar(isCurrentUser: false);
     }
 
-    final visible = participants.take(maxVisible).toList();
+    final ordered = orderWithCurrentUserFirst(participants, currentUserId);
+    final visible = ordered.take(maxVisible).toList();
     final overflow = participants.length - visible.length;
     final step = avatarSize * (1 - _overlapFraction);
     final width = avatarSize + (visible.length - 1) * step + (overflow > 0 ? step : 0);

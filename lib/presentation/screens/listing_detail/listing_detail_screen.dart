@@ -251,7 +251,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       );
 
   bool _isGroupFormingListing(ListingDetail listingDetail) =>
-      listingDetail.listingType.code == ListingTypeCodes.groupForming;
+      ListingGroupProgress.isGroupFormingDetail(listingDetail);
 
   void _reloadListingDetail() {
     context.read<ListingDetailBloc>().add(
@@ -1726,14 +1726,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       );
     }
 
-    // Admin-only: remove listing from top (unfeature).
-    //
-    // The owner already has a dedicated "Promote/Remove from top" pill
-    // in [ListingDetailOwnerToolbar]; this menu entry is for admins acting
-    // on listings they don't own. We reuse [_toggleFeatureListing], which
-    // — because the listing is currently featured — will go down the
-    // "unfeature" branch (DELETE /listings/:id/feature) and skip the
-    // owner-only weekly promotion cooldown.
+    // Admin-only: remove listing from top (unfeature) on listings the admin
+    // does not own. Reuses [_toggleFeatureListing], which — because the
+    // listing is currently featured — will go down the "unfeature" branch
+    // (DELETE /listings/:id/feature) and skip the owner-only weekly promotion
+    // cooldown.
     if (isStrictAdmin &&
         !isOwner &&
         AdminFeatureFlagsState().showListingMoveToTop &&

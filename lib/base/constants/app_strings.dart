@@ -1131,7 +1131,7 @@ class AppStrings {
       "admin_client_settings_show_listing_move_to_top":
           "Show move listing to top controls",
       "admin_client_settings_show_listing_move_to_top_description":
-          "Lets admins promote or remove featured listings from the overflow menu and long-press on feed tiles.",
+          "Owner promote/remove pill on listing detail, admin overflow menu, and long-press on featured feed tiles.",
       "admin_client_config_hide_gemini_listing_ui":
           "Show translation & AI improve",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -2936,7 +2936,7 @@ class AppStrings {
       "admin_client_settings_show_listing_move_to_top":
           "Показывать управление «поднять в топ»",
       "admin_client_settings_show_listing_move_to_top_description":
-          "Позволяет админам поднимать или убирать объявления с верха ленты через меню и долгое нажатие на плитку.",
+          "Кнопка «поднять в топ» у владельца на экране объявления, пункт в меню админа и долгое нажатие на плитку в ленте.",
       "admin_client_config_hide_gemini_listing_ui":
           "Показывать перевод и улучшение ИИ",
       "admin_client_config_hide_gemini_listing_ui_description":
@@ -4763,7 +4763,7 @@ class AppStrings {
       "admin_client_settings_show_listing_move_to_top":
           "Eʼlonni yuqoriga ko‘tarish boshqaruvini ko‘rsatish",
       "admin_client_settings_show_listing_move_to_top_description":
-          "Adminlarga overflow menyusi va lenta plitkasida uzoq bosish orqali eʼlonni yuqoriga ko‘tarish yoki olib tashlash imkonini beradi.",
+          "Eʼlon sahifasidagi egasi tugmasi, admin menyusi va lenta plitkasida uzoq bosish.",
       "admin_client_config_hide_gemini_listing_ui":
           "Tarjima va AI yaxshilashni ko‘rsatish",
       "admin_client_config_hide_gemini_listing_ui_description":

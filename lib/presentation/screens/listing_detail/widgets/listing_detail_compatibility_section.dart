@@ -14,6 +14,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -805,8 +806,13 @@ class _ListingDetailCompatibilitySectionState
   Widget build(BuildContext context) {
     final isAuthenticated = AuthenticationState().isAuthenticated;
     final isOwner = UserListingState().isOwner(widget.listingDetail.user.id);
+    final isGroupForming =
+        ListingGroupProgress.isGroupFormingDetail(widget.listingDetail);
 
-    if (isOwner) {
+    // One-on-one compatibility is viewer vs owner; group compatibility is about
+    // the whole forming group — owners need that section too (including while
+    // group scores are still loading and [isGroupCompatibility] is false).
+    if (isOwner && !isGroupForming && !widget.isGroupCompatibility) {
       return const SizedBox.shrink();
     }
 
