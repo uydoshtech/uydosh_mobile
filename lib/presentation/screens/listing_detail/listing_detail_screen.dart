@@ -89,6 +89,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_forming_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_join_requests_sheet.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_member_profiles_sheet.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_content_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_owner_toolbar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_photo_section.dart";
@@ -309,6 +310,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   Widget _buildGroupFormingActionBar(
     ListingDetail listingDetail, {
     required bool isOwner,
+    VoidCallback? onViewMemberProfiles,
   }) {
     final ctx = listingDetail.groupContext;
     if (isOwner) {
@@ -332,6 +334,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           onSecondary: showManageRequests ? openJoinRequestsSheet : null,
           showManageRequestsDot: pendingCount > 0,
           manageRequestsDotTrigger: pendingCount,
+          onViewMemberProfiles: onViewMemberProfiles,
         );
       }
 
@@ -345,6 +348,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         onPrimary: openJoinRequestsSheet,
         showManageRequestsDot: pendingCount > 0,
         manageRequestsDotTrigger: pendingCount,
+        onViewMemberProfiles: onViewMemberProfiles,
       );
     }
     if (ctx?.isMember == true) {
@@ -352,6 +356,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         listingDetail: listingDetail,
         primaryLabel: L10n.get("group_open_chat"),
         onPrimary: () => _openGroupChat(listingDetail),
+        onViewMemberProfiles: onViewMemberProfiles,
       );
     }
     if (ctx?.hasPendingJoinRequest == true) {
@@ -359,6 +364,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         listingDetail: listingDetail,
         primaryLabel: L10n.get("group_join_request_withdraw"),
         onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
+        onViewMemberProfiles: onViewMemberProfiles,
       );
     }
     if (ctx?.canRequestToJoin == true) {
@@ -366,6 +372,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         listingDetail: listingDetail,
         primaryLabel: L10n.get("group_request_to_join"),
         onPrimary: () => _requestToJoinGroup(listingDetail),
+        onViewMemberProfiles: onViewMemberProfiles,
       );
     }
     return const SizedBox.shrink();
@@ -2366,7 +2373,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupPartialMatches: compat.groupPartialMatches,
         groupDiscussItems: compat.groupDiscussItems,
         currentUserId: _sessionUserId,
-        onViewMemberProfile: (userId) => _navigateToProfile(userId),
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
         onTelegram: (listingDetail.contactTelegram?.trim().isNotEmpty ?? false)
@@ -2699,9 +2705,36 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           if (_isGroupFormingListing(listingDetail))
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: _buildGroupFormingActionBar(
-                listingDetail,
-                isOwner: isOwner,
+              child: BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
+                  List<ConversationMemberSummary>>(
+                selector: (s) => s.groupMembers,
+                builder: (context, groupMembers) {
+                  final showMemberProfiles =
+                      ListingGroupProgress.canShowGroupCompatibility(
+                            listingDetail,
+                          ) &&
+                          groupMembers.isNotEmpty;
+                  return _buildGroupFormingActionBar(
+                    listingDetail,
+                    isOwner: isOwner,
+                    onViewMemberProfiles: showMemberProfiles
+                        ? () => showListingGroupMemberProfilesSheet(
+                              context: context,
+                              listingId: listingDetail.id,
+                              members: groupMembers,
+                              ownerUserId: listingDetail.user.id,
+                              currentUserId: _sessionUserId,
+                              isOwner: isOwner,
+                              groupProgress: ListingGroupProgress.fromListingDetail(
+                                listingDetail,
+                              ),
+                              onMemberTap: (userId) =>
+                                  _navigateToProfile(userId),
+                              onChanged: _reloadListingDetail,
+                            )
+                        : null,
+                  );
+                },
               ),
             ),
         ];

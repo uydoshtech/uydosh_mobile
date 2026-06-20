@@ -15,6 +15,7 @@ class ListingGroupFormingActionBar extends StatelessWidget {
     this.secondaryLabel,
     this.showManageRequestsDot = false,
     this.manageRequestsDotTrigger = 0,
+    this.onViewMemberProfiles,
   });
 
   final ListingDetail listingDetail;
@@ -24,6 +25,7 @@ class ListingGroupFormingActionBar extends StatelessWidget {
   final String? secondaryLabel;
   final bool showManageRequestsDot;
   final int manageRequestsDotTrigger;
+  final VoidCallback? onViewMemberProfiles;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +64,7 @@ class ListingGroupFormingActionBar extends StatelessWidget {
       secondaryLabel: secondaryCtaLabel,
       notificationDot: notificationDot,
       notificationDotTrigger: manageRequestsDotTrigger,
+      onMemberProfiles: onViewMemberProfiles,
     );
   }
 

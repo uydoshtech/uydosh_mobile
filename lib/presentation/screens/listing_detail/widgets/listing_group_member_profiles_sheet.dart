@@ -1,0 +1,538 @@
+import "package:flutter/cupertino.dart";
+import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/utils/listing_group_progress.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
+
+Future<void> showListingGroupMemberProfilesSheet({
+  required BuildContext context,
+  required int listingId,
+  required List<ConversationMemberSummary> members,
+  required int ownerUserId,
+  required void Function(int userId) onMemberTap,
+  required bool isOwner,
+  int? currentUserId,
+  ListingGroupProgress? groupProgress,
+  VoidCallback? onChanged,
+}) async {
+  if (members.isEmpty) return;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (sheetContext) {
+      return _ListingGroupMemberProfilesSheet(
+        listingId: listingId,
+        members: members,
+        ownerUserId: ownerUserId,
+        currentUserId: currentUserId,
+        isOwner: isOwner,
+        groupProgress: groupProgress,
+        onMemberTap: onMemberTap,
+        onChanged: onChanged,
+      );
+    },
+  );
+}
+
+class _ListingGroupMemberProfilesSheet extends StatefulWidget {
+  const _ListingGroupMemberProfilesSheet({
+    required this.listingId,
+    required this.members,
+    required this.ownerUserId,
+    required this.onMemberTap,
+    required this.isOwner,
+    this.currentUserId,
+    this.groupProgress,
+    this.onChanged,
+  });
+
+  final int listingId;
+  final List<ConversationMemberSummary> members;
+  final int ownerUserId;
+  final int? currentUserId;
+  final bool isOwner;
+  final ListingGroupProgress? groupProgress;
+  final void Function(int userId) onMemberTap;
+  final VoidCallback? onChanged;
+
+  @override
+  State<_ListingGroupMemberProfilesSheet> createState() =>
+      _ListingGroupMemberProfilesSheetState();
+}
+
+class _ListingGroupMemberProfilesSheetState
+    extends State<_ListingGroupMemberProfilesSheet> {
+  late List<ConversationMemberSummary> _members;
+  var _isRemoving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _members = List<ConversationMemberSummary>.from(widget.members);
+  }
+
+  ListingGroupProgress? get _groupProgress {
+    final base = widget.groupProgress;
+    if (base == null) return null;
+    return ListingGroupProgress(
+      current: _members.length < 1 ? 1 : _members.length,
+      target: base.target,
+    );
+  }
+
+  bool get _isGroupFull {
+    final progress = _groupProgress;
+    return progress != null &&
+        progress.target > 0 &&
+        progress.current >= progress.target;
+  }
+
+  List<ConversationMemberSummary> get _sortedMembers =>
+      _sortMembersForDisplay(
+        members: _members,
+        ownerUserId: widget.ownerUserId,
+        currentUserId: widget.currentUserId,
+      );
+
+  Future<void> _confirmRemoveMember(ConversationMemberSummary member) async {
+    if (_isRemoving) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+          title: Text(
+            L10n.get("group_remove_member_title"),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+          content: Text(
+            L10n.getWithParams(
+              "group_remove_member_message",
+              params: {"name": member.name},
+            ),
+            style: TextStyle(
+              fontSize: 16,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
+              child: Text(
+                L10n.get("cancel"),
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(foregroundColor: scheme.error),
+              child: Text(
+                L10n.get("group_remove_member"),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isRemoving = true);
+    try {
+      await getIt<IListingGroupService>().removeMember(
+        listingId: widget.listingId,
+        memberUserId: member.userId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _members.removeWhere((row) => row.userId == member.userId);
+        _isRemoving = false;
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_remove_member_success"),
+      );
+      widget.onChanged?.call();
+      if (_members.isEmpty && mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isRemoving = false);
+      ToastTheme.showError(context, message: e.toString());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sortedMembers = _sortedMembers;
+
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _MemberProfilesHeader(
+            members: _members,
+            currentUserId: widget.currentUserId,
+            isGroupFull: _isGroupFull,
+            groupProgress: _groupProgress,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final member in sortedMembers) ...[
+                  if (member != sortedMembers.first) const SizedBox(height: 10),
+                  _MemberProfileCard(
+                    member: member,
+                    ownerUserId: widget.ownerUserId,
+                    currentUserId: widget.currentUserId,
+                    canRemove: widget.isOwner &&
+                        member.userId != widget.ownerUserId &&
+                        !_isRemoving,
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(context).pop();
+                      widget.onMemberTap(member.userId);
+                    },
+                    onRemove: widget.isOwner &&
+                            member.userId != widget.ownerUserId &&
+                            !_isRemoving
+                        ? () => _confirmRemoveMember(member)
+                        : null,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+List<ConversationMemberSummary> _sortMembersForDisplay({
+  required List<ConversationMemberSummary> members,
+  required int ownerUserId,
+  int? currentUserId,
+}) {
+  final sorted = List<ConversationMemberSummary>.from(members);
+  sorted.sort((a, b) {
+    int rank(ConversationMemberSummary member) {
+      if (member.userId == ownerUserId) return 0;
+      if (currentUserId != null && member.userId == currentUserId) return 1;
+      return 2;
+    }
+
+    final rankCompare = rank(a).compareTo(rank(b));
+    if (rankCompare != 0) return rankCompare;
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  });
+  return sorted;
+}
+
+class _MemberProfilesHeader extends StatelessWidget {
+  const _MemberProfilesHeader({
+    required this.members,
+    required this.currentUserId,
+    required this.isGroupFull,
+    this.groupProgress,
+  });
+
+  final List<ConversationMemberSummary> members;
+  final int? currentUserId;
+  final bool isGroupFull;
+  final ListingGroupProgress? groupProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final progressLabel = groupProgress != null
+        ? L10n.getWithParams(
+            "group_members_progress",
+            params: {
+              "current": "${groupProgress!.current}",
+              "target": "${groupProgress!.target}",
+            },
+          )
+        : null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            L10n.get("view_member_profiles"),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            L10n.getWithParams(
+              "group_compatibility_subtitle",
+              params: {"count": members.length.toString()},
+            ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+              height: 1.3,
+            ),
+          ),
+          if (progressLabel != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              progressLabel,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          ChatParticipantAvatarStack(
+            participants: members,
+            currentUserId: currentUserId,
+            avatarSize: 32,
+            maxVisible: 5,
+          ),
+          if (isGroupFull) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.28),
+                ),
+              ),
+              child: Row(
+                children: [
+                  ThemeIcon(
+                    CupertinoIcons.checkmark_circle_fill,
+                    size: 18,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      L10n.get("group_member_profiles_formed"),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.successDark,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MemberProfileCard extends StatelessWidget {
+  const _MemberProfileCard({
+    required this.member,
+    required this.ownerUserId,
+    required this.onTap,
+    this.currentUserId,
+    this.canRemove = false,
+    this.onRemove,
+  });
+
+  final ConversationMemberSummary member;
+  final int ownerUserId;
+  final int? currentUserId;
+  final VoidCallback onTap;
+  final bool canRemove;
+  final VoidCallback? onRemove;
+
+  bool get _isOwner => member.userId == ownerUserId;
+
+  bool get _isCurrentUser =>
+      currentUserId != null && member.userId == currentUserId;
+
+  String? get _roleLabel {
+    if (_isOwner) return L10n.get("group_member_role_owner");
+    if (_isCurrentUser) return L10n.get("group_member_role_you");
+    return L10n.get("group_member_role_member");
+  }
+
+  Color _roleColor(ColorScheme scheme) {
+    if (_isOwner) return ListingDetailThemeHelper.iconColor;
+    if (_isCurrentUser) return AppColors.success;
+    return scheme.onSurfaceVariant;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final themeState = ThemeState();
+    const avatarSize = 48.0;
+    final avatarUrl = resolveAvatarUrl(member.avatarUrl);
+    final initials = StringUtils.extractInitials(member.name);
+    final roleColor = _roleColor(scheme);
+    final highlightCurrentUser = _isCurrentUser && !_isOwner;
+
+    final avatarFallback = CircleAvatar(
+      backgroundColor: themeState.avatarColor,
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: themeState.avatarIconColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    final card = ThreeDElevatedSurface(
+      baseColor: scheme.surface,
+      useLiquidGlass: true,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipOval(
+                child: avatarUrl != null
+                    ? NetworkAvatarImage(
+                        imageUrl: avatarUrl,
+                        size: avatarSize,
+                        fallback: SizedBox(
+                          width: avatarSize,
+                          height: avatarSize,
+                          child: avatarFallback,
+                        ),
+                      )
+                    : SizedBox(
+                        width: avatarSize,
+                        height: avatarSize,
+                        child: avatarFallback,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      member.name,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (_roleLabel != null) ...[
+                      const SizedBox(height: 6),
+                      _RoleBadge(label: _roleLabel!, color: roleColor),
+                    ],
+                    if (canRemove && onRemove != null) ...[
+                      const SizedBox(height: 8),
+                      UydoshLinkButton(
+                        text: L10n.get("group_remove_member"),
+                        onPressed: onRemove!,
+                        color: AppColors.error,
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              ThemeIcon(
+                Icons.chevron_right,
+                size: 22,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (!highlightCurrentUser) return card;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.success.withValues(alpha: 0.45),
+          width: 1.5,
+        ),
+      ),
+      child: card,
+    );
+  }
+}
+
+class _RoleBadge extends StatelessWidget {
+  const _RoleBadge({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          height: 1.1,
+        ),
+      ),
+    );
+  }
+}

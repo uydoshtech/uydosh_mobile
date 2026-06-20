@@ -2,6 +2,7 @@ import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -48,6 +49,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.notificationDot,
     this.notificationDotTrigger = 0,
     this.embedded = false,
+    this.onMemberProfiles,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -63,6 +65,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final int notificationDotTrigger;
   /// When true, renders only the CTA column (no sticky frosted footer).
   final bool embedded;
+  /// Optional CTA rendered directly above the primary chat button in stacked layouts.
+  final VoidCallback? onMemberProfiles;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -161,6 +165,33 @@ class ListingDetailContactActionBar extends StatelessWidget {
   bool get _hasSecondaryAction =>
       onSecondary != null && secondaryLabel != null;
 
+  List<Widget> _stackedPrimaryTail(
+    BuildContext context, {
+    required Widget primaryButton,
+  }) {
+    if (onMemberProfiles == null) {
+      return [primaryButton];
+    }
+    final accentColor = ListingDetailThemeHelper.iconColor;
+    final secondaryTextColor = _getSecondaryTextColor();
+    return [
+      _GlassNeumorphicCtaButton(
+        onPressed: () {
+          HapticFeedbackUtils.impact();
+          onMemberProfiles!();
+        },
+        icon: Icons.group_outlined,
+        iconColor: accentColor,
+        label: L10n.get("view_member_profiles"),
+        labelColor: secondaryTextColor,
+        borderColor: accentColor,
+        width: double.infinity,
+      ),
+      const SizedBox(height: 8),
+      primaryButton,
+    ];
+  }
+
   /// Stacked CTAs share one width. Sticky footer centers them; embedded
   /// mode stretches to the scroll content width.
   Widget _buildStackedActions(BuildContext context) {
@@ -171,7 +202,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
         children: [
           _secondaryButton(context, width: double.infinity),
           const SizedBox(height: 8),
-          _chatButton(context, width: double.infinity),
+          ..._stackedPrimaryTail(
+            context,
+            primaryButton: _chatButton(context, width: double.infinity),
+          ),
         ],
       );
     }
@@ -186,7 +220,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
             children: [
               _secondaryButton(context),
               const SizedBox(height: 8),
-              _chatButton(context),
+              ..._stackedPrimaryTail(
+                context,
+                primaryButton: _chatButton(context),
+              ),
             ],
           ),
         ),
@@ -210,7 +247,14 @@ class ListingDetailContactActionBar extends StatelessWidget {
     }
     if (!hasTelegram) {
       if (embedded) {
-        return _chatButton(context, width: double.infinity);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: _stackedPrimaryTail(
+            context,
+            primaryButton: _chatButton(context, width: double.infinity),
+          ),
+        );
       }
       return SizedBox(
         width: double.infinity,

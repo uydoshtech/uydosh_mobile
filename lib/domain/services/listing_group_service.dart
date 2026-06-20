@@ -26,6 +26,11 @@ abstract class IListingGroupService {
     required int listingId,
     required int requestId,
   });
+
+  Future<void> removeMember({
+    required int listingId,
+    required int memberUserId,
+  });
 }
 
 class ListingGroupService implements IListingGroupService {
@@ -113,6 +118,19 @@ class ListingGroupService implements IListingGroupService {
   }) async {
     await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
       "/listings/$listingId/group/join-requests/$requestId/reject",
+      (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+  }
+
+  @override
+  Future<void> removeMember({
+    required int listingId,
+    required int memberUserId,
+  }) async {
+    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$listingId/group/members/$memberUserId",
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
       data: const _EmptyBody(),

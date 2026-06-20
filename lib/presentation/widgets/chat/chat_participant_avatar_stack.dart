@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
@@ -21,6 +22,10 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   final int maxVisible;
 
   static const double _overlapFraction = 0.22;
+  static const double _avatarBorderWidth = 1;
+
+  static Color _avatarBorderColor() =>
+      ThemeState().isBlueTheme ? Colors.white : Colors.black;
 
   /// Puts the viewer first so the leftmost avatar is always "you".
   static List<ConversationMemberSummary> orderWithCurrentUserFirst(
@@ -99,13 +104,16 @@ class _MemberAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = resolveAvatarUrl(member.avatarUrl);
     final initials = StringUtils.extractInitials(member.name);
-    final ringColor = Theme.of(context).scaffoldBackgroundColor;
+    final borderColor = ChatParticipantAvatarStack._avatarBorderColor();
 
     if (url == null) {
       return DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: ringColor, width: 1.5),
+          border: Border.all(
+            color: borderColor,
+            width: ChatParticipantAvatarStack._avatarBorderWidth,
+          ),
         ),
         child: ChatAvatar(
           isCurrentUser: isCurrentUser,
@@ -135,7 +143,10 @@ class _MemberAvatar extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: ringColor, width: 1.5),
+                border: Border.all(
+                  color: borderColor,
+                  width: ChatParticipantAvatarStack._avatarBorderWidth,
+                ),
               ),
             ),
           ),
@@ -153,7 +164,6 @@ class _OverflowChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ringColor = Theme.of(context).scaffoldBackgroundColor;
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Container(
@@ -162,7 +172,10 @@ class _OverflowChip extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: ringColor, width: 1.5),
+        border: Border.all(
+          color: ChatParticipantAvatarStack._avatarBorderColor(),
+          width: ChatParticipantAvatarStack._avatarBorderWidth,
+        ),
       ),
       alignment: Alignment.center,
       child: Text(

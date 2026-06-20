@@ -82,7 +82,6 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     this.groupPartialMatches = const [],
     this.groupDiscussItems = const [],
     this.currentUserId,
-    this.onViewMemberProfile,
     super.key,
   });
 
@@ -111,7 +110,6 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final List<GroupCompatibilityPartialMatch> groupPartialMatches;
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
   final int? currentUserId;
-  final void Function(int userId)? onViewMemberProfile;
 
   @override
   State<ListingDetailCompatibilitySection> createState() =>
@@ -663,7 +661,7 @@ class _ListingDetailCompatibilitySectionState
                 ),
               )
               .toList(),
-        ),
+          ),
         if (widget.groupFullMatches.isEmpty &&
             widget.groupPartialMatches.isEmpty &&
             widget.groupDiscussItems.isEmpty)
@@ -674,59 +672,9 @@ class _ListingDetailCompatibilitySectionState
             outlined: true,
             maxLines: 1,
           ),
-        if (widget.onViewMemberProfile != null) ...[
-          const SizedBox(height: 14),
-          GhostButtonFactory.iconText(
-            onPressed: () {
-              HapticFeedbackUtils.impact();
-              _showMemberProfilesSheet(context);
-            },
-            width: double.infinity,
-            icon: Icons.group_outlined,
-            iconSize: 18,
-            text: L10n.get("view_member_profiles"),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            borderColor: _getIconColor(),
-            textColor: _getDescriptionTextColor(),
-            iconColor: _getIconColor(),
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
         const SizedBox(height: 14),
         _buildGroupCompatibilitySummaryBar(),
       ],
-    );
-  }
-
-  void _showMemberProfilesSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) {
-        return SafeArea(
-          child: ListView.separated(
-            shrinkWrap: true,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            itemCount: widget.groupMembers.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final member = widget.groupMembers[index];
-              return ListTile(
-                leading: _buildHeaderAvatar(member.avatarUrl, size: 40),
-                title: Text(member.name),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  widget.onViewMemberProfile?.call(member.userId);
-                },
-              );
-            },
-          ),
-        );
-      },
     );
   }
 
