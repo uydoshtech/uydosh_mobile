@@ -129,76 +129,88 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
       ),
     );
 
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 90),
-        transform: Matrix4.translationValues(0, _pressed && enabled ? 2 : 0, 0),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashFactory: NoSplash.splashFactory,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-            onTap: enabled
-                ? () {
-                    HapticFeedbackUtils.impact();
-                    widget.onPressed?.call();
-                  }
-                : null,
-            onHighlightChanged:
-                enabled ? (v) => setState(() => _pressed = v) : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 90),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                borderRadius: borderRadius,
-                boxShadow: shadows,
-              ),
-              child: ClipRRect(
-                borderRadius: borderRadius,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (enableBlur)
-                      BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: blurSigma,
-                          sigmaY: blurSigma,
+    Widget buildSizedButton(double? width) {
+      return SizedBox(
+        width: width,
+        height: widget.height,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          transform: Matrix4.translationValues(0, _pressed && enabled ? 2 : 0, 0),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: borderRadius,
+              splashFactory: NoSplash.splashFactory,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              onTap: enabled
+                  ? () {
+                      HapticFeedbackUtils.impact();
+                      widget.onPressed?.call();
+                    }
+                  : null,
+              onHighlightChanged:
+                  enabled ? (v) => setState(() => _pressed = v) : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 90),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: borderRadius,
+                  boxShadow: shadows,
+                ),
+                child: ClipRRect(
+                  borderRadius: borderRadius,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (enableBlur)
+                        BackdropFilter(
+                          filter: ImageFilter.blur(
+                            sigmaX: blurSigma,
+                            sigmaY: blurSigma,
+                          ),
+                          child: const SizedBox.expand(),
                         ),
-                        child: const SizedBox.expand(),
-                      ),
-                    Positioned.fill(child: face),
-                    // Thin highlight along the top edge — reads as glass lip.
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: borderRadius,
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: const Alignment(0, 0.35),
-                              colors: [
-                                Colors.white.withValues(alpha: isDark ? 0.07 : 0.05),
-                                Colors.white.withValues(alpha: 0),
-                              ],
+                      Positioned.fill(child: face),
+                      // Thin highlight along the top edge — reads as glass lip.
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: borderRadius,
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: const Alignment(0, 0.35),
+                                colors: [
+                                  Colors.white.withValues(alpha: isDark ? 0.07 : 0.05),
+                                  Colors.white.withValues(alpha: 0),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+      );
+    }
+
+    if (widget.width != null) return buildSizedButton(widget.width);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width =
+            constraints.hasBoundedWidth ? constraints.maxWidth : null;
+        return buildSizedButton(width);
+      },
     );
   }
 }

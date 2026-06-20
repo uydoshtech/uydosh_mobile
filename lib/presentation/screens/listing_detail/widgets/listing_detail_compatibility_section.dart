@@ -397,13 +397,13 @@ class _ListingDetailCompatibilitySectionState
           height: 22,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: accentColor.withValues(alpha: 0.18),
+            color: accentColor.withValues(alpha: 0.85),
             shape: BoxShape.circle,
           ),
           child: ThemeIcon(
             _groupSectionHeaderIcon(kind),
             size: 14,
-            color: accentColor,
+            color: Colors.white,
             useThemeColor: false,
           ),
         ),
@@ -487,13 +487,13 @@ class _ListingDetailCompatibilitySectionState
                 height: 24,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.18),
+                  color: color.withValues(alpha: 0.85),
                   shape: BoxShape.circle,
                 ),
                 child: ThemeIcon(
                   icon,
                   size: 14,
-                  color: color,
+                  color: Colors.white,
                   useThemeColor: false,
                 ),
               ),

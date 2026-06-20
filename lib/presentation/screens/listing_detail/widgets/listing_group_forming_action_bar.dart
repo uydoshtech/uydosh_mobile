@@ -4,7 +4,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 
-/// Sticky footer for `group_forming` listings (join / chat / manage requests).
+/// Inline CTAs for `group_forming` listings (join / chat / manage requests).
 class ListingGroupFormingActionBar extends StatelessWidget {
   const ListingGroupFormingActionBar({
     super.key,
@@ -39,18 +39,15 @@ class ListingGroupFormingActionBar extends StatelessWidget {
         : null;
     final hasSecondaryAction =
         onSecondary != null && secondaryLabel != null;
+    final includePrimaryProgress = !hasSecondaryAction &&
+        primaryLabel != L10n.get("group_manage_requests");
     final primaryCtaLabel = _labelWithProgress(
       primaryLabel,
       progress,
-      includeProgress: !hasSecondaryAction,
+      includeProgress: includePrimaryProgress,
     );
-    final secondaryCtaLabel = hasSecondaryAction
-        ? _labelWithProgress(
-            secondaryLabel!,
-            progress,
-            includeProgress: true,
-          )
-        : null;
+    final secondaryCtaLabel =
+        hasSecondaryAction ? secondaryLabel! : null;
     final notificationDot = showManageRequestsDot
         ? (hasSecondaryAction
             ? ListingDetailActionBarNotificationDot.top
@@ -58,6 +55,7 @@ class ListingGroupFormingActionBar extends StatelessWidget {
         : null;
 
     return ListingDetailContactActionBar(
+      embedded: true,
       onMessage: onPrimary,
       inAppChatCtaLabel: primaryCtaLabel,
       onSecondary: onSecondary,

@@ -314,26 +314,35 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (isOwner) {
       final hasChat = ctx?.hasGroupChat == true;
       final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
+      final spotsOpen = ctx?.groupSpotsOpen ?? 0;
+      final showManageRequests = pendingCount > 0 || spotsOpen > 0;
+      final openJoinRequestsSheet = () => showListingGroupJoinRequestsSheet(
+            context: context,
+            listingId: listingDetail.id,
+            onChanged: _reloadListingDetail,
+          );
+
+      if (hasChat) {
+        return ListingGroupFormingActionBar(
+          listingDetail: listingDetail,
+          primaryLabel: L10n.get("group_open_chat"),
+          onPrimary: () => _openGroupChat(listingDetail),
+          secondaryLabel:
+              showManageRequests ? L10n.get("group_manage_requests") : null,
+          onSecondary: showManageRequests ? openJoinRequestsSheet : null,
+          showManageRequestsDot: pendingCount > 0,
+          manageRequestsDotTrigger: pendingCount,
+        );
+      }
+
+      if (!showManageRequests) {
+        return const SizedBox.shrink();
+      }
+
       return ListingGroupFormingActionBar(
         listingDetail: listingDetail,
-        primaryLabel: hasChat
-            ? L10n.get("group_open_chat")
-            : L10n.get("group_manage_requests"),
-        onPrimary: hasChat
-            ? () => _openGroupChat(listingDetail)
-            : () => showListingGroupJoinRequestsSheet(
-                  context: context,
-                  listingId: listingDetail.id,
-                  onChanged: _reloadListingDetail,
-                ),
-        secondaryLabel: hasChat ? L10n.get("group_manage_requests") : null,
-        onSecondary: hasChat
-            ? () => showListingGroupJoinRequestsSheet(
-                  context: context,
-                  listingId: listingDetail.id,
-                  onChanged: _reloadListingDetail,
-                )
-            : null,
+        primaryLabel: L10n.get("group_manage_requests"),
+        onPrimary: openJoinRequestsSheet,
         showManageRequestsDot: pendingCount > 0,
         manageRequestsDotTrigger: pendingCount,
       );
@@ -348,7 +357,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (ctx?.hasPendingJoinRequest == true) {
       return ListingGroupFormingActionBar(
         listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_join_request_sent"),
+        primaryLabel: L10n.get("group_join_request_withdraw"),
         onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
       );
     }
@@ -2203,6 +2212,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         if (data.isLoading || data.hasError || listingDetail == null) {
           return const SizedBox.shrink();
         }
+        // Group-forming CTAs are inline at the bottom of the scroll body.
+        if (_isGroupFormingListing(listingDetail)) {
+          return const SizedBox.shrink();
+        }
         return ValueListenableBuilder<bool>(
           valueListenable: ClientListingContactsConfig.showListingContacts,
           builder: (context, showContacts, _) {
@@ -2210,12 +2223,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               listenable: UserListingState(),
               builder: (context, _) {
                 final isOwner = _isListingOwner(listingDetail.user.id);
-                if (_isGroupFormingListing(listingDetail)) {
-                  return _buildGroupFormingActionBar(
-                    listingDetail,
-                    isOwner: isOwner,
-                  );
-                }
                 final telegramHandle =
                     listingDetail.contactTelegram?.trim() ?? "";
                 final telegramAvailable =
@@ -2225,17 +2232,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                     : null;
 
                 if (isOwner) {
-                  // Admin-as-owner gets a Telegram-only sticky CTA so
-                  // they can still reach the listing's external contact
-                  // (e.g. listings imported under an admin account where
-                  // `contact_telegram` is the original poster's handle).
-                  // The in-app chat CTA is hidden because chatting with
-                  // yourself isn't possible. We deliberately bypass the
-                  // platform-wide `showListingContacts` gate here: the
-                  // toggle controls visibility for regular users, but
-                  // admins always need access to the contact channels
-                  // for moderation. Non-admin owners still see nothing
-                  // — the owner toolbar is their UI.
                   if (telegramHandle.isEmpty) return const SizedBox.shrink();
                   return FutureBuilder<String?>(
                     future: _userRoleFuture,
@@ -2700,15 +2696,23 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 );
               },
             ),
+          if (_isGroupFormingListing(listingDetail))
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: _buildGroupFormingActionBar(
+                listingDetail,
+                isOwner: isOwner,
+              ),
+            ),
         ];
 
         final themeState = ThemeState();
         final topPad = 8.0 + themeState.mainShellGlassExtraTopInset(context);
-        // With [Scaffold.extendBody: true] the body flows under the sticky
-        // [ListingDetailContactActionBar]; Scaffold injects the bar height
-        // into [MediaQuery.padding.bottom] for the body, so reserving that
-        // here keeps the last row of content clear of the frosted footer.
-        final bottomPad = 36.0 + MediaQuery.paddingOf(context).bottom;
+        // Reserve space for the sticky contact bar unless group-forming CTAs
+        // are inline at the bottom of the scroll content.
+        final bottomPad = _isGroupFormingListing(listingDetail)
+            ? 16.0 + MediaQuery.paddingOf(context).bottom
+            : 36.0 + MediaQuery.paddingOf(context).bottom;
         return Column(
           children: [
             Expanded(

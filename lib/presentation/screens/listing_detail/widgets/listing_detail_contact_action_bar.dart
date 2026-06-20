@@ -1,4 +1,3 @@
-import "dart:math" as math;
 import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
@@ -48,6 +47,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.secondaryLabel,
     this.notificationDot,
     this.notificationDotTrigger = 0,
+    this.embedded = false,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -61,6 +61,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final String? secondaryLabel;
   final ListingDetailActionBarNotificationDot? notificationDot;
   final int notificationDotTrigger;
+  /// When true, renders only the CTA column (no sticky frosted footer).
+  final bool embedded;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -121,7 +123,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     );
   }
 
-  Widget _secondaryButton(BuildContext context, {required double width}) {
+  Widget _secondaryButton(BuildContext context, {double? width}) {
     final accentColor = ListingDetailThemeHelper.iconColor;
     final secondaryTextColor = _getSecondaryTextColor();
     final button = _GlassNeumorphicCtaButton(
@@ -159,72 +161,45 @@ class ListingDetailContactActionBar extends StatelessWidget {
   bool get _hasSecondaryAction =>
       onSecondary != null && secondaryLabel != null;
 
-  static const double _ctaHorizontalPadding = 24; // 12px each side
-  static const double _glassNeumorphicLeadingWidth = 28; // 18px icon + 10px gap
-  static const double _chatLeadingWidth = 26; // 18px icon + 8px gap
-
-  double _measureActionLabelWidth(
-    BuildContext context,
-    String label,
-    TextStyle style,
-  ) {
-    final painter = TextPainter(
-      text: TextSpan(text: label, style: style),
-      maxLines: 1,
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-    )..layout();
-    return painter.width;
-  }
-
-  double _stackedActionsWidth(BuildContext context) {
-    final secondaryTextWidth = _measureActionLabelWidth(
-      context,
-      secondaryLabel!,
-      const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1),
-    );
-    final primaryTextWidth = _measureActionLabelWidth(
-      context,
-      inAppChatCtaLabel ?? context.l10n.uydosh_chat,
-      const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, height: 1),
-    );
-    return math.max(
-      secondaryTextWidth + _ctaHorizontalPadding + _glassNeumorphicLeadingWidth,
-      primaryTextWidth + _ctaHorizontalPadding + _chatLeadingWidth,
-    );
-  }
-
-  /// Stacked CTAs share one centered column width inside the frosted footer,
-  /// matching the single-chat layout (`Center` + content-sized primary).
+  /// Stacked CTAs share one width. Sticky footer centers them; embedded
+  /// mode stretches to the scroll content width.
   Widget _buildStackedActions(BuildContext context) {
-    final actionWidth = _stackedActionsWidth(context);
+    if (embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _secondaryButton(context, width: double.infinity),
+          const SizedBox(height: 8),
+          _chatButton(context, width: double.infinity),
+        ],
+      );
+    }
+
     return SizedBox(
       width: double.infinity,
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: actionWidth,
-              child: _secondaryButton(context, width: actionWidth),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: actionWidth,
-              child: _chatButton(context, width: actionWidth),
-            ),
-          ],
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _secondaryButton(context),
+              const SizedBox(height: 8),
+              _chatButton(context),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBarContent() {
-    if (!_hasSecondaryAction) return _buildActions();
-    return Builder(builder: _buildStackedActions);
+  Widget _buildBarContent(BuildContext context) {
+    if (!_hasSecondaryAction) return _buildActions(context);
+    return _buildStackedActions(context);
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(BuildContext context) {
     final hasTelegram = onTelegram != null;
     final hasChat = onMessage != null;
     if (hasTelegram && !hasChat) {
@@ -234,6 +209,9 @@ class ListingDetailContactActionBar extends StatelessWidget {
       );
     }
     if (!hasTelegram) {
+      if (embedded) {
+        return _chatButton(context, width: double.infinity);
+      }
       return SizedBox(
         width: double.infinity,
         child: Center(
@@ -274,7 +252,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: _barPadding(),
-          child: _buildBarContent(),
+          child: _buildBarContent(context),
         ),
       ),
     );
@@ -358,7 +336,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
           top: false,
           child: Padding(
             padding: _barPadding(),
-            child: _buildBarContent(),
+            child: _buildBarContent(context),
           ),
         ),
       ],
@@ -367,6 +345,13 @@ class ListingDetailContactActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (embedded) {
+      return ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) => _buildBarContent(context),
+      );
+    }
+
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, _) {
@@ -473,49 +458,61 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
       child: Center(child: labelRow),
     );
 
-    return SizedBox(
-      width: widget.width,
-      height: 48,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 90),
-        transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: radius,
-            splashFactory: NoSplash.splashFactory,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-            onTap: widget.onPressed,
-            onHighlightChanged: (v) => setState(() => _pressed = v),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 90),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
-              child: ClipRRect(
-                borderRadius: radius,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (useBackdropBlur)
-                      BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: isDark ? 18 : 22,
-                          sigmaY: isDark ? 18 : 22,
+    Widget buildSizedButton(double? width) {
+      return SizedBox(
+        width: width,
+        height: 48,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: radius,
+              splashFactory: NoSplash.splashFactory,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              onTap: widget.onPressed,
+              onHighlightChanged: (v) => setState(() => _pressed = v),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 90),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
+                child: ClipRRect(
+                  borderRadius: radius,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (useBackdropBlur)
+                        BackdropFilter(
+                          filter: ImageFilter.blur(
+                            sigmaX: isDark ? 18 : 22,
+                            sigmaY: isDark ? 18 : 22,
+                          ),
+                          child: const SizedBox.expand(),
                         ),
-                        child: const SizedBox.expand(),
-                      ),
-                    face,
-                  ],
+                      face,
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
+      );
+    }
+
+    if (widget.width != null) return buildSizedButton(widget.width);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width =
+            constraints.hasBoundedWidth ? constraints.maxWidth : null;
+        return buildSizedButton(width);
+      },
     );
   }
 }

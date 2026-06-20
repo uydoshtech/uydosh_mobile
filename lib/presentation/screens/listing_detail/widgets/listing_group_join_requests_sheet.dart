@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -10,9 +11,8 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
-import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -321,6 +321,27 @@ class _JoinRequestCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          UydoshLinkButton(
+                            text: L10n.get("group_reject_member"),
+                            onPressed: onReject,
+                            color: AppColors.error,
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                          ),
+                          const SizedBox(width: 16),
+                          UydoshLinkButton(
+                            text: L10n.get("group_approve_member"),
+                            onPressed: onApprove,
+                            color: AppColors.success,
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                          ),
+                        ],
+                      ),
                       if (message != null && message.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
@@ -332,37 +353,6 @@ class _JoinRequestCard extends StatelessWidget {
                         ),
                       ],
                     ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: GhostButtonFactory.iconText(
-                    onPressed: onReject,
-                    icon: Icons.close_rounded,
-                    text: L10n.get("group_reject_member"),
-                    iconSize: 16,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: PrimaryButtonFactory.iconText(
-                    onPressed: onApprove,
-                    icon: Icons.check_rounded,
-                    text: L10n.get("group_approve_member"),
-                    iconSize: 16,
-                    borderRadius: BorderRadius.circular(12),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
                   ),
                 ),
               ],
