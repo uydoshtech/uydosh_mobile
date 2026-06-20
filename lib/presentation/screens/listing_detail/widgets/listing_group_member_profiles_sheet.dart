@@ -11,6 +11,9 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
+import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/profile_compatibility_field_icons.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
@@ -29,6 +32,7 @@ Future<void> showListingGroupMemberProfilesSheet({
   required bool isOwner,
   int? currentUserId,
   ListingGroupProgress? groupProgress,
+  Map<int, GroupMemberCompatibilitySummary> memberCompatibility = const {},
   VoidCallback? onChanged,
 }) async {
   if (members.isEmpty) return;
@@ -45,6 +49,7 @@ Future<void> showListingGroupMemberProfilesSheet({
         currentUserId: currentUserId,
         isOwner: isOwner,
         groupProgress: groupProgress,
+        memberCompatibility: memberCompatibility,
         onMemberTap: onMemberTap,
         onChanged: onChanged,
       );
@@ -61,6 +66,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
     required this.isOwner,
     this.currentUserId,
     this.groupProgress,
+    this.memberCompatibility = const {},
     this.onChanged,
   });
 
@@ -70,6 +76,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
   final int? currentUserId;
   final bool isOwner;
   final ListingGroupProgress? groupProgress;
+  final Map<int, GroupMemberCompatibilitySummary> memberCompatibility;
   final void Function(int userId) onMemberTap;
   final VoidCallback? onChanged;
 
@@ -218,6 +225,7 @@ class _ListingGroupMemberProfilesSheetState
                     member: member,
                     ownerUserId: widget.ownerUserId,
                     currentUserId: widget.currentUserId,
+                    compatibility: widget.memberCompatibility[member.userId],
                     canRemove: widget.isOwner &&
                         member.userId != widget.ownerUserId &&
                         !_isRemoving,
@@ -279,6 +287,12 @@ class _MemberProfilesHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final isLightTheme = ThemeState().isLightTheme;
+    final subtitleColor =
+        isLightTheme ? Colors.black : scheme.onSurfaceVariant;
+    final progressColor = isLightTheme
+        ? Colors.black
+        : scheme.onSurfaceVariant.withValues(alpha: 0.85);
     final progressLabel = groupProgress != null
         ? L10n.getWithParams(
             "group_members_progress",
@@ -307,7 +321,7 @@ class _MemberProfilesHeader extends StatelessWidget {
               params: {"count": members.length.toString()},
             ),
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
+              color: subtitleColor,
               height: 1.3,
             ),
           ),
@@ -316,7 +330,7 @@ class _MemberProfilesHeader extends StatelessWidget {
             Text(
               progressLabel,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant.withValues(alpha: 0.85),
+                color: progressColor,
               ),
             ),
           ],
@@ -324,7 +338,7 @@ class _MemberProfilesHeader extends StatelessWidget {
           ChatParticipantAvatarStack(
             participants: members,
             currentUserId: currentUserId,
-            avatarSize: 32,
+            avatarSize: 32 * 1.1,
             maxVisible: 5,
           ),
           if (isGroupFull) ...[
@@ -371,6 +385,7 @@ class _MemberProfileCard extends StatelessWidget {
     required this.ownerUserId,
     required this.onTap,
     this.currentUserId,
+    this.compatibility,
     this.canRemove = false,
     this.onRemove,
   });
@@ -378,6 +393,7 @@ class _MemberProfileCard extends StatelessWidget {
   final ConversationMemberSummary member;
   final int ownerUserId;
   final int? currentUserId;
+  final GroupMemberCompatibilitySummary? compatibility;
   final VoidCallback onTap;
   final bool canRemove;
   final VoidCallback? onRemove;
@@ -396,7 +412,89 @@ class _MemberProfileCard extends StatelessWidget {
   Color _roleColor(ColorScheme scheme) {
     if (_isOwner) return ListingDetailThemeHelper.iconColor;
     if (_isCurrentUser) return AppColors.success;
+    if (ThemeState().isLightTheme) return Colors.black;
     return scheme.onSurfaceVariant;
+  }
+
+  Color _percentColor(BuildContext context) {
+    final percent = compatibility?.percent;
+    if (percent == null) return Theme.of(context).colorScheme.onSurfaceVariant;
+    if (percent >= 80) {
+      return ThemeState().isLightTheme
+          ? AppColors.successDark
+          : AppColors.success;
+    }
+    if (percent >= 60) return AppColors.warning;
+    return AppColors.error;
+  }
+
+  Color _highlightColor(ProfileMatchFieldStatus status) {
+    switch (status) {
+      case ProfileMatchFieldStatus.match:
+        return ThemeState().isLightTheme
+            ? AppColors.successDark
+            : AppColors.success;
+      case ProfileMatchFieldStatus.difference:
+        return AppColors.warning;
+      case ProfileMatchFieldStatus.dealbreaker:
+        return AppColors.error;
+      case ProfileMatchFieldStatus.incomplete:
+        return AppColors.iconPrimary;
+    }
+  }
+
+  String _highlightSemanticsLabel(MemberCompatibilityFieldHighlight highlight) {
+    final fieldLabel = L10n.get(highlight.labelKey);
+    final statusLabel = switch (highlight.status) {
+      ProfileMatchFieldStatus.match => L10n.get("group_member_compat_match"),
+      ProfileMatchFieldStatus.difference =>
+        L10n.get("group_member_compat_difference"),
+      ProfileMatchFieldStatus.dealbreaker =>
+        L10n.get("group_member_compat_dealbreaker"),
+      ProfileMatchFieldStatus.incomplete => "",
+    };
+    return "$fieldLabel: $statusLabel";
+  }
+
+  Widget _buildFieldHighlights(BuildContext context) {
+    final highlights = compatibility?.fieldHighlights ?? const [];
+    if (highlights.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final highlight in highlights)
+            Semantics(
+              label: _highlightSemanticsLabel(highlight),
+              child: Tooltip(
+                message: _highlightSemanticsLabel(highlight),
+                child: Container(
+                  width: 29,
+                  height: 29,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: _highlightColor(highlight.status)
+                        .withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _highlightColor(highlight.status)
+                          .withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: ThemeIcon(
+                    ProfileCompatibilityFieldIcons.iconFor(highlight.labelKey),
+                    size: 16,
+                    color: _highlightColor(highlight.status),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -455,18 +553,35 @@ class _MemberProfileCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      member.name,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            member.name,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (compatibility?.percent != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            "${compatibility!.percent}%",
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: _percentColor(context),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     if (_roleLabel != null) ...[
                       const SizedBox(height: 6),
                       _RoleBadge(label: _roleLabel!, color: roleColor),
                     ],
+                    _buildFieldHighlights(context),
                     if (canRemove && onRemove != null) ...[
                       const SizedBox(height: 8),
                       UydoshLinkButton(

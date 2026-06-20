@@ -1,5 +1,6 @@
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 
@@ -33,6 +34,7 @@ class ListingDetailPageState {
     this.groupFullMatches = const [],
     this.groupPartialMatches = const [],
     this.groupDiscussItems = const [],
+    this.groupMemberCompatibility = const {},
     this.similarListingsCount,
     this.similarListingsCountListingId,
     this.isLoadingSimilarListingsCount = false,
@@ -67,6 +69,7 @@ class ListingDetailPageState {
   final List<GroupCompatibilityFullMatch> groupFullMatches;
   final List<GroupCompatibilityPartialMatch> groupPartialMatches;
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
+  final Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility;
 
   /// Number of "similar" listings excluding the current one. When this is
   /// known and equal to 0 the UI hides the "view similar" affordance because
@@ -107,6 +110,7 @@ class ListingDetailPageState {
     List<GroupCompatibilityFullMatch>? groupFullMatches,
     List<GroupCompatibilityPartialMatch>? groupPartialMatches,
     List<GroupCompatibilityDiscussItem>? groupDiscussItems,
+    Map<int, GroupMemberCompatibilitySummary>? groupMemberCompatibility,
     int? similarListingsCount,
     int? similarListingsCountListingId,
     bool? isLoadingSimilarListingsCount,
@@ -152,6 +156,8 @@ class ListingDetailPageState {
       groupFullMatches: groupFullMatches ?? this.groupFullMatches,
       groupPartialMatches: groupPartialMatches ?? this.groupPartialMatches,
       groupDiscussItems: groupDiscussItems ?? this.groupDiscussItems,
+      groupMemberCompatibility:
+          groupMemberCompatibility ?? this.groupMemberCompatibility,
       similarListingsCount:
           similarListingsCount ?? this.similarListingsCount,
       similarListingsCountListingId:
@@ -196,6 +202,7 @@ class ListingDetailPageState {
         _listEquals(other.groupFullMatches, groupFullMatches) &&
         _listEquals(other.groupPartialMatches, groupPartialMatches) &&
         _listEquals(other.groupDiscussItems, groupDiscussItems) &&
+        _mapEquals(other.groupMemberCompatibility, groupMemberCompatibility) &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
         other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount &&
@@ -208,6 +215,14 @@ class ListingDetailPageState {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
       if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
     }
     return true;
   }
@@ -336,6 +351,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     List<GroupCompatibilityFullMatch> groupFullMatches = const [],
     List<GroupCompatibilityPartialMatch> groupPartialMatches = const [],
     List<GroupCompatibilityDiscussItem> groupDiscussItems = const [],
+    Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility = const {},
   }) =>
       emit(state.copyWith(
         compatibilityPercent: percent,
@@ -356,6 +372,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         groupFullMatches: groupFullMatches,
         groupPartialMatches: groupPartialMatches,
         groupDiscussItems: groupDiscussItems,
+        groupMemberCompatibility: groupMemberCompatibility,
       ));
 
   void setLoadingCompatibility(int listingUserId) => emit(
@@ -374,6 +391,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupFullMatches: [],
           groupPartialMatches: [],
           groupDiscussItems: [],
+          groupMemberCompatibility: {},
         ),
       );
 
@@ -392,6 +410,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupFullMatches: [],
           groupPartialMatches: [],
           groupDiscussItems: [],
+          groupMemberCompatibility: {},
         ),
       );
 

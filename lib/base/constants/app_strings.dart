@@ -103,6 +103,9 @@ class AppStrings {
       "group_member_role_owner": "Organizer",
       "group_member_role_you": "You",
       "group_member_role_member": "Member",
+      "group_member_compat_match": "Match",
+      "group_member_compat_difference": "Difference",
+      "group_member_compat_dealbreaker": "Conflict",
       "group_remove_member": "Remove from group",
       "group_remove_member_title": "Remove from group?",
       "group_remove_member_message":
@@ -866,6 +869,7 @@ class AppStrings {
       "pets_preference": "Pets Preference",
       "wakeup_time": "Wake-up Time",
       "sleep_time": "Sleep Time",
+      "sleep_schedule": "Sleep schedule",
 
       // Preference options
       "non_smoker": "Non-smoker",
@@ -1901,6 +1905,9 @@ class AppStrings {
       "group_member_role_owner": "Организатор",
       "group_member_role_you": "Вы",
       "group_member_role_member": "Участник",
+      "group_member_compat_match": "Совпадение",
+      "group_member_compat_difference": "Различие",
+      "group_member_compat_dealbreaker": "Конфликт",
       "group_remove_member": "Удалить из группы",
       "group_remove_member_title": "Удалить из группы?",
       "group_remove_member_message":
@@ -2674,6 +2681,7 @@ class AppStrings {
       "pets_preference": "Отношение к животным",
       "wakeup_time": "Время подъема",
       "sleep_time": "Время сна",
+      "sleep_schedule": "Режим сна",
 
       // Preference options
       "non_smoker": "Не курю",
@@ -3730,6 +3738,9 @@ class AppStrings {
       "group_member_role_owner": "Tashkilotchi",
       "group_member_role_you": "Siz",
       "group_member_role_member": "A'zo",
+      "group_member_compat_match": "Mos keladi",
+      "group_member_compat_difference": "Farq",
+      "group_member_compat_dealbreaker": "Ziddiyat",
       "group_remove_member": "Guruhdan olib tashlash",
       "group_remove_member_title": "Guruhdan olib tashlansinmi?",
       "group_remove_member_message":
@@ -4511,6 +4522,7 @@ class AppStrings {
       "pets_preference": "Hayvonlarga munosabat",
       "wakeup_time": "Uyg'onish vaqti",
       "sleep_time": "Uxlash vaqti",
+      "sleep_schedule": "Uyqu rejimi",
 
       // Preference options
       "non_smoker": "Chekmayman",

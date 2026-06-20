@@ -78,9 +78,11 @@ import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_pending_action.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_and_price_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
@@ -215,8 +217,13 @@ class _ListingDetailBodyData {
 }
 
 class ListingDetailScreen extends StatefulWidget {
-  const ListingDetailScreen({required this.listingId, super.key});
+  const ListingDetailScreen({
+    required this.listingId,
+    this.initialPendingAction,
+    super.key,
+  });
   final int listingId;
+  final ListingDetailPendingAction? initialPendingAction;
 
   @override
   State<ListingDetailScreen> createState() => _ListingDetailScreenState();
@@ -244,6 +251,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   /// Session uid fallback while [UserListingState] has not finished hydrating.
   int? _sessionUserId;
+  var _handledInitialPendingAction = false;
 
   bool _isListingOwner(int listingUserId) =>
       PeerInteractionEligibility.isPublisher(
@@ -645,6 +653,29 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     _loadSimilarListingsCount(listingDetail);
     _loadNearbyMatchesCount(listingDetail);
     unawaited(_hydrateRoomScanMetricsIfNeeded(listingDetail));
+    _maybeHandleInitialPendingAction(listingDetail);
+  }
+
+  void _maybeHandleInitialPendingAction(ListingDetail listingDetail) {
+    final action = widget.initialPendingAction;
+    if (action == null || _handledInitialPendingAction) return;
+    _handledInitialPendingAction = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      switch (action) {
+        case ListingDetailPendingAction.openJoinRequests:
+          if (!_isListingOwner(listingDetail.user.id)) return;
+          await showListingGroupJoinRequestsSheet(
+            context: context,
+            listingId: listingDetail.id,
+            onChanged: _reloadListingDetail,
+          );
+        case ListingDetailPendingAction.openGroupChat:
+          if (listingDetail.groupContext?.isMember != true) return;
+          await _openGroupChat(listingDetail);
+      }
+    });
   }
 
   /// Details tile reads metrics from the API; legacy scans often have USDZ but
@@ -941,6 +972,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     final groupResult = ListingDetailGroupCompatibilityHelper.calculate(profiles);
 
+    final profileByUserId = {
+      for (final profile in profiles) profile.userId: profile,
+    };
+    final groupMemberCompatibility = <int, GroupMemberCompatibilitySummary>{};
+    for (final member in groupMembers) {
+      if (member.userId == currentProfile.userId) continue;
+      final memberProfile = profileByUserId[member.userId];
+      if (memberProfile == null) continue;
+      groupMemberCompatibility[member.userId] =
+          GroupMemberCompatibilityHelper.summarize(
+        currentProfile,
+        memberProfile,
+      );
+    }
+
     if (!mounted) return;
     if (_getCurrentListingUserId() != listingUserId) return;
 
@@ -958,6 +1004,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupFullMatches: groupResult.fullMatches,
       groupPartialMatches: groupResult.partialMatches,
       groupDiscussItems: groupResult.discussItems,
+      groupMemberCompatibility: groupMemberCompatibility,
     );
   }
 
@@ -2718,20 +2765,27 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                     listingDetail,
                     isOwner: isOwner,
                     onViewMemberProfiles: showMemberProfiles
-                        ? () => showListingGroupMemberProfilesSheet(
+                        ? () {
+                            final pageState =
+                                context.read<ListingDetailPageBloc>().state;
+                            showListingGroupMemberProfilesSheet(
                               context: context,
                               listingId: listingDetail.id,
                               members: groupMembers,
                               ownerUserId: listingDetail.user.id,
                               currentUserId: _sessionUserId,
                               isOwner: isOwner,
-                              groupProgress: ListingGroupProgress.fromListingDetail(
+                              groupProgress:
+                                  ListingGroupProgress.fromListingDetail(
                                 listingDetail,
                               ),
+                              memberCompatibility:
+                                  pageState.groupMemberCompatibility,
                               onMemberTap: (userId) =>
                                   _navigateToProfile(userId),
                               onChanged: _reloadListingDetail,
-                            )
+                            );
+                          }
                         : null,
                   );
                 },

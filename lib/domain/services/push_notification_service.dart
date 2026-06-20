@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_pending_action.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 
 final class _EmptyJson implements IJsonEncodable {
@@ -246,6 +247,10 @@ class PushNotificationService implements IPushNotificationService {
     return switch (type) {
       "search_match" => "$type:${data["listingId"] ?? ""}",
       "gig_bid_accepted" => type,
+      "group_join_request" =>
+        "$type:${data["listingId"] ?? ""}:${data["requestId"] ?? ""}",
+      "group_join_accepted" => "$type:${data["listingId"] ?? ""}",
+      "group_join_rejected" => "$type:${data["listingId"] ?? ""}",
       _ => "$type:${data["conversationId"] ?? ""}",
     };
   }
@@ -268,6 +273,18 @@ class PushNotificationService implements IPushNotificationService {
       _navigateToListingFromSearchAlert(message);
     } else if (type == "gig_bid_accepted") {
       _navigateToMyGigBookingsAsProvider(message);
+    } else if (type == "group_join_request") {
+      _navigateToListingFromGroupPush(
+        message,
+        initialAction: ListingDetailPendingAction.openJoinRequests,
+      );
+    } else if (type == "group_join_accepted") {
+      _navigateToListingFromGroupPush(
+        message,
+        initialAction: ListingDetailPendingAction.openGroupChat,
+      );
+    } else if (type == "group_join_rejected") {
+      _navigateToListingFromGroupPush(message);
     }
   }
 
@@ -358,6 +375,13 @@ class PushNotificationService implements IPushNotificationService {
   }
 
   void _navigateToListingFromSearchAlert(RemoteMessage message) {
+    _navigateToListingFromGroupPush(message);
+  }
+
+  void _navigateToListingFromGroupPush(
+    RemoteMessage message, {
+    ListingDetailPendingAction? initialAction,
+  }) {
     final listingId = int.tryParse(message.data["listingId"] ?? "");
     if (listingId == null || listingId <= 0) return;
 
@@ -375,7 +399,10 @@ class PushNotificationService implements IPushNotificationService {
             ),
             BlocProvider(create: (_) => ListingDetailPageBloc()),
           ],
-          child: ListingDetailScreen(listingId: listingId),
+          child: ListingDetailScreen(
+            listingId: listingId,
+            initialPendingAction: initialAction,
+          ),
         ),
       ),
     );

@@ -21,6 +21,9 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     required this.controller,
     super.key,
     this.inlineWithCounter = false,
+    this.iconOnly = false,
+    this.enabled = true,
+    this.iconColor,
     this.maxDescriptionLength = 1000,
     this.dictationMeter,
     this.onTranscriptInserted,
@@ -28,6 +31,16 @@ class ListingDescriptionDictateButton extends StatefulWidget {
 
   final TextEditingController controller;
   final bool inlineWithCounter;
+
+  /// Mic icon only (e.g. chat composer suffix) — no label.
+  final bool iconOnly;
+
+  /// When false, tap is ignored (e.g. while sending a message).
+  final bool enabled;
+
+  /// Overrides [ListingDescriptionAssistant.accentColor] for the idle mic icon.
+  final Color? iconColor;
+
   final int maxDescriptionLength;
 
   /// When set (e.g. by [DescriptionCounterToolbar]), level + timer UI can update.
@@ -55,6 +68,7 @@ class _ListingDescriptionDictateButtonState
 
   static const Duration _maxRecordDuration = Duration(minutes: 1);
   static const double _inlineIconSlotSize = 18;
+  static const double _iconOnlySlotSize = 22;
 
   static double _normalizeDbToLevel(double db) {
     const minDb = -52.0;
@@ -271,19 +285,22 @@ class _ListingDescriptionDictateButtonState
     widget.onTranscriptInserted?.call();
   }
 
+  double get _iconSlotSize =>
+      widget.iconOnly ? _iconOnlySlotSize : _inlineIconSlotSize;
+
   Widget _buildStatusIcon(BuildContext context, Color accent) {
     return SizedBox.square(
-      dimension: _inlineIconSlotSize,
+      dimension: _iconSlotSize,
       child: Center(
         child: _uploading
             ? ListingDescriptionAssistant.inlineProgress(
                 context,
-                size: 14,
+                size: widget.iconOnly ? 18 : 14,
                 strokeWidth: 1.8,
               )
             : ThemeIcon(
                 _recording ? Icons.stop_circle : Icons.mic_none_outlined,
-                size: _inlineIconSlotSize,
+                size: _iconSlotSize,
                 color: _recording ? Colors.redAccent : accent,
               ),
       ),
@@ -292,8 +309,20 @@ class _ListingDescriptionDictateButtonState
 
   @override
   Widget build(BuildContext context) {
-    final accent = ListingDescriptionAssistant.accentColor(context);
+    final accent =
+        widget.iconColor ?? ListingDescriptionAssistant.accentColor(context);
     final icon = _buildStatusIcon(context, accent);
+
+    if (widget.iconOnly) {
+      return IconButton(
+        onPressed: (_uploading || !widget.enabled) ? null : _toggleRecording,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        tooltip: L10n.get("listing_description_dictate"),
+        style: IconButton.styleFrom(foregroundColor: accent),
+        icon: icon,
+      );
+    }
 
     final labelStyle =
         (Theme.of(context).textTheme.labelLarge ?? const TextStyle())
