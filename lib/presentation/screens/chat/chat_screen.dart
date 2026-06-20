@@ -16,6 +16,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
+import "package:uy_dosh/base/state/chat_composer_draft_state.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
@@ -373,6 +374,8 @@ class _ChatScreenState extends State<ChatScreen> {
       listingId: widget.listingId,
     );
     _messageController = TextEditingController();
+    _messageController.addListener(_syncComposerDraft);
+    unawaited(_restoreComposerDraft());
     _scrollController = ScrollController();
     _messageFocusNode = FocusNode(onKeyEvent: _messageComposerOnKeyEvent);
     _peerAvatarUrl = widget.otherUserAvatar;
@@ -400,6 +403,34 @@ class _ChatScreenState extends State<ChatScreen> {
     UnreadMessagesState().setActiveConversationId(widget.conversationId);
   }
 
+  void _syncComposerDraft() {
+    if (_editingMessageId != null) return;
+    ChatComposerDraftState().setDraft(
+      widget.conversationId,
+      _messageController.text,
+    );
+  }
+
+  Future<void> _restoreComposerDraft() async {
+    await ChatComposerDraftState().ensureLoaded();
+    if (!mounted || _editingMessageId != null) return;
+    final draft = ChatComposerDraftState().draftFor(widget.conversationId);
+    if (draft == null) return;
+    if (_messageController.text.isNotEmpty) return;
+    _messageController.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
+  }
+
+  void _persistComposerDraftIfNeeded() {
+    if (_editingMessageId != null) return;
+    ChatComposerDraftState().setDraft(
+      widget.conversationId,
+      _messageController.text,
+    );
+  }
+
   @override
   void dispose() {
     if (UnreadMessagesState().activeConversationId == widget.conversationId) {
@@ -407,6 +438,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     _incomingRefreshDebounce?.cancel();
+    _messageController.removeListener(_syncComposerDraft);
+    _persistComposerDraftIfNeeded();
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
@@ -1058,6 +1091,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 _editingMessageId = null;
               }
             });
+            unawaited(_restoreComposerDraft());
           },
           messagesMarkedAsRead: (conversationId, markedCount) {},
           error: (message) {
@@ -1626,6 +1660,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _editingMessageId = null;
       _messageController.clear();
     });
+    unawaited(_restoreComposerDraft());
   }
 
   bool _messageIsEditable(Message message) {
@@ -1667,6 +1702,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _messageController.clear();
+    ChatComposerDraftState().clearDraft(widget.conversationId);
 
     // Dismiss the keyboard once the message has been submitted so the user
     // sees the freshly sent message instead of the composer obscuring the list.

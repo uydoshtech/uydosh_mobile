@@ -15,6 +15,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
+import "package:uy_dosh/base/state/chat_composer_draft_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/firebase/app_check_bootstrap.dart";
@@ -194,6 +195,7 @@ void main() async {
       PriceDisplaySettingsState().onSessionEnded();
       await SearchFiltersState().clearAllFilters(persistRemote: false);
       await HomeInlineSearchState().clearPersistedActiveForLogout();
+      await ChatComposerDraftState().clearAll();
     };
 
     // Keep the OS app icon badge in sync with unread messages.
@@ -240,6 +242,7 @@ void main() async {
     unawaited(HapticFeedbackState().initialize());
     unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());
+    unawaited(ChatComposerDraftState().initialize());
     unawaited(_bootstrapPriceDisplayCurrencyColdStart());
     unawaited(_bootstrapSearchFiltersColdStart());
 
