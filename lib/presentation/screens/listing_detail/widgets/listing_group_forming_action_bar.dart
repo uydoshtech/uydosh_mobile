@@ -18,6 +18,8 @@ class ListingGroupFormingActionBar extends StatelessWidget {
     this.showGroupChatUnreadDot = false,
     this.groupChatUnreadDotTrigger = 0,
     this.onViewMemberProfiles,
+    this.showMemberProfilesDot = false,
+    this.memberProfilesDotTrigger = 0,
   });
 
   final ListingDetail listingDetail;
@@ -30,6 +32,8 @@ class ListingGroupFormingActionBar extends StatelessWidget {
   final bool showGroupChatUnreadDot;
   final int groupChatUnreadDotTrigger;
   final VoidCallback? onViewMemberProfiles;
+  final bool showMemberProfilesDot;
+  final int memberProfilesDotTrigger;
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +93,8 @@ class ListingGroupFormingActionBar extends StatelessWidget {
       secondaryNotificationDotTrigger: secondaryDotTrigger,
       onMemberProfiles: onViewMemberProfiles,
       memberProfilesCount: groupProgress?.current,
+      showMemberProfilesNotificationDot: showMemberProfilesDot,
+      memberProfilesNotificationDotTrigger: memberProfilesDotTrigger,
     );
   }
 

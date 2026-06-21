@@ -6,6 +6,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -354,18 +355,26 @@ class _GroupShortlistBookmarkActionState
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: GroupShortlistState().listenableFor(
-        groupListingId: widget.groupListingId,
-        housingListingId: widget.housingListingId,
+      listenable: Listenable.merge(
+        [
+          GroupShortlistState().listenableFor(
+            groupListingId: widget.groupListingId,
+            housingListingId: widget.housingListingId,
+          ),
+          ThemeState(),
+        ],
       ),
       builder: (context, _) {
         final isOn = GroupShortlistState().isShortlisted(
           groupListingId: widget.groupListingId,
           housingListingId: widget.housingListingId,
         );
-        final iconColor = isOn
-            ? Theme.of(context).colorScheme.primary
-            : AppColors.favoriteInactive;
+        final isBlueTheme = ThemeState().isBlueTheme;
+        final iconColor = isBlueTheme
+            ? Colors.white
+            : isOn
+                ? Theme.of(context).colorScheme.primary
+                : AppColors.favoriteInactive;
 
         return Opacity(
           opacity: _seeded && !_loading ? 1 : 0.55,
@@ -395,8 +404,8 @@ class _GroupShortlistBookmarkActionState
                       key: ValueKey(isOn ? "bookmark-on" : "bookmark-off"),
                       width: 20,
                       height: 20,
-                      child: ThemeIcon(
-                        Icons.bookmark,
+                      child: Icon(
+                        isOn ? Icons.bookmark : Icons.bookmark_border,
                         color: iconColor,
                         size: 20,
                       ),

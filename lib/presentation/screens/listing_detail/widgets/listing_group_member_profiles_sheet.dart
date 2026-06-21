@@ -12,7 +12,9 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
@@ -105,13 +107,21 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
 class _ListingGroupMemberProfilesSheetState
     extends State<_ListingGroupMemberProfilesSheet> {
   late List<ConversationMemberSummary> _members;
+  List<ListingGroupJoinRequest> _pendingRequests = const [];
+  Map<int, GroupMemberCompatibilitySummary> _pendingRequestCompatibility =
+      const {};
+  final Set<int> _busyRequestIds = {};
   var _isRemoving = false;
   var _isLeaving = false;
+  var _loadingRequests = false;
 
   @override
   void initState() {
     super.initState();
     _members = List<ConversationMemberSummary>.from(widget.members);
+    if (widget.isOwner) {
+      _loadPendingRequests();
+    }
   }
 
   ListingGroupProgress? get _groupProgress {
@@ -135,6 +145,140 @@ class _ListingGroupMemberProfilesSheetState
         ownerUserId: widget.ownerUserId,
         currentUserId: widget.currentUserId,
       );
+
+  Future<void> _loadPendingRequests() async {
+    setState(() => _loadingRequests = true);
+    try {
+      final rows = await getIt<IListingGroupService>().listJoinRequests(
+        listingId: widget.listingId,
+      );
+      if (!mounted) return;
+      final pendingRows =
+          rows.where((request) => request.status == "pending").toList();
+      setState(() {
+        _pendingRequests = pendingRows;
+        _loadingRequests = false;
+      });
+      await _loadPendingRequestCompatibility(pendingRows);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingRequests = false);
+    }
+  }
+
+  Future<void> _loadPendingRequestCompatibility(
+    List<ListingGroupJoinRequest> requests,
+  ) async {
+    if (requests.isEmpty) {
+      if (!mounted) return;
+      setState(() => _pendingRequestCompatibility = const {});
+      return;
+    }
+
+    try {
+      final service = getIt<IUserProfileService>();
+      final currentProfile = await service.getCurrentUserProfile();
+      final entries = await Future.wait(
+        requests.map((request) async {
+          try {
+            final applicantProfile =
+                await service.getUserProfile(request.applicantUserId);
+            return MapEntry(
+              request.applicantUserId,
+              GroupMemberCompatibilityHelper.summarize(
+                currentProfile,
+                applicantProfile,
+              ),
+            );
+          } catch (_) {
+            return MapEntry(
+              request.applicantUserId,
+              GroupMemberCompatibilitySummary.empty,
+            );
+          }
+        }),
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingRequestCompatibility =
+            Map<int, GroupMemberCompatibilitySummary>.fromEntries(entries);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _pendingRequestCompatibility = const {});
+    }
+  }
+
+  Future<void> _approveRequest(ListingGroupJoinRequest request) async {
+    if (_busyRequestIds.contains(request.id)) return;
+    HapticFeedbackUtils.impact();
+    setState(() => _busyRequestIds.add(request.id));
+    try {
+      await getIt<IListingGroupService>().approveJoinRequest(
+        listingId: widget.listingId,
+        requestId: request.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingRequests =
+            _pendingRequests.where((row) => row.id != request.id).toList();
+        _pendingRequestCompatibility =
+            Map<int, GroupMemberCompatibilitySummary>.from(
+          _pendingRequestCompatibility,
+        )..remove(request.applicantUserId);
+        if (!_members.any((row) => row.userId == request.applicantUserId)) {
+          _members.add(
+            ConversationMemberSummary(
+              userId: request.applicantUserId,
+              name: request.applicantName,
+              avatarUrl: request.applicantAvatar,
+            ),
+          );
+        }
+        _busyRequestIds.remove(request.id);
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_join_request_approved"),
+      );
+      widget.onChanged?.call();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busyRequestIds.remove(request.id));
+      ToastTheme.showError(context, message: e.toString());
+    }
+  }
+
+  Future<void> _rejectRequest(ListingGroupJoinRequest request) async {
+    if (_busyRequestIds.contains(request.id)) return;
+    HapticFeedbackUtils.impact();
+    setState(() => _busyRequestIds.add(request.id));
+    try {
+      await getIt<IListingGroupService>().rejectJoinRequest(
+        listingId: widget.listingId,
+        requestId: request.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingRequests =
+            _pendingRequests.where((row) => row.id != request.id).toList();
+        _pendingRequestCompatibility =
+            Map<int, GroupMemberCompatibilitySummary>.from(
+          _pendingRequestCompatibility,
+        )..remove(request.applicantUserId);
+        _busyRequestIds.remove(request.id);
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_join_request_rejected"),
+      );
+      widget.onChanged?.call();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busyRequestIds.remove(request.id));
+      ToastTheme.showError(context, message: e.toString());
+    }
+  }
 
   Future<void> _confirmRemoveMember(ConversationMemberSummary member) async {
     if (_isRemoving) return;
@@ -296,6 +440,8 @@ class _ListingGroupMemberProfilesSheetState
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final sortedMembers = _sortedMembers;
+    final showPendingRequests =
+        widget.isOwner && (_loadingRequests || _pendingRequests.isNotEmpty);
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -417,6 +563,44 @@ class _ListingGroupMemberProfilesSheetState
                                 : null,
                           ),
                         ],
+                        if (showPendingRequests) ...[
+                          const SizedBox(height: 18),
+                          Text(
+                            L10n.get("group_pending_join_requests"),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (_loadingRequests)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          else
+                            for (final request in _pendingRequests) ...[
+                              if (request != _pendingRequests.first)
+                                const SizedBox(height: 10),
+                              _PendingJoinRequestCard(
+                                request: request,
+                                compatibility: _pendingRequestCompatibility[
+                                    request.applicantUserId],
+                                isBusy: _busyRequestIds.contains(request.id),
+                                onTap: () {
+                                  HapticFeedbackUtils.impact();
+                                  Navigator.of(context).pop();
+                                  widget.onMemberTap(request.applicantUserId);
+                                },
+                                onApprove: () => _approveRequest(request),
+                                onReject: () => _rejectRequest(request),
+                              ),
+                            ],
+                        ],
                       ],
                     ),
                   ),
@@ -525,7 +709,32 @@ class _MemberProfilesHeader extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ChatParticipantAvatarStack(
+                participants: members,
+                currentUserId: currentUserId,
+                avatarSize: 32 * 1.1,
+                maxVisible: 5,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  members.map((member) => member.name).join(", "),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: subtitleColor,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           Text(
             L10n.getWithParams(
               "group_compatibility_subtitle",
@@ -545,13 +754,6 @@ class _MemberProfilesHeader extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 12),
-          ChatParticipantAvatarStack(
-            participants: members,
-            currentUserId: currentUserId,
-            avatarSize: 32 * 1.1,
-            maxVisible: 5,
-          ),
         ],
       ),
     );
@@ -762,7 +964,11 @@ class _MemberProfileCard extends StatelessWidget {
                     ),
                     if (_roleLabel != null) ...[
                       const SizedBox(height: 6),
-                      _RoleBadge(label: _roleLabel!, color: roleColor),
+                      _RoleBadge(
+                        label: _roleLabel!,
+                        color: roleColor,
+                        isFilled: ThemeState().isLightTheme && _isOwner,
+                      ),
                     ],
                     _buildFieldHighlights(context),
                     if (canRemove && onRemove != null) ...[
@@ -814,28 +1020,277 @@ class _MemberProfileCard extends StatelessWidget {
   }
 }
 
+class _PendingJoinRequestCard extends StatelessWidget {
+  const _PendingJoinRequestCard({
+    required this.request,
+    required this.isBusy,
+    required this.onTap,
+    required this.onApprove,
+    required this.onReject,
+    this.compatibility,
+  });
+
+  final ListingGroupJoinRequest request;
+  final GroupMemberCompatibilitySummary? compatibility;
+  final bool isBusy;
+  final VoidCallback onTap;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  Color _percentColor(BuildContext context) {
+    final percent = compatibility?.percent;
+    if (percent == null) return Theme.of(context).colorScheme.onSurfaceVariant;
+    if (percent >= 80) {
+      return ThemeState().isLightTheme
+          ? AppColors.successDark
+          : AppColors.success;
+    }
+    if (percent >= 60) return AppColors.warning;
+    return AppColors.error;
+  }
+
+  Color _highlightColor(ProfileMatchFieldStatus status) {
+    switch (status) {
+      case ProfileMatchFieldStatus.match:
+        return ThemeState().isLightTheme
+            ? AppColors.successDark
+            : AppColors.success;
+      case ProfileMatchFieldStatus.difference:
+        return AppColors.warning;
+      case ProfileMatchFieldStatus.dealbreaker:
+        return AppColors.error;
+      case ProfileMatchFieldStatus.incomplete:
+        return AppColors.iconPrimary;
+    }
+  }
+
+  String _highlightSemanticsLabel(MemberCompatibilityFieldHighlight highlight) {
+    final fieldLabel = L10n.get(highlight.labelKey);
+    final statusLabel = switch (highlight.status) {
+      ProfileMatchFieldStatus.match => L10n.get("group_member_compat_match"),
+      ProfileMatchFieldStatus.difference =>
+        L10n.get("group_member_compat_difference"),
+      ProfileMatchFieldStatus.dealbreaker =>
+        L10n.get("group_member_compat_dealbreaker"),
+      ProfileMatchFieldStatus.incomplete => "",
+    };
+    return "$fieldLabel: $statusLabel";
+  }
+
+  Widget _buildFieldHighlights(BuildContext context) {
+    final highlights = compatibility?.fieldHighlights ?? const [];
+    if (highlights.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final highlight in highlights)
+            Semantics(
+              label: _highlightSemanticsLabel(highlight),
+              child: Tooltip(
+                message: _highlightSemanticsLabel(highlight),
+                child: Container(
+                  width: 29,
+                  height: 29,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: _highlightColor(highlight.status)
+                        .withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _highlightColor(highlight.status)
+                          .withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: ThemeIcon(
+                    ProfileCompatibilityFieldIcons.iconFor(highlight.labelKey),
+                    size: 16,
+                    color: _highlightColor(highlight.status),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final themeState = ThemeState();
+    const avatarSize = 48.0;
+    final avatarUrl = resolveAvatarUrl(request.applicantAvatar);
+    final initials = StringUtils.extractInitials(request.applicantName);
+    final message = request.message?.trim();
+
+    final avatarFallback = CircleAvatar(
+      backgroundColor: themeState.avatarColor,
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: themeState.avatarIconColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    return ThreeDElevatedSurface(
+      baseColor: scheme.surface,
+      useLiquidGlass: true,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: isBusy ? null : onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipOval(
+                child: avatarUrl != null
+                    ? NetworkAvatarImage(
+                        imageUrl: avatarUrl,
+                        size: avatarSize,
+                        fallback: SizedBox(
+                          width: avatarSize,
+                          height: avatarSize,
+                          child: avatarFallback,
+                        ),
+                      )
+                    : SizedBox(
+                        width: avatarSize,
+                        height: avatarSize,
+                        child: avatarFallback,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            request.applicantName,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (compatibility?.percent != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            "${compatibility!.percent}%",
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: _percentColor(context),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _RoleBadge(
+                      label: L10n.get("group_member_role_pending_request"),
+                      color: AppColors.warning,
+                    ),
+                    _buildFieldHighlights(context),
+                    if (message != null && message.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        message,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    AbsorbPointer(
+                      absorbing: isBusy,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          UydoshLinkButton(
+                            text: L10n.get("group_reject_member"),
+                            onPressed: onReject,
+                            color: AppColors.error,
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                          ),
+                          const SizedBox(width: 16),
+                          UydoshLinkButton(
+                            text: L10n.get("group_approve_member"),
+                            onPressed: onApprove,
+                            color: AppColors.success,
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isBusy)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                ThemeIcon(
+                  Icons.chevron_right,
+                  size: 22,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.75),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _RoleBadge extends StatelessWidget {
   const _RoleBadge({
     required this.label,
     required this.color,
+    this.isFilled = false,
   });
 
   final String label;
   final Color color;
+  final bool isFilled;
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = isFilled
+        ? Colors.black
+        : color.withValues(alpha: 0.12);
+    final foregroundColor = isFilled ? Colors.white : color;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.28)),
+        border: Border.all(
+          color: isFilled ? Colors.black : color.withValues(alpha: 0.28),
+        ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color,
+          color: foregroundColor,
           fontSize: 12,
           fontWeight: FontWeight.w600,
           height: 1.1,

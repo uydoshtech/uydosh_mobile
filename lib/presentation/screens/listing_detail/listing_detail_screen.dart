@@ -542,6 +542,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             showGroupChatUnreadDot: hasUnreadGroupChat,
             groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
             onViewMemberProfiles: onViewMemberProfiles,
+            showMemberProfilesDot: pendingCount > 0,
+            memberProfilesDotTrigger: pendingCount,
           );
         }
         if (isOwner) {
@@ -568,6 +570,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
               showGroupChatUnreadDot: hasUnreadGroupChat,
               groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
               onViewMemberProfiles: onViewMemberProfiles,
+              showMemberProfilesDot: pendingCount > 0,
+              memberProfilesDotTrigger: pendingCount,
             );
           }
 
@@ -578,6 +582,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             showManageRequestsDot: pendingCount > 0,
             manageRequestsDotTrigger: pendingCount,
             onViewMemberProfiles: onViewMemberProfiles,
+            showMemberProfilesDot: pendingCount > 0,
+            memberProfilesDotTrigger: pendingCount,
           );
         }
         if (ctx?.isMember == true) {

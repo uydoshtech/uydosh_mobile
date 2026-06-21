@@ -244,6 +244,12 @@ class AppColors {
     return brightness == Brightness.dark ? primary : textDark;
   }
 
+  /// Get a warning icon color with enough contrast on light surfaces.
+  static Color getThemeAwareWarningIconColor(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    return brightness == Brightness.light ? warningDark : warning;
+  }
+
   // Background colors
   static const Color backgroundLight = Color(0xFFF5F5F5); // Light grey
   static const Color backgroundDark = Color(0xFF1A1A1A); // Dark almost black

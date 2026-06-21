@@ -58,6 +58,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.embedded = false,
     this.onMemberProfiles,
     this.memberProfilesCount,
+    this.showMemberProfilesNotificationDot = false,
+    this.memberProfilesNotificationDotTrigger = 0,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -84,6 +86,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
   /// Optional CTA rendered directly above the primary chat button in stacked layouts.
   final VoidCallback? onMemberProfiles;
   final int? memberProfilesCount;
+  final bool showMemberProfilesNotificationDot;
+  final int memberProfilesNotificationDotTrigger;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -214,25 +218,34 @@ class ListingDetailContactActionBar extends StatelessWidget {
     }
     final accentColor = ListingDetailThemeHelper.iconColor;
     final secondaryTextColor = _getSecondaryTextColor();
+    final memberProfilesButton = _GlassNeumorphicCtaButton(
+      onPressed: () {
+        HapticFeedbackUtils.impact();
+        onMemberProfiles!();
+      },
+      icon: Icons.group_outlined,
+      iconColor: accentColor,
+      leading: memberProfilesCount == null
+          ? null
+          : _MemberProfilesLeadingIcon(
+              memberCount: memberProfilesCount!,
+              color: accentColor,
+            ),
+      label: L10n.get("view_member_profiles"),
+      labelColor: secondaryTextColor,
+      borderColor: accentColor,
+      width: double.infinity,
+    );
+
     return [
-      _GlassNeumorphicCtaButton(
-        onPressed: () {
-          HapticFeedbackUtils.impact();
-          onMemberProfiles!();
-        },
-        icon: Icons.group_outlined,
-        iconColor: accentColor,
-        leading: memberProfilesCount == null
-            ? null
-            : _MemberProfilesLeadingIcon(
-                memberCount: memberProfilesCount!,
-                color: accentColor,
-              ),
-        label: L10n.get("view_member_profiles"),
-        labelColor: secondaryTextColor,
-        borderColor: accentColor,
-        width: double.infinity,
-      ),
+      if (showMemberProfilesNotificationDot)
+        _wrapWithNotificationDot(
+          context,
+          memberProfilesButton,
+          trigger: memberProfilesNotificationDotTrigger,
+        )
+      else
+        memberProfilesButton,
       const SizedBox(height: 8),
       primaryButton,
     ];
@@ -321,7 +334,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   }
 
   EdgeInsets _barPadding() {
-    if (!_showSecondaryDot) {
+    if (!_showSecondaryDot && !showMemberProfilesNotificationDot) {
       return const EdgeInsets.fromLTRB(16, 10, 16, 10);
     }
     // Leave room for the badge that sits slightly above the top CTA.

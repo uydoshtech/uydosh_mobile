@@ -261,7 +261,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                       style: _plusOneFontSize(
                         context,
                         theme.textTheme.labelLarge,
-                      ).copyWith(height: 1.0),
+                      ).copyWith(
+                        color: theme.colorScheme.error,
+                        height: 1.0,
+                      ),
                       textHeightBehavior: const TextHeightBehavior(
                         applyHeightToFirstAscent: false,
                         applyHeightToLastDescent: false,
@@ -686,6 +689,7 @@ class _GroupRatingSection extends StatelessWidget {
       context,
       theme.textTheme.bodySmall,
     ).copyWith(
+      color: theme.brightness == Brightness.light ? Colors.black : null,
       fontWeight: FontWeight.w700,
     );
 
@@ -710,7 +714,7 @@ class _GroupRatingSection extends StatelessWidget {
                     alignment: PlaceholderAlignment.middle,
                     child: Icon(
                       Icons.star_rounded,
-                      color: AppColors.warning,
+                      color: AppColors.getThemeAwareWarningIconColor(context),
                       size: 14,
                     ),
                   ),
@@ -822,7 +826,7 @@ class _StaticStars extends StatelessWidget {
           filled ? Icons.star_rounded : Icons.star_outline_rounded,
           size: 14,
           color: filled
-              ? AppColors.warning
+              ? AppColors.getThemeAwareWarningIconColor(context)
               : Theme.of(context).colorScheme.onSurfaceVariant,
         );
       }),

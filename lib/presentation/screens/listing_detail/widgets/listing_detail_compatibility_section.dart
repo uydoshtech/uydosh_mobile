@@ -551,6 +551,11 @@ class _ListingDetailCompatibilitySectionState
     final scoredPreferenceCount = widget.scoredFieldCount > 0
         ? widget.scoredFieldCount
         : widget.groupFullMatches.length;
+    final fullMatchAccentColor =
+        ThemeState().isLightTheme ? AppColors.successDark : AppColors.success;
+    final partialMatchAccentColor =
+        ThemeState().isLightTheme ? AppColors.warningDark : AppColors.warning;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -580,7 +585,7 @@ class _ListingDetailCompatibilitySectionState
               "total": scoredPreferenceCount.toString(),
             },
           ),
-          accentColor: AppColors.success,
+          accentColor: fullMatchAccentColor,
           kind: _GroupSectionKind.full,
           children: widget.groupFullMatches
               .map(
@@ -600,7 +605,7 @@ class _ListingDetailCompatibilitySectionState
               "total": memberCount.toString(),
             },
           ),
-          accentColor: AppColors.warning,
+          accentColor: partialMatchAccentColor,
           kind: _GroupSectionKind.partial,
           children: widget.groupPartialMatches
               .map(

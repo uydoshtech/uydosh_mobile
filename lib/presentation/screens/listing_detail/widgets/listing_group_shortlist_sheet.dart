@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -101,6 +102,8 @@ class _ListingGroupShortlistSheetState
     extends State<_ListingGroupShortlistSheet> {
   var _loading = true;
   var _removingId = 0;
+  final _pageController = PageController();
+  var _currentPage = 0;
   int? _currentUserId;
   List<_ShortlistRow> _rows = const [];
 
@@ -108,6 +111,12 @@ class _ListingGroupShortlistSheetState
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -148,6 +157,8 @@ class _ListingGroupShortlistSheetState
       setState(() {
         _currentUserId = currentUserId;
         _rows = rows;
+        _currentPage =
+            rows.isEmpty ? 0 : _currentPage.clamp(0, rows.length - 1).toInt();
         _loading = false;
       });
       GroupShortlistState().setShortlistCountForGroup(
@@ -200,7 +211,9 @@ class _ListingGroupShortlistSheetState
                     },
                     icon: Icon(
                       filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: filled ? Colors.amber : scheme.onSurfaceVariant,
+                      color: filled
+                          ? AppColors.getThemeAwareWarningIconColor(context)
+                          : scheme.onSurfaceVariant,
                     ),
                   );
                 }),
@@ -338,10 +351,19 @@ class _ListingGroupShortlistSheetState
       );
       GroupShortlistState().refreshCount(widget.groupListingId);
       if (!mounted) return;
+      final nextRows =
+          _rows.where((r) => r.listing.id != row.listing.id).toList();
+      final nextPage = nextRows.isEmpty
+          ? 0
+          : _currentPage.clamp(0, nextRows.length - 1).toInt();
       setState(() {
-        _rows = _rows.where((r) => r.listing.id != row.listing.id).toList();
+        _rows = nextRows;
+        _currentPage = nextPage;
         _removingId = 0;
       });
+      if (nextRows.isNotEmpty && _pageController.hasClients) {
+        _pageController.jumpToPage(nextPage);
+      }
       widget.onChanged?.call();
     } catch (e) {
       if (!mounted) return;
@@ -351,6 +373,50 @@ class _ListingGroupShortlistSheetState
         message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
       );
     }
+  }
+
+  void _goToPage(int page) {
+    if (_rows.isEmpty || page < 0 || page >= _rows.length) return;
+    HapticFeedbackUtils.impact();
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Widget _buildShortlistNavigation(BuildContext context) {
+    final canGoBack = _currentPage > 0;
+    final canGoNext = _currentPage < _rows.length - 1;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: [
+          _ShortlistArrowButton(
+            icon: Icons.chevron_left,
+            tooltip: L10n.get("back"),
+            onPressed: canGoBack ? () => _goToPage(_currentPage - 1) : null,
+          ),
+          Expanded(
+            child: Text(
+              "${_currentPage + 1} / ${_rows.length}",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+          _ShortlistArrowButton(
+            icon: Icons.chevron_right,
+            tooltip: L10n.get("next"),
+            onPressed: canGoNext ? () => _goToPage(_currentPage + 1) : null,
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openListing(_ShortlistRow row) async {
@@ -481,6 +547,7 @@ class _ListingGroupShortlistSheetState
                   ),
             ),
           ),
+          if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
           Expanded(
             child: _loading
                 ? const Center(child: HouseLoadingIndicator())
@@ -502,10 +569,12 @@ class _ListingGroupShortlistSheetState
                           label: Text(L10n.get("group_find_housing")),
                         ),
                       )
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    : PageView.builder(
+                        controller: _pageController,
                         itemCount: _rows.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        onPageChanged: (page) {
+                          setState(() => _currentPage = page);
+                        },
                         itemBuilder: (context, index) {
                           final row = _rows[index];
                           final fit = groupDetail == null
@@ -521,24 +590,27 @@ class _ListingGroupShortlistSheetState
                           final hasGroupChat =
                               groupDetail?.groupContext?.hasGroupChat == true;
 
-                          return GroupShortlistItemCard(
-                            item: row.item,
-                            listing: row.listing,
-                            fit: fit,
-                            ownerName: row.ownerName,
-                            ownerAvatarUrl: row.ownerAvatarUrl,
-                            isOwner: widget.isOwner,
-                            isRemoving: isRemoving,
-                            currentUserId: _currentUserId,
-                            onOpen: () => _openListing(row),
-                            onRemove: () => _confirmRemove(row),
-                            onRate: (stars) => _editRating(row, stars),
-                            onContactLandlord: widget.isOwner
-                                ? () => _contactLandlord(row)
-                                : null,
-                            onDiscussInGroup: hasGroupChat
-                                ? () => _discussInGroup(row)
-                                : null,
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: GroupShortlistItemCard(
+                              item: row.item,
+                              listing: row.listing,
+                              fit: fit,
+                              ownerName: row.ownerName,
+                              ownerAvatarUrl: row.ownerAvatarUrl,
+                              isOwner: widget.isOwner,
+                              isRemoving: isRemoving,
+                              currentUserId: _currentUserId,
+                              onOpen: () => _openListing(row),
+                              onRemove: () => _confirmRemove(row),
+                              onRate: (stars) => _editRating(row, stars),
+                              onContactLandlord: widget.isOwner
+                                  ? () => _contactLandlord(row)
+                                  : null,
+                              onDiscussInGroup: hasGroupChat
+                                  ? () => _discussInGroup(row)
+                                  : null,
+                            ),
                           );
                         },
                       ),
@@ -562,6 +634,32 @@ class _ListingGroupShortlistSheetState
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ShortlistArrowButton extends StatelessWidget {
+  const _ShortlistArrowButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton.filledTonal(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: Icon(icon, size: 28),
+      style: IconButton.styleFrom(
+        minimumSize: const Size.square(44),
+        disabledForegroundColor:
+            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.32),
       ),
     );
   }

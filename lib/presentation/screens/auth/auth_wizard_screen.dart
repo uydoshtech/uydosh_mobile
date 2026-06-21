@@ -1489,7 +1489,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   int _getProgressStep() {
     if (_currentPage >= 3) return 3;
     if (_currentPage >= 2) return 2;
-    if (_currentPage == 1 && _isGoogleSignedIn) return 1;
+    if (_currentPage == 1 && _isGoogleSignedIn) return 2;
     return _currentPage;
   }
 
