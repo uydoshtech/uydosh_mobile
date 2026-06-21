@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
@@ -6,6 +7,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
@@ -22,7 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 Future<void> showListingGroupShortlistSheet({
   required BuildContext context,
@@ -306,15 +308,11 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                     groupListing: groupDetail,
                                     housingListing: row.listing,
                                   );
-                            final priceLabel =
-                                PriceRangeHelper.formatStoredListingPrice(
-                              storedPrice: row.listing.price,
-                              listingTypeCode: row.listing.listingType?.code ??
-                                  "roommate_needed",
-                              minPrice: row.listing.minPrice,
-                              maxPrice: row.listing.maxPrice,
-                            );
                             final isRemoving = _removingId == row.listing.id;
+                            final isLightTheme =
+                                Theme.of(context).brightness == Brightness.light;
+                            final openButtonBorderColor =
+                                isLightTheme ? Colors.black : Colors.white;
 
                             return Card(
                               child: Padding(
@@ -344,8 +342,6 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                                           FontWeight.w700,
                                                     ),
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(priceLabel),
                                               if (row.item.savedByName !=
                                                   null) ...[
                                                 const SizedBox(height: 4),
@@ -359,7 +355,25 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                             ],
                                           ),
                                         ),
-                                        GroupBudgetFitChip(fit: fit),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            GroupBudgetFitChip(fit: fit),
+                                            if (row.listing.price > 0) ...[
+                                              const SizedBox(height: 6),
+                                              ListingStoredPriceBadge(
+                                                storedPrice: row.listing.price,
+                                                listingTypeCode: row.listing
+                                                        .listingType?.code ??
+                                                    ListingTypeCodes
+                                                        .roommateNeeded,
+                                                minPrice: row.listing.minPrice,
+                                                maxPrice: row.listing.maxPrice,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 10),
@@ -372,10 +386,27 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                             spacing: 8,
                                             runSpacing: 0,
                                             children: [
-                                              TextButtonThemed(
+                                              OutlinedButton(
                                                 onPressed: isRemoving
                                                     ? null
-                                                    : () => _openListing(row),
+                                                    : () {
+                                                        HapticFeedbackUtils
+                                                            .impact();
+                                                        _openListing(row);
+                                                      },
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: isLightTheme
+                                                      ? Colors.black87
+                                                      : AppColors.textLight70,
+                                                  side: BorderSide(
+                                                    color: openButtonBorderColor,
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8,
+                                                  ),
+                                                ),
                                                 child: Text(
                                                   L10n.get(
                                                     "group_shortlist_open",

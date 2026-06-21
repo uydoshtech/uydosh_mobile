@@ -29,7 +29,7 @@ class ListingUtils {
   }) {
     final g = (gender == 1 || gender == 2) ? gender! : 1;
     if (listingTypeId == ListingTypeIds.groupForming) {
-      return "listing_type_short_group_forming";
+      return "title_group_forming";
     }
     if (listingTypeId == 2) {
       return g == 1 ? "title_male_roommate" : "title_female_roommate";

@@ -71,13 +71,7 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
         // avoid stacking large bottom padding here or it reads as empty space.
         final barDecoration =
             widget.blendWithGlassBackdrop
-                ? BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: scheme.onSurface.withValues(alpha: 0.10),
-                    ),
-                  ),
-                )
+                ? null
                 : BoxDecoration(
                   color: themeState.chatInputBarBackgroundColor,
                   border: Border(top: BorderSide(color: borderColor)),

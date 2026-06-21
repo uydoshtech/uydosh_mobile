@@ -359,6 +359,38 @@ class _MemberProfilesHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isGroupFull) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.28),
+                ),
+              ),
+              child: Row(
+                children: [
+                  ThemeIcon(
+                    CupertinoIcons.checkmark_circle_fill,
+                    size: 18,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      L10n.get("group_member_profiles_formed"),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.successDark,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(
             L10n.get("view_member_profiles"),
             style: theme.textTheme.titleMedium?.copyWith(
@@ -392,38 +424,6 @@ class _MemberProfilesHeader extends StatelessWidget {
             avatarSize: 32 * 1.1,
             maxVisible: 5,
           ),
-          if (isGroupFull) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.success.withValues(alpha: 0.28),
-                ),
-              ),
-              child: Row(
-                children: [
-                  ThemeIcon(
-                    CupertinoIcons.checkmark_circle_fill,
-                    size: 18,
-                    color: AppColors.success,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      L10n.get("group_member_profiles_formed"),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.successDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );

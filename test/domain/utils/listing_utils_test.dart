@@ -100,10 +100,10 @@ void main() {
       );
     });
 
-    test("group forming (3) uses short badge label", () {
+    test("group forming (3) uses hashtag preset title", () {
       expect(
         ListingUtils.presetListingTitleL10nKey(listingTypeId: 3),
-        "listing_type_short_group_forming",
+        "title_group_forming",
       );
     });
 

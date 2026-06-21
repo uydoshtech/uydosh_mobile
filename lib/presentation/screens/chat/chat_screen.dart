@@ -254,9 +254,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
 
-  /// Circular shortlist badge diameter; half floats above the composer panel edge.
-  static const double _groupShortlistPillSize = 44;
-  static const double _groupShortlistPillFloatAbove = _groupShortlistPillSize / 2;
+  /// Oval shortlist pill height; half floats above the composer panel edge.
+  static const double _groupShortlistPillHeight = 36;
+  static const double _groupShortlistPillFloatAbove =
+      _groupShortlistPillHeight / 2;
 
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
@@ -369,48 +370,27 @@ class _ChatScreenState extends State<ChatScreen> {
                   groupListingDetail: _groupListingDetail,
                 );
               },
-              padding: EdgeInsets.zero,
-              borderRadius: BorderRadius.circular(_groupShortlistPillSize / 2),
-              child: SizedBox(
-                width: _groupShortlistPillSize,
-                height: _groupShortlistPillSize,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    ThemeIcon(
-                      count > 0 ? Icons.bookmark : Icons.bookmark_outline,
-                      size: 22,
-                    ),
-                    if (count > 0)
-                      Positioned(
-                        right: 2,
-                        top: 2,
-                        child: Container(
-                          constraints: const BoxConstraints(minWidth: 16),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white, width: 1.5),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            count > 99 ? "99+" : count.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              height: 1.1,
-                            ),
-                          ),
-                        ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ThemeIcon(
+                    count > 0 ? Icons.bookmark : Icons.bookmark_outline,
+                    size: 20,
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      count > 99 ? "99+" : count.toString(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
                       ),
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -449,11 +429,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Stack(
       clipBehavior: Clip.none,
-      alignment: Alignment.topCenter,
       children: [
         composer,
         Positioned(
           top: -_groupShortlistPillFloatAbove,
+          left: 16,
           child: _buildGroupShortlistFloatingPill(context),
         ),
       ],
@@ -1302,12 +1282,6 @@ class _ChatScreenState extends State<ChatScreen> {
           decoration: BoxDecoration(
             borderRadius: topRadius,
             color: BlueThemeColors.background.withValues(alpha: 0.44),
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 0.5,
-              ),
-            ),
           ),
           child: _chatComposerColumn(blendWithGlassBackdrop: true),
         ),
@@ -1317,11 +1291,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Stack(
       clipBehavior: Clip.none,
-      alignment: Alignment.topCenter,
       children: [
         glassPanel,
         Positioned(
           top: -_groupShortlistPillFloatAbove,
+          left: 16,
           child: _buildGroupShortlistFloatingPill(context),
         ),
       ],

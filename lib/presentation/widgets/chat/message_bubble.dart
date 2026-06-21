@@ -452,7 +452,9 @@ class _MessageBubbleState extends State<MessageBubble>
                                 : null,
                       ),
                     ),
-                    if (_hasReactionRow && !embedOutgoingReactionsUnderBubble)
+                    if (_hasReactionRow &&
+                        !embedOutgoingReactionsUnderBubble &&
+                        !_reactionsEnabled)
                       _buildReactionStrip(context, textColor),
                   ],
                 ),
@@ -499,13 +501,14 @@ class _MessageBubbleState extends State<MessageBubble>
   double _reactionBadgeTrailingEndInset({
     required double bubbleInnerWidth,
     required int aggregateCount,
+    double? approxBadgeWidth,
     double extraEndInset = 0,
   }) {
     final R = ChatBubbleWithTail.cornerRadius;
     final badgeR = _reactionBadgeHoverHeight / 2;
     final hugCorner = ((R - badgeR).clamp(0.0, R)) * 0.38;
-    final approxBadgeW =
-        aggregateCount > 1 ? 56.0 : _reactionBadgeHoverHeight.toDouble();
+    final approxBadgeW = approxBadgeWidth ??
+        (aggregateCount > 1 ? 56.0 : _reactionBadgeHoverHeight.toDouble());
     const minGapFromStart = 5.0;
     final maxPermittedEndInset =
         (bubbleInnerWidth - approxBadgeW - minGapFromStart).clamp(
@@ -556,13 +559,31 @@ class _MessageBubbleState extends State<MessageBubble>
   ) {
     final myId = widget.message.myReaction;
     final aggCount = myId != null ? _aggregateCountForReaction(myId) : 1;
+    final otherEntries = _reactionStripEntries();
+    final rowW = _approxIncomingReactionRowWidth(
+      otherEntries,
+      hasMyBadge: myId != null,
+      myAggregateCount: aggCount,
+    );
     final reactionEndInset = _reactionBadgeTrailingEndInset(
       bubbleInnerWidth: maxWidth,
       aggregateCount: aggCount,
+      approxBadgeWidth: rowW,
       extraEndInset: _peerBubbleReactionExtraEndInset,
     );
     final overlapY =
         _reactionBubbleOverlapTranslateY + _reactionCornerPullOntoBubblePx;
+
+    final Widget cornerSlot = myId != null
+        ? ScaleTransition(
+            scale: _reactionAppearPulseScale,
+            alignment: AlignmentDirectional.bottomEnd.resolve(
+              Directionality.of(context),
+            ),
+            child: _buildMyReactionCornerBadge(context, textColor),
+          )
+        : _buildAddReactionCornerBadge(context, textColor);
+
     return Transform.translate(
       offset: Offset(0, -overlapY + _reactionIconNudgeDownPx),
       child: SizedBox(
@@ -571,19 +592,43 @@ class _MessageBubbleState extends State<MessageBubble>
           alignment: AlignmentDirectional.bottomEnd,
           child: Padding(
             padding: EdgeInsetsDirectional.only(end: reactionEndInset),
-            child: myId != null
-                ? ScaleTransition(
-                    scale: _reactionAppearPulseScale,
-                    alignment: AlignmentDirectional.bottomEnd.resolve(
-                      Directionality.of(context),
-                    ),
-                    child: _buildMyReactionCornerBadge(context, textColor),
-                  )
-                : _buildAddReactionCornerBadge(context, textColor),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (otherEntries.isNotEmpty) ...[
+                  _buildReactionStrip(
+                    context,
+                    textColor,
+                    outerPadding: EdgeInsets.zero,
+                    wrapAlignment: WrapAlignment.end,
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                cornerSlot,
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  double _approxIncomingReactionRowWidth(
+    List<MessageReactionCount> otherEntries, {
+    required bool hasMyBadge,
+    required int myAggregateCount,
+  }) {
+    var w = _approxOutgoingReactionWidth(otherEntries);
+    if (otherEntries.isNotEmpty) {
+      w += 4;
+    }
+    if (hasMyBadge) {
+      w += myAggregateCount > 1 ? 56.0 : _reactionBadgeHoverHeight;
+    } else {
+      w += _reactionBadgeHoverHeight;
+    }
+    return math.max(w, _reactionBadgeHoverHeight);
   }
 
   /// Other users’ reactions on **own** messages: overlap the bottom-leading

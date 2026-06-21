@@ -23,7 +23,7 @@ class ListingTypeBadge extends StatelessWidget {
   final String listingTypeCode;
   final bool showIcon;
   final bool showText;
-  /// Compact badge copy (e.g. «Ищем Группу» vs «Создать группу»).
+  /// Compact badge copy (e.g. «#СобираемГруппу» vs «Собрать группу»).
   final bool useShortLabel;
   final double? fontSize;
   final EdgeInsets? padding;
@@ -206,7 +206,7 @@ class ListingTypeHelper {
     }
   }
 
-  /// Short badge label for tiles and detail chips (e.g. «Ищем Группу»).
+  /// Short badge label for tiles and detail chips (e.g. «#СобираемГруппу»).
   static String getShortText(BuildContext context, String code) {
     final currentLanguage = L10n.currentLanguage;
 

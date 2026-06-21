@@ -297,6 +297,91 @@ class CompactPriceBadge extends StatelessWidget {
   }
 }
 
+/// Prominent monthly price badge matching [ListingTile]'s price card.
+class ListingStoredPriceBadge extends StatelessWidget {
+  const ListingStoredPriceBadge({
+    required this.storedPrice,
+    required this.listingTypeCode,
+    this.minPrice,
+    this.maxPrice,
+    super.key,
+  });
+
+  final int storedPrice;
+  final String listingTypeCode;
+  final int? minPrice;
+  final int? maxPrice;
+
+  static const Color _accentGreen = Color(0xFF35C26B);
+  static const Color _accentGreenLightTheme = Color(0xFF25884B);
+
+  Color _priceAccentGreen() =>
+      ThemeState().isLightTheme ? _accentGreenLightTheme : _accentGreen;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: PriceDisplaySettingsState(),
+      builder: (context, _) {
+        final priceGreen = _priceAccentGreen();
+        final amount = PriceRangeHelper.formatStoredListingPrice(
+          storedPrice: storedPrice,
+          listingTypeCode: listingTypeCode,
+          minPrice: minPrice,
+          maxPrice: maxPrice,
+        );
+        final isUsd =
+            PriceDisplaySettingsState().currency == PriceDisplayCurrency.usd;
+        final unit = L10n.get(
+          isUsd ? "price_unit_usd_per_month" : "price_unit_uzs_per_month",
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          decoration: BoxDecoration(
+            color: priceGreen.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: priceGreen.withValues(alpha: 0.6)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThemeIcon(
+                Icons.payments,
+                size: 16,
+                color: priceGreen,
+                useThemeColor: false,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  amount,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: priceGreen,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                unit,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: priceGreen.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Green-outlined chip with a payments icon, matching listing tiles and
 /// [ListingDetailMetaBadges] so marketplace prices stay visually consistent.
 /// Pass currency as an ISO code only — use [CurrencyDisplayUtils.isoCode], not
