@@ -76,6 +76,12 @@ abstract class IListingGroupService {
     required int groupListingId,
     required int housingListingId,
   });
+
+  Future<ListingGroupShortlistRating> rateShortlistItem({
+    required int groupListingId,
+    required int housingListingId,
+    required int stars,
+  });
 }
 
 class ListingGroupService implements IListingGroupService {
@@ -271,6 +277,28 @@ class ListingGroupService implements IListingGroupService {
       data: const _EmptyBody(),
     );
   }
+
+  @override
+  Future<ListingGroupShortlistRating> rateShortlistItem({
+    required int groupListingId,
+    required int housingListingId,
+    required int stars,
+  }) async {
+    final response =
+        await _oauthApiClient.put<Map<String, dynamic>, _ShortlistRatingBody>(
+      "/listings/$groupListingId/group/shortlist/$housingListingId/rating",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: _ShortlistRatingBody(stars: stars),
+    );
+    final rating = ListingGroupShortlistRating.fromJsonOrNull(
+      response["rating"],
+    );
+    if (rating == null) {
+      throw const FormatException("Missing shortlist rating response");
+    }
+    return rating;
+  }
 }
 
 class _JoinRequestBody implements IJsonEncodable {
@@ -292,4 +320,13 @@ class _EmptyBody implements IJsonEncodable {
 
   @override
   Map<String, dynamic> toJson() => {};
+}
+
+class _ShortlistRatingBody implements IJsonEncodable {
+  const _ShortlistRatingBody({required this.stars});
+
+  final int stars;
+
+  @override
+  Map<String, dynamic> toJson() => {"stars": stars};
 }

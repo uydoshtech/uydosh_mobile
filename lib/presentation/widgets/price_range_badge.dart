@@ -216,7 +216,7 @@ class PriceRangeHelper {
     return stored;
   }
 
-  /// Digits only (dot grouping). Currency codes are intentionally not shown.
+  /// Digits only (dot grouping). Currency markers are intentionally not shown.
   static String formatListingPriceRangeWithCurrency(int minUzs, int maxUzs) {
     final pref = PriceDisplaySettingsState().currency;
     if (pref == PriceDisplayCurrency.usd) {
@@ -227,6 +227,23 @@ class PriceRangeHelper {
     final minNat = listingPriceToUzsForDisplay(minUzs);
     final maxNat = listingPriceToUzsForDisplay(maxUzs);
     return formatPriceRange(minNat, maxNat, uzsCompact: true);
+  }
+
+  static String formatListingPriceRangeWithCurrencyMarker(
+    int minUzs,
+    int maxUzs,
+  ) {
+    final amount = formatListingPriceRangeWithCurrency(minUzs, maxUzs);
+    final currency = PriceDisplaySettingsState().currency;
+    final monthlyUnit = L10n.get(
+      currency == PriceDisplayCurrency.usd
+          ? "price_unit_usd_per_month"
+          : "price_unit_uzs_per_month",
+    );
+    final currencyMarker = monthlyUnit.split("/").first.trim();
+    if (currencyMarker.isEmpty) return amount;
+    if (currency == PriceDisplayCurrency.usd) return "$currencyMarker$amount";
+    return "$amount $currencyMarker";
   }
 
   /// Room-needed and group-forming listings use a budget range; roommate-needed

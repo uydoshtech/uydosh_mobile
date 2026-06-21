@@ -56,7 +56,7 @@ class GroupShortlistPillButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    L10n.get("group_shortlist_all_options"),
+                    L10n.get("group_shortlist_title"),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 13,
@@ -65,10 +65,7 @@ class GroupShortlistPillButton extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ThemeIcon(
-                    count > 0 ? Icons.bookmark : Icons.bookmark_outline,
-                    size: 20,
-                  ),
+                  const ThemeIcon(Icons.bookmark, size: 20),
                   if (count > 0) ...[
                     const SizedBox(width: 6),
                     Text(

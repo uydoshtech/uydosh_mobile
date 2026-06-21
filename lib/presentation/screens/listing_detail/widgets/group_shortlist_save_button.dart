@@ -64,9 +64,7 @@ class _GroupShortlistSaveButtonState extends State<GroupShortlistSaveButton> {
       ToastTheme.showSuccess(
         context,
         message: L10n.get(
-          nowShortlisted
-              ? "group_shortlist_added"
-              : "group_shortlist_removed",
+          nowShortlisted ? "group_shortlist_added" : "group_shortlist_removed",
         ),
       );
     } catch (e) {
@@ -82,7 +80,13 @@ class _GroupShortlistSaveButtonState extends State<GroupShortlistSaveButton> {
     if (!_seeded) {
       return const SizedBox(
         height: 44,
-        child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+        child: Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       );
     }
 
@@ -92,10 +96,6 @@ class _GroupShortlistSaveButtonState extends State<GroupShortlistSaveButton> {
         housingListingId: widget.housingListingId,
       ),
       builder: (context, _) {
-        final isOn = GroupShortlistState().isShortlisted(
-          groupListingId: widget.groupListingId,
-          housingListingId: widget.housingListingId,
-        );
         final label = widget.groupSizeLabel != null
             ? L10n.getWithParams(
                 "group_shortlist_save_for_group",
@@ -105,10 +105,7 @@ class _GroupShortlistSaveButtonState extends State<GroupShortlistSaveButton> {
 
         return OutlinedButton.icon(
           onPressed: _loading ? null : _toggle,
-          icon: Icon(
-            isOn ? Icons.bookmark : Icons.bookmark_outline,
-            size: 20,
-          ),
+          icon: const Icon(Icons.bookmark, size: 20),
           label: Text(label),
         );
       },

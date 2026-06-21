@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -99,6 +101,7 @@ class _ListingGroupShortlistSheetState
     extends State<_ListingGroupShortlistSheet> {
   var _loading = true;
   var _removingId = 0;
+  int? _currentUserId;
   List<_ShortlistRow> _rows = const [];
 
   @override
@@ -110,6 +113,7 @@ class _ListingGroupShortlistSheetState
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
+      final currentUserId = await SessionManager.getUserId();
       final items = await getIt<IListingGroupService>().listShortlist(
         groupListingId: widget.groupListingId,
       );
@@ -142,6 +146,7 @@ class _ListingGroupShortlistSheetState
       }
       if (!mounted) return;
       setState(() {
+        _currentUserId = currentUserId;
         _rows = rows;
         _loading = false;
       });
@@ -152,6 +157,103 @@ class _ListingGroupShortlistSheetState
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
+      ToastTheme.showError(
+        context,
+        message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
+      );
+    }
+  }
+
+  Future<void> _editRating(_ShortlistRow row, int currentStars) async {
+    final stars = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        var selected = currentStars.clamp(0, 5).toInt();
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final scheme = Theme.of(context).colorScheme;
+            return AlertDialog(
+              backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+              title: Text(
+                L10n.get("group_shortlist_edit_rating_title"),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+              content: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(5, (index) {
+                  final value = index + 1;
+                  final filled = selected >= value;
+                  return IconButton(
+                    onPressed: () {
+                      HapticFeedbackUtils.selectionClick();
+                      setDialogState(() => selected = value);
+                    },
+                    icon: Icon(
+                      filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: filled ? Colors.amber : scheme.onSurfaceVariant,
+                    ),
+                  );
+                }),
+              ),
+              actions: [
+                TextButtonThemed(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style:
+                      TextButton.styleFrom(foregroundColor: scheme.onSurface),
+                  child: Text(
+                    L10n.get("cancel"),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                TextButtonThemed(
+                  onPressed: selected <= 0
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(selected),
+                  child: Text(
+                    L10n.get("done"),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    if (stars == null || stars == currentStars || !mounted) return;
+
+    try {
+      final rating = await getIt<IListingGroupService>().rateShortlistItem(
+        groupListingId: widget.groupListingId,
+        housingListingId: row.listing.id,
+        stars: stars,
+      );
+      if (!mounted) return;
+      setState(() {
+        _rows = _rows
+            .map(
+              (candidate) => candidate.listing.id == row.listing.id
+                  ? candidate.copyWith(
+                      item: candidate.item.copyWith(rating: rating),
+                    )
+                  : candidate,
+            )
+            .toList();
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_shortlist_rating_updated"),
+      );
+      widget.onChanged?.call();
+    } catch (e) {
+      if (!mounted) return;
       ToastTheme.showError(
         context,
         message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
@@ -421,8 +523,10 @@ class _ListingGroupShortlistSheetState
                             ownerAvatarUrl: row.ownerAvatarUrl,
                             isOwner: widget.isOwner,
                             isRemoving: isRemoving,
+                            currentUserId: _currentUserId,
                             onOpen: () => _openListing(row),
                             onRemove: () => _confirmRemove(row),
+                            onRate: (stars) => _editRating(row, stars),
                             onContactLandlord: widget.isOwner
                                 ? () => _contactLandlord(row)
                                 : null,
@@ -469,4 +573,15 @@ class _ShortlistRow {
   final Listing listing;
   final String? ownerName;
   final String? ownerAvatarUrl;
+
+  _ShortlistRow copyWith({
+    ListingGroupShortlistItem? item,
+  }) {
+    return _ShortlistRow(
+      item: item ?? this.item,
+      listing: listing,
+      ownerName: ownerName,
+      ownerAvatarUrl: ownerAvatarUrl,
+    );
+  }
 }

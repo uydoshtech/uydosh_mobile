@@ -2,8 +2,6 @@ import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
-import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 enum GroupHousingLocationFit {
@@ -102,17 +100,6 @@ class GroupHousingListingFit {
   String? formatPerPersonPriceLabel() {
     final mid = perPersonPriceMid;
     if (mid == null || mid <= 0) return null;
-    final currency = PriceDisplaySettingsState().currency;
-    final amount =
-        PriceRangeHelper.formatListingPriceRangeWithCurrency(mid, mid);
-    final monthlyUnit = L10n.get(
-      currency == PriceDisplayCurrency.usd
-          ? "price_unit_usd_per_month"
-          : "price_unit_uzs_per_month",
-    );
-    final currencyMarker = monthlyUnit.split("/").first.trim();
-    if (currencyMarker.isEmpty) return amount;
-    if (currency == PriceDisplayCurrency.usd) return "$currencyMarker$amount";
-    return "$amount $currencyMarker";
+    return PriceRangeHelper.formatListingPriceRangeWithCurrencyMarker(mid, mid);
   }
 }

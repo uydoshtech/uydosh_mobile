@@ -141,7 +141,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
       minPrice: detail.minPrice,
       maxPrice: detail.maxPrice,
     );
-    final perPerson = PriceRangeHelper.formatListingPriceRangeWithCurrency(
+    final perPerson =
+        PriceRangeHelper.formatListingPriceRangeWithCurrencyMarker(
       bounds.min,
       bounds.max,
     );
@@ -178,7 +179,7 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                       isOwner: detail.groupContext?.isOwner == true,
                       groupListingDetail: detail,
                     ),
-                    icon: const ThemeIcon(Icons.bookmark_outline, size: 18),
+                    icon: const ThemeIcon(Icons.bookmark, size: 18),
                     label: ListenableBuilder(
                       listenable: GroupShortlistState(),
                       builder: (context, _) {
@@ -395,7 +396,7 @@ class _GroupShortlistBookmarkActionState
                       width: 20,
                       height: 20,
                       child: ThemeIcon(
-                        isOn ? Icons.bookmark : Icons.bookmark_outline,
+                        Icons.bookmark,
                         color: iconColor,
                         size: 20,
                       ),

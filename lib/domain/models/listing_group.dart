@@ -182,6 +182,23 @@ class ListingGroupShortlistItem {
   final int? savedByGender;
   final Map<String, dynamic>? listingJson;
   final ListingGroupShortlistRating? rating;
+
+  ListingGroupShortlistItem copyWith({
+    ListingGroupShortlistRating? rating,
+  }) {
+    return ListingGroupShortlistItem(
+      id: id,
+      groupListingId: groupListingId,
+      listingId: listingId,
+      savedByUserId: savedByUserId,
+      createdAt: createdAt,
+      savedByName: savedByName,
+      savedByAvatarUrl: savedByAvatarUrl,
+      savedByGender: savedByGender,
+      listingJson: listingJson,
+      rating: rating ?? this.rating,
+    );
+  }
 }
 
 class ListingGroupShortlistSaver {

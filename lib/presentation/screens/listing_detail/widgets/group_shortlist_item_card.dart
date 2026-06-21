@@ -32,6 +32,8 @@ class GroupShortlistItemCard extends StatelessWidget {
     this.ownerName,
     this.ownerAvatarUrl,
     this.isOwner = false,
+    this.currentUserId,
+    this.onRate,
     this.onContactLandlord,
     this.onDiscussInGroup,
     super.key,
@@ -44,8 +46,10 @@ class GroupShortlistItemCard extends StatelessWidget {
   final String? ownerAvatarUrl;
   final bool isOwner;
   final bool isRemoving;
+  final int? currentUserId;
   final VoidCallback onOpen;
   final VoidCallback onRemove;
+  final ValueChanged<int>? onRate;
   final VoidCallback? onContactLandlord;
   final VoidCallback? onDiscussInGroup;
 
@@ -99,18 +103,18 @@ class GroupShortlistItemCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (item.savedByName != null) ...[
-                        const SizedBox(height: 4),
-                        _SaverLine(
-                          name: item.savedByName!,
-                          avatarUrl: item.savedByAvatarUrl,
-                        ),
-                      ],
                       if (ownerName != null || ownerAvatarUrl != null) ...[
                         const SizedBox(height: 4),
                         _OwnerLine(
                           name: ownerName,
                           avatarUrl: ownerAvatarUrl,
+                        ),
+                      ],
+                      if (item.savedByName != null) ...[
+                        const SizedBox(height: 4),
+                        _SaverLine(
+                          name: item.savedByName!,
+                          avatarUrl: item.savedByAvatarUrl,
                         ),
                       ],
                       if (perPersonPrice != null) ...[
@@ -152,19 +156,12 @@ class GroupShortlistItemCard extends StatelessWidget {
             ..._buildFitChecks(),
             if (rating != null && rating.participants.isNotEmpty) ...[
               const SizedBox(height: 8),
-              _GroupRatingSection(rating: rating),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              L10n.get("group_shortlist_status_waiting"),
-              style: _plusOneFontSize(
-                context,
-                theme.textTheme.bodySmall,
-              ).copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+              _GroupRatingSection(
+                rating: rating,
+                currentUserId: currentUserId,
+                onRate: onRate,
               ),
-            ),
+            ],
             if (showDiscuss) ...[
               const SizedBox(height: 10),
               SizedBox(
@@ -464,6 +461,8 @@ class _SaverLine extends StatelessWidget {
     this.avatarUrl,
   });
 
+  static const double _avatarSize = 24;
+
   final String name;
   final String? avatarUrl;
 
@@ -479,15 +478,17 @@ class _SaverLine extends StatelessWidget {
       fontWeight: FontWeight.w700,
     );
 
+    final textParts = <String>[
+      if (prefix.isNotEmpty) prefix,
+      name,
+      if (suffix.isNotEmpty) suffix,
+    ];
+
     return Row(
       children: [
-        if (prefix.isNotEmpty) ...[
-          Text(prefix, style: textStyle),
-          const SizedBox(width: 6),
-        ],
         SizedBox(
-          width: 20,
-          height: 20,
+          width: _avatarSize,
+          height: _avatarSize,
           child: ChatAvatar(
             isCurrentUser: false,
             initials: initials.isEmpty ? null : initials,
@@ -497,16 +498,12 @@ class _SaverLine extends StatelessWidget {
         const SizedBox(width: 6),
         Flexible(
           child: Text(
-            name,
+            textParts.join(" "),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textStyle,
           ),
         ),
-        if (suffix.isNotEmpty) ...[
-          const SizedBox(width: 6),
-          Text(suffix, style: textStyle),
-        ],
       ],
     );
   }
@@ -518,6 +515,8 @@ class _OwnerLine extends StatelessWidget {
     this.avatarUrl,
   });
 
+  static const double _avatarSize = _SaverLine._avatarSize;
+
   final String? name;
   final String? avatarUrl;
 
@@ -525,15 +524,18 @@ class _OwnerLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmedName = name?.trim();
     final hasName = trimmedName != null && trimmedName.isNotEmpty;
-    final displayName =
-        hasName ? "${L10n.get("author")}: $trimmedName" : L10n.get("author");
+    final authorLabel = L10n.get(
+      "listing_author",
+      fallback: L10n.get("author"),
+    );
+    final displayName = hasName ? "$authorLabel: $trimmedName" : authorLabel;
     final initials = StringUtils.extractInitials(hasName ? trimmedName : "");
 
     return Row(
       children: [
         SizedBox(
-          width: 20,
-          height: 20,
+          width: _avatarSize,
+          height: _avatarSize,
           child: ChatAvatar(
             isCurrentUser: false,
             initials: initials.isEmpty ? null : initials,
@@ -667,9 +669,15 @@ class _PlaceLabelRow extends StatelessWidget {
 }
 
 class _GroupRatingSection extends StatelessWidget {
-  const _GroupRatingSection({required this.rating});
+  const _GroupRatingSection({
+    required this.rating,
+    this.currentUserId,
+    this.onRate,
+  });
 
   final ListingGroupShortlistRating rating;
+  final int? currentUserId;
+  final ValueChanged<int>? onRate;
 
   @override
   Widget build(BuildContext context) {
@@ -707,11 +715,17 @@ class _GroupRatingSection extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 6,
-            children: rating.participants
-                .map((participant) => _ParticipantRatingChip(
-                      participant: participant,
-                    ))
-                .toList(),
+            children: rating.participants.map((participant) {
+              final canEdit = currentUserId != null &&
+                  participant.userId == currentUserId &&
+                  participant.stars != null &&
+                  onRate != null;
+              return _ParticipantRatingChip(
+                participant: participant,
+                isCurrentUser: canEdit,
+                onTap: canEdit ? () => onRate!(participant.stars!) : null,
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -720,9 +734,15 @@ class _GroupRatingSection extends StatelessWidget {
 }
 
 class _ParticipantRatingChip extends StatelessWidget {
-  const _ParticipantRatingChip({required this.participant});
+  const _ParticipantRatingChip({
+    required this.participant,
+    this.isCurrentUser = false,
+    this.onTap,
+  });
 
   final ListingGroupShortlistParticipantRating participant;
+  final bool isCurrentUser;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -730,27 +750,39 @@ class _ParticipantRatingChip extends StatelessWidget {
 
     return Tooltip(
       message: participant.name,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: ChatAvatar(
-                isCurrentUser: false,
-                initials: initials.isEmpty ? null : initials,
-                avatarUrl: participant.avatarUrl,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: ChatAvatar(
+                    isCurrentUser: isCurrentUser,
+                    initials: initials.isEmpty ? null : initials,
+                    avatarUrl: participant.avatarUrl,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                _StaticStars(stars: participant.stars),
+                if (onTap != null) ...[
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.edit_rounded,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(width: 4),
-            _StaticStars(stars: participant.stars),
-          ],
+          ),
         ),
       ),
     );
