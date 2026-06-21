@@ -384,16 +384,27 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
-  Widget _buildGroupHeaderTitle() {
+  Widget _buildGroupHeaderTitle(String headerPercentText) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          L10n.get("group_compatibility_title"),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: _getDescriptionTextColor(),
+        Text.rich(
+          TextSpan(
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: _getDescriptionTextColor(),
+            ),
+            children: [
+              TextSpan(text: L10n.get("group_compatibility_title")),
+              TextSpan(
+                text: " $headerPercentText",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: _getCompatibilityPercentColor(),
+                ),
+              ),
+            ],
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -1035,7 +1046,7 @@ class _ListingDetailCompatibilitySectionState
                 if (!isAuthenticated) const SizedBox(width: 8),
                 Expanded(
                   child: widget.isGroupCompatibility && isAuthenticated
-                      ? _buildGroupHeaderTitle()
+                      ? _buildGroupHeaderTitle(headerPercentText)
                       : Text(
                           L10n.get("compatibility_title"),
                           style: TextStyle(
@@ -1047,7 +1058,7 @@ class _ListingDetailCompatibilitySectionState
                           overflow: TextOverflow.ellipsis,
                         ),
                 ),
-                if (isAuthenticated) ...[
+                if (isAuthenticated && !widget.isGroupCompatibility) ...[
                   const SizedBox(width: 8),
                   Text(
                     headerPercentText,

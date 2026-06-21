@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
@@ -23,9 +25,25 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   static const double _overlapFraction = 0.22;
   static const double _avatarBorderWidth = 1;
 
-  /// Ring stroke that separates overlapping avatars from the card background.
-  static Color avatarBorderColor(BuildContext context) =>
-      Theme.of(context).colorScheme.surface;
+  /// Ring stroke for circle avatars — visible on both light and blue themes.
+  ///
+  /// Light theme uses a subtle dark ring on pale glass tiles; blue theme uses
+  /// a soft light ring on frosted surfaces. Other themes keep [ColorScheme.surface]
+  /// so overlapping stacks still read as cut-outs on card backgrounds.
+  static Color avatarBorderColor(BuildContext context, {Color? background}) {
+    if (background != null) return background;
+
+    final themeState = ThemeState();
+    final scheme = Theme.of(context).colorScheme;
+
+    if (themeState.isLightTheme) {
+      return scheme.onSurface.withValues(alpha: 0.15);
+    }
+    if (themeState.isBlueTheme) {
+      return AppColors.textLight.withValues(alpha: 0.48);
+    }
+    return scheme.surface;
+  }
 
   /// Puts the viewer first so the leftmost avatar is always "you".
   static List<ConversationMemberSummary> orderWithCurrentUserFirst(
