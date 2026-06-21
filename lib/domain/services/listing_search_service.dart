@@ -9,6 +9,18 @@ import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:flutter/foundation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
+void _applyListingTypeQueryParams(
+  Map<String, dynamic> queryParams, {
+  int? listingTypeId,
+  List<int>? listingTypeIds,
+}) {
+  if (listingTypeIds != null && listingTypeIds.isNotEmpty) {
+    queryParams["listingTypeIds"] = listingTypeIds.join(",");
+  } else if (listingTypeId != null) {
+    queryParams["listingTypeId"] = listingTypeId;
+  }
+}
+
 abstract class IListingSearchService {
   Future<PageableResponse<Listing>> getListings({
     int page = 1,
@@ -16,6 +28,7 @@ abstract class IListingSearchService {
     bool isActive = true,
     String? language,
     int? listingTypeId,
+    List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
     List<int>? subwayStationIds,
@@ -48,6 +61,7 @@ abstract class IListingSearchService {
     bool isActive = true,
     String? language,
     int? listingTypeId,
+    List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
     List<int>? subwayStationIds,
@@ -127,6 +141,7 @@ class ListingSearchService implements IListingSearchService {
     bool isActive = true,
     String? language,
     int? listingTypeId,
+    List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
     List<int>? subwayStationIds,
@@ -148,7 +163,11 @@ class ListingSearchService implements IListingSearchService {
       if (createdWithinDays > 0) {
         queryParams["createdWithinDays"] = createdWithinDays;
       }
-      if (listingTypeId != null) queryParams["listingTypeId"] = listingTypeId;
+      _applyListingTypeQueryParams(
+        queryParams,
+        listingTypeId: listingTypeId,
+        listingTypeIds: listingTypeIds,
+      );
       if (locationId != null && locationId > 0) {
         queryParams["locationId"] = locationId;
       }
@@ -268,6 +287,7 @@ class ListingSearchService implements IListingSearchService {
     bool isActive = true,
     String? language,
     int? listingTypeId,
+    List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
     List<int>? subwayStationIds,
@@ -292,7 +312,11 @@ class ListingSearchService implements IListingSearchService {
       if (createdWithinDays > 0) {
         queryParams["createdWithinDays"] = createdWithinDays;
       }
-      if (listingTypeId != null) queryParams["listingTypeId"] = listingTypeId;
+      _applyListingTypeQueryParams(
+        queryParams,
+        listingTypeId: listingTypeId,
+        listingTypeIds: listingTypeIds,
+      );
       if (locationId != null && locationId > 0) {
         queryParams["locationId"] = locationId;
       }

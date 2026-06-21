@@ -1,30 +1,27 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/navigation_extensions.dart";
-import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
-import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/base/utils/auth_flow.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
+import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
+import "package:uy_dosh/domain/utils/group_shortlist_discuss_message.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_screen.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_item_card.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
-import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
-import "package:uy_dosh/presentation/widgets/price_badge.dart";
 
 Future<void> showListingGroupShortlistSheet({
   required BuildContext context,
@@ -255,6 +252,38 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
     }
   }
 
+  Future<void> _discussInGroup(_ShortlistRow row) async {
+    if (!AuthFlow.requireAuth(context)) return;
+    final groupDetail = widget.groupListingDetail;
+    if (groupDetail == null) return;
+    final conversationId = groupDetail.groupContext?.groupConversationId;
+    if (conversationId == null) return;
+
+    final fit = GroupHousingListingFit.evaluate(
+      groupListing: groupDetail,
+      housingListing: row.listing,
+    );
+    final composerText = GroupShortlistDiscussMessage.build(
+      listing: row.listing,
+      fit: fit,
+    );
+
+    Navigator.of(context).pop();
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+        builder: (_) => ChatScreen(
+          conversationId: conversationId,
+          listingId: groupDetail.id,
+          listingTypeId: groupDetail.listingTypeId,
+          listingTitle: groupDetail.title,
+          conversationContextType: "listing_group",
+          initialComposerText: composerText,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
@@ -303,157 +332,33 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                           itemBuilder: (context, index) {
                             final row = _rows[index];
                             final fit = groupDetail == null
-                                ? GroupHousingBudgetFit.unknown
-                                : GroupHousingBudgetFitHelper.evaluateListing(
+                                ? const GroupHousingListingFit(
+                                    budget: GroupHousingBudgetFit.unknown,
+                                    location: GroupHousingLocationFit.unknown,
+                                  )
+                                : GroupHousingListingFit.evaluate(
                                     groupListing: groupDetail,
                                     housingListing: row.listing,
                                   );
                             final isRemoving = _removingId == row.listing.id;
-                            final isLightTheme =
-                                Theme.of(context).brightness == Brightness.light;
-                            final openButtonBorderColor =
-                                isLightTheme ? Colors.black : Colors.white;
+                            final hasGroupChat =
+                                groupDetail?.groupContext?.hasGroupChat == true;
 
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                row.listing.title,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleSmall
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                              ),
-                                              if (row.item.savedByName !=
-                                                  null) ...[
-                                                const SizedBox(height: 4),
-                                                _GroupShortlistSavedByLine(
-                                                  name: row.item.savedByName!,
-                                                  avatarUrl:
-                                                      row.item.savedByAvatarUrl,
-                                                  gender: row.item.savedByGender,
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            GroupBudgetFitChip(fit: fit),
-                                            if (row.listing.price > 0) ...[
-                                              const SizedBox(height: 6),
-                                              ListingStoredPriceBadge(
-                                                storedPrice: row.listing.price,
-                                                listingTypeCode: row.listing
-                                                        .listingType?.code ??
-                                                    ListingTypeCodes
-                                                        .roommateNeeded,
-                                                minPrice: row.listing.minPrice,
-                                                maxPrice: row.listing.maxPrice,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                          child: Wrap(
-                                            spacing: 8,
-                                            runSpacing: 0,
-                                            children: [
-                                              OutlinedButton(
-                                                onPressed: isRemoving
-                                                    ? null
-                                                    : () {
-                                                        HapticFeedbackUtils
-                                                            .impact();
-                                                        _openListing(row);
-                                                      },
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor: isLightTheme
-                                                      ? Colors.black87
-                                                      : AppColors.textLight70,
-                                                  side: BorderSide(
-                                                    color: openButtonBorderColor,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 8,
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  L10n.get(
-                                                    "group_shortlist_open",
-                                                  ),
-                                                ),
-                                              ),
-                                              if (widget.isOwner)
-                                                TextButtonThemed(
-                                                  onPressed: isRemoving
-                                                      ? null
-                                                      : () =>
-                                                          _contactLandlord(row),
-                                                  child: Text(
-                                                    L10n.get(
-                                                      "group_shortlist_contact_landlord",
-                                                    ),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: isRemoving
-                                              ? null
-                                              : () {
-                                                  HapticFeedbackUtils.impact();
-                                                  _confirmRemove(row);
-                                                },
-                                          icon: isRemoving
-                                              ? const SizedBox(
-                                                  width: 18,
-                                                  height: 18,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                  ),
-                                                )
-                                              : const Icon(
-                                                  Icons.close,
-                                                  size: 20,
-                                                ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            return GroupShortlistItemCard(
+                              item: row.item,
+                              listing: row.listing,
+                              fit: fit,
+                              groupListingDetail: groupDetail,
+                              isOwner: widget.isOwner,
+                              isRemoving: isRemoving,
+                              onOpen: () => _openListing(row),
+                              onRemove: () => _confirmRemove(row),
+                              onContactLandlord: widget.isOwner
+                                  ? () => _contactLandlord(row)
+                                  : null,
+                              onDiscussInGroup: hasGroupChat
+                                  ? () => _discussInGroup(row)
+                                  : null,
                             );
                           },
                         ),
@@ -488,71 +393,4 @@ class _ShortlistRow {
 
   final ListingGroupShortlistItem item;
   final Listing listing;
-}
-
-class _GroupShortlistSavedByLine extends StatelessWidget {
-  const _GroupShortlistSavedByLine({
-    required this.name,
-    this.avatarUrl,
-    this.gender,
-  });
-
-  final String name;
-  final String? avatarUrl;
-  final int? gender;
-
-  String get _prefixKey {
-    if (L10n.currentLanguage == "ru") {
-      return gender == 2
-          ? "group_shortlist_saved_by_female"
-          : "group_shortlist_saved_by";
-    }
-    return "group_shortlist_saved_by";
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.bodySmall;
-    final prefix = L10n.get(_prefixKey).trim();
-    final suffix = L10n.get("group_shortlist_saved_by_suffix").trim();
-    final initials = StringUtils.extractInitials(name);
-    final spans = <InlineSpan>[];
-
-    if (prefix.isNotEmpty) {
-      spans.add(TextSpan(text: "$prefix ", style: style));
-    }
-
-    spans.add(
-      WidgetSpan(
-        alignment: PlaceholderAlignment.middle,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 4),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: FittedBox(
-              child: ChatAvatar(
-                isCurrentUser: false,
-                initials: initials.isEmpty ? null : initials,
-                avatarUrl: avatarUrl,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    spans.add(
-      TextSpan(
-        text: name,
-        style: style?.copyWith(fontWeight: FontWeight.w700),
-      ),
-    );
-
-    if (suffix.isNotEmpty) {
-      spans.add(TextSpan(text: " $suffix", style: style));
-    }
-
-    return Text.rich(TextSpan(children: spans));
-  }
 }

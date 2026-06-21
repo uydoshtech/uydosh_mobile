@@ -15,6 +15,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     required this.onPressed,
     super.key,
     this.listingTypeId,
+    this.listingTypeIds,
     this.gender,
     this.locationId,
     this.subwayStationId,
@@ -34,6 +35,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
 
   final VoidCallback onPressed;
   final int? listingTypeId;
+  final List<int>? listingTypeIds;
   final int? gender; // 1 male, 2 female
   final int? locationId;
   final int? subwayStationId;
@@ -178,19 +180,47 @@ class AppliedSearchFiltersBar extends StatelessWidget {
 
     final out = <Widget>[];
 
-    final lt = listingTypeId;
-    if (lt != null && lt > 0) {
-      final code = ListingTypeHelper.getCodeFromId(lt);
-      out.add(
-        roundChip(
+    final typeIds = listingTypeIds != null && listingTypeIds!.length > 1
+        ? listingTypeIds!
+        : (listingTypeId != null && listingTypeId! > 0 ? [listingTypeId!] : null);
+    if (typeIds != null && typeIds.isNotEmpty) {
+      final typeChips = typeIds.map((lt) {
+        final code = ListingTypeHelper.getCodeFromId(lt);
+        return roundChip(
           tooltip: ListingTypeHelper.getText(context, code),
           child: Icon(
             ListingTypeHelper.getIcon(code),
             size: 20,
             color: ListingTypeHelper.getColor(code),
           ),
-        ),
-      );
+        );
+      }).toList();
+
+      if (typeChips.length > 1) {
+        // Landlord demand bundle: room + group read as one "audience" cluster.
+        out.add(
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(chipSize / 2 + 2),
+              border: Border.all(
+                color: onSurface.withValues(alpha: 0.10),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < typeChips.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 4),
+                  typeChips[i],
+                ],
+              ],
+            ),
+          ),
+        );
+      } else {
+        out.add(typeChips.first);
+      }
       out.add(gap);
     }
 

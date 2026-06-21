@@ -34,6 +34,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
   // Store search context for load more operations
   int? _lastListingTypeId;
+  List<int>? _lastListingTypeIds;
   int? _lastLocationId;
   int? _lastSubwayStationId;
   int? _lastSubwayLineId;
@@ -197,6 +198,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       // Check if we have stored search parameters
       if (_lastListingTypeId != null ||
+          (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
           _lastLocationId != null ||
           _lastSubwayStationId != null) {
         // Use search with stored parameters
@@ -204,7 +206,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           page: _currentPage,
           limit: limit,
           isActive: isActive,
-          listingTypeId: _lastListingTypeId,
+          listingTypeId: _lastListingTypeIds != null ? null : _lastListingTypeId,
+          listingTypeIds: _lastListingTypeIds,
           locationId: _lastLocationId,
           subwayStationId: _lastSubwayStationId,
           subwayLineId: _lastSubwayLineId,
@@ -478,6 +481,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   void _storeSearchParams(Map<String, dynamic> searchParams) {
     _stationOnlyMode = false;
     _lastListingTypeId = searchParams["listingTypeId"] as int?;
+    _lastListingTypeIds = searchParams["listingTypeIds"] as List<int>?;
     _lastLocationId = searchParams["locationId"] as int?;
     _lastSubwayStationId = searchParams["subwayStationId"] as int?;
     _lastSubwayLineId = searchParams["subwayLineId"] as int?;
@@ -531,6 +535,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       searchListings:
           (e) => {
             "listingTypeId": e.listingTypeId,
+            "listingTypeIds": e.listingTypeIds,
             "locationId": e.locationId,
             "subwayStationId": e.subwayStationId,
             "subwayLineId": e.subwayLineId,
@@ -562,6 +567,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         searchListings:
             (e) => {
               "listingTypeId": e.listingTypeId,
+              "listingTypeIds": e.listingTypeIds,
               "locationId": e.locationId,
               "subwayStationId": e.subwayStationId,
               "subwayLineId": e.subwayLineId,
@@ -597,6 +603,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final subwayStationId = searchParams?["subwayStationId"] as int?;
       final locationId = searchParams?["locationId"] as int?;
       final listingTypeId = searchParams?["listingTypeId"] as int?;
+      final listingTypeIds = searchParams?["listingTypeIds"] as List<int>?;
       final subwayLineId = searchParams?["subwayLineId"] as int?;
       final gender = searchParams?["gender"] as int?;
       final minPrice = searchParams?["minPrice"] as double?;
@@ -607,6 +614,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
       logger.d("Listing Type ID: $listingTypeId");
+      logger.d("Listing Type IDs: $listingTypeIds");
       logger.d("Location ID: $locationId");
       logger.d("Subway Station ID: $subwayStationId");
       logger.d("Subway Line ID: $subwayLineId");
@@ -622,7 +630,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         page: page,
         limit: limit,
         isActive: true,
-        listingTypeId: listingTypeId,
+        listingTypeId: listingTypeIds != null ? null : listingTypeId,
+        listingTypeIds: listingTypeIds,
         locationId: locationId,
         subwayStationId: subwayStationId,
         subwayLineId: subwayLineId,

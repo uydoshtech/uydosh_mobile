@@ -144,6 +144,7 @@ class _HomeScreenData {
 class _ResolvedSearchFilters {
   const _ResolvedSearchFilters({
     required this.listingTypeId,
+    required this.listingTypeIds,
     required this.locationId,
     required this.subwayStationId,
     required this.subwayLineId,
@@ -155,6 +156,7 @@ class _ResolvedSearchFilters {
   });
 
   final int? listingTypeId;
+  final List<int>? listingTypeIds;
   final int? locationId;
   final int? subwayStationId;
   final int? subwayLineId;
@@ -859,9 +861,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final listingTypeId = fromExplicit
         ? (explicitNullFallsBackToState
             ? (widget.listingTypeId ??
-                _searchFiltersState.selectedListingTypeId)
+                _searchFiltersState.searchListingTypeId)
             : widget.listingTypeId)
-        : _searchFiltersState.selectedListingTypeId;
+        : _searchFiltersState.searchListingTypeId;
+
+    final listingTypeIds = fromExplicit
+        ? null
+        : _searchFiltersState.searchListingTypeIds;
 
     // For location / metro fields we preserve current behavior: if opened with
     // explicit filters, we display/use exactly what was provided (nullable).
@@ -897,6 +903,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     return _ResolvedSearchFilters(
       listingTypeId: listingTypeId,
+      listingTypeIds: listingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
       subwayLineId: subwayLineId,
@@ -1154,7 +1161,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         child: AppliedSearchFiltersBar(
           onPressed: _openSearchModeFiltersSheet,
           listingTypeId: filters.listingTypeId ??
-              _searchFiltersState.selectedListingTypeId,
+              _searchFiltersState.searchListingTypeId,
+          listingTypeIds: filters.listingTypeIds ??
+              _searchFiltersState.searchListingTypeIds,
           gender: filters.gender,
           locationId: (filters.locationId != null && filters.locationId! > 0)
               ? filters.locationId
@@ -1470,7 +1479,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildInlineFiltersChips() {
     return AppliedSearchFiltersBar(
       onPressed: _openInlineSearchFromFab,
-      listingTypeId: _searchFiltersState.selectedListingTypeId,
+      listingTypeId: _searchFiltersState.searchListingTypeId,
+      listingTypeIds: _searchFiltersState.searchListingTypeIds,
       gender: _searchFiltersState.selectedGender,
       locationId: _searchFiltersState.selectedLocationIndex > 0
           ? _searchFiltersState.selectedLocationIndex
@@ -1735,7 +1745,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   AppliedSearchFiltersBar(
                     onPressed: () {},
                     listingTypeId: filters.listingTypeId ??
-                        _searchFiltersState.selectedListingTypeId,
+                        _searchFiltersState.searchListingTypeId,
+                    listingTypeIds: filters.listingTypeIds ??
+                        _searchFiltersState.searchListingTypeIds,
                     gender: filters.gender,
                     locationId:
                         (filters.locationId != null && filters.locationId! > 0)
@@ -2327,7 +2339,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     listingsBloc.add(
       ListingsEvent.searchListings(
-        listingTypeId: filters.listingTypeId,
+        listingTypeId: filters.listingTypeIds != null
+            ? null
+            : filters.listingTypeId,
+        listingTypeIds: filters.listingTypeIds,
         locationId: filters.locationId,
         subwayStationId: filters.subwayStationId,
         subwayLineId: filters.subwayLineId,
@@ -2348,6 +2363,7 @@ bool _searchFiltersSnapshotEquals(
   SearchFiltersSnapshot b,
 ) {
   return a.selectedListingTypeId == b.selectedListingTypeId &&
+      _listEquals(a.searchListingTypeIds, b.searchListingTypeIds) &&
       a.selectedLocationIndex == b.selectedLocationIndex &&
       a.selectedSubwayLine == b.selectedSubwayLine &&
       a.selectedStationIndex == b.selectedStationIndex &&
@@ -2357,4 +2373,12 @@ bool _searchFiltersSnapshotEquals(
       a.maxPrice == b.maxPrice &&
       a.privateRoom == b.privateRoom &&
       a.withPhoto == b.withPhoto;
+}
+
+bool _listEquals(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }

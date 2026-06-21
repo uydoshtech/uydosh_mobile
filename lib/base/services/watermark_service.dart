@@ -29,9 +29,10 @@ class WatermarkPlacement {
   /// inside its square canvas (see brand_logo_transparent.svg viewBox —
   /// U letter ends at y=9590 in 11607-tall canvas, right at x=9974 in
   /// 11711-wide), so the visible "U" glyph already sits inset from the
-  /// box edges. 0.155 read too far from the corner on fullscreen viewers;
-  /// 0.10 keeps the glyph near the edge while leaving enough room on
-  /// cropped tile thumbnails.
+  /// box edges. A 10% box margin (combined with the smaller box) lands
+  /// the visible glyph ~12% of the shorter side from the photo's edge —
+  /// comfortably off the corner on the final photo even when viewed
+  /// edge-to-edge in a fullscreen viewer.
   static const double marginFraction = 0.10;
 }
 

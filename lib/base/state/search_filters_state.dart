@@ -8,6 +8,8 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/search/search_filter_defaults.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
@@ -18,6 +20,7 @@ class SearchFiltersState extends ChangeNotifier {
   static final SearchFiltersState _instance = SearchFiltersState._internal();
 
   int _selectedListingTypeId = 2; // Default to roommate needed
+  List<int> _searchListingTypeIds = const [ListingTypeIds.roommateNeeded];
   int _selectedLocationIndex = 0;
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -172,6 +175,10 @@ class SearchFiltersState extends ChangeNotifier {
     }
 
     _selectedListingTypeId = readInt("listing_type_id", 2, min: 1, max: 99);
+    _searchListingTypeIds = SearchFilterListingTypeIdsCodec.fromServerJson(
+      m,
+      fallbackUiTypeId: _selectedListingTypeId,
+    );
     _selectedLocationIndex = readInt("location_index", 0, min: 0, max: 9999);
     _selectedSubwayLine = readInt("subway_line", 0, min: 0, max: 9999);
     _selectedStationIndex = readInt("station_index", 0, min: 0, max: 9999);
@@ -191,6 +198,11 @@ class SearchFiltersState extends ChangeNotifier {
 
     await _enqueuePrefsWrite((prefs) async {
       await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
+      await prefs.setString(
+        SearchFilterListingTypeIdsCodec.prefsKey,
+        SearchFilterListingTypeIdsCodec.toPrefsString(_searchListingTypeIds),
+      );
+      await prefs.remove("search_landlord_demand_bundle");
       await prefs.setInt("search_location_index", _selectedLocationIndex);
       await prefs.setInt("search_subway_line", _selectedSubwayLine);
       await prefs.setInt("search_station_index", _selectedStationIndex);
@@ -217,6 +229,7 @@ class SearchFiltersState extends ChangeNotifier {
     try {
       final payload = <String, dynamic>{
         "listing_type_id": _selectedListingTypeId,
+        ...?_listingTypeIdsServerPayload(),
         "location_index": _selectedLocationIndex,
         "subway_line": _selectedSubwayLine,
         "station_index": _selectedStationIndex,
@@ -246,6 +259,22 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   int get selectedListingTypeId => _selectedListingTypeId;
+
+  List<int> get searchListingTypeIdsList =>
+      List<int>.unmodifiable(_searchListingTypeIds);
+
+  /// Listing type ids sent to search APIs when searching multiple types.
+  List<int>? get searchListingTypeIds {
+    if (_searchListingTypeIds.length > 1) {
+      return List<int>.from(_searchListingTypeIds);
+    }
+    return null;
+  }
+
+  int? get searchListingTypeId {
+    if (_searchListingTypeIds.length > 1) return null;
+    return _searchListingTypeIds.isNotEmpty ? _searchListingTypeIds.first : null;
+  }
   int get selectedLocationIndex => _selectedLocationIndex;
   int get selectedSubwayLine => _selectedSubwayLine;
   int get selectedStationIndex => _selectedStationIndex;
@@ -316,6 +345,11 @@ class SearchFiltersState extends ChangeNotifier {
 
       _withPhoto = prefs.getBool("search_with_photo") ?? false;
 
+      _searchListingTypeIds = _loadSearchListingTypeIdsFromPrefs(
+        prefs,
+        uiListingTypeId: _selectedListingTypeId,
+      );
+
       // Mark whether we need to apply profile defaults (when no saved values)
       _profileDefaultsApplied =
           savedListingTypeId != null && savedGender != null;
@@ -331,10 +365,12 @@ class SearchFiltersState extends ChangeNotifier {
           prefs.containsKey("search_min_price") ||
           prefs.containsKey("search_max_price") ||
           prefs.containsKey("search_private_room") ||
-          prefs.containsKey("search_with_photo");
+          prefs.containsKey("search_with_photo") ||
+          prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey) ||
+          prefs.containsKey("search_landlord_demand_bundle");
 
       logger.d(
-        "Loaded saved search filters: listingType=$_selectedListingTypeId, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto",
+        "Loaded saved search filters: listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto",
       );
     } catch (e) {
       logger.d("Error loading saved search filters: $e");
@@ -362,12 +398,12 @@ class SearchFiltersState extends ChangeNotifier {
       // Apply listing type from profile role when no saved preference
       if (savedListingTypeId == null) {
         final role = await _getUserRole();
-        final defaultType = _defaultListingTypeFromRole(role);
-        _selectedListingTypeId = defaultType;
-        await prefs.setInt("search_listing_type_id", defaultType);
+        final defaults = SearchFilterDefaultsPolicy.forRole(role);
+        _applySearchFilterDefaults(defaults);
+        await _enqueuePrefsWrite(_persistListingTypePrefs);
         updated = true;
         logger.d(
-          "SearchFiltersState: Applied profile listing type default: $defaultType (role: $role)",
+          "SearchFiltersState: Applied profile listing type default: ${defaults.uiListingTypeId} (role: $role, searchListingTypeIds: ${defaults.searchListingTypeIds})",
         );
       }
 
@@ -406,24 +442,28 @@ class SearchFiltersState extends ChangeNotifier {
   /// Only runs for authenticated users (role/profile are required to build the
   /// defaults and to persist them remotely).
   Future<bool> ensureDefaultFiltersBuiltAndSaved() async {
-    if (_hadSavedFilters) return false;
+    if (_hadSavedFilters) {
+      await _upgradeLegacyLandlordListingTypeIdsIfNeeded();
+      return false;
+    }
     if (!await SessionManager.isAuthenticated()) return false;
 
     try {
       final role = await _getUserRole();
-      _selectedListingTypeId = _defaultListingTypeFromRole(role);
-
       final gender = await _getProfileGender();
-      if (gender != null && (gender == 1 || gender == 2)) {
-        _selectedGender = gender;
-      }
-
-      // Default visible range; users can expand the max in +100 steps.
-      _minPrice = 10.0;
-      _maxPrice = 500.0;
+      final defaults = SearchFilterDefaultsPolicy.forRole(
+        role,
+        profileGender: gender,
+      );
+      _applySearchFilterDefaults(defaults);
 
       await _enqueuePrefsWrite((prefs) async {
         await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
+        await prefs.setString(
+          SearchFilterListingTypeIdsCodec.prefsKey,
+          SearchFilterListingTypeIdsCodec.toPrefsString(_searchListingTypeIds),
+        );
+        await prefs.remove("search_landlord_demand_bundle");
         await prefs.setInt("search_gender", _selectedGender);
         await prefs.setDouble("search_min_price", _minPrice);
         await prefs.setDouble("search_max_price", _maxPrice);
@@ -442,7 +482,7 @@ class SearchFiltersState extends ChangeNotifier {
       }
 
       logger.d(
-        "SearchFiltersState: built default filters (listingType=$_selectedListingTypeId, gender=$_selectedGender, price=$_minPrice-$_maxPrice)",
+        "SearchFiltersState: built default filters (listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, gender=$_selectedGender, price=$_minPrice-$_maxPrice)",
       );
       return true;
     } catch (e) {
@@ -451,11 +491,83 @@ class SearchFiltersState extends ChangeNotifier {
     }
   }
 
-  /// Maps a user role to the default listing type: tenant/requester see
-  /// "Need roommate" (2); landlord/provider see "Needs Room" (1).
-  int _defaultListingTypeFromRole(String? role) {
-    final tenantLike = role == "tenant" || role == "service_requester";
-    return tenantLike ? 2 : 1;
+  void _applySearchFilterDefaults(SearchFilterDefaults defaults) {
+    _selectedListingTypeId = defaults.uiListingTypeId;
+    _searchListingTypeIds = List<int>.from(defaults.searchListingTypeIds);
+    _minPrice = defaults.minPrice;
+    _maxPrice = defaults.maxPrice;
+    if (defaults.gender != null && (defaults.gender == 1 || defaults.gender == 2)) {
+      _selectedGender = defaults.gender!;
+    }
+  }
+
+  List<int> _loadSearchListingTypeIdsFromPrefs(
+    SharedPreferences prefs, {
+    required int uiListingTypeId,
+  }) {
+    if (prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey)) {
+      return SearchFilterListingTypeIdsCodec.fromPrefsString(
+        prefs.getString(SearchFilterListingTypeIdsCodec.prefsKey),
+        fallbackUiTypeId: uiListingTypeId,
+      );
+    }
+    if (prefs.getBool("search_landlord_demand_bundle") == true) {
+      return SearchFilterDefaultsPolicy.landlordDemandListingTypeIds();
+    }
+    return [uiListingTypeId];
+  }
+
+  Future<void> _persistListingTypePrefs(SharedPreferences prefs) async {
+    await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
+    await prefs.setString(
+      SearchFilterListingTypeIdsCodec.prefsKey,
+      SearchFilterListingTypeIdsCodec.toPrefsString(_searchListingTypeIds),
+    );
+    await prefs.remove("search_landlord_demand_bundle");
+  }
+
+  Map<String, dynamic>? _listingTypeIdsServerPayload() {
+    final ids = SearchFilterListingTypeIdsCodec.toServerJson(
+      _searchListingTypeIds,
+      uiListingTypeId: _selectedListingTypeId,
+    );
+    if (ids == null) return null;
+    return {SearchFilterListingTypeIdsCodec.serverKey: ids};
+  }
+
+  /// Existing landlords who saved room_needed-only filters before multi-type
+  /// ids shipped still get groups in their feed.
+  Future<void> _upgradeLegacyLandlordListingTypeIdsIfNeeded() async {
+    if (_searchListingTypeIds.length > 1) return;
+    if (!await SessionManager.isAuthenticated()) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hadExplicitListingTypeIds =
+          prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey) ||
+          prefs.containsKey("search_landlord_demand_bundle");
+
+      final role = await _getUserRole();
+      if (!SearchFilterDefaultsPolicy.shouldUpgradeLegacyLandlordSearch(
+        role: role,
+        uiListingTypeId: _selectedListingTypeId,
+        searchListingTypeIds: _searchListingTypeIds,
+        hadExplicitListingTypeIds: hadExplicitListingTypeIds,
+      )) {
+        return;
+      }
+
+      _searchListingTypeIds =
+          SearchFilterDefaultsPolicy.landlordDemandListingTypeIds();
+      await _enqueuePrefsWrite(_persistListingTypePrefs);
+      notifyListeners();
+      if (!_remotePersistGated) _scheduleRemotePersist();
+      logger.d(
+        "SearchFiltersState: upgraded landlord saved filters to multi-type ids",
+      );
+    } catch (e) {
+      logger.d("SearchFiltersState: landlord listing-type upgrade failed: $e");
+    }
   }
 
   /// Fills in listing type and gender from profile only when the user has no
@@ -473,7 +585,11 @@ class SearchFiltersState extends ChangeNotifier {
 
       if (savedListingTypeId == null) {
         final role = await _getUserRole();
-        await setListingTypeId(_defaultListingTypeFromRole(role));
+        final defaults = SearchFilterDefaultsPolicy.forRole(role);
+        await setListingTypeId(
+          defaults.uiListingTypeId,
+          searchListingTypeIds: defaults.searchListingTypeIds,
+        );
       }
 
       if (savedGender == null) {
@@ -523,13 +639,15 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   // Update listing type ID
-  Future<void> setListingTypeId(int listingTypeId) async {
+  Future<void> setListingTypeId(
+    int listingTypeId, {
+    List<int>? searchListingTypeIds,
+  }) async {
     _selectedListingTypeId = listingTypeId;
+    _searchListingTypeIds = searchListingTypeIds ?? [listingTypeId];
 
     try {
-      await _enqueuePrefsWrite((prefs) async {
-        await prefs.setInt("search_listing_type_id", listingTypeId);
-      });
+      await _enqueuePrefsWrite(_persistListingTypePrefs);
     } catch (e) {
       logger.d("Error saving listing type ID: $e");
     }
@@ -691,6 +809,7 @@ class SearchFiltersState extends ChangeNotifier {
     bool flushRemoteImmediately = false,
   }) async {
     _selectedListingTypeId = 2;
+    _searchListingTypeIds = const [ListingTypeIds.roommateNeeded];
     _selectedLocationIndex = 0;
     _selectedSubwayLine = 0;
     _selectedStationIndex = 0;
@@ -706,6 +825,8 @@ class SearchFiltersState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove("search_listing_type_id");
+      await prefs.remove(SearchFilterListingTypeIdsCodec.prefsKey);
+      await prefs.remove("search_landlord_demand_bundle");
       await prefs.remove("search_location_index");
       await prefs.remove("search_subway_line");
       await prefs.remove("search_station_index");
@@ -735,6 +856,7 @@ class SearchFiltersState extends ChangeNotifier {
   /// (e.g. editing a search alert).
   Future<void> restoreToSnapshot(SearchFiltersSnapshot snapshot) async {
     _selectedListingTypeId = snapshot.selectedListingTypeId;
+    _searchListingTypeIds = List<int>.from(snapshot.searchListingTypeIds);
     _selectedLocationIndex = snapshot.selectedLocationIndex;
     _selectedSubwayLine = snapshot.selectedSubwayLine;
     _selectedStationIndex = snapshot.selectedStationIndex;
@@ -753,6 +875,13 @@ class SearchFiltersState extends ChangeNotifier {
           "search_listing_type_id",
           snapshot.selectedListingTypeId,
         );
+        await prefs.setString(
+          SearchFilterListingTypeIdsCodec.prefsKey,
+          SearchFilterListingTypeIdsCodec.toPrefsString(
+            snapshot.searchListingTypeIds,
+          ),
+        );
+        await prefs.remove("search_landlord_demand_bundle");
         await prefs.setInt(
             "search_location_index", snapshot.selectedLocationIndex);
         await prefs.setInt("search_subway_line", snapshot.selectedSubwayLine);
@@ -777,6 +906,7 @@ class SearchFiltersState extends ChangeNotifier {
 class SearchFiltersSnapshot {
   const SearchFiltersSnapshot({
     required this.selectedListingTypeId,
+    required this.searchListingTypeIds,
     required this.selectedLocationIndex,
     required this.selectedSubwayLine,
     required this.selectedStationIndex,
@@ -791,6 +921,7 @@ class SearchFiltersSnapshot {
   factory SearchFiltersSnapshot.capture(SearchFiltersState s) {
     return SearchFiltersSnapshot(
       selectedListingTypeId: s.selectedListingTypeId,
+      searchListingTypeIds: List<int>.from(s.searchListingTypeIdsList),
       selectedLocationIndex: s.selectedLocationIndex,
       selectedSubwayLine: s.selectedSubwayLine,
       selectedStationIndex: s.selectedStationIndex,
@@ -804,6 +935,7 @@ class SearchFiltersSnapshot {
   }
 
   final int selectedListingTypeId;
+  final List<int> searchListingTypeIds;
   final int selectedLocationIndex;
   final int selectedSubwayLine;
   final int selectedStationIndex;

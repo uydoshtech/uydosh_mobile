@@ -31,6 +31,7 @@ mixin _$ListingsEvent {
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -63,6 +64,7 @@ mixin _$ListingsEvent {
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -94,6 +96,7 @@ mixin _$ListingsEvent {
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -311,6 +314,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -346,6 +350,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -380,6 +385,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -568,6 +574,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -603,6 +610,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -637,6 +645,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -882,6 +891,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -918,6 +928,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -953,6 +964,7 @@ class _$$FetchListingsBySubwayStationImplImpl
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1193,6 +1205,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1229,6 +1242,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1264,6 +1278,7 @@ class _$$FetchListingsByLocationImplImpl
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1373,6 +1388,7 @@ abstract class _$$$SearchListingsImplImplCopyWith<$Res>
   @useResult
   $Res call(
       {int? listingTypeId,
+      List<int>? listingTypeIds,
       int? locationId,
       int? subwayStationId,
       int? subwayLineId,
@@ -1403,6 +1419,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? listingTypeId = freezed,
+    Object? listingTypeIds = freezed,
     Object? locationId = freezed,
     Object? subwayStationId = freezed,
     Object? subwayLineId = freezed,
@@ -1423,6 +1440,10 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
           ? _value.listingTypeId
           : listingTypeId // ignore: cast_nullable_to_non_nullable
               as int?,
+      listingTypeIds: freezed == listingTypeIds
+          ? _value._listingTypeIds
+          : listingTypeIds // ignore: cast_nullable_to_non_nullable
+              as List<int>?,
       locationId: freezed == locationId
           ? _value.locationId
           : locationId // ignore: cast_nullable_to_non_nullable
@@ -1488,6 +1509,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
 class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   const _$$SearchListingsImplImpl(
       {this.listingTypeId,
+      final List<int>? listingTypeIds,
       this.locationId,
       this.subwayStationId,
       this.subwayLineId,
@@ -1502,10 +1524,21 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       this.isActive = true,
       this.isRefresh = true,
       this.keepStaleWhileRefreshing = false})
-      : _excludeUserIds = excludeUserIds;
+      : _listingTypeIds = listingTypeIds,
+        _excludeUserIds = excludeUserIds;
 
   @override
   final int? listingTypeId;
+  final List<int>? _listingTypeIds;
+  @override
+  List<int>? get listingTypeIds {
+    final value = _listingTypeIds;
+    if (value == null) return null;
+    if (_listingTypeIds is EqualUnmodifiableListView) return _listingTypeIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   final int? locationId;
   @override
@@ -1553,7 +1586,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 
   @override
   String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
+    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
   }
 
   @override
@@ -1563,6 +1596,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             other is _$$SearchListingsImplImpl &&
             (identical(other.listingTypeId, listingTypeId) ||
                 other.listingTypeId == listingTypeId) &&
+            const DeepCollectionEquality()
+                .equals(other._listingTypeIds, _listingTypeIds) &&
             (identical(other.locationId, locationId) ||
                 other.locationId == locationId) &&
             (identical(other.subwayStationId, subwayStationId) ||
@@ -1595,6 +1630,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   int get hashCode => Object.hash(
       runtimeType,
       listingTypeId,
+      const DeepCollectionEquality().hash(_listingTypeIds),
       locationId,
       subwayStationId,
       subwayLineId,
@@ -1634,6 +1670,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1654,6 +1691,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   }) {
     return searchListings(
         listingTypeId,
+        listingTypeIds,
         locationId,
         subwayStationId,
         subwayLineId,
@@ -1684,6 +1722,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1703,6 +1742,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   }) {
     return searchListings?.call(
         listingTypeId,
+        listingTypeIds,
         locationId,
         subwayStationId,
         subwayLineId,
@@ -1733,6 +1773,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -1754,6 +1795,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     if (searchListings != null) {
       return searchListings(
           listingTypeId,
+          listingTypeIds,
           locationId,
           subwayStationId,
           subwayLineId,
@@ -1825,6 +1867,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 abstract class _$SearchListingsImpl implements ListingsEvent {
   const factory _$SearchListingsImpl(
       {final int? listingTypeId,
+      final List<int>? listingTypeIds,
       final int? locationId,
       final int? subwayStationId,
       final int? subwayLineId,
@@ -1841,6 +1884,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
       final bool keepStaleWhileRefreshing}) = _$$SearchListingsImplImpl;
 
   int? get listingTypeId;
+  List<int>? get listingTypeIds;
   int? get locationId;
   int? get subwayStationId;
   int? get subwayLineId;
@@ -1974,6 +2018,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListingsByLocation,
     required TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -2009,6 +2054,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListingsByLocation,
     TResult? Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,
@@ -2043,6 +2089,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
         fetchListingsByLocation,
     TResult Function(
             int? listingTypeId,
+            List<int>? listingTypeIds,
             int? locationId,
             int? subwayStationId,
             int? subwayLineId,

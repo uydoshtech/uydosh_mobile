@@ -38,7 +38,7 @@ import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_pill_button.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -89,7 +89,6 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -126,6 +125,10 @@ class ChatScreen extends StatefulWidget {
     this.otherUserName,
     this.otherUserId,
     this.otherUserAvatar,
+
+    /// When set, pre-fills the composer on open (e.g. sharing a saved listing
+    /// into a group chat). Takes precedence over a persisted draft.
+    this.initialComposerText,
   }) : assert(conversationId > 0, "Conversation ID must be positive");
   final int conversationId;
   final int? listingId;
@@ -168,6 +171,7 @@ class ChatScreen extends StatefulWidget {
   final String? otherUserName;
   final int? otherUserId;
   final String? otherUserAvatar;
+  final String? initialComposerText;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -344,58 +348,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final listingId = widget.listingId;
     if (listingId == null) return const SizedBox.shrink();
 
-    return ListenableBuilder(
-      listenable: GroupShortlistState(),
-      builder: (context, _) {
-        final count = GroupShortlistState().shortlistCountForGroup(listingId);
-        final tooltip = count > 0
-            ? L10n.getWithParams(
-                "group_shortlist_title_count",
-                params: {"count": count.toString()},
-              )
-            : L10n.get("group_shortlist_title");
-
-        return Semantics(
-          button: true,
-          label: tooltip,
-          child: Tooltip(
-            message: tooltip,
-            child: ThreeDPillButton(
-              neumorphicSoftUi: true,
-              onPressed: () async {
-                await GroupHousingFlow.openShortlistSheet(
-                  context: context,
-                  groupListingId: listingId,
-                  isOwner: _groupChatIsOwner,
-                  groupListingDetail: _groupListingDetail,
-                );
-              },
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ThemeIcon(
-                    count > 0 ? Icons.bookmark : Icons.bookmark_outline,
-                    size: 20,
-                  ),
-                  if (count > 0) ...[
-                    const SizedBox(width: 6),
-                    Text(
-                      count > 99 ? "99+" : count.toString(),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+    return GroupShortlistPillButton(
+      groupListingId: listingId,
+      isOwner: _groupChatIsOwner,
+      groupListingDetail: _groupListingDetail,
     );
   }
 
@@ -563,6 +519,17 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _restoreComposerDraft() async {
     await ChatComposerDraftState().ensureLoaded();
     if (!mounted || _editingMessageId != null) return;
+
+    final initial = widget.initialComposerText?.trim();
+    if (initial != null && initial.isNotEmpty) {
+      _messageController.value = TextEditingValue(
+        text: initial,
+        selection: TextSelection.collapsed(offset: initial.length),
+      );
+      ChatComposerDraftState().setDraft(widget.conversationId, initial);
+      return;
+    }
+
     final draft = ChatComposerDraftState().draftFor(widget.conversationId);
     if (draft == null) return;
     if (_messageController.text.isNotEmpty) return;

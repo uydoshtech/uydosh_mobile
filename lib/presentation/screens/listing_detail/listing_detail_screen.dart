@@ -82,6 +82,7 @@ import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_pill_button.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_save_button.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
@@ -272,6 +273,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   bool _isGroupFormingListing(ListingDetail listingDetail) =>
       ListingGroupProgress.isGroupFormingDetail(listingDetail);
 
+  bool _canShowGroupShortlistPill(ListingDetail listingDetail) {
+    final ctx = listingDetail.groupContext;
+    if (ctx?.canUseHousingShortlist != true) return false;
+    return ctx?.isOwner == true || ctx?.isMember == true;
+  }
+
+  void _seedGroupShortlistCount(ListingDetail listingDetail) {
+    if (!_canShowGroupShortlistPill(listingDetail)) return;
+    final count = listingDetail.groupContext?.groupShortlistCount;
+    if (count != null) {
+      GroupShortlistState().setShortlistCountForGroup(listingDetail.id, count);
+    }
+    unawaited(GroupShortlistState().refreshCount(listingDetail.id));
+  }
+
   void _reloadListingDetail() {
     context.read<ListingDetailBloc>().add(
           ListingDetailEvent.fetchListingDetail(id: widget.listingId),
@@ -332,8 +348,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   }) {
     final ctx = listingDetail.groupContext;
     if (ctx?.canUseHousingShortlist == true && (ctx?.isOwner == true || ctx?.isMember == true)) {
-      final shortlistCount = ctx?.groupShortlistCount ??
-          GroupShortlistState().shortlistCountForGroup(listingDetail.id);
       return ListingGroupFormingActionBar(
         listingDetail: listingDetail,
         primaryLabel: L10n.get("group_find_housing"),
@@ -341,18 +355,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           context: context,
           groupListingDetail: listingDetail,
         ),
-        secondaryLabel: ctx?.hasGroupChat == true
-            ? L10n.get("group_open_chat")
-            : GroupHousingFlow.savedListingsLabel(shortlistCount),
-        onSecondary: ctx?.hasGroupChat == true
-            ? () => _openGroupChat(listingDetail)
-            : () => GroupHousingFlow.openShortlistSheet(
-                  context: context,
-                  groupListingId: listingDetail.id,
-                  isOwner: isOwner,
-                  groupListingDetail: listingDetail,
-                  onChanged: _reloadListingDetail,
-                ),
+        secondaryLabel:
+            ctx?.hasGroupChat == true ? L10n.get("group_open_chat") : null,
+        onSecondary:
+            ctx?.hasGroupChat == true ? () => _openGroupChat(listingDetail) : null,
         onViewMemberProfiles: onViewMemberProfiles,
       );
     }
@@ -738,6 +744,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
     _loadSimilarListingsCount(listingDetail);
     _loadNearbyMatchesCount(listingDetail);
+    _seedGroupShortlistCount(listingDetail);
     unawaited(_hydrateRoomScanMetricsIfNeeded(listingDetail));
     _maybeHandleInitialPendingAction(listingDetail);
   }
@@ -2174,13 +2181,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 style: appBarTheme.titleTextStyle,
                 textAlign: TextAlign.center,
               ),
+              actionsPadding: const EdgeInsets.only(right: 8),
               actions: [
-                SizedBox(
-                  width: kToolbarHeight,
-                  child: Center(
-                    child: BlocSelector<ListingDetailBloc, ListingDetailState,
-                        _ListingDetailIconsData>(
-                      selector: (state) => state.map(
+                BlocSelector<ListingDetailBloc, ListingDetailState,
+                    _ListingDetailIconsData>(
+                  selector: (state) => state.map(
                         initial: (_) => const _ListingDetailIconsData(
                           isLoading: true,
                           hasError: false,
@@ -2212,6 +2217,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                         }
 
                         final listingDetail = data.listingDetail!;
+                        final showGroupShortlistPill =
+                            _canShowGroupShortlistPill(listingDetail);
                         return ListenableBuilder(
                           listenable: Listenable.merge([
                             AuthenticationState(),
@@ -2220,39 +2227,59 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                           builder: (context, _) {
                             final isAuthenticated =
                                 AuthenticationState().isAuthenticated;
-                            if (!isAuthenticated) {
-                              return ActionDropdownMenu(
-                                items: _buildActionMenuItems(
-                                  listingDetail,
-                                  isListingStaff: false,
-                                  isStrictAdmin: false,
-                                ),
-                              );
-                            }
-                            return FutureBuilder<String?>(
-                              future: _userRoleFuture,
-                              builder: (context, snapshot) {
-                                final role = snapshot.data;
-                                final isListingStaff =
-                                    ModerationStaffUtils.isModerationStaff(
-                                  role,
-                                );
-                                final isStrictAdmin = role == "admin";
-                                return ActionDropdownMenu(
-                                  items: _buildActionMenuItems(
-                                    listingDetail,
-                                    isListingStaff: isListingStaff,
-                                    isStrictAdmin: isStrictAdmin,
+                            final actionMenu = !isAuthenticated
+                                ? ActionDropdownMenu(
+                                    items: _buildActionMenuItems(
+                                      listingDetail,
+                                      isListingStaff: false,
+                                      isStrictAdmin: false,
+                                    ),
+                                  )
+                                : FutureBuilder<String?>(
+                                    future: _userRoleFuture,
+                                    builder: (context, snapshot) {
+                                      final role = snapshot.data;
+                                      final isListingStaff =
+                                          ModerationStaffUtils
+                                              .isModerationStaff(
+                                        role,
+                                      );
+                                      final isStrictAdmin = role == "admin";
+                                      return ActionDropdownMenu(
+                                        items: _buildActionMenuItems(
+                                          listingDetail,
+                                          isListingStaff: isListingStaff,
+                                          isStrictAdmin: isStrictAdmin,
+                                        ),
+                                      );
+                                    },
+                                  );
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showGroupShortlistPill) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: GroupShortlistPillButton(
+                                      groupListingId: listingDetail.id,
+                                      isOwner: listingDetail
+                                              .groupContext?.isOwner ==
+                                          true,
+                                      groupListingDetail: listingDetail,
+                                      onChanged: _reloadListingDetail,
+                                    ),
                                   ),
-                                );
-                              },
+                                ],
+                                SizedBox(
+                                  width: kToolbarHeight,
+                                  child: Center(child: actionMenu),
+                                ),
+                              ],
                             );
                           },
                         );
                       },
                     ),
-                  ),
-                ),
               ],
               automaticallyImplyLeading: false,
             ),

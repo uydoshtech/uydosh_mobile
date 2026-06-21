@@ -38,6 +38,7 @@ class ListingsEvent with _$ListingsEvent {
 
   const factory ListingsEvent.searchListings({
     int? listingTypeId,
+    List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
     int? subwayLineId,
