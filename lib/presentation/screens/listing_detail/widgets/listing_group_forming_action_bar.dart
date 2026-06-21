@@ -89,12 +89,15 @@ class ListingGroupFormingActionBar extends StatelessWidget {
           isOpenGroupChatSecondary ? Icons.chat_bubble_outline : null,
       showPrimaryNotificationDot: showPrimaryDot,
       primaryNotificationDotTrigger: primaryDotTrigger,
+      showPrimaryRequestPill: showManageRequestsDot && !hasSecondaryAction,
       showSecondaryNotificationDot: showSecondaryDot,
       secondaryNotificationDotTrigger: secondaryDotTrigger,
+      showSecondaryRequestPill: showManageRequestsDot && hasSecondaryAction,
       onMemberProfiles: onViewMemberProfiles,
       memberProfilesCount: groupProgress?.current,
       showMemberProfilesNotificationDot: showMemberProfilesDot,
       memberProfilesNotificationDotTrigger: memberProfilesDotTrigger,
+      showMemberProfilesRequestPill: showMemberProfilesDot,
     );
   }
 

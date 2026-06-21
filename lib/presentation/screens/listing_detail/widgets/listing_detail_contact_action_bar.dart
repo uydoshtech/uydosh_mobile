@@ -55,11 +55,14 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.primaryNotificationDotTrigger,
     this.showSecondaryNotificationDot,
     this.secondaryNotificationDotTrigger,
+    this.showPrimaryRequestPill = false,
+    this.showSecondaryRequestPill = false,
     this.embedded = false,
     this.onMemberProfiles,
     this.memberProfilesCount,
     this.showMemberProfilesNotificationDot = false,
     this.memberProfilesNotificationDotTrigger = 0,
+    this.showMemberProfilesRequestPill = false,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -79,6 +82,8 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final int? primaryNotificationDotTrigger;
   final bool? showSecondaryNotificationDot;
   final int? secondaryNotificationDotTrigger;
+  final bool showPrimaryRequestPill;
+  final bool showSecondaryRequestPill;
 
   /// When true, renders only the CTA column (no sticky frosted footer).
   final bool embedded;
@@ -88,6 +93,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final int? memberProfilesCount;
   final bool showMemberProfilesNotificationDot;
   final int memberProfilesNotificationDotTrigger;
+  final bool showMemberProfilesRequestPill;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -166,6 +172,22 @@ class ListingDetailContactActionBar extends StatelessWidget {
     );
   }
 
+  Widget _wrapWithRequestPill(Widget child) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        child,
+        Positioned(
+          right: 10,
+          top: -9,
+          child: _SlowBlinkingRequestPill(
+            label: L10n.get("group_new_request_pill"),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _secondaryButton(BuildContext context, {double? width}) {
     final accentColor = ListingDetailThemeHelper.iconColor;
     final secondaryTextColor = _getSecondaryTextColor();
@@ -181,6 +203,9 @@ class ListingDetailContactActionBar extends StatelessWidget {
       borderColor: accentColor,
       width: width,
     );
+    if (showSecondaryRequestPill) {
+      return _wrapWithRequestPill(button);
+    }
     if (!_showSecondaryDot) {
       return button;
     }
@@ -200,6 +225,9 @@ class ListingDetailContactActionBar extends StatelessWidget {
       width: width,
       icon: primaryIcon ?? CupertinoIcons.shield_fill,
     );
+    if (showPrimaryRequestPill) {
+      return _wrapWithRequestPill(button);
+    }
     if (!_showPrimaryDot) {
       return button;
     }
@@ -238,7 +266,9 @@ class ListingDetailContactActionBar extends StatelessWidget {
     );
 
     return [
-      if (showMemberProfilesNotificationDot)
+      if (showMemberProfilesRequestPill)
+        _wrapWithRequestPill(memberProfilesButton)
+      else if (showMemberProfilesNotificationDot)
         _wrapWithNotificationDot(
           context,
           memberProfilesButton,
@@ -334,11 +364,14 @@ class ListingDetailContactActionBar extends StatelessWidget {
   }
 
   EdgeInsets _barPadding() {
-    if (!_showSecondaryDot && !showMemberProfilesNotificationDot) {
+    if (!_showSecondaryDot &&
+        !showSecondaryRequestPill &&
+        !showMemberProfilesNotificationDot &&
+        !showMemberProfilesRequestPill) {
       return const EdgeInsets.fromLTRB(16, 10, 16, 10);
     }
     // Leave room for the badge that sits slightly above the top CTA.
-    return const EdgeInsets.fromLTRB(16, 14, 16, 10);
+    return const EdgeInsets.fromLTRB(16, 20, 16, 10);
   }
 
   /// Opaque fallback for themes that don't use liquid glass chrome.
@@ -460,6 +493,76 @@ class ListingDetailContactActionBar extends StatelessWidget {
             ? _buildGlassBar(context)
             : _buildOpaqueBar(context);
       },
+    );
+  }
+}
+
+class _SlowBlinkingRequestPill extends StatefulWidget {
+  const _SlowBlinkingRequestPill({required this.label});
+
+  final String label;
+
+  @override
+  State<_SlowBlinkingRequestPill> createState() =>
+      _SlowBlinkingRequestPillState();
+}
+
+class _SlowBlinkingRequestPillState extends State<_SlowBlinkingRequestPill>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+  late final Animation<double> _opacity = Tween<double>(begin: 0.55, end: 1.0)
+      .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+  @override
+  void initState() {
+    super.initState();
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (!disableAnimations) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.success,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.success.withValues(alpha: 0.28),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Text(
+        widget.label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          height: 1,
+        ),
+      ),
+    );
+
+    if (!_controller.isAnimating) return pill;
+
+    return FadeTransition(
+      opacity: _opacity,
+      child: pill,
     );
   }
 }

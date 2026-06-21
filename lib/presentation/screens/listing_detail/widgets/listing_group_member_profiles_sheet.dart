@@ -480,21 +480,6 @@ class _ListingGroupMemberProfilesSheetState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          FilledButton.icon(
-                            onPressed: widget.groupListingDetail == null
-                                ? null
-                                : () {
-                                    Navigator.of(context).pop();
-                                    GroupHousingFlow.openSearch(
-                                      context: context,
-                                      groupListingDetail:
-                                          widget.groupListingDetail!,
-                                    );
-                                  },
-                            icon: const Icon(Icons.search),
-                            label: Text(L10n.get("group_find_housing")),
-                          ),
-                          const SizedBox(height: 8),
                           OutlinedButton.icon(
                             onPressed: () async {
                               await GroupHousingFlow.openShortlistSheet(
@@ -653,9 +638,6 @@ class _MemberProfilesHeader extends StatelessWidget {
     final scheme = theme.colorScheme;
     final isLightTheme = ThemeState().isLightTheme;
     final subtitleColor = isLightTheme ? Colors.black : scheme.onSurfaceVariant;
-    final progressColor = isLightTheme
-        ? Colors.black
-        : scheme.onSurfaceVariant.withValues(alpha: 0.85);
     final progressLabel = groupProgress != null
         ? L10n.getWithParams(
             "group_members_progress",
@@ -746,15 +728,45 @@ class _MemberProfilesHeader extends StatelessWidget {
             ),
           ),
           if (progressLabel != null) ...[
-            const SizedBox(height: 2),
-            Text(
-              progressLabel,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: progressColor,
-              ),
-            ),
+            const SizedBox(height: 8),
+            _GroupMembersProgressPill(label: progressLabel),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _GroupMembersProgressPill extends StatelessWidget {
+  const _GroupMembersProgressPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.72) : Colors.black;
+    final textColor = isDark
+        ? theme.colorScheme.onSurface.withValues(alpha: 0.90)
+        : Colors.black;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        child: Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            height: 1,
+          ),
+        ),
       ),
     );
   }
@@ -820,7 +832,9 @@ class _MemberProfileCard extends StatelessWidget {
             ? AppColors.successDark
             : AppColors.success;
       case ProfileMatchFieldStatus.difference:
-        return AppColors.warning;
+        return ThemeState().isLightTheme
+            ? AppColors.warningDark
+            : AppColors.warning;
       case ProfileMatchFieldStatus.dealbreaker:
         return AppColors.error;
       case ProfileMatchFieldStatus.incomplete:
@@ -1056,7 +1070,9 @@ class _PendingJoinRequestCard extends StatelessWidget {
             ? AppColors.successDark
             : AppColors.success;
       case ProfileMatchFieldStatus.difference:
-        return AppColors.warning;
+        return ThemeState().isLightTheme
+            ? AppColors.warningDark
+            : AppColors.warning;
       case ProfileMatchFieldStatus.dealbreaker:
         return AppColors.error;
       case ProfileMatchFieldStatus.incomplete:
@@ -1200,7 +1216,9 @@ class _PendingJoinRequestCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     _RoleBadge(
                       label: L10n.get("group_member_role_pending_request"),
-                      color: AppColors.warning,
+                      color: ThemeState().isLightTheme
+                          ? AppColors.warningDark
+                          : AppColors.warning,
                     ),
                     _buildFieldHighlights(context),
                     if (message != null && message.isNotEmpty) ...[
