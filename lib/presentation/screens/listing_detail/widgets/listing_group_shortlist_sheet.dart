@@ -316,29 +316,39 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                     ),
                                     const SizedBox(height: 10),
                                     Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        TextButtonThemed(
-                                          onPressed: isRemoving
-                                              ? null
-                                              : () => _openListing(row),
-                                          child: Text(
-                                            L10n.get("group_shortlist_open"),
+                                        Expanded(
+                                          child: Wrap(
+                                            spacing: 8,
+                                            runSpacing: 0,
+                                            children: [
+                                              TextButtonThemed(
+                                                onPressed: isRemoving
+                                                    ? null
+                                                    : () => _openListing(row),
+                                                child: Text(
+                                                  L10n.get(
+                                                    "group_shortlist_open",
+                                                  ),
+                                                ),
+                                              ),
+                                              if (widget.isOwner)
+                                                TextButtonThemed(
+                                                  onPressed: isRemoving
+                                                      ? null
+                                                      : () =>
+                                                          _contactLandlord(row),
+                                                  child: Text(
+                                                    L10n.get(
+                                                      "group_shortlist_contact_landlord",
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
-                                        if (widget.isOwner) ...[
-                                          const SizedBox(width: 8),
-                                          TextButtonThemed(
-                                            onPressed: isRemoving
-                                                ? null
-                                                : () => _contactLandlord(row),
-                                            child: Text(
-                                              L10n.get(
-                                                "group_shortlist_contact_landlord",
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                        const Spacer(),
                                         IconButton(
                                           onPressed: isRemoving
                                               ? null

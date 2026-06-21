@@ -212,22 +212,25 @@ class ListingDetailContactActionBar extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: Center(
-        child: IntrinsicWidth(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _secondaryButton(context),
-              const SizedBox(height: 8),
-              ..._stackedPrimaryTail(
-                context,
-                primaryButton: _chatButton(context),
-              ),
-            ],
-          ),
+    // Align with heightFactor keeps the sticky footer shrink-wrapped. A plain
+    // Center would expand to the scaffold bottom slot height and the glass
+    // backdrop blur would cover the whole listing body.
+    return Align(
+      alignment: Alignment.topCenter,
+      heightFactor: 1,
+      widthFactor: 1,
+      child: IntrinsicWidth(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _secondaryButton(context),
+            const SizedBox(height: 8),
+            ..._stackedPrimaryTail(
+              context,
+              primaryButton: _chatButton(context),
+            ),
+          ],
         ),
       ),
     );
@@ -258,12 +261,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
           ),
         );
       }
-      return SizedBox(
-        width: double.infinity,
-        child: Center(
-          child: Builder(builder: (context) => _chatButton(context)),
-        ),
-      );
+      return _chatButton(context, width: double.infinity);
     }
     return Row(
       children: [
