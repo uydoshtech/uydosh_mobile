@@ -213,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   bool _inlineSearchClosing = false;
   bool _inlineSearchSpacerExpanded = false;
   int _inlineSearchExitRefreshToken = 0;
-  int _inlineSearchEnterSearchToken = 0;
+  SearchFiltersSnapshot? _lastDispatchedSearchFilters;
   // Window during which a SearchFiltersState change after a fresh login is
   // treated as the post-hydrate update and may auto-activate the inline
   // ribbon. Outside this window we ignore filter changes so we don't
@@ -378,7 +378,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // defaults (gender / role-derived listing type / full price range) or the
     // user's existing saved filters. This surfaces the inline filter ribbon and
     // dispatches a filtered listings search.
-    if (!await SessionManager.isAuthenticated()) return;
+    if (!await SessionManager.isAuthenticated()) {
+      _ensureUnfilteredBrowseFeed();
+      return;
+    }
     _activateInlineSearch(persistActiveFlag: true);
   }
 
@@ -578,8 +581,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // (`_inlineSearchClosing`). AnimatedSwitcher keeps the outgoing ribbon
     // widget alive; rebuilding during that window would re-read the singleton
     // filters and can cause visible "chip flips" mid-animation (e.g. gender).
-    if (_inlineSearchActive) {
-      setState(() {});
+    if (_inlineSearchActive && !_inlineSearchClosing) {
+      final current = SearchFiltersSnapshot.capture(_searchFiltersState);
+      if (_lastDispatchedSearchFilters == null ||
+          !_searchFiltersSnapshotEquals(
+            current,
+            _lastDispatchedSearchFilters!,
+          )) {
+        _performSearch(keepStaleWhileRibbonAnimates: true);
+      } else {
+        setState(() {});
+      }
     }
 
     // Auto-activate the inline ribbon if the filter change happened within
@@ -772,7 +784,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   void _dispatchFeedRefresh({bool keepStaleWhileRefreshing = false}) {
-    if (widget.isSearchMode || _inlineSearchActive) {
+    if (widget.isSearchMode ||
+        _inlineSearchActive ||
+        HomeInlineSearchState().isActive) {
       _dispatchSearch(
         isRefresh: true,
         keepStaleWhileRibbonAnimates: keepStaleWhileRefreshing,
@@ -787,7 +801,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Default home browse feed — no ribbon filter criteria applied. Saved filter
   /// values remain in [SearchFiltersState] for the search sheet / ribbon.
   void _ensureUnfilteredBrowseFeed({bool keepStaleWhileRefreshing = false}) {
-    if (widget.isSearchMode || _inlineSearchActive) return;
+    if (widget.isSearchMode ||
+        _inlineSearchActive ||
+        HomeInlineSearchState().isActive) {
+      return;
+    }
     if (!mounted) return;
     context.read<ListingsBloc>().add(
           ListingsEvent.searchListings(
@@ -1999,20 +2017,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
 
     if (!mounted) return;
-    final token = ++_inlineSearchEnterSearchToken;
     setState(() {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
       _inlineSearchSpacerExpanded = true;
     });
     HomeInlineSearchState().setActive(true);
-    await HomeInlineSearchState().setRibbonDismissedByUser(false);
-    final p = await SharedPreferences.getInstance();
-    await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-    if (!mounted) return;
-    if (!_inlineSearchActive) return;
-    if (token != _inlineSearchEnterSearchToken) return;
+    // Dispatch immediately so the feed cannot sit on a stale unfiltered page
+    // while SharedPreferences writes finish (pull-to-refresh was fixing that).
     _performSearch(keepStaleWhileRibbonAnimates: true);
+    unawaited(() async {
+      await HomeInlineSearchState().setRibbonDismissedByUser(false);
+      try {
+        final p = await SharedPreferences.getInstance();
+        await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+      } catch (_) {}
+    }());
   }
 
   /// Resets filters to defaults (local + server when logged in) so a later
@@ -2040,6 +2060,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       });
     }
     HomeInlineSearchState().setActive(false);
+    _lastDispatchedSearchFilters = null;
     if (recordRibbonDismissed) {
       unawaited(HomeInlineSearchState().setRibbonDismissedByUser(true));
     }
@@ -2301,6 +2322,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       );
     }
 
+    _lastDispatchedSearchFilters =
+        SearchFiltersSnapshot.capture(_searchFiltersState);
+
     listingsBloc.add(
       ListingsEvent.searchListings(
         listingTypeId: filters.listingTypeId,
@@ -2317,4 +2341,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       ),
     );
   }
+}
+
+bool _searchFiltersSnapshotEquals(
+  SearchFiltersSnapshot a,
+  SearchFiltersSnapshot b,
+) {
+  return a.selectedListingTypeId == b.selectedListingTypeId &&
+      a.selectedLocationIndex == b.selectedLocationIndex &&
+      a.selectedSubwayLine == b.selectedSubwayLine &&
+      a.selectedStationIndex == b.selectedStationIndex &&
+      a.selectedStationId == b.selectedStationId &&
+      a.selectedGender == b.selectedGender &&
+      a.minPrice == b.minPrice &&
+      a.maxPrice == b.maxPrice &&
+      a.privateRoom == b.privateRoom &&
+      a.withPhoto == b.withPhoto;
 }

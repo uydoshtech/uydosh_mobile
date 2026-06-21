@@ -46,6 +46,11 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
   bool _stationOnlyMode = false;
 
+  /// Monotonic id for in-flight feed searches. Responses from older requests
+  /// are ignored so a slow unfiltered prefetch cannot overwrite a newer
+  /// filtered search (home ribbon bootstrap vs app start).
+  int _searchRequestGeneration = 0;
+
   Future<void> _onFetchListings(
     Emitter<ListingsState> emit,
     ListingsEvent event,
@@ -470,10 +475,26 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     }
   }
 
+  void _storeSearchParams(Map<String, dynamic> searchParams) {
+    _stationOnlyMode = false;
+    _lastListingTypeId = searchParams["listingTypeId"] as int?;
+    _lastLocationId = searchParams["locationId"] as int?;
+    _lastSubwayStationId = searchParams["subwayStationId"] as int?;
+    _lastSubwayLineId = searchParams["subwayLineId"] as int?;
+    _lastGender = searchParams["gender"] as int?;
+    _lastMinPrice = searchParams["minPrice"] as double?;
+    _lastMaxPrice = searchParams["maxPrice"] as double?;
+    _lastPrivateRoom = searchParams["privateRoom"] as bool?;
+    _lastWithPhoto = searchParams["withPhoto"] as bool?;
+    _lastExcludeUserIds = searchParams["excludeUserIds"] as List<int>?;
+  }
+
   Future<void> _onSearchListings(
     Emitter<ListingsState> emit,
     ListingsEvent event,
   ) async {
+    final requestGeneration = ++_searchRequestGeneration;
+
     final isRefresh = event.map(
       fetchListings: (e) => e.isRefresh,
       loadMore: (e) => false,
@@ -523,30 +544,9 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         fetchUserListings: (e) => null,
       );
 
+    Map<String, dynamic>? pendingSearchParams;
     if (searchParams != null) {
-      _stationOnlyMode = false;
-      _lastListingTypeId = searchParams["listingTypeId"] as int?;
-      _lastLocationId = searchParams["locationId"] as int?;
-      _lastSubwayStationId = searchParams["subwayStationId"] as int?;
-      _lastSubwayLineId = searchParams["subwayLineId"] as int?;
-      _lastGender = searchParams["gender"] as int?;
-      _lastMinPrice = searchParams["minPrice"] as double?;
-      _lastMaxPrice = searchParams["maxPrice"] as double?;
-      _lastPrivateRoom = searchParams["privateRoom"] as bool?;
-      _lastWithPhoto = searchParams["withPhoto"] as bool?;
-      _lastExcludeUserIds = searchParams["excludeUserIds"] as List<int>?;
-
-      if (isRefresh) {
-        getIt<AppAnalyticsService>().logSearchPerformed(
-          listingTypeId: _lastListingTypeId,
-          locationId: _lastLocationId,
-          subwayStationId: _lastSubwayStationId,
-          subwayLineId: _lastSubwayLineId,
-          gender: _lastGender,
-          hasPriceFilter: _lastMinPrice != null || _lastMaxPrice != null,
-          hasGenderFilter: _lastGender != null,
-        );
-      }
+      pendingSearchParams = searchParams;
     }
 
     if (!(isRefresh && keepStaleWhileRefreshing)) {
@@ -634,6 +634,25 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         excludeUserIds: excludeUserIds,
       ).timeout(_requestTimeout);
 
+      if (requestGeneration != _searchRequestGeneration) {
+        return;
+      }
+
+      if (pendingSearchParams != null) {
+        _storeSearchParams(pendingSearchParams);
+        if (isRefresh) {
+          getIt<AppAnalyticsService>().logSearchPerformed(
+            listingTypeId: _lastListingTypeId,
+            locationId: _lastLocationId,
+            subwayStationId: _lastSubwayStationId,
+            subwayLineId: _lastSubwayLineId,
+            gender: _lastGender,
+            hasPriceFilter: _lastMinPrice != null || _lastMaxPrice != null,
+            hasGenderFilter: _lastGender != null,
+          );
+        }
+      }
+
       final listings = response.data;
       FavoritesState().syncFromListings(listings);
 
@@ -657,6 +676,9 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       _currentPage++;
     } catch (error) {
+      if (requestGeneration != _searchRequestGeneration) {
+        return;
+      }
       final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(error);
       emit(ListingsState.error(sanitizedMessage));
     }
