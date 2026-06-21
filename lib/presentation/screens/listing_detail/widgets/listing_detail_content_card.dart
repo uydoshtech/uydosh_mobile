@@ -64,6 +64,11 @@ class ListingDetailContentCard extends StatefulWidget {
 }
 
 class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
+  static const List<String> _leadingAmenityCodes = <String>[
+    "wifi",
+    "air_conditioning",
+  ];
+
   String _authorDisplayLabel() {
     final fromProfile = (widget.ownerName ?? "").trim();
     if (fromProfile.isNotEmpty) return fromProfile;
@@ -281,6 +286,26 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         ),
       ),
     );
+  }
+
+  List<Amenity> _sortedAmenitiesForDetails(List<Amenity> amenities) {
+    final indexedAmenities = amenities.asMap().entries.toList();
+
+    int rank(Amenity amenity) {
+      final code = amenity.code ?? "";
+      final leadingIndex = _leadingAmenityCodes.indexOf(code);
+      if (leadingIndex != -1) return leadingIndex;
+      if (code == "pets") return _leadingAmenityCodes.length + 1;
+      return _leadingAmenityCodes.length;
+    }
+
+    indexedAmenities.sort((a, b) {
+      final rankCompare = rank(a.value).compareTo(rank(b.value));
+      if (rankCompare != 0) return rankCompare;
+      return a.key.compareTo(b.key);
+    });
+
+    return indexedAmenities.map((entry) => entry.value).toList();
   }
 
   Widget _buildSubwayStationDisplay(SubwayStationDetail station) {
@@ -568,7 +593,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                             spacing: 8,
                             runSpacing: 8,
                             children: widget.amenityChips ??
-                                (widget.listingDetail.amenities ?? <Amenity>[])
+                                _sortedAmenitiesForDetails(
+                                  widget.listingDetail.amenities ?? <Amenity>[],
+                                )
                                     .map((amenity) =>
                                         _buildAmenityChip(context, amenity))
                                     .toList(),

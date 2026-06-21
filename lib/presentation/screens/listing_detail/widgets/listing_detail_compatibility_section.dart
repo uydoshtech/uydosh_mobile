@@ -560,6 +560,7 @@ class _ListingDetailCompatibilitySectionState
       bool isHeader = false,
       bool isLast = false,
       Alignment alignment = Alignment.center,
+      Color? fillColor,
     }) {
       return Expanded(
         child: Container(
@@ -567,6 +568,7 @@ class _ListingDetailCompatibilitySectionState
           alignment: alignment,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           decoration: BoxDecoration(
+            color: fillColor,
             border: Border(
               right: isLast ? BorderSide.none : BorderSide(color: borderColor),
               bottom: BorderSide(color: borderColor),
@@ -577,8 +579,49 @@ class _ListingDetailCompatibilitySectionState
       );
     }
 
-    Widget valueText(String value) {
+    Color? statusColor(GroupPreferenceMatrixCellStatus status) {
+      switch (status) {
+        case GroupPreferenceMatrixCellStatus.fullMatch:
+        case GroupPreferenceMatrixCellStatus.partialMatch:
+          return ThemeState().isLightTheme
+              ? AppColors.successDark
+              : AppColors.success;
+        case GroupPreferenceMatrixCellStatus.mismatch:
+          return ThemeState().isLightTheme
+              ? AppColors.warningDark
+              : AppColors.warning;
+        case GroupPreferenceMatrixCellStatus.conflict:
+          return AppColors.error;
+        case GroupPreferenceMatrixCellStatus.missing:
+          return null;
+      }
+    }
+
+    GroupPreferenceMatrixCellStatus rowStatus(GroupPreferenceMatrixRow row) {
+      final statuses = row.cells
+          .map((cell) => cell.status)
+          .where((status) => status != GroupPreferenceMatrixCellStatus.missing)
+          .toList(growable: false);
+      if (statuses.isEmpty) return GroupPreferenceMatrixCellStatus.missing;
+      if (statuses.contains(GroupPreferenceMatrixCellStatus.conflict)) {
+        return GroupPreferenceMatrixCellStatus.conflict;
+      }
+      if (statuses.contains(GroupPreferenceMatrixCellStatus.mismatch)) {
+        return GroupPreferenceMatrixCellStatus.mismatch;
+      }
+      if (statuses.contains(GroupPreferenceMatrixCellStatus.partialMatch)) {
+        return GroupPreferenceMatrixCellStatus.partialMatch;
+      }
+      return GroupPreferenceMatrixCellStatus.fullMatch;
+    }
+
+    Widget valueText(
+      String value, {
+      GroupPreferenceMatrixCellStatus status =
+          GroupPreferenceMatrixCellStatus.missing,
+    }) {
       final isMissing = value == L10n.get("not_specified");
+      final accentColor = statusColor(status);
       return Text(
         value,
         textAlign: TextAlign.center,
@@ -587,7 +630,9 @@ class _ListingDetailCompatibilitySectionState
         style: TextStyle(
           fontSize: orderedUserIds.length >= 5 ? 11 : 12,
           fontWeight: isMissing ? FontWeight.w400 : FontWeight.w600,
-          color: textColor.withValues(alpha: isMissing ? 0.55 : 0.9),
+          color: isMissing
+              ? textColor.withValues(alpha: 0.55)
+              : (accentColor ?? textColor).withValues(alpha: 0.9),
         ),
       );
     }
@@ -602,16 +647,18 @@ class _ListingDetailCompatibilitySectionState
     Widget iconValueCell(GroupPreferenceMatrixRow row, int userId) {
       final cell = cellFor(row, userId);
       final value = cell?.value ?? L10n.get("not_specified");
+      final status = cell?.status ?? GroupPreferenceMatrixCellStatus.missing;
       final iconKey = cell?.valueIconKey;
       if (iconKey == null || value == L10n.get("not_specified")) {
-        return valueText(value);
+        return valueText(value, status: status);
       }
 
+      final accentColor = statusColor(status);
       final visual = _buildMatrixValueIcon(
         iconKey,
-        color: textColor.withValues(alpha: 0.9),
+        color: (accentColor ?? textColor).withValues(alpha: 0.9),
       );
-      if (visual == null) return valueText(value);
+      if (visual == null) return valueText(value, status: status);
 
       return Tooltip(
         message: value,
@@ -704,62 +751,85 @@ class _ListingDetailCompatibilitySectionState
                     ],
                   ),
                   for (final row in widget.groupPreferenceMatrix) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: borderColor)),
-                      ),
-                      child: Row(
-                        children: [
-                          ThemeIcon(
-                            _getLifestyleIcon(row.labelKey),
-                            size: 18,
-                            color: textColor.withValues(alpha: 0.75),
+                    Builder(
+                      builder: (_) {
+                        final accentColor = statusColor(rowStatus(row));
+
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  row.label,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: textColor,
-                                  ),
-                                ),
-                                if (row.alignmentSummary != null) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    row.alignmentSummary!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: textColor.withValues(alpha: 0.65),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                          decoration: BoxDecoration(
+                            color: accentColor?.withValues(alpha: 0.08),
+                            border: Border(
+                              bottom: BorderSide(color: borderColor),
                             ),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            children: [
+                              ThemeIcon(
+                                _getLifestyleIcon(row.labelKey),
+                                size: 18,
+                                color: (accentColor ?? textColor).withValues(
+                                  alpha: 0.85,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      row.label,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: accentColor ?? textColor,
+                                      ),
+                                    ),
+                                    if (row.alignmentSummary != null) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        row.alignmentSummary!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: (accentColor ?? textColor)
+                                              .withValues(alpha: 0.75),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     Row(
                       children: [
                         for (var i = 0; i < orderedUserIds.length; i++)
-                          tableCell(
-                            isLast: i == orderedUserIds.length - 1,
-                            child: iconValueCell(row, orderedUserIds[i]),
+                          Builder(
+                            builder: (_) {
+                              final cell = cellFor(row, orderedUserIds[i]);
+                              final accentColor = statusColor(
+                                cell?.status ??
+                                    GroupPreferenceMatrixCellStatus.missing,
+                              );
+
+                              return tableCell(
+                                isLast: i == orderedUserIds.length - 1,
+                                fillColor: accentColor?.withValues(alpha: 0.08),
+                                child: iconValueCell(row, orderedUserIds[i]),
+                              );
+                            },
                           ),
                       ],
                     ),

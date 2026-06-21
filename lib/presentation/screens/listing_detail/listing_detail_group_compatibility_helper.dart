@@ -51,11 +51,13 @@ class GroupPreferenceMatrixCell {
   const GroupPreferenceMatrixCell({
     required this.userId,
     required this.value,
+    required this.status,
     this.valueIconKey,
   });
 
   final int userId;
   final String value;
+  final GroupPreferenceMatrixCellStatus status;
   final String? valueIconKey;
 
   @override
@@ -63,11 +65,20 @@ class GroupPreferenceMatrixCell {
     return other is GroupPreferenceMatrixCell &&
         other.userId == userId &&
         other.value == value &&
+        other.status == status &&
         other.valueIconKey == valueIconKey;
   }
 
   @override
-  int get hashCode => Object.hash(userId, value, valueIconKey);
+  int get hashCode => Object.hash(userId, value, status, valueIconKey);
+}
+
+enum GroupPreferenceMatrixCellStatus {
+  fullMatch,
+  partialMatch,
+  mismatch,
+  conflict,
+  missing,
 }
 
 class GroupPreferenceMatrixRow {
@@ -159,19 +170,67 @@ class ListingDetailGroupCompatibilityHelper {
             labelKey: spec.labelKey,
             label: L10n.get(spec.labelKey),
             alignmentSummary: _preferenceAlignmentSummary(participants, spec),
-            cells: participants
-                .map(
-                  (profile) => GroupPreferenceMatrixCell(
-                    userId: profile.userId,
-                    value:
-                        spec.displayText(profile) ?? L10n.get("not_specified"),
-                    valueIconKey: spec.displayIconKey?.call(profile),
-                  ),
-                )
-                .toList(),
+            cells: _preferenceMatrixCells(participants, spec),
           ),
         )
         .toList();
+  }
+
+  static List<GroupPreferenceMatrixCell> _preferenceMatrixCells(
+    List<UserProfile> participants,
+    _GroupFieldSpec spec,
+  ) {
+    final active = participants
+        .where((p) => spec.displayText(p) != null)
+        .toList(growable: false);
+    final clusters = active.length < 2
+        ? <List<UserProfile>>[]
+        : _buildClusters(active, spec);
+    final sortedClusters = clusters.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final largest = sortedClusters.firstOrNull;
+    final hasDealbreaker = _hasDealbreaker(active, spec);
+
+    return participants
+        .map(
+          (profile) => GroupPreferenceMatrixCell(
+            userId: profile.userId,
+            value: spec.displayText(profile) ?? L10n.get("not_specified"),
+            status: _preferenceCellStatus(
+              profile: profile,
+              displayText: spec.displayText(profile),
+              sortedClusters: sortedClusters,
+              largestCluster: largest,
+              hasDealbreaker: hasDealbreaker,
+            ),
+            valueIconKey: spec.displayIconKey?.call(profile),
+          ),
+        )
+        .toList();
+  }
+
+  static GroupPreferenceMatrixCellStatus _preferenceCellStatus({
+    required UserProfile profile,
+    required String? displayText,
+    required List<List<UserProfile>> sortedClusters,
+    required List<UserProfile>? largestCluster,
+    required bool hasDealbreaker,
+  }) {
+    if (displayText == null) return GroupPreferenceMatrixCellStatus.missing;
+    if (hasDealbreaker) return GroupPreferenceMatrixCellStatus.conflict;
+    if (largestCluster == null) return GroupPreferenceMatrixCellStatus.missing;
+
+    final isInLargestCluster =
+        largestCluster.any((p) => p.userId == profile.userId);
+    if (sortedClusters.length == 1) {
+      return GroupPreferenceMatrixCellStatus.fullMatch;
+    }
+    if (largestCluster.length < 2) {
+      return GroupPreferenceMatrixCellStatus.conflict;
+    }
+    return isInLargestCluster
+        ? GroupPreferenceMatrixCellStatus.partialMatch
+        : GroupPreferenceMatrixCellStatus.mismatch;
   }
 
   static String? _preferenceAlignmentSummary(
