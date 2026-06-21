@@ -244,7 +244,8 @@ class GroupShortlistItemCard extends StatelessWidget {
             ),
             if (isOwner && onContactLandlord != null) ...[
               const SizedBox(height: 8),
-              Center(
+              SizedBox(
+                width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: isRemoving ? null : onContactLandlord,
                   style: actionButtonStyle,
@@ -278,20 +279,6 @@ class GroupShortlistItemCard extends StatelessWidget {
           emoji: "💸",
           label: L10n.get("group_shortlist_fit_budget_above"),
           positive: false,
-        ),
-      );
-    }
-
-    final groupSize = fit.groupSize;
-    if (groupSize != null && groupSize > 0) {
-      checks.add(
-        _FitCheckRow(
-          emoji: "👥",
-          label: L10n.getWithParams(
-            "group_shortlist_fit_suitable_for_people",
-            params: {"count": groupSize.toString()},
-          ),
-          positive: true,
         ),
       );
     }
@@ -682,15 +669,22 @@ class _GroupRatingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final summary = rating.count > 0 && rating.average != null
+    final hasRating = rating.count > 0 && rating.average != null;
+    final averageText = rating.average?.toStringAsFixed(1);
+    final countText = hasRating
         ? L10n.getWithParams(
-            "group_shortlist_rating_summary",
+            "group_shortlist_rating_count_summary",
             params: {
-              "average": rating.average!.toStringAsFixed(1),
               "count": rating.count.toString(),
             },
           )
-        : L10n.get("group_shortlist_no_ratings");
+        : null;
+    final headerStyle = _plusOneFontSize(
+      context,
+      theme.textTheme.bodySmall,
+    ).copyWith(
+      fontWeight: FontWeight.w700,
+    );
 
     return Container(
       width: double.infinity,
@@ -702,15 +696,35 @@ class _GroupRatingSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "${L10n.get("group_shortlist_group_rating")} · $summary",
-            style: _plusOneFontSize(
-              context,
-              theme.textTheme.bodySmall,
-            ).copyWith(
-              fontWeight: FontWeight.w700,
+          if (hasRating)
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "${L10n.get("group_shortlist_group_rating")} · ",
+                  ),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Icon(
+                      Icons.star_rounded,
+                      color: AppColors.warning,
+                      size: 14,
+                    ),
+                  ),
+                  TextSpan(text: " $averageText · $countText"),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: headerStyle,
+            )
+          else
+            Text(
+              "${L10n.get("group_shortlist_group_rating")} · ${L10n.get("group_shortlist_no_ratings")}",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: headerStyle,
             ),
-          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,

@@ -188,6 +188,12 @@ class _ListingGroupShortlistSheetState
                   final value = index + 1;
                   final filled = selected >= value;
                   return IconButton(
+                    iconSize: 48,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 56,
+                      height: 56,
+                    ),
                     onPressed: () {
                       HapticFeedbackUtils.selectionClick();
                       setDialogState(() => selected = value);
