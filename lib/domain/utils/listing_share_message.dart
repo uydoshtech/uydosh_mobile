@@ -1,8 +1,10 @@
 import "dart:convert";
 
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 const listingShareMessagePrefix = "[[uydosh:listing_share]]";
 
@@ -168,6 +170,7 @@ abstract final class GroupShortlistDiscussMessage {
             ? null
             : _localizedMetroLabel(listing),
         metroLine: listing.subwayStation?.line ?? listing.subwayLineId,
+        priceLabel: _priceLabel(listing),
         ownerUserId: listing.userId,
         ownerName: ownerName,
         ownerAvatarUrl: ownerAvatarUrl,
@@ -222,6 +225,26 @@ abstract final class GroupShortlistDiscussMessage {
       nameRu: station.nameRu,
       nameEn: station.nameEn,
     );
+  }
+
+  static String _priceLabel(Listing listing) {
+    final listingTypeCode = listing.listingType?.code ?? "";
+    final amount = PriceRangeHelper.formatStoredListingPrice(
+      storedPrice: listing.price,
+      listingTypeCode: listingTypeCode,
+      minPrice: listing.minPrice,
+      maxPrice: listing.maxPrice,
+    );
+    final currency = PriceDisplaySettingsState().currency;
+    final monthlyUnit = L10n.get(
+      currency == PriceDisplayCurrency.usd
+          ? "price_unit_usd_per_month"
+          : "price_unit_uzs_per_month",
+    );
+    final currencyMarker = monthlyUnit.split("/").first.trim();
+    if (currencyMarker.isEmpty) return amount;
+    if (currency == PriceDisplayCurrency.usd) return "$currencyMarker$amount";
+    return "$amount $currencyMarker";
   }
 
   static String _localizedName({

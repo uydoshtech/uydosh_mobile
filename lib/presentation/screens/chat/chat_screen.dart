@@ -1587,24 +1587,35 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_isGroupChat) {
       final payload = ListingShareMessageCodec.parse(message.content);
       if (payload != null) {
-        final senderName = message.sender?.profile?.name ??
-            message.sender?.email ??
-            "";
+        final senderName =
+            message.sender?.profile?.name ?? message.sender?.email ?? "";
+        final previousPayload = _listingShareNeighborPayload(
+          message: message,
+          next: false,
+        );
+        final nextPayload = _listingShareNeighborPayload(
+          message: message,
+          next: true,
+        );
         return ListingShareMessageBubble(
           key: ValueKey("listing_share_${message.id}_${message.createdAt}"),
           message: message,
           payload: payload,
           rating: message.listingRating,
           isCurrentUser: isCurrentUser,
-          leftAvatarInitials: isCurrentUser
-              ? null
-              : StringUtils.extractInitials(senderName),
+          leftAvatarInitials:
+              isCurrentUser ? null : StringUtils.extractInitials(senderName),
           rightAvatarInitials: _getCurrentUserInitials(),
-          leftAvatarUrl: isCurrentUser
-              ? null
-              : message.sender?.profile?.avatarUrl,
+          leftAvatarUrl:
+              isCurrentUser ? null : message.sender?.profile?.avatarUrl,
           rightAvatarUrl: _currentUserProfile?.avatarUrl,
           onOpenListing: () => _openSharedListing(payload.listingId),
+          onOpenPreviousListing: previousPayload == null
+              ? null
+              : () => _openSharedListing(previousPayload.listingId),
+          onOpenNextListing: nextPayload == null
+              ? null
+              : () => _openSharedListing(nextPayload.listingId),
           onRate: (stars) => _setListingRating(message, stars),
         );
       }
@@ -1671,6 +1682,28 @@ class _ChatScreenState extends State<ChatScreen> {
       housingListingId,
       groupHousingContextListingId: widget.listingId,
     );
+  }
+
+  ListingShareMessagePayload? _listingShareNeighborPayload({
+    required Message message,
+    required bool next,
+  }) {
+    final sharedListings =
+        <({Message message, ListingShareMessagePayload payload})>[];
+    for (final candidate in _messages) {
+      if (candidate.isDeleted == true) continue;
+      final payload = ListingShareMessageCodec.parse(candidate.content);
+      if (payload == null) continue;
+      sharedListings.add((message: candidate, payload: payload));
+    }
+
+    final currentIndex =
+        sharedListings.indexWhere((entry) => entry.message.id == message.id);
+    if (currentIndex < 0) return null;
+
+    final targetIndex = currentIndex + (next ? 1 : -1);
+    if (targetIndex < 0 || targetIndex >= sharedListings.length) return null;
+    return sharedListings[targetIndex].payload;
   }
 
   Future<void> _setListingRating(Message message, int stars) async {

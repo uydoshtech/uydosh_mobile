@@ -4,10 +4,12 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -16,6 +18,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class ListingShareMessageBubble extends StatelessWidget {
   const ListingShareMessageBubble({
@@ -25,6 +28,8 @@ class ListingShareMessageBubble extends StatelessWidget {
     required this.onOpenListing,
     required this.onRate,
     this.rating,
+    this.onOpenPreviousListing,
+    this.onOpenNextListing,
     this.leftAvatarInitials,
     this.rightAvatarInitials,
     this.leftAvatarUrl,
@@ -38,6 +43,8 @@ class ListingShareMessageBubble extends StatelessWidget {
   final bool isCurrentUser;
   final VoidCallback onOpenListing;
   final ValueChanged<int> onRate;
+  final VoidCallback? onOpenPreviousListing;
+  final VoidCallback? onOpenNextListing;
   final String? leftAvatarInitials;
   final String? rightAvatarInitials;
   final String? leftAvatarUrl;
@@ -53,6 +60,8 @@ class ListingShareMessageBubble extends StatelessWidget {
             : AppColors.textDark87)
         : (themeState.isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
     final footerColor = textColor.withValues(alpha: 0.95);
+    final showNavigationControls =
+        onOpenPreviousListing != null || onOpenNextListing != null;
 
     return ChatMessageRow(
       isFromCurrentUser: isCurrentUser,
@@ -121,6 +130,11 @@ class ListingShareMessageBubble extends StatelessWidget {
               color: textColor,
             ),
           ],
+          _ListingPriceLine(
+            listingId: payload.listingId,
+            initialPriceLabel: payload.priceLabel,
+            color: textColor,
+          ),
           const SizedBox(height: 10),
           _StarRatingRow(
             myStars: rating?.myStars,
@@ -129,53 +143,256 @@ class ListingShareMessageBubble extends StatelessWidget {
             onRate: onRate,
           ),
           const SizedBox(height: 8),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedbackUtils.impact();
-                onOpenListing();
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: textColor.withValues(alpha: 0.12),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.open_in_new,
-                      size: 16,
-                      color: footerColor,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      L10n.get("group_shortlist_view"),
-                      style: TextStyle(
+          _ListingShareFooter(
+            footerColor: footerColor,
+            borderColor: textColor.withValues(alpha: 0.12),
+            showNavigationControls: showNavigationControls,
+            onOpenListing: onOpenListing,
+            onOpenPreviousListing: onOpenPreviousListing,
+            onOpenNextListing: onOpenNextListing,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ListingShareFooter extends StatelessWidget {
+  const _ListingShareFooter({
+    required this.footerColor,
+    required this.borderColor,
+    required this.showNavigationControls,
+    required this.onOpenListing,
+    required this.onOpenPreviousListing,
+    required this.onOpenNextListing,
+  });
+
+  final Color footerColor;
+  final Color borderColor;
+  final bool showNavigationControls;
+  final VoidCallback onOpenListing;
+  final VoidCallback? onOpenPreviousListing;
+  final VoidCallback? onOpenNextListing;
+
+  @override
+  Widget build(BuildContext context) {
+    final previousTooltip =
+        MaterialLocalizations.of(context).previousPageTooltip;
+    final nextTooltip = MaterialLocalizations.of(context).nextPageTooltip;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: borderColor)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (showNavigationControls)
+            _ListingNavigationButton(
+              icon: Icons.chevron_left_rounded,
+              color: footerColor,
+              tooltip: previousTooltip,
+              onPressed: onOpenPreviousListing,
+            ),
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedbackUtils.impact();
+                  onOpenListing();
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.open_in_new,
+                        size: 16,
                         color: footerColor,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        height: 1.0,
                       ),
-                      textHeightBehavior: const TextHeightBehavior(
-                        applyHeightToFirstAscent: false,
-                        applyHeightToLastDescent: false,
+                      const SizedBox(width: 6),
+                      Text(
+                        L10n.get("group_shortlist_view"),
+                        style: TextStyle(
+                          color: footerColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          height: 1.0,
+                        ),
+                        textHeightBehavior: const TextHeightBehavior(
+                          applyHeightToFirstAscent: false,
+                          applyHeightToLastDescent: false,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+          if (showNavigationControls)
+            _ListingNavigationButton(
+              icon: Icons.chevron_right_rounded,
+              color: footerColor,
+              tooltip: nextTooltip,
+              onPressed: onOpenNextListing,
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _ListingNavigationButton extends StatelessWidget {
+  const _ListingNavigationButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled
+              ? () {
+                  HapticFeedbackUtils.selectionClick();
+                  onPressed!();
+                }
+              : null,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            child: Icon(
+              icon,
+              size: 24,
+              color: color.withValues(alpha: enabled ? 0.95 : 0.32),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ListingPriceLine extends StatefulWidget {
+  const _ListingPriceLine({
+    required this.listingId,
+    required this.color,
+    this.initialPriceLabel,
+  });
+
+  final int listingId;
+  final Color color;
+  final String? initialPriceLabel;
+
+  @override
+  State<_ListingPriceLine> createState() => _ListingPriceLineState();
+}
+
+class _ListingPriceLineState extends State<_ListingPriceLine> {
+  static final Map<int, String> _cache = {};
+
+  String? _priceLabel;
+  var _loadStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hydrate();
+    if (_needsFetch) {
+      unawaited(_loadPriceLabel());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ListingPriceLine oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listingId != widget.listingId ||
+        oldWidget.initialPriceLabel != widget.initialPriceLabel) {
+      _loadStarted = false;
+      _hydrate();
+      if (_needsFetch) {
+        unawaited(_loadPriceLabel());
+      }
+    }
+  }
+
+  bool get _needsFetch => _priceLabel == null || _priceLabel!.trim().isEmpty;
+
+  void _hydrate() {
+    final initial = widget.initialPriceLabel?.trim();
+    _priceLabel = initial?.isEmpty == true ? null : initial;
+    _priceLabel ??= _cache[widget.listingId];
+  }
+
+  Future<void> _loadPriceLabel() async {
+    if (_loadStarted) return;
+    _loadStarted = true;
+    try {
+      final detail = await getIt<IListingService>().getListingDetail(
+        widget.listingId,
+      );
+      final label = _formatPriceLabel(detail);
+      _cache[widget.listingId] = label;
+      if (!mounted) return;
+      setState(() => _priceLabel = label);
+    } catch (_) {
+      _loadStarted = false;
+    }
+  }
+
+  static String _formatPriceLabel(ListingDetail detail) {
+    final amount = PriceRangeHelper.formatStoredListingPrice(
+      storedPrice: detail.price,
+      listingTypeCode: detail.listingType.code,
+      minPrice: detail.minPrice,
+      maxPrice: detail.maxPrice,
+    );
+    final currency = PriceDisplaySettingsState().currency;
+    final monthlyUnit = L10n.get(
+      currency == PriceDisplayCurrency.usd
+          ? "price_unit_usd_per_month"
+          : "price_unit_uzs_per_month",
+    );
+    final currencyMarker = monthlyUnit.split("/").first.trim();
+    if (currencyMarker.isEmpty) return amount;
+    if (currency == PriceDisplayCurrency.usd) return "$currencyMarker$amount";
+    return "$amount $currencyMarker";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = _priceLabel;
+    if (label == null || label.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: _DetailLine(
+        leading: const Icon(
+          Icons.payments_outlined,
+          color: AppColors.successDark,
+          size: 20,
+        ),
+        label: label,
+        color: widget.color,
       ),
     );
   }

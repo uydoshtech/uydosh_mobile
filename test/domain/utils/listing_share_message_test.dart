@@ -42,6 +42,7 @@ void main() {
     expect(payload.location, "Yunusabad");
     expect(payload.metro, "Minor");
     expect(payload.metroLine, 1);
+    expect(payload.priceLabel, isNotEmpty);
     expect(payload.ownerUserId, 1);
     expect(payload.ownerName, "Bob Landlord");
     expect(payload.ownerAvatarUrl, "/uploads/avatars/bob.jpg");
@@ -63,5 +64,6 @@ Cozy flat near metro
     expect(payload?.title, "Cozy flat near metro");
     expect(payload?.location, "Yunusabad");
     expect(payload?.metro, "Minor");
+    expect(payload?.priceLabel, "100/mo per person");
   });
 }

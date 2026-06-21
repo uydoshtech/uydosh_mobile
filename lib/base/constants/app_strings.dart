@@ -116,7 +116,7 @@ class AppStrings {
       "group_shortlist_saved_by_suffix": "",
       "group_shortlist_open": "Open",
       "group_shortlist_view": "View",
-      "group_shortlist_open_listing": "Open listing",
+      "group_shortlist_open_listing": "View",
       "group_shortlist_remove": "Remove",
       "group_shortlist_saved_for_group_context": "Saved for group \"{label}\"",
       "group_shortlist_group_size_label": "{count} people",
@@ -1985,7 +1985,7 @@ class AppStrings {
       "group_shortlist_saved_by_suffix": "",
       "group_shortlist_open": "Открыть",
       "group_shortlist_view": "Посмотреть",
-      "group_shortlist_open_listing": "Открыть объявление",
+      "group_shortlist_open_listing": "Просмотреть",
       "group_shortlist_remove": "Убрать",
       "group_shortlist_saved_for_group_context":
           "Сохранено для группы «{label}»",
@@ -3886,7 +3886,7 @@ class AppStrings {
       "group_shortlist_saved_by_suffix": "saqladi",
       "group_shortlist_open": "Ochish",
       "group_shortlist_view": "Ko'rish",
-      "group_shortlist_open_listing": "E'lonni ochish",
+      "group_shortlist_open_listing": "Ko'rish",
       "group_shortlist_remove": "Olib tashlash",
       "group_shortlist_saved_for_group_context":
           "Guruh uchun saqlangan \"{label}\"",
