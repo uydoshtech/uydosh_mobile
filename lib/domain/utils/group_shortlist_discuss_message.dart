@@ -1,12 +1,60 @@
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
+class GroupShortlistDiscussPayload {
+  const GroupShortlistDiscussPayload({
+    required this.displayText,
+    this.listingId,
+  });
+
+  final String displayText;
+  final int? listingId;
+
+  bool get hasListingFooter => listingId != null;
+}
+
 /// Plain-text payload for sharing a saved housing listing in the group chat.
 abstract final class GroupShortlistDiscussMessage {
+  static final RegExp _markerPattern = RegExp(
+    r"\[\[uydosh:listing:(\d+)\]\]\s*$",
+  );
+  static final RegExp _listingUrlPattern = RegExp(
+    r"https?://[^\s]*/listing/(\d+)",
+  );
+  static final RegExp _linkLinePattern = RegExp(
+    r"^\s*🔗\s*.+\s*$",
+    multiLine: true,
+  );
+
+  static String listingMarker(int listingId) => "[[uydosh:listing:$listingId]]";
+
+  static GroupShortlistDiscussPayload parse(String content) {
+    var text = content.trimRight();
+    int? listingId;
+
+    final markerMatch = _markerPattern.firstMatch(text);
+    if (markerMatch != null) {
+      listingId = int.tryParse(markerMatch.group(1)!);
+      text = text.substring(0, markerMatch.start).trimRight();
+    }
+
+    if (listingId == null) {
+      final urlMatch = _listingUrlPattern.firstMatch(text);
+      listingId = urlMatch != null ? int.tryParse(urlMatch.group(1)!) : null;
+    }
+
+    text = text.replaceAll(_linkLinePattern, "").trimRight();
+    text = text.replaceAll(RegExp(r"\n{3,}"), "\n\n");
+
+    return GroupShortlistDiscussPayload(
+      displayText: text,
+      listingId: listingId,
+    );
+  }
+
   static String build({
     required Listing listing,
     GroupHousingListingFit? fit,
@@ -58,19 +106,11 @@ abstract final class GroupShortlistDiscussMessage {
       );
     }
 
-    lines.add(
-      L10n.getWithParams(
-        "group_shortlist_discuss_line_link",
-        params: {
-          "link": DeepLinkService.buildListingDeepLink(listing.id),
-        },
-      ),
-    );
-
     final body = lines.join("\n");
     final intro = L10n.get("group_shortlist_discuss_message_intro");
-    if (intro.trim().isEmpty) return body;
-    return "$intro\n\n$body";
+    final messageBody =
+        intro.trim().isEmpty ? body : "$intro\n\n$body";
+    return "$messageBody\n${listingMarker(listing.id)}";
   }
 
   static String _localizedLocationLabel(Listing listing) {

@@ -4,7 +4,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/utils/group_shortlist_discuss_message.dart";
 
 void main() {
-  test("builds share text with title, location, metro, price, and link", () {
+  test("build appends hidden listing marker instead of a visible URL", () {
     final listing = Listing(
       id: 42,
       userId: 1,
@@ -35,7 +35,28 @@ void main() {
     expect(text, contains("📍 Yunusabad"));
     expect(text, contains("🚇 Minor"));
     expect(text, contains("💰"));
-    expect(text, contains("🔗"));
-    expect(text, contains("/listing/42"));
+    expect(text, contains("[[uydosh:listing:42]]"));
+    expect(text, isNot(contains("https://")));
+  });
+
+  test("parse strips marker and legacy link line", () {
+    const legacy =
+        "Как вам этот вариант?\n\nFlat title\n📍 District\n🔗 https://api.uydosh.com/listing/3663";
+    final parsed = GroupShortlistDiscussMessage.parse(legacy);
+
+    expect(parsed.listingId, 3663);
+    expect(parsed.displayText, contains("Flat title"));
+    expect(parsed.displayText, isNot(contains("https://")));
+    expect(parsed.displayText, isNot(contains("🔗")));
+  });
+
+  test("parse reads hidden marker from new messages", () {
+    const message =
+        "Flat title\n📍 District\n[[uydosh:listing:99]]";
+    final parsed = GroupShortlistDiscussMessage.parse(message);
+
+    expect(parsed.listingId, 99);
+    expect(parsed.displayText, "Flat title\n📍 District");
+    expect(parsed.hasListingFooter, isTrue);
   });
 }

@@ -1,5 +1,6 @@
 import "dart:ui" show ImageFilter;
 
+import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -47,10 +48,12 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.onSecondary,
     this.secondaryLabel,
     this.secondaryIcon,
+    this.primaryIcon,
     this.notificationDot,
     this.notificationDotTrigger = 0,
     this.embedded = false,
     this.onMemberProfiles,
+    this.memberProfilesCount,
     super.key,
   }) : assert(
           onMessage != null || onTelegram != null,
@@ -63,12 +66,16 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final VoidCallback? onSecondary;
   final String? secondaryLabel;
   final IconData? secondaryIcon;
+  final IconData? primaryIcon;
   final ListingDetailActionBarNotificationDot? notificationDot;
   final int notificationDotTrigger;
+
   /// When true, renders only the CTA column (no sticky frosted footer).
   final bool embedded;
+
   /// Optional CTA rendered directly above the primary chat button in stacked layouts.
   final VoidCallback? onMemberProfiles;
+  final int? memberProfilesCount;
 
   static const BorderRadius _topRadius = BorderRadius.vertical(
     top: Radius.circular(20),
@@ -157,6 +164,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       height: 48,
       width: width,
+      icon: primaryIcon ?? CupertinoIcons.shield_fill,
     );
     if (notificationDot != ListingDetailActionBarNotificationDot.primary) {
       return button;
@@ -164,8 +172,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     return _wrapWithNotificationDot(context, button);
   }
 
-  bool get _hasSecondaryAction =>
-      onSecondary != null && secondaryLabel != null;
+  bool get _hasSecondaryAction => onSecondary != null && secondaryLabel != null;
 
   List<Widget> _stackedPrimaryTail(
     BuildContext context, {
@@ -184,6 +191,12 @@ class ListingDetailContactActionBar extends StatelessWidget {
         },
         icon: Icons.group_outlined,
         iconColor: accentColor,
+        leading: memberProfilesCount == null
+            ? null
+            : _MemberProfilesLeadingIcon(
+                memberCount: memberProfilesCount!,
+                color: accentColor,
+              ),
         label: L10n.get("view_member_profiles"),
         labelColor: secondaryTextColor,
         borderColor: accentColor,
@@ -415,6 +428,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.label,
     required this.labelColor,
     required this.borderColor,
+    this.leading,
     this.width,
   });
 
@@ -424,6 +438,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final String label;
   final Color labelColor;
   final Color borderColor;
+  final Widget? leading;
   final double? width;
 
   @override
@@ -461,11 +476,12 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
     final labelRow = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ThemeIcon(
-          widget.icon,
-          size: 18,
-          color: widget.iconColor,
-        ),
+        widget.leading ??
+            ThemeIcon(
+              widget.icon,
+              size: 18,
+              color: widget.iconColor,
+            ),
         const SizedBox(width: 10),
         Flexible(
           child: Text(
@@ -524,7 +540,8 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 90),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(borderRadius: radius, boxShadow: shadows),
+                decoration:
+                    BoxDecoration(borderRadius: radius, boxShadow: shadows),
                 child: ClipRRect(
                   borderRadius: radius,
                   child: Stack(
@@ -553,10 +570,47 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width =
-            constraints.hasBoundedWidth ? constraints.maxWidth : null;
+        final width = constraints.hasBoundedWidth ? constraints.maxWidth : null;
         return buildSizedButton(width);
       },
+    );
+  }
+}
+
+class _MemberProfilesLeadingIcon extends StatelessWidget {
+  const _MemberProfilesLeadingIcon({
+    required this.memberCount,
+    required this.color,
+  });
+
+  final int memberCount;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    const iconSize = 18.0;
+    const overlap = 8.0;
+    final visibleCount =
+        memberCount < 1 ? 1 : (memberCount > 6 ? 6 : memberCount);
+    final step = iconSize - overlap;
+
+    return SizedBox(
+      width: iconSize + (visibleCount - 1) * step,
+      height: iconSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: List.generate(
+          visibleCount,
+          (index) => Positioned(
+            left: index * step,
+            child: ThemeIcon(
+              index.isEven ? Icons.person_outline : Icons.person,
+              size: iconSize,
+              color: color,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

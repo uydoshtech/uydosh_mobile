@@ -39,12 +39,11 @@ class ListingGroupFormingActionBar extends StatelessWidget {
             },
           )
         : null;
-    final hasSecondaryAction =
-        onSecondary != null && secondaryLabel != null;
-    final isOpenGroupChatPrimary =
-        primaryLabel == L10n.get("group_open_chat");
+    final hasSecondaryAction = onSecondary != null && secondaryLabel != null;
+    final isOpenGroupChatPrimary = primaryLabel == L10n.get("group_open_chat");
     final isOpenGroupChatSecondary =
         secondaryLabel == L10n.get("group_open_chat");
+    final isFindHousingPrimary = primaryLabel == L10n.get("group_find_housing");
     final includePrimaryProgress = !hasSecondaryAction &&
         primaryLabel != L10n.get("group_manage_requests");
     final primaryCtaLabel = _labelWithProgress(
@@ -69,14 +68,15 @@ class ListingGroupFormingActionBar extends StatelessWidget {
       embedded: true,
       onMessage: onPrimary,
       inAppChatCtaLabel: primaryCtaLabel,
+      primaryIcon: isFindHousingPrimary ? Icons.home_rounded : null,
       onSecondary: onSecondary,
       secondaryLabel: secondaryCtaLabel,
-      secondaryIcon: isOpenGroupChatSecondary
-          ? Icons.chat_bubble_outline
-          : null,
+      secondaryIcon:
+          isOpenGroupChatSecondary ? Icons.chat_bubble_outline : null,
       notificationDot: notificationDot,
       notificationDotTrigger: manageRequestsDotTrigger,
       onMemberProfiles: onViewMemberProfiles,
+      memberProfilesCount: groupProgress?.current,
     );
   }
 

@@ -33,6 +33,7 @@ import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -1663,6 +1664,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
                       ? () => _onLongPressOwnMessageForEdit(message)
                       : null,
+              onOpenSharedListing: _openSharedListingFromChat,
             ),
         };
       },
@@ -1972,6 +1974,15 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     }
+  }
+
+  void _openSharedListingFromChat(int housingListingId) {
+    HapticFeedbackUtils.selectionClick();
+    context.pushListingDetail(
+      housingListingId,
+      groupHousingContextListingId:
+          _isGroupChat ? widget.listingId : null,
+    );
   }
 
   void _navigateToGigRequestDetail() {
