@@ -243,6 +243,32 @@ class _PatchAdminListingConversationsEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class GroupFormingMaxActiveMembershipsResponse {
+  GroupFormingMaxActiveMembershipsResponse({required this.limit});
+
+  factory GroupFormingMaxActiveMembershipsResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final raw = json["limit"];
+    final parsed = raw is num ? raw.toInt() : int.tryParse(raw?.toString() ?? "");
+    return GroupFormingMaxActiveMembershipsResponse(
+      limit: parsed == null || parsed < 1 ? 2 : parsed,
+    );
+  }
+
+  final int limit;
+}
+
+class _PatchGroupFormingMaxActiveMembershipsRequest
+    implements IJsonEncodable {
+  _PatchGroupFormingMaxActiveMembershipsRequest({required this.limit});
+
+  final int limit;
+
+  @override
+  dynamic toJson() => {"limit": limit};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -298,6 +324,12 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<AdminListingConversationsEnabledResponse>
       setAdminListingConversationsEnabled({required bool enabled});
+
+  Future<GroupFormingMaxActiveMembershipsResponse>
+      getGroupFormingMaxActiveMembershipsSetting();
+
+  Future<GroupFormingMaxActiveMembershipsResponse>
+      setGroupFormingMaxActiveMemberships({required int limit});
 }
 
 class AdminContentModerationSettingsService
@@ -695,6 +727,49 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating admin listing conversations enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<GroupFormingMaxActiveMembershipsResponse>
+      getGroupFormingMaxActiveMembershipsSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/group-forming-max-active-memberships",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return GroupFormingMaxActiveMembershipsResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from group forming membership limit setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading group forming membership limit setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<GroupFormingMaxActiveMembershipsResponse>
+      setGroupFormingMaxActiveMemberships({required int limit}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/group-forming-max-active-memberships",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchGroupFormingMaxActiveMembershipsRequest(limit: limit),
+      );
+      return GroupFormingMaxActiveMembershipsResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from group forming membership limit setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating group forming membership limit setting: $e");
       rethrow;
     }
   }

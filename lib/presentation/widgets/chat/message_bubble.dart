@@ -297,6 +297,10 @@ class _MessageBubbleState extends State<MessageBubble>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.message.messageType.toLowerCase() == "system") {
+      return _SystemMessageBubble(content: widget.message.content);
+    }
+
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
@@ -1195,6 +1199,52 @@ class _TranslationSkeleton extends StatelessWidget {
         const SizedBox(height: 6),
         _SkeletonBar(height: 10, widthFactor: 0.52, color: base),
       ],
+    );
+  }
+}
+
+class _SystemMessageBubble extends StatelessWidget {
+  const _SystemMessageBubble({required this.content});
+
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isLight = ThemeState().isLightTheme;
+    final backgroundColor = isLight
+        ? Colors.black.withValues(alpha: 0.06)
+        : scheme.surfaceContainerHighest.withValues(alpha: 0.72);
+    final textColor = isLight
+        ? Colors.black.withValues(alpha: 0.68)
+        : scheme.onSurfaceVariant;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 6),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: textColor.withValues(alpha: 0.10),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Text(
+              content,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1233,6 +1233,10 @@ class AppStrings {
           "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "Firebase SMS sign-in in the auth wizard.",
+      "admin_app_setting_group_forming_membership_limit_title":
+          "Max active groups per user",
+      "admin_app_setting_group_forming_membership_limit_subtitle":
+          "Includes groups the user created and groups they joined.",
 
       "admin_panel_section_telegram_sync": "Data import",
       "admin_telegram_sync_title": "Data import",
@@ -3121,6 +3125,10 @@ class AppStrings {
           "Чаты по объявлению (админ)",
       "admin_app_setting_listing_owner_conversations_subtitle":
           "Когда включено, админ может открыть все in-app диалоги по объявлению с его экрана.",
+      "admin_app_setting_group_forming_membership_limit_title":
+          "Максимум активных групп на пользователя",
+      "admin_app_setting_group_forming_membership_limit_subtitle":
+          "Учитываются группы, которые пользователь создал или к которым присоединился.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_telegram_sync_title": "Импорт данных",
@@ -5025,6 +5033,10 @@ class AppStrings {
           "E'lon chatlari (admin)",
       "admin_app_setting_listing_owner_conversations_subtitle":
           "Yoqilganda admin e'lon sahifasidan shu e'lon bo'yicha barcha in-app chatlarni ochishi mumkin.",
+      "admin_app_setting_group_forming_membership_limit_title":
+          "Har foydalanuvchi uchun aktiv guruhlar limiti",
+      "admin_app_setting_group_forming_membership_limit_subtitle":
+          "Foydalanuvchi yaratgan va qo'shilgan guruhlar hisobga olinadi.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_telegram_sync_title": "Maʼlumot importi",

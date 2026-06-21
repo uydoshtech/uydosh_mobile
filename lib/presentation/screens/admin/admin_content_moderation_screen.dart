@@ -60,6 +60,8 @@ class _AdminContentModerationScreenState
   bool _isSavingPhoneSignIn = false;
   bool _adminListingConversationsEnabled = false;
   bool _isSavingAdminListingConversations = false;
+  int _groupFormingMaxActiveMemberships = 2;
+  bool _isSavingGroupFormingLimit = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingPushDebug = false;
   bool _isSavingListingMoveToTop = false;
@@ -118,6 +120,16 @@ class _AdminContentModerationScreenState
           "Admin listing conversations setting skipped (is the API updated?): $e",
         );
       }
+      var groupFormingMaxActiveMemberships = 2;
+      try {
+        final groupLimitRes =
+            await _settingsService.getGroupFormingMaxActiveMembershipsSetting();
+        groupFormingMaxActiveMemberships = groupLimitRes.limit;
+      } catch (e) {
+        logger.d(
+          "Group forming membership limit setting skipped (is the API updated?): $e",
+        );
+      }
       setStateIfMounted(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
@@ -129,6 +141,7 @@ class _AdminContentModerationScreenState
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
         _phoneSignInEnabled = phoneSignInEnabled;
         _adminListingConversationsEnabled = adminListingConversationsEnabled;
+        _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
@@ -342,6 +355,29 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingAdminListingConversations = false);
+    }
+  }
+
+  Future<void> _setGroupFormingLimit(int value) async {
+    if (_isSavingGroupFormingLimit) return;
+    final next = value < 1 ? 1 : (value > 10 ? 10 : value);
+    if (next == _groupFormingMaxActiveMemberships) return;
+    setState(() => _isSavingGroupFormingLimit = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setGroupFormingMaxActiveMemberships(
+        limit: next,
+      );
+      setStateIfMounted(() {
+        _groupFormingMaxActiveMemberships = res.limit;
+      });
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingGroupFormingLimit = false);
     }
   }
 
@@ -618,6 +654,37 @@ class _AdminContentModerationScreenState
           ),
         ),
         const SizedBox(height: 16),
+        _neumorphicRow(
+          ListTile(
+            leading: _isSavingGroupFormingLimit
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const ThemeIcon(Icons.groups_2_outlined),
+            title: Text(
+              L10n.get(
+                "admin_app_setting_group_forming_membership_limit_title",
+              ),
+            ),
+            subtitle: Text(
+              L10n.get(
+                "admin_app_setting_group_forming_membership_limit_subtitle",
+              ),
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: _GroupLimitStepper(
+              value: _groupFormingMaxActiveMemberships,
+              enabled: !_isSavingGroupFormingLimit,
+              onChanged: _setGroupFormingLimit,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         ListenableBuilder(
           listenable: AdminFeatureFlagsState(),
           builder: (context, _) {
@@ -841,6 +908,58 @@ class _AdminContentModerationScreenState
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GroupLimitStepper extends StatelessWidget {
+  const _GroupLimitStepper({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final int value;
+  final bool enabled;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurface;
+    final disabledColor = theme.disabledColor;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove),
+            color: enabled && value > 1 ? color : disabledColor,
+            onPressed: enabled && value > 1 ? () => onChanged(value - 1) : null,
+          ),
+          SizedBox(
+            width: 28,
+            child: Text(
+              "$value",
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add),
+            color: enabled && value < 10 ? color : disabledColor,
+            onPressed: enabled && value < 10 ? () => onChanged(value + 1) : null,
+          ),
+        ],
+      ),
     );
   }
 }
