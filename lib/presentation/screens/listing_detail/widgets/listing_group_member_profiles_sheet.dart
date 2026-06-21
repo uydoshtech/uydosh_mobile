@@ -19,7 +19,9 @@ import "package:uy_dosh/presentation/screens/listing_detail/group_member_compati
 import "package:uy_dosh/presentation/screens/listing_detail/profile_compatibility_field_icons.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -41,22 +43,30 @@ Future<void> showListingGroupMemberProfilesSheet({
 }) async {
   if (members.isEmpty) return;
 
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
     builder: (sheetContext) {
-      return _ListingGroupMemberProfilesSheet(
-        listingId: listingId,
-        members: members,
-        ownerUserId: ownerUserId,
-        currentUserId: currentUserId,
-        isOwner: isOwner,
-        groupProgress: groupProgress,
-        memberCompatibility: memberCompatibility,
-        groupListingDetail: groupListingDetail,
-        onMemberTap: onMemberTap,
-        onChanged: onChanged,
+      final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
+      return Padding(
+        padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
+        child: GlassBottomSheetSurface(
+          borderRadius: BorderRadius.circular(18),
+          child: Material(
+            type: MaterialType.transparency,
+            child: _ListingGroupMemberProfilesSheet(
+              listingId: listingId,
+              members: members,
+              ownerUserId: ownerUserId,
+              currentUserId: currentUserId,
+              isOwner: isOwner,
+              groupProgress: groupProgress,
+              memberCompatibility: memberCompatibility,
+              groupListingDetail: groupListingDetail,
+              onMemberTap: onMemberTap,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
       );
     },
   );
@@ -284,104 +294,134 @@ class _ListingGroupMemberProfilesSheetState
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final sortedMembers = _sortedMembers;
 
-    return SafeArea(
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          const SizedBox(height: 10),
+          Center(
+            child: Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.onSurface.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+          ),
           _MemberProfilesHeader(
             members: _members,
             currentUserId: widget.currentUserId,
             isGroupFull: _isGroupFull,
             groupProgress: _groupProgress,
           ),
-          if (_isGroupFull) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          Flexible(
+            child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  FilledButton.icon(
-                    onPressed: widget.groupListingDetail == null
-                        ? null
-                        : () {
-                            Navigator.of(context).pop();
-                            GroupHousingFlow.openSearch(
-                              context: context,
-                              groupListingDetail: widget.groupListingDetail!,
-                            );
-                          },
-                    icon: const Icon(Icons.search),
-                    label: Text(L10n.get("group_find_housing")),
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      await GroupHousingFlow.openShortlistSheet(
-                        context: context,
-                        groupListingId: widget.listingId,
-                        isOwner: widget.isOwner,
-                        groupListingDetail: widget.groupListingDetail,
-                        onChanged: widget.onChanged,
-                      );
-                    },
-                    icon: const Icon(Icons.bookmark_outline),
-                    label: Text(
-                      GroupHousingFlow.savedListingsLabel(
-                        widget.groupListingDetail?.groupContext
-                                ?.groupShortlistCount ??
-                            GroupShortlistState()
-                                .shortlistCountForGroup(widget.listingId),
+                  if (_isGroupFull) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: widget.groupListingDetail == null
+                                ? null
+                                : () {
+                                    Navigator.of(context).pop();
+                                    GroupHousingFlow.openSearch(
+                                      context: context,
+                                      groupListingDetail:
+                                          widget.groupListingDetail!,
+                                    );
+                                  },
+                            icon: const Icon(Icons.search),
+                            label: Text(L10n.get("group_find_housing")),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              await GroupHousingFlow.openShortlistSheet(
+                                context: context,
+                                groupListingId: widget.listingId,
+                                isOwner: widget.isOwner,
+                                groupListingDetail: widget.groupListingDetail,
+                                onChanged: widget.onChanged,
+                              );
+                            },
+                            icon: const Icon(Icons.bookmark_outline),
+                            label: Text(
+                              GroupHousingFlow.savedListingsLabel(
+                                widget.groupListingDetail?.groupContext
+                                        ?.groupShortlistCount ??
+                                    GroupShortlistState()
+                                        .shortlistCountForGroup(
+                                      widget.listingId,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                  ],
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final member in sortedMembers) ...[
+                          if (member != sortedMembers.first)
+                            const SizedBox(height: 10),
+                          _MemberProfileCard(
+                            member: member,
+                            ownerUserId: widget.ownerUserId,
+                            currentUserId: widget.currentUserId,
+                            compatibility:
+                                widget.memberCompatibility[member.userId],
+                            canRemove: widget.isOwner &&
+                                member.userId != widget.ownerUserId &&
+                                !_isRemoving,
+                            canLeave: !widget.isOwner &&
+                                widget.currentUserId != null &&
+                                member.userId == widget.currentUserId &&
+                                member.userId != widget.ownerUserId &&
+                                !_isLeaving,
+                            onTap: () {
+                              HapticFeedbackUtils.impact();
+                              Navigator.of(context).pop();
+                              widget.onMemberTap(member.userId);
+                            },
+                            onRemove: widget.isOwner &&
+                                    member.userId != widget.ownerUserId &&
+                                    !_isRemoving
+                                ? () => _confirmRemoveMember(member)
+                                : null,
+                            onLeave: !widget.isOwner &&
+                                    widget.currentUserId != null &&
+                                    member.userId == widget.currentUserId &&
+                                    member.userId != widget.ownerUserId &&
+                                    !_isLeaving
+                                ? _confirmLeaveGroup
+                                : null,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final member in sortedMembers) ...[
-                  if (member != sortedMembers.first) const SizedBox(height: 10),
-                  _MemberProfileCard(
-                    member: member,
-                    ownerUserId: widget.ownerUserId,
-                    currentUserId: widget.currentUserId,
-                    compatibility: widget.memberCompatibility[member.userId],
-                    canRemove: widget.isOwner &&
-                        member.userId != widget.ownerUserId &&
-                        !_isRemoving,
-                    canLeave: !widget.isOwner &&
-                        widget.currentUserId != null &&
-                        member.userId == widget.currentUserId &&
-                        member.userId != widget.ownerUserId &&
-                        !_isLeaving,
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(context).pop();
-                      widget.onMemberTap(member.userId);
-                    },
-                    onRemove: widget.isOwner &&
-                            member.userId != widget.ownerUserId &&
-                            !_isRemoving
-                        ? () => _confirmRemoveMember(member)
-                        : null,
-                    onLeave: !widget.isOwner &&
-                            widget.currentUserId != null &&
-                            member.userId == widget.currentUserId &&
-                            member.userId != widget.ownerUserId &&
-                            !_isLeaving
-                        ? _confirmLeaveGroup
-                        : null,
-                  ),
-                ],
-              ],
             ),
           ),
         ],

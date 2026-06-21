@@ -55,6 +55,36 @@ class GroupShortlistItemCard extends StatelessWidget {
 
   static const double _thumbSize = 72;
 
+  static List<InlineSpan> _pricePerPersonSpans({
+    required String price,
+    required TextStyle amountStyle,
+  }) {
+    const placeholder = "{price}";
+    final template = L10n.get("group_shortlist_price_per_person");
+    final parts = template.split(placeholder);
+    if (parts.length == 1) {
+      return [
+        TextSpan(
+          text: L10n.getWithParams(
+            "group_shortlist_price_per_person",
+            params: {"price": price},
+          ),
+        ),
+      ];
+    }
+
+    final spans = <InlineSpan>[];
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        spans.add(TextSpan(text: parts[i]));
+      }
+      if (i < parts.length - 1) {
+        spans.add(TextSpan(text: price, style: amountStyle));
+      }
+    }
+    return spans;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -75,6 +105,12 @@ class GroupShortlistItemCard extends StatelessWidget {
     final perPersonPrice = fit.formatPerPersonPriceLabel();
     final showDiscuss = onDiscussInGroup != null;
     final rating = item.rating;
+    final hasGroupActivity = (rating?.count ?? 0) > 0 ||
+        (rating?.participants.any((participant) => participant.stars != null) ??
+            false);
+    final discussLabelKey = hasGroupActivity
+        ? "group_shortlist_continue_discussion"
+        : "group_shortlist_start_listing_discussion";
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -103,26 +139,20 @@ class GroupShortlistItemCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (ownerName != null || ownerAvatarUrl != null) ...[
-                        const SizedBox(height: 4),
-                        _OwnerLine(
-                          name: ownerName,
-                          avatarUrl: ownerAvatarUrl,
-                        ),
-                      ],
-                      if (item.savedByName != null) ...[
-                        const SizedBox(height: 4),
-                        _SaverLine(
-                          name: item.savedByName!,
-                          avatarUrl: item.savedByAvatarUrl,
-                        ),
-                      ],
                       if (perPersonPrice != null) ...[
                         const SizedBox(height: 8),
-                        Text(
-                          L10n.getWithParams(
-                            "group_shortlist_price_per_person",
-                            params: {"price": perPersonPrice},
+                        Text.rich(
+                          TextSpan(
+                            children: _pricePerPersonSpans(
+                              price: perPersonPrice,
+                              amountStyle: _plusOneFontSize(
+                                context,
+                                theme.textTheme.bodyMedium,
+                              ).copyWith(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                           style: _plusOneFontSize(
                             context,
@@ -132,26 +162,25 @@ class GroupShortlistItemCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (fit.budget == GroupHousingBudgetFit.fits) ...[
-                        const SizedBox(height: 4),
-                        _BudgetStatusLine(
-                          emoji: "✅",
-                          label: L10n.get("group_shortlist_fits_budget_check"),
-                          color: AppColors.successDark,
-                        ),
-                      ] else if (fit.budget == GroupHousingBudgetFit.above) ...[
-                        const SizedBox(height: 4),
-                        _BudgetStatusLine(
-                          emoji: "⚠️",
-                          label: L10n.get("group_shortlist_above_budget_check"),
-                          color: AppColors.warning,
-                        ),
-                      ],
                     ],
                   ),
                 ),
               ],
             ),
+            if (ownerName != null || ownerAvatarUrl != null) ...[
+              const SizedBox(height: 8),
+              _OwnerLine(
+                name: ownerName,
+                avatarUrl: ownerAvatarUrl,
+              ),
+            ],
+            if (item.savedByName != null) ...[
+              const SizedBox(height: 4),
+              _SaverLine(
+                name: item.savedByName!,
+                avatarUrl: item.savedByAvatarUrl,
+              ),
+            ],
             const SizedBox(height: 10),
             ..._buildFitChecks(),
             if (rating != null && rating.participants.isNotEmpty) ...[
@@ -171,7 +200,7 @@ class GroupShortlistItemCard extends StatelessWidget {
                   style: actionButtonStyle,
                   icon: const Icon(Icons.forum_outlined, size: 20),
                   label: Text(
-                    L10n.get("group_shortlist_discuss_in_group"),
+                    L10n.get(discussLabelKey),
                     style: _plusOneFontSize(
                       context,
                       theme.textTheme.labelLarge,
@@ -352,32 +381,6 @@ class GroupShortlistItemCard extends StatelessWidget {
       default:
         return shortNameEn ?? nameEn ?? nameRu ?? nameUz ?? "";
     }
-  }
-}
-
-class _BudgetStatusLine extends StatelessWidget {
-  const _BudgetStatusLine({
-    required this.emoji,
-    required this.label,
-    required this.color,
-  });
-
-  final String emoji;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      "$emoji $label",
-      style: _plusOneFontSize(
-        context,
-        Theme.of(context).textTheme.bodySmall,
-      ).copyWith(
-        color: color,
-        fontWeight: FontWeight.w600,
-      ),
-    );
   }
 }
 

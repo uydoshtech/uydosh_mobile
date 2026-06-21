@@ -209,6 +209,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   List<HomeFeedEntry>? _cachedFeedEntries;
   bool _isCreatingSearchAlert = false;
   bool _searchCountReady = false;
+  bool _searchResultsReady = false;
+  bool _searchRefreshInFlight = false;
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
   // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
@@ -275,16 +277,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // on the user's own listings.
     UserListingState().initialize();
 
-    unawaited(_bootstrapHomeSearchFilters());
+    if (!widget.isSearchMode) {
+      unawaited(_bootstrapHomeSearchFilters());
+    }
 
     // Initialize search filters with current parameters if in search mode
     if (widget.isSearchMode) {
-      if (!widget.useExplicitFiltersOnly) {
-        _initializeSearchFilters();
-      }
       // Trigger search when screen loads in search mode
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _performSearch();
+        unawaited(() async {
+          if (!widget.useExplicitFiltersOnly) {
+            await _initializeSearchFilters();
+          }
+          if (!mounted) return;
+          _performSearch();
+        }());
       });
     }
 
@@ -666,39 +673,39 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   /// Initialize search filters with widget parameters
-  void _initializeSearchFilters() {
+  Future<void> _initializeSearchFilters() async {
     if (widget.listingTypeId != null) {
-      _searchFiltersState.setListingTypeId(widget.listingTypeId!);
+      await _searchFiltersState.setListingTypeId(widget.listingTypeId!);
     }
     if (widget.locationId != null) {
-      _searchFiltersState.setLocationIndex(widget.locationId!);
+      await _searchFiltersState.setLocationIndex(widget.locationId!);
     }
     if (widget.subwayLineId != null && widget.locationId == null) {
-      _searchFiltersState.setLocationIndex(0);
+      await _searchFiltersState.setLocationIndex(0);
     }
     if (widget.subwayLineId != null) {
-      _searchFiltersState.setSubwayLine(widget.subwayLineId!);
+      await _searchFiltersState.setSubwayLine(widget.subwayLineId!);
     }
     if (widget.subwayLineId != null && widget.subwayStationId == null) {
-      _searchFiltersState.setStationIndex(0);
-      _searchFiltersState.setStationId(0);
+      await _searchFiltersState.setStationIndex(0);
+      await _searchFiltersState.setStationId(0);
     }
     if (widget.subwayStationId != null) {
-      _searchFiltersState.setStationId(widget.subwayStationId!);
+      await _searchFiltersState.setStationId(widget.subwayStationId!);
     }
     if (widget.gender != null) {
-      _searchFiltersState.setGender(widget.gender!);
+      await _searchFiltersState.setGender(widget.gender!);
     }
     if (widget.minPrice != null || widget.maxPrice != null) {
       final minPrice = widget.minPrice ?? _searchFiltersState.minPrice;
       final maxPrice = widget.maxPrice ?? _searchFiltersState.maxPrice;
-      _searchFiltersState.setPriceRange(minPrice, maxPrice);
+      await _searchFiltersState.setPriceRange(minPrice, maxPrice);
     }
     if (widget.privateRoom != null) {
-      _searchFiltersState.setPrivateRoom(widget.privateRoom!);
+      await _searchFiltersState.setPrivateRoom(widget.privateRoom!);
     }
     if (widget.withPhoto != null) {
-      _searchFiltersState.setWithPhoto(widget.withPhoto!);
+      await _searchFiltersState.setWithPhoto(widget.withPhoto!);
     }
   }
 
@@ -931,10 +938,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           loaded: (loadedState) {
             _resetLoadMoreState();
             _syncFeedEntriesCache(loadedState.listings);
+            final shouldUpdateSearchFlags =
+                _searchRefreshInFlight ||
+                (widget.isSearchMode && !_searchResultsReady);
+            if (shouldUpdateSearchFlags && mounted) {
+              setState(() {
+                _searchRefreshInFlight = false;
+                if (widget.isSearchMode) {
+                  _searchResultsReady = true;
+                }
+              });
+            }
           },
           error: (_) {
             _resetLoadMoreState();
             _clearFeedEntriesCache();
+            if (_searchRefreshInFlight && mounted) {
+              setState(() => _searchRefreshInFlight = false);
+            }
           },
         );
       },
@@ -981,6 +1002,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           }
           if (data.hasError) {
             return _buildErrorState(data.errorMessage);
+          }
+          if (widget.isSearchMode && !_searchResultsReady) {
+            return _buildLoadingState();
+          }
+          if (_searchRefreshInFlight &&
+              data.listings.isEmpty &&
+              (widget.isSearchMode ||
+                  _inlineSearchActive ||
+                  _inlineSearchClosing)) {
+            return _buildLoadingState();
           }
           if (data.listings.isEmpty) {
             return (widget.isSearchMode ||
@@ -2290,10 +2321,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }) {
     final listingsBloc = context.read<ListingsBloc>();
 
-    // Hide the old count immediately so it can't flash from a previous `loaded`
-    // state while this new search is being dispatched.
+    // Hide stale search UI from a previous `loaded` state while this new search
+    // is being dispatched.
     if (isRefresh && mounted) {
-      setState(() => _searchCountReady = false);
+      setState(() {
+        _searchCountReady = false;
+        final inSearchContext = widget.isSearchMode ||
+            _inlineSearchActive ||
+            _inlineSearchClosing ||
+            HomeInlineSearchState().isActive;
+        if (inSearchContext) {
+          _searchRefreshInFlight = true;
+        }
+        if (widget.isSearchMode) {
+          _searchResultsReady = false;
+        }
+      });
     }
 
     // When opened from metro map with only station: use station-only API (no transfer expansion, no other filters)
