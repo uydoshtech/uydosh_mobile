@@ -220,6 +220,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // surprise the user with the ribbon popping up during normal browsing
   // (e.g. when another part of the app touches a filter setter).
   DateTime? _postLoginActivationDeadline;
+  /// True while reloading per-user ribbon-dismiss prefs after a login flip.
+  /// Blocks [_onSearchFiltersStateChanged] from auto-opening the ribbon until
+  /// the scoped dismiss flag is hydrated (logout clears session before prefs).
+  bool _postLoginRibbonDismissHydrating = false;
   // Tracks the previous value of [AuthenticationState.isAuthenticated] so
   // we react only to real transitions. Without this guard, the Firebase
   // auth listener firing during logout (local session is briefly still
@@ -364,7 +368,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final restored = await _restoreInlineSearchModeFromPrefs();
     if (restored) return;
     if (!mounted) return;
-    if (HomeInlineSearchState().ribbonDismissedByUser) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) {
+      _ensureUnfilteredBrowseFeed();
+      return;
+    }
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
     // Always apply the current filters to the feed on home load: freshly built
@@ -389,6 +396,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _rebootstrapAfterLogin() async {
     if (!mounted) return;
     if (!await SessionManager.isAuthenticated()) return;
+    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
+    if (!mounted) return;
     await _searchFiltersState.hydrateFromBackendForCurrentUser();
     unawaited(PriceDisplaySettingsState().hydrateFromBackendForCurrentUser());
     if (!mounted) return;
@@ -403,6 +412,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     if (!mounted) return;
     if (HomeInlineSearchState().ribbonDismissedByUser) {
       _postLoginActivationDeadline = null;
+      _ensureUnfilteredBrowseFeed();
       return;
     }
     if (widget.isSearchMode) return;
@@ -447,6 +457,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return false;
     if (!active) return false;
+    if (HomeInlineSearchState().ribbonDismissedByUser) {
+      try {
+        await prefs.setBool(HomeInlineSearchState.activePrefsKey, false);
+      } catch (_) {}
+      return false;
+    }
     _activateInlineSearch(persistActiveFlag: false);
     return true;
   }
@@ -512,8 +528,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         // gate in [_buildInlineFiltersRibbonAnimated] re-evaluates.
         _postLoginActivationDeadline =
             DateTime.now().add(const Duration(seconds: 20));
+        _postLoginRibbonDismissHydrating = true;
         setState(() {});
-        unawaited(_rebootstrapAfterLogin());
+        unawaited(() async {
+          await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
+          if (!mounted) return;
+          _postLoginRibbonDismissHydrating = false;
+          await _rebootstrapAfterLogin();
+        }());
       } else if (_postLoginActivationDeadline != null &&
           DateTime.now().isBefore(_postLoginActivationDeadline!)) {
         // Follow-up notification within the window: retry the bootstrap
@@ -534,10 +556,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // subtree in this frame, instead of letting it play a 750ms slide-out
     // with the previous user's chips cached on the outgoing child.
     _postLoginActivationDeadline = null;
+    _postLoginRibbonDismissHydrating = false;
     if (_inlineSearchActive) {
       _exitInlineSearch(animated: false, recordRibbonDismissed: false);
     } else {
       setState(() {});
+      _ensureUnfilteredBrowseFeed();
     }
   }
 
@@ -565,6 +589,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // already finished its (then-stale) heuristic check.
     final deadline = _postLoginActivationDeadline;
     if (deadline == null || DateTime.now().isAfter(deadline)) return;
+    if (_postLoginRibbonDismissHydrating) return;
     if (!AuthenticationState().isAuthenticated) return;
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
@@ -753,13 +778,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         keepStaleWhileRibbonAnimates: keepStaleWhileRefreshing,
       );
     } else {
-      context.read<ListingsBloc>().add(
-            ListingsEvent.searchListings(
-              isRefresh: true,
-              keepStaleWhileRefreshing: keepStaleWhileRefreshing,
-            ),
-          );
+      _ensureUnfilteredBrowseFeed(
+        keepStaleWhileRefreshing: keepStaleWhileRefreshing,
+      );
     }
+  }
+
+  /// Default home browse feed — no ribbon filter criteria applied. Saved filter
+  /// values remain in [SearchFiltersState] for the search sheet / ribbon.
+  void _ensureUnfilteredBrowseFeed({bool keepStaleWhileRefreshing = false}) {
+    if (widget.isSearchMode || _inlineSearchActive) return;
+    if (!mounted) return;
+    context.read<ListingsBloc>().add(
+          ListingsEvent.searchListings(
+            isRefresh: true,
+            keepStaleWhileRefreshing: keepStaleWhileRefreshing,
+          ),
+        );
   }
 
   Future<void> _onFeedPullRefresh() async {
@@ -1983,9 +2018,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Resets filters to defaults (local + server when logged in) so a later
   /// cold start does not restore the previous search, then closes inline mode.
   /// The Settings toggle "Restore filters on app start" is unchanged.
-  // NOTE: Closing the ribbon should NOT reset filters — users expect the bottom
-  // sheet to keep their current selections. Filter reset is handled explicitly
-  // via "clear" actions (e.g. empty state CTA).
+  // NOTE: Closing the ribbon hides it and reloads the unfiltered browse feed.
+  // Filter selections stay in [SearchFiltersState] for the search sheet; they
+  // apply again only when the user re-opens the ribbon (search / apply).
 
   void _exitInlineSearch({
     bool animated = true,

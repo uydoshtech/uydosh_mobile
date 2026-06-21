@@ -1,5 +1,6 @@
 import "package:flutter/foundation.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 
 /// Global state for whether Home's inline-search ribbon is active.
 ///
@@ -19,18 +20,31 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// When true, the user closed the filter-chip ribbon while filters may still
   /// be non-default. [HomeScreen] skips the post-start heuristic that would
   /// otherwise reopen the ribbon; cleared when they commit from the search
-  /// sheet or we restore `activePrefsKey` from prefs. Logout clears this.
+  /// sheet or we restore `activePrefsKey` from prefs. Scoped per user (or
+  /// guest) so logout/login does not forget a deliberate dismiss.
   static const String ribbonUserDismissedPrefsKey =
       "home_inline_search_ribbon_user_dismissed";
 
   bool _isActive = false;
 
-  /// Loaded from [ribbonUserDismissedPrefsKey] during home bootstrap.
+  /// Loaded from a scoped [ribbonUserDismissedPrefsKey] during home bootstrap.
   bool _ribbonDismissedByUser = false;
 
   bool get isActive => _isActive;
 
   bool get ribbonDismissedByUser => _ribbonDismissedByUser;
+
+  static String _ribbonDismissedPrefsKeyForScope({required int? userId}) {
+    if (userId != null) {
+      return "${ribbonUserDismissedPrefsKey}_$userId";
+    }
+    return "${ribbonUserDismissedPrefsKey}_guest";
+  }
+
+  Future<int?> _currentRibbonDismissScopeUserId() async {
+    if (!await SessionManager.isAuthenticated()) return null;
+    return SessionManager.getUserId();
+  }
 
   void setActive(bool v) {
     if (_isActive == v) return;
@@ -41,10 +55,26 @@ class HomeInlineSearchState extends ChangeNotifier {
   Future<void> hydrateRibbonDismissedFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _ribbonDismissedByUser =
-          prefs.getBool(ribbonUserDismissedPrefsKey) ?? false;
+      final userId = await _currentRibbonDismissScopeUserId();
+      final scopedKey = _ribbonDismissedPrefsKeyForScope(userId: userId);
+      var dismissed = prefs.getBool(scopedKey) ?? false;
+      if (!dismissed) {
+        final legacyDismissed =
+            prefs.getBool(ribbonUserDismissedPrefsKey) ?? false;
+        if (legacyDismissed) {
+          dismissed = true;
+          await prefs.setBool(scopedKey, true);
+          await prefs.remove(ribbonUserDismissedPrefsKey);
+        }
+      }
+      if (_ribbonDismissedByUser == dismissed) return;
+      _ribbonDismissedByUser = dismissed;
+      notifyListeners();
     } catch (_) {
-      _ribbonDismissedByUser = false;
+      if (_ribbonDismissedByUser) {
+        _ribbonDismissedByUser = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -56,24 +86,27 @@ class HomeInlineSearchState extends ChangeNotifier {
     notifyListeners();
     try {
       final prefs = await SharedPreferences.getInstance();
+      final userId = await _currentRibbonDismissScopeUserId();
+      final scopedKey = _ribbonDismissedPrefsKeyForScope(userId: userId);
       if (dismissed) {
-        await prefs.setBool(ribbonUserDismissedPrefsKey, true);
+        await prefs.setBool(scopedKey, true);
       } else {
-        await prefs.remove(ribbonUserDismissedPrefsKey);
+        await prefs.remove(scopedKey);
       }
     } catch (_) {}
   }
 
-  /// Clears in-memory flag and persisted inline-search mode after logout or
-  /// session expiry so the guest home feed does not reopen with a search ribbon.
+  /// Clears persisted inline-search mode after logout or session expiry so the
+  /// guest home feed does not reopen with a search ribbon. Per-user dismiss
+  /// prefs are kept so the same account does not see the ribbon pop back after
+  /// signing in again.
   Future<void> clearPersistedActiveForLogout() async {
     setActive(false);
-    _ribbonDismissedByUser = false;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(activePrefsKey, false);
-      await prefs.remove(ribbonUserDismissedPrefsKey);
     } catch (_) {}
+    await hydrateRibbonDismissedFromPrefs();
   }
 }
 

@@ -88,7 +88,13 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
                         // Tighten the primary title slightly when a subtitle
                         // is present so the two lines comfortably fit
                         // [kToolbarHeight] without inflating the AppBar.
-                        fontSize: subtitle == null ? 20 : 17,
+                        // Group participant names use a smaller size so long
+                        // comma-separated lists fit without crowding the bar.
+                        fontSize: (subtitle == null ? 20 : 17) -
+                            (groupParticipants != null &&
+                                    groupParticipants!.isNotEmpty
+                                ? 2
+                                : 0),
                         fontWeight: FontWeight.bold,
                         height: 1.1,
                       ),

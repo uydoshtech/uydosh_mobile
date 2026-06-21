@@ -14,6 +14,7 @@ import "package:uy_dosh/base/navigation/top_named_route_tracker.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/services/device_info_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -212,8 +213,8 @@ class PushNotificationService implements IPushNotificationService {
 
   void _onForegroundMessage(RemoteMessage message) {
     logger.d("📲 FCM foreground message: ${message.notification?.title}");
-    // Refresh unread count; optionally show in-app banner
     _handleNewMessageNotification(message);
+    _handleGroupShortlistAddedNotification(message);
   }
 
   void _handleNotificationTap(RemoteMessage message) {
@@ -223,6 +224,14 @@ class PushNotificationService implements IPushNotificationService {
       return;
     }
     _routeFromNotification(message);
+  }
+
+  void _handleGroupShortlistAddedNotification(RemoteMessage message) {
+    final data = message.data;
+    if (data["type"] != "group_shortlist_added") return;
+    final groupListingId = int.tryParse("${data["listingId"] ?? ""}");
+    if (groupListingId == null || groupListingId <= 0) return;
+    GroupShortlistState().refreshCount(groupListingId);
   }
 
   void _handleNewMessageNotification(RemoteMessage message) {
@@ -251,6 +260,8 @@ class PushNotificationService implements IPushNotificationService {
         "$type:${data["listingId"] ?? ""}:${data["requestId"] ?? ""}",
       "group_join_accepted" => "$type:${data["listingId"] ?? ""}",
       "group_join_rejected" => "$type:${data["listingId"] ?? ""}",
+      "group_shortlist_added" =>
+        "$type:${data["listingId"] ?? ""}:${data["housingListingId"] ?? ""}",
       _ => "$type:${data["conversationId"] ?? ""}",
     };
   }
@@ -285,6 +296,8 @@ class PushNotificationService implements IPushNotificationService {
       );
     } else if (type == "group_join_rejected") {
       _navigateToListingFromGroupPush(message);
+    } else if (type == "group_shortlist_added") {
+      _navigateToGroupChatFromShortlistPush(message);
     }
   }
 
@@ -376,6 +389,60 @@ class PushNotificationService implements IPushNotificationService {
 
   void _navigateToListingFromSearchAlert(RemoteMessage message) {
     _navigateToListingFromGroupPush(message);
+  }
+
+  void _navigateToGroupChatFromShortlistPush(RemoteMessage message) {
+    final data = message.data;
+    final conversationId = int.tryParse(data["conversationId"] ?? "");
+    final groupListingId = int.tryParse(data["listingId"] ?? "");
+    if (conversationId == null ||
+        conversationId <= 0 ||
+        groupListingId == null ||
+        groupListingId <= 0) {
+      _navigateToListingFromGroupPush(
+        message,
+        initialAction: ListingDetailPendingAction.openGroupChat,
+      );
+      return;
+    }
+
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
+    final navigatorKey = getIt<GlobalKey<NavigatorState>>();
+    final nav = navigatorKey.currentState;
+    if (nav == null) return;
+
+    final targetName = ChatScreen.routeName(conversationId);
+    nav.popUntil((route) {
+      if (route.isFirst) return true;
+      return route.settings.name == targetName;
+    });
+
+    if (topNamedRouteTracker.topName == targetName ||
+        UnreadMessagesState().activeConversationId == conversationId) {
+      GroupShortlistState().refreshCount(groupListingId);
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!nav.mounted) return;
+      if (topNamedRouteTracker.topName == targetName ||
+          UnreadMessagesState().activeConversationId == conversationId) {
+        GroupShortlistState().refreshCount(groupListingId);
+        return;
+      }
+
+      nav.push<void>(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(name: targetName),
+          builder: (_) => ChatScreen(
+            conversationId: conversationId,
+            listingId: groupListingId,
+            conversationContextType: "listing_group",
+          ),
+        ),
+      );
+      GroupShortlistState().refreshCount(groupListingId);
+    });
   }
 
   void _navigateToListingFromGroupPush(

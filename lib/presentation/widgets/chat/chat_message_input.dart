@@ -155,15 +155,18 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
                               HapticFeedbackUtils.impact();
                               widget.onSend();
                             },
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     backgroundColor: sendButtonBase,
                     borderSide: BorderSide(
                       color: scheme.onSurface.withValues(alpha: 0.06),
                       width: 1,
                     ),
                     child: SizedBox(
-                      width: 28,
-                      height: 28,
+                      width: 24,
+                      height: 24,
                       child: Center(
                         child:
                             widget.isSendingMessage
