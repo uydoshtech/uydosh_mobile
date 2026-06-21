@@ -14,7 +14,10 @@ import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 /// Navigation helpers to reduce duplication of Navigator.push / MaterialPageRoute.
 extension NavigatorExtensions on BuildContext {
   /// Push listing detail screen with required BlocProvider.
-  Future<void> pushListingDetail(int listingId) async {
+  Future<void> pushListingDetail(
+    int listingId, {
+    int? groupHousingContextListingId,
+  }) async {
     await Navigator.of(this).push(
       MaterialPageRoute<void>(
         builder: (_) => MultiBlocProvider(
@@ -24,7 +27,10 @@ extension NavigatorExtensions on BuildContext {
             ),
             BlocProvider(create: (_) => ListingDetailPageBloc()),
           ],
-          child: ListingDetailScreen(listingId: listingId),
+          child: ListingDetailScreen(
+            listingId: listingId,
+            groupHousingContextListingId: groupHousingContextListingId,
+          ),
         ),
       ),
     );

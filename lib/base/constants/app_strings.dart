@@ -111,9 +111,14 @@ class AppStrings {
       "group_shortlist_empty_title": "No saved listings yet",
       "group_shortlist_empty_subtitle":
           "Browse housing offers and save options to discuss with your group",
-      "group_shortlist_saved_by": "Saved by {name}",
+      "group_shortlist_saved_by": "Saved by",
+      "group_shortlist_saved_by_suffix": "",
       "group_shortlist_open": "Open",
       "group_shortlist_contact_landlord": "Contact landlord",
+      "group_shortlist_remove_title": "Remove from saved list?",
+      "group_shortlist_remove_message":
+          "{title} will be removed from the group saved list.",
+      "group_shortlist_remove_confirm": "Remove",
       "group_housing_fits_budget": "Fits group budget",
       "group_housing_above_budget": "Above group budget",
       "group_housing_search_banner":
@@ -1932,9 +1937,15 @@ class AppStrings {
       "group_shortlist_empty_title": "Пока нет сохранённых объявлений",
       "group_shortlist_empty_subtitle":
           "Ищите жильё и сохраняйте варианты для обсуждения с группой",
-      "group_shortlist_saved_by": "Сохранил(а) {name}",
+      "group_shortlist_saved_by": "Сохранил",
+      "group_shortlist_saved_by_female": "Сохранила",
+      "group_shortlist_saved_by_suffix": "",
       "group_shortlist_open": "Открыть",
       "group_shortlist_contact_landlord": "Связаться с арендодателем",
+      "group_shortlist_remove_title": "Удалить из сохранённых?",
+      "group_shortlist_remove_message":
+          "«{title}» будет удалено из списка сохранённых группы.",
+      "group_shortlist_remove_confirm": "Удалить",
       "group_housing_fits_budget": "Вписывается в бюджет",
       "group_housing_above_budget": "Выше бюджета группы",
       "group_housing_search_banner":
@@ -3784,9 +3795,15 @@ class AppStrings {
       "group_shortlist_empty_title": "Hali saqlangan e'lonlar yo'q",
       "group_shortlist_empty_subtitle":
           "Uy-joy e'lonlarini qidiring va guruh bilan muhokama qilish uchun saqlang",
-      "group_shortlist_saved_by": "{name} saqladi",
+      "group_shortlist_saved_by": "",
+      "group_shortlist_saved_by_suffix": "saqladi",
       "group_shortlist_open": "Ochish",
       "group_shortlist_contact_landlord": "Ijara beruvchi bilan bog'lanish",
+      "group_shortlist_remove_title":
+          "Saqlanganlar ro'yxatidan olib tashlansinmi?",
+      "group_shortlist_remove_message":
+          "«{title}» guruhning saqlangan ro'yxatidan olib tashlanadi.",
+      "group_shortlist_remove_confirm": "Olib tashlash",
       "group_housing_fits_budget": "Byudjetga mos",
       "group_housing_above_budget": "Guruh byudjetidan yuqori",
       "group_housing_search_banner":

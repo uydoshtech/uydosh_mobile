@@ -150,6 +150,8 @@ class ListingGroupShortlistItem {
     required this.savedByUserId,
     required this.createdAt,
     this.savedByName,
+    this.savedByAvatarUrl,
+    this.savedByGender,
     this.listingJson,
   });
 
@@ -162,6 +164,8 @@ class ListingGroupShortlistItem {
       savedByUserId: (json["saved_by_user_id"] as num).toInt(),
       createdAt: json["created_at"]?.toString() ?? "",
       savedByName: savedBy?["name"] as String?,
+      savedByAvatarUrl: savedBy?["avatar_url"] as String?,
+      savedByGender: (savedBy?["gender"] as num?)?.toInt(),
       listingJson: _optionalJsonMap(json["listing"]),
     );
   }
@@ -172,6 +176,8 @@ class ListingGroupShortlistItem {
   final int savedByUserId;
   final String createdAt;
   final String? savedByName;
+  final String? savedByAvatarUrl;
+  final int? savedByGender;
   final Map<String, dynamic>? listingJson;
 }
 

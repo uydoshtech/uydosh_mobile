@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -12,7 +13,6 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_save_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -255,13 +255,9 @@ class _HousingSearchResultCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => ListingDetailScreen(
-                listingId: listing.id,
-                groupHousingContextListingId: groupListingDetail.id,
-              ),
-            ),
+          context.pushListingDetail(
+            listing.id,
+            groupHousingContextListingId: groupListingDetail.id,
           );
         },
         child: Padding(

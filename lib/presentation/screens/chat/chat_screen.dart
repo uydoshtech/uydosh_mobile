@@ -32,6 +32,7 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -88,6 +89,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -197,7 +199,6 @@ class _ChatScreenState extends State<ChatScreen> {
   List<ConversationMemberSummary> _groupParticipants = [];
   bool _groupMembersFetchInFlight = false;
   ListingDetail? _groupListingDetail;
-  int _groupShortlistCount = 0;
   bool _groupChatIsOwner = false;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
@@ -253,6 +254,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
 
+  /// Circular shortlist badge diameter; half floats above the composer panel edge.
+  static const double _groupShortlistPillSize = 44;
+  static const double _groupShortlistPillFloatAbove = _groupShortlistPillSize / 2;
+
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
   List<MessageGroupListItem>? _cachedGroupedItems;
@@ -271,6 +276,19 @@ class _ChatScreenState extends State<ChatScreen> {
     if (ctx == "listing_group") return true;
     return widget.listingTypeId == ListingTypeIds.groupForming &&
         widget.otherUserId == null;
+  }
+
+  bool get _showGroupShortlistPill =>
+      _isGroupChat &&
+      widget.listingId != null &&
+      _groupListingDetail?.groupContext?.canUseHousingShortlist == true;
+
+  double get _composerBottomReserveHeight {
+    var height = _glassComposerEstimatedHeight;
+    if (_showGroupShortlistPill) {
+      height += _groupShortlistPillFloatAbove;
+    }
+    return height;
   }
 
   Future<void> _loadGroupParticipants() async {
@@ -313,7 +331,6 @@ class _ChatScreenState extends State<ChatScreen> {
       if (!mounted) return;
       setState(() {
         _groupListingDetail = detail;
-        _groupShortlistCount = count;
         _groupChatIsOwner = ctx?.isOwner == true;
       });
       GroupShortlistState().setShortlistCountForGroup(listingId, count);
@@ -322,38 +339,124 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _buildGroupShortlistAppBarButton(BuildContext context) {
+  Widget _buildGroupShortlistFloatingPill(BuildContext context) {
     final listingId = widget.listingId;
     if (listingId == null) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.only(right: 4),
-      child: TextButton(
-        onPressed: () async {
-          await GroupHousingFlow.openShortlistSheet(
-            context: context,
-            groupListingId: listingId,
-            isOwner: _groupChatIsOwner,
-            groupListingDetail: _groupListingDetail,
-          );
-          if (!mounted) return;
-          final count =
-              GroupShortlistState().shortlistCountForGroup(listingId);
-          setState(() => _groupShortlistCount = count);
-        },
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        child: Text(
-          L10n.getWithParams(
-            "group_shortlist_chip",
-            params: {"count": _groupShortlistCount.toString()},
+    return ListenableBuilder(
+      listenable: GroupShortlistState(),
+      builder: (context, _) {
+        final count = GroupShortlistState().shortlistCountForGroup(listingId);
+        final tooltip = count > 0
+            ? L10n.getWithParams(
+                "group_shortlist_title_count",
+                params: {"count": count.toString()},
+              )
+            : L10n.get("group_shortlist_title");
+
+        return Semantics(
+          button: true,
+          label: tooltip,
+          child: Tooltip(
+            message: tooltip,
+            child: ThreeDPillButton(
+              neumorphicSoftUi: true,
+              onPressed: () async {
+                await GroupHousingFlow.openShortlistSheet(
+                  context: context,
+                  groupListingId: listingId,
+                  isOwner: _groupChatIsOwner,
+                  groupListingDetail: _groupListingDetail,
+                );
+              },
+              padding: EdgeInsets.zero,
+              borderRadius: BorderRadius.circular(_groupShortlistPillSize / 2),
+              child: SizedBox(
+                width: _groupShortlistPillSize,
+                height: _groupShortlistPillSize,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    ThemeIcon(
+                      count > 0 ? Icons.bookmark : Icons.bookmark_outline,
+                      size: 22,
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        right: 2,
+                        top: 2,
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            count > 99 ? "99+" : count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        );
+      },
+    );
+  }
+
+  Widget _chatComposerColumn({required bool blendWithGlassBackdrop}) {
+    final showPill = _showGroupShortlistPill;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showPill) const SizedBox(height: _groupShortlistPillFloatAbove),
+        _chatComposerWithListener(
+          blendWithGlassBackdrop: blendWithGlassBackdrop,
         ),
-      ),
+        QuickQuestionsWidget(
+          onQuestionTap: _onQuestionTap,
+          conversationContextType: widget.conversationContextType,
+          listingTypeId: widget.listingTypeId,
+          isViewerServiceOfferer: _isViewerServiceOfferer,
+          isViewerListingAuthor: _isViewerListingOwner,
+          blendWithGlassBackdrop: blendWithGlassBackdrop,
+        ),
+      ],
+    );
+  }
+
+  Widget _chatComposerSection({required bool blendWithGlassBackdrop}) {
+    final showPill = _showGroupShortlistPill;
+    final composer = _chatComposerColumn(
+      blendWithGlassBackdrop: blendWithGlassBackdrop,
+    );
+    if (!showPill) return composer;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        composer,
+        Positioned(
+          top: -_groupShortlistPillFloatAbove,
+          child: _buildGroupShortlistFloatingPill(context),
+        ),
+      ],
     );
   }
 
@@ -1113,7 +1216,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String _groupHeaderTitle() {
     final names = _groupParticipants
-        .map((p) => p.name.trim())
+        .map((p) => StringUtils.splitFullName(p.name.trim()).$1)
         .where((n) => n.isNotEmpty)
         .toList();
     if (names.isEmpty) {
@@ -1128,7 +1231,7 @@ class _ChatScreenState extends State<ChatScreen> {
   EdgeInsets _messagesListPadding(BuildContext context) {
     const base = EdgeInsets.all(16);
     if (!ThemeState().isBlueTheme) return base;
-    final extra = _glassComposerEstimatedHeight +
+    final extra = _composerBottomReserveHeight +
         MediaQuery.viewPaddingOf(context).bottom;
     return base.copyWith(bottom: base.bottom + extra);
   }
@@ -1187,7 +1290,8 @@ class _ChatScreenState extends State<ChatScreen> {
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final enableGlass =
         AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
-    return ClipRRect(
+    final showPill = _showGroupShortlistPill;
+    final glassPanel = ClipRRect(
       borderRadius: topRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(
@@ -1205,22 +1309,22 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _chatComposerWithListener(blendWithGlassBackdrop: true),
-              QuickQuestionsWidget(
-                onQuestionTap: _onQuestionTap,
-                conversationContextType: widget.conversationContextType,
-                listingTypeId: widget.listingTypeId,
-                isViewerServiceOfferer: _isViewerServiceOfferer,
-                isViewerListingAuthor: _isViewerListingOwner,
-                blendWithGlassBackdrop: true,
-              ),
-            ],
-          ),
+          child: _chatComposerColumn(blendWithGlassBackdrop: true),
         ),
       ),
+    );
+    if (!showPill) return glassPanel;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        glassPanel,
+        Positioned(
+          top: -_groupShortlistPillFloatAbove,
+          child: _buildGroupShortlistFloatingPill(context),
+        ),
+      ],
     );
   }
 
@@ -1457,12 +1561,7 @@ class _ChatScreenState extends State<ChatScreen> {
             onPeerAvatarTap: _isGroupChat ? null : _navigateToUserProfile,
             actionBeforeMenu: widget.gigRequestId != null
                 ? _buildInviteToBookAppBarButton(context)
-                : (_isGroupChat &&
-                        widget.listingId != null &&
-                        _groupListingDetail?.groupContext?.canUseHousingShortlist ==
-                            true)
-                    ? _buildGroupShortlistAppBarButton(context)
-                    : null,
+                : null,
             actionMenuItems: _buildActionMenuItems(),
           ),
           body: GestureDetector(
@@ -1473,6 +1572,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: themeState.isBlueTheme
                 ? Stack(
                     fit: StackFit.expand,
+                    clipBehavior: Clip.none,
                     children: [
                       Positioned.fill(
                         child: Padding(
@@ -1502,16 +1602,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       ..._chatLeadingRibbonWidgets(),
                       _messageScrollExpanded(),
-                      _chatComposerWithListener(
-                        blendWithGlassBackdrop: false,
-                      ),
-                      QuickQuestionsWidget(
-                        onQuestionTap: _onQuestionTap,
-                        conversationContextType: widget.conversationContextType,
-                        listingTypeId: widget.listingTypeId,
-                        isViewerServiceOfferer: _isViewerServiceOfferer,
-                        isViewerListingAuthor: _isViewerListingOwner,
-                      ),
+                      _chatComposerSection(blendWithGlassBackdrop: false),
                     ],
                   ),
           ),

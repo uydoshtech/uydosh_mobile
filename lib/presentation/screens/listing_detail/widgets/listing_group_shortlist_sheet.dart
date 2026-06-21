@@ -3,6 +3,8 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -13,9 +15,9 @@ import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_screen.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -111,6 +113,62 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
     }
   }
 
+  Future<void> _confirmRemove(_ShortlistRow row) async {
+    if (_removingId != 0) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+          title: Text(
+            L10n.get("group_shortlist_remove_title"),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+          content: Text(
+            L10n.getWithParams(
+              "group_shortlist_remove_message",
+              params: {"title": row.listing.title},
+            ),
+            style: TextStyle(
+              fontSize: 16,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
+              child: Text(
+                L10n.get("cancel"),
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(foregroundColor: scheme.error),
+              child: Text(
+                L10n.get("group_shortlist_remove_confirm"),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    await _remove(row);
+  }
+
   Future<void> _remove(_ShortlistRow row) async {
     if (_removingId != 0) return;
     setState(() => _removingId = row.listing.id);
@@ -143,13 +201,9 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
 
   Future<void> _openListing(_ShortlistRow row) async {
     Navigator.of(context).pop();
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => ListingDetailScreen(
-          listingId: row.listing.id,
-          groupHousingContextListingId: widget.groupListingId,
-        ),
-      ),
+    await context.pushListingDetail(
+      row.listing.id,
+      groupHousingContextListingId: widget.groupListingId,
     );
   }
 
@@ -295,17 +349,11 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                               if (row.item.savedByName !=
                                                   null) ...[
                                                 const SizedBox(height: 4),
-                                                Text(
-                                                  L10n.getWithParams(
-                                                    "group_shortlist_saved_by",
-                                                    params: {
-                                                      "name":
-                                                          row.item.savedByName!,
-                                                    },
-                                                  ),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
+                                                _GroupShortlistSavedByLine(
+                                                  name: row.item.savedByName!,
+                                                  avatarUrl:
+                                                      row.item.savedByAvatarUrl,
+                                                  gender: row.item.savedByGender,
                                                 ),
                                               ],
                                             ],
@@ -354,7 +402,7 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
                                               ? null
                                               : () {
                                                   HapticFeedbackUtils.impact();
-                                                  _remove(row);
+                                                  _confirmRemove(row);
                                                 },
                                           icon: isRemoving
                                               ? const SizedBox(
@@ -409,4 +457,71 @@ class _ShortlistRow {
 
   final ListingGroupShortlistItem item;
   final Listing listing;
+}
+
+class _GroupShortlistSavedByLine extends StatelessWidget {
+  const _GroupShortlistSavedByLine({
+    required this.name,
+    this.avatarUrl,
+    this.gender,
+  });
+
+  final String name;
+  final String? avatarUrl;
+  final int? gender;
+
+  String get _prefixKey {
+    if (L10n.currentLanguage == "ru") {
+      return gender == 2
+          ? "group_shortlist_saved_by_female"
+          : "group_shortlist_saved_by";
+    }
+    return "group_shortlist_saved_by";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall;
+    final prefix = L10n.get(_prefixKey).trim();
+    final suffix = L10n.get("group_shortlist_saved_by_suffix").trim();
+    final initials = StringUtils.extractInitials(name);
+    final spans = <InlineSpan>[];
+
+    if (prefix.isNotEmpty) {
+      spans.add(TextSpan(text: "$prefix ", style: style));
+    }
+
+    spans.add(
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: FittedBox(
+              child: ChatAvatar(
+                isCurrentUser: false,
+                initials: initials.isEmpty ? null : initials,
+                avatarUrl: avatarUrl,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    spans.add(
+      TextSpan(
+        text: name,
+        style: style?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+
+    if (suffix.isNotEmpty) {
+      spans.add(TextSpan(text: " $suffix", style: style));
+    }
+
+    return Text.rich(TextSpan(children: spans));
+  }
 }
