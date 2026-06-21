@@ -13,9 +13,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
-import "package:uy_dosh/domain/utils/group_shortlist_discuss_message.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_bubble_with_tail.dart";
-import "package:uy_dosh/presentation/widgets/chat/chat_listing_share_footer.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -41,7 +39,6 @@ class MessageBubble extends StatefulWidget {
     this.onSetReaction,
     this.onClearReaction,
     this.onLongPressEditOwnMessage,
-    this.onOpenSharedListing,
   });
   final Message message;
   final bool isCurrentUser;
@@ -87,9 +84,6 @@ class MessageBubble extends StatefulWidget {
 
   /// Long-press on **own** text bubbles opens edit in the parent.
   final VoidCallback? onLongPressEditOwnMessage;
-
-  /// Opens a housing listing referenced by a group shortlist share bubble.
-  final ValueChanged<int>? onOpenSharedListing;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -316,9 +310,6 @@ class _MessageBubbleState extends State<MessageBubble>
 
         final textColor =
             widget.isCurrentUser ? ownMessageTextColor : otherMessageTextColor;
-        final listingShare = GroupShortlistDiscussMessage.parse(
-          widget.message.content,
-        );
         final embedOutgoingReactionsUnderBubble =
             widget.isCurrentUser && _hasReactionRow;
 
@@ -356,18 +347,9 @@ class _MessageBubbleState extends State<MessageBubble>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildMessageContent(
-                                    _displayText(listingShare),
+                                    _displayText(),
                                     textColor,
                                   ),
-                                  if (listingShare.hasListingFooter &&
-                                      widget.onOpenSharedListing != null) ...[
-                                    ChatListingShareFooter(
-                                      textColor: textColor,
-                                      onTap: () => widget.onOpenSharedListing!(
-                                        listingShare.listingId!,
-                                      ),
-                                    ),
-                                  ],
                                   if (widget.translation == null &&
                                       widget.isTranslating) ...[
                                     const SizedBox(height: 6),
@@ -1174,12 +1156,7 @@ class _MessageBubbleState extends State<MessageBubble>
 
   /// Text to render inside the bubble — translation by default when
   /// available, original when the user has toggled "Show original".
-  String _displayText(GroupShortlistDiscussPayload listingShare) {
-    if (listingShare.hasListingFooter &&
-        (widget.translation == null || widget.showOriginal)) {
-      return listingShare.displayText;
-    }
-
+  String _displayText() {
     final t = widget.translation;
     if (t == null || widget.showOriginal) return widget.message.content;
     return t.translatedText;

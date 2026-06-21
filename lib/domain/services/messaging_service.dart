@@ -138,6 +138,12 @@ abstract class IMessagingService {
 
   /// Removes the current user's reaction from a message.
   Future<Message> removeMessageReaction({required int messageId});
+
+  /// Star rating (1–5) on a listing-share message in group housing chat.
+  Future<Message> setListingRating({
+    required int messageId,
+    required int stars,
+  });
 }
 
 class MessagingService implements IMessagingService {
@@ -919,6 +925,47 @@ class MessagingService implements IMessagingService {
       throw Exception("Failed to remove reaction");
     }
   }
+
+  @override
+  Future<Message> setListingRating({
+    required int messageId,
+    required int stars,
+  }) async {
+    await _checkAuthentication();
+    try {
+      final response =
+          await _apiClient.post<Map<String, dynamic>, _ListingRatingBody>(
+            "/messages/$messageId/listing-rating",
+            (json) => json as Map<String, dynamic>,
+            data: _ListingRatingBody(stars: stars),
+          );
+      final messageData = response["data"] as Map<String, dynamic>?;
+      if (messageData == null) {
+        throw Exception("No message data found in response");
+      }
+      return Message.fromJson(messageData);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        final data = e.response?.data;
+        if (data is Map &&
+            ((data["code"] == "USER_BLOCKED") ||
+                (data["error"] as String? ?? "").contains("restricted"))) {
+          throw Exception("USER_BLOCKED");
+        }
+      }
+      throw Exception("Failed to save listing rating");
+    } catch (e) {
+      throw Exception("Failed to save listing rating");
+    }
+  }
+}
+
+class _ListingRatingBody implements IJsonEncodable {
+  _ListingRatingBody({required this.stars});
+  final int stars;
+
+  @override
+  Map<String, dynamic> toJson() => {"stars": stars};
 }
 
 class _MessageReactionBody implements IJsonEncodable {

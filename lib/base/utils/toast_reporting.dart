@@ -36,6 +36,11 @@ abstract final class ToastReporting {
     );
   }
 
+  static void warningKey(BuildContext context, String messageKey) {
+    if (!context.mounted) return;
+    ToastTheme.showWarning(context, message: L10n.get(messageKey));
+  }
+
   static void infoKey(BuildContext context, String messageKey) {
     if (!context.mounted) return;
     ToastTheme.showInfo(context, message: L10n.get(messageKey));

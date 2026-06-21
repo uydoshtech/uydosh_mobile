@@ -18,6 +18,55 @@ class MessageReactionCount {
   }
 }
 
+class MessageListingRating {
+  const MessageListingRating({
+    required this.count,
+    this.average,
+    this.myStars,
+    this.distribution = const {},
+  });
+
+  final double? average;
+  final int count;
+  final int? myStars;
+  final Map<int, int> distribution;
+
+  factory MessageListingRating.fromJson(Map<String, dynamic> json) {
+    final rawDistribution = json["distribution"];
+    final distribution = <int, int>{};
+    if (rawDistribution is Map) {
+      rawDistribution.forEach((key, value) {
+        final star = int.tryParse(key.toString());
+        if (star == null) return;
+        distribution[star] = (value as num?)?.toInt() ?? 0;
+      });
+    }
+    return MessageListingRating(
+      average: (json["average"] as num?)?.toDouble(),
+      count: (json["count"] as num?)?.toInt() ?? 0,
+      myStars: (json["my_stars"] as num?)?.toInt(),
+      distribution: distribution,
+    );
+  }
+}
+
+MessageListingRating? _listingRatingFromJson(dynamic value) {
+  if (value == null || value is! Map) return null;
+  return MessageListingRating.fromJson(Map<String, dynamic>.from(value));
+}
+
+Map<String, dynamic>? _listingRatingToJson(MessageListingRating? value) {
+  if (value == null) return null;
+  return {
+    "average": value.average,
+    "count": value.count,
+    "my_stars": value.myStars,
+    "distribution": value.distribution.map(
+      (key, val) => MapEntry(key.toString(), val),
+    ),
+  };
+}
+
 List<MessageReactionCount>? _messageReactionsFromJson(dynamic value) {
   if (value == null) {
     return null;
@@ -72,6 +121,12 @@ class Message with _$Message {
     )
     List<MessageReactionCount>? reactions,
     @JsonKey(name: "my_reaction") String? myReaction,
+    @JsonKey(
+      name: "listing_rating",
+      fromJson: _listingRatingFromJson,
+      toJson: _listingRatingToJson,
+    )
+    MessageListingRating? listingRating,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) =>

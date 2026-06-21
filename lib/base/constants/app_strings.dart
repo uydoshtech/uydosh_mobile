@@ -143,6 +143,8 @@ class AppStrings {
       "group_shortlist_discuss_line_price_per_person":
           "💰 {price}/mo per person",
       "group_shortlist_discuss_line_link": "🔗 {link}",
+      "group_shortlist_rating_summary": "{average} · {count} ratings",
+      "group_shortlist_rate_prompt": "Rate this option",
       "group_shortlist_contact_landlord": "Contact landlord",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
@@ -1999,6 +2001,8 @@ class AppStrings {
       "group_shortlist_discuss_line_price_per_person":
           "💰 {price}/мес за человека",
       "group_shortlist_discuss_line_link": "🔗 {link}",
+      "group_shortlist_rating_summary": "{average} · {count} оценок",
+      "group_shortlist_rate_prompt": "Оцените вариант",
       "group_shortlist_contact_landlord": "Связаться с арендодателем",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
@@ -3885,6 +3889,8 @@ class AppStrings {
       "group_shortlist_discuss_line_price_per_person":
           "💰 {price}/oy har bir kishi uchun",
       "group_shortlist_discuss_line_link": "🔗 {link}",
+      "group_shortlist_rating_summary": "{average} · {count} baho",
+      "group_shortlist_rate_prompt": "Variantni baholang",
       "group_shortlist_contact_landlord": "Ijara beruvchi bilan bog'lanish",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",

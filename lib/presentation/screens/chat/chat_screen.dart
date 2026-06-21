@@ -69,6 +69,8 @@ import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_security_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
+import "package:uy_dosh/presentation/widgets/chat/listing_share_message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
@@ -1577,6 +1579,126 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _buildChatMessageBubble({
+    required Message message,
+    required bool isCurrentUser,
+    required bool isLatest,
+  }) {
+    if (_isGroupChat) {
+      final payload = ListingShareMessageCodec.parse(message.content);
+      if (payload != null) {
+        final senderName = message.sender?.profile?.name ??
+            message.sender?.email ??
+            "";
+        return ListingShareMessageBubble(
+          key: ValueKey("listing_share_${message.id}_${message.createdAt}"),
+          message: message,
+          payload: payload,
+          rating: message.listingRating,
+          isCurrentUser: isCurrentUser,
+          leftAvatarInitials: isCurrentUser
+              ? null
+              : StringUtils.extractInitials(senderName),
+          rightAvatarInitials: _getCurrentUserInitials(),
+          leftAvatarUrl: isCurrentUser
+              ? null
+              : message.sender?.profile?.avatarUrl,
+          rightAvatarUrl: _currentUserProfile?.avatarUrl,
+          onOpenListing: () => _openSharedListing(payload.listingId),
+          onRate: (stars) => _setListingRating(message, stars),
+        );
+      }
+    }
+
+    return MessageBubble(
+      key: ValueKey("message_${message.id}_${message.createdAt}"),
+      message: message,
+      isCurrentUser: isCurrentUser,
+      isLatest: isLatest,
+      riskLevel: _messageRiskById[message.id],
+      riskReason: () {
+        final raw = _messageSafetyReasonById[message.id];
+        if (raw == null || raw.isEmpty) return null;
+        return _localizedSafetyReason(raw);
+      }(),
+      onRiskBadgeTap: () {
+        final riskLevel = _messageRiskById[message.id];
+        if (riskLevel == null) return;
+        _openSuspiciousMessageSheet(
+          message: message,
+          riskLevel: riskLevel,
+        );
+      },
+      onAnimationComplete: () {
+        setStateIfMounted(() => _newMessageIds.remove(message.id));
+      },
+      currentUserProfile: _currentUserProfile,
+      otherUserInitials: _isGroupChat ? null : widget.otherUserInitials,
+      otherUserAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
+      translation: _translationsById[message.id],
+      isTranslating: _translationInFlightIds.contains(message.id),
+      showOriginal: _showOriginalAll ^
+          _showOriginalMessageIds.contains(message.id),
+      onToggleTranslation: _translationsById[message.id] == null
+          ? null
+          : () {
+              setState(() {
+                if (_showOriginalMessageIds.contains(message.id)) {
+                  _showOriginalMessageIds.remove(message.id);
+                } else {
+                  _showOriginalMessageIds.add(message.id);
+                }
+              });
+            },
+      onSetReaction: isCurrentUser
+          ? null
+          : (reactionId) => _setMessageReaction(message, reactionId),
+      onClearReaction:
+          isCurrentUser ? null : () => _clearMessageReaction(message),
+      onLongPressEditOwnMessage:
+          isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
+              ? () => _onLongPressOwnMessageForEdit(message)
+              : null,
+    );
+  }
+
+  String? _getCurrentUserInitials() {
+    return StringUtils.extractInitials(_currentUserProfile?.name);
+  }
+
+  Future<void> _openSharedListing(int housingListingId) async {
+    await context.pushListingDetail(
+      housingListingId,
+      groupHousingContextListingId: widget.listingId,
+    );
+  }
+
+  Future<void> _setListingRating(Message message, int stars) async {
+    try {
+      await getIt<IMessagingService>().setListingRating(
+        messageId: message.id,
+        stars: stars,
+      );
+      if (!mounted) return;
+      context.read<MessagingBloc>().add(
+            RefreshMessages(conversationId: widget.conversationId),
+          );
+    } catch (e) {
+      if (!mounted) return;
+      if (e.toString().contains("USER_BLOCKED")) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("user_blocked_violation_message"),
+        );
+        return;
+      }
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic"),
+      );
+    }
+  }
+
   Widget _buildMessagesList(List<Message> messages) {
     if (messages.isEmpty) {
       return UydoshRefreshIndicator(
@@ -1611,60 +1733,10 @@ class _ChatScreenState extends State<ChatScreen> {
             :final isCurrentUser,
             :final isLatest,
           ) =>
-            MessageBubble(
-              key: ValueKey("message_${message.id}_${message.createdAt}"),
+            _buildChatMessageBubble(
               message: message,
               isCurrentUser: isCurrentUser,
               isLatest: isLatest,
-              riskLevel: _messageRiskById[message.id],
-              riskReason: () {
-                final raw = _messageSafetyReasonById[message.id];
-                if (raw == null || raw.isEmpty) return null;
-                return _localizedSafetyReason(raw);
-              }(),
-              onRiskBadgeTap: () {
-                final riskLevel = _messageRiskById[message.id];
-                if (riskLevel == null) return;
-                _openSuspiciousMessageSheet(
-                  message: message,
-                  riskLevel: riskLevel,
-                );
-              },
-              onAnimationComplete: () {
-                setStateIfMounted(() => _newMessageIds.remove(message.id));
-              },
-              currentUserProfile: _currentUserProfile,
-              otherUserInitials:
-                  _isGroupChat ? null : widget.otherUserInitials,
-              otherUserAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
-              translation: _translationsById[message.id],
-              isTranslating: _translationInFlightIds.contains(message.id),
-              // The global "Show original messages" mode flips the default
-              // for every translated bubble; the per-message set acts as
-              // exceptions so taps on the in-bubble toggle still work.
-              showOriginal: _showOriginalAll ^
-                  _showOriginalMessageIds.contains(message.id),
-              onToggleTranslation: _translationsById[message.id] == null
-                  ? null
-                  : () {
-                      setState(() {
-                        if (_showOriginalMessageIds.contains(message.id)) {
-                          _showOriginalMessageIds.remove(message.id);
-                        } else {
-                          _showOriginalMessageIds.add(message.id);
-                        }
-                      });
-                    },
-              onSetReaction: isCurrentUser
-                  ? null
-                  : (reactionId) => _setMessageReaction(message, reactionId),
-              onClearReaction:
-                  isCurrentUser ? null : () => _clearMessageReaction(message),
-              onLongPressEditOwnMessage:
-                  isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
-                      ? () => _onLongPressOwnMessageForEdit(message)
-                      : null,
-              onOpenSharedListing: _openSharedListingFromChat,
             ),
         };
       },
@@ -1974,15 +2046,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     }
-  }
-
-  void _openSharedListingFromChat(int housingListingId) {
-    HapticFeedbackUtils.selectionClick();
-    context.pushListingDetail(
-      housingListingId,
-      groupHousingContextListingId:
-          _isGroupChat ? widget.listingId : null,
-    );
   }
 
   void _navigateToGigRequestDetail() {

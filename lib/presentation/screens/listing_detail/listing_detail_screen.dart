@@ -37,6 +37,7 @@ import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
@@ -355,8 +356,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _reloadListingDetail();
     } catch (e) {
       if (!mounted) return;
-      ToastReporting.errorMessage(context, e.toString());
+      final message = throwableUserMessage(e);
+      if (_isAlreadyInAnotherGroupMessage(message)) {
+        ToastReporting.warningKey(
+          context,
+          "group_join_request_already_in_group_warning",
+        );
+        return;
+      }
+      ToastReporting.errorMessage(context, message);
     }
+  }
+
+  bool _isAlreadyInAnotherGroupMessage(String message) {
+    return message.trim().toLowerCase() ==
+        "you are already in another active group";
   }
 
   Future<void> _withdrawGroupJoinRequest(ListingDetail listingDetail) async {
@@ -369,7 +383,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _reloadListingDetail();
     } catch (e) {
       if (!mounted) return;
-      ToastReporting.errorMessage(context, e.toString());
+      ToastReporting.errorMessage(context, throwableUserMessage(e));
     }
   }
 

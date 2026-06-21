@@ -61,6 +61,11 @@ mixin _$Message {
       throw _privateConstructorUsedError;
   @JsonKey(name: "my_reaction")
   String? get myReaction => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: "listing_rating",
+      fromJson: _listingRatingFromJson,
+      toJson: _listingRatingToJson)
+  MessageListingRating? get listingRating => throw _privateConstructorUsedError;
 
   /// Serializes this Message to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -100,7 +105,12 @@ abstract class $MessageCopyWith<$Res> {
           fromJson: _messageReactionsFromJson,
           toJson: _messageReactionsToJson)
       List<MessageReactionCount>? reactions,
-      @JsonKey(name: "my_reaction") String? myReaction});
+      @JsonKey(name: "my_reaction") String? myReaction,
+      @JsonKey(
+          name: "listing_rating",
+          fromJson: _listingRatingFromJson,
+          toJson: _listingRatingToJson)
+      MessageListingRating? listingRating});
 
   $MessageSenderCopyWith<$Res>? get sender;
   $MessageCopyWith<$Res>? get replyToMessage;
@@ -141,6 +151,7 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
     Object? isReadByRecipient = freezed,
     Object? reactions = freezed,
     Object? myReaction = freezed,
+    Object? listingRating = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -223,6 +234,10 @@ class _$MessageCopyWithImpl<$Res, $Val extends Message>
           ? _value.myReaction
           : myReaction // ignore: cast_nullable_to_non_nullable
               as String?,
+      listingRating: freezed == listingRating
+          ? _value.listingRating
+          : listingRating // ignore: cast_nullable_to_non_nullable
+              as MessageListingRating?,
     ) as $Val);
   }
 
@@ -286,7 +301,12 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
           fromJson: _messageReactionsFromJson,
           toJson: _messageReactionsToJson)
       List<MessageReactionCount>? reactions,
-      @JsonKey(name: "my_reaction") String? myReaction});
+      @JsonKey(name: "my_reaction") String? myReaction,
+      @JsonKey(
+          name: "listing_rating",
+          fromJson: _listingRatingFromJson,
+          toJson: _listingRatingToJson)
+      MessageListingRating? listingRating});
 
   @override
   $MessageSenderCopyWith<$Res>? get sender;
@@ -327,6 +347,7 @@ class __$$MessageImplCopyWithImpl<$Res>
     Object? isReadByRecipient = freezed,
     Object? reactions = freezed,
     Object? myReaction = freezed,
+    Object? listingRating = freezed,
   }) {
     return _then(_$MessageImpl(
       id: null == id
@@ -409,6 +430,10 @@ class __$$MessageImplCopyWithImpl<$Res>
           ? _value.myReaction
           : myReaction // ignore: cast_nullable_to_non_nullable
               as String?,
+      listingRating: freezed == listingRating
+          ? _value.listingRating
+          : listingRating // ignore: cast_nullable_to_non_nullable
+              as MessageListingRating?,
     ));
   }
 }
@@ -440,7 +465,12 @@ class _$MessageImpl implements _Message {
           fromJson: _messageReactionsFromJson,
           toJson: _messageReactionsToJson)
       final List<MessageReactionCount>? reactions,
-      @JsonKey(name: "my_reaction") this.myReaction})
+      @JsonKey(name: "my_reaction") this.myReaction,
+      @JsonKey(
+          name: "listing_rating",
+          fromJson: _listingRatingFromJson,
+          toJson: _listingRatingToJson)
+      this.listingRating})
       : _attachments = attachments,
         _reactions = reactions;
 
@@ -522,10 +552,16 @@ class _$MessageImpl implements _Message {
   @override
   @JsonKey(name: "my_reaction")
   final String? myReaction;
+  @override
+  @JsonKey(
+      name: "listing_rating",
+      fromJson: _listingRatingFromJson,
+      toJson: _listingRatingToJson)
+  final MessageListingRating? listingRating;
 
   @override
   String toString() {
-    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, previousContent: $previousContent, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient, reactions: $reactions, myReaction: $myReaction)';
+    return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, content: $content, messageType: $messageType, createdAt: $createdAt, updatedAt: $updatedAt, replyToMessageId: $replyToMessageId, isEdited: $isEdited, editedAt: $editedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, previousContent: $previousContent, sender: $sender, attachments: $attachments, replyToMessage: $replyToMessage, isReadByCurrentUser: $isReadByCurrentUser, isReadByRecipient: $isReadByRecipient, reactions: $reactions, myReaction: $myReaction, listingRating: $listingRating)';
   }
 
   @override
@@ -569,7 +605,9 @@ class _$MessageImpl implements _Message {
             const DeepCollectionEquality()
                 .equals(other._reactions, _reactions) &&
             (identical(other.myReaction, myReaction) ||
-                other.myReaction == myReaction));
+                other.myReaction == myReaction) &&
+            (identical(other.listingRating, listingRating) ||
+                other.listingRating == listingRating));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -595,7 +633,8 @@ class _$MessageImpl implements _Message {
         isReadByCurrentUser,
         isReadByRecipient,
         const DeepCollectionEquality().hash(_reactions),
-        myReaction
+        myReaction,
+        listingRating
       ]);
 
   /// Create a copy of Message
@@ -639,7 +678,12 @@ abstract class _Message implements Message {
           fromJson: _messageReactionsFromJson,
           toJson: _messageReactionsToJson)
       final List<MessageReactionCount>? reactions,
-      @JsonKey(name: "my_reaction") final String? myReaction}) = _$MessageImpl;
+      @JsonKey(name: "my_reaction") final String? myReaction,
+      @JsonKey(
+          name: "listing_rating",
+          fromJson: _listingRatingFromJson,
+          toJson: _listingRatingToJson)
+      final MessageListingRating? listingRating}) = _$MessageImpl;
 
   factory _Message.fromJson(Map<String, dynamic> json) = _$MessageImpl.fromJson;
 
@@ -701,6 +745,12 @@ abstract class _Message implements Message {
   @override
   @JsonKey(name: "my_reaction")
   String? get myReaction;
+  @override
+  @JsonKey(
+      name: "listing_rating",
+      fromJson: _listingRatingFromJson,
+      toJson: _listingRatingToJson)
+  MessageListingRating? get listingRating;
 
   /// Create a copy of Message
   /// with the given fields replaced by the non-null parameter values.

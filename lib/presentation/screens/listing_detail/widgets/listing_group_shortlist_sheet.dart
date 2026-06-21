@@ -12,7 +12,7 @@ import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
-import "package:uy_dosh/domain/utils/group_shortlist_discuss_message.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_screen.dart";
@@ -263,7 +263,7 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
       groupListing: groupDetail,
       housingListing: row.listing,
     );
-    final composerText = GroupShortlistDiscussMessage.build(
+    final composerText = GroupShortlistDiscussMessage.buildContent(
       listing: row.listing,
       fit: fit,
     );
