@@ -26,13 +26,13 @@ class ListingGroupMember {
 class ListingGroupContext {
   const ListingGroupContext({
     required this.isGroupForming,
-    this.groupSizeTarget,
     required this.groupMemberCount,
     required this.groupSpotsOpen,
-    this.groupFormingStatus,
-    this.groupConversationId,
     required this.isOwner,
     required this.isMember,
+    this.groupSizeTarget,
+    this.groupFormingStatus,
+    this.groupConversationId,
     this.myJoinRequestStatus,
     this.pendingJoinRequestCount,
     this.groupShortlistCount,
@@ -84,10 +84,7 @@ class ListingGroupContext {
   bool get hasPendingJoinRequest => myJoinRequestStatus == "pending";
 
   bool get canRequestToJoin =>
-      !isOwner &&
-      !isMember &&
-      !hasPendingJoinRequest &&
-      isRecruiting;
+      !isOwner && !isMember && !hasPendingJoinRequest && isRecruiting;
 
   bool get hasGroupChat => groupConversationId != null;
 }
@@ -97,10 +94,10 @@ class ListingGroupJoinRequest {
     required this.id,
     required this.listingId,
     required this.applicantUserId,
-    this.message,
     required this.status,
     required this.createdAt,
     required this.applicantName,
+    this.message,
     this.applicantAvatar,
     this.applicantGender,
   });
@@ -156,6 +153,7 @@ class ListingGroupShortlistItem {
     this.savedByAvatarUrl,
     this.savedByGender,
     this.listingJson,
+    this.rating,
   });
 
   factory ListingGroupShortlistItem.fromJson(Map<String, dynamic> json) {
@@ -170,6 +168,7 @@ class ListingGroupShortlistItem {
       savedByAvatarUrl: savedBy?["avatar_url"] as String?,
       savedByGender: (savedBy?["gender"] as num?)?.toInt(),
       listingJson: _optionalJsonMap(json["listing"]),
+      rating: ListingGroupShortlistRating.fromJsonOrNull(json["rating"]),
     );
   }
 
@@ -182,6 +181,7 @@ class ListingGroupShortlistItem {
   final String? savedByAvatarUrl;
   final int? savedByGender;
   final Map<String, dynamic>? listingJson;
+  final ListingGroupShortlistRating? rating;
 }
 
 class ListingGroupShortlistSaver {
@@ -199,4 +199,66 @@ class ListingGroupShortlistSaver {
 
   final int userId;
   final String name;
+}
+
+class ListingGroupShortlistRating {
+  const ListingGroupShortlistRating({
+    required this.count,
+    required this.participants,
+    this.average,
+  });
+
+  factory ListingGroupShortlistRating.fromJson(Map<String, dynamic> json) {
+    final rawParticipants = json["participants"];
+    return ListingGroupShortlistRating(
+      average: (json["average"] as num?)?.toDouble(),
+      count: (json["count"] as num?)?.toInt() ?? 0,
+      participants: rawParticipants is List
+          ? rawParticipants
+              .whereType<Map>()
+              .map(
+                (e) => ListingGroupShortlistParticipantRating.fromJson(
+                  Map<String, dynamic>.from(e),
+                ),
+              )
+              .toList()
+          : const [],
+    );
+  }
+
+  static ListingGroupShortlistRating? fromJsonOrNull(dynamic value) {
+    if (value == null || value is! Map) return null;
+    return ListingGroupShortlistRating.fromJson(
+      Map<String, dynamic>.from(value),
+    );
+  }
+
+  final double? average;
+  final int count;
+  final List<ListingGroupShortlistParticipantRating> participants;
+}
+
+class ListingGroupShortlistParticipantRating {
+  const ListingGroupShortlistParticipantRating({
+    required this.userId,
+    required this.name,
+    this.avatarUrl,
+    this.stars,
+  });
+
+  factory ListingGroupShortlistParticipantRating.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ListingGroupShortlistParticipantRating(
+      userId: (json["user_id"] as num).toInt(),
+      name: json["name"] as String? ?? "User",
+      avatarUrl: json["avatar_url"] as String?,
+      stars: (json["stars"] as num?)?.toInt(),
+    );
+  }
+
+  final int userId;
+  final String name;
+  final String? avatarUrl;
+  final int? stars;
 }

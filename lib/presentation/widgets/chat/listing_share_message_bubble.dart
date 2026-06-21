@@ -1,11 +1,22 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 class ListingShareMessageBubble extends StatelessWidget {
   const ListingShareMessageBubble({
@@ -41,9 +52,7 @@ class ListingShareMessageBubble extends StatelessWidget {
         ? (themeState.isBlueTheme || themeState.isLightTheme
             ? Colors.black
             : AppColors.textDark87)
-        : (themeState.isBlueTheme
-            ? Colors.white
-            : theme.colorScheme.onSurface);
+        : (themeState.isBlueTheme ? Colors.white : theme.colorScheme.onSurface);
     final footerColor = textColor.withValues(alpha: 0.95);
 
     return ChatMessageRow(
@@ -67,13 +76,27 @@ class ListingShareMessageBubble extends StatelessWidget {
             ),
             const SizedBox(height: 6),
           ],
-          Text(
-            payload.title,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  payload.title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _ListingOwnerAvatar(
+                listingId: payload.listingId,
+                ownerUserId: payload.ownerUserId,
+                ownerName: payload.ownerName,
+                ownerAvatarUrl: payload.ownerAvatarUrl,
+              ),
+            ],
           ),
           if (payload.location != null) ...[
             const SizedBox(height: 6),
@@ -86,16 +109,11 @@ class ListingShareMessageBubble extends StatelessWidget {
           if (payload.metro != null) ...[
             const SizedBox(height: 4),
             _DetailLine(
-              emoji: "🚇",
+              leading: MLetterIcon(
+                color: AppColors.getMetroLineColor(payload.metroLine ?? 1),
+                size: 16,
+              ),
               label: payload.metro!,
-              color: textColor,
-            ),
-          ],
-          if (payload.priceLabel != null) ...[
-            const SizedBox(height: 4),
-            _DetailLine(
-              emoji: "💰",
-              label: payload.priceLabel!,
               color: textColor,
             ),
           ],
@@ -153,22 +171,185 @@ class ListingShareMessageBubble extends StatelessWidget {
   }
 }
 
-class _DetailLine extends StatelessWidget {
-  const _DetailLine({
-    required this.emoji,
-    required this.label,
-    required this.color,
+class _ListingOwnerAvatar extends StatefulWidget {
+  const _ListingOwnerAvatar({
+    required this.listingId,
+    this.ownerUserId,
+    this.ownerName,
+    this.ownerAvatarUrl,
   });
 
-  final String emoji;
+  final int listingId;
+  final int? ownerUserId;
+  final String? ownerName;
+  final String? ownerAvatarUrl;
+
+  static const double size = 36;
+
+  @override
+  State<_ListingOwnerAvatar> createState() => _ListingOwnerAvatarState();
+}
+
+class _ListingOwnerAvatarState extends State<_ListingOwnerAvatar> {
+  static final Map<int, ({String? name, String? avatarUrl})> _cache = {};
+
+  String? _name;
+  String? _avatarUrl;
+  var _loadStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hydrateFromWidgetOrCache();
+    if (_needsFetch) {
+      unawaited(_loadOwnerProfile());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ListingOwnerAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.listingId != widget.listingId ||
+        oldWidget.ownerName != widget.ownerName ||
+        oldWidget.ownerAvatarUrl != widget.ownerAvatarUrl ||
+        oldWidget.ownerUserId != widget.ownerUserId) {
+      _hydrateFromWidgetOrCache();
+      if (_needsFetch) {
+        unawaited(_loadOwnerProfile());
+      }
+    }
+  }
+
+  bool get _needsFetch =>
+      (_avatarUrl == null || _avatarUrl!.trim().isEmpty) &&
+      (_name == null || _name!.trim().isEmpty);
+
+  void _hydrateFromWidgetOrCache() {
+    _name = widget.ownerName?.trim();
+    _avatarUrl = widget.ownerAvatarUrl?.trim();
+    final cached = _cache[widget.listingId];
+    if (cached != null) {
+      _name ??= cached.name;
+      _avatarUrl ??= cached.avatarUrl;
+    }
+  }
+
+  Future<void> _loadOwnerProfile() async {
+    if (_loadStarted) return;
+    _loadStarted = true;
+    try {
+      var userId = widget.ownerUserId;
+      userId ??=
+          (await getIt<IListingService>().getListingDetail(widget.listingId))
+              .userId;
+      final profile = await getIt<IUserProfileService>().getUserProfile(userId);
+      _cache[widget.listingId] = (
+        name: profile.name,
+        avatarUrl: profile.avatarUrl,
+      );
+      if (!mounted) return;
+      setState(() {
+        _name = profile.name;
+        _avatarUrl = profile.avatarUrl;
+      });
+    } catch (_) {
+      _loadStarted = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = ChatParticipantAvatarStack.avatarBorderColor();
+    final initials = StringUtils.extractInitials(_name ?? "");
+    final resolvedUrl = resolveAvatarUrl(_avatarUrl);
+
+    if (resolvedUrl == null) {
+      return SizedBox(
+        width: _ListingOwnerAvatar.size,
+        height: _ListingOwnerAvatar.size,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Center(
+            child: ChatAvatar(
+              isCurrentUser: false,
+              initials: initials.isEmpty ? null : initials,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: _ListingOwnerAvatar.size,
+      height: _ListingOwnerAvatar.size,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipOval(
+              child: NetworkAvatarImage(
+                imageUrl: resolvedUrl,
+                size: _ListingOwnerAvatar.size,
+                fallback: ChatAvatar(
+                  isCurrentUser: false,
+                  initials: initials.isEmpty ? null : initials,
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: borderColor, width: 1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailLine extends StatelessWidget {
+  const _DetailLine({
+    required this.label,
+    required this.color,
+    this.emoji,
+    this.leading,
+  });
+
+  final String? emoji;
+  final Widget? leading;
   final String label;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "$emoji $label",
-      style: TextStyle(color: color, fontSize: 14, height: 1.3),
+    final icon = leading;
+    if (icon == null && emoji != null) {
+      return Text(
+        "$emoji $label",
+        style: TextStyle(color: color, fontSize: 15, height: 1.3),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          icon,
+          const SizedBox(width: 6),
+        ],
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(color: color, fontSize: 15, height: 1.3),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -202,26 +383,32 @@ class _StarRatingRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: List.generate(5, (index) {
-            final starValue = index + 1;
-            final filled = (myStars ?? 0) >= starValue;
-            return IconButton(
-              onPressed: () {
-                HapticFeedbackUtils.selectionClick();
-                onRate(starValue);
-              },
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              icon: Icon(
-                filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                size: 22,
-                color: filled
-                    ? AppColors.warning
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-            );
-          }),
+        Material(
+          color: Colors.transparent,
+          child: Row(
+            children: List.generate(5, (index) {
+              final starValue = index + 1;
+              final filled = (myStars ?? 0) >= starValue;
+              return InkWell(
+                onTap: () {
+                  HapticFeedbackUtils.selectionClick();
+                  onRate(starValue);
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                  child: Icon(
+                    filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 22,
+                    color: filled
+                        ? AppColors.warning
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
         Text(
           summary,

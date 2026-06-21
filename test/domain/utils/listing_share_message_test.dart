@@ -29,7 +29,11 @@ void main() {
       ),
     );
 
-    final encoded = GroupShortlistDiscussMessage.buildContent(listing: listing);
+    final encoded = GroupShortlistDiscussMessage.buildContent(
+      listing: listing,
+      ownerName: "Bob Landlord",
+      ownerAvatarUrl: "/uploads/avatars/bob.jpg",
+    );
     final payload = ListingShareMessageCodec.parse(encoded);
 
     expect(payload, isNotNull);
@@ -37,6 +41,10 @@ void main() {
     expect(payload.title, "Cozy flat near metro");
     expect(payload.location, "Yunusabad");
     expect(payload.metro, "Minor");
+    expect(payload.metroLine, 1);
+    expect(payload.ownerUserId, 1);
+    expect(payload.ownerName, "Bob Landlord");
+    expect(payload.ownerAvatarUrl, "/uploads/avatars/bob.jpg");
   });
 
   test("parses legacy plain-text listing share messages", () {

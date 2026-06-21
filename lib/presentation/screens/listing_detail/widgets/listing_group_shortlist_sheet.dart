@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
@@ -18,7 +19,9 @@ import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.da
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_item_card.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
+import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
@@ -30,16 +33,24 @@ Future<void> showListingGroupShortlistSheet({
   ListingDetail? groupListingDetail,
   VoidCallback? onChanged,
 }) async {
-  await showModalBottomSheet<void>(
+  await showAppBottomSheet<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
     builder: (sheetContext) {
-      return _ListingGroupShortlistSheet(
-        groupListingId: groupListingId,
-        isOwner: isOwner,
-        groupListingDetail: groupListingDetail,
-        onChanged: onChanged,
+      final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
+      return Padding(
+        padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
+        child: GlassBottomSheetSurface(
+          borderRadius: BorderRadius.circular(18),
+          child: Material(
+            type: MaterialType.transparency,
+            child: _ListingGroupShortlistSheet(
+              groupListingId: groupListingId,
+              isOwner: isOwner,
+              groupListingDetail: groupListingDetail,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
       );
     },
   );
@@ -63,7 +74,8 @@ class _ListingGroupShortlistSheet extends StatefulWidget {
       _ListingGroupShortlistSheetState();
 }
 
-class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet> {
+class _ListingGroupShortlistSheetState
+    extends State<_ListingGroupShortlistSheet> {
   var _loading = true;
   var _removingId = 0;
   List<_ShortlistRow> _rows = const [];
@@ -263,9 +275,20 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
       groupListing: groupDetail,
       housingListing: row.listing,
     );
+    String? ownerName;
+    String? ownerAvatarUrl;
+    try {
+      final ownerProfile = await getIt<IUserProfileService>().getUserProfile(
+        row.listing.userId,
+      );
+      ownerName = ownerProfile.name;
+      ownerAvatarUrl = ownerProfile.avatarUrl;
+    } catch (_) {}
     final composerText = GroupShortlistDiscussMessage.buildContent(
       listing: row.listing,
       fit: fit,
+      ownerName: ownerName,
+      ownerAvatarUrl: ownerAvatarUrl,
     );
 
     Navigator.of(context).pop();
@@ -288,101 +311,111 @@ class _ListingGroupShortlistSheetState extends State<_ListingGroupShortlistSheet
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.82;
+    final scheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: SizedBox(
-        height: maxHeight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Text(
-                GroupHousingFlow.savedListingsLabel(_rows.length),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+    return SizedBox(
+      height: maxHeight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 10),
+          Center(
+            child: Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.onSurface.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(99),
               ),
             ),
-            Expanded(
-              child: _loading
-                  ? const Center(child: HouseLoadingIndicator())
-                  : _rows.isEmpty
-                      ? UydoshEmptyColumn(
-                          title: L10n.get("group_shortlist_empty_title"),
-                          subtitle: L10n.get("group_shortlist_empty_subtitle"),
-                          action: FilledButton.icon(
-                            onPressed: groupDetail == null
-                                ? null
-                                : () {
-                                    Navigator.of(context).pop();
-                                    GroupHousingFlow.openSearch(
-                                      context: context,
-                                      groupListingDetail: groupDetail,
-                                    );
-                                  },
-                            icon: const Icon(Icons.search),
-                            label: Text(L10n.get("group_find_housing")),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: _rows.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final row = _rows[index];
-                            final fit = groupDetail == null
-                                ? const GroupHousingListingFit(
-                                    budget: GroupHousingBudgetFit.unknown,
-                                    location: GroupHousingLocationFit.unknown,
-                                  )
-                                : GroupHousingListingFit.evaluate(
-                                    groupListing: groupDetail,
-                                    housingListing: row.listing,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Text(
+              GroupHousingFlow.savedListingsLabel(_rows.length),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: _loading
+                ? const Center(child: HouseLoadingIndicator())
+                : _rows.isEmpty
+                    ? UydoshEmptyColumn(
+                        title: L10n.get("group_shortlist_empty_title"),
+                        subtitle: L10n.get("group_shortlist_empty_subtitle"),
+                        action: FilledButton.icon(
+                          onPressed: groupDetail == null
+                              ? null
+                              : () {
+                                  Navigator.of(context).pop();
+                                  GroupHousingFlow.openSearch(
+                                    context: context,
+                                    groupListingDetail: groupDetail,
                                   );
-                            final isRemoving = _removingId == row.listing.id;
-                            final hasGroupChat =
-                                groupDetail?.groupContext?.hasGroupChat == true;
+                                },
+                          icon: const Icon(Icons.search),
+                          label: Text(L10n.get("group_find_housing")),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        itemCount: _rows.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final row = _rows[index];
+                          final fit = groupDetail == null
+                              ? const GroupHousingListingFit(
+                                  budget: GroupHousingBudgetFit.unknown,
+                                  location: GroupHousingLocationFit.unknown,
+                                )
+                              : GroupHousingListingFit.evaluate(
+                                  groupListing: groupDetail,
+                                  housingListing: row.listing,
+                                );
+                          final isRemoving = _removingId == row.listing.id;
+                          final hasGroupChat =
+                              groupDetail?.groupContext?.hasGroupChat == true;
 
-                            return GroupShortlistItemCard(
-                              item: row.item,
-                              listing: row.listing,
-                              fit: fit,
-                              groupListingDetail: groupDetail,
-                              isOwner: widget.isOwner,
-                              isRemoving: isRemoving,
-                              onOpen: () => _openListing(row),
-                              onRemove: () => _confirmRemove(row),
-                              onContactLandlord: widget.isOwner
-                                  ? () => _contactLandlord(row)
-                                  : null,
-                              onDiscussInGroup: hasGroupChat
-                                  ? () => _discussInGroup(row)
-                                  : null,
-                            );
-                          },
-                        ),
-            ),
-            if (!_loading && _rows.isNotEmpty && groupDetail != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push<void>(
-                      MaterialPageRoute<void>(
-                        builder: (_) => GroupHousingSearchScreen(
-                          groupListingDetail: groupDetail,
-                        ),
+                          return GroupShortlistItemCard(
+                            item: row.item,
+                            listing: row.listing,
+                            fit: fit,
+                            groupListingDetail: groupDetail,
+                            isOwner: widget.isOwner,
+                            isRemoving: isRemoving,
+                            onOpen: () => _openListing(row),
+                            onRemove: () => _confirmRemove(row),
+                            onContactLandlord: widget.isOwner
+                                ? () => _contactLandlord(row)
+                                : null,
+                            onDiscussInGroup: hasGroupChat
+                                ? () => _discussInGroup(row)
+                                : null,
+                          );
+                        },
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.search),
-                  label: Text(L10n.get("group_find_housing")),
-                ),
+          ),
+          if (!_loading && _rows.isNotEmpty && groupDetail != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => GroupHousingSearchScreen(
+                        groupListingDetail: groupDetail,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.search),
+                label: Text(L10n.get("group_find_housing")),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

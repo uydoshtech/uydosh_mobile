@@ -953,8 +953,10 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
-      throw Exception("Failed to save listing rating");
-    } catch (e) {
+      final serverError = e.response?.data;
+      if (serverError is Map && serverError["error"] is String) {
+        throw Exception(serverError["error"] as String);
+      }
       throw Exception("Failed to save listing rating");
     }
   }

@@ -34,6 +34,7 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
       isReadByRecipient: json['is_read_by_recipient'] as bool?,
       reactions: _messageReactionsFromJson(json['reactions']),
       myReaction: json['my_reaction'] as String?,
+      listingRating: _listingRatingFromJson(json['listing_rating']),
     );
 
 Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
@@ -58,4 +59,5 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'is_read_by_recipient': instance.isReadByRecipient,
       'reactions': _messageReactionsToJson(instance.reactions),
       'my_reaction': instance.myReaction,
+      'listing_rating': _listingRatingToJson(instance.listingRating),
     };

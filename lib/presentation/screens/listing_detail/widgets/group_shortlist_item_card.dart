@@ -51,6 +51,7 @@ class GroupShortlistItemCard extends StatelessWidget {
     final showDiscuss = onDiscussInGroup != null;
     final groupContextLabel = _groupContextLabel();
     final districtLabel = _districtChecklistLabel();
+    final rating = item.rating;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -131,6 +132,10 @@ class GroupShortlistItemCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             ..._buildFitChecks(districtLabel),
+            if (rating != null && rating.participants.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _GroupRatingSection(rating: rating),
+            ],
             const SizedBox(height: 8),
             Text(
               L10n.get("group_shortlist_status_waiting"),
@@ -230,10 +235,7 @@ class GroupShortlistItemCard extends StatelessWidget {
     if (locationLabel.isEmpty) {
       return L10n.get("group_shortlist_fit_district_unspecified");
     }
-    return L10n.getWithParams(
-      "group_shortlist_fit_district_named",
-      params: {"name": locationLabel},
-    );
+    return locationLabel;
   }
 
   List<Widget> _buildFitChecks(String districtLabel) {
@@ -266,8 +268,7 @@ class GroupShortlistItemCard extends StatelessWidget {
     }
 
     checks.add(
-      _FitCheckRow(
-        emoji: "📍",
+      _LocationFitCheckRow(
         label: districtLabel,
         positive: fit.location != GroupHousingLocationFit.different,
       ),
@@ -453,9 +454,8 @@ class _FitCheckRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = positive
-        ? Theme.of(context).colorScheme.onSurface
-        : AppColors.warning;
+    final color =
+        positive ? Theme.of(context).colorScheme.onSurface : AppColors.warning;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -467,6 +467,161 @@ class _FitCheckRow extends StatelessWidget {
               height: 1.35,
             ),
       ),
+    );
+  }
+}
+
+class _LocationFitCheckRow extends StatelessWidget {
+  const _LocationFitCheckRow({
+    required this.label,
+    required this.positive,
+  });
+
+  final String label;
+  final bool positive;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = positive ? theme.colorScheme.onSurface : AppColors.warning;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.location_on,
+            color: AppColors.error,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w500,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GroupRatingSection extends StatelessWidget {
+  const _GroupRatingSection({required this.rating});
+
+  final ListingGroupShortlistRating rating;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final summary = rating.count > 0 && rating.average != null
+        ? L10n.getWithParams(
+            "group_shortlist_rating_summary",
+            params: {
+              "average": rating.average!.toStringAsFixed(1),
+              "count": rating.count.toString(),
+            },
+          )
+        : L10n.get("group_shortlist_no_ratings");
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${L10n.get("group_shortlist_group_rating")} · $summary",
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: rating.participants
+                .map((participant) => _ParticipantRatingChip(
+                      participant: participant,
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ParticipantRatingChip extends StatelessWidget {
+  const _ParticipantRatingChip({required this.participant});
+
+  final ListingGroupShortlistParticipantRating participant;
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = StringUtils.extractInitials(participant.name);
+
+    return Tooltip(
+      message: participant.name,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: ChatAvatar(
+                isCurrentUser: false,
+                initials: initials.isEmpty ? null : initials,
+                avatarUrl: participant.avatarUrl,
+              ),
+            ),
+            const SizedBox(width: 4),
+            _StaticStars(stars: participant.stars),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StaticStars extends StatelessWidget {
+  const _StaticStars({required this.stars});
+
+  final int? stars;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        final value = index + 1;
+        final filled = (stars ?? 0) >= value;
+        return Icon(
+          filled ? Icons.star_rounded : Icons.star_outline_rounded,
+          size: 14,
+          color: filled
+              ? AppColors.warning
+              : Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+      }),
     );
   }
 }

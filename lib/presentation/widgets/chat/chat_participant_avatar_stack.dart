@@ -24,8 +24,10 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   static const double _overlapFraction = 0.22;
   static const double _avatarBorderWidth = 1;
 
-  static Color _avatarBorderColor() =>
+  static Color avatarBorderColor() =>
       ThemeState().isBlueTheme ? Colors.white : Colors.black;
+
+  static Color _avatarBorderColor() => avatarBorderColor();
 
   /// Puts the viewer first so the leftmost avatar is always "you".
   static List<ConversationMemberSummary> orderWithCurrentUserFirst(

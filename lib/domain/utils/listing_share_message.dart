@@ -1,10 +1,8 @@
 import "dart:convert";
 
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
-import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 const listingShareMessagePrefix = "[[uydosh:listing_share]]";
 
@@ -15,7 +13,11 @@ class ListingShareMessagePayload {
     this.intro,
     this.location,
     this.metro,
+    this.metroLine,
     this.priceLabel,
+    this.ownerUserId,
+    this.ownerName,
+    this.ownerAvatarUrl,
   });
 
   final int listingId;
@@ -23,7 +25,11 @@ class ListingShareMessagePayload {
   final String? intro;
   final String? location;
   final String? metro;
+  final int? metroLine;
   final String? priceLabel;
+  final int? ownerUserId;
+  final String? ownerName;
+  final String? ownerAvatarUrl;
 
   Map<String, dynamic> toJson() => {
         "v": 1,
@@ -32,7 +38,13 @@ class ListingShareMessagePayload {
         "title": title,
         "location": location,
         "metro": metro,
+        if (metroLine != null) "metro_line": metroLine,
         "price_label": priceLabel,
+        if (ownerUserId != null) "owner_user_id": ownerUserId,
+        if (ownerName != null && ownerName!.trim().isNotEmpty)
+          "owner_name": ownerName!.trim(),
+        if (ownerAvatarUrl != null && ownerAvatarUrl!.trim().isNotEmpty)
+          "owner_avatar_url": ownerAvatarUrl!.trim(),
       };
 
   factory ListingShareMessagePayload.fromJson(Map<String, dynamic> json) {
@@ -42,7 +54,11 @@ class ListingShareMessagePayload {
       intro: json["intro"] as String?,
       location: json["location"] as String?,
       metro: json["metro"] as String?,
+      metroLine: (json["metro_line"] as num?)?.toInt(),
       priceLabel: json["price_label"] as String?,
+      ownerUserId: (json["owner_user_id"] as num?)?.toInt(),
+      ownerName: json["owner_name"] as String?,
+      ownerAvatarUrl: json["owner_avatar_url"] as String?,
     );
   }
 }
@@ -72,8 +88,8 @@ abstract final class ListingShareMessageCodec {
       }
     }
 
-    final linkMatch = RegExp(r"/listing/(\d+)", caseSensitive: false)
-        .firstMatch(content);
+    final linkMatch =
+        RegExp(r"/listing/(\d+)", caseSensitive: false).firstMatch(content);
     if (linkMatch == null) return null;
     final listingId = int.tryParse(linkMatch.group(1)!);
     if (listingId == null || listingId <= 0) return null;
@@ -121,7 +137,8 @@ abstract final class ListingShareMessageCodec {
       intro: intro?.trim(),
       location: location?.trim().isEmpty == true ? null : location?.trim(),
       metro: metro?.trim().isEmpty == true ? null : metro?.trim(),
-      priceLabel: priceLabel?.trim().isEmpty == true ? null : priceLabel?.trim(),
+      priceLabel:
+          priceLabel?.trim().isEmpty == true ? null : priceLabel?.trim(),
     );
   }
 
@@ -134,24 +151,10 @@ abstract final class GroupShortlistDiscussMessage {
   static String buildContent({
     required Listing listing,
     GroupHousingListingFit? fit,
+    String? ownerName,
+    String? ownerAvatarUrl,
   }) {
     final intro = L10n.get("group_shortlist_discuss_message_intro").trim();
-    final perPerson = fit?.formatPerPersonPriceLabel();
-    String? priceLabel;
-    if (perPerson != null && perPerson.isNotEmpty) {
-      priceLabel = L10n.getWithParams(
-        "group_shortlist_discuss_line_price_per_person",
-        params: {"price": perPerson},
-      ).replaceFirst("💰 ", "");
-    } else if (listing.price > 0) {
-      priceLabel = PriceRangeHelper.formatStoredListingPrice(
-        storedPrice: listing.price,
-        listingTypeCode:
-            listing.listingType?.code ?? ListingTypeCodes.roommateNeeded,
-        minPrice: listing.minPrice,
-        maxPrice: listing.maxPrice,
-      );
-    }
 
     return ListingShareMessageCodec.encode(
       ListingShareMessagePayload(
@@ -164,7 +167,10 @@ abstract final class GroupShortlistDiscussMessage {
         metro: _localizedMetroLabel(listing).isEmpty
             ? null
             : _localizedMetroLabel(listing),
-        priceLabel: priceLabel,
+        metroLine: listing.subwayStation?.line ?? listing.subwayLineId,
+        ownerUserId: listing.userId,
+        ownerName: ownerName,
+        ownerAvatarUrl: ownerAvatarUrl,
       ),
     );
   }
@@ -190,11 +196,6 @@ abstract final class GroupShortlistDiscussMessage {
         L10n.getWithParams(
           "group_shortlist_discuss_line_metro",
           params: {"station": payload.metro!},
-        ),
-      if (payload.priceLabel != null)
-        L10n.getWithParams(
-          "group_shortlist_discuss_line_price_per_person",
-          params: {"price": payload.priceLabel!},
         ),
     ];
     return lines.join("\n");

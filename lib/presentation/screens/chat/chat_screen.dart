@@ -1675,11 +1675,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _setListingRating(Message message, int stars) async {
     try {
-      await getIt<IMessagingService>().setListingRating(
+      final updated = await getIt<IMessagingService>().setListingRating(
         messageId: message.id,
         stars: stars,
       );
       if (!mounted) return;
+      setState(() {
+        final index = _messages.indexWhere((m) => m.id == message.id);
+        if (index >= 0) {
+          _messages = List<Message>.from(_messages)..[index] = updated;
+        }
+      });
+      HapticFeedbackUtils.selectionClick();
       context.read<MessagingBloc>().add(
             RefreshMessages(conversationId: widget.conversationId),
           );

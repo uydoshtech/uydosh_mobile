@@ -116,8 +116,7 @@ class AppStrings {
       "group_shortlist_open": "Open",
       "group_shortlist_open_listing": "Open listing",
       "group_shortlist_remove": "Remove",
-      "group_shortlist_saved_for_group_context":
-          "Saved for group \"{label}\"",
+      "group_shortlist_saved_for_group_context": "Saved for group \"{label}\"",
       "group_shortlist_group_size_label": "{count} people",
       "group_shortlist_fits_budget_check": "Fits budget",
       "group_shortlist_above_budget_check": "Above budget",
@@ -145,6 +144,8 @@ class AppStrings {
       "group_shortlist_discuss_line_link": "🔗 {link}",
       "group_shortlist_rating_summary": "{average} · {count} ratings",
       "group_shortlist_rate_prompt": "Rate this option",
+      "group_shortlist_group_rating": "Group rating",
+      "group_shortlist_no_ratings": "No ratings yet",
       "group_shortlist_contact_landlord": "Contact landlord",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
@@ -152,8 +153,7 @@ class AppStrings {
       "group_shortlist_remove_confirm": "Remove",
       "group_housing_fits_budget": "Fits group budget",
       "group_housing_above_budget": "Above group budget",
-      "group_housing_search_banner":
-          "Group of {count} · up to {budget}/person",
+      "group_housing_search_banner": "Group of {count} · up to {budget}/person",
       "group_housing_search_empty": "No matching housing offers found",
       "group_member_role_owner": "Organizer",
       "group_member_role_you": "You",
@@ -1993,8 +1993,7 @@ class AppStrings {
       "group_shortlist_fit_district_ok": "Район подходит",
       "group_shortlist_fit_district_diff": "Другой район",
       "group_shortlist_discuss_in_group": "Обсудить в группе",
-      "group_shortlist_discuss_message_intro":
-          "Как вам этот вариант?",
+      "group_shortlist_discuss_message_intro": "Как вам этот вариант?",
       "group_shortlist_discuss_line_location": "📍 {location}",
       "group_shortlist_discuss_line_metro": "🚇 {station}",
       "group_shortlist_discuss_line_price": "💰 {price}",
@@ -2003,6 +2002,8 @@ class AppStrings {
       "group_shortlist_discuss_line_link": "🔗 {link}",
       "group_shortlist_rating_summary": "{average} · {count} оценок",
       "group_shortlist_rate_prompt": "Оцените вариант",
+      "group_shortlist_group_rating": "Оценка группы",
+      "group_shortlist_no_ratings": "Пока нет оценок",
       "group_shortlist_contact_landlord": "Связаться с арендодателем",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
@@ -3785,7 +3786,8 @@ class AppStrings {
       "title_group_forming": "Guruh Yigamiz",
       "group_size_target_label": "Guruh hajmi (siz bilan)",
       "group_size_target_option_other": "Jami {count} kishi",
-      "group_budget_per_person_label": "Har bir kishi uchun byudjet diapazoni (y.e./oy)",
+      "group_budget_per_person_label":
+          "Har bir kishi uchun byudjet diapazoni (y.e./oy)",
       "group_budget_per_person_heading": "Har bir kishi uchun byudjet",
       "group_budget_per_person_amount_line":
           "Har bir a'zo oyiga {range} to'laydi",
@@ -3881,8 +3883,7 @@ class AppStrings {
       "group_shortlist_fit_district_ok": "Tuman mos",
       "group_shortlist_fit_district_diff": "Boshqa tuman",
       "group_shortlist_discuss_in_group": "Guruhda muhokama qilish",
-      "group_shortlist_discuss_message_intro":
-          "Bu variant sizga qanday?",
+      "group_shortlist_discuss_message_intro": "Bu variant sizga qanday?",
       "group_shortlist_discuss_line_location": "📍 {location}",
       "group_shortlist_discuss_line_metro": "🚇 {station}",
       "group_shortlist_discuss_line_price": "💰 {price}",
@@ -3891,6 +3892,8 @@ class AppStrings {
       "group_shortlist_discuss_line_link": "🔗 {link}",
       "group_shortlist_rating_summary": "{average} · {count} baho",
       "group_shortlist_rate_prompt": "Variantni baholang",
+      "group_shortlist_group_rating": "Guruh bahosi",
+      "group_shortlist_no_ratings": "Hali baho yo'q",
       "group_shortlist_contact_landlord": "Ijara beruvchi bilan bog'lanish",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",
@@ -5569,11 +5572,11 @@ class AppStrings {
       "telegram_alerts_enabled_success": "Telegram bildirishnomalari yoqildi",
       "telegram_alerts_enable_failed":
           "Telegram bildirishnomalarini yoqib bo‘lmadi. Keyinroq urinib ko‘ring.",
-      "telegram_alerts_settings_title": "Telegram bildirishnomalari o‘chirilgan",
+      "telegram_alerts_settings_title":
+          "Telegram bildirishnomalari o‘chirilgan",
       "telegram_alerts_settings_body":
           "Telegramda @uydosh_bot ni oching va bildirishnomalarga obuna bo‘ling — xabarlar va qidiruv mosliklari shu yerda keladi.",
-      "telegram_alerts_settings_button":
-          "Telegram bildirishnomalarini yoqish",
+      "telegram_alerts_settings_button": "Telegram bildirishnomalarini yoqish",
       "telegram_alerts_settings_waiting":
           "@uydosh_bot da obuna bo‘ling, so‘ng bu yerga qayting.",
       "telegram_alerts_connected": "Telegram bildirishnomalari yoqilgan",
