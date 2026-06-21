@@ -32,6 +32,7 @@ import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/state/admin_feature_flags_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -59,6 +60,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -77,7 +79,10 @@ import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.d
 import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_save_button.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
@@ -220,10 +225,14 @@ class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({
     required this.listingId,
     this.initialPendingAction,
+    this.groupHousingContextListingId,
     super.key,
   });
   final int listingId;
   final ListingDetailPendingAction? initialPendingAction;
+
+  /// When set, shows "Save for group" on `roommate_needed` housing listings.
+  final int? groupHousingContextListingId;
 
   @override
   State<ListingDetailScreen> createState() => _ListingDetailScreenState();
@@ -242,6 +251,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   late PageController _pageController;
   late ScrollController _scrollController;
   bool _isOpeningRoom3d = false;
+  ListingDetail? _groupListingDetailForHousing;
   int? _roomScanMetricsHydrationListingId;
 
   /// Cached so [ListenableBuilder] around the app bar menu does not restart
@@ -321,6 +331,31 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     VoidCallback? onViewMemberProfiles,
   }) {
     final ctx = listingDetail.groupContext;
+    if (ctx?.canUseHousingShortlist == true && (ctx?.isOwner == true || ctx?.isMember == true)) {
+      final shortlistCount = ctx?.groupShortlistCount ??
+          GroupShortlistState().shortlistCountForGroup(listingDetail.id);
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_find_housing"),
+        onPrimary: () => GroupHousingFlow.openSearch(
+          context: context,
+          groupListingDetail: listingDetail,
+        ),
+        secondaryLabel: ctx?.hasGroupChat == true
+            ? L10n.get("group_open_chat")
+            : GroupHousingFlow.savedListingsLabel(shortlistCount),
+        onSecondary: ctx?.hasGroupChat == true
+            ? () => _openGroupChat(listingDetail)
+            : () => GroupHousingFlow.openShortlistSheet(
+                  context: context,
+                  groupListingId: listingDetail.id,
+                  isOwner: isOwner,
+                  groupListingDetail: listingDetail,
+                  onChanged: _reloadListingDetail,
+                ),
+        onViewMemberProfiles: onViewMemberProfiles,
+      );
+    }
     if (isOwner) {
       final hasChat = ctx?.hasGroupChat == true;
       final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
@@ -386,6 +421,45 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     return const SizedBox.shrink();
   }
 
+  Widget? _buildGroupHousingContextSection(ListingDetail housingListing) {
+    final groupDetail = _groupListingDetailForHousing;
+    final groupId = widget.groupHousingContextListingId;
+    if (groupId == null || groupDetail == null) return null;
+    if (housingListing.listingTypeId != ListingTypeIds.roommateNeeded &&
+        housingListing.listingType.code != ListingTypeCodes.roommateNeeded) {
+      return null;
+    }
+
+    final fit = GroupHousingBudgetFitHelper.evaluate(
+      groupListing: groupDetail,
+      housingPrice: housingListing.price,
+      housingMinPrice: housingListing.minPrice,
+      housingMaxPrice: housingListing.maxPrice,
+      housingListingTypeCode: housingListing.listingType.code,
+    );
+    final groupSize = groupDetail.groupContext?.groupSizeTarget ??
+        groupDetail.groupSizeTarget;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: GroupBudgetFitChip(fit: fit),
+          ),
+          const SizedBox(height: 10),
+          GroupShortlistSaveButton(
+            groupListingId: groupId,
+            housingListingId: housingListing.id,
+            groupSizeLabel: groupSize?.toString(),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// In-app chat CTA for guests (login prompt) or signed-in non-owners only.
   bool _canShowInAppListingChat(ListingDetail listingDetail) {
     if (PeerInteractionEligibility
@@ -433,6 +507,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     context.read<ListingDetailBloc>().add(
           ListingDetailEvent.fetchListingDetail(id: widget.listingId),
         );
+    unawaited(_loadGroupListingDetailForHousing());
+  }
+
+  Future<void> _loadGroupListingDetailForHousing() async {
+    final groupId = widget.groupHousingContextListingId;
+    if (groupId == null) return;
+    try {
+      final detail = await getIt<IListingService>().getListingDetail(groupId);
+      if (!mounted) return;
+      setState(() => _groupListingDetailForHousing = detail);
+      await GroupShortlistState().refreshCount(groupId);
+    } catch (_) {}
   }
 
   @override
@@ -2749,6 +2835,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 );
               },
             ),
+          if (_buildGroupHousingContextSection(listingDetail) case final section?)
+            section,
           if (_isGroupFormingListing(listingDetail))
             Padding(
               padding: const EdgeInsets.only(top: 16),
@@ -2781,6 +2869,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                               ),
                               memberCompatibility:
                                   pageState.groupMemberCompatibility,
+                              groupListingDetail: listingDetail,
                               onMemberTap: (userId) =>
                                   _navigateToProfile(userId),
                               onChanged: _reloadListingDetail,

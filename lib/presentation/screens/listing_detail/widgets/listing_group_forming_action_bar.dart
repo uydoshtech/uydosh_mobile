@@ -41,15 +41,24 @@ class ListingGroupFormingActionBar extends StatelessWidget {
         : null;
     final hasSecondaryAction =
         onSecondary != null && secondaryLabel != null;
+    final isOpenGroupChatPrimary =
+        primaryLabel == L10n.get("group_open_chat");
+    final isOpenGroupChatSecondary =
+        secondaryLabel == L10n.get("group_open_chat");
     final includePrimaryProgress = !hasSecondaryAction &&
         primaryLabel != L10n.get("group_manage_requests");
     final primaryCtaLabel = _labelWithProgress(
       primaryLabel,
       progress,
-      includeProgress: includePrimaryProgress,
+      includeProgress: includePrimaryProgress || isOpenGroupChatPrimary,
     );
-    final secondaryCtaLabel =
-        hasSecondaryAction ? secondaryLabel! : null;
+    final secondaryCtaLabel = hasSecondaryAction
+        ? _labelWithProgress(
+            secondaryLabel!,
+            progress,
+            includeProgress: isOpenGroupChatSecondary,
+          )
+        : null;
     final notificationDot = showManageRequestsDot
         ? (hasSecondaryAction
             ? ListingDetailActionBarNotificationDot.top
@@ -62,6 +71,9 @@ class ListingGroupFormingActionBar extends StatelessWidget {
       inAppChatCtaLabel: primaryCtaLabel,
       onSecondary: onSecondary,
       secondaryLabel: secondaryCtaLabel,
+      secondaryIcon: isOpenGroupChatSecondary
+          ? Icons.chat_bubble_outline
+          : null,
       notificationDot: notificationDot,
       notificationDotTrigger: manageRequestsDotTrigger,
       onMemberProfiles: onViewMemberProfiles,

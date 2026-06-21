@@ -113,6 +113,7 @@ abstract class IListingService {
     bool? privateRoom,
     bool? withPhoto,
     int createdWithinDays = 30,
+    List<int>? excludeUserIds,
   });
 
   Future<PageableResponse<Listing>> getUserListings({
@@ -376,6 +377,7 @@ class ListingService implements IListingService {
     bool? privateRoom,
     bool? withPhoto,
     int createdWithinDays = 30,
+    List<int>? excludeUserIds,
   }) =>
       _searchService.searchListings(
         page: page,
@@ -393,6 +395,7 @@ class ListingService implements IListingService {
         privateRoom: privateRoom,
         withPhoto: withPhoto,
         createdWithinDays: createdWithinDays,
+        excludeUserIds: excludeUserIds,
       );
 
   @override

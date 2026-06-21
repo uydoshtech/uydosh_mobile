@@ -32,7 +32,12 @@ import "package:uy_dosh/base/utils/int_format_utils.dart";
 import "package:uy_dosh/base/utils/scam_trigger.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
@@ -40,7 +45,6 @@ import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/complaint_service.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/blocs/complaint_bloc.dart";
@@ -192,6 +196,9 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _peerProfileFetchedForUserId;
   List<ConversationMemberSummary> _groupParticipants = [];
   bool _groupMembersFetchInFlight = false;
+  ListingDetail? _groupListingDetail;
+  int _groupShortlistCount = 0;
+  bool _groupChatIsOwner = false;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
   // (Gemini's English string) and the severity, then re-derive the
@@ -289,6 +296,65 @@ class _ChatScreenState extends State<ChatScreen> {
     } finally {
       _groupMembersFetchInFlight = false;
     }
+  }
+
+  Future<void> _loadGroupHousingContext() async {
+    final listingId = widget.listingId;
+    if (!_isGroupChat || listingId == null) return;
+    try {
+      final detail = await getIt<IListingService>().getListingDetail(listingId);
+      if (!mounted) return;
+      final ctx = detail.groupContext;
+      if (ctx?.canUseHousingShortlist != true) return;
+      final count = ctx?.groupShortlistCount ??
+          await getIt<IListingGroupService>().getShortlistCount(
+            groupListingId: listingId,
+          );
+      if (!mounted) return;
+      setState(() {
+        _groupListingDetail = detail;
+        _groupShortlistCount = count;
+        _groupChatIsOwner = ctx?.isOwner == true;
+      });
+      GroupShortlistState().setShortlistCountForGroup(listingId, count);
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error loading group housing context: $e");
+    }
+  }
+
+  Widget _buildGroupShortlistAppBarButton(BuildContext context) {
+    final listingId = widget.listingId;
+    if (listingId == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: TextButton(
+        onPressed: () async {
+          await GroupHousingFlow.openShortlistSheet(
+            context: context,
+            groupListingId: listingId,
+            isOwner: _groupChatIsOwner,
+            groupListingDetail: _groupListingDetail,
+          );
+          if (!mounted) return;
+          final count =
+              GroupShortlistState().shortlistCountForGroup(listingId);
+          setState(() => _groupShortlistCount = count);
+        },
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          L10n.getWithParams(
+            "group_shortlist_chip",
+            params: {"count": _groupShortlistCount.toString()},
+          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        ),
+      ),
+    );
   }
 
   /// Best-effort roster when the members endpoint is unavailable or empty.
@@ -502,6 +568,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() => _isAdmin = isAdmin);
       if (_isGroupChat) {
         unawaited(_loadGroupParticipants());
+        unawaited(_loadGroupHousingContext());
       } else {
         _refreshPeerAvatarIfPossible();
       }
@@ -1390,7 +1457,12 @@ class _ChatScreenState extends State<ChatScreen> {
             onPeerAvatarTap: _isGroupChat ? null : _navigateToUserProfile,
             actionBeforeMenu: widget.gigRequestId != null
                 ? _buildInviteToBookAppBarButton(context)
-                : null,
+                : (_isGroupChat &&
+                        widget.listingId != null &&
+                        _groupListingDetail?.groupContext?.canUseHousingShortlist ==
+                            true)
+                    ? _buildGroupShortlistAppBarButton(context)
+                    : null,
             actionMenuItems: _buildActionMenuItems(),
           ),
           body: GestureDetector(

@@ -1,7 +1,27 @@
+import "dart:convert";
+
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
+
+Map<String, dynamic> _requireResponseMap(dynamic json) {
+  if (json is Map<String, dynamic>) return json;
+  if (json is Map) return Map<String, dynamic>.from(json);
+  if (json is String) {
+    final trimmed = json.trim();
+    if (trimmed.isEmpty) {
+      throw const FormatException("Empty API response");
+    }
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    } catch (_) {
+      throw FormatException("Unexpected API response: $trimmed");
+    }
+  }
+  throw FormatException("Expected JSON object, got ${json.runtimeType}");
+}
 
 abstract class IListingGroupService {
   Future<void> createJoinRequest({
@@ -30,6 +50,29 @@ abstract class IListingGroupService {
   Future<void> removeMember({
     required int listingId,
     required int memberUserId,
+  });
+
+  Future<List<ListingGroupShortlistItem>> listShortlist({
+    required int groupListingId,
+    int page = 1,
+    int limit = 50,
+  });
+
+  Future<int> getShortlistCount({required int groupListingId});
+
+  Future<bool> isOnShortlist({
+    required int groupListingId,
+    required int housingListingId,
+  });
+
+  Future<bool> toggleShortlist({
+    required int groupListingId,
+    required int housingListingId,
+  });
+
+  Future<void> removeFromShortlist({
+    required int groupListingId,
+    required int housingListingId,
   });
 }
 
@@ -131,6 +174,84 @@ class ListingGroupService implements IListingGroupService {
   }) async {
     await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
       "/listings/$listingId/group/members/$memberUserId",
+      (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+  }
+
+  @override
+  Future<List<ListingGroupShortlistItem>> listShortlist({
+    required int groupListingId,
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/listings/$groupListingId/group/shortlist",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      queryParameters: {"page": page, "limit": limit},
+    );
+    final data = response["data"];
+    if (data is! List) return const [];
+    final items = <ListingGroupShortlistItem>[];
+    for (final entry in data) {
+      if (entry is! Map) continue;
+      try {
+        items.add(
+          ListingGroupShortlistItem.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        );
+      } catch (_) {}
+    }
+    return items;
+  }
+
+  @override
+  Future<int> getShortlistCount({required int groupListingId}) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/listings/$groupListingId/group/shortlist/count",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+    );
+    return (response["count"] as num?)?.toInt() ?? 0;
+  }
+
+  @override
+  Future<bool> isOnShortlist({
+    required int groupListingId,
+    required int housingListingId,
+  }) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/listings/$groupListingId/group/shortlist/check/$housingListingId",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+    );
+    return response["isShortlisted"] == true;
+  }
+
+  @override
+  Future<bool> toggleShortlist({
+    required int groupListingId,
+    required int housingListingId,
+  }) async {
+    final response = await _oauthApiClient.put<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/shortlist/toggle/$housingListingId",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+    return response["isShortlisted"] == true;
+  }
+
+  @override
+  Future<void> removeFromShortlist({
+    required int groupListingId,
+    required int housingListingId,
+  }) async {
+    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/shortlist/$housingListingId",
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
       data: const _EmptyBody(),

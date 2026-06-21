@@ -46,6 +46,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.inAppChatCtaLabel,
     this.onSecondary,
     this.secondaryLabel,
+    this.secondaryIcon,
     this.notificationDot,
     this.notificationDotTrigger = 0,
     this.embedded = false,
@@ -61,6 +62,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final String? inAppChatCtaLabel;
   final VoidCallback? onSecondary;
   final String? secondaryLabel;
+  final IconData? secondaryIcon;
   final ListingDetailActionBarNotificationDot? notificationDot;
   final int notificationDotTrigger;
   /// When true, renders only the CTA column (no sticky frosted footer).
@@ -135,7 +137,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
         HapticFeedbackUtils.impact();
         onSecondary!.call();
       },
-      icon: Icons.group_outlined,
+      icon: secondaryIcon ?? Icons.group_outlined,
       iconColor: accentColor,
       label: secondaryLabel!,
       labelColor: secondaryTextColor,

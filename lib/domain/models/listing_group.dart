@@ -1,3 +1,5 @@
+import "dart:convert";
+
 class ListingGroupMember {
   const ListingGroupMember({
     required this.userId,
@@ -33,6 +35,7 @@ class ListingGroupContext {
     required this.isMember,
     this.myJoinRequestStatus,
     this.pendingJoinRequestCount,
+    this.groupShortlistCount,
   });
 
   factory ListingGroupContext.fromJson(Map<String, dynamic> json) {
@@ -48,6 +51,7 @@ class ListingGroupContext {
       myJoinRequestStatus: json["my_join_request_status"] as String?,
       pendingJoinRequestCount:
           (json["pending_join_request_count"] as num?)?.toInt(),
+      groupShortlistCount: (json["group_shortlist_count"] as num?)?.toInt(),
     );
   }
 
@@ -61,9 +65,17 @@ class ListingGroupContext {
   final bool isMember;
   final String? myJoinRequestStatus;
   final int? pendingJoinRequestCount;
+  final int? groupShortlistCount;
 
   bool get isRecruiting =>
       groupFormingStatus == null || groupFormingStatus == "recruiting";
+
+  bool get isFull =>
+      groupFormingStatus == "full" ||
+      (groupSizeTarget != null && groupMemberCount >= groupSizeTarget!);
+
+  bool get canUseHousingShortlist =>
+      (isOwner || isMember) && isFull;
 
   bool get hasPendingJoinRequest => myJoinRequestStatus == "pending";
 
@@ -113,4 +125,69 @@ class ListingGroupJoinRequest {
   final String applicantName;
   final String? applicantAvatar;
   final int? applicantGender;
+}
+
+Map<String, dynamic>? _optionalJsonMap(dynamic value) {
+  if (value == null) return null;
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    } catch (_) {}
+  }
+  return null;
+}
+
+class ListingGroupShortlistItem {
+  const ListingGroupShortlistItem({
+    required this.id,
+    required this.groupListingId,
+    required this.listingId,
+    required this.savedByUserId,
+    required this.createdAt,
+    this.savedByName,
+    this.listingJson,
+  });
+
+  factory ListingGroupShortlistItem.fromJson(Map<String, dynamic> json) {
+    final savedBy = _optionalJsonMap(json["saved_by"]);
+    return ListingGroupShortlistItem(
+      id: (json["id"] as num).toInt(),
+      groupListingId: (json["group_listing_id"] as num).toInt(),
+      listingId: (json["listing_id"] as num).toInt(),
+      savedByUserId: (json["saved_by_user_id"] as num).toInt(),
+      createdAt: json["created_at"]?.toString() ?? "",
+      savedByName: savedBy?["name"] as String?,
+      listingJson: _optionalJsonMap(json["listing"]),
+    );
+  }
+
+  final int id;
+  final int groupListingId;
+  final int listingId;
+  final int savedByUserId;
+  final String createdAt;
+  final String? savedByName;
+  final Map<String, dynamic>? listingJson;
+}
+
+class ListingGroupShortlistSaver {
+  const ListingGroupShortlistSaver({
+    required this.userId,
+    required this.name,
+  });
+
+  factory ListingGroupShortlistSaver.fromJson(Map<String, dynamic> json) {
+    return ListingGroupShortlistSaver(
+      userId: (json["user_id"] as num).toInt(),
+      name: json["name"] as String? ?? "User",
+    );
+  }
+
+  final int userId;
+  final String name;
 }

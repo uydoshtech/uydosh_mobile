@@ -58,6 +58,7 @@ abstract class IListingSearchService {
     bool? privateRoom,
     bool? withPhoto,
     int createdWithinDays = 30,
+    List<int>? excludeUserIds,
   });
 
   Future<PageableResponse<Listing>> getUserListings({
@@ -277,6 +278,7 @@ class ListingSearchService implements IListingSearchService {
     bool? privateRoom,
     bool? withPhoto,
     int createdWithinDays = 30,
+    List<int>? excludeUserIds,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
@@ -323,6 +325,9 @@ class ListingSearchService implements IListingSearchService {
       if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
       if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
       if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
+      if (excludeUserIds != null && excludeUserIds.isNotEmpty) {
+        queryParams["excludeUserIds"] = excludeUserIds.join(",");
+      }
 
       logger.d("\x1B[33m=== SEARCH LISTINGS API REQUEST DEBUG ===");
       logger.d("URL: /listings/search");

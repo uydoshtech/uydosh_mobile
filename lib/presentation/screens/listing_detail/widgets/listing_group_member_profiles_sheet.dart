@@ -1,6 +1,9 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -33,6 +36,7 @@ Future<void> showListingGroupMemberProfilesSheet({
   int? currentUserId,
   ListingGroupProgress? groupProgress,
   Map<int, GroupMemberCompatibilitySummary> memberCompatibility = const {},
+  ListingDetail? groupListingDetail,
   VoidCallback? onChanged,
 }) async {
   if (members.isEmpty) return;
@@ -50,6 +54,7 @@ Future<void> showListingGroupMemberProfilesSheet({
         isOwner: isOwner,
         groupProgress: groupProgress,
         memberCompatibility: memberCompatibility,
+        groupListingDetail: groupListingDetail,
         onMemberTap: onMemberTap,
         onChanged: onChanged,
       );
@@ -67,6 +72,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
     this.currentUserId,
     this.groupProgress,
     this.memberCompatibility = const {},
+    this.groupListingDetail,
     this.onChanged,
   });
 
@@ -77,6 +83,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
   final bool isOwner;
   final ListingGroupProgress? groupProgress;
   final Map<int, GroupMemberCompatibilitySummary> memberCompatibility;
+  final ListingDetail? groupListingDetail;
   final void Function(int userId) onMemberTap;
   final VoidCallback? onChanged;
 
@@ -213,6 +220,50 @@ class _ListingGroupMemberProfilesSheetState
             isGroupFull: _isGroupFull,
             groupProgress: _groupProgress,
           ),
+          if (_isGroupFull) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton.icon(
+                    onPressed: widget.groupListingDetail == null
+                        ? null
+                        : () {
+                            Navigator.of(context).pop();
+                            GroupHousingFlow.openSearch(
+                              context: context,
+                              groupListingDetail: widget.groupListingDetail!,
+                            );
+                          },
+                    icon: const Icon(Icons.search),
+                    label: Text(L10n.get("group_find_housing")),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await GroupHousingFlow.openShortlistSheet(
+                        context: context,
+                        groupListingId: widget.listingId,
+                        isOwner: widget.isOwner,
+                        groupListingDetail: widget.groupListingDetail,
+                        onChanged: widget.onChanged,
+                      );
+                    },
+                    icon: const Icon(Icons.bookmark_outline),
+                    label: Text(
+                      GroupHousingFlow.savedListingsLabel(
+                        widget.groupListingDetail?.groupContext
+                                ?.groupShortlistCount ??
+                            GroupShortlistState()
+                                .shortlistCountForGroup(widget.listingId),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(

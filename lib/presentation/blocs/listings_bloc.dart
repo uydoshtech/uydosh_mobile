@@ -42,6 +42,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   double? _lastMaxPrice;
   bool? _lastPrivateRoom;
   bool? _lastWithPhoto;
+  List<int>? _lastExcludeUserIds;
   /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
   bool _stationOnlyMode = false;
 
@@ -207,6 +208,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           maxPrice: _lastMaxPrice,
           privateRoom: _lastPrivateRoom,
           withPhoto: _lastWithPhoto,
+          excludeUserIds: _lastExcludeUserIds,
         ).timeout(_requestTimeout);
 
         final newListings = response.data;
@@ -516,6 +518,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             "maxPrice": e.maxPrice,
             "privateRoom": e.privateRoom,
             "withPhoto": e.withPhoto,
+            "excludeUserIds": e.excludeUserIds,
           },
         fetchUserListings: (e) => null,
       );
@@ -531,6 +534,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastMaxPrice = searchParams["maxPrice"] as double?;
       _lastPrivateRoom = searchParams["privateRoom"] as bool?;
       _lastWithPhoto = searchParams["withPhoto"] as bool?;
+      _lastExcludeUserIds = searchParams["excludeUserIds"] as List<int>?;
 
       if (isRefresh) {
         getIt<AppAnalyticsService>().logSearchPerformed(
@@ -566,6 +570,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
               "maxPrice": e.maxPrice,
               "privateRoom": e.privateRoom,
               "withPhoto": e.withPhoto,
+              "excludeUserIds": e.excludeUserIds,
             },
         fetchUserListings: (e) => null,
       );
@@ -598,6 +603,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final maxPrice = searchParams?["maxPrice"] as double?;
       final privateRoom = searchParams?["privateRoom"] as bool?;
       final withPhoto = searchParams?["withPhoto"] as bool?;
+      final excludeUserIds = searchParams?["excludeUserIds"] as List<int>?;
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
       logger.d("Listing Type ID: $listingTypeId");
@@ -625,6 +631,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         maxPrice: maxPrice,
         privateRoom: privateRoom,
         withPhoto: withPhoto,
+        excludeUserIds: excludeUserIds,
       ).timeout(_requestTimeout);
 
       final listings = response.data;
