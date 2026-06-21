@@ -1,10 +1,15 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
+import "package:uy_dosh/base/util/error_message_helper.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
-import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -14,12 +19,14 @@ import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_save_button.dart";
+import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class GroupHousingSearchScreen extends StatefulWidget {
@@ -44,6 +51,14 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   void initState() {
     super.initState();
     _bloc = ListingsBloc(getIt<IListingService>());
+    final initialShortlistCount =
+        widget.groupListingDetail.groupContext?.groupShortlistCount;
+    if (initialShortlistCount != null) {
+      GroupShortlistState().setShortlistCountForGroup(
+        widget.groupListingDetail.id,
+        initialShortlistCount,
+      );
+    }
     _scrollController.addListener(_onScroll);
     _loadParticipantsAndSearch();
   }
@@ -80,7 +95,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
       minPrice: detail.minPrice,
       maxPrice: detail.maxPrice,
     );
-    final groupSize = detail.groupContext?.groupSizeTarget ?? detail.groupSizeTarget;
+    final groupSize =
+        detail.groupContext?.groupSizeTarget ?? detail.groupSizeTarget;
     final totalMax = groupSize != null ? bounds.max * groupSize : bounds.max;
 
     _bloc.add(
@@ -101,7 +117,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final state = _bloc.state;
-    final loaded = state.maybeWhen(loaded: (l, h, p, t) => (l, h, p), orElse: () => null);
+    final loaded =
+        state.maybeWhen(loaded: (l, h, p, t) => (l, h, p), orElse: () => null);
     if (loaded == null || !loaded.$2) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 240) {
@@ -162,10 +179,13 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                       groupListingDetail: detail,
                     ),
                     icon: const ThemeIcon(Icons.bookmark_outline, size: 18),
-                    label: Text(
-                      GroupHousingFlow.savedListingsLabel(
-                        detail.groupContext?.groupShortlistCount ?? 0,
-                      ),
+                    label: ListenableBuilder(
+                      listenable: GroupShortlistState(),
+                      builder: (context, _) {
+                        final count = GroupShortlistState()
+                            .shortlistCountForGroup(detail.id);
+                        return Text(GroupHousingFlow.savedListingsLabel(count));
+                      },
                     ),
                   ),
                 ],
@@ -191,11 +211,11 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                     }
                     return UydoshRefreshIndicator(
                       onRefresh: () async => _runSearch(refresh: true),
-                      child: ListView.separated(
+                      child: CommonListView(
                         controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                        itemSpacing: 12,
                         itemCount: listings.length + (hasMore ? 1 : 0),
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           if (index >= listings.length) {
                             return const Padding(
@@ -203,10 +223,36 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                               child: Center(child: HouseLoadingIndicator()),
                             );
                           }
-                          return _HousingSearchResultCard(
-                            listing: listings[index],
-                            groupListingDetail: detail,
-                            groupSizeLabel: _groupSizeLabel,
+                          final listing = listings[index];
+                          final fit =
+                              GroupHousingBudgetFitHelper.evaluateListing(
+                            groupListing: detail,
+                            housingListing: listing,
+                          );
+                          return ListingTile(
+                            key: ValueKey(
+                              "group-housing-${detail.id}-${listing.id}",
+                            ),
+                            listing: listing,
+                            feedOptimized: true,
+                            trailingAction: _GroupShortlistBookmarkAction(
+                              groupListingId: detail.id,
+                              housingListingId: listing.id,
+                            ),
+                            footerContent: fit == GroupHousingBudgetFit.unknown
+                                ? null
+                                : Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: GroupBudgetFitChip(fit: fit),
+                                  ),
+                            onTap: () {
+                              unawaited(
+                                context.pushListingDetail(
+                                  listing.id,
+                                  groupHousingContextListingId: detail.id,
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -222,95 +268,145 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   }
 }
 
-class _HousingSearchResultCard extends StatelessWidget {
-  const _HousingSearchResultCard({
-    required this.listing,
-    required this.groupListingDetail,
-    required this.groupSizeLabel,
+class _GroupShortlistBookmarkAction extends StatefulWidget {
+  const _GroupShortlistBookmarkAction({
+    required this.groupListingId,
+    required this.housingListingId,
   });
 
-  final Listing listing;
-  final ListingDetail groupListingDetail;
-  final String groupSizeLabel;
+  final int groupListingId;
+  final int housingListingId;
+
+  @override
+  State<_GroupShortlistBookmarkAction> createState() =>
+      _GroupShortlistBookmarkActionState();
+}
+
+class _GroupShortlistBookmarkActionState
+    extends State<_GroupShortlistBookmarkAction> {
+  var _loading = false;
+  var _seeded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _seedInitial();
+  }
+
+  @override
+  void didUpdateWidget(covariant _GroupShortlistBookmarkAction oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.groupListingId != widget.groupListingId ||
+        oldWidget.housingListingId != widget.housingListingId) {
+      _seeded = false;
+      _loading = false;
+      _seedInitial();
+    }
+  }
+
+  Future<void> _seedInitial() async {
+    try {
+      final isOn = await getIt<IListingGroupService>().isOnShortlist(
+        groupListingId: widget.groupListingId,
+        housingListingId: widget.housingListingId,
+      );
+      if (!mounted) return;
+      GroupShortlistState().seedShortlisted(
+        groupListingId: widget.groupListingId,
+        housingListingId: widget.housingListingId,
+        isShortlisted: isOn,
+      );
+    } catch (_) {
+      // Keep the action usable; the optimistic toggle will surface failures.
+    } finally {
+      if (mounted) setState(() => _seeded = true);
+    }
+  }
+
+  Future<void> _toggle() async {
+    if (_loading || !_seeded) return;
+    HapticFeedbackUtils.selection();
+    setState(() => _loading = true);
+    try {
+      final nowShortlisted = await GroupShortlistState().toggle(
+        groupListingId: widget.groupListingId,
+        housingListingId: widget.housingListingId,
+      );
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get(
+          nowShortlisted ? "group_shortlist_added" : "group_shortlist_removed",
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final fit = GroupHousingBudgetFitHelper.evaluateListing(
-      groupListing: groupListingDetail,
-      housingListing: listing,
-    );
-    final priceLabel = PriceRangeHelper.formatStoredListingPrice(
-      storedPrice: listing.price,
-      listingTypeCode:
-          listing.listingType?.code ?? ListingTypeCodes.roommateNeeded,
-      minPrice: listing.minPrice,
-      maxPrice: listing.maxPrice,
-    );
-    final locationLabel = listing.location?.nameEn ??
-        listing.location?.nameRu ??
-        listing.subwayStation?.nameEn ??
-        "";
+    return ListenableBuilder(
+      listenable: GroupShortlistState().listenableFor(
+        groupListingId: widget.groupListingId,
+        housingListingId: widget.housingListingId,
+      ),
+      builder: (context, _) {
+        final isOn = GroupShortlistState().isShortlisted(
+          groupListingId: widget.groupListingId,
+          housingListingId: widget.housingListingId,
+        );
+        final iconColor = isOn
+            ? Theme.of(context).colorScheme.primary
+            : AppColors.favoriteInactive;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          context.pushListingDetail(
-            listing.id,
-            groupHousingContextListingId: groupListingDetail.id,
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          listing.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          priceLabel,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        if (locationLabel.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            locationLabel,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ],
+        return Opacity(
+          opacity: _seeded && !_loading ? 1 : 0.55,
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _toggle,
+                  child: const SizedBox(width: 48, height: 48),
+                ),
+                IgnorePointer(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    reverseDuration: const Duration(milliseconds: 160),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                    child: SizedBox(
+                      key: ValueKey(isOn ? "bookmark-on" : "bookmark-off"),
+                      width: 20,
+                      height: 20,
+                      child: ThemeIcon(
+                        isOn ? Icons.bookmark : Icons.bookmark_outline,
+                        color: iconColor,
+                        size: 20,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  GroupBudgetFitChip(fit: fit),
-                ],
-              ),
-              const SizedBox(height: 10),
-              GroupShortlistSaveButton(
-                groupListingId: groupListingDetail.id,
-                housingListingId: listing.id,
-                groupSizeLabel: groupSizeLabel,
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

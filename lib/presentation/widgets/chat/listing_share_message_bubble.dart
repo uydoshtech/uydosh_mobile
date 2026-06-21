@@ -50,6 +50,8 @@ class ListingShareMessageBubble extends StatelessWidget {
   final String? leftAvatarUrl;
   final String? rightAvatarUrl;
 
+  static const double _ownerAvatarGap = 8;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -69,87 +71,104 @@ class ListingShareMessageBubble extends StatelessWidget {
       rightAvatarInitials: rightAvatarInitials,
       leftAvatarUrl: leftAvatarUrl,
       rightAvatarUrl: rightAvatarUrl,
-      bubbleChild: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
+      bubbleChild: Stack(
         children: [
-          if (payload.intro != null && payload.intro!.isNotEmpty) ...[
-            Text(
-              payload.intro!,
-              style: TextStyle(
-                color: textColor.withValues(alpha: 0.85),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 6),
-          ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Text(
-                  payload.title,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: _ListingOwnerAvatar.size,
+                ),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: _ListingOwnerAvatar.size + _ownerAvatarGap,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (payload.intro != null &&
+                          payload.intro!.isNotEmpty) ...[
+                        Text(
+                          payload.intro!,
+                          style: TextStyle(
+                            color: textColor.withValues(alpha: 0.85),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      Text(
+                        payload.title,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              _ListingOwnerAvatar(
+              if (payload.location != null) ...[
+                const SizedBox(height: 6),
+                _DetailLine(
+                  leading: const Icon(
+                    Icons.location_on,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                  label: payload.location!,
+                  color: textColor,
+                ),
+              ],
+              if (payload.metro != null) ...[
+                const SizedBox(height: 4),
+                _DetailLine(
+                  leading: Icon(
+                    Icons.train,
+                    color: AppColors.getMetroLineColor(payload.metroLine ?? 1),
+                    size: 20,
+                  ),
+                  label: payload.metro!,
+                  color: textColor,
+                ),
+              ],
+              _ListingPriceLine(
                 listingId: payload.listingId,
-                ownerUserId: payload.ownerUserId,
-                ownerName: payload.ownerName,
-                ownerAvatarUrl: payload.ownerAvatarUrl,
+                initialPriceLabel: payload.priceLabel,
+                color: textColor,
+              ),
+              const SizedBox(height: 10),
+              _StarRatingRow(
+                myStars: rating?.myStars,
+                average: rating?.average,
+                count: rating?.count ?? 0,
+                onRate: onRate,
+              ),
+              const SizedBox(height: 8),
+              _ListingShareFooter(
+                footerColor: footerColor,
+                borderColor: textColor.withValues(alpha: 0.12),
+                showNavigationControls: showNavigationControls,
+                onOpenListing: onOpenListing,
+                onOpenPreviousListing: onOpenPreviousListing,
+                onOpenNextListing: onOpenNextListing,
               ),
             ],
           ),
-          if (payload.location != null) ...[
-            const SizedBox(height: 6),
-            _DetailLine(
-              leading: const Icon(
-                Icons.location_on,
-                color: Colors.red,
-                size: 20,
-              ),
-              label: payload.location!,
-              color: textColor,
+          PositionedDirectional(
+            top: 0,
+            end: 0,
+            child: _ListingOwnerAvatar(
+              listingId: payload.listingId,
+              ownerUserId: payload.ownerUserId,
+              ownerName: payload.ownerName,
+              ownerAvatarUrl: payload.ownerAvatarUrl,
             ),
-          ],
-          if (payload.metro != null) ...[
-            const SizedBox(height: 4),
-            _DetailLine(
-              leading: Icon(
-                Icons.train,
-                color: AppColors.getMetroLineColor(payload.metroLine ?? 1),
-                size: 20,
-              ),
-              label: payload.metro!,
-              color: textColor,
-            ),
-          ],
-          _ListingPriceLine(
-            listingId: payload.listingId,
-            initialPriceLabel: payload.priceLabel,
-            color: textColor,
-          ),
-          const SizedBox(height: 10),
-          _StarRatingRow(
-            myStars: rating?.myStars,
-            average: rating?.average,
-            count: rating?.count ?? 0,
-            onRate: onRate,
-          ),
-          const SizedBox(height: 8),
-          _ListingShareFooter(
-            footerColor: footerColor,
-            borderColor: textColor.withValues(alpha: 0.12),
-            showNavigationControls: showNavigationControls,
-            onOpenListing: onOpenListing,
-            onOpenPreviousListing: onOpenPreviousListing,
-            onOpenNextListing: onOpenNextListing,
           ),
         ],
       ),

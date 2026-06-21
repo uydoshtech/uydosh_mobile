@@ -2,6 +2,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter/foundation.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
@@ -15,28 +16,24 @@ part "messaging_bloc.freezed.dart";
 abstract class MessagingEvent {}
 
 class FetchConversations extends MessagingEvent {
-
   FetchConversations({this.page = 1, this.limit = 20});
   final int page;
   final int limit;
 }
 
 class FetchParticipantConversations extends MessagingEvent {
-
   FetchParticipantConversations({this.page = 1, this.limit = 20});
   final int page;
   final int limit;
 }
 
 class CreateConversation extends MessagingEvent {
-
   CreateConversation({required this.listingId, required this.participantId});
   final int listingId;
   final int participantId;
 }
 
 class FetchMessages extends MessagingEvent {
-
   FetchMessages({required this.conversationId, this.page = 1, this.limit = 50});
   final int conversationId;
   final int page;
@@ -44,7 +41,6 @@ class FetchMessages extends MessagingEvent {
 }
 
 class SendMessage extends MessagingEvent {
-
   SendMessage({
     required this.conversationId,
     required this.content,
@@ -58,7 +54,6 @@ class SendMessage extends MessagingEvent {
 }
 
 class MarkMessagesAsRead extends MessagingEvent {
-
   MarkMessagesAsRead({required this.conversationId});
   final int conversationId;
 }
@@ -85,7 +80,6 @@ class UnarchiveConversation extends MessagingEvent {
 const String archiveHasUnreadErrorCode = "ARCHIVE_HAS_UNREAD";
 
 class RefreshMessages extends MessagingEvent {
-
   RefreshMessages({required this.conversationId});
   final int conversationId;
 }
@@ -133,7 +127,6 @@ class MessagingState with _$MessagingState {
 
 // BLoC
 class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
-
   MessagingBloc(this._messagingService, this._gamificationService)
       : super(const MessagingInitial()) {
     on<FetchConversations>(_onFetchConversations);
@@ -186,8 +179,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     } catch (e) {
       // Check if this is an authentication error
       final errorMessage = e.toString();
-      final isAuthError =
-          errorMessage.contains("401") ||
+      final isAuthError = errorMessage.contains("401") ||
           errorMessage.contains("Unauthorized") ||
           errorMessage.contains("Invalid or expired session token");
 
@@ -296,7 +288,8 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         ),
       );
       if (kDebugMode) {
-        logger.d("✅ [MessagingBloc] Messages loaded state emitted successfully!");
+        logger
+            .d("✅ [MessagingBloc] Messages loaded state emitted successfully!");
       }
     } catch (e) {
       if (kDebugMode) {
@@ -348,6 +341,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       await _messagingService.markMessagesAsRead(event.conversationId);
+      UnreadMessagesState().clearConversationUnreadCount(event.conversationId);
 
       // Frontend workaround: Update local cache to set unread count to 0
       final conversationIndex = _cachedConversations.indexWhere(
@@ -355,8 +349,8 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       );
 
       if (conversationIndex != -1) {
-        final updatedConversation = _cachedConversations[conversationIndex]
-            .copyWith(unreadCount: 0);
+        final updatedConversation =
+            _cachedConversations[conversationIndex].copyWith(unreadCount: 0);
         _cachedConversations[conversationIndex] = updatedConversation;
 
         if (kDebugMode) {
@@ -398,8 +392,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     } catch (e) {
       // Check if this is an authentication error
       final errorMessage = e.toString();
-      final isAuthError =
-          errorMessage.contains("401") ||
+      final isAuthError = errorMessage.contains("401") ||
           errorMessage.contains("Unauthorized") ||
           errorMessage.contains("Invalid or expired session token");
 
@@ -479,7 +472,8 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
           add(FetchConversations(page: 1));
         }
       } else {
-        emit(MessagingError(message: ErrorMessageHelper.sanitizeErrorMessage(e)));
+        emit(MessagingError(
+            message: ErrorMessageHelper.sanitizeErrorMessage(e)));
         // Rollback: pull fresh data so the row reappears if the server
         // rejected our optimistic removal.
         add(FetchConversations(page: 1));
@@ -513,11 +507,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   /// payload, if the state currently carries one. Returns null when the
   /// current state wouldn't benefit from an in-place patch (e.g. an error
   /// screen or a messages view).
-  MessagingState? _withoutConversation(MessagingState state, int conversationId) {
+  MessagingState? _withoutConversation(
+      MessagingState state, int conversationId) {
     if (state is MessagingConversationsLoaded) {
-      final filtered = state.conversations
-          .where((c) => c.id != conversationId)
-          .toList();
+      final filtered =
+          state.conversations.where((c) => c.id != conversationId).toList();
       return MessagingConversationsLoaded(
         conversations: filtered,
         hasMore: state.hasMore,

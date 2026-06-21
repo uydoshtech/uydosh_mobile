@@ -30,6 +30,7 @@ import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_alerts.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -334,8 +335,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_moveInDateValue != _baselineMoveInDateValue) {
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
-    if (!_isLoadingLocations &&
-        _currentLocationId() != _baselineLocationId()) {
+    if (!_isLoadingLocations && _currentLocationId() != _baselineLocationId()) {
       addLabel("location", fallback: "Location");
     }
     if (!_isLoadingStations) {
@@ -374,8 +374,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_isPrivateRoom != _baselinePrivateRoom) return true;
     if (_moveInDateValue != _baselineMoveInDateValue) return true;
 
-    if (!_isLoadingLocations &&
-        _currentLocationId() != _baselineLocationId()) {
+    if (!_isLoadingLocations && _currentLocationId() != _baselineLocationId()) {
       return true;
     }
 
@@ -705,90 +704,90 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           canPop: _allowPopWithoutConfirm || !_isFormDirty(),
           onPopInvokedWithResult: _onPopInvoked,
           child: Scaffold(
-          extendBodyBehindAppBar: useLiquidGlassAppBar,
-          appBar: widget.showAppBar
-              ? UydoshAppBar(
-                  leading: ThreeDAppBarIconButton.backLeading(
-                    context,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  title: L10n.text(
-                    _isGroupFormingFlow
-                        ? "create_group_title"
-                        : "create_listing_title",
-                    style: appBarTheme.titleTextStyle?.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ) ??
-                        const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  backgroundColor: useLiquidGlassAppBar
-                      ? liquidGlassAppBarMaterialColor(context)
-                      : appBarTheme.backgroundColor,
-                  surfaceTintColor: useLiquidGlassAppBar
-                      ? Colors.transparent
-                      : appBarTheme.surfaceTintColor,
-                  elevation: useLiquidGlassAppBar ? 0 : null,
-                  scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
-                  shadowColor: useLiquidGlassAppBar
-                      ? Colors.transparent
-                      : appBarTheme.shadowColor,
-                  forceMaterialTransparency: useLiquidGlassAppBar,
-                  flexibleSpace: useLiquidGlassAppBar
-                      ? const LiquidGlassAppBarFlexibleSpace()
-                      : null,
-                  foregroundColor: appBarTheme.foregroundColor,
-                )
-              : null,
-          body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
-            listener: (context, state) {
-              state.map(
-                initial: (_) => setState(() => _isLoadingStations = false),
-                loading: (_) => setState(() => _isLoadingStations = true),
-                loaded: (loadedState) =>
-                    _onStationsLoaded(loadedState.stations),
-                error: (_) => setState(() => _isLoadingStations = false),
-              );
-            },
-            child: BlocListener<LocationsBloc, LocationsState>(
+            extendBodyBehindAppBar: useLiquidGlassAppBar,
+            appBar: widget.showAppBar
+                ? UydoshAppBar(
+                    leading: ThreeDAppBarIconButton.backLeading(
+                      context,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                    title: L10n.text(
+                      _isGroupFormingFlow
+                          ? "create_group_title"
+                          : "create_listing_title",
+                      style: appBarTheme.titleTextStyle?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ) ??
+                          const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    backgroundColor: useLiquidGlassAppBar
+                        ? liquidGlassAppBarMaterialColor(context)
+                        : appBarTheme.backgroundColor,
+                    surfaceTintColor: useLiquidGlassAppBar
+                        ? Colors.transparent
+                        : appBarTheme.surfaceTintColor,
+                    elevation: useLiquidGlassAppBar ? 0 : null,
+                    scrolledUnderElevation: useLiquidGlassAppBar ? 0 : null,
+                    shadowColor: useLiquidGlassAppBar
+                        ? Colors.transparent
+                        : appBarTheme.shadowColor,
+                    forceMaterialTransparency: useLiquidGlassAppBar,
+                    flexibleSpace: useLiquidGlassAppBar
+                        ? const LiquidGlassAppBarFlexibleSpace()
+                        : null,
+                    foregroundColor: appBarTheme.foregroundColor,
+                  )
+                : null,
+            body: BlocListener<SubwayStationsBloc, SubwayStationsState>(
               listener: (context, state) {
                 state.map(
-                  initial: (_) => setState(() => _isLoadingLocations = false),
-                  loading: (_) => setState(() => _isLoadingLocations = true),
+                  initial: (_) => setState(() => _isLoadingStations = false),
+                  loading: (_) => setState(() => _isLoadingStations = true),
                   loaded: (loadedState) =>
-                      _onLocationsLoaded(loadedState.locations),
-                  error: (_) => setState(() => _isLoadingLocations = false),
+                      _onStationsLoaded(loadedState.stations),
+                  error: (_) => setState(() => _isLoadingStations = false),
                 );
               },
-              child: SafeArea(
-                top: !embeddedInGlassShell,
-                child: KeyboardDismissScope(
-                  child: UydoshFormScrollBody(
-                    topPadding: scrollTopPad,
-                    children: [
-                      ListenableBuilder(
-                        listenable: AuthenticationState(),
-                        builder: (context, child) {
-                          final isAuthenticated =
-                              AuthenticationState().isAuthenticated;
+              child: BlocListener<LocationsBloc, LocationsState>(
+                listener: (context, state) {
+                  state.map(
+                    initial: (_) => setState(() => _isLoadingLocations = false),
+                    loading: (_) => setState(() => _isLoadingLocations = true),
+                    loaded: (loadedState) =>
+                        _onLocationsLoaded(loadedState.locations),
+                    error: (_) => setState(() => _isLoadingLocations = false),
+                  );
+                },
+                child: SafeArea(
+                  top: !embeddedInGlassShell,
+                  child: KeyboardDismissScope(
+                    child: UydoshFormScrollBody(
+                      topPadding: scrollTopPad,
+                      children: [
+                        ListenableBuilder(
+                          listenable: AuthenticationState(),
+                          builder: (context, child) {
+                            final isAuthenticated =
+                                AuthenticationState().isAuthenticated;
 
-                          if (isAuthenticated) {
-                            return _buildAuthenticatedForm();
-                          } else {
-                            return _buildUnauthenticatedPrompt();
-                          }
-                        },
-                      ),
-                    ],
+                            if (isAuthenticated) {
+                              return _buildAuthenticatedForm();
+                            } else {
+                              return _buildUnauthenticatedPrompt();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
         );
       },
     );
@@ -982,26 +981,26 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         ),
         const SizedBox(height: 16),
         if (!_isGroupFormingFlow) ...[
-        // Amenities Section
-        LabeledFieldOverlay(
-          label: L10n.get("amenities"),
-          child: ListingFormAmenitiesSection(
-            listingTypeId: _selectedListingTypeId,
-            selectedAmenityIds: _selectedAmenityIds,
-            onAmenityToggled: (amenityId) {
-              setState(() {
-                if (_selectedAmenityIds.contains(amenityId)) {
-                  _selectedAmenityIds.remove(amenityId);
-                } else {
-                  _selectedAmenityIds.add(amenityId);
-                }
-              });
-            },
-            onDismissKeyboard: _dismissKeyboard,
+          // Amenities Section
+          LabeledFieldOverlay(
+            label: L10n.get("amenities"),
+            child: ListingFormAmenitiesSection(
+              listingTypeId: _selectedListingTypeId,
+              selectedAmenityIds: _selectedAmenityIds,
+              onAmenityToggled: (amenityId) {
+                setState(() {
+                  if (_selectedAmenityIds.contains(amenityId)) {
+                    _selectedAmenityIds.remove(amenityId);
+                  } else {
+                    _selectedAmenityIds.add(amenityId);
+                  }
+                });
+              },
+              onDismissKeyboard: _dismissKeyboard,
+            ),
           ),
-        ),
 
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
         ],
 
         // Move-in Date and Private Room Row ([IntrinsicHeight] — stretch in scroll).
@@ -1133,89 +1132,90 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 ),
               ),
               if (!_isGroupFormingFlow) ...[
-              const SizedBox(width: 12),
-              // Private Room Toggle (50% width)
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
-                    context,
-                    theme: Theme.of(context),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0,
-                      vertical: 16.0,
+                const SizedBox(width: 12),
+                // Private Room Toggle (50% width)
+                Expanded(
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                      context,
+                      theme: Theme.of(context),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ThemeIcon(
-                          Icons.lock_outline,
-                          color: _isPrivateRoom
-                              ? _getBorderColor()
-                              : (Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.grey[600]),
-                          size: 22,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                L10n.get("private_room")
-                                    .replaceFirst(" ", "\n"),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: ThemeState().isLightTheme
-                                      ? Colors.black
-                                      : Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 16.0,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ThemeIcon(
+                            Icons.lock_outline,
+                            color: _isPrivateRoom
+                                ? _getBorderColor()
+                                : (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                        .withOpacity(0.7)
+                                    : Colors.grey[600]),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  L10n.get("private_room")
+                                      .replaceFirst(" ", "\n"),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: ThemeState().isLightTheme
+                                        ? Colors.black
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        NeumorphicToggle(
-                          value: _isPrivateRoom,
-                          activeAccentColor: _getBorderColor(),
-                          activeTrackColor: _getBorderColor().withValues(
-                            alpha: 0.3,
+                          NeumorphicToggle(
+                            value: _isPrivateRoom,
+                            activeAccentColor: _getBorderColor(),
+                            activeTrackColor: _getBorderColor().withValues(
+                              alpha: 0.3,
+                            ),
+                            inactiveThumbColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                        .withOpacity(0.7)
+                                    : Colors.grey.shade600,
+                            inactiveTrackColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                        .withOpacity(0.3)
+                                    : Colors.grey.shade300,
+                            onChanged: (value) {
+                              HapticFeedbackUtils.impact();
+                              setState(() {
+                                _isPrivateRoom = value;
+                              });
+                            },
                           ),
-                          inactiveThumbColor:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.7)
-                                  : Colors.grey.shade600,
-                          inactiveTrackColor:
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.3)
-                                  : Colors.grey.shade300,
-                          onChanged: (value) {
-                            HapticFeedbackUtils.impact();
-                            setState(() {
-                              _isPrivateRoom = value;
-                            });
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               ],
             ],
           ),
@@ -1508,6 +1508,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         photoPaths: orderedPhotos.isNotEmpty ? orderedPhotos : null,
         groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
       );
+
+      if (_isGroupFormingFlow) {
+        unawaited(
+            GroupHousingSearchAlerts.ensureForGroupListing(createdListing));
+      }
 
       if (!mounted) return;
 

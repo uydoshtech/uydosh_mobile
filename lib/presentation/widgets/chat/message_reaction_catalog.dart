@@ -10,7 +10,18 @@ abstract final class MessageReactionCatalog {
     "heart",
     "lightning",
     "fire",
+    "hundred",
     "smile",
+    "handshake",
+    "thanks",
+    "flower",
+    "home",
+    "warm_smile",
+    "sparkles",
+    "celebrate",
+    "interested",
+    "approved",
+    "tea",
   ];
 
   /// Red heart ❤️: U+2764 + U+FE0F so it uses emoji presentation everywhere.
@@ -22,8 +33,41 @@ abstract final class MessageReactionCatalog {
   /// Fire 🔥 (U+1F525).
   static const String fireReactionEmoji = "\u{1F525}";
 
+  /// Hundred points 💯 (U+1F4AF).
+  static const String hundredReactionEmoji = "\u{1F4AF}";
+
   /// Slightly smiling 🙂 (U+1F642).
   static const String smileReactionEmoji = "\u{1F642}";
+
+  /// Handshake 🤝 (U+1F91D).
+  static const String handshakeReactionEmoji = "\u{1F91D}";
+
+  /// Folded hands 🙏 (U+1F64F).
+  static const String thanksReactionEmoji = "\u{1F64F}";
+
+  /// Cherry blossom 🌸 (U+1F338).
+  static const String flowerReactionEmoji = "\u{1F338}";
+
+  /// House 🏠 (U+1F3E0).
+  static const String homeReactionEmoji = "\u{1F3E0}";
+
+  /// Smiling face with smiling eyes 😊 (U+1F60A).
+  static const String warmSmileReactionEmoji = "\u{1F60A}";
+
+  /// Sparkles ✨ (U+2728).
+  static const String sparklesReactionEmoji = "\u{2728}";
+
+  /// Party popper 🎉 (U+1F389).
+  static const String celebrateReactionEmoji = "\u{1F389}";
+
+  /// Eyes 👀 (U+1F440).
+  static const String interestedReactionEmoji = "\u{1F440}";
+
+  /// Check mark button ✅ (U+2705).
+  static const String approvedReactionEmoji = "\u{2705}";
+
+  /// Hot beverage ☕ (U+2615).
+  static const String teaReactionEmoji = "\u{2615}";
 
   /// Forces full-color emoji glyphs (esp. ⚡) instead of monochrome text-symbol fonts.
   static TextStyle textStyleForReactionEmoji(
@@ -79,8 +123,30 @@ abstract final class MessageReactionCatalog {
         return lightningReactionEmoji;
       case "fire":
         return fireReactionEmoji;
+      case "hundred":
+        return hundredReactionEmoji;
       case "smile":
         return smileReactionEmoji;
+      case "handshake":
+        return handshakeReactionEmoji;
+      case "thanks":
+        return thanksReactionEmoji;
+      case "flower":
+        return flowerReactionEmoji;
+      case "home":
+        return homeReactionEmoji;
+      case "warm_smile":
+        return warmSmileReactionEmoji;
+      case "sparkles":
+        return sparklesReactionEmoji;
+      case "celebrate":
+        return celebrateReactionEmoji;
+      case "interested":
+        return interestedReactionEmoji;
+      case "approved":
+        return approvedReactionEmoji;
+      case "tea":
+        return teaReactionEmoji;
       default:
         return "👍";
     }

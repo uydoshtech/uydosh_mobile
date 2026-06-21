@@ -35,6 +35,7 @@ import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/dio_api_error_message.dart";
@@ -117,6 +118,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/favorite_heart_toggle.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
@@ -225,6 +227,100 @@ class _ListingDetailBodyData {
   }
 }
 
+class _FloatingGroupChatButton extends StatelessWidget {
+  const _FloatingGroupChatButton({
+    required this.label,
+    required this.hasUnread,
+    required this.unreadTrigger,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool hasUnread;
+  final int unreadTrigger;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final unreadColor = ThemeState().unreadIndicatorColor;
+    final surface = isDark
+        ? theme.colorScheme.surface.withValues(alpha: 0.84)
+        : Colors.white.withValues(alpha: 0.92);
+    final foreground = isDark ? Colors.white : Colors.black;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.32 : 0.16),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: surface,
+            borderRadius: BorderRadius.circular(999),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: onPressed,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: WidgetStatePropertyAll(
+                foreground.withValues(alpha: 0.06),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.chat_bubble_2_fill,
+                      size: 19,
+                      color: unreadColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 14,
+                        height: 1.0,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (hasUnread)
+          Positioned(
+            right: 2,
+            top: -2,
+            child: PulseThenBlinkDotWidget(
+              trigger: unreadTrigger,
+              color: unreadColor,
+              size: 10,
+              blinkDuration: const Duration(milliseconds: 750),
+              borderColor: surface,
+              borderWidth: 1.5,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({
     required this.listingId,
@@ -280,6 +376,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final ctx = listingDetail.groupContext;
     if (ctx?.canUseHousingShortlist != true) return false;
     return ctx?.isOwner == true || ctx?.isMember == true;
+  }
+
+  bool _canShowFloatingGroupChatButton(ListingDetail listingDetail) {
+    final ctx = listingDetail.groupContext;
+    if (ctx?.hasGroupChat != true) return false;
+    return ctx?.isOwner == true || ctx?.isMember == true;
+  }
+
+  bool _hasUnreadGroupChat(ListingDetail listingDetail) {
+    final conversationId = listingDetail.groupContext?.groupConversationId;
+    if (conversationId == null) return false;
+    return UnreadMessagesState().hasUnreadForConversation(conversationId);
   }
 
   void _seedGroupShortlistCount(ListingDetail listingDetail) {
@@ -392,84 +500,103 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     required bool isOwner,
     VoidCallback? onViewMemberProfiles,
   }) {
-    final ctx = listingDetail.groupContext;
-    if (ctx?.canUseHousingShortlist == true && (ctx?.isOwner == true || ctx?.isMember == true)) {
-      return ListingGroupFormingActionBar(
-        listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_find_housing"),
-        onPrimary: () => GroupHousingFlow.openSearch(
-          context: context,
-          groupListingDetail: listingDetail,
-        ),
-        secondaryLabel:
-            ctx?.hasGroupChat == true ? L10n.get("group_open_chat") : null,
-        onSecondary:
-            ctx?.hasGroupChat == true ? () => _openGroupChat(listingDetail) : null,
-        onViewMemberProfiles: onViewMemberProfiles,
-      );
-    }
-    if (isOwner) {
-      final hasChat = ctx?.hasGroupChat == true;
-      final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
-      final showManageRequests = pendingCount > 0;
-      final openJoinRequestsSheet = () => showListingGroupJoinRequestsSheet(
-            context: context,
-            listingId: listingDetail.id,
-            onChanged: _reloadListingDetail,
+    return ListenableBuilder(
+      listenable: UnreadMessagesState(),
+      builder: (context, _) {
+        final ctx = listingDetail.groupContext;
+        final hasUnreadGroupChat = _hasUnreadGroupChat(listingDetail);
+        final groupChatUnreadDotTrigger = UnreadMessagesState().unreadCount;
+
+        if (ctx?.canUseHousingShortlist == true &&
+            (ctx?.isOwner == true || ctx?.isMember == true)) {
+          return ListingGroupFormingActionBar(
+            listingDetail: listingDetail,
+            primaryLabel: L10n.get("group_find_housing"),
+            onPrimary: () => GroupHousingFlow.openSearch(
+              context: context,
+              groupListingDetail: listingDetail,
+            ),
+            secondaryLabel:
+                ctx?.hasGroupChat == true ? L10n.get("group_open_chat") : null,
+            onSecondary: ctx?.hasGroupChat == true
+                ? () => _openGroupChat(listingDetail)
+                : null,
+            showGroupChatUnreadDot: hasUnreadGroupChat,
+            groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
+            onViewMemberProfiles: onViewMemberProfiles,
           );
+        }
+        if (isOwner) {
+          final hasChat = ctx?.hasGroupChat == true;
+          final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
+          final showManageRequests = pendingCount > 0;
 
-      if (hasChat) {
-        return ListingGroupFormingActionBar(
-          listingDetail: listingDetail,
-          primaryLabel: L10n.get("group_open_chat"),
-          onPrimary: () => _openGroupChat(listingDetail),
-          secondaryLabel:
-              showManageRequests ? L10n.get("group_manage_requests") : null,
-          onSecondary: showManageRequests ? openJoinRequestsSheet : null,
-          showManageRequestsDot: pendingCount > 0,
-          manageRequestsDotTrigger: pendingCount,
-          onViewMemberProfiles: onViewMemberProfiles,
-        );
-      }
+          void openJoinRequestsSheet() {
+            showListingGroupJoinRequestsSheet(
+              context: context,
+              listingId: listingDetail.id,
+              onChanged: _reloadListingDetail,
+            );
+          }
 
-      if (!showManageRequests) {
+          if (hasChat) {
+            return ListingGroupFormingActionBar(
+              listingDetail: listingDetail,
+              primaryLabel: L10n.get("group_open_chat"),
+              onPrimary: () => _openGroupChat(listingDetail),
+              secondaryLabel:
+                  showManageRequests ? L10n.get("group_manage_requests") : null,
+              onSecondary: showManageRequests ? openJoinRequestsSheet : null,
+              showManageRequestsDot: pendingCount > 0,
+              manageRequestsDotTrigger: pendingCount,
+              showGroupChatUnreadDot: hasUnreadGroupChat,
+              groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
+              onViewMemberProfiles: onViewMemberProfiles,
+            );
+          }
+
+          if (!showManageRequests) {
+            return const SizedBox.shrink();
+          }
+
+          return ListingGroupFormingActionBar(
+            listingDetail: listingDetail,
+            primaryLabel: L10n.get("group_manage_requests"),
+            onPrimary: openJoinRequestsSheet,
+            showManageRequestsDot: pendingCount > 0,
+            manageRequestsDotTrigger: pendingCount,
+            onViewMemberProfiles: onViewMemberProfiles,
+          );
+        }
+        if (ctx?.isMember == true) {
+          return ListingGroupFormingActionBar(
+            listingDetail: listingDetail,
+            primaryLabel: L10n.get("group_open_chat"),
+            onPrimary: () => _openGroupChat(listingDetail),
+            showGroupChatUnreadDot: hasUnreadGroupChat,
+            groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
+            onViewMemberProfiles: onViewMemberProfiles,
+          );
+        }
+        if (ctx?.hasPendingJoinRequest == true) {
+          return ListingGroupFormingActionBar(
+            listingDetail: listingDetail,
+            primaryLabel: L10n.get("group_join_request_withdraw"),
+            onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
+            onViewMemberProfiles: onViewMemberProfiles,
+          );
+        }
+        if (ctx?.canRequestToJoin == true) {
+          return ListingGroupFormingActionBar(
+            listingDetail: listingDetail,
+            primaryLabel: L10n.get("group_request_to_join"),
+            onPrimary: () => _requestToJoinGroup(listingDetail),
+            onViewMemberProfiles: onViewMemberProfiles,
+          );
+        }
         return const SizedBox.shrink();
-      }
-
-      return ListingGroupFormingActionBar(
-        listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_manage_requests"),
-        onPrimary: openJoinRequestsSheet,
-        showManageRequestsDot: pendingCount > 0,
-        manageRequestsDotTrigger: pendingCount,
-        onViewMemberProfiles: onViewMemberProfiles,
-      );
-    }
-    if (ctx?.isMember == true) {
-      return ListingGroupFormingActionBar(
-        listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_open_chat"),
-        onPrimary: () => _openGroupChat(listingDetail),
-        onViewMemberProfiles: onViewMemberProfiles,
-      );
-    }
-    if (ctx?.hasPendingJoinRequest == true) {
-      return ListingGroupFormingActionBar(
-        listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_join_request_withdraw"),
-        onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
-        onViewMemberProfiles: onViewMemberProfiles,
-      );
-    }
-    if (ctx?.canRequestToJoin == true) {
-      return ListingGroupFormingActionBar(
-        listingDetail: listingDetail,
-        primaryLabel: L10n.get("group_request_to_join"),
-        onPrimary: () => _requestToJoinGroup(listingDetail),
-        onViewMemberProfiles: onViewMemberProfiles,
-      );
-    }
-    return const SizedBox.shrink();
+      },
+    );
   }
 
   Widget? _buildGroupHousingContextSection(ListingDetail housingListing) {
@@ -829,7 +956,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (_roomScanMetricsHydrationListingId == listingDetail.id) return;
     _roomScanMetricsHydrationListingId = listingDetail.id;
     try {
-      final metrics = await RoomScanMetricsHydrationService.computeFromRemoteUrl(
+      final metrics =
+          await RoomScanMetricsHydrationService.computeFromRemoteUrl(
         absoluteUrl: _buildPhotoUrl(raw),
         listingId: listingDetail.id,
       );
@@ -1046,8 +1174,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     required ListingDetailPageBloc pageBloc,
     required IUserProfileService userProfileService,
   }) async {
-    final members =
-        await getIt<IListingGroupService>().listMembers(listingId: listingDetail.id);
+    final members = await getIt<IListingGroupService>()
+        .listMembers(listingId: listingDetail.id);
 
     final memberUserIds = members.map((m) => m.userId).toSet();
     final profiles = <UserProfile>[];
@@ -1108,7 +1236,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupMembers: groupMembers,
     );
 
-    final groupResult = ListingDetailGroupCompatibilityHelper.calculate(profiles);
+    final groupResult =
+        ListingDetailGroupCompatibilityHelper.calculate(profiles);
 
     final profileByUserId = {
       for (final profile in profiles) profile.userId: profile,
@@ -1377,11 +1506,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     return """$title$typeInfo$locationInfo$subwayInfo
 
 ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatStoredListingPrice(
-  storedPrice: price,
-  listingTypeCode: listingDetail.listingType.code,
-  minPrice: listingDetail.minPrice,
-  maxPrice: listingDetail.maxPrice,
-)}
+      storedPrice: price,
+      listingTypeCode: listingDetail.listingType.code,
+      minPrice: listingDetail.minPrice,
+      maxPrice: listingDetail.maxPrice,
+    )}
 
 📱 ${L10n.get("check_out_listing_on_uydosh")}
 
@@ -1425,8 +1554,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
       final isAdmin = role == "admin";
       // Admins get the same edit privileges as the owner (north orientation slider + metrics backfill).
-      final canEditAsOwner =
-          _isListingOwner(listingDetail.user.id) || isAdmin;
+      final canEditAsOwner = _isListingOwner(listingDetail.user.id) || isAdmin;
       final metricsMissing = listingDetail.roomScanMetricsMissing;
       final ok = await RoomUsdzViewerService.downloadAndPresent(
         url,
@@ -1792,7 +1920,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ListingDetail listingDetail, {
     required bool isListingStaff,
     required bool isStrictAdmin,
-  }  ) {
+  }) {
     final isOwner = _isListingOwner(listingDetail.user.id);
     final authState = AuthenticationState();
     final isAuthenticated = authState.isAuthenticated;
@@ -2231,100 +2359,99 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 BlocSelector<ListingDetailBloc, ListingDetailState,
                     _ListingDetailIconsData>(
                   selector: (state) => state.map(
-                        initial: (_) => const _ListingDetailIconsData(
-                          isLoading: true,
-                          hasError: false,
-                          errorMessage: "",
-                          listingDetail: null,
-                        ),
-                        loading: (_) => const _ListingDetailIconsData(
-                          isLoading: true,
-                          hasError: false,
-                          errorMessage: "",
-                          listingDetail: null,
-                        ),
-                        loaded: (loadedState) => _ListingDetailIconsData(
-                          isLoading: false,
-                          hasError: false,
-                          errorMessage: "",
-                          listingDetail: loadedState.listingDetail,
-                        ),
-                        error: (errorState) => _ListingDetailIconsData(
-                          isLoading: false,
-                          hasError: true,
-                          errorMessage: errorState.message,
-                          listingDetail: null,
-                        ),
-                      ),
-                      builder: (context, data) {
-                        if (data.isLoading || data.listingDetail == null) {
-                          return const SizedBox.shrink();
-                        }
+                    initial: (_) => const _ListingDetailIconsData(
+                      isLoading: true,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: null,
+                    ),
+                    loading: (_) => const _ListingDetailIconsData(
+                      isLoading: true,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: null,
+                    ),
+                    loaded: (loadedState) => _ListingDetailIconsData(
+                      isLoading: false,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: loadedState.listingDetail,
+                    ),
+                    error: (errorState) => _ListingDetailIconsData(
+                      isLoading: false,
+                      hasError: true,
+                      errorMessage: errorState.message,
+                      listingDetail: null,
+                    ),
+                  ),
+                  builder: (context, data) {
+                    if (data.isLoading || data.listingDetail == null) {
+                      return const SizedBox.shrink();
+                    }
 
-                        final listingDetail = data.listingDetail!;
-                        final showGroupShortlistPill =
-                            _canShowGroupShortlistPill(listingDetail);
-                        return ListenableBuilder(
-                          listenable: Listenable.merge([
-                            AuthenticationState(),
-                            FavoritesState().listenableFor(widget.listingId),
-                          ]),
-                          builder: (context, _) {
-                            final isAuthenticated =
-                                AuthenticationState().isAuthenticated;
-                            final actionMenu = !isAuthenticated
-                                ? ActionDropdownMenu(
+                    final listingDetail = data.listingDetail!;
+                    final showGroupShortlistPill =
+                        _canShowGroupShortlistPill(listingDetail);
+                    return ListenableBuilder(
+                      listenable: Listenable.merge([
+                        AuthenticationState(),
+                        FavoritesState().listenableFor(widget.listingId),
+                      ]),
+                      builder: (context, _) {
+                        final isAuthenticated =
+                            AuthenticationState().isAuthenticated;
+                        final actionMenu = !isAuthenticated
+                            ? ActionDropdownMenu(
+                                items: _buildActionMenuItems(
+                                  listingDetail,
+                                  isListingStaff: false,
+                                  isStrictAdmin: false,
+                                ),
+                              )
+                            : FutureBuilder<String?>(
+                                future: _userRoleFuture,
+                                builder: (context, snapshot) {
+                                  final role = snapshot.data;
+                                  final isListingStaff =
+                                      ModerationStaffUtils.isModerationStaff(
+                                    role,
+                                  );
+                                  final isStrictAdmin = role == "admin";
+                                  return ActionDropdownMenu(
                                     items: _buildActionMenuItems(
                                       listingDetail,
-                                      isListingStaff: false,
-                                      isStrictAdmin: false,
+                                      isListingStaff: isListingStaff,
+                                      isStrictAdmin: isStrictAdmin,
                                     ),
-                                  )
-                                : FutureBuilder<String?>(
-                                    future: _userRoleFuture,
-                                    builder: (context, snapshot) {
-                                      final role = snapshot.data;
-                                      final isListingStaff =
-                                          ModerationStaffUtils
-                                              .isModerationStaff(
-                                        role,
-                                      );
-                                      final isStrictAdmin = role == "admin";
-                                      return ActionDropdownMenu(
-                                        items: _buildActionMenuItems(
-                                          listingDetail,
-                                          isListingStaff: isListingStaff,
-                                          isStrictAdmin: isStrictAdmin,
-                                        ),
-                                      );
-                                    },
                                   );
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (showGroupShortlistPill) ...[
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 4),
-                                    child: GroupShortlistPillButton(
-                                      groupListingId: listingDetail.id,
-                                      isOwner: listingDetail
-                                              .groupContext?.isOwner ==
+                                },
+                              );
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (showGroupShortlistPill) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: GroupShortlistPillButton(
+                                  groupListingId: listingDetail.id,
+                                  isOwner:
+                                      listingDetail.groupContext?.isOwner ==
                                           true,
-                                      groupListingDetail: listingDetail,
-                                      onChanged: _reloadListingDetail,
-                                    ),
-                                  ),
-                                ],
-                                SizedBox(
-                                  width: kToolbarHeight,
-                                  child: Center(child: actionMenu),
+                                  groupListingDetail: listingDetail,
+                                  onChanged: _reloadListingDetail,
                                 ),
-                              ],
-                            );
-                          },
+                              ),
+                            ],
+                            SizedBox(
+                              width: kToolbarHeight,
+                              child: Center(child: actionMenu),
+                            ),
+                          ],
                         );
                       },
-                    ),
+                    );
+                  },
+                ),
               ],
               automaticallyImplyLeading: false,
             ),
@@ -2376,7 +2503,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                       prev.ownerName != curr.ownerName ||
                       prev.ownerAvatarUrl != curr.ownerAvatarUrl,
                   builder: (context, pageState) =>
-                      _buildLoadedState(data.listingDetail!, pageState),
+                      _buildLoadedStateWithFloatingGroupChat(
+                    data.listingDetail!,
+                    pageState,
+                  ),
                 );
               },
             ),
@@ -2384,6 +2514,42 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           );
         },
       ),
+    );
+  }
+
+  Widget _buildLoadedStateWithFloatingGroupChat(
+    ListingDetail listingDetail,
+    ListingDetailPageState pageState,
+  ) {
+    final content = _buildLoadedState(listingDetail, pageState);
+    if (!_canShowFloatingGroupChatButton(listingDetail)) return content;
+
+    final groupProgress = ListingGroupProgress.fromListingDetail(listingDetail);
+    final participantLabel = groupProgress?.ratioLabel ??
+        "${listingDetail.groupContext?.groupMemberCount ?? 1}";
+
+    return Stack(
+      children: [
+        Positioned.fill(child: content),
+        Positioned(
+          right: 16,
+          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+          child: ListenableBuilder(
+            listenable: UnreadMessagesState(),
+            builder: (context, _) {
+              return _FloatingGroupChatButton(
+                label: participantLabel,
+                hasUnread: _hasUnreadGroupChat(listingDetail),
+                unreadTrigger: UnreadMessagesState().unreadCount,
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  _openGroupChat(listingDetail);
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -2907,7 +3073,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 );
               },
             ),
-          if (_buildGroupHousingContextSection(listingDetail) case final section?)
+          if (_buildGroupHousingContextSection(listingDetail)
+              case final section?)
             section,
           if (_isGroupFormingListing(listingDetail))
             Padding(

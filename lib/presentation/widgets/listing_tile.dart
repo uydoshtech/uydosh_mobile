@@ -63,6 +63,9 @@ class ListingTile extends StatefulWidget {
     this.searchLineId, // Optional parameter to indicate which line was used for search
     this.feedOptimized =
         false, // Lighter visuals for long home/search feeds (Android blur off, etc.)
+    this.trailingAction,
+    this.footerContent,
+    this.onTap,
   });
 
   final Listing listing;
@@ -80,6 +83,14 @@ class ListingTile extends StatefulWidget {
       searchLineId; // Line ID used for search (helps order transfer stations)
   /// When true, skips the heaviest per-tile effects used in long scroll feeds.
   final bool feedOptimized;
+
+  /// Replaces the favorite slot with a context-specific action while preserving
+  /// the home-feed tile layout.
+  final Widget? trailingAction;
+
+  /// Adds context-specific content to the footer area below the media row.
+  final Widget? footerContent;
+  final VoidCallback? onTap;
 
   @override
   State<ListingTile> createState() => _ListingTileState();
@@ -381,8 +392,7 @@ class _ListingTileState extends State<ListingTile> {
     final bg = scheme.surface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeState = ThemeState();
-    final useLiquidGlass =
-        themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
     final darkShadow = Colors.black.withValues(
       alpha: isDark ? 0.45 : 0.20,
     );
@@ -393,218 +403,217 @@ class _ListingTileState extends State<ListingTile> {
     final tileInkWell = InkWell(
       onTap: () {
         HapticFeedbackUtils.lightImpact();
+        final customOnTap = widget.onTap;
+        if (customOnTap != null) {
+          customOnTap();
+          return;
+        }
         unawaited(context.pushListingDetail(widget.listing.id));
       },
       onLongPress: () => unawaited(_onTileLongPress()),
       borderRadius: borderRadius,
       child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Badges (type, gender, price, 3D) span the full card
-                      // width above the photo; favorite heart at the far end.
-                      Row(
+                // Badges (type, gender, price, 3D) span the full card
+                // width above the photo; favorite heart at the far end.
+                Row(
+                  children: [
+                    // Type / gender / price / 3D badges. A Wrap (not a
+                    // Row) so labelled badges flow onto a second line on
+                    // narrow screens instead of overflowing.
+                    Expanded(
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          // Type / gender / price / 3D badges. A Wrap (not a
-                          // Row) so labelled badges flow onto a second line on
-                          // narrow screens instead of overflowing.
-                          Expanded(
-                            child: Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                // Listing Type
-                                if (widget.listing.listingType != null)
-                                  ListingTypeIconBadge(
-                                    listingTypeCode:
-                                        widget.listing.listingType!.code,
-                                    size: 16,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 5,
-                                    ),
-                                    label: _shortListingTypeLabel(
-                                      widget.listing.listingType!.code,
-                                      widget.listing.gender,
-                                    ),
-                                  ),
-                                // Gender Badge
-                                if (widget.listing.gender != null)
-                                  GenderBadge(
-                                    gender: widget.listing.gender!,
-                                    size: 16,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 5,
-                                    ),
-                                    label: _shortGenderLabel(
-                                      widget.listing.gender!,
-                                    ),
-                                  ),
-                                if (_groupMembersProgressBadge != null)
-                                  _groupMembersProgressBadge!,
-                                // Price is shown only in the prominent price
-                                // card below the title (no header duplicate).
-                                // 3D room scan (available on iOS; show indicator on web too)
-                                if ((kIsWeb || isIPhoneFormFactor(context)) &&
-                                    (widget.listing.pointCloudUrl?.isNotEmpty ??
-                                        false))
-                                  const Room3dIconBadge(
-                                    size: 16,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 5,
-                                    ),
-                                    label: "3D",
-                                  ),
-                              ],
-                            ),
-                          ),
-                          // Favorite heart(s): explicit icon on favorites screen,
-                          // or compact indicator on home / feeds.
-                          _buildFavoriteSlot(),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      // Fixed media cell plus flexible details. Avoid
-                      // IntrinsicHeight here; this tile is a hot feed row and
-                      // intrinsic layout adds an extra measurement pass.
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Floor the media/info row height so sparse tiles
-                          // (e.g. title + price only) don't visually shrink
-                          // relative to fuller tiles.
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minHeight: _minMediaRowHeight,
-                            ),
-                            child: _buildThumbnail(context),
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Title
-                                  Text(
-                                    ListingUtils.usesPresetListingTitle(
-                                      widget.listing.listingTypeId,
-                                    )
-                                        ? L10n.get(
-                                            ListingUtils
-                                                .presetListingTitleL10nKey(
-                                              listingTypeId:
-                                                  widget.listing.listingTypeId,
-                                              gender: widget.listing.gender,
-                                            ),
-                                          )
-                                        : widget.listing.title,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: _getTitleTextColor(),
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  // Prominent monthly-price card.
-                                  if (widget.listing.price > 0) ...[
-                                    const SizedBox(height: 10),
-                                    _buildPriceCard(),
-                                  ],
-                                  // Location and metro on separate lines.
-                                  if (widget.listing.location != null ||
-                                      widget.listing.subwayStation != null) ...[
-                                    const SizedBox(height: 12),
-                                    ListenableBuilder(
-                                      listenable: LanguageState(),
-                                      builder: (context, child) {
-                                        final hasLocation =
-                                            widget.listing.location != null;
-                                        final hasStation =
-                                            widget.listing.subwayStation !=
-                                                null;
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (hasLocation)
-                                              Row(
-                                                children: [
-                                                  const ThemeIcon(
-                                                    Icons.location_on,
-                                                    color: AppColors.error,
-                                                    size: 20,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      _shortenDistrictSuffix(
-                                                        _getLocalizedName(
-                                                          nameUz: widget.listing
-                                                              .location!.nameUz,
-                                                          nameRu: widget.listing
-                                                              .location!.nameRu,
-                                                          nameEn: widget.listing
-                                                              .location!.nameEn,
-                                                        ),
-                                                      ),
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color:
-                                                            _getLocationTextColor(),
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            if (hasStation) ...[
-                                              if (hasLocation)
-                                                const SizedBox(height: 8),
-                                              _buildSubwayStationDisplay(
-                                                widget.listing.subwayStation!,
-                                              ),
-                                            ] else if (hasLocation)
-                                              // Reserve the metro-row height
-                                              // (8px gap + 20px icon row) so
-                                              // tiles without a station match
-                                              // the height of those with one.
-                                              const SizedBox(
-                                                height: 8 + 20,
-                                              ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ],
+                          // Listing Type
+                          if (widget.listing.listingType != null)
+                            ListingTypeIconBadge(
+                              listingTypeCode: widget.listing.listingType!.code,
+                              size: 16,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
                               ),
-                          ),
+                              label: _shortListingTypeLabel(
+                                widget.listing.listingType!.code,
+                                widget.listing.gender,
+                              ),
+                            ),
+                          // Gender Badge
+                          if (widget.listing.gender != null)
+                            GenderBadge(
+                              gender: widget.listing.gender!,
+                              size: 16,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
+                              ),
+                              label: _shortGenderLabel(
+                                widget.listing.gender!,
+                              ),
+                            ),
+                          if (_groupMembersProgressBadge != null)
+                            _groupMembersProgressBadge!,
+                          // Price is shown only in the prominent price
+                          // card below the title (no header duplicate).
+                          // 3D room scan (available on iOS; show indicator on web too)
+                          if ((kIsWeb || isIPhoneFormFactor(context)) &&
+                              (widget.listing.pointCloudUrl?.isNotEmpty ??
+                                  false))
+                            const Room3dIconBadge(
+                              size: 16,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
+                              ),
+                              label: "3D",
+                            ),
                         ],
                       ),
-                      // Footer rendered *below* the photo/info row, spanning
-                      // the full tile width. Keeping it out of the
-                      // media row means owner-only views/status can sit at the
-                      // right edge without affecting the photo.
-                      if (_hasTileFooter) ...[
-                        const SizedBox(height: 12),
-                        _buildTileFooter(),
-                      ],
-                    ],
-                  ),
+                    ),
+                    // Favorite heart(s): explicit icon on favorites screen,
+                    // or compact indicator on home / feeds.
+                    _buildFavoriteSlot(),
+                  ],
                 ),
+                const SizedBox(height: 10),
+                // Fixed media cell plus flexible details. Avoid
+                // IntrinsicHeight here; this tile is a hot feed row and
+                // intrinsic layout adds an extra measurement pass.
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Floor the media/info row height so sparse tiles
+                    // (e.g. title + price only) don't visually shrink
+                    // relative to fuller tiles.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: _minMediaRowHeight,
+                      ),
+                      child: _buildThumbnail(context),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Title
+                          Text(
+                            ListingUtils.usesPresetListingTitle(
+                              widget.listing.listingTypeId,
+                            )
+                                ? L10n.get(
+                                    ListingUtils.presetListingTitleL10nKey(
+                                      listingTypeId:
+                                          widget.listing.listingTypeId,
+                                      gender: widget.listing.gender,
+                                    ),
+                                  )
+                                : widget.listing.title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: _getTitleTextColor(),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          // Prominent monthly-price card.
+                          if (widget.listing.price > 0) ...[
+                            const SizedBox(height: 10),
+                            _buildPriceCard(),
+                          ],
+                          // Location and metro on separate lines.
+                          if (widget.listing.location != null ||
+                              widget.listing.subwayStation != null) ...[
+                            const SizedBox(height: 12),
+                            ListenableBuilder(
+                              listenable: LanguageState(),
+                              builder: (context, child) {
+                                final hasLocation =
+                                    widget.listing.location != null;
+                                final hasStation =
+                                    widget.listing.subwayStation != null;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (hasLocation)
+                                      Row(
+                                        children: [
+                                          const ThemeIcon(
+                                            Icons.location_on,
+                                            color: AppColors.error,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              _shortenDistrictSuffix(
+                                                _getLocalizedName(
+                                                  nameUz: widget
+                                                      .listing.location!.nameUz,
+                                                  nameRu: widget
+                                                      .listing.location!.nameRu,
+                                                  nameEn: widget
+                                                      .listing.location!.nameEn,
+                                                ),
+                                              ),
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: _getLocationTextColor(),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    if (hasStation) ...[
+                                      if (hasLocation)
+                                        const SizedBox(height: 8),
+                                      _buildSubwayStationDisplay(
+                                        widget.listing.subwayStation!,
+                                      ),
+                                    ] else if (hasLocation)
+                                      // Reserve the metro-row height
+                                      // (8px gap + 20px icon row) so
+                                      // tiles without a station match
+                                      // the height of those with one.
+                                      const SizedBox(
+                                        height: 8 + 20,
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                // Footer rendered *below* the photo/info row, spanning
+                // the full tile width. Keeping it out of the
+                // media row means owner-only views/status can sit at the
+                // right edge without affecting the photo.
+                if (_hasTileFooter) ...[
+                  const SizedBox(height: 12),
+                  _buildTileFooter(),
+                ],
               ],
             ),
+          ),
+        ],
+      ),
     );
 
     final cardSurface = useLiquidGlass
@@ -689,6 +698,13 @@ class _ListingTileState extends State<ListingTile> {
   }
 
   Widget _buildFavoriteSlot() {
+    if (widget.trailingAction != null) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: widget.trailingAction!,
+      );
+    }
+
     if (!widget.showHeartIcon && !widget.showFavoriteIndicator) {
       return const SizedBox.shrink();
     }
@@ -707,61 +723,23 @@ class _ListingTileState extends State<ListingTile> {
     }
 
     return Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: FavoriteHeartToggle(
-          listenable: _favoriteListenable,
-          shouldShow: (ctx) =>
-              PeerInteractionEligibility.mayInteractWithPublisher(
-            publisherUserId: widget.listing.userId,
-          ),
-          resolveIsFavorite: (ctx) => widget.showHeartIcon
-              ? (widget.forceFavorite ??
-                  FavoritesState().isFavorite(widget.listing.id))
-              : widget.forceFavorite == true
-                  ? true
-                  : FavoritesState().isFavorite(widget.listing.id),
-          hiddenBuilder: (_) => const SizedBox.shrink(),
-          onToggle: _onListingFavoriteToggle,
-          builder: (context, ui) {
-            if (widget.showHeartIcon) {
-              return SizedBox(
-                width: 20,
-                height: 20,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: ui.onTap,
-                      child: const SizedBox(
-                        width: 48,
-                        height: 48,
-                      ),
-                    ),
-                    IgnorePointer(
-                      child: AnimatedBuilder(
-                        animation: ui.pulse.listenable,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: ui.pulse.scale,
-                            child: ThemeIcon(
-                              ui.isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: ui.isFavorite
-                                  ? AppColors.favoriteActive
-                                  : AppColors.favoriteInactive,
-                              size: 20,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
+      padding: const EdgeInsets.only(right: 10),
+      child: FavoriteHeartToggle(
+        listenable: _favoriteListenable,
+        shouldShow: (ctx) =>
+            PeerInteractionEligibility.mayInteractWithPublisher(
+          publisherUserId: widget.listing.userId,
+        ),
+        resolveIsFavorite: (ctx) => widget.showHeartIcon
+            ? (widget.forceFavorite ??
+                FavoritesState().isFavorite(widget.listing.id))
+            : widget.forceFavorite == true
+                ? true
+                : FavoritesState().isFavorite(widget.listing.id),
+        hiddenBuilder: (_) => const SizedBox.shrink(),
+        onToggle: _onListingFavoriteToggle,
+        builder: (context, ui) {
+          if (widget.showHeartIcon) {
             return SizedBox(
               width: 20,
               height: 20,
@@ -783,25 +761,6 @@ class _ListingTileState extends State<ListingTile> {
                       builder: (context, child) {
                         return Transform.scale(
                           scale: ui.pulse.scale,
-                          child: child,
-                        );
-                      },
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        reverseDuration: const Duration(milliseconds: 180),
-                        switchInCurve: Curves.elasticOut,
-                        switchOutCurve: Curves.easeInBack,
-                        transitionBuilder: (child, animation) =>
-                            ScaleTransition(
-                          scale: animation,
-                          child: child,
-                        ),
-                        child: SizedBox(
-                          key: ValueKey(
-                            ui.isFavorite ? "fav-on" : "fav-off",
-                          ),
-                          width: 20,
-                          height: 20,
                           child: ThemeIcon(
                             ui.isFavorite
                                 ? Icons.favorite
@@ -811,16 +770,72 @@ class _ListingTileState extends State<ListingTile> {
                                 : AppColors.favoriteInactive,
                             size: 20,
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             );
-          },
-        ),
-      );
+          }
+          return SizedBox(
+            width: 20,
+            height: 20,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: ui.onTap,
+                  child: const SizedBox(
+                    width: 48,
+                    height: 48,
+                  ),
+                ),
+                IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: ui.pulse.listenable,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: ui.pulse.scale,
+                        child: child,
+                      );
+                    },
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      reverseDuration: const Duration(milliseconds: 180),
+                      switchInCurve: Curves.elasticOut,
+                      switchOutCurve: Curves.easeInBack,
+                      transitionBuilder: (child, animation) => ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      ),
+                      child: SizedBox(
+                        key: ValueKey(
+                          ui.isFavorite ? "fav-on" : "fav-off",
+                        ),
+                        width: 20,
+                        height: 20,
+                        child: ThemeIcon(
+                          ui.isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: ui.isFavorite
+                              ? AppColors.favoriteActive
+                              : AppColors.favoriteInactive,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Color _getLineColor(int line) {
@@ -1075,8 +1090,8 @@ class _ListingTileState extends State<ListingTile> {
       builder: (context, _) {
         final amount = PriceRangeHelper.formatStoredListingPrice(
           storedPrice: widget.listing.price,
-          listingTypeCode:
-              widget.listing.listingType?.code ?? ListingTypeCodes.roommateNeeded,
+          listingTypeCode: widget.listing.listingType?.code ??
+              ListingTypeCodes.roommateNeeded,
           minPrice: widget.listing.minPrice,
           maxPrice: widget.listing.maxPrice,
         );
@@ -1105,7 +1120,8 @@ class _ListingTileState extends State<ListingTile> {
   bool get _hasAmenities =>
       widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty;
 
-  bool get _hasTileFooter => _hasAmenities || widget.showActiveStatus;
+  bool get _hasTileFooter =>
+      widget.footerContent != null || _hasAmenities || widget.showActiveStatus;
 
   Widget _buildTileFooter() {
     return Column(
@@ -1117,9 +1133,16 @@ class _ListingTileState extends State<ListingTile> {
         Row(
           children: [
             Expanded(
-              child: _hasAmenities
-                  ? _buildAmenityIcons()
-                  : const SizedBox.shrink(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.footerContent != null) widget.footerContent!,
+                  if (widget.footerContent != null && _hasAmenities)
+                    const SizedBox(height: 10),
+                  if (_hasAmenities) _buildAmenityIcons(),
+                ],
+              ),
             ),
             if (widget.showActiveStatus) ...[
               const SizedBox(width: 12),
@@ -1561,7 +1584,8 @@ class _FeedFavoriteIndicator extends StatelessWidget {
     return ListenableBuilder(
       listenable: FavoritesState().listenableFor(listingId),
       builder: (context, _) {
-        final isFavorite = forceFavorite ?? FavoritesState().isFavorite(listingId);
+        final isFavorite =
+            forceFavorite ?? FavoritesState().isFavorite(listingId);
         if (!isFavorite) {
           return const SizedBox(width: 20, height: 20);
         }

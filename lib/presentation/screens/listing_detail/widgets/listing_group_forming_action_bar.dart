@@ -7,14 +7,16 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 /// Inline CTAs for `group_forming` listings (join / chat / manage requests).
 class ListingGroupFormingActionBar extends StatelessWidget {
   const ListingGroupFormingActionBar({
-    super.key,
     required this.listingDetail,
     required this.onPrimary,
     required this.primaryLabel,
+    super.key,
     this.onSecondary,
     this.secondaryLabel,
     this.showManageRequestsDot = false,
     this.manageRequestsDotTrigger = 0,
+    this.showGroupChatUnreadDot = false,
+    this.groupChatUnreadDotTrigger = 0,
     this.onViewMemberProfiles,
   });
 
@@ -25,6 +27,8 @@ class ListingGroupFormingActionBar extends StatelessWidget {
   final String? secondaryLabel;
   final bool showManageRequestsDot;
   final int manageRequestsDotTrigger;
+  final bool showGroupChatUnreadDot;
+  final int groupChatUnreadDotTrigger;
   final VoidCallback? onViewMemberProfiles;
 
   @override
@@ -58,11 +62,17 @@ class ListingGroupFormingActionBar extends StatelessWidget {
             includeProgress: isOpenGroupChatSecondary,
           )
         : null;
-    final notificationDot = showManageRequestsDot
-        ? (hasSecondaryAction
-            ? ListingDetailActionBarNotificationDot.top
-            : ListingDetailActionBarNotificationDot.primary)
-        : null;
+    final showPrimaryDot = (showManageRequestsDot && !hasSecondaryAction) ||
+        (showGroupChatUnreadDot && isOpenGroupChatPrimary);
+    final showSecondaryDot = (showManageRequestsDot && hasSecondaryAction) ||
+        (showGroupChatUnreadDot && isOpenGroupChatSecondary);
+    final primaryDotTrigger = showGroupChatUnreadDot && isOpenGroupChatPrimary
+        ? groupChatUnreadDotTrigger
+        : manageRequestsDotTrigger;
+    final secondaryDotTrigger =
+        showGroupChatUnreadDot && isOpenGroupChatSecondary
+            ? groupChatUnreadDotTrigger
+            : manageRequestsDotTrigger;
 
     return ListingDetailContactActionBar(
       embedded: true,
@@ -73,8 +83,10 @@ class ListingGroupFormingActionBar extends StatelessWidget {
       secondaryLabel: secondaryCtaLabel,
       secondaryIcon:
           isOpenGroupChatSecondary ? Icons.chat_bubble_outline : null,
-      notificationDot: notificationDot,
-      notificationDotTrigger: manageRequestsDotTrigger,
+      showPrimaryNotificationDot: showPrimaryDot,
+      primaryNotificationDotTrigger: primaryDotTrigger,
+      showSecondaryNotificationDot: showSecondaryDot,
+      secondaryNotificationDotTrigger: secondaryDotTrigger,
       onMemberProfiles: onViewMemberProfiles,
       memberProfilesCount: groupProgress?.current,
     );

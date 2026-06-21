@@ -51,6 +51,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
     this.primaryIcon,
     this.notificationDot,
     this.notificationDotTrigger = 0,
+    this.showPrimaryNotificationDot,
+    this.primaryNotificationDotTrigger,
+    this.showSecondaryNotificationDot,
+    this.secondaryNotificationDotTrigger,
     this.embedded = false,
     this.onMemberProfiles,
     this.memberProfilesCount,
@@ -69,6 +73,10 @@ class ListingDetailContactActionBar extends StatelessWidget {
   final IconData? primaryIcon;
   final ListingDetailActionBarNotificationDot? notificationDot;
   final int notificationDotTrigger;
+  final bool? showPrimaryNotificationDot;
+  final int? primaryNotificationDotTrigger;
+  final bool? showSecondaryNotificationDot;
+  final int? secondaryNotificationDotTrigger;
 
   /// When true, renders only the CTA column (no sticky frosted footer).
   final bool embedded;
@@ -109,7 +117,25 @@ class ListingDetailContactActionBar extends StatelessWidget {
     );
   }
 
-  Widget _wrapWithNotificationDot(BuildContext context, Widget child) {
+  bool get _showPrimaryDot =>
+      showPrimaryNotificationDot ??
+      notificationDot == ListingDetailActionBarNotificationDot.primary;
+
+  bool get _showSecondaryDot =>
+      showSecondaryNotificationDot ??
+      notificationDot == ListingDetailActionBarNotificationDot.top;
+
+  int get _primaryDotTrigger =>
+      primaryNotificationDotTrigger ?? notificationDotTrigger;
+
+  int get _secondaryDotTrigger =>
+      secondaryNotificationDotTrigger ?? notificationDotTrigger;
+
+  Widget _wrapWithNotificationDot(
+    BuildContext context,
+    Widget child, {
+    required int trigger,
+  }) {
     final theme = Theme.of(context);
     final unreadColor = ThemeState().unreadIndicatorColor;
     final dotBorderColor = theme.brightness == Brightness.dark
@@ -124,7 +150,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
           right: 10,
           top: -4,
           child: PulseThenBlinkDotWidget(
-            trigger: notificationDotTrigger,
+            trigger: trigger,
             color: unreadColor,
             size: 10,
             blinkDuration: const Duration(milliseconds: 750),
@@ -151,10 +177,14 @@ class ListingDetailContactActionBar extends StatelessWidget {
       borderColor: accentColor,
       width: width,
     );
-    if (notificationDot != ListingDetailActionBarNotificationDot.top) {
+    if (!_showSecondaryDot) {
       return button;
     }
-    return _wrapWithNotificationDot(context, button);
+    return _wrapWithNotificationDot(
+      context,
+      button,
+      trigger: _secondaryDotTrigger,
+    );
   }
 
   Widget _chatButton(BuildContext context, {double? width}) {
@@ -166,10 +196,11 @@ class ListingDetailContactActionBar extends StatelessWidget {
       width: width,
       icon: primaryIcon ?? CupertinoIcons.shield_fill,
     );
-    if (notificationDot != ListingDetailActionBarNotificationDot.primary) {
+    if (!_showPrimaryDot) {
       return button;
     }
-    return _wrapWithNotificationDot(context, button);
+    return _wrapWithNotificationDot(context, button,
+        trigger: _primaryDotTrigger);
   }
 
   bool get _hasSecondaryAction => onSecondary != null && secondaryLabel != null;
@@ -290,7 +321,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   }
 
   EdgeInsets _barPadding() {
-    if (notificationDot != ListingDetailActionBarNotificationDot.top) {
+    if (!_showSecondaryDot) {
       return const EdgeInsets.fromLTRB(16, 10, 16, 10);
     }
     // Leave room for the badge that sits slightly above the top CTA.

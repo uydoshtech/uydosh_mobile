@@ -556,17 +556,20 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     return _buildLoadingState();
   }
 
-  /// Calculate total unread count from all conversations
-  int _calculateTotalUnreadCount(List<ConversationSummary> conversations) {
-    return conversations.fold(0, (sum, conversation) {
-      if (conversation.unreadCount != null &&
-          conversation.unreadCount! > 0 &&
-          _currentUserId != null &&
-          conversation.lastMessageSenderId != _currentUserId) {
-        return sum + conversation.unreadCount!;
+  Map<int, int> _unreadCountsByConversation(
+    List<ConversationSummary> conversations,
+  ) {
+    final unreadCounts = <int, int>{};
+    for (final conversation in conversations) {
+      final unreadCount = conversation.unreadCount ?? 0;
+      if (unreadCount <= 0) continue;
+      if (_currentUserId != null &&
+          conversation.lastMessageSenderId == _currentUserId) {
+        continue;
       }
-      return sum;
-    });
+      unreadCounts[conversation.id] = unreadCount;
+    }
+    return unreadCounts;
   }
 
   bool _conversationBelongsToFilteredGigRequest(
@@ -596,6 +599,21 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       list = list.where(conversationHasMessagesForInbox).toList();
     }
     return list;
+  }
+
+  bool _isListingGroupConversation(ConversationSummary conversation) =>
+      conversation.contextType?.trim().toLowerCase() == "listing_group";
+
+  bool _isIncomingConversation(ConversationSummary conversation) {
+    if (_currentUserId == null) return false;
+    if (_isListingGroupConversation(conversation)) return true;
+    return conversation.participantId == _currentUserId;
+  }
+
+  bool _isOutgoingConversation(ConversationSummary conversation) {
+    if (_currentUserId == null) return false;
+    if (_isListingGroupConversation(conversation)) return false;
+    return conversation.initiatorId == _currentUserId;
   }
 
   @override
@@ -660,8 +678,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
               _maybeApplyInitialTabRule(visible);
 
               if (widget.filterGigRequestId == null) {
-                final totalUnreadCount = _calculateTotalUnreadCount(visible);
-                UnreadMessagesState().updateUnreadCount(totalUnreadCount);
+                UnreadMessagesState().updateFromConversations(
+                  _unreadCountsByConversation(visible),
+                );
               }
             } else if (state is ConversationsCleared) {
               _lastDisplayedConversations = null;
@@ -849,19 +868,12 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       return _buildGigScopedConversationsList(conversations);
     }
 
-    // Filter conversations into incoming and outgoing
-    final incomingConversations = conversations
-        .where(
-          (conv) =>
-              _currentUserId != null && conv.participantId == _currentUserId,
-        )
-        .toList();
-    final outgoingConversations = conversations
-        .where(
-          (conv) =>
-              _currentUserId != null && conv.initiatorId == _currentUserId,
-        )
-        .toList();
+    // Group chats are membership-based; members beyond the legacy
+    // initiator/participant pair still need a stable inbox lane.
+    final incomingConversations =
+        conversations.where(_isIncomingConversation).toList();
+    final outgoingConversations =
+        conversations.where(_isOutgoingConversation).toList();
 
     final showInboxTabs =
         incomingConversations.isNotEmpty && outgoingConversations.isNotEmpty;
@@ -1246,10 +1258,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (_currentUserId == null) return;
     _appliedInitialTabRule = true;
 
-    final incoming =
-        visible.where((c) => c.participantId == _currentUserId).toList();
-    final outgoing =
-        visible.where((c) => c.initiatorId == _currentUserId).toList();
+    final incoming = visible.where(_isIncomingConversation).toList();
+    final outgoing = visible.where(_isOutgoingConversation).toList();
 
     final incomingHasUnread = _getUnreadCount(incoming) > 0;
     final outgoingHasUnread = _getUnreadCount(outgoing) > 0;
@@ -1452,8 +1462,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final cache =
         _lastDisplayedConversations ?? _visibleConversationsFromBloc();
     if (widget.filterGigRequestId == null && cache != null) {
-      UnreadMessagesState().updateUnreadCount(
-        _calculateTotalUnreadCount(
+      UnreadMessagesState().updateFromConversations(
+        _unreadCountsByConversation(
           cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
         ),
       );
@@ -1502,8 +1512,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final cache =
             _lastDisplayedConversations ?? _visibleConversationsFromBloc();
         if (widget.filterGigRequestId == null && cache != null) {
-          UnreadMessagesState().updateUnreadCount(
-            _calculateTotalUnreadCount(
+          UnreadMessagesState().updateFromConversations(
+            _unreadCountsByConversation(
               cache.where((c) => !_pendingArchiveIds.contains(c.id)).toList(),
             ),
           );

@@ -13,12 +13,16 @@ class UnreadMessagesState extends ChangeNotifier {
   bool _isInitialized = false;
   int? _lastIncomingConversationId;
   int? _activeConversationId;
+  final Map<int, int> _conversationUnreadCounts = {};
 
   /// Current unread messages count
   int get unreadCount => _unreadCount;
 
   /// Whether there are any unread messages
   bool get hasUnreadMessages => _unreadCount > 0;
+
+  bool hasUnreadForConversation(int conversationId) =>
+      (_conversationUnreadCounts[conversationId] ?? 0) > 0;
 
   /// Whether the state has been initialized
   bool get isInitialized => _isInitialized;
@@ -63,11 +67,35 @@ class UnreadMessagesState extends ChangeNotifier {
     }
   }
 
+  void updateFromConversations(Map<int, int> unreadCountsByConversation) {
+    _conversationUnreadCounts
+      ..clear()
+      ..addAll(unreadCountsByConversation);
+    final nextUnreadCount = unreadCountsByConversation.values.fold<int>(
+      0,
+      (sum, count) => sum + count,
+    );
+    if (_unreadCount != nextUnreadCount || !_isInitialized) {
+      _unreadCount = nextUnreadCount;
+      _isInitialized = true;
+      notifyListeners();
+      logger.d(
+          "🔔 UnreadMessagesState: Updated unread count to $nextUnreadCount");
+      return;
+    }
+    _isInitialized = true;
+    _safeNotifyListeners();
+  }
+
   /// Increment unread count (when new message arrives)
   void incrementUnreadCount({int? conversationId}) {
     _unreadCount++;
     _isInitialized = true;
     _lastIncomingConversationId = conversationId;
+    if (conversationId != null) {
+      _conversationUnreadCounts[conversationId] =
+          (_conversationUnreadCounts[conversationId] ?? 0) + 1;
+    }
     notifyListeners();
     logger.d(
       "🔔 UnreadMessagesState: Incremented unread count to $_unreadCount",
@@ -86,10 +114,24 @@ class UnreadMessagesState extends ChangeNotifier {
     }
   }
 
+  void clearConversationUnreadCount(int conversationId) {
+    final count = _conversationUnreadCounts.remove(conversationId) ?? 0;
+    final nextUnreadCount =
+        (_unreadCount - count).clamp(0, _unreadCount).toInt();
+    if (_unreadCount == nextUnreadCount && count == 0) return;
+    _unreadCount = nextUnreadCount;
+    _isInitialized = true;
+    notifyListeners();
+    logger.d(
+      "🔔 UnreadMessagesState: Cleared unread count for conversation $conversationId",
+    );
+  }
+
   /// Clear all unread messages (when all messages are read)
   void clearUnreadCount() {
     if (_unreadCount > 0) {
       _unreadCount = 0;
+      _conversationUnreadCounts.clear();
       _isInitialized = true;
       notifyListeners();
       logger.d("🔔 UnreadMessagesState: Cleared unread count");
@@ -100,6 +142,7 @@ class UnreadMessagesState extends ChangeNotifier {
   void reset() {
     _unreadCount = 0;
     _isInitialized = false;
+    _conversationUnreadCounts.clear();
     notifyListeners();
   }
 }

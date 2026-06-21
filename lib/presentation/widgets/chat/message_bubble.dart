@@ -543,6 +543,28 @@ class _MessageBubbleState extends State<MessageBubble>
     return math.min(base + extraStartInset, maxPermittedStartInset);
   }
 
+  BoxDecoration _reactionBadgeDecoration(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      color: isDark
+          ? Colors.white.withValues(alpha: 0.12)
+          : Colors.black.withValues(alpha: 0.07),
+      borderRadius: BorderRadius.circular(_reactionBadgeHoverHeight / 2),
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.14)
+            : Colors.black.withValues(alpha: 0.08),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.10),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
   /// Same horizontal inset as the posted reaction badge (even before a reaction exists).
   double _reactionToolbarTrailingEndInset(double bubbleInnerWidth) {
     final myId = widget.message.myReaction;
@@ -698,9 +720,10 @@ class _MessageBubbleState extends State<MessageBubble>
           _openReactionToolbar(context);
         },
         behavior: HitTestBehavior.opaque,
-        child: SizedBox(
+        child: Container(
           width: _reactionBadgeHoverHeight,
           height: _reactionBadgeHoverHeight,
+          decoration: _reactionBadgeDecoration(context),
           child: Icon(
             Icons.add_reaction_outlined,
             size: _reactionBubbleEmojiSize + 2,
@@ -734,9 +757,10 @@ class _MessageBubbleState extends State<MessageBubble>
       },
       behavior: HitTestBehavior.opaque,
       child: isSingle
-          ? SizedBox(
+          ? Container(
               width: _reactionBadgeHoverHeight,
               height: _reactionBadgeHoverHeight,
+              decoration: _reactionBadgeDecoration(context),
               child: Center(
                 child: Text(
                   MessageReactionCatalog.emojiFor(id),
@@ -753,8 +777,10 @@ class _MessageBubbleState extends State<MessageBubble>
                 ),
               ),
             )
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          : Container(
+              height: _reactionBadgeHoverHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: _reactionBadgeDecoration(context),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1001,9 +1027,10 @@ class _MessageBubbleState extends State<MessageBubble>
                     }
                   : null,
               behavior: HitTestBehavior.translucent,
-              child: Padding(
+              child: Container(
+                decoration: _reactionBadgeDecoration(context),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 2,
+                  horizontal: 7,
                   vertical: 2,
                 ),
                 child: Row(
