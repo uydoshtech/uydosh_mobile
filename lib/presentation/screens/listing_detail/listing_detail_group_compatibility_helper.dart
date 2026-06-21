@@ -445,7 +445,6 @@ class ListingDetailGroupCompatibilityHelper {
           if (lang == null || lang.isEmpty) return null;
           return LanguageDisplayHelper.getLocalizedLanguageName(lang);
         },
-        displayIconKey: (p) => _slugIconKey("language", p.preferredLanguage),
       ),
     ];
   }

@@ -22,6 +22,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/profile_compatibilit
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
@@ -130,6 +131,7 @@ class _ListingGroupMemberProfilesSheetState
   var _isRemoving = false;
   var _isLeaving = false;
   var _loadingRequests = false;
+  var _hasCheckedRequests = false;
 
   @override
   void initState() {
@@ -188,7 +190,7 @@ class _ListingGroupMemberProfilesSheetState
 
     if (showPendingRequests) {
       height += _sheetPendingSectionHeaderHeight;
-      if (_loadingRequests) {
+      if (_loadingRequests || _pendingRequests.isEmpty) {
         height += _sheetLoadingRequestsHeight;
       } else {
         height += _estimatedPendingRequestCardsHeight();
@@ -252,11 +254,15 @@ class _ListingGroupMemberProfilesSheetState
       setState(() {
         _pendingRequests = pendingRows;
         _loadingRequests = false;
+        _hasCheckedRequests = true;
       });
       await _loadPendingRequestCompatibility(pendingRows);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _loadingRequests = false);
+      setState(() {
+        _loadingRequests = false;
+        _hasCheckedRequests = true;
+      });
     }
   }
 
@@ -534,8 +540,10 @@ class _ListingGroupMemberProfilesSheetState
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final sortedMembers = _sortedMembers;
-    final showPendingRequests =
-        widget.isOwner && (_loadingRequests || _pendingRequests.isNotEmpty);
+    final showPendingRequests = widget.isOwner &&
+        (_loadingRequests ||
+            _pendingRequests.isNotEmpty ||
+            _hasCheckedRequests);
     final maxSheetHeight = _availableSheetHeight(context);
     final estimatedSheetHeight = _estimatedSheetHeight(
       sortedMembers: sortedMembers,
@@ -667,10 +675,26 @@ class _ListingGroupMemberProfilesSheetState
                           ),
                           const SizedBox(height: 10),
                           if (_loadingRequests)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
+                            const SizedBox(
+                              height: _sheetLoadingRequestsHeight,
                               child: Center(
-                                child: CircularProgressIndicator(),
+                                child: HouseLoadingIndicator(size: 24),
+                              ),
+                            )
+                          else if (_pendingRequests.isEmpty)
+                            SizedBox(
+                              height: _sheetLoadingRequestsHeight,
+                              child: Center(
+                                child: Text(
+                                  L10n.get("group_no_pending_requests"),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
                               ),
                             )
                           else

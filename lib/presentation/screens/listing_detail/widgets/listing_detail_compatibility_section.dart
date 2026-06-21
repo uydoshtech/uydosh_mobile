@@ -197,7 +197,7 @@ class _ListingDetailCompatibilitySectionState
               padding: const EdgeInsets.symmetric(horizontal: 1),
               child: Icon(
                 Icons.circle,
-                size: 5,
+                size: 10,
                 color: color.withValues(alpha: i <= count ? 0.9 : 0.25),
               ),
             ),
@@ -261,8 +261,6 @@ class _ListingDetailCompatibilitySectionState
         return singleIcon(value == "yes" ? Icons.check : Icons.close);
       case "cooking":
         return singleIcon(value == "yes" ? Icons.restaurant : Icons.close);
-      case "language":
-        return singleIcon(CupertinoIcons.globe);
     }
 
     return null;
@@ -331,26 +329,6 @@ class _ListingDetailCompatibilitySectionState
     return AppColors.error;
   }
 
-  bool get _useCompactGroupSections => ThemeState().isLightTheme;
-
-  IconData _groupSectionHeaderIcon(_GroupSectionKind kind) {
-    switch (kind) {
-      case _GroupSectionKind.full:
-        return Icons.check;
-      case _GroupSectionKind.partial:
-        return Icons.waves;
-      case _GroupSectionKind.discuss:
-        return Icons.warning_amber_rounded;
-    }
-  }
-
-  int _partialSectionAgreeCount() {
-    if (widget.groupPartialMatches.isEmpty) return 0;
-    return widget.groupPartialMatches
-        .map((item) => item.agreeCount)
-        .reduce((a, b) => a > b ? a : b);
-  }
-
   Widget _buildHeaderAvatar(String? avatarUrl, {required double size}) {
     final resolvedUrl = resolveAvatarUrl(avatarUrl);
     final fallback = CircleAvatar(
@@ -413,115 +391,9 @@ class _ListingDetailCompatibilitySectionState
             color: _getDescriptionTextColor().withValues(alpha: 0.8),
           ),
         ),
+        const SizedBox(height: 6),
+        _buildGroupHeaderAvatars(),
       ],
-    );
-  }
-
-  Widget _buildGroupFieldRow({
-    required String labelKey,
-    required String label,
-    required String value,
-  }) {
-    final iconColor =
-        _useCompactGroupSections ? _getIconColor() : _getDescriptionTextColor();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ThemeIcon(
-            _getLifestyleIcon(labelKey),
-            size: 20,
-            color: iconColor,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              "$label: $value",
-              style: TextStyle(
-                fontSize: 14,
-                color: _getDescriptionTextColor(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGroupSectionHeader({
-    required String title,
-    required Color accentColor,
-    required _GroupSectionKind kind,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 22,
-          height: 22,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: accentColor.withValues(alpha: 0.85),
-            shape: BoxShape.circle,
-          ),
-          child: ThemeIcon(
-            _groupSectionHeaderIcon(kind),
-            size: 14,
-            color: Colors.white,
-            useThemeColor: false,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: accentColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGroupSection({
-    required String title,
-    required Color accentColor,
-    required _GroupSectionKind kind,
-    required List<Widget> children,
-  }) {
-    if (children.isEmpty) return const SizedBox.shrink();
-
-    final sectionFillAlpha = _useCompactGroupSections ? 0.12 : 0.04;
-    final sectionBorderColor = _useCompactGroupSections
-        ? accentColor.withValues(alpha: 0.45)
-        : _getDescriptionTextColor().withValues(alpha: 0.14);
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _useCompactGroupSections
-            ? accentColor.withValues(alpha: sectionFillAlpha)
-            : _getDescriptionTextColor().withValues(alpha: sectionFillAlpha),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: sectionBorderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildGroupSectionHeader(
-            title: title,
-            accentColor: accentColor,
-            kind: kind,
-          ),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
     );
   }
 
@@ -653,10 +525,9 @@ class _ListingDetailCompatibilitySectionState
         return valueText(value, status: status);
       }
 
-      final accentColor = statusColor(status);
       final visual = _buildMatrixValueIcon(
         iconKey,
-        color: (accentColor ?? textColor).withValues(alpha: 0.9),
+        color: textColor.withValues(alpha: 0.9),
       );
       if (visual == null) return valueText(value, status: status);
 
@@ -922,7 +793,7 @@ class _ListingDetailCompatibilitySectionState
         ),
       if (partialCount > 0)
         statColumn(
-          icon: Icons.waves,
+          icon: Icons.warning_amber_rounded,
           count: partialCount,
           color: AppColors.warning,
           label: L10n.get("group_compatibility_summary_partial"),
@@ -968,94 +839,11 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupCompatibilityBody() {
-    final memberCount = widget.groupMembers.length;
-    final scoredPreferenceCount = widget.scoredFieldCount > 0
-        ? widget.scoredFieldCount
-        : widget.groupFullMatches.length;
-    final fullMatchAccentColor =
-        ThemeState().isLightTheme ? AppColors.successDark : AppColors.success;
-    final partialMatchAccentColor =
-        ThemeState().isLightTheme ? AppColors.warningDark : AppColors.warning;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.scoredFieldCount > 0 &&
-            widget.scoredFieldCount < widget.totalFieldCount)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              L10n.getWithParams(
-                "compatibility_based_on_preferences",
-                params: {
-                  "scored": widget.scoredFieldCount.toString(),
-                  "total": widget.totalFieldCount.toString(),
-                },
-              ),
-              style: TextStyle(
-                fontSize: 13,
-                color: _getDescriptionTextColor().withValues(alpha: 0.85),
-              ),
-            ),
-          ),
         _buildGroupPreferenceMatrix(),
-        _buildGroupSection(
-          title: L10n.getWithParams(
-            "group_compatibility_full_matches",
-            params: {
-              "count": widget.groupFullMatches.length.toString(),
-              "total": scoredPreferenceCount.toString(),
-            },
-          ),
-          accentColor: fullMatchAccentColor,
-          kind: _GroupSectionKind.full,
-          children: widget.groupFullMatches
-              .map(
-                (item) => _buildGroupFieldRow(
-                  labelKey: item.labelKey,
-                  label: item.label,
-                  value: item.value,
-                ),
-              )
-              .toList(),
-        ),
-        _buildGroupSection(
-          title: L10n.getWithParams(
-            "group_compatibility_partial_matches",
-            params: {
-              "count": _partialSectionAgreeCount().toString(),
-              "total": memberCount.toString(),
-            },
-          ),
-          accentColor: partialMatchAccentColor,
-          kind: _GroupSectionKind.partial,
-          children: widget.groupPartialMatches
-              .map(
-                (item) => _buildGroupFieldRow(
-                  labelKey: item.labelKey,
-                  label: item.label,
-                  value: item.value,
-                ),
-              )
-              .toList(),
-        ),
-        _buildGroupSection(
-          title: L10n.get("group_compatibility_discuss"),
-          accentColor: AppColors.error,
-          kind: _GroupSectionKind.discuss,
-          children: widget.groupDiscussItems
-              .map(
-                (item) => _buildGroupFieldRow(
-                  labelKey: item.labelKey,
-                  label: item.label,
-                  value: item.summary,
-                ),
-              )
-              .toList(),
-        ),
-        if (widget.groupFullMatches.isEmpty &&
-            widget.groupPartialMatches.isEmpty &&
-            widget.groupDiscussItems.isEmpty)
+        if (widget.groupPreferenceMatrix.isEmpty)
           UydoshLinkButton(
             text: L10n.get("complete_profile"),
             onPressed: widget.onCompleteProfile,
@@ -1184,11 +972,9 @@ class _ListingDetailCompatibilitySectionState
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (isAuthenticated) ...[
-                  if (widget.isGroupCompatibility)
-                    _buildGroupHeaderAvatars()
-                  else
+                  if (!widget.isGroupCompatibility)
                     _buildOverlappingHeaderAvatars(),
-                  const SizedBox(width: 10),
+                  if (!widget.isGroupCompatibility) const SizedBox(width: 10),
                 ] else
                   ThemeIcon(
                     ThemeState().isBlueTheme
@@ -1292,26 +1078,6 @@ class _ListingDetailCompatibilitySectionState
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.scoredFieldCount > 0 &&
-                          widget.scoredFieldCount < widget.totalFieldCount)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            L10n.getWithParams(
-                              "compatibility_based_on_preferences",
-                              params: {
-                                "scored": widget.scoredFieldCount.toString(),
-                                "total": widget.totalFieldCount.toString(),
-                              },
-                            ),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: _getDescriptionTextColor().withValues(
-                                alpha: 0.85,
-                              ),
-                            ),
-                          ),
-                        ),
                       if (widget.dealbreakers.isNotEmpty) ...[
                         Text(
                           L10n.get("compatibility_critical_differences"),
@@ -1545,5 +1311,3 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 }
-
-enum _GroupSectionKind { full, partial, discuss }
