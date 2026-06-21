@@ -1373,7 +1373,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                         label: L10n.get(
                           "pets_like_pets",
                         ),
-                        icon: Icons.pets,
+                        icon: Icons.favorite,
                       ),
                       DropdownOption(
                         value: "have_cat",

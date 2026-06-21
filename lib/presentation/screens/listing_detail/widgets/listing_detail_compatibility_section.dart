@@ -196,9 +196,9 @@ class _ListingDetailCompatibilitySectionState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 1),
               child: Icon(
-                Icons.circle,
+                i <= count ? Icons.circle : Icons.circle_outlined,
                 size: 10,
-                color: color.withValues(alpha: i <= count ? 0.9 : 0.25),
+                color: color.withValues(alpha: i <= count ? 0.9 : 0.45),
               ),
             ),
         ],
@@ -237,6 +237,7 @@ class _ListingDetailCompatibilitySectionState
           case "dont_like_pets":
             return singleIcon(Icons.block);
           case "like_pets":
+            return singleIcon(Icons.favorite);
           case "have_cat":
           case "have_dog":
             return singleIcon(Icons.pets);
@@ -331,6 +332,7 @@ class _ListingDetailCompatibilitySectionState
 
   Widget _buildHeaderAvatar(String? avatarUrl, {required double size}) {
     final resolvedUrl = resolveAvatarUrl(avatarUrl);
+    final borderColor = ChatParticipantAvatarStack.avatarBorderColor(context);
     final fallback = CircleAvatar(
       radius: size / 2,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -341,19 +343,34 @@ class _ListingDetailCompatibilitySectionState
       ),
     );
 
+    Widget avatarContent;
     if (resolvedUrl == null) {
-      return fallback;
-    }
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: ClipOval(
+      avatarContent = fallback;
+    } else {
+      avatarContent = ClipOval(
         child: NetworkAvatarImage(
           imageUrl: resolvedUrl,
           size: size,
           fallback: fallback,
         ),
+      );
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        children: [
+          Positioned.fill(child: avatarContent),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: borderColor, width: 1.5),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -361,7 +378,7 @@ class _ListingDetailCompatibilitySectionState
   Widget _buildGroupHeaderAvatars() {
     return ChatParticipantAvatarStack(
       participants: widget.groupMembers,
-      currentUserId: widget.currentUserId,
+      currentUserId: widget.currentUserId ?? UserListingState().currentUserId,
       avatarSize: 32,
       maxVisible: 5,
     );
@@ -408,9 +425,17 @@ class _ListingDetailCompatibilitySectionState
     final isLightTheme = ThemeState().isLightTheme;
     final notSpecifiedLabel = L10n.get("not_specified");
     final fallbackUserLabel = L10n.get("user");
-    final orderedUserIds = widget.groupMembers
-        .map((member) => member.userId)
+    final currentUserId =
+        widget.currentUserId ?? UserListingState().currentUserId;
+    final matrixUserIds = widget.groupPreferenceMatrix.first.cells
+        .map((cell) => cell.userId)
         .toList(growable: false);
+    final orderedUserIds = currentUserId == null
+        ? matrixUserIds
+        : [
+            if (matrixUserIds.contains(currentUserId)) currentUserId,
+            ...matrixUserIds.where((id) => id != currentUserId),
+          ];
     final memberByUserId = {
       for (final member in widget.groupMembers) member.userId: member,
     };
@@ -891,17 +916,6 @@ class _ListingDetailCompatibilitySectionState
   Widget _buildOverlappingHeaderAvatars() {
     const size = 32.0;
     const overlap = 8.0;
-    final borderColor = Theme.of(context).colorScheme.surface;
-
-    Widget borderedAvatar(String? avatarUrl) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: borderColor, width: 1.5),
-        ),
-        child: _buildHeaderAvatar(avatarUrl, size: size),
-      );
-    }
 
     return SizedBox(
       width: size * 2 - overlap,
@@ -911,11 +925,11 @@ class _ListingDetailCompatibilitySectionState
         children: [
           Positioned(
             left: 0,
-            child: borderedAvatar(widget.currentUserAvatarUrl),
+            child: _buildHeaderAvatar(widget.currentUserAvatarUrl, size: size),
           ),
           Positioned(
             left: size - overlap,
-            child: borderedAvatar(widget.ownerAvatarUrl),
+            child: _buildHeaderAvatar(widget.ownerAvatarUrl, size: size),
           ),
         ],
       ),

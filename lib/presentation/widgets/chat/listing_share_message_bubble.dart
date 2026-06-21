@@ -505,7 +505,7 @@ class _ListingOwnerAvatarState extends State<_ListingOwnerAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = ChatParticipantAvatarStack.avatarBorderColor();
+    final borderColor = ChatParticipantAvatarStack.avatarBorderColor(context);
     final initials = StringUtils.extractInitials(_name ?? "");
     final resolvedUrl = resolveAvatarUrl(_avatarUrl);
 

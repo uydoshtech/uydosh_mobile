@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
@@ -24,10 +23,9 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   static const double _overlapFraction = 0.22;
   static const double _avatarBorderWidth = 1;
 
-  static Color avatarBorderColor() =>
-      ThemeState().isBlueTheme ? Colors.white : Colors.black;
-
-  static Color _avatarBorderColor() => avatarBorderColor();
+  /// Ring stroke that separates overlapping avatars from the card background.
+  static Color avatarBorderColor(BuildContext context) =>
+      Theme.of(context).colorScheme.surface;
 
   /// Puts the viewer first so the leftmost avatar is always "you".
   static List<ConversationMemberSummary> orderWithCurrentUserFirst(
@@ -106,7 +104,7 @@ class _MemberAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = resolveAvatarUrl(member.avatarUrl);
     final initials = StringUtils.extractInitials(member.name);
-    final borderColor = ChatParticipantAvatarStack._avatarBorderColor();
+    final borderColor = ChatParticipantAvatarStack.avatarBorderColor(context);
 
     if (url == null) {
       return DecoratedBox(
@@ -175,7 +173,7 @@ class _OverflowChip extends StatelessWidget {
         shape: BoxShape.circle,
         color: Theme.of(context).colorScheme.surface,
         border: Border.all(
-          color: ChatParticipantAvatarStack._avatarBorderColor(),
+          color: ChatParticipantAvatarStack.avatarBorderColor(context),
           width: ChatParticipantAvatarStack._avatarBorderWidth,
         ),
       ),
