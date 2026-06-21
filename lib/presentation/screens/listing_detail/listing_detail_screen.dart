@@ -510,7 +510,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         if (ctx?.canUseHousingShortlist == true &&
             (ctx?.isOwner == true || ctx?.isMember == true)) {
           final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
-          final showManageRequests = ctx?.isOwner == true;
+          final hasGroupChat = ctx?.hasGroupChat == true;
+          final showManageRequestsFallback =
+              ctx?.isOwner == true && !hasGroupChat;
 
           void openJoinRequestsSheet() {
             showListingGroupJoinRequestsSheet(
@@ -527,15 +529,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
               context: context,
               groupListingDetail: listingDetail,
             ),
-            secondaryLabel: showManageRequests
-                ? L10n.get("group_manage_requests")
-                : ctx?.hasGroupChat == true
-                    ? L10n.get("group_open_chat")
+            secondaryLabel: hasGroupChat
+                ? L10n.get("group_open_chat")
+                : showManageRequestsFallback
+                    ? L10n.get("group_manage_requests")
                     : null,
-            onSecondary: showManageRequests
-                ? openJoinRequestsSheet
-                : ctx?.hasGroupChat == true
-                    ? () => _openGroupChat(listingDetail)
+            onSecondary: hasGroupChat
+                ? () => _openGroupChat(listingDetail)
+                : showManageRequestsFallback
+                    ? openJoinRequestsSheet
                     : null,
             showManageRequestsDot: pendingCount > 0,
             manageRequestsDotTrigger: pendingCount,

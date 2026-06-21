@@ -405,27 +405,36 @@ class _ListingDetailCompatibilitySectionState
 
     final textColor = _getDescriptionTextColor();
     final borderColor = textColor.withValues(alpha: 0.12);
+    final isLightTheme = ThemeState().isLightTheme;
+    final notSpecifiedLabel = L10n.get("not_specified");
+    final fallbackUserLabel = L10n.get("user");
+    final orderedUserIds = widget.groupMembers
+        .map((member) => member.userId)
+        .toList(growable: false);
+    final memberByUserId = {
+      for (final member in widget.groupMembers) member.userId: member,
+    };
+    final cellsByRowAndUserId = {
+      for (final row in widget.groupPreferenceMatrix)
+        row: {
+          for (final cell in row.cells) cell.userId: cell,
+        },
+    };
 
     ConversationMemberSummary? memberFor(int userId) {
-      return widget.groupMembers
-          .where((item) => item.userId == userId)
-          .firstOrNull;
+      return memberByUserId[userId];
     }
 
     String memberName(int userId) {
       final member = memberFor(userId);
       final name = member?.name.trim();
-      if (name == null || name.isEmpty) return L10n.get("user");
+      if (name == null || name.isEmpty) return fallbackUserLabel;
 
       final parts = name.split(RegExp(r"\s+"));
       if (parts.length < 2) return name;
 
       return "${parts.first} ${parts.last.characters.first}.";
     }
-
-    final orderedUserIds = widget.groupMembers
-        .map((member) => member.userId)
-        .toList(growable: false);
 
     Widget tableCell({
       required Widget child,
@@ -455,13 +464,9 @@ class _ListingDetailCompatibilitySectionState
       switch (status) {
         case GroupPreferenceMatrixCellStatus.fullMatch:
         case GroupPreferenceMatrixCellStatus.partialMatch:
-          return ThemeState().isLightTheme
-              ? AppColors.successDark
-              : AppColors.success;
+          return isLightTheme ? AppColors.successDark : AppColors.success;
         case GroupPreferenceMatrixCellStatus.mismatch:
-          return ThemeState().isLightTheme
-              ? AppColors.warningDark
-              : AppColors.warning;
+          return isLightTheme ? AppColors.warningDark : AppColors.warning;
         case GroupPreferenceMatrixCellStatus.conflict:
           return AppColors.error;
         case GroupPreferenceMatrixCellStatus.missing:
@@ -469,22 +474,47 @@ class _ListingDetailCompatibilitySectionState
       }
     }
 
-    GroupPreferenceMatrixCellStatus rowStatus(GroupPreferenceMatrixRow row) {
-      final statuses = row.cells
-          .map((cell) => cell.status)
-          .where((status) => status != GroupPreferenceMatrixCellStatus.missing)
-          .toList(growable: false);
-      if (statuses.isEmpty) return GroupPreferenceMatrixCellStatus.missing;
-      if (statuses.contains(GroupPreferenceMatrixCellStatus.conflict)) {
-        return GroupPreferenceMatrixCellStatus.conflict;
+    GroupPreferenceMatrixCellStatus resolveRowStatus(
+      GroupPreferenceMatrixRow row,
+    ) {
+      var hasStatus = false;
+      var hasPartialMatch = false;
+      for (final cell in row.cells) {
+        final status = cell.status;
+        if (status == GroupPreferenceMatrixCellStatus.missing) continue;
+        hasStatus = true;
+        if (status == GroupPreferenceMatrixCellStatus.conflict) {
+          return GroupPreferenceMatrixCellStatus.conflict;
+        }
+        if (status == GroupPreferenceMatrixCellStatus.mismatch) {
+          return GroupPreferenceMatrixCellStatus.mismatch;
+        }
+        if (status == GroupPreferenceMatrixCellStatus.partialMatch) {
+          hasPartialMatch = true;
+        }
       }
-      if (statuses.contains(GroupPreferenceMatrixCellStatus.mismatch)) {
-        return GroupPreferenceMatrixCellStatus.mismatch;
-      }
-      if (statuses.contains(GroupPreferenceMatrixCellStatus.partialMatch)) {
+
+      if (!hasStatus) return GroupPreferenceMatrixCellStatus.missing;
+      if (hasPartialMatch) {
         return GroupPreferenceMatrixCellStatus.partialMatch;
       }
       return GroupPreferenceMatrixCellStatus.fullMatch;
+    }
+
+    final rowStatusByRow = {
+      for (final row in widget.groupPreferenceMatrix)
+        row: resolveRowStatus(row),
+    };
+
+    GroupPreferenceMatrixCell? cellFor(
+      GroupPreferenceMatrixRow row,
+      int userId,
+    ) {
+      return cellsByRowAndUserId[row]?[userId];
+    }
+
+    GroupPreferenceMatrixCellStatus rowStatus(GroupPreferenceMatrixRow row) {
+      return rowStatusByRow[row] ?? GroupPreferenceMatrixCellStatus.missing;
     }
 
     Widget valueText(
@@ -492,7 +522,7 @@ class _ListingDetailCompatibilitySectionState
       GroupPreferenceMatrixCellStatus status =
           GroupPreferenceMatrixCellStatus.missing,
     }) {
-      final isMissing = value == L10n.get("not_specified");
+      final isMissing = value == notSpecifiedLabel;
       final accentColor = statusColor(status);
       return Text(
         value,
@@ -509,19 +539,16 @@ class _ListingDetailCompatibilitySectionState
       );
     }
 
-    GroupPreferenceMatrixCell? cellFor(
+    Widget iconValueCell(
       GroupPreferenceMatrixRow row,
-      int userId,
-    ) {
-      return row.cells.where((cell) => cell.userId == userId).firstOrNull;
-    }
-
-    Widget iconValueCell(GroupPreferenceMatrixRow row, int userId) {
-      final cell = cellFor(row, userId);
-      final value = cell?.value ?? L10n.get("not_specified");
+      int userId, {
+      GroupPreferenceMatrixCell? cell,
+    }) {
+      cell ??= cellFor(row, userId);
+      final value = cell?.value ?? notSpecifiedLabel;
       final status = cell?.status ?? GroupPreferenceMatrixCellStatus.missing;
       final iconKey = cell?.valueIconKey;
-      if (iconKey == null || value == L10n.get("not_specified")) {
+      if (iconKey == null || value == notSpecifiedLabel) {
         return valueText(value, status: status);
       }
 
@@ -537,6 +564,85 @@ class _ListingDetailCompatibilitySectionState
           label: "${row.label}: $value",
           child: ExcludeSemantics(child: visual),
         ),
+      );
+    }
+
+    Widget matrixRowHeader(GroupPreferenceMatrixRow row) {
+      final accentColor = statusColor(rowStatus(row));
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: accentColor?.withValues(alpha: 0.08),
+          border: Border(
+            bottom: BorderSide(color: borderColor),
+          ),
+        ),
+        child: Row(
+          children: [
+            ThemeIcon(
+              _getLifestyleIcon(row.labelKey),
+              size: 18,
+              color: (accentColor ?? textColor).withValues(
+                alpha: 0.85,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    row.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: accentColor ?? textColor,
+                    ),
+                  ),
+                  if (row.alignmentSummary != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      row.alignmentSummary!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: (accentColor ?? textColor).withValues(
+                          alpha: 0.75,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget matrixValueTableCell(
+      GroupPreferenceMatrixRow row,
+      int index,
+    ) {
+      final userId = orderedUserIds[index];
+      final cell = cellFor(row, userId);
+      final status =
+          cell?.status ?? GroupPreferenceMatrixCellStatus.missing;
+      final accentColor = statusColor(status);
+
+      return tableCell(
+        isLast: index == orderedUserIds.length - 1,
+        fillColor: accentColor?.withValues(alpha: 0.08),
+        child: iconValueCell(row, userId, cell: cell),
       );
     }
 
@@ -622,86 +728,11 @@ class _ListingDetailCompatibilitySectionState
                     ],
                   ),
                   for (final row in widget.groupPreferenceMatrix) ...[
-                    Builder(
-                      builder: (_) {
-                        final accentColor = statusColor(rowStatus(row));
-
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: accentColor?.withValues(alpha: 0.08),
-                            border: Border(
-                              bottom: BorderSide(color: borderColor),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              ThemeIcon(
-                                _getLifestyleIcon(row.labelKey),
-                                size: 18,
-                                color: (accentColor ?? textColor).withValues(
-                                  alpha: 0.85,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      row.label,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: accentColor ?? textColor,
-                                      ),
-                                    ),
-                                    if (row.alignmentSummary != null) ...[
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        row.alignmentSummary!,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: (accentColor ?? textColor)
-                                              .withValues(alpha: 0.75),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                    matrixRowHeader(row),
                     Row(
                       children: [
                         for (var i = 0; i < orderedUserIds.length; i++)
-                          Builder(
-                            builder: (_) {
-                              final cell = cellFor(row, orderedUserIds[i]);
-                              final accentColor = statusColor(
-                                cell?.status ??
-                                    GroupPreferenceMatrixCellStatus.missing,
-                              );
-
-                              return tableCell(
-                                isLast: i == orderedUserIds.length - 1,
-                                fillColor: accentColor?.withValues(alpha: 0.08),
-                                child: iconValueCell(row, orderedUserIds[i]),
-                              );
-                            },
-                          ),
+                          matrixValueTableCell(row, i),
                       ],
                     ),
                   ],
