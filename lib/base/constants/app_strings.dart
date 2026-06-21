@@ -166,6 +166,11 @@ class AppStrings {
       "group_remove_member_message":
           "{name} will lose access to the group chat. A spot will open for a new member.",
       "group_remove_member_success": "Member removed from the group",
+      "group_leave_group": "Leave group",
+      "group_leave_group_title": "Leave group?",
+      "group_leave_group_message":
+          "You will lose access to the group chat. A spot will open for a new member.",
+      "group_leave_group_success": "You left the group",
       "vs": "vs",
       "name": "Name or nickname",
       "im_from": "I'm from:",
@@ -2025,6 +2030,11 @@ class AppStrings {
       "group_remove_member_message":
           "{name} потеряет доступ к групповому чату. Освободится место для нового участника.",
       "group_remove_member_success": "Участник удалён из группы",
+      "group_leave_group": "Покинуть группу",
+      "group_leave_group_title": "Покинуть группу?",
+      "group_leave_group_message":
+          "Вы потеряете доступ к групповому чату. Освободится место для нового участника.",
+      "group_leave_group_success": "Вы покинули группу",
       "vs": "vs",
       "name": "Имя или никнейм",
       "im_from": "Я из:",
@@ -3916,6 +3926,11 @@ class AppStrings {
       "group_remove_member_message":
           "{name} guruh chatiga kira olmaydi. Yangi a'zo uchun joy ochiladi.",
       "group_remove_member_success": "A'zo guruhdan olib tashlandi",
+      "group_leave_group": "Guruhni tark etish",
+      "group_leave_group_title": "Guruh tark etilsinmi?",
+      "group_leave_group_message":
+          "Guruh chatiga kira olmaysiz. Yangi a'zo uchun joy ochiladi.",
+      "group_leave_group_success": "Guruhni tark etdingiz",
       "vs": "vs",
       "name": "Ism yoki taxallus",
       "im_from": "Men:",

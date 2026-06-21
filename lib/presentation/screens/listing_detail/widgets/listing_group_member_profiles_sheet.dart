@@ -96,6 +96,7 @@ class _ListingGroupMemberProfilesSheetState
     extends State<_ListingGroupMemberProfilesSheet> {
   late List<ConversationMemberSummary> _members;
   var _isRemoving = false;
+  var _isLeaving = false;
 
   @override
   void initState() {
@@ -107,7 +108,7 @@ class _ListingGroupMemberProfilesSheetState
     final base = widget.groupProgress;
     if (base == null) return null;
     return ListingGroupProgress(
-      current: _members.length < 1 ? 1 : _members.length,
+      current: _members.isEmpty ? 1 : _members.length,
       target: base.target,
     );
   }
@@ -119,8 +120,7 @@ class _ListingGroupMemberProfilesSheetState
         progress.current >= progress.target;
   }
 
-  List<ConversationMemberSummary> get _sortedMembers =>
-      _sortMembersForDisplay(
+  List<ConversationMemberSummary> get _sortedMembers => _sortMembersForDisplay(
         members: _members,
         ownerUserId: widget.ownerUserId,
         currentUserId: widget.currentUserId,
@@ -205,6 +205,83 @@ class _ListingGroupMemberProfilesSheetState
     }
   }
 
+  Future<void> _confirmLeaveGroup() async {
+    if (_isLeaving) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+          title: Text(
+            L10n.get("group_leave_group_title"),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+          content: Text(
+            L10n.get("group_leave_group_message"),
+            style: TextStyle(
+              fontSize: 16,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
+              child: Text(
+                L10n.get("cancel"),
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            TextButtonThemed(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(foregroundColor: scheme.error),
+              child: Text(
+                L10n.get("group_leave_group"),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isLeaving = true);
+    try {
+      await getIt<IListingGroupService>().leaveGroup(
+        listingId: widget.listingId,
+      );
+      if (!mounted) return;
+      setState(() {
+        if (widget.currentUserId != null) {
+          _members.removeWhere((row) => row.userId == widget.currentUserId);
+        }
+        _isLeaving = false;
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_leave_group_success"),
+      );
+      widget.onChanged?.call();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLeaving = false);
+      ToastTheme.showError(context, message: e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sortedMembers = _sortedMembers;
@@ -280,6 +357,11 @@ class _ListingGroupMemberProfilesSheetState
                     canRemove: widget.isOwner &&
                         member.userId != widget.ownerUserId &&
                         !_isRemoving,
+                    canLeave: !widget.isOwner &&
+                        widget.currentUserId != null &&
+                        member.userId == widget.currentUserId &&
+                        member.userId != widget.ownerUserId &&
+                        !_isLeaving,
                     onTap: () {
                       HapticFeedbackUtils.impact();
                       Navigator.of(context).pop();
@@ -289,6 +371,13 @@ class _ListingGroupMemberProfilesSheetState
                             member.userId != widget.ownerUserId &&
                             !_isRemoving
                         ? () => _confirmRemoveMember(member)
+                        : null,
+                    onLeave: !widget.isOwner &&
+                            widget.currentUserId != null &&
+                            member.userId == widget.currentUserId &&
+                            member.userId != widget.ownerUserId &&
+                            !_isLeaving
+                        ? _confirmLeaveGroup
                         : null,
                   ),
                 ],
@@ -339,8 +428,7 @@ class _MemberProfilesHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isLightTheme = ThemeState().isLightTheme;
-    final subtitleColor =
-        isLightTheme ? Colors.black : scheme.onSurfaceVariant;
+    final subtitleColor = isLightTheme ? Colors.black : scheme.onSurfaceVariant;
     final progressColor = isLightTheme
         ? Colors.black
         : scheme.onSurfaceVariant.withValues(alpha: 0.85);
@@ -438,7 +526,9 @@ class _MemberProfileCard extends StatelessWidget {
     this.currentUserId,
     this.compatibility,
     this.canRemove = false,
+    this.canLeave = false,
     this.onRemove,
+    this.onLeave,
   });
 
   final ConversationMemberSummary member;
@@ -447,7 +537,9 @@ class _MemberProfileCard extends StatelessWidget {
   final GroupMemberCompatibilitySummary? compatibility;
   final VoidCallback onTap;
   final bool canRemove;
+  final bool canLeave;
   final VoidCallback? onRemove;
+  final VoidCallback? onLeave;
 
   bool get _isOwner => member.userId == ownerUserId;
 
@@ -638,6 +730,16 @@ class _MemberProfileCard extends StatelessWidget {
                       UydoshLinkButton(
                         text: L10n.get("group_remove_member"),
                         onPressed: onRemove!,
+                        color: AppColors.error,
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ],
+                    if (canLeave && onLeave != null) ...[
+                      const SizedBox(height: 8),
+                      UydoshLinkButton(
+                        text: L10n.get("group_leave_group"),
+                        onPressed: onLeave!,
                         color: AppColors.error,
                         padding: EdgeInsets.zero,
                         alignment: Alignment.centerLeft,

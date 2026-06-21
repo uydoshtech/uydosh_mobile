@@ -52,6 +52,8 @@ abstract class IListingGroupService {
     required int memberUserId,
   });
 
+  Future<void> leaveGroup({required int listingId});
+
   Future<List<ListingGroupShortlistItem>> listShortlist({
     required int groupListingId,
     int page = 1,
@@ -145,7 +147,8 @@ class ListingGroupService implements IListingGroupService {
     required int listingId,
     required int requestId,
   }) async {
-    final response = await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
+    final response =
+        await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
       "/listings/$listingId/group/join-requests/$requestId/approve",
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
@@ -174,6 +177,16 @@ class ListingGroupService implements IListingGroupService {
   }) async {
     await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
       "/listings/$listingId/group/members/$memberUserId",
+      (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+  }
+
+  @override
+  Future<void> leaveGroup({required int listingId}) async {
+    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$listingId/group/members/me",
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
       data: const _EmptyBody(),
@@ -236,7 +249,8 @@ class ListingGroupService implements IListingGroupService {
     required int groupListingId,
     required int housingListingId,
   }) async {
-    final response = await _oauthApiClient.put<Map<String, dynamic>, _EmptyBody>(
+    final response =
+        await _oauthApiClient.put<Map<String, dynamic>, _EmptyBody>(
       "/listings/$groupListingId/group/shortlist/toggle/$housingListingId",
       _requireResponseMap,
       basePath: EnvironmentUtil.basePath,

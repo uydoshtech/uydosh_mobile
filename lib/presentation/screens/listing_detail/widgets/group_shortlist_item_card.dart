@@ -1,18 +1,25 @@
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
-import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+
+TextStyle _plusOneFontSize(BuildContext context, TextStyle? style) {
+  final fallbackStyle = DefaultTextStyle.of(context).style;
+  final baseStyle = style ?? fallbackStyle;
+  final baseFontSize = baseStyle.fontSize ?? fallbackStyle.fontSize ?? 14;
+  return baseStyle.copyWith(fontSize: baseFontSize + 1);
+}
 
 class GroupShortlistItemCard extends StatelessWidget {
   const GroupShortlistItemCard({
@@ -22,7 +29,8 @@ class GroupShortlistItemCard extends StatelessWidget {
     required this.isRemoving,
     required this.onOpen,
     required this.onRemove,
-    this.groupListingDetail,
+    this.ownerName,
+    this.ownerAvatarUrl,
     this.isOwner = false,
     this.onContactLandlord,
     this.onDiscussInGroup,
@@ -32,7 +40,8 @@ class GroupShortlistItemCard extends StatelessWidget {
   final ListingGroupShortlistItem item;
   final Listing listing;
   final GroupHousingListingFit fit;
-  final ListingDetail? groupListingDetail;
+  final String? ownerName;
+  final String? ownerAvatarUrl;
   final bool isOwner;
   final bool isRemoving;
   final VoidCallback onOpen;
@@ -47,10 +56,20 @@ class GroupShortlistItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isLightTheme = theme.brightness == Brightness.light;
     final openButtonBorderColor = isLightTheme ? Colors.black : Colors.white;
+    final actionButtonForegroundColor =
+        isLightTheme ? Colors.black87 : AppColors.textLight70;
+    final actionButtonStyle = OutlinedButton.styleFrom(
+      foregroundColor: actionButtonForegroundColor,
+      side: BorderSide(color: openButtonBorderColor),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+    );
+    final removeButtonStyle = OutlinedButton.styleFrom(
+      foregroundColor: theme.colorScheme.error,
+      side: BorderSide(color: theme.colorScheme.error),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+    );
     final perPersonPrice = fit.formatPerPersonPriceLabel();
     final showDiscuss = onDiscussInGroup != null;
-    final groupContextLabel = _groupContextLabel();
-    final districtLabel = _districtChecklistLabel();
     final rating = item.rating;
 
     return Card(
@@ -73,29 +92,25 @@ class GroupShortlistItemCard extends StatelessWidget {
                         listing.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
+                        style: _plusOneFontSize(
+                          context,
+                          theme.textTheme.titleSmall,
+                        ).copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (groupContextLabel != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          L10n.getWithParams(
-                            "group_shortlist_saved_for_group_context",
-                            params: {"label": groupContextLabel},
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
                       if (item.savedByName != null) ...[
                         const SizedBox(height: 4),
                         _SaverLine(
                           name: item.savedByName!,
                           avatarUrl: item.savedByAvatarUrl,
+                        ),
+                      ],
+                      if (ownerName != null || ownerAvatarUrl != null) ...[
+                        const SizedBox(height: 4),
+                        _OwnerLine(
+                          name: ownerName,
+                          avatarUrl: ownerAvatarUrl,
                         ),
                       ],
                       if (perPersonPrice != null) ...[
@@ -105,7 +120,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                             "group_shortlist_price_per_person",
                             params: {"price": perPersonPrice},
                           ),
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                          style: _plusOneFontSize(
+                            context,
+                            theme.textTheme.bodyMedium,
+                          ).copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -131,7 +149,7 @@ class GroupShortlistItemCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            ..._buildFitChecks(districtLabel),
+            ..._buildFitChecks(),
             if (rating != null && rating.participants.isNotEmpty) ...[
               const SizedBox(height: 8),
               _GroupRatingSection(rating: rating),
@@ -139,7 +157,10 @@ class GroupShortlistItemCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               L10n.get("group_shortlist_status_waiting"),
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: _plusOneFontSize(
+                context,
+                theme.textTheme.bodySmall,
+              ).copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
@@ -148,107 +169,96 @@ class GroupShortlistItemCard extends StatelessWidget {
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: isRemoving ? null : onDiscussInGroup,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor:
-                        isLightTheme ? Colors.black87 : AppColors.textLight70,
-                    side: BorderSide(color: openButtonBorderColor),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  style: actionButtonStyle,
+                  icon: const Icon(Icons.forum_outlined, size: 20),
+                  label: Text(
+                    L10n.get("group_shortlist_discuss_in_group"),
+                    style:
+                        _plusOneFontSize(context, theme.textTheme.labelLarge),
                   ),
-                  child: Text(L10n.get("group_shortlist_discuss_in_group")),
                 ),
               ),
             ],
             const SizedBox(height: 8),
             Row(
               children: [
-                TextButtonThemed(
-                  onPressed: isRemoving
-                      ? null
-                      : () {
-                          HapticFeedbackUtils.impact();
-                          onOpen();
-                        },
-                  child: Text(L10n.get("group_shortlist_open_listing")),
-                ),
-                const Spacer(),
-                TextButtonThemed(
-                  onPressed: isRemoving
-                      ? null
-                      : () {
-                          HapticFeedbackUtils.impact();
-                          onRemove();
-                        },
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.error,
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isRemoving
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            onOpen();
+                          },
+                    style: actionButtonStyle,
+                    icon: const Icon(Icons.open_in_new, size: 20),
+                    label: Text(
+                      L10n.get("group_shortlist_open_listing"),
+                      style:
+                          _plusOneFontSize(context, theme.textTheme.labelLarge),
+                    ),
                   ),
-                  child: isRemoving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(L10n.get("group_shortlist_remove")),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isRemoving
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            onRemove();
+                          },
+                    style: removeButtonStyle,
+                    icon: isRemoving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.delete_outline, size: 20),
+                    label: Text(
+                      L10n.get("group_shortlist_remove"),
+                      style: _plusOneFontSize(
+                        context,
+                        theme.textTheme.labelLarge,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            if (isOwner && onContactLandlord != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButtonThemed(
+            if (isOwner && onContactLandlord != null) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: OutlinedButton.icon(
                   onPressed: isRemoving ? null : onContactLandlord,
-                  child: Text(L10n.get("group_shortlist_contact_landlord")),
+                  style: actionButtonStyle,
+                  icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                  label: Text(
+                    L10n.get("group_shortlist_contact_landlord"),
+                    style:
+                        _plusOneFontSize(context, theme.textTheme.labelLarge),
+                  ),
                 ),
               ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  String? _groupContextLabel() {
-    final detail = groupListingDetail;
-    final parts = <String>[];
-
-    final groupName = detail?.title.trim();
-    if (groupName != null && groupName.isNotEmpty) {
-      parts.add(groupName);
-    }
-
-    final groupSize = fit.groupSize;
-    if (groupSize != null && groupSize > 0) {
-      parts.add(
-        L10n.getWithParams(
-          "group_shortlist_group_size_label",
-          params: {"count": groupSize.toString()},
-        ),
-      );
-    }
-
-    if (parts.isEmpty) return null;
-    return parts.join(" • ");
-  }
-
-  String _districtChecklistLabel() {
-    final locationLabel = _localizedLocationLabel(listing);
-    if (locationLabel.isEmpty) {
-      return L10n.get("group_shortlist_fit_district_unspecified");
-    }
-    return locationLabel;
-  }
-
-  List<Widget> _buildFitChecks(String districtLabel) {
+  List<Widget> _buildFitChecks() {
     final checks = <Widget>[];
 
-    if (fit.budget != GroupHousingBudgetFit.unknown) {
+    if (fit.budget == GroupHousingBudgetFit.above) {
       checks.add(
         _FitCheckRow(
           emoji: "💸",
-          label: fit.budget == GroupHousingBudgetFit.fits
-              ? L10n.get("group_shortlist_fit_budget_ok")
-              : L10n.get("group_shortlist_fit_budget_above"),
-          positive: fit.budget == GroupHousingBudgetFit.fits,
+          label: L10n.get("group_shortlist_fit_budget_above"),
+          positive: false,
         ),
       );
     }
@@ -267,35 +277,57 @@ class GroupShortlistItemCard extends StatelessWidget {
       );
     }
 
-    checks.add(
-      _LocationFitCheckRow(
-        label: districtLabel,
-        positive: fit.location != GroupHousingLocationFit.different,
-      ),
-    );
+    checks.add(_ListingLocationRows(listing: listing));
 
     return checks;
   }
 
-  static String _localizedLocationLabel(Listing listing) {
+  static String _localizedDistrictLabel(Listing listing) {
     final location = listing.location;
-    if (location == null) {
-      final station = listing.subwayStation;
-      if (station == null) return "";
-      return _localizedName(
-        nameUz: station.nameUz,
-        nameRu: station.nameRu,
-        nameEn: station.nameEn,
-      );
-    }
+    if (location == null) return "";
     return _localizedName(
       nameUz: location.nameUz,
       nameRu: location.nameRu,
       nameEn: location.nameEn,
-      shortNameUz: location.shortNameUz,
-      shortNameRu: location.shortNameRu,
-      shortNameEn: location.shortNameEn,
     );
+  }
+
+  static String _localizedStationLabel(Listing listing) {
+    final station = listing.subwayStation;
+    if (station == null) return "";
+    final stationName = _localizedName(
+      nameUz: station.nameUz,
+      nameRu: station.nameRu,
+      nameEn: station.nameEn,
+    );
+    return MetroCache.formatStationLabel(stationName, L10n.currentLanguage);
+  }
+
+  static Color _stationLineColor(Listing listing) {
+    final line = listing.subwayStation?.line;
+    if (line == null) return AppColors.error;
+    return ListingDetailThemeHelper.lineColor(line);
+  }
+
+  static String _fallbackLocationLabel() {
+    return L10n.get("group_shortlist_fit_district_unspecified");
+  }
+
+  static String districtLabelFor(Listing listing) {
+    return _localizedDistrictLabel(listing);
+  }
+
+  static String stationLabelFor(Listing listing) {
+    return _localizedStationLabel(listing);
+  }
+
+  static Color stationLineColorFor(Listing listing) {
+    return _stationLineColor(listing);
+  }
+
+  static bool hasAnyPlaceLabel(Listing listing) {
+    return _localizedDistrictLabel(listing).isNotEmpty ||
+        _localizedStationLabel(listing).isNotEmpty;
   }
 
   static String _localizedName({
@@ -332,10 +364,13 @@ class _BudgetStatusLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       "$emoji $label",
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
+      style: _plusOneFontSize(
+        context,
+        Theme.of(context).textTheme.bodySmall,
+      ).copyWith(
+        color: color,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }
@@ -413,6 +448,64 @@ class _SaverLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = StringUtils.extractInitials(name);
+    final prefix = L10n.get("group_shortlist_saved_by").trim();
+    final suffix = L10n.get("group_shortlist_saved_by_suffix").trim();
+    final textStyle = _plusOneFontSize(
+      context,
+      Theme.of(context).textTheme.bodySmall,
+    ).copyWith(
+      fontWeight: FontWeight.w700,
+    );
+
+    return Row(
+      children: [
+        if (prefix.isNotEmpty) ...[
+          Text(prefix, style: textStyle),
+          const SizedBox(width: 6),
+        ],
+        SizedBox(
+          width: 20,
+          height: 20,
+          child: ChatAvatar(
+            isCurrentUser: false,
+            initials: initials.isEmpty ? null : initials,
+            avatarUrl: avatarUrl,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textStyle,
+          ),
+        ),
+        if (suffix.isNotEmpty) ...[
+          const SizedBox(width: 6),
+          Text(suffix, style: textStyle),
+        ],
+      ],
+    );
+  }
+}
+
+class _OwnerLine extends StatelessWidget {
+  const _OwnerLine({
+    required this.name,
+    this.avatarUrl,
+  });
+
+  final String? name;
+  final String? avatarUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmedName = name?.trim();
+    final hasName = trimmedName != null && trimmedName.isNotEmpty;
+    final displayName =
+        hasName ? "${L10n.get("author")}: $trimmedName" : L10n.get("author");
+    final initials = StringUtils.extractInitials(hasName ? trimmedName : "");
 
     return Row(
       children: [
@@ -428,12 +521,16 @@ class _SaverLine extends StatelessWidget {
         const SizedBox(width: 6),
         Expanded(
           child: Text(
-            name,
+            displayName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: _plusOneFontSize(
+              context,
+              Theme.of(context).textTheme.bodySmall,
+            ).copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -461,55 +558,90 @@ class _FitCheckRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         "$emoji $label",
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
-            ),
+        style: _plusOneFontSize(
+          context,
+          Theme.of(context).textTheme.bodySmall,
+        ).copyWith(
+          color: color,
+          fontWeight: FontWeight.w500,
+          height: 1.35,
+        ),
       ),
     );
   }
 }
 
-class _LocationFitCheckRow extends StatelessWidget {
-  const _LocationFitCheckRow({
-    required this.label,
-    required this.positive,
-  });
+class _ListingLocationRows extends StatelessWidget {
+  const _ListingLocationRows({required this.listing});
 
-  final String label;
-  final bool positive;
+  final Listing listing;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = positive ? theme.colorScheme.onSurface : AppColors.warning;
+    final districtLabel = GroupShortlistItemCard.districtLabelFor(listing);
+    final stationLabel = GroupShortlistItemCard.stationLabelFor(listing);
+    final hasPlaceLabel = GroupShortlistItemCard.hasAnyPlaceLabel(listing);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.location_on,
-            color: AppColors.error,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w500,
-                height: 1.35,
-              ),
+          if (districtLabel.isNotEmpty)
+            _PlaceLabelRow(
+              icon: Icons.location_on,
+              iconColor: Colors.red,
+              label: districtLabel,
             ),
-          ),
+          if (!hasPlaceLabel)
+            _PlaceLabelRow(
+              icon: Icons.location_on,
+              iconColor: Colors.red,
+              label: GroupShortlistItemCard._fallbackLocationLabel(),
+            ),
+          if (stationLabel.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            _PlaceLabelRow(
+              icon: Icons.train,
+              iconColor: GroupShortlistItemCard.stationLineColorFor(listing),
+              label: stationLabel,
+            ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _PlaceLabelRow extends StatelessWidget {
+  const _PlaceLabelRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 16,
+              color: ListingDetailThemeHelper.locationTextColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -544,7 +676,10 @@ class _GroupRatingSection extends StatelessWidget {
         children: [
           Text(
             "${L10n.get("group_shortlist_group_rating")} · $summary",
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: _plusOneFontSize(
+              context,
+              theme.textTheme.bodySmall,
+            ).copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),

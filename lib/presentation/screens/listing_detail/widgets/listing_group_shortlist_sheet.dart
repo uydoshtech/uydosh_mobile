@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
+import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -25,6 +26,26 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+
+String? _listingOwnerNameFromProfile(UserProfile profile) {
+  final name = profile.name?.trim();
+  if (name != null && name.isNotEmpty) return name;
+  final telegram = profile.telegram?.trim();
+  if (telegram != null && telegram.isNotEmpty) {
+    return telegram.startsWith("@") ? telegram : "@$telegram";
+  }
+  return null;
+}
+
+String? _listingOwnerAvatarUrlFromProfile(UserProfile profile) {
+  final avatar = profile.avatarUrl?.trim();
+  if (avatar != null && avatar.isNotEmpty) return avatar;
+  final telegramAvatar = profile.telegramAvatarUrl?.trim();
+  if (telegramAvatar != null && telegramAvatar.isNotEmpty) {
+    return telegramAvatar;
+  }
+  return null;
+}
 
 Future<void> showListingGroupShortlistSheet({
   required BuildContext context,
@@ -93,14 +114,28 @@ class _ListingGroupShortlistSheetState
         groupListingId: widget.groupListingId,
       );
       final rows = <_ShortlistRow>[];
+      final ownerProfilesByUserId = <int, UserProfile>{};
+      final userProfileService = getIt<IUserProfileService>();
       for (final item in items) {
         final json = item.listingJson;
         if (json == null) continue;
         try {
+          final listing = Listing.fromJson(json);
+          UserProfile? ownerProfile;
+          try {
+            ownerProfile = ownerProfilesByUserId[listing.userId] ??=
+                await userProfileService.getUserProfile(listing.userId);
+          } catch (_) {}
           rows.add(
             _ShortlistRow(
               item: item,
-              listing: Listing.fromJson(json),
+              listing: listing,
+              ownerName: ownerProfile == null
+                  ? null
+                  : _listingOwnerNameFromProfile(ownerProfile),
+              ownerAvatarUrl: ownerProfile == null
+                  ? null
+                  : _listingOwnerAvatarUrlFromProfile(ownerProfile),
             ),
           );
         } catch (_) {}
@@ -382,7 +417,8 @@ class _ListingGroupShortlistSheetState
                             item: row.item,
                             listing: row.listing,
                             fit: fit,
-                            groupListingDetail: groupDetail,
+                            ownerName: row.ownerName,
+                            ownerAvatarUrl: row.ownerAvatarUrl,
                             isOwner: widget.isOwner,
                             isRemoving: isRemoving,
                             onOpen: () => _openListing(row),
@@ -422,8 +458,15 @@ class _ListingGroupShortlistSheetState
 }
 
 class _ShortlistRow {
-  const _ShortlistRow({required this.item, required this.listing});
+  const _ShortlistRow({
+    required this.item,
+    required this.listing,
+    this.ownerName,
+    this.ownerAvatarUrl,
+  });
 
   final ListingGroupShortlistItem item;
   final Listing listing;
+  final String? ownerName;
+  final String? ownerAvatarUrl;
 }
