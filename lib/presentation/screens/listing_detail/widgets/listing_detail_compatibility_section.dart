@@ -82,6 +82,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     this.groupFullMatches = const [],
     this.groupPartialMatches = const [],
     this.groupDiscussItems = const [],
+    this.groupPreferenceMatrix = const [],
     this.currentUserId,
     super.key,
   });
@@ -110,6 +111,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final List<GroupCompatibilityFullMatch> groupFullMatches;
   final List<GroupCompatibilityPartialMatch> groupPartialMatches;
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
+  final List<GroupPreferenceMatrixRow> groupPreferenceMatrix;
   final int? currentUserId;
 
   @override
@@ -152,11 +154,9 @@ class _ListingDetailCompatibilitySectionState
     final viewport = RenderAbstractViewport.of(renderObject);
     final topInset = _listingDetailScrollTopInset(ctx);
 
-    final target = (viewport
-                .getOffsetToReveal(renderObject, 0.0)
-                .offset -
-            topInset)
-        .clamp(position.minScrollExtent, position.maxScrollExtent);
+    final target =
+        (viewport.getOffsetToReveal(renderObject, 0.0).offset - topInset)
+            .clamp(position.minScrollExtent, position.maxScrollExtent);
 
     if ((target - position.pixels).abs() < 2) return;
     position.animateTo(target, duration: duration, curve: curve);
@@ -164,6 +164,109 @@ class _ListingDetailCompatibilitySectionState
 
   static IconData _getLifestyleIcon(String labelKey) =>
       ProfileCompatibilityFieldIcons.iconFor(labelKey);
+
+  static Widget? _buildMatrixValueIcon(
+    String iconKey, {
+    required Color color,
+  }) {
+    final parts = iconKey.split(":");
+    if (parts.length != 2) return null;
+    final category = parts.first;
+    final value = parts.last;
+
+    Widget singleIcon(IconData icon) => Icon(icon, size: 18, color: color);
+
+    Widget repeatedIcon(IconData icon, int count) {
+      return Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 2,
+        runSpacing: 2,
+        children: [
+          for (var i = 0; i < count; i++) Icon(icon, size: 12, color: color),
+        ],
+      );
+    }
+
+    Widget ratingDots(int count) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (var i = 1; i <= 5; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1),
+              child: Icon(
+                Icons.circle,
+                size: 5,
+                color: color.withValues(alpha: i <= count ? 0.9 : 0.25),
+              ),
+            ),
+        ],
+      );
+    }
+
+    int? ratingValue() {
+      final parsed = int.tryParse(value);
+      if (parsed == null) return null;
+      return parsed.clamp(1, 5).toInt();
+    }
+
+    switch (category) {
+      case "day":
+        switch (value) {
+          case "morning":
+            return singleIcon(Icons.wb_sunny);
+          case "evening":
+            return singleIcon(Icons.schedule);
+          case "night":
+            return singleIcon(Icons.nights_stay);
+        }
+        return null;
+      case "smoking":
+        switch (value) {
+          case "non-smoker":
+            return singleIcon(Icons.smoke_free);
+          case "occasional":
+            return singleIcon(Icons.smoking_rooms);
+          case "regular":
+            return repeatedIcon(Icons.smoking_rooms, 2);
+        }
+        return null;
+      case "pets":
+        switch (value) {
+          case "dont_like_pets":
+            return singleIcon(Icons.block);
+          case "like_pets":
+          case "have_cat":
+          case "have_dog":
+            return singleIcon(Icons.pets);
+        }
+        return null;
+      case "cleanliness":
+      case "noise":
+      case "sociability":
+        final count = ratingValue();
+        return count == null ? null : ratingDots(count);
+      case "alcohol":
+        switch (value) {
+          case "non-drinker":
+            return singleIcon(Icons.block);
+          case "occasional":
+            return singleIcon(Icons.local_bar);
+          case "regular":
+            return repeatedIcon(Icons.local_bar, 2);
+        }
+        return null;
+      case "guests":
+        return singleIcon(value == "yes" ? Icons.check : Icons.close);
+      case "cooking":
+        return singleIcon(value == "yes" ? Icons.restaurant : Icons.close);
+      case "language":
+        return singleIcon(CupertinoIcons.globe);
+    }
+
+    return null;
+  }
 
   String _formatUzbekPhoneDisplay(String raw) {
     final d = raw.replaceAll(RegExp(r"\D"), "");
@@ -319,9 +422,8 @@ class _ListingDetailCompatibilitySectionState
     required String label,
     required String value,
   }) {
-    final iconColor = _useCompactGroupSections
-        ? _getIconColor()
-        : _getDescriptionTextColor();
+    final iconColor =
+        _useCompactGroupSections ? _getIconColor() : _getDescriptionTextColor();
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -423,6 +525,254 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
+  Widget _buildGroupPreferenceMatrix() {
+    if (widget.groupMembers.length < 3 ||
+        widget.groupPreferenceMatrix.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final textColor = _getDescriptionTextColor();
+    final borderColor = textColor.withValues(alpha: 0.12);
+
+    ConversationMemberSummary? memberFor(int userId) {
+      return widget.groupMembers
+          .where((item) => item.userId == userId)
+          .firstOrNull;
+    }
+
+    String memberName(int userId) {
+      final member = memberFor(userId);
+      final name = member?.name.trim();
+      if (name == null || name.isEmpty) return L10n.get("user");
+
+      final parts = name.split(RegExp(r"\s+"));
+      if (parts.length < 2) return name;
+
+      return "${parts.first} ${parts.last.characters.first}.";
+    }
+
+    final orderedUserIds = widget.groupMembers
+        .map((member) => member.userId)
+        .toList(growable: false);
+
+    Widget tableCell({
+      required Widget child,
+      bool isHeader = false,
+      bool isLast = false,
+      Alignment alignment = Alignment.center,
+    }) {
+      return Expanded(
+        child: Container(
+          constraints: BoxConstraints(minHeight: isHeader ? 76 : 48),
+          alignment: alignment,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              right: isLast ? BorderSide.none : BorderSide(color: borderColor),
+              bottom: BorderSide(color: borderColor),
+            ),
+          ),
+          child: child,
+        ),
+      );
+    }
+
+    Widget valueText(String value) {
+      final isMissing = value == L10n.get("not_specified");
+      return Text(
+        value,
+        textAlign: TextAlign.center,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: orderedUserIds.length >= 5 ? 11 : 12,
+          fontWeight: isMissing ? FontWeight.w400 : FontWeight.w600,
+          color: textColor.withValues(alpha: isMissing ? 0.55 : 0.9),
+        ),
+      );
+    }
+
+    GroupPreferenceMatrixCell? cellFor(
+      GroupPreferenceMatrixRow row,
+      int userId,
+    ) {
+      return row.cells.where((cell) => cell.userId == userId).firstOrNull;
+    }
+
+    Widget iconValueCell(GroupPreferenceMatrixRow row, int userId) {
+      final cell = cellFor(row, userId);
+      final value = cell?.value ?? L10n.get("not_specified");
+      final iconKey = cell?.valueIconKey;
+      if (iconKey == null || value == L10n.get("not_specified")) {
+        return valueText(value);
+      }
+
+      final visual = _buildMatrixValueIcon(
+        iconKey,
+        color: textColor.withValues(alpha: 0.9),
+      );
+      if (visual == null) return valueText(value);
+
+      return Tooltip(
+        message: value,
+        child: Semantics(
+          label: "${row.label}: $value",
+          child: ExcludeSemantics(child: visual),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        color: textColor.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ThemeIcon(
+                Icons.table_chart_outlined,
+                size: 20,
+                color: textColor,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  L10n.get("group_preference_matrix_title"),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            L10n.get("group_preference_matrix_subtitle"),
+            style: TextStyle(
+              fontSize: 12,
+              color: textColor.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: borderColor),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      for (var i = 0; i < orderedUserIds.length; i++)
+                        tableCell(
+                          isHeader: true,
+                          isLast: i == orderedUserIds.length - 1,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildHeaderAvatar(
+                                memberFor(orderedUserIds[i])?.avatarUrl,
+                                size: 28,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                memberName(orderedUserIds[i]),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize:
+                                      orderedUserIds.length >= 5 ? 11 : 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  for (final row in widget.groupPreferenceMatrix) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: borderColor)),
+                      ),
+                      child: Row(
+                        children: [
+                          ThemeIcon(
+                            _getLifestyleIcon(row.labelKey),
+                            size: 18,
+                            color: textColor.withValues(alpha: 0.75),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  row.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
+                                if (row.alignmentSummary != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    row.alignmentSummary!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor.withValues(alpha: 0.65),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        for (var i = 0; i < orderedUserIds.length; i++)
+                          tableCell(
+                            isLast: i == orderedUserIds.length - 1,
+                            child: iconValueCell(row, orderedUserIds[i]),
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGroupCompatibilitySummaryBar() {
     final fullCount = widget.groupFullMatches.length;
     final partialCount = widget.groupPartialMatches.length;
@@ -479,7 +829,8 @@ class _ListingDetailCompatibilitySectionState
                       style: TextStyle(
                         fontSize: 11,
                         height: 1.2,
-                        color: _getDescriptionTextColor().withValues(alpha: 0.75),
+                        color:
+                            _getDescriptionTextColor().withValues(alpha: 0.75),
                       ),
                     ),
                   ],
@@ -577,6 +928,7 @@ class _ListingDetailCompatibilitySectionState
               ),
             ),
           ),
+        _buildGroupPreferenceMatrix(),
         _buildGroupSection(
           title: L10n.getWithParams(
             "group_compatibility_full_matches",
@@ -630,7 +982,7 @@ class _ListingDetailCompatibilitySectionState
                 ),
               )
               .toList(),
-          ),
+        ),
         if (widget.groupFullMatches.isEmpty &&
             widget.groupPartialMatches.isEmpty &&
             widget.groupDiscussItems.isEmpty)
@@ -759,53 +1111,53 @@ class _ListingDetailCompatibilitySectionState
           title: KeyedSubtree(
             key: widget.sectionKey,
             child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (isAuthenticated) ...[
-                if (widget.isGroupCompatibility)
-                  _buildGroupHeaderAvatars()
-                else
-                  _buildOverlappingHeaderAvatars(),
-                const SizedBox(width: 10),
-              ] else
-                ThemeIcon(
-                  ThemeState().isBlueTheme
-                      ? CupertinoIcons.group_solid
-                      : CupertinoIcons.group,
-                  size: 24,
-                  color: ThemeState().isBlueTheme
-                      ? Colors.white
-                      : ThemeState().isLightTheme
-                          ? Colors.black
-                          : _getIconColor(),
-                ),
-              if (!isAuthenticated) const SizedBox(width: 8),
-              Expanded(
-                child: widget.isGroupCompatibility && isAuthenticated
-                    ? _buildGroupHeaderTitle()
-                    : Text(
-                        L10n.get("compatibility_title"),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: _getDescriptionTextColor(),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-              ),
-              if (isAuthenticated) ...[
-                const SizedBox(width: 8),
-                Text(
-                  headerPercentText,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: _getCompatibilityPercentColor(),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (isAuthenticated) ...[
+                  if (widget.isGroupCompatibility)
+                    _buildGroupHeaderAvatars()
+                  else
+                    _buildOverlappingHeaderAvatars(),
+                  const SizedBox(width: 10),
+                ] else
+                  ThemeIcon(
+                    ThemeState().isBlueTheme
+                        ? CupertinoIcons.group_solid
+                        : CupertinoIcons.group,
+                    size: 24,
+                    color: ThemeState().isBlueTheme
+                        ? Colors.white
+                        : ThemeState().isLightTheme
+                            ? Colors.black
+                            : _getIconColor(),
                   ),
+                if (!isAuthenticated) const SizedBox(width: 8),
+                Expanded(
+                  child: widget.isGroupCompatibility && isAuthenticated
+                      ? _buildGroupHeaderTitle()
+                      : Text(
+                          L10n.get("compatibility_title"),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: _getDescriptionTextColor(),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                 ),
+                if (isAuthenticated) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    headerPercentText,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: _getCompatibilityPercentColor(),
+                    ),
+                  ),
+                ],
               ],
-            ],
             ),
           ),
           children: [
@@ -863,10 +1215,9 @@ class _ListingDetailCompatibilitySectionState
                   final hasPhone = showContacts &&
                       (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
                       widget.onPhone != null;
-                  final phoneDisplay =
-                      hasPhone
-                          ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
-                          : null;
+                  final phoneDisplay = hasPhone
+                      ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
+                      : null;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

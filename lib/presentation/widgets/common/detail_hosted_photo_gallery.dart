@@ -36,6 +36,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ListingDetailTileShell(
+        useLiquidGlass: ThemeState().isBlueTheme || ThemeState().isLightTheme,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 6, 5, 5),
           child: Column(

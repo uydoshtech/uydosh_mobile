@@ -2707,7 +2707,7 @@ abstract class AppLocalizations {
   /// No description provided for @cook.
   ///
   /// In en, this message translates to:
-  /// **'Cook at home'**
+  /// **'I cook at home'**
   String get cook;
 
   /// No description provided for @dont_cook.

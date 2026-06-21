@@ -1247,7 +1247,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       }
     }
 
-    await _ensureListingOwnerInGroupMembers(
+    await _putListingOwnerFirstInGroupMembers(
       listingUserId: listingUserId,
       profileFor: profileFor,
       profiles: profiles,
@@ -1260,6 +1260,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final profileByUserId = {
       for (final profile in profiles) profile.userId: profile,
     };
+    final matrixProfiles = groupMembers
+        .map((member) => profileByUserId[member.userId])
+        .whereType<UserProfile>()
+        .toList(growable: false);
+    final groupPreferenceMatrix =
+        ListingDetailGroupCompatibilityHelper.buildPreferenceMatrix(
+      matrixProfiles,
+    );
     final groupMemberCompatibility = <int, GroupMemberCompatibilitySummary>{};
     for (final member in groupMembers) {
       if (member.userId == currentProfile.userId) continue;
@@ -1289,32 +1297,47 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupFullMatches: groupResult.fullMatches,
       groupPartialMatches: groupResult.partialMatches,
       groupDiscussItems: groupResult.discussItems,
+      groupPreferenceMatrix: groupPreferenceMatrix,
       groupMemberCompatibility: groupMemberCompatibility,
     );
   }
 
   /// Listing owner is always group member #1; repair display when the API row
-  /// is missing (legacy listings created before owner auto-enrollment).
-  Future<void> _ensureListingOwnerInGroupMembers({
+  /// is missing or arrives later in the member list.
+  Future<void> _putListingOwnerFirstInGroupMembers({
     required int listingUserId,
     required Future<UserProfile> Function(int userId) profileFor,
     required List<UserProfile> profiles,
     required List<ConversationMemberSummary> groupMembers,
   }) async {
-    if (groupMembers.any((member) => member.userId == listingUserId)) {
-      return;
+    UserProfile? ownerProfile;
+
+    final memberIndex = groupMembers.indexWhere(
+      (member) => member.userId == listingUserId,
+    );
+    if (memberIndex == -1) {
+      ownerProfile = await profileFor(listingUserId);
+      groupMembers.insert(
+        0,
+        ConversationMemberSummary(
+          userId: ownerProfile.userId,
+          name: ownerProfile.name ?? L10n.get("user"),
+          avatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
+        ),
+      );
+    } else if (memberIndex > 0) {
+      final ownerMember = groupMembers.removeAt(memberIndex);
+      groupMembers.insert(0, ownerMember);
     }
 
-    final ownerProfile = await profileFor(listingUserId);
-    groupMembers.insert(
-      0,
-      ConversationMemberSummary(
-        userId: ownerProfile.userId,
-        name: ownerProfile.name ?? L10n.get("user"),
-        avatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
-      ),
+    final profileIndex = profiles.indexWhere(
+      (profile) => profile.userId == listingUserId,
     );
-    if (!profiles.any((profile) => profile.userId == listingUserId)) {
+    if (profileIndex == -1) {
+      ownerProfile ??= await profileFor(listingUserId);
+      profiles.insert(0, ownerProfile);
+    } else if (profileIndex > 0) {
+      final ownerProfile = profiles.removeAt(profileIndex);
       profiles.insert(0, ownerProfile);
     }
   }
@@ -2724,6 +2747,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           List<GroupCompatibilityFullMatch> groupFullMatches,
           List<GroupCompatibilityPartialMatch> groupPartialMatches,
           List<GroupCompatibilityDiscussItem> groupDiscussItems,
+          List<GroupPreferenceMatrixRow> groupPreferenceMatrix,
         })>(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
@@ -2741,6 +2765,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupFullMatches: s.groupFullMatches,
         groupPartialMatches: s.groupPartialMatches,
         groupDiscussItems: s.groupDiscussItems,
+        groupPreferenceMatrix: s.groupPreferenceMatrix,
       ),
       builder: (context, compat) => ListingDetailCompatibilitySection(
         listingDetail: listingDetail,
@@ -2761,6 +2786,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupFullMatches: compat.groupFullMatches,
         groupPartialMatches: compat.groupPartialMatches,
         groupDiscussItems: compat.groupDiscussItems,
+        groupPreferenceMatrix: compat.groupPreferenceMatrix,
         currentUserId: _sessionUserId,
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
@@ -3166,7 +3192,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 // glass app bar is active the body renders behind the
                 // header, so we add [mainShellGlassExtraTopInset] to keep
                 // content clear of the transparent toolbar.
-                padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, bottomPad),
+                padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, bottomPad),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => sections[index],

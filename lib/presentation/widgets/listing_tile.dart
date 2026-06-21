@@ -1162,8 +1162,8 @@ class _ListingTileState extends State<ListingTile> {
     final fg = _getAmenityIconColor();
 
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         for (final amenity in amenities)

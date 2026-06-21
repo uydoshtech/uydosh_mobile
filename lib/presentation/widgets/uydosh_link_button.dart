@@ -46,6 +46,8 @@ class UydoshLinkButton extends StatelessWidget {
     this.padding,
     this.alignment = Alignment.center,
     this.maxLines,
+    this.icon,
+    this.iconSize = 18,
     super.key,
   });
 
@@ -66,6 +68,8 @@ class UydoshLinkButton extends StatelessWidget {
   /// Combined with no soft-wrap + ellipsis so the button intrinsically sizes
   /// to a single-line label and doesn't grow vertically on narrow screens.
   final int? maxLines;
+  final IconData? icon;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +118,17 @@ class UydoshLinkButton extends StatelessWidget {
             ),
           );
 
+    final child = icon == null
+        ? textWidget
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: iconSize, color: effectiveColor),
+              const SizedBox(width: 6),
+              textWidget,
+            ],
+          );
+
     void handleTap() {
       HapticFeedbackUtils.impact();
       onPressed();
@@ -133,7 +148,7 @@ class UydoshLinkButton extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: textWidget,
+          child: child,
         ),
       );
     }
@@ -145,7 +160,7 @@ class UydoshLinkButton extends StatelessWidget {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: textWidget,
+      child: child,
     );
   }
 }

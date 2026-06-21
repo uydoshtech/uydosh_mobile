@@ -47,6 +47,60 @@ class GroupCompatibilityDiscussItem {
   final String summary;
 }
 
+class GroupPreferenceMatrixCell {
+  const GroupPreferenceMatrixCell({
+    required this.userId,
+    required this.value,
+    this.valueIconKey,
+  });
+
+  final int userId;
+  final String value;
+  final String? valueIconKey;
+
+  @override
+  bool operator ==(Object other) {
+    return other is GroupPreferenceMatrixCell &&
+        other.userId == userId &&
+        other.value == value &&
+        other.valueIconKey == valueIconKey;
+  }
+
+  @override
+  int get hashCode => Object.hash(userId, value, valueIconKey);
+}
+
+class GroupPreferenceMatrixRow {
+  const GroupPreferenceMatrixRow({
+    required this.labelKey,
+    required this.label,
+    required this.alignmentSummary,
+    required this.cells,
+  });
+
+  final String labelKey;
+  final String label;
+  final String? alignmentSummary;
+  final List<GroupPreferenceMatrixCell> cells;
+
+  @override
+  bool operator ==(Object other) {
+    return other is GroupPreferenceMatrixRow &&
+        other.labelKey == labelKey &&
+        other.label == label &&
+        other.alignmentSummary == alignmentSummary &&
+        _listEquals(other.cells, cells);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        labelKey,
+        label,
+        alignmentSummary,
+        Object.hashAll(cells),
+      );
+}
+
 class GroupCompatibilityResult {
   const GroupCompatibilityResult({
     required this.percent,
@@ -65,23 +119,84 @@ class GroupCompatibilityResult {
   final List<GroupCompatibilityDiscussItem> discussItems;
 }
 
+bool _listEquals<T>(List<T> a, List<T> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
 class _GroupFieldSpec {
   const _GroupFieldSpec({
     required this.labelKey,
     required this.pairScore,
     required this.displayText,
+    this.displayIconKey,
     this.isDealbreakerPair,
   });
 
   final String labelKey;
   final double? Function(UserProfile a, UserProfile b) pairScore;
   final String? Function(UserProfile profile) displayText;
+  final String? Function(UserProfile profile)? displayIconKey;
   final bool Function(UserProfile a, UserProfile b)? isDealbreakerPair;
 }
 
 /// Computes multi-member compatibility for `group_forming` listings.
 class ListingDetailGroupCompatibilityHelper {
   ListingDetailGroupCompatibilityHelper._();
+
+  static List<GroupPreferenceMatrixRow> buildPreferenceMatrix(
+    List<UserProfile> participants,
+  ) {
+    if (participants.length < 3) return const [];
+
+    final specs = _fieldSpecs();
+    return specs
+        .map(
+          (spec) => GroupPreferenceMatrixRow(
+            labelKey: spec.labelKey,
+            label: L10n.get(spec.labelKey),
+            alignmentSummary: _preferenceAlignmentSummary(participants, spec),
+            cells: participants
+                .map(
+                  (profile) => GroupPreferenceMatrixCell(
+                    userId: profile.userId,
+                    value:
+                        spec.displayText(profile) ?? L10n.get("not_specified"),
+                    valueIconKey: spec.displayIconKey?.call(profile),
+                  ),
+                )
+                .toList(),
+          ),
+        )
+        .toList();
+  }
+
+  static String? _preferenceAlignmentSummary(
+    List<UserProfile> participants,
+    _GroupFieldSpec spec,
+  ) {
+    final active = participants
+        .where((p) => spec.displayText(p) != null)
+        .toList(growable: false);
+    if (active.length < 2) return null;
+
+    final clusters = _buildClusters(active, spec);
+    if (clusters.isEmpty) return null;
+
+    final sortedClusters = clusters.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final largest = sortedClusters.first;
+    final countPrefix = "${largest.length}/${participants.length}";
+
+    if (sortedClusters.length == 1 && largest.length == active.length) {
+      return "$countPrefix · ${_dominantDisplay(largest, spec)}";
+    }
+
+    return "$countPrefix · ${_clusterSummary(sortedClusters, spec)}";
+  }
 
   static GroupCompatibilityResult calculate(List<UserProfile> participants) {
     if (participants.length < 2) {
@@ -177,11 +292,13 @@ class ListingDetailGroupCompatibilityHelper {
         labelKey: "wakeup_time",
         pairScore: (a, b) => dayPhaseSlotScore(a.wakeupTime, b.wakeupTime),
         displayText: (p) => _formatDay(p.wakeupTime),
+        displayIconKey: (p) => _dayIconKey(p.wakeupTime),
       ),
       _GroupFieldSpec(
         labelKey: "sleep_time",
         pairScore: (a, b) => dayPhaseSlotScore(a.sleepTime, b.sleepTime),
         displayText: (p) => _formatDay(p.sleepTime),
+        displayIconKey: (p) => _dayIconKey(p.sleepTime),
       ),
       _GroupFieldSpec(
         labelKey: "smoking_preference",
@@ -194,6 +311,10 @@ class ListingDetailGroupCompatibilityHelper {
             smokingCompatibility(a.smokingPreference, b.smokingPreference)
                 ?.isDealbreaker ==
             true,
+        displayIconKey: (p) => _slugIconKey(
+          "smoking",
+          p.smokingPreference,
+        ),
       ),
       _GroupFieldSpec(
         labelKey: "pets_preference",
@@ -205,23 +326,28 @@ class ListingDetailGroupCompatibilityHelper {
           return localizedPetsPreference(pref);
         },
         isDealbreakerPair: (a, b) =>
-            petsCompatibility(a.petsPreference, b.petsPreference)?.isDealbreaker ==
+            petsCompatibility(a.petsPreference, b.petsPreference)
+                ?.isDealbreaker ==
             true,
+        displayIconKey: (p) => _slugIconKey("pets", p.petsPreference),
       ),
       _GroupFieldSpec(
         labelKey: "cleanliness",
         pairScore: (a, b) => scaleCompatibility(a.cleanliness, b.cleanliness),
         displayText: (p) => _formatCleanliness(p.cleanliness),
+        displayIconKey: (p) => _scaleIconKey("cleanliness", p.cleanliness),
       ),
       _GroupFieldSpec(
         labelKey: "noise_level",
         pairScore: (a, b) => scaleCompatibility(a.noiseLevel, b.noiseLevel),
         displayText: (p) => _formatNoise(p.noiseLevel),
+        displayIconKey: (p) => _scaleIconKey("noise", p.noiseLevel),
       ),
       _GroupFieldSpec(
         labelKey: "sociability",
         pairScore: (a, b) => scaleCompatibility(a.sociability, b.sociability),
         displayText: (p) => _formatSociability(p.sociability),
+        displayIconKey: (p) => _scaleIconKey("sociability", p.sociability),
       ),
       _GroupFieldSpec(
         labelKey: "alcohol_preference",
@@ -230,18 +356,24 @@ class ListingDetailGroupCompatibilityHelper {
           b.alcoholPreference,
         ),
         displayText: (p) => _formatAlcohol(p.alcoholPreference),
+        displayIconKey: (p) => _slugIconKey(
+          "alcohol",
+          p.alcoholPreference,
+        ),
       ),
       _GroupFieldSpec(
         labelKey: "guests",
         pairScore: (a, b) =>
             preferenceBinaryScore(a.guestsAllowed, b.guestsAllowed),
         displayText: (p) => _formatBool(p.guestsAllowed),
+        displayIconKey: (p) => _boolIconKey("guests", p.guestsAllowed),
       ),
       _GroupFieldSpec(
         labelKey: "cooking_habits",
         pairScore: (a, b) =>
             preferenceBinaryScore(a.cookingHabits, b.cookingHabits),
         displayText: (p) => _formatCooking(p.cookingHabits),
+        displayIconKey: (p) => _boolIconKey("cooking", p.cookingHabits),
       ),
       _GroupFieldSpec(
         labelKey: "language",
@@ -254,6 +386,7 @@ class ListingDetailGroupCompatibilityHelper {
           if (lang == null || lang.isEmpty) return null;
           return LanguageDisplayHelper.getLocalizedLanguageName(lang);
         },
+        displayIconKey: (p) => _slugIconKey("language", p.preferredLanguage),
       ),
     ];
   }
@@ -397,6 +530,33 @@ class ListingDetailGroupCompatibilityHelper {
       default:
         return value;
     }
+  }
+
+  static String? _dayIconKey(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case "morning":
+      case "evening":
+      case "night":
+        return "day:$value";
+      default:
+        return null;
+    }
+  }
+
+  static String? _slugIconKey(String prefix, String? value) {
+    if (value == null || value.isEmpty) return null;
+    return "$prefix:$value";
+  }
+
+  static String? _boolIconKey(String prefix, bool? value) {
+    if (value == null) return null;
+    return "$prefix:${value ? "yes" : "no"}";
+  }
+
+  static String? _scaleIconKey(String prefix, int? value) {
+    if (value == null) return null;
+    return "$prefix:${value.clamp(1, 5)}";
   }
 
   static String? _formatSmoking(String? value) {

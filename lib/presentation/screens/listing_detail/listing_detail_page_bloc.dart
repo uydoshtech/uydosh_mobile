@@ -34,6 +34,7 @@ class ListingDetailPageState {
     this.groupFullMatches = const [],
     this.groupPartialMatches = const [],
     this.groupDiscussItems = const [],
+    this.groupPreferenceMatrix = const [],
     this.groupMemberCompatibility = const {},
     this.similarListingsCount,
     this.similarListingsCountListingId,
@@ -69,6 +70,7 @@ class ListingDetailPageState {
   final List<GroupCompatibilityFullMatch> groupFullMatches;
   final List<GroupCompatibilityPartialMatch> groupPartialMatches;
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
+  final List<GroupPreferenceMatrixRow> groupPreferenceMatrix;
   final Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility;
 
   /// Number of "similar" listings excluding the current one. When this is
@@ -110,6 +112,7 @@ class ListingDetailPageState {
     List<GroupCompatibilityFullMatch>? groupFullMatches,
     List<GroupCompatibilityPartialMatch>? groupPartialMatches,
     List<GroupCompatibilityDiscussItem>? groupDiscussItems,
+    List<GroupPreferenceMatrixRow>? groupPreferenceMatrix,
     Map<int, GroupMemberCompatibilitySummary>? groupMemberCompatibility,
     int? similarListingsCount,
     int? similarListingsCountListingId,
@@ -129,22 +132,20 @@ class ListingDetailPageState {
       viewCount: viewCount ?? this.viewCount,
       viewCountListingId: viewCountListingId ?? this.viewCountListingId,
       isLoadingViewCount: isLoadingViewCount ?? this.isLoadingViewCount,
-      compatibilityPercent:
-          compatibilityPercent ?? this.compatibilityPercent,
+      compatibilityPercent: compatibilityPercent ?? this.compatibilityPercent,
       compatibilityListingUserId:
           compatibilityListingUserId ?? this.compatibilityListingUserId,
       isLoadingCompatibility:
           isLoadingCompatibility ?? this.isLoadingCompatibility,
-      compatibilityMatches:
-          compatibilityMatches ?? this.compatibilityMatches,
+      compatibilityMatches: compatibilityMatches ?? this.compatibilityMatches,
       compatibilityDifferences:
           compatibilityDifferences ?? this.compatibilityDifferences,
       compatibilityDealbreakers:
           compatibilityDealbreakers ?? this.compatibilityDealbreakers,
-      compatibilityScoredFieldCount: compatibilityScoredFieldCount ??
-          this.compatibilityScoredFieldCount,
-      compatibilityTotalFieldCount: compatibilityTotalFieldCount ??
-          this.compatibilityTotalFieldCount,
+      compatibilityScoredFieldCount:
+          compatibilityScoredFieldCount ?? this.compatibilityScoredFieldCount,
+      compatibilityTotalFieldCount:
+          compatibilityTotalFieldCount ?? this.compatibilityTotalFieldCount,
       compatibilityError: compatibilityError ?? this.compatibilityError,
       ownerName: ownerName ?? this.ownerName,
       ownerNameListingUserId:
@@ -156,19 +157,20 @@ class ListingDetailPageState {
       groupFullMatches: groupFullMatches ?? this.groupFullMatches,
       groupPartialMatches: groupPartialMatches ?? this.groupPartialMatches,
       groupDiscussItems: groupDiscussItems ?? this.groupDiscussItems,
+      groupPreferenceMatrix:
+          groupPreferenceMatrix ?? this.groupPreferenceMatrix,
       groupMemberCompatibility:
           groupMemberCompatibility ?? this.groupMemberCompatibility,
-      similarListingsCount:
-          similarListingsCount ?? this.similarListingsCount,
+      similarListingsCount: similarListingsCount ?? this.similarListingsCount,
       similarListingsCountListingId:
           similarListingsCountListingId ?? this.similarListingsCountListingId,
-      isLoadingSimilarListingsCount: isLoadingSimilarListingsCount ??
-          this.isLoadingSimilarListingsCount,
+      isLoadingSimilarListingsCount:
+          isLoadingSimilarListingsCount ?? this.isLoadingSimilarListingsCount,
       nearbyMatchesCount: nearbyMatchesCount ?? this.nearbyMatchesCount,
       nearbyMatchesCountListingId:
           nearbyMatchesCountListingId ?? this.nearbyMatchesCountListingId,
-      isLoadingNearbyMatchesCount: isLoadingNearbyMatchesCount ??
-          this.isLoadingNearbyMatchesCount,
+      isLoadingNearbyMatchesCount:
+          isLoadingNearbyMatchesCount ?? this.isLoadingNearbyMatchesCount,
     );
   }
 
@@ -189,7 +191,8 @@ class ListingDetailPageState {
         other.isLoadingCompatibility == isLoadingCompatibility &&
         _listEquals(other.compatibilityMatches, compatibilityMatches) &&
         _listEquals(other.compatibilityDifferences, compatibilityDifferences) &&
-        _listEquals(other.compatibilityDealbreakers, compatibilityDealbreakers) &&
+        _listEquals(
+            other.compatibilityDealbreakers, compatibilityDealbreakers) &&
         other.compatibilityScoredFieldCount == compatibilityScoredFieldCount &&
         other.compatibilityTotalFieldCount == compatibilityTotalFieldCount &&
         other.compatibilityError == compatibilityError &&
@@ -202,6 +205,7 @@ class ListingDetailPageState {
         _listEquals(other.groupFullMatches, groupFullMatches) &&
         _listEquals(other.groupPartialMatches, groupPartialMatches) &&
         _listEquals(other.groupDiscussItems, groupDiscussItems) &&
+        _listEquals(other.groupPreferenceMatrix, groupPreferenceMatrix) &&
         _mapEquals(other.groupMemberCompatibility, groupMemberCompatibility) &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
@@ -228,8 +232,7 @@ class ListingDetailPageState {
   }
 
   @override
-  int get hashCode =>
-      Object.hashAll([
+  int get hashCode => Object.hashAll([
         isToggling,
         isDeleting,
         complaintsCount,
@@ -264,8 +267,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
   /// loads for the previous owner can finish later and keep the UI stale.
   void invalidateStaleListingOwnerPresentation(int listingOwnerUserId) {
     final s = state;
-    final stale =
-        (s.ownerNameListingUserId != null &&
+    final stale = (s.ownerNameListingUserId != null &&
             s.ownerNameListingUserId != listingOwnerUserId) ||
         (s.compatibilityListingUserId != null &&
             s.compatibilityListingUserId != listingOwnerUserId);
@@ -291,11 +293,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     );
   }
 
-  void setToggling(bool value) =>
-      emit(state.copyWith(isToggling: value));
+  void setToggling(bool value) => emit(state.copyWith(isToggling: value));
 
-  void setDeleting(bool value) =>
-      emit(state.copyWith(isDeleting: value));
+  void setDeleting(bool value) => emit(state.copyWith(isDeleting: value));
 
   void setComplaintsCount(int listingId, int count) => emit(
         state.copyWith(
@@ -351,7 +351,9 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     List<GroupCompatibilityFullMatch> groupFullMatches = const [],
     List<GroupCompatibilityPartialMatch> groupPartialMatches = const [],
     List<GroupCompatibilityDiscussItem> groupDiscussItems = const [],
-    Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility = const {},
+    List<GroupPreferenceMatrixRow> groupPreferenceMatrix = const [],
+    Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility =
+        const {},
   }) =>
       emit(state.copyWith(
         compatibilityPercent: percent,
@@ -372,6 +374,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         groupFullMatches: groupFullMatches,
         groupPartialMatches: groupPartialMatches,
         groupDiscussItems: groupDiscussItems,
+        groupPreferenceMatrix: groupPreferenceMatrix,
         groupMemberCompatibility: groupMemberCompatibility,
       ));
 
@@ -391,6 +394,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupFullMatches: [],
           groupPartialMatches: [],
           groupDiscussItems: [],
+          groupPreferenceMatrix: [],
           groupMemberCompatibility: {},
         ),
       );
@@ -410,6 +414,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupFullMatches: [],
           groupPartialMatches: [],
           groupDiscussItems: [],
+          groupPreferenceMatrix: [],
           groupMemberCompatibility: {},
         ),
       );

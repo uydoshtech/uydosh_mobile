@@ -821,8 +821,6 @@ class _MessageBubbleState extends State<MessageBubble>
     RenderBox? bubbleBox,
     TextDirection textDir,
   ) {
-    const toolbarHeightEstimate = 48.0;
-    const toolbarWidthEstimate = 248.0;
     final w = mq.size.width;
     final h = mq.size.height;
     final padTop = mq.padding.top;
@@ -843,24 +841,24 @@ class _MessageBubbleState extends State<MessageBubble>
       );
       top = (bubbleTop +
               _reactionToolbarOverlapIntoBubble -
-              toolbarHeightEstimate)
+              _kReactionToolbarHeightEstimate)
           .clamp(
         padTop + 8,
-        h - padBottom - toolbarHeightEstimate - 8,
+        h - padBottom - _kReactionToolbarHeightEstimate - 8,
       );
       if (textDir == TextDirection.ltr) {
         left = o.dx +
             bubbleW -
             toolbarEndInset -
-            toolbarWidthEstimate +
+            _kReactionToolbarWidth +
             _reactionToolbarShiftTowardTrailingEndPx;
       } else {
         left = o.dx +
             toolbarEndInset -
-            toolbarWidthEstimate -
+            _kReactionToolbarWidth -
             _reactionToolbarShiftTowardTrailingEndPx;
       }
-      left = left.clamp(8.0, w - toolbarWidthEstimate - 8);
+      left = left.clamp(8.0, w - _kReactionToolbarWidth - 8);
     }
     return (left: left, top: top);
   }
@@ -1411,6 +1409,11 @@ class _TranslationToggleRow extends StatelessWidget {
 
 const Duration _kReactionToolbarOverlayAnimDuration =
     Duration(milliseconds: 220);
+const double _kReactionToolbarHeightEstimate = 48;
+const double _kReactionToolbarWidth = 248;
+const double _kReactionToolbarHorizontalPadding = 12;
+const double _kReactionToolbarScrollViewportWidth =
+    _kReactionToolbarWidth - _kReactionToolbarHorizontalPadding;
 
 class _ReactionToolbarOverlayAnimated extends StatefulWidget {
   const _ReactionToolbarOverlayAnimated({
@@ -1523,51 +1526,58 @@ class _ReactionToolbarOverlayAnimatedState
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                   child: Material(
                     color: Colors.transparent,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final id in MessageReactionCatalog.ids)
-                          Material(
-                            type: MaterialType.transparency,
-                            child: InkWell(
-                              onTap: () {
-                                HapticFeedbackUtils.tapticChain();
-                                final applyReaction = widget.onEmojiChosen;
-                                final reactionId = id;
-                                final matchesOpening = _MessageBubbleState
-                                    ._reactionKeysEqualNullable(
-                                  widget.selectedReactionId,
-                                  reactionId,
-                                );
-                                _animateOut(
-                                  afterOverlayRemoved: () => applyReaction(
-                                    reactionId,
-                                    matchesOpeningSelection: matchesOpening,
+                    child: SizedBox(
+                      width: _kReactionToolbarScrollViewportWidth,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final id in MessageReactionCatalog.ids)
+                              Material(
+                                type: MaterialType.transparency,
+                                child: InkWell(
+                                  onTap: () {
+                                    HapticFeedbackUtils.tapticChain();
+                                    final applyReaction = widget.onEmojiChosen;
+                                    final reactionId = id;
+                                    final matchesOpening = _MessageBubbleState
+                                        ._reactionKeysEqualNullable(
+                                      widget.selectedReactionId,
+                                      reactionId,
+                                    );
+                                    _animateOut(
+                                      afterOverlayRemoved: () => applyReaction(
+                                        reactionId,
+                                        matchesOpeningSelection: matchesOpening,
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(22),
+                                  customBorder: const CircleBorder(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 4,
+                                    ),
+                                    child: _MessageBubbleState
+                                        ._reactionRibbonEmojiBody(
+                                      reactionId: id,
+                                      emojiSize: 20,
+                                      selected: _MessageBubbleState
+                                          ._reactionKeysEqualNullable(
+                                        widget.selectedReactionId,
+                                        id,
+                                      ),
+                                      onGlassBackground: true,
+                                    ),
                                   ),
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(22),
-                              customBorder: const CircleBorder(),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 4,
-                                ),
-                                child: _MessageBubbleState
-                                    ._reactionRibbonEmojiBody(
-                                  reactionId: id,
-                                  emojiSize: 20,
-                                  selected: _MessageBubbleState
-                                      ._reactionKeysEqualNullable(
-                                    widget.selectedReactionId,
-                                    id,
-                                  ),
-                                  onGlassBackground: true,
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

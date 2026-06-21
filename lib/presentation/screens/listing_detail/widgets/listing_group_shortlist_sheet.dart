@@ -519,7 +519,7 @@ class _ListingGroupShortlistSheetState
   @override
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.82;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.64;
     final scheme = Theme.of(context).colorScheme;
 
     return SizedBox(

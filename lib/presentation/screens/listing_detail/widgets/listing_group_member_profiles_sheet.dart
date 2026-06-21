@@ -30,6 +30,22 @@ import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dar
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
+const _sheetScreenMargin = 24.0;
+const _sheetMinimumHeight = 280.0;
+const _sheetHandleHeight = 14.0;
+const _sheetHeaderHeight = 118.0;
+const _sheetFullGroupHeaderExtraHeight = 55.0;
+const _sheetFullGroupShortlistActionHeight = 52.0;
+const _sheetListBottomPadding = 16.0;
+const _sheetCardGap = 10.0;
+const _sheetPendingSectionHeaderHeight = 46.0;
+const _sheetLoadingRequestsHeight = 48.0;
+const _memberCardBaseHeight = 82.0;
+const _memberCardHighlightsHeight = 37.0;
+const _memberCardActionHeight = 29.0;
+const _pendingRequestCardBaseHeight = 132.0;
+const _pendingRequestMessageHeight = 28.0;
+
 Future<void> showListingGroupMemberProfilesSheet({
   required BuildContext context,
   required int listingId,
@@ -145,6 +161,84 @@ class _ListingGroupMemberProfilesSheetState
         ownerUserId: widget.ownerUserId,
         currentUserId: widget.currentUserId,
       );
+
+  double _availableSheetHeight(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return (mediaQuery.size.height -
+            mediaQuery.padding.top -
+            mediaQuery.padding.bottom -
+            _sheetScreenMargin)
+        .clamp(0.0, mediaQuery.size.height)
+        .toDouble();
+  }
+
+  double _estimatedSheetHeight({
+    required List<ConversationMemberSummary> sortedMembers,
+    required bool showPendingRequests,
+  }) {
+    var height = _sheetHandleHeight +
+        _sheetHeaderHeight +
+        _sheetListBottomPadding +
+        _estimatedMemberCardsHeight(sortedMembers);
+
+    if (_isGroupFull) {
+      height += _sheetFullGroupHeaderExtraHeight +
+          _sheetFullGroupShortlistActionHeight;
+    }
+
+    if (showPendingRequests) {
+      height += _sheetPendingSectionHeaderHeight;
+      if (_loadingRequests) {
+        height += _sheetLoadingRequestsHeight;
+      } else {
+        height += _estimatedPendingRequestCardsHeight();
+      }
+    }
+
+    return height;
+  }
+
+  double _estimatedMemberCardsHeight(
+    List<ConversationMemberSummary> sortedMembers,
+  ) {
+    if (sortedMembers.isEmpty) return 0;
+
+    var height = (sortedMembers.length - 1) * _sheetCardGap;
+    for (final member in sortedMembers) {
+      height += _estimatedMemberCardHeight(member);
+    }
+    return height;
+  }
+
+  double _estimatedMemberCardHeight(ConversationMemberSummary member) {
+    final hasHighlights =
+        widget.memberCompatibility[member.userId]?.fieldHighlights.isNotEmpty ??
+            false;
+    final hasAction = (widget.isOwner &&
+            member.userId != widget.ownerUserId &&
+            !_isRemoving) ||
+        (!widget.isOwner &&
+            widget.currentUserId != null &&
+            member.userId == widget.currentUserId &&
+            member.userId != widget.ownerUserId &&
+            !_isLeaving);
+
+    return _memberCardBaseHeight +
+        (hasHighlights ? _memberCardHighlightsHeight : 0) +
+        (hasAction ? _memberCardActionHeight : 0);
+  }
+
+  double _estimatedPendingRequestCardsHeight() {
+    if (_pendingRequests.isEmpty) return 0;
+
+    var height = (_pendingRequests.length - 1) * _sheetCardGap;
+    for (final request in _pendingRequests) {
+      final hasMessage = request.message?.trim().isNotEmpty ?? false;
+      height += _pendingRequestCardBaseHeight +
+          (hasMessage ? _pendingRequestMessageHeight : 0);
+    }
+    return height;
+  }
 
   Future<void> _loadPendingRequests() async {
     setState(() => _loadingRequests = true);
@@ -442,11 +536,20 @@ class _ListingGroupMemberProfilesSheetState
     final sortedMembers = _sortedMembers;
     final showPendingRequests =
         widget.isOwner && (_loadingRequests || _pendingRequests.isNotEmpty);
+    final maxSheetHeight = _availableSheetHeight(context);
+    final estimatedSheetHeight = _estimatedSheetHeight(
+      sortedMembers: sortedMembers,
+      showPendingRequests: showPendingRequests,
+    );
+    final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
+        ? maxSheetHeight
+        : _sheetMinimumHeight;
+    final sheetHeight =
+        estimatedSheetHeight.clamp(minSheetHeight, maxSheetHeight).toDouble();
+    final shouldScroll = estimatedSheetHeight > maxSheetHeight;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.72,
-      ),
+    return SizedBox(
+      height: sheetHeight,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -468,8 +571,11 @@ class _ListingGroupMemberProfilesSheetState
             isGroupFull: _isGroupFull,
             groupProgress: _groupProgress,
           ),
-          Flexible(
+          Expanded(
             child: SingleChildScrollView(
+              physics: shouldScroll
+                  ? const BouncingScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
@@ -1009,6 +1115,7 @@ class _MemberProfileCard extends StatelessWidget {
                         text: L10n.get("group_leave_group"),
                         onPressed: onLeave!,
                         color: AppColors.error,
+                        icon: Icons.logout_rounded,
                         padding: EdgeInsets.zero,
                         alignment: Alignment.centerLeft,
                       ),
@@ -1299,9 +1406,8 @@ class _RoleBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isFilled
-        ? Colors.black
-        : color.withValues(alpha: 0.12);
+    final backgroundColor =
+        isFilled ? Colors.black : color.withValues(alpha: 0.12);
     final foregroundColor = isFilled ? Colors.white : color;
 
     return Container(

@@ -1437,7 +1437,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get no => 'Yo\'q';
 
   @override
-  String get cook => 'Uyda ovqat pishiraman';
+  String get cook => 'Uyda pishiraman';
 
   @override
   String get dont_cook => 'Pishirmayman';

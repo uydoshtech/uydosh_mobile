@@ -1422,7 +1422,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no => 'Нет';
 
   @override
-  String get cook => 'Готовлю еду дома';
+  String get cook => 'Готовлю дома';
 
   @override
   String get dont_cook => 'Не готовлю';

@@ -305,11 +305,14 @@ class _GroupFormingSecondaryButtonState
       ),
     );
 
-    return _GroupActionBadgeWrapper(
-      showDot: widget.showDot,
-      dotTrigger: widget.dotTrigger,
-      showRequestPill: widget.showRequestPill,
-      child: button,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: _GroupActionBadgeWrapper(
+        showDot: widget.showDot,
+        dotTrigger: widget.dotTrigger,
+        showRequestPill: widget.showRequestPill,
+        child: button,
+      ),
     );
   }
 }

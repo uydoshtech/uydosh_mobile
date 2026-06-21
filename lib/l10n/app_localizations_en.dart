@@ -1420,7 +1420,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no => 'No';
 
   @override
-  String get cook => 'Cook at home';
+  String get cook => 'I cook at home';
 
   @override
   String get dont_cook => 'Don\'t cook';
