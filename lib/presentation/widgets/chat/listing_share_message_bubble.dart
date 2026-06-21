@@ -16,7 +16,6 @@ import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 class ListingShareMessageBubble extends StatelessWidget {
   const ListingShareMessageBubble({
@@ -101,7 +100,11 @@ class ListingShareMessageBubble extends StatelessWidget {
           if (payload.location != null) ...[
             const SizedBox(height: 6),
             _DetailLine(
-              emoji: "📍",
+              leading: const Icon(
+                Icons.location_on,
+                color: Colors.red,
+                size: 20,
+              ),
               label: payload.location!,
               color: textColor,
             ),
@@ -109,9 +112,10 @@ class ListingShareMessageBubble extends StatelessWidget {
           if (payload.metro != null) ...[
             const SizedBox(height: 4),
             _DetailLine(
-              leading: MLetterIcon(
+              leading: Icon(
+                Icons.train,
                 color: AppColors.getMetroLineColor(payload.metroLine ?? 1),
-                size: 16,
+                size: 20,
               ),
               label: payload.metro!,
               color: textColor,
@@ -145,6 +149,7 @@ class ListingShareMessageBubble extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.open_in_new,
@@ -153,11 +158,16 @@ class ListingShareMessageBubble extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      L10n.get("group_shortlist_open_listing"),
+                      L10n.get("group_shortlist_view"),
                       style: TextStyle(
                         color: footerColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
+                        height: 1.0,
+                      ),
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
                       ),
                     ),
                   ],
@@ -317,11 +327,9 @@ class _DetailLine extends StatelessWidget {
   const _DetailLine({
     required this.label,
     required this.color,
-    this.emoji,
     this.leading,
   });
 
-  final String? emoji;
   final Widget? leading;
   final String label;
   final Color color;
@@ -329,13 +337,6 @@ class _DetailLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = leading;
-    if (icon == null && emoji != null) {
-      return Text(
-        "$emoji $label",
-        style: TextStyle(color: color, fontSize: 15, height: 1.3),
-      );
-    }
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [

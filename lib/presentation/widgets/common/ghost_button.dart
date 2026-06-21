@@ -239,10 +239,18 @@ class GhostButtonFactory {
       neumorphicSoftUi: neumorphicSoftUi,
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ThemeIcon(icon, color: iconColor ?? textColor, size: iconSize),
           const SizedBox(width: 8),
-          Text(text),
+          Text(
+            text,
+            style: const TextStyle(height: 1.0),
+            textHeightBehavior: const TextHeightBehavior(
+              applyHeightToFirstAscent: false,
+              applyHeightToLastDescent: false,
+            ),
+          ),
         ],
       ),
     );
@@ -281,8 +289,16 @@ class GhostButtonFactory {
       neumorphicSoftUi: neumorphicSoftUi,
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(text),
+          Text(
+            text,
+            style: const TextStyle(height: 1.0),
+            textHeightBehavior: const TextHeightBehavior(
+              applyHeightToFirstAscent: false,
+              applyHeightToLastDescent: false,
+            ),
+          ),
           const SizedBox(width: 8),
           ThemeIcon(icon, color: iconColor ?? textColor, size: iconSize),
         ],
@@ -339,6 +355,11 @@ class GhostButtonFactory {
           maxLines: 1,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
+          style: const TextStyle(height: 1.0),
+          textHeightBehavior: const TextHeightBehavior(
+            applyHeightToFirstAscent: false,
+            applyHeightToLastDescent: false,
+          ),
         ),
       ),
     );

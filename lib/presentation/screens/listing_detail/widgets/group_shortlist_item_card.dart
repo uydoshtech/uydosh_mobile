@@ -175,8 +175,14 @@ class GroupShortlistItemCard extends StatelessWidget {
                   icon: const Icon(Icons.forum_outlined, size: 20),
                   label: Text(
                     L10n.get("group_shortlist_discuss_in_group"),
-                    style:
-                        _plusOneFontSize(context, theme.textTheme.labelLarge),
+                    style: _plusOneFontSize(
+                      context,
+                      theme.textTheme.labelLarge,
+                    ).copyWith(height: 1.0),
+                    textHeightBehavior: const TextHeightBehavior(
+                      applyHeightToFirstAscent: false,
+                      applyHeightToLastDescent: false,
+                    ),
                   ),
                 ),
               ),
@@ -196,8 +202,14 @@ class GroupShortlistItemCard extends StatelessWidget {
                     icon: const Icon(Icons.open_in_new, size: 20),
                     label: Text(
                       L10n.get("group_shortlist_open_listing"),
-                      style:
-                          _plusOneFontSize(context, theme.textTheme.labelLarge),
+                      style: _plusOneFontSize(
+                        context,
+                        theme.textTheme.labelLarge,
+                      ).copyWith(height: 1.0),
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
+                      ),
                     ),
                   ),
                 ),
@@ -223,6 +235,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                       style: _plusOneFontSize(
                         context,
                         theme.textTheme.labelLarge,
+                      ).copyWith(height: 1.0),
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
                       ),
                     ),
                   ),
@@ -238,8 +254,14 @@ class GroupShortlistItemCard extends StatelessWidget {
                   icon: const Icon(Icons.chat_bubble_outline, size: 20),
                   label: Text(
                     L10n.get("group_shortlist_contact_landlord"),
-                    style:
-                        _plusOneFontSize(context, theme.textTheme.labelLarge),
+                    style: _plusOneFontSize(
+                      context,
+                      theme.textTheme.labelLarge,
+                    ).copyWith(height: 1.0),
+                    textHeightBehavior: const TextHeightBehavior(
+                      applyHeightToFirstAscent: false,
+                      applyHeightToLastDescent: false,
+                    ),
                   ),
                 ),
               ),
@@ -558,10 +580,8 @@ class _FitCheckRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         "$emoji $label",
-        style: _plusOneFontSize(
-          context,
-          Theme.of(context).textTheme.bodySmall,
-        ).copyWith(
+        style: TextStyle(
+          fontSize: 16,
           color: color,
           fontWeight: FontWeight.w500,
           height: 1.35,
