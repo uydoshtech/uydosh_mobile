@@ -27,9 +27,9 @@ class ChatParticipantAvatarStack extends StatelessWidget {
 
   /// Ring stroke for circle avatars — visible on both light and blue themes.
   ///
-  /// Light theme uses a subtle dark ring on pale glass tiles; blue theme uses
-  /// a soft light ring on frosted surfaces. Other themes keep [ColorScheme.surface]
-  /// so overlapping stacks still read as cut-outs on card backgrounds.
+  /// Light theme uses a black ring; blue theme uses a white ring. Other themes
+  /// keep [ColorScheme.surface] so overlapping stacks still read as cut-outs on
+  /// card backgrounds.
   static Color avatarBorderColor(BuildContext context, {Color? background}) {
     if (background != null) return background;
 
@@ -37,10 +37,10 @@ class ChatParticipantAvatarStack extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     if (themeState.isLightTheme) {
-      return scheme.onSurface.withValues(alpha: 0.15);
+      return AppColors.textDark;
     }
     if (themeState.isBlueTheme) {
-      return AppColors.textLight.withValues(alpha: 0.48);
+      return AppColors.textLight;
     }
     return scheme.surface;
   }

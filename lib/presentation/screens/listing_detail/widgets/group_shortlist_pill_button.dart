@@ -14,6 +14,7 @@ class GroupShortlistPillButton extends StatelessWidget {
     required this.isOwner,
     this.groupListingDetail,
     this.onChanged,
+    this.compact = false,
     super.key,
   });
 
@@ -21,6 +22,9 @@ class GroupShortlistPillButton extends StatelessWidget {
   final bool isOwner;
   final ListingDetail? groupListingDetail;
   final VoidCallback? onChanged;
+
+  /// Icon (+ count) only — for floating placement above group chat.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -53,31 +57,59 @@ class GroupShortlistPillButton extends StatelessWidget {
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    L10n.get("group_shortlist_title"),
-                    style: _pillTextStyle(context),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.bookmark,
-                    size: 20,
-                    color: _pillForegroundColor(context),
-                  ),
-                  if (count > 0) ...[
-                    const SizedBox(width: 6),
-                    Text(
-                      count > 99 ? "99+" : count.toString(),
-                      style: _pillTextStyle(context),
-                    ),
-                  ],
-                ],
+                children: compact
+                    ? _compactPillChildren(context, count)
+                    : _fullPillChildren(context, count),
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  List<Widget> _fullPillChildren(BuildContext context, int count) {
+    return [
+      Text(
+        L10n.get("group_shortlist_title"),
+        style: _pillTextStyle(context),
+      ),
+      const SizedBox(width: 8),
+      Icon(
+        Icons.bookmark,
+        size: 20,
+        color: _pillForegroundColor(context),
+      ),
+      if (count > 0) ...[
+        const SizedBox(width: 6),
+        Text(
+          count > 99 ? "99+" : count.toString(),
+          style: _pillTextStyle(context),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _compactPillChildren(BuildContext context, int count) {
+    final label = count > 0
+        ? L10n.getWithParams(
+            "group_floating_shortlist_label",
+            params: {"count": count > 99 ? "99+" : count.toString()},
+          )
+        : L10n.get("group_shortlist_title");
+
+    return [
+      Icon(
+        Icons.bookmark,
+        size: 20,
+        color: _pillForegroundColor(context),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        label,
+        style: _pillTextStyle(context),
+      ),
+    ];
   }
 }
 

@@ -384,6 +384,32 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     return ctx?.isOwner == true || ctx?.isMember == true;
   }
 
+  static const double _floatingGroupChatButtonHeight = 40;
+  static const double _floatingShortlistPillHeight = 38;
+  static const double _floatingGroupActionsGap = 10;
+  static const double _floatingGroupActionsBottomInset = 16;
+  static const double _floatingGroupActionsShadowBuffer = 8;
+
+  double _groupFormingFloatingActionsBottomPad(ListingDetail listingDetail) {
+    final showChat = _canShowFloatingGroupChatButton(listingDetail);
+    final showShortlist = _canShowGroupShortlistPill(listingDetail);
+    if (!showChat && !showShortlist) {
+      return 16.0 + MediaQuery.paddingOf(context).bottom;
+    }
+
+    var height = _floatingGroupActionsBottomInset + _floatingGroupActionsShadowBuffer;
+    if (showChat) height += _floatingGroupChatButtonHeight;
+    if (showShortlist) {
+      if (showChat) height += _floatingGroupActionsGap;
+      height += _floatingShortlistPillHeight;
+    }
+    return height + MediaQuery.paddingOf(context).bottom;
+  }
+
+  bool _canShowFloatingGroupActions(ListingDetail listingDetail) =>
+      _canShowGroupShortlistPill(listingDetail) ||
+      _canShowFloatingGroupChatButton(listingDetail);
+
   bool _hasUnreadGroupChat(ListingDetail listingDetail) {
     final conversationId = listingDetail.groupContext?.groupConversationId;
     if (conversationId == null) return false;
@@ -2433,8 +2459,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                     }
 
                     final listingDetail = data.listingDetail!;
-                    final showGroupShortlistPill =
-                        _canShowGroupShortlistPill(listingDetail);
                     return ListenableBuilder(
                       listenable: Listenable.merge([
                         AuthenticationState(),
@@ -2469,27 +2493,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                                   );
                                 },
                               );
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (showGroupShortlistPill) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: GroupShortlistPillButton(
-                                  groupListingId: listingDetail.id,
-                                  isOwner:
-                                      listingDetail.groupContext?.isOwner ==
-                                          true,
-                                  groupListingDetail: listingDetail,
-                                  onChanged: _reloadListingDetail,
-                                ),
-                              ),
-                            ],
-                            SizedBox(
-                              width: kToolbarHeight,
-                              child: Center(child: actionMenu),
-                            ),
-                          ],
+                        return SizedBox(
+                          width: kToolbarHeight,
+                          child: Center(child: actionMenu),
                         );
                       },
                     );
@@ -2565,31 +2571,58 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ListingDetailPageState pageState,
   ) {
     final content = _buildLoadedState(listingDetail, pageState);
-    if (!_canShowFloatingGroupChatButton(listingDetail)) return content;
+    if (!_canShowFloatingGroupActions(listingDetail)) return content;
 
+    final showShortlist = _canShowGroupShortlistPill(listingDetail);
+    final showChat = _canShowFloatingGroupChatButton(listingDetail);
     final groupProgress = ListingGroupProgress.fromListingDetail(listingDetail);
-    final participantLabel = groupProgress?.ratioLabel ??
-        "${listingDetail.groupContext?.groupMemberCount ?? 1}";
+    final participantLabel = groupProgress != null
+        ? L10n.getWithParams(
+            "group_floating_chat_label",
+            params: {
+              "current": "${groupProgress.current}",
+              "target": "${groupProgress.target}",
+            },
+          )
+        : L10n.get("group_open_chat");
 
     return Stack(
       children: [
         Positioned.fill(child: content),
         Positioned(
-          right: 16,
-          bottom: 16 + MediaQuery.paddingOf(context).bottom,
-          child: ListenableBuilder(
-            listenable: UnreadMessagesState(),
-            builder: (context, _) {
-              return _FloatingGroupChatButton(
-                label: participantLabel,
-                hasUnread: _hasUnreadGroupChat(listingDetail),
-                unreadTrigger: UnreadMessagesState().unreadCount,
-                onPressed: () {
-                  HapticFeedbackUtils.impact();
-                  _openGroupChat(listingDetail);
-                },
-              );
-            },
+          right: _floatingGroupActionsBottomInset,
+          bottom:
+              _floatingGroupActionsBottomInset + MediaQuery.paddingOf(context).bottom,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (showShortlist)
+                GroupShortlistPillButton(
+                  groupListingId: listingDetail.id,
+                  isOwner: listingDetail.groupContext?.isOwner == true,
+                  groupListingDetail: listingDetail,
+                  onChanged: _reloadListingDetail,
+                  compact: true,
+                ),
+              if (showShortlist && showChat)
+                const SizedBox(height: _floatingGroupActionsGap),
+              if (showChat)
+                ListenableBuilder(
+                  listenable: UnreadMessagesState(),
+                  builder: (context, _) {
+                    return _FloatingGroupChatButton(
+                      label: participantLabel,
+                      hasUnread: _hasUnreadGroupChat(listingDetail),
+                      unreadTrigger: UnreadMessagesState().unreadCount,
+                      onPressed: () {
+                        HapticFeedbackUtils.impact();
+                        _openGroupChat(listingDetail);
+                      },
+                    );
+                  },
+                ),
+            ],
           ),
         ),
       ],
@@ -2942,10 +2975,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
         final show3d = (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
-        final showFloatingGroupChat =
-            _canShowFloatingGroupChatButton(listingDetail);
-        final groupFormingBottomPad = (showFloatingGroupChat ? 78.0 : 16.0) +
-            MediaQuery.paddingOf(context).bottom;
+        final groupFormingBottomPad =
+            _groupFormingFloatingActionsBottomPad(listingDetail);
 
         final sections = <Widget>[
           if (isOwner)

@@ -620,12 +620,12 @@ class MetroCache {
     }
   }
 
-  /// Station name with localized "st." / "ст." prefix for UI labels.
+  /// Station name with localized "st." / "ст." suffix for UI labels.
   static String formatStationLabel(String stationName, String language) {
     final trimmed = stationName.trim();
     if (trimmed.isEmpty) return trimmed;
-    final prefix = AppStrings.get("metro_station_abbr", language);
-    return "$prefix $trimmed";
+    final suffix = AppStrings.get("metro_station_abbr", language);
+    return "$trimmed $suffix";
   }
 
   /// Line name with localized "ln." / "лн." suffix for UI labels.
@@ -645,7 +645,7 @@ class MetroCache {
     return getStationName(station, language);
   }
 
-  /// Station display name with type prefix (e.g. "ст. Чиланзар").
+  /// Station display name with type suffix (e.g. "Чиланзар ст.").
   static String getStationLabel(int stationId, String language) {
     return formatStationLabel(getStationDisplayName(stationId, language), language);
   }

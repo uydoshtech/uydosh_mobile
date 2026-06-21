@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
 import "dart:async";
+import "dart:math" as math;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
@@ -22,6 +23,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
@@ -121,12 +123,490 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
 
 class _ListingDetailCompatibilitySectionState
     extends State<ListingDetailCompatibilitySection> {
+  static const double _matrixTableCornerRadius = 10;
+  static const double _matrixUserHeaderHeight = 76;
+
   Timer? _scrollIntoViewTimer;
+  final GlobalKey _matrixUserHeaderKey = GlobalKey();
+  final GlobalKey _matrixTableKey = GlobalKey();
+  OverlayEntry? _matrixStickyHeaderOverlay;
+  bool _isCompatibilitySectionExpanded = true;
+  bool _isMatrixExpanded = true;
+  bool _showMatrixStickyHeader = false;
+  Rect? _matrixStickyHeaderBounds;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.scrollController.addListener(_handleParentScroll);
+    final isAuthenticated = AuthenticationState().isAuthenticated;
+    final isProfileComplete = ProfileCompletionState().isProfileComplete;
+    _isCompatibilitySectionExpanded =
+        !isAuthenticated || !isProfileComplete;
+  }
+
+  @override
+  void didUpdateWidget(ListingDetailCompatibilitySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.groupPreferenceMatrix != widget.groupPreferenceMatrix ||
+        oldWidget.groupMembers != widget.groupMembers ||
+        oldWidget.currentUserId != widget.currentUserId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _updateMatrixStickyHeader();
+      });
+    }
+  }
+
+  @override
+  void deactivate() {
+    if (_showMatrixStickyHeader) {
+      _showMatrixStickyHeader = false;
+      _matrixStickyHeaderBounds = null;
+      _removeMatrixStickyHeaderOverlay();
+    }
+    super.deactivate();
+  }
 
   @override
   void dispose() {
+    widget.scrollController.removeListener(_handleParentScroll);
+    _removeMatrixStickyHeaderOverlay();
     _scrollIntoViewTimer?.cancel();
     super.dispose();
+  }
+
+  bool _hasGroupPreferenceMatrix() {
+    return widget.groupMembers.length >= 3 &&
+        widget.groupPreferenceMatrix.isNotEmpty;
+  }
+
+  List<int> _orderedMatrixUserIds() {
+    final currentUserId =
+        widget.currentUserId ?? UserListingState().currentUserId;
+    final matrixUserIds = widget.groupPreferenceMatrix.first.cells
+        .map((cell) => cell.userId)
+        .toList(growable: false);
+    if (currentUserId == null) return matrixUserIds;
+    return [
+      if (matrixUserIds.contains(currentUserId)) currentUserId,
+      ...matrixUserIds.where((id) => id != currentUserId),
+    ];
+  }
+
+  ConversationMemberSummary? _matrixMemberFor(int userId) {
+    for (final member in widget.groupMembers) {
+      if (member.userId == userId) return member;
+    }
+    return null;
+  }
+
+  String _matrixMemberName(int userId) {
+    final member = _matrixMemberFor(userId);
+    final name = member?.name.trim();
+    final fallbackUserLabel = L10n.get("user");
+    if (name == null || name.isEmpty) return fallbackUserLabel;
+
+    final parts = name.split(RegExp(r"\s+"));
+    if (parts.length < 2) return name;
+
+    return "${parts.first} ${parts.last.characters.first}.";
+  }
+
+  double _matrixStickyHeaderTop(BuildContext context) {
+    final scaffoldHeight = Scaffold.maybeOf(context)?.appBarMaxHeight;
+    if (scaffoldHeight != null && scaffoldHeight > 0) {
+      return scaffoldHeight;
+    }
+    final toolbarHeight =
+        AppBarTheme.of(context).toolbarHeight ?? kToolbarHeight;
+    return MediaQuery.viewPaddingOf(context).top + toolbarHeight;
+  }
+
+  bool _isListingDetailRouteCurrent() {
+    final route = ModalRoute.of(context);
+    return route == null || route.isCurrent;
+  }
+
+  void _handleParentScroll() {
+    _updateMatrixStickyHeader();
+  }
+
+  void _updateMatrixStickyHeader() {
+    if (!mounted ||
+        !_isListingDetailRouteCurrent() ||
+        !_hasGroupPreferenceMatrix() ||
+        !_isCompatibilitySectionExpanded ||
+        !_isMatrixExpanded) {
+      _setMatrixStickyHeaderVisible(false);
+      return;
+    }
+
+    final tableContext = _matrixTableKey.currentContext;
+    final headerContext = _matrixUserHeaderKey.currentContext;
+    if (tableContext == null || headerContext == null) {
+      _setMatrixStickyHeaderVisible(false);
+      return;
+    }
+
+    final tableBox = tableContext.findRenderObject();
+    final headerBox = headerContext.findRenderObject();
+    if (tableBox is! RenderBox ||
+        headerBox is! RenderBox ||
+        !tableBox.hasSize ||
+        !headerBox.hasSize) {
+      _setMatrixStickyHeaderVisible(false);
+      return;
+    }
+
+    final pinTop = _matrixStickyHeaderTop(context);
+    final headerTop = headerBox.localToGlobal(Offset.zero).dy;
+    final tableTop = tableBox.localToGlobal(Offset.zero).dy;
+    final tableBottom =
+        tableBox.localToGlobal(Offset(0, tableBox.size.height)).dy;
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+
+    final matrixVisible =
+        tableBottom > pinTop && tableTop < viewportHeight;
+    // Pin as soon as the app bar starts covering the in-flow header, not
+    // after it has fully scrolled away (that left a visible gap).
+    final shouldPin = matrixVisible && headerTop < pinTop;
+
+    if (shouldPin) {
+      final tableOrigin = tableBox.localToGlobal(Offset.zero);
+      final stickyTop = math.max(headerTop, pinTop);
+      _setMatrixStickyHeaderVisible(
+        true,
+        bounds: Rect.fromLTWH(
+          tableOrigin.dx,
+          stickyTop,
+          tableBox.size.width,
+          _matrixUserHeaderHeight,
+        ),
+      );
+    } else {
+      _setMatrixStickyHeaderVisible(false);
+    }
+  }
+
+  void _setMatrixStickyHeaderVisible(
+    bool visible, {
+    Rect? bounds,
+  }) {
+    if (!visible) {
+      if (!_showMatrixStickyHeader) return;
+      _showMatrixStickyHeader = false;
+      _matrixStickyHeaderBounds = null;
+      _removeMatrixStickyHeaderOverlay();
+      setState(() {});
+      return;
+    }
+
+    final nextBounds = bounds;
+    if (nextBounds == null) return;
+
+    final boundsChanged = _matrixStickyHeaderBounds == null ||
+        (_matrixStickyHeaderBounds!.left - nextBounds.left).abs() > 0.5 ||
+        (_matrixStickyHeaderBounds!.top - nextBounds.top).abs() > 0.5 ||
+        (_matrixStickyHeaderBounds!.width - nextBounds.width).abs() > 0.5;
+
+    if (!_showMatrixStickyHeader || boundsChanged) {
+      final becameVisible = !_showMatrixStickyHeader;
+      _showMatrixStickyHeader = true;
+      _matrixStickyHeaderBounds = nextBounds;
+      _insertOrUpdateMatrixStickyHeaderOverlay();
+      if (becameVisible) setState(() {});
+    } else {
+      _matrixStickyHeaderOverlay?.markNeedsBuild();
+    }
+  }
+
+  void _removeMatrixStickyHeaderOverlay() {
+    _matrixStickyHeaderOverlay?.remove();
+    _matrixStickyHeaderOverlay = null;
+  }
+
+  void _insertOrUpdateMatrixStickyHeaderOverlay() {
+    if (!mounted || !_showMatrixStickyHeader) {
+      _removeMatrixStickyHeaderOverlay();
+      return;
+    }
+
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+
+    if (_matrixStickyHeaderOverlay == null) {
+      _matrixStickyHeaderOverlay = OverlayEntry(
+        builder: (context) => _buildMatrixStickyHeaderOverlay(),
+      );
+      overlay.insert(_matrixStickyHeaderOverlay!);
+    } else {
+      _matrixStickyHeaderOverlay!.markNeedsBuild();
+    }
+  }
+
+  Widget _buildMatrixTableCell({
+    required Widget child,
+    required Color borderColor,
+    bool isHeader = false,
+    bool isLast = false,
+    bool showBottomBorder = true,
+    Alignment alignment = Alignment.center,
+    Color? fillColor,
+  }) {
+    return Expanded(
+      child: Container(
+        constraints: BoxConstraints(minHeight: isHeader ? 76 : 48),
+        alignment: alignment,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: fillColor,
+          border: Border(
+            right: isLast ? BorderSide.none : BorderSide(color: borderColor),
+            bottom: showBottomBorder
+                ? BorderSide(color: borderColor)
+                : BorderSide.none,
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildMatrixUserHeaderRow({
+    required List<int> orderedUserIds,
+    required Color textColor,
+    required Color borderColor,
+    Key? key,
+    bool pinned = false,
+    bool? showBottomBorder,
+  }) {
+    final cellBottomBorder = showBottomBorder ?? !pinned;
+    return KeyedSubtree(
+      key: key,
+      child: Row(
+        children: [
+          for (var i = 0; i < orderedUserIds.length; i++)
+            _buildMatrixTableCell(
+              isHeader: true,
+              isLast: i == orderedUserIds.length - 1,
+              borderColor: borderColor,
+              showBottomBorder: cellBottomBorder,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHeaderAvatar(
+                    _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
+                    size: 28,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _matrixMemberName(orderedUserIds[i]),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: orderedUserIds.length >= 5 ? 11 : 12,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Color _matrixCardTintColor() {
+    return _getDescriptionTextColor().withValues(alpha: 0.04);
+  }
+
+  Color _matrixHeaderSurfaceColor() {
+    final cardBase =
+        Theme.of(context).cardTheme.color ??
+        Theme.of(context).colorScheme.surface;
+    return Color.alphaBlend(_matrixCardTintColor(), cardBase);
+  }
+
+  Widget _buildMatrixStickyHeaderOverlay() {
+    final bounds = _matrixStickyHeaderBounds;
+    if (!_showMatrixStickyHeader ||
+        bounds == null ||
+        !_isListingDetailRouteCurrent()) {
+      return const SizedBox.shrink();
+    }
+
+    final textColor = _getDescriptionTextColor();
+    final borderColor = textColor.withValues(alpha: 0.12);
+    final orderedUserIds = _orderedMatrixUserIds();
+
+    return Positioned(
+      left: bounds.left,
+      top: bounds.top,
+      width: bounds.width,
+      height: _matrixUserHeaderHeight,
+      child: ListenableBuilder(
+        listenable: ThemeState(),
+        builder: (context, _) => _buildMatrixStickyHeaderGlassShell(
+          borderColor: borderColor,
+          child: _buildPinnedMatrixUserHeaderRow(
+            orderedUserIds: orderedUserIds,
+            textColor: textColor,
+            borderColor: borderColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Compact header row sized exactly for the pinned overlay. Separate from
+  /// the in-flow row so we avoid minHeight/padding overflow (yellow stripes).
+  Widget _buildPinnedMatrixUserHeaderRow({
+    required List<int> orderedUserIds,
+    required Color textColor,
+    required Color borderColor,
+  }) {
+    final nameFontSize = orderedUserIds.length >= 5 ? 11.0 : 12.0;
+
+    return SizedBox(
+      height: _matrixUserHeaderHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < orderedUserIds.length; i++)
+            Expanded(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: i == orderedUserIds.length - 1
+                        ? BorderSide.none
+                        : BorderSide(color: borderColor),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 5),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildHeaderAvatar(
+                        _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
+                        size: 28,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _matrixMemberName(orderedUserIds[i]),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: nameFontSize,
+                          height: 1.1,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatrixStickyHeaderBorderOverlay({
+    required Color borderColor,
+    required BorderRadius borderRadius,
+  }) {
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          border: Border(
+            top: BorderSide(color: borderColor),
+            left: BorderSide(color: borderColor),
+            right: BorderSide(color: borderColor),
+            bottom: BorderSide(color: borderColor),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMatrixStickyHeaderBackground({
+    required bool isLightTheme,
+    required BorderRadius borderRadius,
+  }) {
+    if (isLightTheme) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: LiquidGlassRendering.plateGradient(
+                context: context,
+                isDark: false,
+              ),
+            ),
+          ),
+          ColoredBox(color: _matrixHeaderSurfaceColor()),
+        ],
+      );
+    }
+
+    return ColoredBox(color: _matrixHeaderSurfaceColor());
+  }
+
+  Widget _buildMatrixStickyHeaderGlassShell({
+    required Color borderColor,
+    required Widget child,
+  }) {
+    const topRadius = BorderRadius.vertical(
+      top: Radius.circular(_matrixTableCornerRadius),
+    );
+    final themeState = ThemeState();
+    final isLightTheme = themeState.isLightTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+
+    return ClipRRect(
+      borderRadius: topRadius,
+      clipBehavior: Clip.hardEdge,
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: enableGlass,
+        sigma: isLightTheme ? 22.0 : (isDark ? 18.0 : 22.0),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildMatrixStickyHeaderBackground(
+              isLightTheme: isLightTheme,
+              borderRadius: topRadius,
+            ),
+            child,
+            _buildMatrixStickyHeaderBorderOverlay(
+              borderColor: borderColor,
+              borderRadius: topRadius,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    _scheduleMatrixStickyHeaderUpdate();
+  }
+
+  void _scheduleMatrixStickyHeaderUpdate() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _updateMatrixStickyHeader();
+    });
   }
 
   /// Extra scroll offset so the section header lands below the app bar when
@@ -433,9 +913,11 @@ class _ListingDetailCompatibilitySectionState
 
     final textColor = _getDescriptionTextColor();
     final borderColor = textColor.withValues(alpha: 0.12);
-    final isLightTheme = ThemeState().isLightTheme;
+    final themeState = ThemeState();
+    final isLightTheme = themeState.isLightTheme;
+    final isBlueTheme = themeState.isBlueTheme;
+    final useValueClusterFills = isLightTheme || isBlueTheme;
     final notSpecifiedLabel = L10n.get("not_specified");
-    final fallbackUserLabel = L10n.get("user");
     final currentUserId =
         widget.currentUserId ?? UserListingState().currentUserId;
     final matrixUserIds = widget.groupPreferenceMatrix.first.cells
@@ -447,30 +929,12 @@ class _ListingDetailCompatibilitySectionState
             if (matrixUserIds.contains(currentUserId)) currentUserId,
             ...matrixUserIds.where((id) => id != currentUserId),
           ];
-    final memberByUserId = {
-      for (final member in widget.groupMembers) member.userId: member,
-    };
     final cellsByRowAndUserId = {
       for (final row in widget.groupPreferenceMatrix)
         row: {
           for (final cell in row.cells) cell.userId: cell,
         },
     };
-
-    ConversationMemberSummary? memberFor(int userId) {
-      return memberByUserId[userId];
-    }
-
-    String memberName(int userId) {
-      final member = memberFor(userId);
-      final name = member?.name.trim();
-      if (name == null || name.isEmpty) return fallbackUserLabel;
-
-      final parts = name.split(RegExp(r"\s+"));
-      if (parts.length < 2) return name;
-
-      return "${parts.first} ${parts.last.characters.first}.";
-    }
 
     Widget tableCell({
       required Widget child,
@@ -479,20 +943,13 @@ class _ListingDetailCompatibilitySectionState
       Alignment alignment = Alignment.center,
       Color? fillColor,
     }) {
-      return Expanded(
-        child: Container(
-          constraints: BoxConstraints(minHeight: isHeader ? 76 : 48),
-          alignment: alignment,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          decoration: BoxDecoration(
-            color: fillColor,
-            border: Border(
-              right: isLast ? BorderSide.none : BorderSide(color: borderColor),
-              bottom: BorderSide(color: borderColor),
-            ),
-          ),
-          child: child,
-        ),
+      return _buildMatrixTableCell(
+        child: child,
+        borderColor: borderColor,
+        isHeader: isHeader,
+        isLast: isLast,
+        alignment: alignment,
+        fillColor: fillColor,
       );
     }
 
@@ -508,6 +965,31 @@ class _ListingDetailCompatibilitySectionState
         case GroupPreferenceMatrixCellStatus.missing:
           return null;
       }
+    }
+
+    ({Color prominent, Color muted}) valueClusterFillPalette() {
+      if (isLightTheme) {
+        return (
+          prominent: const Color(0xFFEAD9C3),
+          muted: const Color(0xFFD5DED2),
+        );
+      }
+      return (
+        prominent: const Color(0xFF3C4451),
+        muted: const Color(0xFF2D3E4F),
+      );
+    }
+
+    bool rowHasValueSplit(GroupPreferenceMatrixRow row) {
+      final valueKeys = row.cells
+          .where(
+            (cell) =>
+                cell.status != GroupPreferenceMatrixCellStatus.missing &&
+                cell.valueIconKey != null,
+          )
+          .map((cell) => cell.valueIconKey!)
+          .toSet();
+      return valueKeys.length > 1;
     }
 
     GroupPreferenceMatrixCellStatus resolveRowStatus(
@@ -551,6 +1033,47 @@ class _ListingDetailCompatibilitySectionState
 
     GroupPreferenceMatrixCellStatus rowStatus(GroupPreferenceMatrixRow row) {
       return rowStatusByRow[row] ?? GroupPreferenceMatrixCellStatus.missing;
+    }
+
+    Color? matrixRowHeaderFillColor(GroupPreferenceMatrixRow row) {
+      if (!useValueClusterFills) {
+        return statusColor(rowStatus(row))?.withValues(alpha: 0.08);
+      }
+
+      final status = rowStatus(row);
+      if (status == GroupPreferenceMatrixCellStatus.conflict) {
+        return AppColors.error.withValues(alpha: 0.12);
+      }
+      if (!rowHasValueSplit(row)) {
+        return valueClusterFillPalette().muted;
+      }
+      return valueClusterFillPalette().prominent;
+    }
+
+    Color? matrixCellFillColor(
+      GroupPreferenceMatrixRow row,
+      GroupPreferenceMatrixCell? cell,
+    ) {
+      if (cell == null ||
+          cell.status == GroupPreferenceMatrixCellStatus.missing) {
+        return null;
+      }
+
+      if (!useValueClusterFills) {
+        return statusColor(cell.status)?.withValues(alpha: 0.08);
+      }
+
+      if (cell.status == GroupPreferenceMatrixCellStatus.conflict) {
+        return AppColors.error.withValues(alpha: 0.12);
+      }
+      if (!rowHasValueSplit(row)) {
+        return valueClusterFillPalette().muted;
+      }
+
+      // Highlight divergent values; majority-aligned cluster stays muted.
+      return cell.status == GroupPreferenceMatrixCellStatus.mismatch
+          ? valueClusterFillPalette().prominent
+          : valueClusterFillPalette().muted;
     }
 
     Widget valueText(
@@ -613,7 +1136,7 @@ class _ListingDetailCompatibilitySectionState
           vertical: 8,
         ),
         decoration: BoxDecoration(
-          color: accentColor?.withValues(alpha: 0.08),
+          color: matrixRowHeaderFillColor(row),
           border: Border(
             bottom: BorderSide(color: borderColor),
           ),
@@ -671,114 +1194,122 @@ class _ListingDetailCompatibilitySectionState
     ) {
       final userId = orderedUserIds[index];
       final cell = cellFor(row, userId);
-      final status =
-          cell?.status ?? GroupPreferenceMatrixCellStatus.missing;
-      final accentColor = statusColor(status);
 
       return tableCell(
         isLast: index == orderedUserIds.length - 1,
-        fillColor: accentColor?.withValues(alpha: 0.08),
+        fillColor: matrixCellFillColor(row, cell),
         child: iconValueCell(row, userId, cell: cell),
       );
     }
 
-    return Container(
+    final chevronColor = ListingDetailThemeHelper.locationTextColor;
+
+    final matrixWidget = Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: textColor.withValues(alpha: 0.04),
+        color: _matrixCardTintColor(),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          backgroundColor: Colors.transparent,
+          collapsedBackgroundColor: Colors.transparent,
+          initiallyExpanded: true,
+          onExpansionChanged: _onMatrixExpansionChanged,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          iconColor: chevronColor,
+          collapsedIconColor: chevronColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.transparent),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.transparent),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ThemeIcon(
-                Icons.table_chart_outlined,
-                size: 20,
-                color: textColor,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  L10n.get("group_preference_matrix_title"),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  ThemeIcon(
+                    Icons.table_chart_outlined,
+                    size: 20,
                     color: textColor,
                   ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      L10n.get("group_preference_matrix_title"),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                L10n.get("group_preference_matrix_subtitle"),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: textColor.withValues(alpha: 0.7),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            L10n.get("group_preference_matrix_subtitle"),
-            style: TextStyle(
-              fontSize: 12,
-              color: textColor.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(color: borderColor),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      for (var i = 0; i < orderedUserIds.length; i++)
-                        tableCell(
-                          isHeader: true,
-                          isLast: i == orderedUserIds.length - 1,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildHeaderAvatar(
-                                memberFor(orderedUserIds[i])?.avatarUrl,
-                                size: 28,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                memberName(orderedUserIds[i]),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize:
-                                      orderedUserIds.length >= 5 ? 11 : 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  for (final row in widget.groupPreferenceMatrix) ...[
-                    matrixRowHeader(row),
-                    Row(
-                      children: [
-                        for (var i = 0; i < orderedUserIds.length; i++)
-                          matrixValueTableCell(row, i),
-                      ],
+          children: [
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(_matrixTableCornerRadius),
+              child: DecoratedBox(
+                key: _matrixTableKey,
+                decoration: BoxDecoration(
+                  border: Border.all(color: borderColor),
+                  borderRadius:
+                      BorderRadius.circular(_matrixTableCornerRadius),
+                ),
+                child: Column(
+                  children: [
+                    Opacity(
+                      opacity: _showMatrixStickyHeader ? 0 : 1,
+                      child: _buildMatrixUserHeaderRow(
+                        key: _matrixUserHeaderKey,
+                        orderedUserIds: orderedUserIds,
+                        textColor: textColor,
+                        borderColor: borderColor,
+                      ),
                     ),
+                    for (final row in widget.groupPreferenceMatrix) ...[
+                      matrixRowHeader(row),
+                      Row(
+                        children: [
+                          for (var i = 0; i < orderedUserIds.length; i++)
+                            matrixValueTableCell(row, i),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+          ],
+        ),
       ),
     );
+
+    if (_isMatrixExpanded) {
+      _scheduleMatrixStickyHeaderUpdate();
+    }
+    return matrixWidget;
   }
 
   Widget _buildGroupCompatibilitySummaryBar() {
@@ -947,8 +1478,24 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
+  void _onMatrixExpansionChanged(bool isExpanded) {
+    HapticFeedbackUtils.impact();
+    _isMatrixExpanded = isExpanded;
+    if (!isExpanded) {
+      _setMatrixStickyHeaderVisible(false);
+    } else {
+      _scheduleMatrixStickyHeaderUpdate();
+    }
+  }
+
   void _onExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
+    _isCompatibilitySectionExpanded = isExpanded;
+    if (!isExpanded) {
+      _setMatrixStickyHeaderVisible(false);
+    } else if (_isMatrixExpanded) {
+      _scheduleMatrixStickyHeaderUpdate();
+    }
     if (!isExpanded) return;
 
     // Measure the 350ms from a settled layout (after the tap's frame has
