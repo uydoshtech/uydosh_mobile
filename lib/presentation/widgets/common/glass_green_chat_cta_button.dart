@@ -23,6 +23,7 @@ class GlassGreenChatCtaButton extends StatefulWidget {
     this.borderRadius,
     this.textStyle,
     this.isLoading = false,
+    this.enableBackdropBlur = true,
   });
 
   static const Color _brandGreen = Color(0xFF25C06D);
@@ -36,6 +37,7 @@ class GlassGreenChatCtaButton extends StatefulWidget {
   final BorderRadius? borderRadius;
   final TextStyle? textStyle;
   final bool isLoading;
+  final bool enableBackdropBlur;
 
   @override
   State<GlassGreenChatCtaButton> createState() =>
@@ -51,18 +53,17 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
     final isDark = theme.brightness == Brightness.dark;
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableBlur =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableBlur = widget.enableBackdropBlur &&
+        AnimationSettingsState().uiAnimationsEnabled &&
+        !disableAnimations;
 
     final blurSigma = enableBlur ? (isDark ? 18.0 : 22.0) : 0.0;
 
-    final borderRadius =
-        widget.borderRadius ?? BorderRadius.circular(16);
+    final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
     const strokeGreen = GlassGreenChatCtaButton._brandGreen;
 
     final fg = Colors.white;
-    final resolvedStyle =
-        widget.textStyle ??
+    final resolvedStyle = widget.textStyle ??
         TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
@@ -71,10 +72,9 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
         );
 
     final enabled = widget.onPressed != null && !widget.isLoading;
-    final shadows =
-        !enabled || _pressed
-            ? ThreeDSurfaceStyle.pressedShadows(context)
-            : ThreeDSurfaceStyle.elevatedShadows(context);
+    final shadows = !enabled || _pressed
+        ? ThreeDSurfaceStyle.pressedShadows(context)
+        : ThreeDSurfaceStyle.elevatedShadows(context);
 
     const glassLeft = Color(0xFF1A3D2E);
     const glassRight = Color(0xFF0F2419);
@@ -116,7 +116,8 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
                   ),
                 )
               : ButtonIconLabel(
-                  leading: ThemeIcon(widget.icon, size: widget.iconSize, color: fg),
+                  leading:
+                      ThemeIcon(widget.icon, size: widget.iconSize, color: fg),
                   label: Text(
                     widget.label,
                     style: resolvedStyle,
@@ -135,7 +136,8 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
         height: widget.height,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 90),
-          transform: Matrix4.translationValues(0, _pressed && enabled ? 2 : 0, 0),
+          transform:
+              Matrix4.translationValues(0, _pressed && enabled ? 2 : 0, 0),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -185,7 +187,8 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
                                 begin: Alignment.topCenter,
                                 end: const Alignment(0, 0.35),
                                 colors: [
-                                  Colors.white.withValues(alpha: isDark ? 0.07 : 0.05),
+                                  Colors.white
+                                      .withValues(alpha: isDark ? 0.07 : 0.05),
                                   Colors.white.withValues(alpha: 0),
                                 ],
                               ),
@@ -207,8 +210,7 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width =
-            constraints.hasBoundedWidth ? constraints.maxWidth : null;
+        final width = constraints.hasBoundedWidth ? constraints.maxWidth : null;
         return buildSizedButton(width);
       },
     );

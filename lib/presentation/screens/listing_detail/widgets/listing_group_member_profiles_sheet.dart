@@ -717,20 +717,28 @@ class _MemberProfilesHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            L10n.getWithParams(
-              "group_compatibility_subtitle",
-              params: {"count": members.length.toString()},
-            ),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: subtitleColor,
-              height: 1.3,
-            ),
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  L10n.getWithParams(
+                    "group_compatibility_subtitle",
+                    params: {"count": members.length.toString()},
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: subtitleColor,
+                    height: 1.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (progressLabel != null) ...[
+                const SizedBox(width: 10),
+                _GroupMembersProgressPill(label: progressLabel),
+              ],
+            ],
           ),
-          if (progressLabel != null) ...[
-            const SizedBox(height: 8),
-            _GroupMembersProgressPill(label: progressLabel),
-          ],
         ],
       ),
     );

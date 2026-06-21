@@ -2914,6 +2914,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
         final show3d = (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
+        final showFloatingGroupChat =
+            _canShowFloatingGroupChatButton(listingDetail);
+        final groupFormingBottomPad = (showFloatingGroupChat ? 78.0 : 16.0) +
+            MediaQuery.paddingOf(context).bottom;
 
         final sections = <Widget>[
           if (isOwner)
@@ -3095,46 +3099,50 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               case final section?)
             section,
           if (_isGroupFormingListing(listingDetail))
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-                  List<ConversationMemberSummary>>(
-                selector: (s) => s.groupMembers,
-                builder: (context, groupMembers) {
-                  final showMemberProfiles =
-                      ListingGroupProgress.canShowGroupCompatibility(
-                            listingDetail,
-                          ) &&
-                          groupMembers.isNotEmpty;
-                  return _buildGroupFormingActionBar(
-                    listingDetail,
-                    isOwner: isOwner,
-                    onViewMemberProfiles: showMemberProfiles
-                        ? () {
-                            final pageState =
-                                context.read<ListingDetailPageBloc>().state;
-                            showListingGroupMemberProfilesSheet(
-                              context: context,
-                              listingId: listingDetail.id,
-                              members: groupMembers,
-                              ownerUserId: listingDetail.user.id,
-                              currentUserId: _sessionUserId,
-                              isOwner: isOwner,
-                              groupProgress:
-                                  ListingGroupProgress.fromListingDetail(
-                                listingDetail,
-                              ),
-                              memberCompatibility:
-                                  pageState.groupMemberCompatibility,
-                              groupListingDetail: listingDetail,
-                              onMemberTap: (userId) =>
-                                  _navigateToProfile(userId),
-                              onChanged: _reloadListingDetail,
-                            );
-                          }
-                        : null,
-                  );
-                },
+            ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Padding(
+                padding:
+                    EdgeInsets.only(top: 16, bottom: groupFormingBottomPad),
+                child: BlocSelector<ListingDetailPageBloc,
+                    ListingDetailPageState, List<ConversationMemberSummary>>(
+                  selector: (s) => s.groupMembers,
+                  builder: (context, groupMembers) {
+                    final showMemberProfiles =
+                        ListingGroupProgress.canShowGroupCompatibility(
+                              listingDetail,
+                            ) &&
+                            groupMembers.isNotEmpty;
+                    return _buildGroupFormingActionBar(
+                      listingDetail,
+                      isOwner: isOwner,
+                      onViewMemberProfiles: showMemberProfiles
+                          ? () {
+                              final pageState =
+                                  context.read<ListingDetailPageBloc>().state;
+                              showListingGroupMemberProfilesSheet(
+                                context: context,
+                                listingId: listingDetail.id,
+                                members: groupMembers,
+                                ownerUserId: listingDetail.user.id,
+                                currentUserId: _sessionUserId,
+                                isOwner: isOwner,
+                                groupProgress:
+                                    ListingGroupProgress.fromListingDetail(
+                                  listingDetail,
+                                ),
+                                memberCompatibility:
+                                    pageState.groupMemberCompatibility,
+                                groupListingDetail: listingDetail,
+                                onMemberTap: (userId) =>
+                                    _navigateToProfile(userId),
+                                onChanged: _reloadListingDetail,
+                              );
+                            }
+                          : null,
+                    );
+                  },
+                ),
               ),
             ),
         ];
@@ -3144,7 +3152,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         // Reserve space for the sticky contact bar unless group-forming CTAs
         // are inline at the bottom of the scroll content.
         final bottomPad = _isGroupFormingListing(listingDetail)
-            ? 16.0 + MediaQuery.paddingOf(context).bottom
+            ? 0.0
             : 36.0 + MediaQuery.paddingOf(context).bottom;
         return _wrapListingDetailPullToRefresh(
           CustomScrollView(

@@ -202,6 +202,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       labelColor: secondaryTextColor,
       borderColor: accentColor,
       width: width,
+      enableBackdropBlur: !embedded,
     );
     if (showSecondaryRequestPill) {
       return _wrapWithRequestPill(button);
@@ -224,6 +225,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       height: 48,
       width: width,
       icon: primaryIcon ?? CupertinoIcons.shield_fill,
+      enableBackdropBlur: !embedded,
     );
     if (showPrimaryRequestPill) {
       return _wrapWithRequestPill(button);
@@ -263,6 +265,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       labelColor: secondaryTextColor,
       borderColor: accentColor,
       width: double.infinity,
+      enableBackdropBlur: !embedded,
     );
 
     return [
@@ -577,6 +580,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
     required this.borderColor,
     this.leading,
     this.width,
+    this.enableBackdropBlur = true,
   });
 
   final VoidCallback onPressed;
@@ -587,6 +591,7 @@ class _GlassNeumorphicCtaButton extends StatefulWidget {
   final Color borderColor;
   final Widget? leading;
   final double? width;
+  final bool enableBackdropBlur;
 
   @override
   State<_GlassNeumorphicCtaButton> createState() =>
@@ -616,9 +621,19 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
     final base = isDark
         ? scheme.surface.withValues(alpha: 0.08)
         : scheme.surface.withValues(alpha: 0.12);
-    final faceColor = base.withValues(alpha: isDark ? 0.38 : 0.55);
+    final faceColor = widget.enableBackdropBlur
+        ? base.withValues(alpha: isDark ? 0.38 : 0.55)
+        : scheme.surface;
     final stroke = widget.borderColor.withValues(alpha: isDark ? 0.60 : 0.70);
-    final useBackdropBlur = enableGlass;
+    final useBackdropBlur = widget.enableBackdropBlur && enableGlass;
+    final gradientStart = Color.lerp(
+      faceColor,
+      Colors.white,
+      isDark ? 0.10 : 0.18,
+    )!;
+    final gradientEnd = widget.enableBackdropBlur
+        ? faceColor.withValues(alpha: 0.0)
+        : faceColor;
 
     final labelRow = Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -655,9 +670,10 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color.lerp(faceColor, Colors.white, isDark ? 0.10 : 0.18)!
-                .withValues(alpha: isDark ? 0.35 : 0.28),
-            faceColor.withValues(alpha: 0.0),
+            gradientStart.withValues(
+              alpha: widget.enableBackdropBlur ? (isDark ? 0.35 : 0.28) : 1,
+            ),
+            gradientEnd,
           ],
           stops: const [0.0, 0.62],
         ),

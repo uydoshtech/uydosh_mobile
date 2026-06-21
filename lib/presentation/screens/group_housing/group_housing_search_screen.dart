@@ -22,6 +22,7 @@ import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.da
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
@@ -155,9 +156,10 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Material(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Padding(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+            child: LiquidGlassPlate(
+              borderRadius: BorderRadius.circular(16),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
