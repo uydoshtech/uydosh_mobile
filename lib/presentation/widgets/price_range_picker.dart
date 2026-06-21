@@ -255,18 +255,12 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         final scaledRangeMax = rangeMax * scale;
         final divisions = ((scaledRangeMax - scaledRangeMin) / step).round();
 
-        var scaledMin = _snapToStepInRange(
-          (_minPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
-          scaledRangeMin,
-          scaledRangeMax,
-          step,
-        );
-        var scaledMax = _snapToStepInRange(
-          (_maxPrice * scale).clamp(scaledRangeMin, scaledRangeMax),
-          scaledRangeMin,
-          scaledRangeMax,
-          step,
-        );
+        // Keep stored values exact on first paint; only snap while dragging so
+        // edit screens match the listing card (e.g. 85–165, not 90–170).
+        var scaledMin =
+            (_minPrice * scale).clamp(scaledRangeMin, scaledRangeMax);
+        var scaledMax =
+            (_maxPrice * scale).clamp(scaledRangeMin, scaledRangeMax);
         if (scaledMin > scaledMax) {
           final t = scaledMin;
           scaledMin = scaledMax;

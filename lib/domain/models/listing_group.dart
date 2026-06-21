@@ -67,15 +67,19 @@ class ListingGroupContext {
   final int? pendingJoinRequestCount;
   final int? groupShortlistCount;
 
-  bool get isRecruiting =>
-      groupFormingStatus == null || groupFormingStatus == "recruiting";
+  bool get isClosed => groupFormingStatus == "closed";
 
-  bool get isFull =>
-      groupFormingStatus == "full" ||
-      (groupSizeTarget != null && groupMemberCount >= groupSizeTarget!);
+  /// Open spots are authoritative — status can stay `full` after the owner
+  /// raises group size until the listing is saved and reconciled on the server.
+  bool get isRecruiting => !isClosed && groupSpotsOpen > 0;
+
+  bool get isFull => !isClosed && groupSpotsOpen <= 0;
+
+  bool get hasEnoughMembersForHousingSearch =>
+      !isClosed && groupMemberCount >= 2;
 
   bool get canUseHousingShortlist =>
-      (isOwner || isMember) && isFull;
+      (isOwner || isMember) && hasEnoughMembersForHousingSearch;
 
   bool get hasPendingJoinRequest => myJoinRequestStatus == "pending";
 
@@ -83,8 +87,7 @@ class ListingGroupContext {
       !isOwner &&
       !isMember &&
       !hasPendingJoinRequest &&
-      isRecruiting &&
-      groupSpotsOpen > 0;
+      isRecruiting;
 
   bool get hasGroupChat => groupConversationId != null;
 }

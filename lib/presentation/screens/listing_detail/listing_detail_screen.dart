@@ -118,6 +118,8 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 
 /// Label for listing author from profile when [UserProfile.name] is empty.
 String? _listingAuthorNameFromProfile(UserProfile profile) {
@@ -294,6 +296,36 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         );
   }
 
+  double _listingDetailPullRefreshEdgeOffset(BuildContext context) {
+    return 8.0 + ThemeState().mainShellGlassExtraTopInset(context);
+  }
+
+  Future<void> _onListingDetailPullRefresh() async {
+    final bloc = context.read<ListingDetailBloc>();
+    final isRefresh = bloc.state.maybeMap(
+      loaded: (_) => true,
+      orElse: () => false,
+    );
+    final refreshDone = bloc.stream.firstWhere(
+      (state) => state.maybeMap(loading: (_) => false, orElse: () => true),
+    );
+    bloc.add(
+      ListingDetailEvent.fetchListingDetail(
+        id: widget.listingId,
+        isRefresh: isRefresh,
+      ),
+    );
+    await refreshDone;
+  }
+
+  Widget _wrapListingDetailPullToRefresh(Widget scrollableChild) {
+    return UydoshRefreshIndicator.mainShell(
+      onRefresh: _onListingDetailPullRefresh,
+      edgeOffset: _listingDetailPullRefreshEdgeOffset(context),
+      child: PullToRefreshStretchHaptics(child: scrollableChild),
+    );
+  }
+
   Future<void> _openGroupChat(ListingDetail listingDetail) async {
     if (!AuthFlow.requireAuth(context)) return;
     final conversationId = listingDetail.groupContext?.groupConversationId;
@@ -365,8 +397,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (isOwner) {
       final hasChat = ctx?.hasGroupChat == true;
       final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
-      final spotsOpen = ctx?.groupSpotsOpen ?? 0;
-      final showManageRequests = pendingCount > 0 || spotsOpen > 0;
+      final showManageRequests = pendingCount > 0;
       final openJoinRequestsSheet = () => showListingGroupJoinRequestsSheet(
             context: context,
             listingId: listingDetail.id,
@@ -2916,43 +2947,52 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         final bottomPad = _isGroupFormingListing(listingDetail)
             ? 16.0 + MediaQuery.paddingOf(context).bottom
             : 36.0 + MediaQuery.paddingOf(context).bottom;
-        return Column(
-          children: [
-            Expanded(
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverPadding(
-                    // Tight top: global [CardTheme.margin] is all(8); photo
-                    // [ListingDetailPhotoSection] has zero top margin so the
-                    // carousel sits closer to the app bar. When the liquid
-                    // glass app bar is active the body renders behind the
-                    // header, so we add [mainShellGlassExtraTopInset] to keep
-                    // content clear of the transparent toolbar.
-                    padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, bottomPad),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => sections[index],
-                        childCount: sections.length,
-                      ),
-                    ),
+        return _wrapListingDetailPullToRefresh(
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                // Tight top: global [CardTheme.margin] is all(8); photo
+                // [ListingDetailPhotoSection] has zero top margin so the
+                // carousel sits closer to the app bar. When the liquid
+                // glass app bar is active the body renders behind the
+                // header, so we add [mainShellGlassExtraTopInset] to keep
+                // content clear of the transparent toolbar.
+                padding: EdgeInsets.fromLTRB(16.0, topPad, 16.0, bottomPad),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => sections[index],
+                    childCount: sections.length,
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
   Widget _buildErrorState(String message) {
-    return ListingDetailFetchErrorBody(
-      onRetry: () {
-        context.read<ListingDetailBloc>().add(
-              ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-            );
-      },
+    return _wrapListingDetailPullToRefresh(
+      CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: ListingDetailFetchErrorBody(
+              onRetry: () {
+                context.read<ListingDetailBloc>().add(
+                      ListingDetailEvent.fetchListingDetail(
+                        id: widget.listingId,
+                      ),
+                    );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

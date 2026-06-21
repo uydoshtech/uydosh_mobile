@@ -14,7 +14,7 @@ class ListingDetailBloc extends Bloc<ListingDetailEvent, ListingDetailState> {
     on<ListingDetailEvent>((event, emit) async {
       await event.map(
         fetchListingDetail:
-            (e) async => _onFetchListingDetail(emit, e.id),
+            (e) async => _onFetchListingDetail(emit, e.id, isRefresh: e.isRefresh),
         updateListingDetail:
             (e) async => _onUpdateListingDetail(emit, e.listingDetail),
       );
@@ -25,17 +25,29 @@ class ListingDetailBloc extends Bloc<ListingDetailEvent, ListingDetailState> {
 
   Future<void> _onFetchListingDetail(
     Emitter<ListingDetailState> emit,
-    int id,
-  ) async {
-    // Always emit loading to ensure fresh data is fetched
-    emit(const ListingDetailState.loading());
+    int id, {
+    bool isRefresh = false,
+  }) async {
+    final previousListing = state.mapOrNull(
+      loaded: (loadedState) => loadedState.listingDetail,
+    );
+    final keepStaleWhileRefreshing =
+        isRefresh && previousListing != null;
+
+    if (!keepStaleWhileRefreshing) {
+      emit(const ListingDetailState.loading());
+    }
 
     try {
       final listingDetail = await _listingService.getListingDetail(id);
       emit(ListingDetailState.loaded(listingDetail: listingDetail));
     } catch (error) {
-      final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(error);
-      emit(ListingDetailState.error(message: sanitizedMessage));
+      if (keepStaleWhileRefreshing) {
+        emit(ListingDetailState.loaded(listingDetail: previousListing!));
+      } else {
+        final sanitizedMessage = ErrorMessageHelper.sanitizeErrorMessage(error);
+        emit(ListingDetailState.error(message: sanitizedMessage));
+      }
     }
   }
 

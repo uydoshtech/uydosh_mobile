@@ -18,19 +18,19 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ListingDetailEvent {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(int id) fetchListingDetail,
+    required TResult Function(int id, bool isRefresh) fetchListingDetail,
     required TResult Function(ListingDetail listingDetail) updateListingDetail,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int id)? fetchListingDetail,
+    TResult? Function(int id, bool isRefresh)? fetchListingDetail,
     TResult? Function(ListingDetail listingDetail)? updateListingDetail,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int id)? fetchListingDetail,
+    TResult Function(int id, bool isRefresh)? fetchListingDetail,
     TResult Function(ListingDetail listingDetail)? updateListingDetail,
     required TResult orElse(),
   }) =>
@@ -83,7 +83,7 @@ abstract class _$$FetchListingDetailImplCopyWith<$Res> {
           $Res Function(_$FetchListingDetailImpl) then) =
       __$$FetchListingDetailImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({int id});
+  $Res call({int id, bool isRefresh});
 }
 
 /// @nodoc
@@ -100,12 +100,17 @@ class __$$FetchListingDetailImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? isRefresh = null,
   }) {
     return _then(_$FetchListingDetailImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
+      isRefresh: null == isRefresh
+          ? _value.isRefresh
+          : isRefresh // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -113,14 +118,17 @@ class __$$FetchListingDetailImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$FetchListingDetailImpl implements _FetchListingDetail {
-  const _$FetchListingDetailImpl({required this.id});
+  const _$FetchListingDetailImpl({required this.id, this.isRefresh = false});
 
   @override
   final int id;
+  @override
+  @JsonKey()
+  final bool isRefresh;
 
   @override
   String toString() {
-    return 'ListingDetailEvent.fetchListingDetail(id: $id)';
+    return 'ListingDetailEvent.fetchListingDetail(id: $id, isRefresh: $isRefresh)';
   }
 
   @override
@@ -128,11 +136,13 @@ class _$FetchListingDetailImpl implements _FetchListingDetail {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FetchListingDetailImpl &&
-            (identical(other.id, id) || other.id == id));
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.isRefresh, isRefresh) ||
+                other.isRefresh == isRefresh));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id);
+  int get hashCode => Object.hash(runtimeType, id, isRefresh);
 
   /// Create a copy of ListingDetailEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -146,30 +156,30 @@ class _$FetchListingDetailImpl implements _FetchListingDetail {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(int id) fetchListingDetail,
+    required TResult Function(int id, bool isRefresh) fetchListingDetail,
     required TResult Function(ListingDetail listingDetail) updateListingDetail,
   }) {
-    return fetchListingDetail(id);
+    return fetchListingDetail(id, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int id)? fetchListingDetail,
+    TResult? Function(int id, bool isRefresh)? fetchListingDetail,
     TResult? Function(ListingDetail listingDetail)? updateListingDetail,
   }) {
-    return fetchListingDetail?.call(id);
+    return fetchListingDetail?.call(id, isRefresh);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int id)? fetchListingDetail,
+    TResult Function(int id, bool isRefresh)? fetchListingDetail,
     TResult Function(ListingDetail listingDetail)? updateListingDetail,
     required TResult orElse(),
   }) {
     if (fetchListingDetail != null) {
-      return fetchListingDetail(id);
+      return fetchListingDetail(id, isRefresh);
     }
     return orElse();
   }
@@ -207,10 +217,11 @@ class _$FetchListingDetailImpl implements _FetchListingDetail {
 }
 
 abstract class _FetchListingDetail implements ListingDetailEvent {
-  const factory _FetchListingDetail({required final int id}) =
-      _$FetchListingDetailImpl;
+  const factory _FetchListingDetail(
+      {required final int id, final bool isRefresh}) = _$FetchListingDetailImpl;
 
   int get id;
+  bool get isRefresh;
 
   /// Create a copy of ListingDetailEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -301,7 +312,7 @@ class _$UpdateListingDetailImpl implements _UpdateListingDetail {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(int id) fetchListingDetail,
+    required TResult Function(int id, bool isRefresh) fetchListingDetail,
     required TResult Function(ListingDetail listingDetail) updateListingDetail,
   }) {
     return updateListingDetail(listingDetail);
@@ -310,7 +321,7 @@ class _$UpdateListingDetailImpl implements _UpdateListingDetail {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int id)? fetchListingDetail,
+    TResult? Function(int id, bool isRefresh)? fetchListingDetail,
     TResult? Function(ListingDetail listingDetail)? updateListingDetail,
   }) {
     return updateListingDetail?.call(listingDetail);
@@ -319,7 +330,7 @@ class _$UpdateListingDetailImpl implements _UpdateListingDetail {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int id)? fetchListingDetail,
+    TResult Function(int id, bool isRefresh)? fetchListingDetail,
     TResult Function(ListingDetail listingDetail)? updateListingDetail,
     required TResult orElse(),
   }) {
