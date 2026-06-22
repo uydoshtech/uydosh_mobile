@@ -125,6 +125,11 @@ class GroupedConversationsList extends StatefulWidget {
     /// When true, expanded rows use [OutgoingConversationTile] (messages tab
     /// "others' listings" / initiator side) instead of [ConversationTile].
     this.useOutgoingInnerTiles = false,
+
+    /// Invoked when the member-avatar cluster of a group chat card is tapped,
+    /// with the group's listing id. Lets the host open the group listing
+    /// detail. When null, the cluster stays non-interactive.
+    this.onGroupListingTap,
   }) : assert(
          leadingItemCount == 0 || leadingItemBuilder != null,
          "leadingItemBuilder is required when leadingItemCount > 0",
@@ -140,6 +145,7 @@ class GroupedConversationsList extends StatefulWidget {
   final bool showActivityTimeOnly;
   final Function(ConversationSummary)? onConversationLongPress;
   final bool useOutgoingInnerTiles;
+  final void Function(int listingId)? onGroupListingTap;
 
   @override
   State<GroupedConversationsList> createState() =>
@@ -570,6 +576,51 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     );
   }
 
+  /// A single-conversation `listing_group` card whose member previews drive
+  /// the overlapping avatar cluster. Mirrors `_isPersistentGroupStack` in
+  /// [_ConversationParticipantStack].
+  bool _isGroupChatCard(List<ConversationSummary> conversations) {
+    if (conversations.length != 1) return false;
+    final conv = conversations.first;
+    return conv.conversationType == _listingGroupConversationType &&
+        conv.members.isNotEmpty;
+  }
+
+  Widget _buildParticipantStackOverlay({
+    required int listingId,
+    required List<ConversationSummary> conversations,
+    required bool isExpanded,
+    required Color avatarColor,
+    required Color avatarIconColor,
+    required Color ringColor,
+  }) {
+    final stack = _ConversationParticipantStack(
+      isExpanded: isExpanded,
+      conversations: conversations,
+      currentUserId: widget.currentUserId,
+      avatarColor: avatarColor,
+      avatarIconColor: avatarIconColor,
+      ringColor: ringColor,
+    );
+
+    final groupListingId = conversations.first.listingId;
+    final canOpenListing = widget.onGroupListingTap != null &&
+        groupListingId != null &&
+        _isGroupChatCard(conversations);
+    if (!canOpenListing) {
+      return IgnorePointer(child: stack);
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedbackUtils.impact();
+        widget.onGroupListingTap!(groupListingId);
+      },
+      child: stack,
+    );
+  }
+
   Widget _buildGroupCard({
     required int listingId,
     required List<ConversationSummary> conversations,
@@ -798,20 +849,23 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                   // animated inside [_ConversationParticipantStack] so
                   // multi-person groups can stagger per avatar instead of
                   // one [AnimatedOpacity] over the whole stack.
+                  //
+                  // For group chats the member-avatar cluster is a tappable
+                  // shortcut to the group listing detail; for plain listing
+                  // cards it stays inert ([IgnorePointer]) so taps fall
+                  // through to the expand/collapse [GestureDetector] below.
                   PositionedDirectional(
                     top: 10,
                     end: 12,
-                    child: IgnorePointer(
-                      child: _ConversationParticipantStack(
-                        isExpanded: isExpanded,
-                        conversations: conversations,
-                        currentUserId: widget.currentUserId,
-                        avatarColor: avatarColor,
-                        avatarIconColor: avatarIconColor,
-                        ringColor: useLiquidGlass
-                            ? glassTintColor.withValues(alpha: 0.48)
-                            : cardColor,
-                      ),
+                    child: _buildParticipantStackOverlay(
+                      listingId: listingId,
+                      conversations: conversations,
+                      isExpanded: isExpanded,
+                      avatarColor: avatarColor,
+                      avatarIconColor: avatarIconColor,
+                      ringColor: useLiquidGlass
+                          ? glassTintColor.withValues(alpha: 0.48)
+                          : cardColor,
                     ),
                   ),
                 ],

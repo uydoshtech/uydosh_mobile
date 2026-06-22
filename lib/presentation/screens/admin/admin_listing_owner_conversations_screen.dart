@@ -7,6 +7,7 @@ import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/domain/services/admin_listing_conversations_service.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
@@ -240,7 +241,7 @@ class _AdminListingOwnerConversationsScreenState
     final resolvedAvatar = resolveAvatarUrl(c.otherUserAvatar)?.trim() ?? "";
     final last = (c.lastMessageContent ?? "").trim().isEmpty
         ? "—"
-        : c.lastMessageContent!.trim();
+        : ListingShareMessageCodec.previewText(c.lastMessageContent!.trim());
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),

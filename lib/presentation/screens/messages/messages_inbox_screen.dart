@@ -26,12 +26,16 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/main.dart";
+import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
@@ -1027,6 +1031,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
             useOutgoingInnerTiles: false,
             onConversationTap: _openChatScreen,
             onConversationLongPress: _promptConversationActions,
+            onGroupListingTap: _openGroupListingDetail,
           ),
         ),
       ),
@@ -1624,6 +1629,24 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     );
   }
 
+  Future<void> _openGroupListingDetail(int listingId) async {
+    HapticFeedbackUtils.impact();
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => ListingDetailBloc(getIt<IListingService>()),
+            ),
+            BlocProvider(create: (_) => ListingDetailPageBloc()),
+          ],
+          child: ListingDetailScreen(listingId: listingId),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDayGroupedConversationsList(
     List<ConversationSummary> conversations, {
     required bool outgoingInnerTiles,
@@ -1638,6 +1661,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       useOutgoingInnerTiles: outgoingInnerTiles,
       onConversationTap: _openChatScreen,
       onConversationLongPress: _promptConversationActions,
+      onGroupListingTap: _openGroupListingDetail,
       leadingItemCount: _shouldRenderPushBannerRow ? 1 : 0,
       leadingItemBuilder: _shouldRenderPushBannerRow
           ? (context, index) => Padding(

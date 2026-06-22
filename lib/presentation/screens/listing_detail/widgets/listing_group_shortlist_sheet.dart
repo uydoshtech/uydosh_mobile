@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/rendering.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -522,120 +523,254 @@ class _ListingGroupShortlistSheetState
     final maxHeight = MediaQuery.sizeOf(context).height * 0.64;
     final scheme = Theme.of(context).colorScheme;
 
-    return SizedBox(
-      height: maxHeight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 10),
-          Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: scheme.onSurface.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(99),
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 10),
+        Center(
+          child: Container(
+            width: 38,
+            height: 4,
+            decoration: BoxDecoration(
+              color: scheme.onSurface.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(99),
             ),
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          child: Text(
+            GroupHousingFlow.savedListingsLabel(_rows.length),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ),
+        if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
+        if (_loading)
+          const SizedBox(
+            height: 200,
+            child: Center(child: HouseLoadingIndicator()),
+          )
+        else if (_rows.isEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Text(
-              GroupHousingFlow.savedListingsLabel(_rows.length),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
-          ),
-          if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
-          Expanded(
-            child: _loading
-                ? const Center(child: HouseLoadingIndicator())
-                : _rows.isEmpty
-                    ? UydoshEmptyColumn(
-                        title: L10n.get("group_shortlist_empty_title"),
-                        subtitle: L10n.get("group_shortlist_empty_subtitle"),
-                        action: FilledButton.icon(
-                          onPressed: groupDetail == null
-                              ? null
-                              : () {
-                                  Navigator.of(context).pop();
-                                  GroupHousingFlow.openSearch(
-                                    context: context,
-                                    groupListingDetail: groupDetail,
-                                  );
-                                },
-                          icon: const Icon(Icons.search),
-                          label: Text(L10n.get("group_find_housing")),
-                        ),
-                      )
-                    : PageView.builder(
-                        controller: _pageController,
-                        itemCount: _rows.length,
-                        onPageChanged: (page) {
-                          setState(() => _currentPage = page);
-                        },
-                        itemBuilder: (context, index) {
-                          final row = _rows[index];
-                          final fit = groupDetail == null
-                              ? const GroupHousingListingFit(
-                                  budget: GroupHousingBudgetFit.unknown,
-                                  location: GroupHousingLocationFit.unknown,
-                                )
-                              : GroupHousingListingFit.evaluate(
-                                  groupListing: groupDetail,
-                                  housingListing: row.listing,
-                                );
-                          final isRemoving = _removingId == row.listing.id;
-                          final hasGroupChat =
-                              groupDetail?.groupContext?.hasGroupChat == true;
-
-                          return SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                            child: GroupShortlistItemCard(
-                              item: row.item,
-                              listing: row.listing,
-                              fit: fit,
-                              ownerName: row.ownerName,
-                              ownerAvatarUrl: row.ownerAvatarUrl,
-                              isOwner: widget.isOwner,
-                              isRemoving: isRemoving,
-                              currentUserId: _currentUserId,
-                              onOpen: () => _openListing(row),
-                              onRemove: () => _confirmRemove(row),
-                              onRate: (stars) => _editRating(row, stars),
-                              onContactLandlord: widget.isOwner
-                                  ? () => _contactLandlord(row)
-                                  : null,
-                              onDiscussInGroup: hasGroupChat
-                                  ? () => _discussInGroup(row)
-                                  : null,
-                            ),
-                          );
-                        },
-                      ),
-          ),
-          if (!_loading && _rows.isNotEmpty && groupDetail != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(
-                      builder: (_) => GroupHousingSearchScreen(
-                        groupListingDetail: groupDetail,
-                      ),
-                    ),
-                  );
-                },
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: UydoshEmptyColumn(
+              title: L10n.get("group_shortlist_empty_title"),
+              subtitle: L10n.get("group_shortlist_empty_subtitle"),
+              action: FilledButton.icon(
+                onPressed: groupDetail == null
+                    ? null
+                    : () {
+                        Navigator.of(context).pop();
+                        GroupHousingFlow.openSearch(
+                          context: context,
+                          groupListingDetail: groupDetail,
+                        );
+                      },
                 icon: const Icon(Icons.search),
                 label: Text(L10n.get("group_find_housing")),
               ),
             ),
-        ],
+          )
+        else
+          _ExpandablePageView(
+            controller: _pageController,
+            itemCount: _rows.length,
+            maxHeight: maxHeight,
+            onPageChanged: (page) {
+              setState(() => _currentPage = page);
+            },
+            itemBuilder: (context, index) {
+              final row = _rows[index];
+              final fit = groupDetail == null
+                  ? const GroupHousingListingFit(
+                      budget: GroupHousingBudgetFit.unknown,
+                      location: GroupHousingLocationFit.unknown,
+                    )
+                  : GroupHousingListingFit.evaluate(
+                      groupListing: groupDetail,
+                      housingListing: row.listing,
+                    );
+              final isRemoving = _removingId == row.listing.id;
+              final hasGroupChat =
+                  groupDetail?.groupContext?.hasGroupChat == true;
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: GroupShortlistItemCard(
+                  item: row.item,
+                  listing: row.listing,
+                  fit: fit,
+                  ownerName: row.ownerName,
+                  ownerAvatarUrl: row.ownerAvatarUrl,
+                  isOwner: widget.isOwner,
+                  isRemoving: isRemoving,
+                  currentUserId: _currentUserId,
+                  onOpen: () => _openListing(row),
+                  onRemove: () => _confirmRemove(row),
+                  onRate: (stars) => _editRating(row, stars),
+                  onContactLandlord: widget.isOwner
+                      ? () => _contactLandlord(row)
+                      : null,
+                  onDiscussInGroup: hasGroupChat
+                      ? () => _discussInGroup(row)
+                      : null,
+                ),
+              );
+            },
+          ),
+        if (!_loading && _rows.isNotEmpty && groupDetail != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => GroupHousingSearchScreen(
+                      groupListingDetail: groupDetail,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.search),
+              label: Text(L10n.get("group_find_housing")),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// A horizontal [PageView] that sizes its height to the currently-visible
+/// page's content (capped at [maxHeight]) instead of forcing a fixed viewport.
+///
+/// Each page's natural height is measured on layout; the container animates to
+/// that height so cards are shown in full without an inner scroll. If a card is
+/// taller than [maxHeight] it falls back to scrolling within the cap.
+class _ExpandablePageView extends StatefulWidget {
+  const _ExpandablePageView({
+    required this.controller,
+    required this.itemCount,
+    required this.itemBuilder,
+    required this.maxHeight,
+    required this.onPageChanged,
+  });
+
+  final PageController controller;
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+  final double maxHeight;
+  final ValueChanged<int> onPageChanged;
+
+  @override
+  State<_ExpandablePageView> createState() => _ExpandablePageViewState();
+}
+
+class _ExpandablePageViewState extends State<_ExpandablePageView> {
+  late List<double> _heights;
+  var _currentPage = 0;
+
+  double get _currentHeight =>
+      _heights.isEmpty ? widget.maxHeight : _heights[_currentPage];
+
+  @override
+  void initState() {
+    super.initState();
+    _heights = List<double>.filled(widget.itemCount, widget.maxHeight);
+    _currentPage = widget.controller.initialPage
+        .clamp(0, widget.itemCount == 0 ? 0 : widget.itemCount - 1)
+        .toInt();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ExpandablePageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.itemCount != widget.itemCount) {
+      final next = List<double>.filled(widget.itemCount, widget.maxHeight);
+      for (var i = 0; i < widget.itemCount && i < _heights.length; i++) {
+        next[i] = _heights[i];
+      }
+      _heights = next;
+      if (widget.itemCount == 0) {
+        _currentPage = 0;
+      } else if (_currentPage >= widget.itemCount) {
+        _currentPage = widget.itemCount - 1;
+      }
+    }
+  }
+
+  void _setHeight(int index, double height) {
+    if (index < 0 || index >= _heights.length) return;
+    if ((_heights[index] - height).abs() < 0.5) return;
+    setState(() => _heights[index] = height);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      height: _currentHeight.clamp(0.0, widget.maxHeight),
+      child: PageView.builder(
+        controller: widget.controller,
+        itemCount: widget.itemCount,
+        onPageChanged: (page) {
+          setState(() => _currentPage = page);
+          widget.onPageChanged(page);
+        },
+        itemBuilder: (context, index) {
+          return SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: _MeasureSize(
+              onChange: (size) => _setHeight(index, size.height),
+              child: widget.itemBuilder(context, index),
+            ),
+          );
+        },
       ),
     );
+  }
+}
+
+typedef _OnWidgetSizeChange = void Function(Size size);
+
+/// Reports its child's laid-out size to [onChange] after each layout pass.
+class _MeasureSize extends SingleChildRenderObjectWidget {
+  const _MeasureSize({required this.onChange, required super.child});
+
+  final _OnWidgetSizeChange onChange;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _MeasureSizeRenderObject(onChange);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _MeasureSizeRenderObject renderObject,
+  ) {
+    renderObject.onChange = onChange;
+  }
+}
+
+class _MeasureSizeRenderObject extends RenderProxyBox {
+  _MeasureSizeRenderObject(this.onChange);
+
+  _OnWidgetSizeChange onChange;
+  Size? _oldSize;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final newSize = child?.size ?? Size.zero;
+    if (_oldSize == newSize) return;
+    _oldSize = newSize;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onChange(newSize);
+    });
   }
 }
 
@@ -652,14 +787,17 @@ class _ShortlistArrowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return IconButton.filledTonal(
       onPressed: onPressed,
       tooltip: tooltip,
       icon: Icon(icon, size: 28),
       style: IconButton.styleFrom(
         minimumSize: const Size.square(44),
-        disabledForegroundColor:
-            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.32),
+        backgroundColor: scheme.onSurface.withValues(alpha: 0.10),
+        foregroundColor: scheme.onSurface,
+        disabledBackgroundColor: scheme.onSurface.withValues(alpha: 0.05),
+        disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.32),
       ),
     );
   }

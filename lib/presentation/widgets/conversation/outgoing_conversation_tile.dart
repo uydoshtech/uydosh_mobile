@@ -6,6 +6,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
@@ -206,7 +207,9 @@ class OutgoingConversationTile extends StatelessWidget {
                           children: [
                             if (conversation.lastMessageContent != null) ...[
                               Text(
-                                conversation.lastMessageContent!,
+                                ListingShareMessageCodec.previewText(
+                                  conversation.lastMessageContent!,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(color: secondaryTextColor),

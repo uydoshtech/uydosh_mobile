@@ -51,7 +51,11 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([ThemeState(), _dictationMeter]),
+      listenable: Listenable.merge([
+        ThemeState(),
+        _dictationMeter,
+        widget.controller,
+      ]),
       builder: (context, child) {
         final themeState = ThemeState();
         final inputBackgroundColor = themeState.chatComposerFieldBackground(context);
@@ -106,8 +110,9 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
             minHeight: 40,
           ),
         );
+        final hasText = widget.controller.text.trim().isNotEmpty;
         textField = ComposerEditGlow(
-          enabled: widget.isEditingExistingMessage,
+          enabled: widget.isEditingExistingMessage && hasText,
           borderRadius: fieldRadius,
           child: textField,
         );

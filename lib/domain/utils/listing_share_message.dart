@@ -147,6 +147,27 @@ abstract final class ListingShareMessageCodec {
   static String encode(ListingShareMessagePayload payload) {
     return "$listingShareMessagePrefix${jsonEncode(payload.toJson())}";
   }
+
+  /// Human-readable one-line preview for an inbox / notification snippet.
+  ///
+  /// Listing-share messages are stored as an encoded payload
+  /// ([listingShareMessagePrefix] + JSON); printing that raw string leaks
+  /// braces and quotes into the conversation list. When [content] decodes to a
+  /// share payload we render a localized "shared a listing" line with the
+  /// listing title; otherwise the original content is returned untouched.
+  static String previewText(String content) {
+    if (!isListingShareContent(content)) return content;
+    final payload = parse(content);
+    if (payload == null) return content;
+    final title = payload.title.trim();
+    if (title.isEmpty) {
+      return L10n.get("messages_preview_shared_listing_no_title");
+    }
+    return L10n.getWithParams(
+      "messages_preview_shared_listing",
+      params: {"title": title},
+    );
+  }
 }
 
 abstract final class GroupShortlistDiscussMessage {

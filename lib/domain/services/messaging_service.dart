@@ -620,6 +620,12 @@ class MessagingService implements IMessagingService {
           throw Exception("USER_BLOCKED");
         }
       }
+      if (e.response?.statusCode == 409) {
+        final data = e.response?.data;
+        if (data is Map && data["code"] == "LISTING_ALREADY_DISCUSSED") {
+          throw Exception("LISTING_ALREADY_DISCUSSED");
+        }
+      }
       throw Exception("Failed to send message");
     } catch (e) {
       throw Exception("Failed to send message");

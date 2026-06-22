@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
@@ -335,7 +336,9 @@ class ConversationCard extends StatelessWidget {
             ],
             if (conversation.lastMessageContent != null)
               Text(
-                conversation.lastMessageContent!,
+                ListingShareMessageCodec.previewText(
+                  conversation.lastMessageContent!,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

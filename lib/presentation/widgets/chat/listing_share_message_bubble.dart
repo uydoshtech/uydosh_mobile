@@ -42,7 +42,7 @@ class ListingShareMessageBubble extends StatelessWidget {
   final MessageListingRating? rating;
   final bool isCurrentUser;
   final VoidCallback onOpenListing;
-  final ValueChanged<int> onRate;
+  final Future<void> Function(int stars) onRate;
   final VoidCallback? onOpenPreviousListing;
   final VoidCallback? onOpenNextListing;
   final String? leftAvatarInitials;
@@ -591,7 +591,7 @@ class _DetailLine extends StatelessWidget {
   }
 }
 
-class _StarRatingRow extends StatelessWidget {
+class _StarRatingRow extends StatefulWidget {
   const _StarRatingRow({
     required this.myStars,
     required this.average,
@@ -602,17 +602,35 @@ class _StarRatingRow extends StatelessWidget {
   final int? myStars;
   final double? average;
   final int count;
-  final ValueChanged<int> onRate;
+  final Future<void> Function(int stars) onRate;
+
+  @override
+  State<_StarRatingRow> createState() => _StarRatingRowState();
+}
+
+class _StarRatingRowState extends State<_StarRatingRow> {
+  bool _isSaving = false;
+
+  Future<void> _handleRate(int starValue) async {
+    if (_isSaving) return;
+    HapticFeedbackUtils.selectionClick();
+    setState(() => _isSaving = true);
+    try {
+      await widget.onRate(starValue);
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final summary = count > 0 && average != null
+    final summary = widget.count > 0 && widget.average != null
         ? L10n.getWithParams(
             "group_shortlist_rating_summary",
             params: {
-              "average": average!.toStringAsFixed(1),
-              "count": count.toString(),
+              "average": widget.average!.toStringAsFixed(1),
+              "count": widget.count.toString(),
             },
           )
         : L10n.get("group_shortlist_rate_prompt");
@@ -623,34 +641,46 @@ class _StarRatingRow extends StatelessWidget {
         Material(
           color: Colors.transparent,
           child: Row(
-            children: List.generate(5, (index) {
-              final starValue = index + 1;
-              final filled = (myStars ?? 0) >= starValue;
-              return InkWell(
-                onTap: () {
-                  HapticFeedbackUtils.selectionClick();
-                  onRate(starValue);
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-                  child: Icon(
-                    filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 22,
-                    color: filled
-                        ? AppColors.warning
-                        : theme.colorScheme.onSurfaceVariant,
+            children: [
+              ...List.generate(5, (index) {
+                final starValue = index + 1;
+                final filled = (widget.myStars ?? 0) >= starValue;
+                return InkWell(
+                  onTap: _isSaving ? null : () => _handleRate(starValue),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                    child: Icon(
+                      filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                      size: 22,
+                      color: filled
+                          ? AppColors.warning
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              }),
+              if (_isSaving) ...[
+                const SizedBox(width: 6),
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-              );
-            }),
+              ],
+            ],
           ),
         ),
         Text(
           summary,
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+            color: theme.brightness == Brightness.light
+                ? Colors.black
+                : theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ],

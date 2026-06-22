@@ -120,7 +120,17 @@ class _ThreeDTextFieldState extends State<ThreeDTextField> {
     final scheme = Theme.of(context).colorScheme;
     final bgBase = widget.backgroundColor ?? scheme.surfaceContainerHighest;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final rim = BorderRadius.lerp(widget.borderRadius, BorderRadius.circular(999), 0.25)!;
+    // Outer rim sits 3px outside the inner field (see [Padding] below). Keep the
+    // corners concentric by adding that gap to each radius; lerping toward a full
+    // pill makes the rim diverge from small inner radii and reads as a second,
+    // mismatched outline around the field.
+    const rimGap = Radius.circular(3);
+    final rim = BorderRadius.only(
+      topLeft: widget.borderRadius.topLeft + rimGap,
+      topRight: widget.borderRadius.topRight + rimGap,
+      bottomLeft: widget.borderRadius.bottomLeft + rimGap,
+      bottomRight: widget.borderRadius.bottomRight + rimGap,
+    );
     final focused = _focusNode.hasFocus;
 
     // Match reference (img1):

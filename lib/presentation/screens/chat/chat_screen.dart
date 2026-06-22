@@ -1219,6 +1219,13 @@ class _ChatScreenState extends State<ChatScreen> {
               _isSendingMessage = false;
             });
             if (message.contains("USER_BLOCKED")) return;
+            if (message.contains("LISTING_ALREADY_DISCUSSED")) {
+              ToastTheme.showInfo(
+                context,
+                message: L10n.get("group_shortlist_already_in_discussion"),
+              );
+              return;
+            }
             ToastTheme.showError(context, message: message);
           },
         );
@@ -1706,6 +1713,17 @@ class _ChatScreenState extends State<ChatScreen> {
     return sharedListings[targetIndex].payload;
   }
 
+  /// Whether a (non-deleted) listing-share card for [listingId] is already
+  /// present among the currently loaded messages of this conversation.
+  bool _listingAlreadyShared(int listingId) {
+    for (final candidate in _messages) {
+      if (candidate.isDeleted == true) continue;
+      final payload = ListingShareMessageCodec.parse(candidate.content);
+      if (payload?.listingId == listingId) return true;
+    }
+    return false;
+  }
+
   Future<void> _setListingRating(Message message, int stars) async {
     try {
       final updated = await getIt<IMessagingService>().setListingRating(
@@ -1913,6 +1931,20 @@ class _ChatScreenState extends State<ChatScreen> {
             EditMessage(messageId: editingId, newContent: content),
           );
       return;
+    }
+
+    // Block re-adding a listing card that is already in this group discussion.
+    // The backend is authoritative (and handles races), but this gives instant
+    // feedback and avoids a wasted round-trip for the common case.
+    if (_isGroupChat) {
+      final payload = ListingShareMessageCodec.parse(content);
+      if (payload != null && _listingAlreadyShared(payload.listingId)) {
+        ToastTheme.showInfo(
+          context,
+          message: L10n.get("group_shortlist_already_in_discussion"),
+        );
+        return;
+      }
     }
 
     setState(() {

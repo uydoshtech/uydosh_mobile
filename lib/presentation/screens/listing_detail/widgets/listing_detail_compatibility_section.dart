@@ -1629,6 +1629,309 @@ class _ListingDetailCompatibilitySectionState
     });
   }
 
+  /// Builds the expandable body of the compatibility tile. Returned as a single
+  /// widget (rather than spread into the [ExpansionTile.children]) so it can be
+  /// wrapped in an [AnimatedSize] that animates the height change when the body
+  /// swaps from the loading placeholder to the resolved content.
+  Widget _buildCompatibilityContent({
+    required bool isAuthenticated,
+    required String? percentText,
+  }) {
+    if (!isAuthenticated) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          L10n.get("compatibility_sign_in"),
+          style: TextStyle(
+            fontSize: 14,
+            color: _getDescriptionTextColor(),
+          ),
+        ),
+      );
+    }
+
+    if (widget.isLoadingCompatibility) {
+      return Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: _getIconColor(),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            L10n.get("compatibility_calculating"),
+            style: TextStyle(
+              fontSize: 14,
+              color: _getDescriptionTextColor(),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (widget.compatibilityError != null || percentText == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          UydoshLinkButton(
+            text: L10n.get("complete_profile"),
+            onPressed: widget.onCompleteProfile,
+            color: _getIconColor(),
+            outlined: true,
+            maxLines: 1,
+          ),
+        ],
+      );
+    }
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: ClientListingContactsConfig.showListingContacts,
+      builder: (context, showContacts, _) {
+        if (widget.isGroupCompatibility) {
+          return _buildGroupCompatibilityBody();
+        }
+
+        final hasPhone = showContacts &&
+            (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
+            widget.onPhone != null;
+        final phoneDisplay = hasPhone
+            ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
+            : null;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.dealbreakers.isNotEmpty) ...[
+              Text(
+                L10n.get("compatibility_critical_differences"),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.error,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.error,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...widget.dealbreakers.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ThemeIcon(
+                        _getLifestyleIcon(item.labelKey),
+                        size: 20,
+                        color: AppColors.error,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.error,
+                            ),
+                            children: [
+                              TextSpan(
+                                text:
+                                    "${item.label}: ${item.currentText} ",
+                              ),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: ThemeIcon(
+                                  Icons.compare_arrows,
+                                  size: 16,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                              TextSpan(text: " ${item.ownerText}"),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (widget.matches.isNotEmpty) ...[
+              Text(
+                L10n.get("compatibility_matches"),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _getLocationTextColor(),
+                  decoration: TextDecoration.underline,
+                  decorationColor: _getLocationTextColor(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...widget.matches.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ThemeIcon(
+                        _getLifestyleIcon(item.labelKey),
+                        size: 20,
+                        color: _getDescriptionTextColor(),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "${item.label}: ${item.value}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _getDescriptionTextColor(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            if (widget.differences.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                L10n.get("compatibility_differences"),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _getLocationTextColor(),
+                  decoration: TextDecoration.underline,
+                  decorationColor: _getLocationTextColor(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...widget.differences.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ThemeIcon(
+                        _getLifestyleIcon(item.labelKey),
+                        size: 20,
+                        color: _getDescriptionTextColor(),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _getDescriptionTextColor(),
+                            ),
+                            children: [
+                              TextSpan(
+                                text:
+                                    "${item.label}: ${item.currentText} ",
+                              ),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: ThemeIcon(
+                                  Icons.compare_arrows,
+                                  size: 16,
+                                  color: _getDescriptionTextColor(),
+                                ),
+                              ),
+                              TextSpan(text: " ${item.ownerText}"),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            if (widget.matches.isEmpty &&
+                widget.differences.isEmpty &&
+                widget.dealbreakers.isEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UydoshLinkButton(
+                    text: L10n.get("complete_profile"),
+                    onPressed: widget.onCompleteProfile,
+                    color: _getIconColor(),
+                    outlined: true,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            // Telegram / in-app chat CTAs live in the sticky
+            // [ListingDetailContactActionBar] at the bottom of the
+            // screen (always reachable). Phone stays here because
+            // it's a compat-adjacent conditional contact channel
+            // (gated by admin flag + handle presence) and it's the
+            // only inline contact we still surface in-section.
+            if (hasPhone) ...[
+              const SizedBox(height: 16),
+              GhostButton(
+                onPressed: () {
+                  HapticFeedbackUtils.impact();
+                  widget.onPhone?.call();
+                },
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                borderWidth: 1.5,
+                borderColor: _getIconColor(),
+                textColor: _getDescriptionTextColor(),
+                iconColor: _getIconColor(),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ThemeIcon(
+                      Icons.phone,
+                      size: 18,
+                      color: _getIconColor(),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(phoneDisplay ?? L10n.get("contact_user")),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            GhostButtonFactory.iconText(
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                widget.onViewProfile();
+              },
+              width: double.infinity,
+              icon: Icons.person_outline,
+              iconSize: 18,
+              text: L10n.get("view_profile"),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              borderColor: _getIconColor(),
+              textColor: _getDescriptionTextColor(),
+              iconColor: _getIconColor(),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAuthenticated = AuthenticationState().isAuthenticated;
@@ -1681,343 +1984,87 @@ class _ListingDetailCompatibilitySectionState
           collapsedIconColor: chevronColor,
           title: KeyedSubtree(
             key: widget.sectionKey,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (isAuthenticated) ...[
-                  if (!widget.isGroupCompatibility)
-                    _buildOverlappingHeaderAvatars(),
-                  if (!widget.isGroupCompatibility) const SizedBox(width: 10),
-                ] else
-                  ThemeIcon(
-                    ThemeState().isBlueTheme
-                        ? CupertinoIcons.group_solid
-                        : CupertinoIcons.group,
-                    size: 24,
-                    color: ThemeState().isBlueTheme
-                        ? Colors.white
-                        : ThemeState().isLightTheme
-                            ? Colors.black
-                            : _getIconColor(),
-                  ),
-                if (!isAuthenticated) const SizedBox(width: 8),
-                Expanded(
-                  child: widget.isGroupCompatibility && isAuthenticated
-                      ? _buildGroupHeaderTitle(headerPercentText)
-                      : Text(
-                          L10n.get("compatibility_title"),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: _getDescriptionTextColor(),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                ),
-                if (isAuthenticated && !widget.isGroupCompatibility) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    headerPercentText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: _getCompatibilityPercentColor(),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          children: [
-            if (!isAuthenticated)
-              Text(
-                L10n.get("compatibility_sign_in"),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _getDescriptionTextColor(),
-                ),
-              )
-            else if (widget.isLoadingCompatibility)
-              Row(
-                children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: _getIconColor(),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    L10n.get("compatibility_calculating"),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: _getDescriptionTextColor(),
-                    ),
-                  ),
-                ],
-              )
-            else if (widget.compatibilityError != null || percentText == null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UydoshLinkButton(
-                    text: L10n.get("complete_profile"),
-                    onPressed: widget.onCompleteProfile,
-                    color: _getIconColor(),
-                    outlined: true,
-                    maxLines: 1,
-                  ),
-                ],
-              )
-            else
-              ValueListenableBuilder<bool>(
-                valueListenable:
-                    ClientListingContactsConfig.showListingContacts,
-                builder: (context, showContacts, _) {
-                  if (widget.isGroupCompatibility) {
-                    return _buildGroupCompatibilityBody();
-                  }
-
-                  final hasPhone = showContacts &&
-                      (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
-                      widget.onPhone != null;
-                  final phoneDisplay = hasPhone
-                      ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
-                      : null;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (widget.dealbreakers.isNotEmpty) ...[
-                        Text(
-                          L10n.get("compatibility_critical_differences"),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.error,
-                            decoration: TextDecoration.underline,
-                            decorationColor: AppColors.error,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...widget.dealbreakers.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ThemeIcon(
-                                  _getLifestyleIcon(item.labelKey),
-                                  size: 20,
-                                  color: AppColors.error,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: AppColors.error,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text:
-                                              "${item.label}: ${item.currentText} ",
-                                        ),
-                                        WidgetSpan(
-                                          alignment:
-                                              PlaceholderAlignment.middle,
-                                          child: ThemeIcon(
-                                            Icons.compare_arrows,
-                                            size: 16,
-                                            color: AppColors.error,
-                                          ),
-                                        ),
-                                        TextSpan(text: " ${item.ownerText}"),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (widget.matches.isNotEmpty) ...[
-                        Text(
-                          L10n.get("compatibility_matches"),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _getLocationTextColor(),
-                            decoration: TextDecoration.underline,
-                            decorationColor: _getLocationTextColor(),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...widget.matches.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ThemeIcon(
-                                  _getLifestyleIcon(item.labelKey),
-                                  size: 20,
-                                  color: _getDescriptionTextColor(),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    "${item.label}: ${item.value}",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: _getDescriptionTextColor(),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (widget.differences.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          L10n.get("compatibility_differences"),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _getLocationTextColor(),
-                            decoration: TextDecoration.underline,
-                            decorationColor: _getLocationTextColor(),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...widget.differences.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ThemeIcon(
-                                  _getLifestyleIcon(item.labelKey),
-                                  size: 20,
-                                  color: _getDescriptionTextColor(),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: _getDescriptionTextColor(),
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text:
-                                              "${item.label}: ${item.currentText} ",
-                                        ),
-                                        WidgetSpan(
-                                          alignment:
-                                              PlaceholderAlignment.middle,
-                                          child: ThemeIcon(
-                                            Icons.compare_arrows,
-                                            size: 16,
-                                            color: _getDescriptionTextColor(),
-                                          ),
-                                        ),
-                                        TextSpan(text: " ${item.ownerText}"),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (widget.matches.isEmpty &&
-                          widget.differences.isEmpty &&
-                          widget.dealbreakers.isEmpty)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            UydoshLinkButton(
-                              text: L10n.get("complete_profile"),
-                              onPressed: widget.onCompleteProfile,
-                              color: _getIconColor(),
-                              outlined: true,
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                      // Telegram / in-app chat CTAs live in the sticky
-                      // [ListingDetailContactActionBar] at the bottom of the
-                      // screen (always reachable). Phone stays here because
-                      // it's a compat-adjacent conditional contact channel
-                      // (gated by admin flag + handle presence) and it's the
-                      // only inline contact we still surface in-section.
-                      if (hasPhone) ...[
-                        const SizedBox(height: 16),
-                        GhostButton(
-                          onPressed: () {
-                            HapticFeedbackUtils.impact();
-                            widget.onPhone?.call();
-                          },
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          borderWidth: 1.5,
-                          borderColor: _getIconColor(),
-                          textColor: _getDescriptionTextColor(),
-                          iconColor: _getIconColor(),
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ThemeIcon(
-                                Icons.phone,
-                                size: 18,
-                                color: _getIconColor(),
+            // Animate the header height change when compatibility data lands
+            // and the layout swaps from the one-on-one placeholder (avatars +
+            // "N/A") to the taller group header (title + subtitle + avatar
+            // stack), so the tile grows smoothly instead of snapping.
+            child: ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                clipBehavior: Clip.hardEdge,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (isAuthenticated) ...[
+                      if (!widget.isGroupCompatibility)
+                        _buildOverlappingHeaderAvatars(),
+                      if (!widget.isGroupCompatibility)
+                        const SizedBox(width: 10),
+                    ] else
+                      ThemeIcon(
+                        ThemeState().isBlueTheme
+                            ? CupertinoIcons.group_solid
+                            : CupertinoIcons.group,
+                        size: 24,
+                        color: ThemeState().isBlueTheme
+                            ? Colors.white
+                            : ThemeState().isLightTheme
+                                ? Colors.black
+                                : _getIconColor(),
+                      ),
+                    if (!isAuthenticated) const SizedBox(width: 8),
+                    Expanded(
+                      child: widget.isGroupCompatibility && isAuthenticated
+                          ? _buildGroupHeaderTitle(headerPercentText)
+                          : Text(
+                              L10n.get("compatibility_title"),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: _getDescriptionTextColor(),
                               ),
-                              const SizedBox(width: 8),
-                              Text(phoneDisplay ?? L10n.get("contact_user")),
-                            ],
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 14),
-                      GhostButtonFactory.iconText(
-                        onPressed: () {
-                          HapticFeedbackUtils.impact();
-                          widget.onViewProfile();
-                        },
-                        width: double.infinity,
-                        icon: Icons.person_outline,
-                        iconSize: 18,
-                        text: L10n.get("view_profile"),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        borderColor: _getIconColor(),
-                        textColor: _getDescriptionTextColor(),
-                        iconColor: _getIconColor(),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                    if (isAuthenticated && !widget.isGroupCompatibility) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        headerPercentText,
+                        style: TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: _getCompatibilityPercentColor(),
                         ),
                       ),
                     ],
-                  );
-                },
+                  ],
+                ),
               ),
+            ),
+          ),
+          children: [
+            // Animate the height change when the body swaps from the loading
+            // placeholder to the resolved compatibility content, so the tile
+            // expands smoothly instead of jerking once data is available
+            // (mirrors the "View room in 3D" tile's reveal animation).
+            ClipRect(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _buildCompatibilityContent(
+                    isAuthenticated: isAuthenticated,
+                    percentText: percentText,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

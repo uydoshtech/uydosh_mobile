@@ -461,8 +461,8 @@ class _ListingTileState extends State<ListingTile> {
                             ),
                           if (_groupMembersProgressBadge != null)
                             _groupMembersProgressBadge!,
-                          // Price is shown only in the prominent price
-                          // card below the title (no header duplicate).
+                          // Price is shown in the footer (right side),
+                          // not as a header badge.
                           // 3D room scan (available on iOS; show indicator on web too)
                           if ((kIsWeb || isIPhoneFormFactor(context)) &&
                               (widget.listing.pointCloudUrl?.isNotEmpty ??
@@ -526,11 +526,8 @@ class _ListingTileState extends State<ListingTile> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          // Prominent monthly-price card.
-                          if (widget.listing.price > 0) ...[
-                            const SizedBox(height: 10),
-                            _buildPriceCard(),
-                          ],
+                          // Price is shown in the footer (right side); see
+                          // [_buildTileFooter].
                           // Location and metro on separate lines.
                           if (widget.listing.location != null ||
                               widget.listing.subwayStation != null) ...[
@@ -1120,10 +1117,18 @@ class _ListingTileState extends State<ListingTile> {
   bool get _hasAmenities =>
       widget.listing.amenities != null && widget.listing.amenities!.isNotEmpty;
 
+  bool get _hasFooterPrice => widget.listing.price > 0;
+
   bool get _hasTileFooter =>
-      widget.footerContent != null || _hasAmenities || widget.showActiveStatus;
+      widget.footerContent != null ||
+      _hasAmenities ||
+      widget.showActiveStatus ||
+      _hasFooterPrice;
 
   Widget _buildTileFooter() {
+    // The owner-only views/status pill and the price badge both claim the
+    // footer's trailing slot; owner status wins on the "my listings" screen.
+    final showPrice = !widget.showActiveStatus && _hasFooterPrice;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -1131,6 +1136,7 @@ class _ListingTileState extends State<ListingTile> {
         Container(height: 1, color: _amenityDividerColor()),
         const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
@@ -1147,6 +1153,9 @@ class _ListingTileState extends State<ListingTile> {
             if (widget.showActiveStatus) ...[
               const SizedBox(width: 12),
               _buildOwnerFooterStatus(),
+            ] else if (showPrice) ...[
+              const SizedBox(width: 12),
+              _buildPriceCard(),
             ],
           ],
         ),
@@ -1154,20 +1163,40 @@ class _ListingTileState extends State<ListingTile> {
     );
   }
 
+  /// Maximum number of amenity icons shown in the tile footer. Anything beyond
+  /// this collapses into a "+N" counter so the strip stays a single brief row
+  /// (and leaves room for the trailing price badge).
+  static const int _maxVisibleAmenityIcons = 5;
+
   /// Amenity icons (no labels) rendered inside the tile footer — compact,
-  /// but still enough to hint at the listing's features.
+  /// but still enough to hint at the listing's features. Capped at
+  /// [_maxVisibleAmenityIcons]; remaining amenities are summarised as "+N".
   Widget _buildAmenityIcons() {
     final amenities = _cachedSortedAmenities ?? const <Amenity>[];
     if (amenities.isEmpty) return const SizedBox.shrink();
     final fg = _getAmenityIconColor();
+
+    final visible = amenities.length > _maxVisibleAmenityIcons
+        ? amenities.sublist(0, _maxVisibleAmenityIcons)
+        : amenities;
+    final remaining = amenities.length - visible.length;
 
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        for (final amenity in amenities)
+        for (final amenity in visible)
           ThemeIcon(_getAmenityIcon(amenity), size: 20, color: fg),
+        if (remaining > 0)
+          Text(
+            "+$remaining",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
+          ),
       ],
     );
   }

@@ -1033,11 +1033,18 @@ class _MessageBubbleState extends State<MessageBubble>
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       MessageReactionCatalog.emojiFor(e.reaction),
+                      textAlign: TextAlign.center,
+                      textHeightBehavior: const TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
+                      ),
                       style: MessageReactionCatalog.textStyleForReactionEmoji(
                         _reactionBubbleEmojiSize,
+                        height: 1,
                         shadows: [
                           Shadow(
                             color: Colors.black.withValues(alpha: 0.2),
