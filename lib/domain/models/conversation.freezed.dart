@@ -692,10 +692,18 @@ mixin _$ConversationSummary {
   /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
   @JsonKey(name: "price_currency_code")
   String? get priceCurrencyCode => throw _privateConstructorUsedError;
+  @JsonKey(name: "conversation_type")
+  String? get conversationType => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_name")
   String? get otherUserName => throw _privateConstructorUsedError;
   @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar => throw _privateConstructorUsedError;
+
+  /// Group-chat (`listing_group`) member previews for overlapping inbox
+  /// avatars. Empty for direct/listing/gig chats.
+  @JsonKey(name: "members")
+  List<ConversationMemberSummary> get members =>
+      throw _privateConstructorUsedError;
 
   /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
   @JsonKey(name: "gig_owner_name")
@@ -773,8 +781,10 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
       @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
+      @JsonKey(name: "conversation_type") String? conversationType,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "members") List<ConversationMemberSummary> members,
       @JsonKey(name: "gig_owner_name") String? gigOwnerName,
       @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
@@ -831,8 +841,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? listingGender = freezed,
     Object? listingPrice = freezed,
     Object? priceCurrencyCode = freezed,
+    Object? conversationType = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
+    Object? members = null,
     Object? gigOwnerName = freezed,
     Object? gigOwnerAvatar = freezed,
     Object? unreadCount = freezed,
@@ -940,6 +952,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.priceCurrencyCode
           : priceCurrencyCode // ignore: cast_nullable_to_non_nullable
               as String?,
+      conversationType: freezed == conversationType
+          ? _value.conversationType
+          : conversationType // ignore: cast_nullable_to_non_nullable
+              as String?,
       otherUserName: freezed == otherUserName
           ? _value.otherUserName
           : otherUserName // ignore: cast_nullable_to_non_nullable
@@ -948,6 +964,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.otherUserAvatar
           : otherUserAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      members: null == members
+          ? _value.members
+          : members // ignore: cast_nullable_to_non_nullable
+              as List<ConversationMemberSummary>,
       gigOwnerName: freezed == gigOwnerName
           ? _value.gigOwnerName
           : gigOwnerName // ignore: cast_nullable_to_non_nullable
@@ -1051,8 +1071,10 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "listing_gender") int? listingGender,
       @JsonKey(name: "listing_price") int? listingPrice,
       @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
+      @JsonKey(name: "conversation_type") String? conversationType,
       @JsonKey(name: "other_user_name") String? otherUserName,
       @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+      @JsonKey(name: "members") List<ConversationMemberSummary> members,
       @JsonKey(name: "gig_owner_name") String? gigOwnerName,
       @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") int? unreadCount,
@@ -1107,8 +1129,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? listingGender = freezed,
     Object? listingPrice = freezed,
     Object? priceCurrencyCode = freezed,
+    Object? conversationType = freezed,
     Object? otherUserName = freezed,
     Object? otherUserAvatar = freezed,
+    Object? members = null,
     Object? gigOwnerName = freezed,
     Object? gigOwnerAvatar = freezed,
     Object? unreadCount = freezed,
@@ -1216,6 +1240,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.priceCurrencyCode
           : priceCurrencyCode // ignore: cast_nullable_to_non_nullable
               as String?,
+      conversationType: freezed == conversationType
+          ? _value.conversationType
+          : conversationType // ignore: cast_nullable_to_non_nullable
+              as String?,
       otherUserName: freezed == otherUserName
           ? _value.otherUserName
           : otherUserName // ignore: cast_nullable_to_non_nullable
@@ -1224,6 +1252,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.otherUserAvatar
           : otherUserAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
+      members: null == members
+          ? _value._members
+          : members // ignore: cast_nullable_to_non_nullable
+              as List<ConversationMemberSummary>,
       gigOwnerName: freezed == gigOwnerName
           ? _value.gigOwnerName
           : gigOwnerName // ignore: cast_nullable_to_non_nullable
@@ -1322,8 +1354,11 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "listing_gender") this.listingGender,
       @JsonKey(name: "listing_price") this.listingPrice,
       @JsonKey(name: "price_currency_code") this.priceCurrencyCode,
+      @JsonKey(name: "conversation_type") this.conversationType,
       @JsonKey(name: "other_user_name") this.otherUserName,
       @JsonKey(name: "other_user_avatar") this.otherUserAvatar,
+      @JsonKey(name: "members") final List<ConversationMemberSummary> members =
+          const <ConversationMemberSummary>[],
       @JsonKey(name: "gig_owner_name") this.gigOwnerName,
       @JsonKey(name: "gig_owner_avatar") this.gigOwnerAvatar,
       @JsonKey(name: "unread_count") this.unreadCount,
@@ -1340,7 +1375,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "location_name_en") this.locationNameEn,
       @JsonKey(name: "location_short_name_uz") this.locationShortNameUz,
       @JsonKey(name: "location_short_name_ru") this.locationShortNameRu,
-      @JsonKey(name: "location_short_name_en") this.locationShortNameEn});
+      @JsonKey(name: "location_short_name_en") this.locationShortNameEn})
+      : _members = members;
 
   factory _$ConversationSummaryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ConversationSummaryImplFromJson(json);
@@ -1418,11 +1454,28 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @JsonKey(name: "price_currency_code")
   final String? priceCurrencyCode;
   @override
+  @JsonKey(name: "conversation_type")
+  final String? conversationType;
+  @override
   @JsonKey(name: "other_user_name")
   final String? otherUserName;
   @override
   @JsonKey(name: "other_user_avatar")
   final String? otherUserAvatar;
+
+  /// Group-chat (`listing_group`) member previews for overlapping inbox
+  /// avatars. Empty for direct/listing/gig chats.
+  final List<ConversationMemberSummary> _members;
+
+  /// Group-chat (`listing_group`) member previews for overlapping inbox
+  /// avatars. Empty for direct/listing/gig chats.
+  @override
+  @JsonKey(name: "members")
+  List<ConversationMemberSummary> get members {
+    if (_members is EqualUnmodifiableListView) return _members;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_members);
+  }
 
   /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
   @override
@@ -1480,7 +1533,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, gigOwnerName: $gigOwnerName, gigOwnerAvatar: $gigOwnerAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, conversationType: $conversationType, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, members: $members, gigOwnerName: $gigOwnerName, gigOwnerAvatar: $gigOwnerAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
   }
 
   @override
@@ -1531,10 +1584,13 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.listingPrice == listingPrice) &&
             (identical(other.priceCurrencyCode, priceCurrencyCode) ||
                 other.priceCurrencyCode == priceCurrencyCode) &&
+            (identical(other.conversationType, conversationType) ||
+                other.conversationType == conversationType) &&
             (identical(other.otherUserName, otherUserName) ||
                 other.otherUserName == otherUserName) &&
             (identical(other.otherUserAvatar, otherUserAvatar) ||
                 other.otherUserAvatar == otherUserAvatar) &&
+            const DeepCollectionEquality().equals(other._members, _members) &&
             (identical(other.gigOwnerName, gigOwnerName) ||
                 other.gigOwnerName == gigOwnerName) &&
             (identical(other.gigOwnerAvatar, gigOwnerAvatar) ||
@@ -1597,8 +1653,10 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         listingGender,
         listingPrice,
         priceCurrencyCode,
+        conversationType,
         otherUserName,
         otherUserAvatar,
+        const DeepCollectionEquality().hash(_members),
         gigOwnerName,
         gigOwnerAvatar,
         unreadCount,
@@ -1659,8 +1717,10 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "listing_gender") final int? listingGender,
       @JsonKey(name: "listing_price") final int? listingPrice,
       @JsonKey(name: "price_currency_code") final String? priceCurrencyCode,
+      @JsonKey(name: "conversation_type") final String? conversationType,
       @JsonKey(name: "other_user_name") final String? otherUserName,
       @JsonKey(name: "other_user_avatar") final String? otherUserAvatar,
+      @JsonKey(name: "members") final List<ConversationMemberSummary> members,
       @JsonKey(name: "gig_owner_name") final String? gigOwnerName,
       @JsonKey(name: "gig_owner_avatar") final String? gigOwnerAvatar,
       @JsonKey(name: "unread_count") final int? unreadCount,
@@ -1761,11 +1821,20 @@ abstract class _ConversationSummary implements ConversationSummary {
   @JsonKey(name: "price_currency_code")
   String? get priceCurrencyCode;
   @override
+  @JsonKey(name: "conversation_type")
+  String? get conversationType;
+  @override
   @JsonKey(name: "other_user_name")
   String? get otherUserName;
   @override
   @JsonKey(name: "other_user_avatar")
   String? get otherUserAvatar;
+
+  /// Group-chat (`listing_group`) member previews for overlapping inbox
+  /// avatars. Empty for direct/listing/gig chats.
+  @override
+  @JsonKey(name: "members")
+  List<ConversationMemberSummary> get members;
 
   /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
   @override

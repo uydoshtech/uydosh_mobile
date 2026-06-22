@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
 import "dart:async";
 import "dart:math" as math;
+import "package:uy_dosh/main.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_strings.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
@@ -122,7 +123,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
 }
 
 class _ListingDetailCompatibilitySectionState
-    extends State<ListingDetailCompatibilitySection> {
+    extends State<ListingDetailCompatibilitySection> with RouteAware {
   static const double _matrixTableCornerRadius = 10;
   static const double _matrixUserHeaderHeight = 76;
 
@@ -134,6 +135,7 @@ class _ListingDetailCompatibilitySectionState
   bool _isMatrixExpanded = true;
   bool _showMatrixStickyHeader = false;
   Rect? _matrixStickyHeaderBounds;
+  Animation<double>? _transitionAnimation;
 
   @override
   void initState() {
@@ -143,6 +145,65 @@ class _ListingDetailCompatibilitySectionState
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
     _isCompatibilitySectionExpanded =
         !isAuthenticated || !isProfileComplete;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to route changes so we can re-anchor (or hide) the pinned
+    // matrix header when another screen — e.g. the group chat — is pushed on
+    // top of the listing detail and later popped. Scroll events don't fire
+    // during navigation, so without this the overlay lingers with stale
+    // bounds and reappears misplaced after returning.
+    routeObserver.unsubscribe(this);
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPushNext() {
+    // Navigating away (e.g. opening the group chat): drop the overlay so it
+    // can't sit on top of the pushed route.
+    _setMatrixStickyHeaderVisible(false);
+  }
+
+  @override
+  void didPopNext() {
+    // Returning to the listing detail: recompute the pinned header position
+    // from the now-settled layout instead of trusting pre-navigation bounds.
+    //
+    // didPopNext fires as soon as the pop starts, while the page transition is
+    // still animating. Measuring then would read the table mid-slide and pin
+    // the overlay to transient coordinates that never correct (no scroll
+    // event follows). Wait for the transition to finish before measuring.
+    _recomputeStickyHeaderAfterTransition();
+  }
+
+  void _recomputeStickyHeaderAfterTransition() {
+    _transitionAnimation?.removeStatusListener(_handleTransitionStatus);
+    _transitionAnimation = null;
+
+    final secondary = ModalRoute.of(context)?.secondaryAnimation;
+    if (secondary == null ||
+        secondary.status == AnimationStatus.dismissed) {
+      _scheduleMatrixStickyHeaderUpdate();
+      return;
+    }
+
+    _transitionAnimation = secondary;
+    secondary.addStatusListener(_handleTransitionStatus);
+  }
+
+  void _handleTransitionStatus(AnimationStatus status) {
+    if (status != AnimationStatus.dismissed &&
+        status != AnimationStatus.completed) {
+      return;
+    }
+    _transitionAnimation?.removeStatusListener(_handleTransitionStatus);
+    _transitionAnimation = null;
+    if (mounted) _scheduleMatrixStickyHeaderUpdate();
   }
 
   @override
@@ -169,6 +230,9 @@ class _ListingDetailCompatibilitySectionState
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
+    _transitionAnimation?.removeStatusListener(_handleTransitionStatus);
+    _transitionAnimation = null;
     widget.scrollController.removeListener(_handleParentScroll);
     _removeMatrixStickyHeaderOverlay();
     _scrollIntoViewTimer?.cancel();
@@ -418,6 +482,10 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
+  /// Light surface the matrix table sits on so blue theme can reuse the light
+  /// theme's pale value-cluster fills and dark text without losing contrast.
+  Color _matrixLightSurfaceColor() => const Color(0xFFF5F6F8);
+
   Color _matrixCardTintColor() {
     return _getDescriptionTextColor().withValues(alpha: 0.04);
   }
@@ -437,8 +505,11 @@ class _ListingDetailCompatibilitySectionState
       return const SizedBox.shrink();
     }
 
-    final textColor = _getDescriptionTextColor();
-    final borderColor = textColor.withValues(alpha: 0.12);
+    // Blue theme pins a light header to match the light-styled matrix table.
+    final textColor = ThemeState().isBlueTheme
+        ? AppColors.textDark87
+        : _getDescriptionTextColor();
+    final borderColor = Colors.transparent;
     final orderedUserIds = _orderedMatrixUserIds();
 
     return Positioned(
@@ -556,6 +627,11 @@ class _ListingDetailCompatibilitySectionState
           ColoredBox(color: _matrixHeaderSurfaceColor()),
         ],
       );
+    }
+
+    // Blue theme: pin a light surface so it matches the light-styled table.
+    if (ThemeState().isBlueTheme) {
+      return ColoredBox(color: _matrixLightSurfaceColor());
     }
 
     return ColoredBox(color: _matrixHeaderSurfaceColor());
@@ -912,11 +988,17 @@ class _ListingDetailCompatibilitySectionState
     }
 
     final textColor = _getDescriptionTextColor();
-    final borderColor = textColor.withValues(alpha: 0.12);
+    final borderColor = Colors.transparent;
     final themeState = ThemeState();
     final isLightTheme = themeState.isLightTheme;
     final isBlueTheme = themeState.isBlueTheme;
     final useValueClusterFills = isLightTheme || isBlueTheme;
+    // Blue theme borrows the light theme's matrix treatment: pale value-cluster
+    // fills, dark accent variants and dark text on a light table surface. The
+    // dark muddy fills it used before were hard to read.
+    final useLightMatrixStyling = isLightTheme || isBlueTheme;
+    final matrixTextColor =
+        useLightMatrixStyling ? AppColors.textDark87 : textColor;
     final notSpecifiedLabel = L10n.get("not_specified");
     final currentUserId =
         widget.currentUserId ?? UserListingState().currentUserId;
@@ -957,9 +1039,13 @@ class _ListingDetailCompatibilitySectionState
       switch (status) {
         case GroupPreferenceMatrixCellStatus.fullMatch:
         case GroupPreferenceMatrixCellStatus.partialMatch:
-          return isLightTheme ? AppColors.successDark : AppColors.success;
+          return useLightMatrixStyling
+              ? AppColors.successDark
+              : AppColors.success;
         case GroupPreferenceMatrixCellStatus.mismatch:
-          return isLightTheme ? AppColors.warningDark : AppColors.warning;
+          return useLightMatrixStyling
+              ? AppColors.warningDark
+              : AppColors.warning;
         case GroupPreferenceMatrixCellStatus.conflict:
           return AppColors.error;
         case GroupPreferenceMatrixCellStatus.missing:
@@ -968,7 +1054,7 @@ class _ListingDetailCompatibilitySectionState
     }
 
     ({Color prominent, Color muted}) valueClusterFillPalette() {
-      if (isLightTheme) {
+      if (useLightMatrixStyling) {
         return (
           prominent: const Color(0xFFEAD9C3),
           muted: const Color(0xFFD5DED2),
@@ -1092,8 +1178,8 @@ class _ListingDetailCompatibilitySectionState
           fontSize: orderedUserIds.length >= 5 ? 11 : 12,
           fontWeight: isMissing ? FontWeight.w400 : FontWeight.w600,
           color: isMissing
-              ? textColor.withValues(alpha: 0.55)
-              : (accentColor ?? textColor).withValues(alpha: 0.9),
+              ? matrixTextColor.withValues(alpha: 0.55)
+              : (accentColor ?? matrixTextColor).withValues(alpha: 0.9),
         ),
       );
     }
@@ -1113,7 +1199,7 @@ class _ListingDetailCompatibilitySectionState
 
       final visual = _buildMatrixValueIcon(
         iconKey,
-        color: textColor.withValues(alpha: 0.9),
+        color: matrixTextColor.withValues(alpha: 0.9),
       );
       if (visual == null) return valueText(value, status: status);
 
@@ -1146,7 +1232,7 @@ class _ListingDetailCompatibilitySectionState
             ThemeIcon(
               _getLifestyleIcon(row.labelKey),
               size: 18,
-              color: (accentColor ?? textColor).withValues(
+              color: (accentColor ?? matrixTextColor).withValues(
                 alpha: 0.85,
               ),
             ),
@@ -1162,7 +1248,7 @@ class _ListingDetailCompatibilitySectionState
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: accentColor ?? textColor,
+                      color: accentColor ?? matrixTextColor,
                     ),
                   ),
                   if (row.alignmentSummary != null) ...[
@@ -1174,7 +1260,7 @@ class _ListingDetailCompatibilitySectionState
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: (accentColor ?? textColor).withValues(
+                        color: (accentColor ?? matrixTextColor).withValues(
                           alpha: 0.75,
                         ),
                       ),
@@ -1204,15 +1290,8 @@ class _ListingDetailCompatibilitySectionState
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
-    final matrixWidget = Container(
+    final matrixWidget = SizedBox(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _matrixCardTintColor(),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
-      ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -1272,6 +1351,7 @@ class _ListingDetailCompatibilitySectionState
               child: DecoratedBox(
                 key: _matrixTableKey,
                 decoration: BoxDecoration(
+                  color: isBlueTheme ? _matrixLightSurfaceColor() : null,
                   border: Border.all(color: borderColor),
                   borderRadius:
                       BorderRadius.circular(_matrixTableCornerRadius),
@@ -1283,7 +1363,7 @@ class _ListingDetailCompatibilitySectionState
                       child: _buildMatrixUserHeaderRow(
                         key: _matrixUserHeaderKey,
                         orderedUserIds: orderedUserIds,
-                        textColor: textColor,
+                        textColor: matrixTextColor,
                         borderColor: borderColor,
                       ),
                     ),

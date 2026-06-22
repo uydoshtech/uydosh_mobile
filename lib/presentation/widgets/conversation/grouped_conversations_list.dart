@@ -10,8 +10,11 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
@@ -23,6 +26,12 @@ import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widg
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 import "package:uy_dosh/presentation/widgets/conversation/outgoing_conversation_tile.dart";
+
+/// `conversation_type` value for multi-member group chats (mirrors the
+/// backend `CONVERSATION_TYPE_LISTING_GROUP`). A group card whose single
+/// conversation carries this type renders overlapping member avatars instead
+/// of one-avatar-per-thread.
+const String _listingGroupConversationType = "listing_group";
 
 /// Stable id for grouping inbox threads that belong to the same listing or
 /// the same gig row. Listing chats use [ConversationSummary.listingId]. Gig
@@ -796,6 +805,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                       child: _ConversationParticipantStack(
                         isExpanded: isExpanded,
                         conversations: conversations,
+                        currentUserId: widget.currentUserId,
                         avatarColor: avatarColor,
                         avatarIconColor: avatarIconColor,
                         ringColor: useLiquidGlass
@@ -892,6 +902,7 @@ class _ConversationParticipantStack extends StatefulWidget {
   const _ConversationParticipantStack({
     required this.isExpanded,
     required this.conversations,
+    required this.currentUserId,
     required this.avatarColor,
     required this.avatarIconColor,
     required this.ringColor,
@@ -925,6 +936,11 @@ class _ConversationParticipantStack extends StatefulWidget {
   final bool isExpanded;
 
   final List<ConversationSummary> conversations;
+
+  /// Viewer id, used to order the current user first when a group chat's
+  /// members are rendered as overlapping avatars.
+  final int? currentUserId;
+
   final Color avatarColor;
   final Color avatarIconColor;
 
@@ -943,6 +959,52 @@ class _ConversationParticipantStackState
     with SingleTickerProviderStateMixin {
   late final AnimationController _fadeController;
   late final CurvedAnimation _singleSlotFadeOpacity;
+
+  /// Avatars to stack. For a single-conversation group chat
+  /// ([_listingGroupConversationType] with member previews) this is one entry
+  /// per member (current user first); otherwise one entry per conversation
+  /// thread using the thread's "other user".
+  List<_StackAvatar> _resolveAvatars() {
+    final convs = widget.conversations;
+    if (convs.length == 1) {
+      final conv = convs.first;
+      if (conv.conversationType == _listingGroupConversationType &&
+          conv.members.isNotEmpty) {
+        final ordered = ChatParticipantAvatarStack.orderWithCurrentUserFirst(
+          conv.members,
+          widget.currentUserId,
+        );
+        return [
+          for (final member in ordered)
+            _StackAvatar(
+              url: member.avatarUrl,
+              fallbackContent: _memberInitials(member),
+            ),
+        ];
+      }
+    }
+    return [
+      for (final conversation in convs)
+        _StackAvatar(
+          url: conversation.otherUserAvatar,
+          fallbackContent: ConversationAvatarContent(
+            conversation: conversation,
+            iconColor: widget.avatarIconColor,
+          ),
+        ),
+    ];
+  }
+
+  Widget _memberInitials(ConversationMemberSummary member) {
+    return Text(
+      StringUtils.extractInitials(member.name),
+      style: TextStyle(
+        color: widget.avatarIconColor,
+        fontWeight: FontWeight.bold,
+        fontSize: _ConversationParticipantStack._avatarSize * 0.4,
+      ),
+    );
+  }
 
   int _fadeDurationMsForSlots(int slotCount) {
     if (slotCount <= 1) {
@@ -966,10 +1028,10 @@ class _ConversationParticipantStackState
   @override
   void initState() {
     super.initState();
-    final visible = widget.conversations
-        .take(_ConversationParticipantStack._maxVisible)
-        .toList();
-    final overflow = widget.conversations.length - visible.length;
+    final avatars = _resolveAvatars();
+    final visible =
+        avatars.take(_ConversationParticipantStack._maxVisible).toList();
+    final overflow = avatars.length - visible.length;
     final slotCount = visible.length + (overflow > 0 ? 1 : 0);
 
     _fadeController = AnimationController(
@@ -1008,14 +1070,14 @@ class _ConversationParticipantStackState
   }
 
   Widget _staggeredFade({required int index, required Widget child}) {
-    if (widget.conversations.isEmpty) {
+    final avatars = _resolveAvatars();
+    if (avatars.isEmpty) {
       return child;
     }
 
-    final visible = widget.conversations
-        .take(_ConversationParticipantStack._maxVisible)
-        .toList();
-    final overflow = widget.conversations.length - visible.length;
+    final visible =
+        avatars.take(_ConversationParticipantStack._maxVisible).toList();
+    final overflow = avatars.length - visible.length;
     final slotCount = visible.length + (overflow > 0 ? 1 : 0);
     if (slotCount <= 1) {
       return child;
@@ -1049,12 +1111,12 @@ class _ConversationParticipantStackState
 
   @override
   Widget build(BuildContext context) {
-    if (widget.conversations.isEmpty) return const SizedBox.shrink();
+    final avatars = _resolveAvatars();
+    if (avatars.isEmpty) return const SizedBox.shrink();
 
-    final visible = widget.conversations
-        .take(_ConversationParticipantStack._maxVisible)
-        .toList();
-    final overflow = widget.conversations.length - visible.length;
+    final visible =
+        avatars.take(_ConversationParticipantStack._maxVisible).toList();
+    final overflow = avatars.length - visible.length;
 
     final overlap = _ConversationParticipantStack._avatarSize *
             _ConversationParticipantStack._avatarOverlapFraction +
@@ -1078,10 +1140,9 @@ class _ConversationParticipantStackState
               child: _staggeredFade(
                 index: i,
                 child: _ParticipantAvatar(
-                  conversation: visible[i],
+                  avatar: visible[i],
                   size: _ConversationParticipantStack._avatarSize,
                   avatarColor: widget.avatarColor,
-                  avatarIconColor: widget.avatarIconColor,
                   ringColor: widget.ringColor,
                 ),
               ),
@@ -1115,32 +1176,37 @@ class _ConversationParticipantStackState
   }
 }
 
+/// One slot in the overlapping cluster: an avatar URL plus the widget to draw
+/// when the URL is missing or fails to load (listing thumbnail icon for thread
+/// avatars, initials for group members).
+class _StackAvatar {
+  const _StackAvatar({required this.url, required this.fallbackContent});
+
+  final String? url;
+  final Widget fallbackContent;
+}
+
 class _ParticipantAvatar extends StatelessWidget {
   const _ParticipantAvatar({
-    required this.conversation,
+    required this.avatar,
     required this.size,
     required this.avatarColor,
-    required this.avatarIconColor,
     required this.ringColor,
   });
 
-  final ConversationSummary conversation;
+  final _StackAvatar avatar;
   final double size;
   final Color avatarColor;
-  final Color avatarIconColor;
   final Color ringColor;
 
   @override
   Widget build(BuildContext context) {
-    final url = resolveAvatarUrl(conversation.otherUserAvatar);
+    final url = resolveAvatarUrl(avatar.url);
 
     Widget fallback() => Container(
           color: avatarColor,
           alignment: Alignment.center,
-          child: ConversationAvatarContent(
-            conversation: conversation,
-            iconColor: avatarIconColor,
-          ),
+          child: avatar.fallbackContent,
         );
 
     // Pipeline: an explicit [SizedBox] locks the 36×36 footprint, [ClipOval]

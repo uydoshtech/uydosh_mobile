@@ -526,123 +526,77 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     required bool isOwner,
     VoidCallback? onViewMemberProfiles,
   }) {
-    return ListenableBuilder(
-      listenable: UnreadMessagesState(),
-      builder: (context, _) {
-        final ctx = listingDetail.groupContext;
-        final hasUnreadGroupChat = _hasUnreadGroupChat(listingDetail);
-        final groupChatUnreadDotTrigger = UnreadMessagesState().unreadCount;
+    final ctx = listingDetail.groupContext;
 
-        if (ctx?.canUseHousingShortlist == true &&
-            (ctx?.isOwner == true || ctx?.isMember == true)) {
-          final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
-          final hasGroupChat = ctx?.hasGroupChat == true;
-          final showManageRequestsFallback =
-              ctx?.isOwner == true && !hasGroupChat;
+    void openJoinRequestsSheet() {
+      showListingGroupJoinRequestsSheet(
+        context: context,
+        listingId: listingDetail.id,
+        onChanged: _reloadListingDetail,
+      );
+    }
 
-          void openJoinRequestsSheet() {
-            showListingGroupJoinRequestsSheet(
-              context: context,
-              listingId: listingDetail.id,
-              onChanged: _reloadListingDetail,
-            );
-          }
+    if (ctx?.canUseHousingShortlist == true &&
+        (ctx?.isOwner == true || ctx?.isMember == true)) {
+      final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
+      final hasGroupChat = ctx?.hasGroupChat == true;
+      final showManageRequestsFallback = ctx?.isOwner == true && !hasGroupChat;
 
-          return ListingGroupFormingActionBar(
-            listingDetail: listingDetail,
-            primaryLabel: L10n.get("group_find_housing"),
-            onPrimary: () => GroupHousingFlow.openSearch(
-              context: context,
-              groupListingDetail: listingDetail,
-            ),
-            secondaryLabel: hasGroupChat
-                ? L10n.get("group_open_chat")
-                : showManageRequestsFallback
-                    ? L10n.get("group_manage_requests")
-                    : null,
-            onSecondary: hasGroupChat
-                ? () => _openGroupChat(listingDetail)
-                : showManageRequestsFallback
-                    ? openJoinRequestsSheet
-                    : null,
-            showManageRequestsDot: pendingCount > 0,
-            manageRequestsDotTrigger: pendingCount,
-            showGroupChatUnreadDot: hasUnreadGroupChat,
-            groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
-            onViewMemberProfiles: onViewMemberProfiles,
-            showMemberProfilesDot: pendingCount > 0,
-            memberProfilesDotTrigger: pendingCount,
-          );
-        }
-        if (isOwner) {
-          final hasChat = ctx?.hasGroupChat == true;
-          final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_find_housing"),
+        onPrimary: () => GroupHousingFlow.openSearch(
+          context: context,
+          groupListingDetail: listingDetail,
+        ),
+        secondaryLabel:
+            showManageRequestsFallback ? L10n.get("group_manage_requests") : null,
+        onSecondary: showManageRequestsFallback ? openJoinRequestsSheet : null,
+        showManageRequestsDot: pendingCount > 0,
+        manageRequestsDotTrigger: pendingCount,
+        onViewMemberProfiles: onViewMemberProfiles,
+        showMemberProfilesDot: pendingCount > 0,
+        memberProfilesDotTrigger: pendingCount,
+      );
+    }
+    if (isOwner) {
+      final pendingCount = ctx?.pendingJoinRequestCount ?? 0;
 
-          void openJoinRequestsSheet() {
-            showListingGroupJoinRequestsSheet(
-              context: context,
-              listingId: listingDetail.id,
-              onChanged: _reloadListingDetail,
-            );
-          }
-
-          if (hasChat) {
-            return ListingGroupFormingActionBar(
-              listingDetail: listingDetail,
-              primaryLabel: L10n.get("group_open_chat"),
-              onPrimary: () => _openGroupChat(listingDetail),
-              secondaryLabel: L10n.get("group_manage_requests"),
-              onSecondary: openJoinRequestsSheet,
-              showManageRequestsDot: pendingCount > 0,
-              manageRequestsDotTrigger: pendingCount,
-              showGroupChatUnreadDot: hasUnreadGroupChat,
-              groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
-              onViewMemberProfiles: onViewMemberProfiles,
-              showMemberProfilesDot: pendingCount > 0,
-              memberProfilesDotTrigger: pendingCount,
-            );
-          }
-
-          return ListingGroupFormingActionBar(
-            listingDetail: listingDetail,
-            primaryLabel: L10n.get("group_manage_requests"),
-            onPrimary: openJoinRequestsSheet,
-            showManageRequestsDot: pendingCount > 0,
-            manageRequestsDotTrigger: pendingCount,
-            onViewMemberProfiles: onViewMemberProfiles,
-            showMemberProfilesDot: pendingCount > 0,
-            memberProfilesDotTrigger: pendingCount,
-          );
-        }
-        if (ctx?.isMember == true) {
-          return ListingGroupFormingActionBar(
-            listingDetail: listingDetail,
-            primaryLabel: L10n.get("group_open_chat"),
-            onPrimary: () => _openGroupChat(listingDetail),
-            showGroupChatUnreadDot: hasUnreadGroupChat,
-            groupChatUnreadDotTrigger: groupChatUnreadDotTrigger,
-            onViewMemberProfiles: onViewMemberProfiles,
-          );
-        }
-        if (ctx?.hasPendingJoinRequest == true) {
-          return ListingGroupFormingActionBar(
-            listingDetail: listingDetail,
-            primaryLabel: L10n.get("group_join_request_withdraw"),
-            onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
-            onViewMemberProfiles: onViewMemberProfiles,
-          );
-        }
-        if (ctx?.canRequestToJoin == true) {
-          return ListingGroupFormingActionBar(
-            listingDetail: listingDetail,
-            primaryLabel: L10n.get("group_request_to_join"),
-            onPrimary: () => _requestToJoinGroup(listingDetail),
-            onViewMemberProfiles: onViewMemberProfiles,
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_manage_requests"),
+        onPrimary: openJoinRequestsSheet,
+        showManageRequestsDot: pendingCount > 0,
+        manageRequestsDotTrigger: pendingCount,
+        onViewMemberProfiles: onViewMemberProfiles,
+        showMemberProfilesDot: pendingCount > 0,
+        memberProfilesDotTrigger: pendingCount,
+      );
+    }
+    if (ctx?.isMember == true) {
+      if (onViewMemberProfiles == null) return const SizedBox.shrink();
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        onViewMemberProfiles: onViewMemberProfiles,
+      );
+    }
+    if (ctx?.hasPendingJoinRequest == true) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_join_request_withdraw"),
+        onPrimary: () => _withdrawGroupJoinRequest(listingDetail),
+        onViewMemberProfiles: onViewMemberProfiles,
+      );
+    }
+    if (ctx?.canRequestToJoin == true) {
+      return ListingGroupFormingActionBar(
+        listingDetail: listingDetail,
+        primaryLabel: L10n.get("group_request_to_join"),
+        onPrimary: () => _requestToJoinGroup(listingDetail),
+        onViewMemberProfiles: onViewMemberProfiles,
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget? _buildGroupHousingContextSection(ListingDetail housingListing) {

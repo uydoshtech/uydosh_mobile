@@ -79,8 +79,14 @@ _$ConversationSummaryImpl _$$ConversationSummaryImplFromJson(
       listingGender: (json['listing_gender'] as num?)?.toInt(),
       listingPrice: (json['listing_price'] as num?)?.toInt(),
       priceCurrencyCode: json['price_currency_code'] as String?,
+      conversationType: json['conversation_type'] as String?,
       otherUserName: json['other_user_name'] as String?,
       otherUserAvatar: json['other_user_avatar'] as String?,
+      members: (json['members'] as List<dynamic>?)
+              ?.map((e) =>
+                  ConversationMemberSummary.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <ConversationMemberSummary>[],
       gigOwnerName: json['gig_owner_name'] as String?,
       gigOwnerAvatar: json['gig_owner_avatar'] as String?,
       unreadCount: (json['unread_count'] as num?)?.toInt(),
@@ -126,8 +132,10 @@ Map<String, dynamic> _$$ConversationSummaryImplToJson(
       'listing_gender': instance.listingGender,
       'listing_price': instance.listingPrice,
       'price_currency_code': instance.priceCurrencyCode,
+      'conversation_type': instance.conversationType,
       'other_user_name': instance.otherUserName,
       'other_user_avatar': instance.otherUserAvatar,
+      'members': instance.members,
       'gig_owner_name': instance.gigOwnerName,
       'gig_owner_avatar': instance.gigOwnerAvatar,
       'unread_count': instance.unreadCount,

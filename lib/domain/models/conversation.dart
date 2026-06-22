@@ -1,4 +1,5 @@
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 
@@ -66,8 +67,14 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "listing_price") int? listingPrice,
     /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
     @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
+    @JsonKey(name: "conversation_type") String? conversationType,
     @JsonKey(name: "other_user_name") String? otherUserName,
     @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+    /// Group-chat (`listing_group`) member previews for overlapping inbox
+    /// avatars. Empty for direct/listing/gig chats.
+    @JsonKey(name: "members")
+    @Default(<ConversationMemberSummary>[])
+    List<ConversationMemberSummary> members,
     /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
     @JsonKey(name: "gig_owner_name") String? gigOwnerName,
     @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,

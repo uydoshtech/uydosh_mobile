@@ -15,9 +15,9 @@ import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 class ListingGroupFormingActionBar extends StatelessWidget {
   const ListingGroupFormingActionBar({
     required this.listingDetail,
-    required this.onPrimary,
-    required this.primaryLabel,
     super.key,
+    this.onPrimary,
+    this.primaryLabel,
     this.onSecondary,
     this.secondaryLabel,
     this.showManageRequestsDot = false,
@@ -30,9 +30,9 @@ class ListingGroupFormingActionBar extends StatelessWidget {
   });
 
   final ListingDetail listingDetail;
-  final VoidCallback onPrimary;
+  final VoidCallback? onPrimary;
   final VoidCallback? onSecondary;
-  final String primaryLabel;
+  final String? primaryLabel;
   final String? secondaryLabel;
   final bool showManageRequestsDot;
   final int manageRequestsDotTrigger;
@@ -67,11 +67,14 @@ class ListingGroupFormingActionBar extends StatelessWidget {
     final isFindHousingPrimary = primaryLabel == L10n.get("group_find_housing");
     final includePrimaryProgress = !hasSecondaryAction &&
         primaryLabel != L10n.get("group_manage_requests");
-    final primaryCtaLabel = _labelWithProgress(
-      primaryLabel,
-      progress,
-      includeProgress: includePrimaryProgress || isOpenGroupChatPrimary,
-    );
+    final hasPrimary = onPrimary != null && primaryLabel != null;
+    final primaryCtaLabel = hasPrimary
+        ? _labelWithProgress(
+            primaryLabel!,
+            progress,
+            includeProgress: includePrimaryProgress || isOpenGroupChatPrimary,
+          )
+        : null;
     final secondaryCtaLabel = hasSecondaryAction
         ? _labelWithProgress(
             secondaryLabel!,
@@ -93,8 +96,10 @@ class ListingGroupFormingActionBar extends StatelessWidget {
             ? groupChatUnreadDotTrigger
             : manageRequestsDotTrigger;
 
-    final children = <Widget>[
-      if (onViewMemberProfiles != null) ...[
+    final children = <Widget>[];
+
+    if (onViewMemberProfiles != null) {
+      children.add(
         _GroupFormingSecondaryButton(
           onPressed: onViewMemberProfiles!,
           icon: Icons.group_outlined,
@@ -109,9 +114,10 @@ class ListingGroupFormingActionBar extends StatelessWidget {
           dotTrigger: memberProfilesDotTrigger,
           showRequestPill: showMemberProfilesDot,
         ),
-        const SizedBox(height: 8),
-      ],
-      if (hasSecondaryAction) ...[
+      );
+    }
+    if (hasSecondaryAction) {
+      children.add(
         _GroupFormingSecondaryButton(
           onPressed: onSecondary!,
           icon: isOpenGroupChatSecondary
@@ -122,26 +128,37 @@ class ListingGroupFormingActionBar extends StatelessWidget {
           dotTrigger: secondaryDotTrigger,
           showRequestPill: showManageRequestsDot,
         ),
-        const SizedBox(height: 8),
-      ],
-      _GroupFormingPrimaryButton(
-        onPressed: onPrimary,
-        icon: isFindHousingPrimary ? Icons.home_rounded : null,
-        label: primaryCtaLabel,
-        showDot: showPrimaryDot,
-        dotTrigger: primaryDotTrigger,
-        showRequestPill: showManageRequestsDot &&
-            !hasSecondaryAction &&
-            onViewMemberProfiles == null,
-      ),
-    ];
+      );
+    }
+    if (hasPrimary) {
+      children.add(
+        _GroupFormingPrimaryButton(
+          onPressed: onPrimary!,
+          icon: isFindHousingPrimary ? Icons.home_rounded : null,
+          label: primaryCtaLabel!,
+          showDot: showPrimaryDot,
+          dotTrigger: primaryDotTrigger,
+          showRequestPill: showManageRequestsDot &&
+              !hasSecondaryAction &&
+              onViewMemberProfiles == null,
+        ),
+      );
+    }
+
+    if (children.isEmpty) return const SizedBox.shrink();
+
+    final spacedChildren = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
+      if (i > 0) spacedChildren.add(const SizedBox(height: 8));
+      spacedChildren.add(children[i]);
+    }
 
     return ColoredBox(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
-        children: children,
+        children: spacedChildren,
       ),
     );
   }

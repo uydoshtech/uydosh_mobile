@@ -16,4 +16,10 @@ class ConversationMemberSummary {
   final int userId;
   final String name;
   final String? avatarUrl;
+
+  Map<String, dynamic> toJson() => {
+        "user_id": userId,
+        "name": name,
+        "avatar_url": avatarUrl,
+      };
 }

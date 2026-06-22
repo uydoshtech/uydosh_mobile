@@ -82,7 +82,12 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     Emitter<ConversationsState> emit,
   ) async {
     try {
-      if (event.page == 1) {
+      // Only show the loading state when there's nothing to display yet.
+      // Background refreshes (e.g. returning from the chat screen) keep the
+      // current [ConversationsLoaded] on screen so the inbox doesn't dip
+      // through a loading rebuild — that hop re-runs the sticky tab-strip
+      // animations and makes the header visibly "jerk" back into place.
+      if (event.page == 1 && state is! ConversationsLoaded) {
         emit(const ConversationsLoading());
       }
 
