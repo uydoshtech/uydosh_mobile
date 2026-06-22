@@ -25,9 +25,11 @@ import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
@@ -3071,25 +3073,24 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             ),
             const SizedBox(height: 10),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 10,
+              runSpacing: 12,
               children: options.map((slug) {
                 final isSelected = selected.contains(slug);
-                return FilterChip(
-                  label: Text(_dimensionLabel(slug)),
-                  selected: isSelected,
-                  onSelected: (wantSelected) {
-                    HapticFeedbackUtils.impact();
+                return _PreferenceChip(
+                  label: _dimensionLabel(slug),
+                  isSelected: isSelected,
+                  onTap: () {
                     final next = {...selected};
-                    if (wantSelected) {
+                    if (isSelected) {
+                      next.remove(slug);
+                    } else {
                       if (maxSelection != null &&
                           next.length >= maxSelection) {
                         ToastTheme.showInfo(context, message: hint);
                         return;
                       }
                       next.add(slug);
-                    } else {
-                      next.remove(slug);
                     }
                     notifier.value = next;
                   },
@@ -3143,4 +3144,115 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 class _EditProfileEmptyRequest implements IJsonEncodable {
   @override
   Map<String, dynamic> toJson() => const <String, dynamic>{};
+}
+
+/// Selectable preference pill (dealbreakers / top priorities) styled to match
+/// the amenity chips: 3D surface gradient, theme-aware colors, tap animation.
+class _PreferenceChip extends StatefulWidget {
+  const _PreferenceChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  State<_PreferenceChip> createState() => _PreferenceChipState();
+}
+
+class _PreferenceChipState extends State<_PreferenceChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationUtils.createAnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _scaleAnimation = AnimationUtils.createScaleAnimation(
+      controller: _controller,
+      begin: 1.0,
+      end: 1.2,
+    );
+  }
+
+  @override
+  void dispose() {
+    AnimationUtils.disposeAnimationController(_controller);
+    super.dispose();
+  }
+
+  void _handleTap() {
+    UiFeedbackUtils.tap();
+    _controller.forward().then((_) {
+      _controller.reverse();
+    });
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isSelected = widget.isSelected;
+    final isBlueTheme = ThemeState().isBlueTheme;
+
+    final chipBase = isSelected
+        ? (isBlueTheme
+            ? BlueThemeColors.buttonPrimary
+            : theme.colorScheme.primary)
+        : (isBlueTheme
+            ? BlueThemeColors.card
+            : theme.colorScheme.surfaceContainerHighest);
+    final contentColor = isBlueTheme
+        ? (isSelected
+            ? BlueThemeColors.textPrimary
+            : theme.colorScheme.onSurfaceVariant)
+        : (isSelected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: InkWell(
+            onTap: _handleTap,
+            borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isSelected) ...[
+                    ThemeIcon(Icons.check, size: 18, color: contentColor),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    widget.label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: contentColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

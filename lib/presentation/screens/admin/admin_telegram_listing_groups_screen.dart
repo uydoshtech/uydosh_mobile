@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_listing_group_detail_screen.dart";
@@ -33,6 +34,7 @@ class _AdminTelegramListingGroupsScreenState
   int _pageNumber = 1;
   final int _pageSize = 20;
   bool _hasMore = true;
+  TelegramListingGroupSort _sort = TelegramListingGroupSort.count;
 
   @override
   void initState() {
@@ -76,6 +78,7 @@ class _AdminTelegramListingGroupsScreenState
           await getIt<IAdminTelegramListingGroupsService>().getGroups(
         page: _pageNumber,
         limit: _pageSize,
+        sort: _sort,
       );
 
       setStateIfMounted(() {
@@ -105,6 +108,70 @@ class _AdminTelegramListingGroupsScreenState
     _groups.clear();
     _summary = null;
     await _fetchGroups();
+  }
+
+  String _sortLabel(TelegramListingGroupSort sort) {
+    switch (sort) {
+      case TelegramListingGroupSort.count:
+        return L10n.get("admin_telegram_listing_groups_sort_count");
+      case TelegramListingGroupSort.recent:
+        return L10n.get("admin_telegram_listing_groups_sort_recent");
+      case TelegramListingGroupSort.name:
+        return L10n.get("admin_telegram_listing_groups_sort_name");
+    }
+  }
+
+  IconData _sortIcon(TelegramListingGroupSort sort) {
+    switch (sort) {
+      case TelegramListingGroupSort.count:
+        return Icons.format_list_numbered;
+      case TelegramListingGroupSort.recent:
+        return Icons.schedule;
+      case TelegramListingGroupSort.name:
+        return Icons.sort_by_alpha;
+    }
+  }
+
+  Future<void> _showSortSheet() async {
+    final selected = await showModalBottomSheet<TelegramListingGroupSort>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Text(
+                  L10n.get("admin_telegram_listing_groups_sort_title"),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              for (final option in TelegramListingGroupSort.values)
+                ListTile(
+                  leading: ThemeIcon(_sortIcon(option), size: 22),
+                  title: Text(_sortLabel(option)),
+                  trailing: option == _sort
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () => Navigator.of(sheetContext).pop(option),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected != null && selected != _sort) {
+      setState(() => _sort = selected);
+      await _refresh();
+    }
   }
 
   String _groupTitle(TelegramListingGroup group) {
@@ -150,6 +217,19 @@ class _AdminTelegramListingGroupsScreenState
           L10n.get("admin_telegram_listing_groups_title"),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Align(
+              child: ThreeDAppBarIconButton(
+                iconData: Icons.sort,
+                onPressed: _showSortSheet,
+                semanticsLabel:
+                    L10n.get("admin_telegram_listing_groups_sort_title"),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? CenteredHouseLoadingIndicator(
@@ -294,9 +374,12 @@ class _AdminTelegramListingGroupsScreenState
   Widget _buildGroupTile(BuildContext context, TelegramListingGroup group) {
     final theme = Theme.of(context);
     const tileRadius = BorderRadius.all(Radius.circular(16));
+    // On the blue theme the primary color matches the surface, so the leading
+    // type icon would be invisible — use white there for contrast.
+    final isBlueTheme = ThemeState().isBlueTheme;
     final accent = group.groupType == TelegramListingGroupType.unknown
         ? theme.colorScheme.onSurfaceVariant
-        : theme.colorScheme.primary;
+        : (isBlueTheme ? Colors.white : theme.colorScheme.primary);
 
     return DecoratedBox(
       decoration: BoxDecoration(

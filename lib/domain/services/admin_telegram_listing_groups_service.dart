@@ -38,6 +38,30 @@ enum TelegramListingGroupType {
   }
 }
 
+/// How the groups list is ordered. The `unknown` bucket is always pinned to the
+/// bottom server-side regardless of the chosen sort.
+enum TelegramListingGroupSort {
+  /// Most listings first (default) — surfaces prolific posters / duplicates.
+  count,
+
+  /// Most recent activity first (latest scraped listing).
+  recent,
+
+  /// Handle / phone alphabetically (A→Z).
+  name;
+
+  String get apiValue {
+    switch (this) {
+      case TelegramListingGroupSort.count:
+        return "count";
+      case TelegramListingGroupSort.recent:
+        return "recent";
+      case TelegramListingGroupSort.name:
+        return "name";
+    }
+  }
+}
+
 class TelegramListingGroup {
   TelegramListingGroup({
     required this.groupType,
@@ -143,6 +167,7 @@ abstract class IAdminTelegramListingGroupsService {
   Future<TelegramListingGroupsResponse> getGroups({
     int page = 1,
     int limit = 20,
+    TelegramListingGroupSort sort = TelegramListingGroupSort.count,
   });
 
   /// GET `/admin/telegram/listing-groups/listings` — listings within one group.
@@ -164,13 +189,14 @@ class AdminTelegramListingGroupsService
   Future<TelegramListingGroupsResponse> getGroups({
     int page = 1,
     int limit = 20,
+    TelegramListingGroupSort sort = TelegramListingGroupSort.count,
   }) async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         "/admin/telegram/listing-groups",
         (data) => data,
         basePath: EnvironmentUtil.basePath,
-        queryParameters: {"page": page, "limit": limit},
+        queryParameters: {"page": page, "limit": limit, "sort": sort.apiValue},
       );
       if (response is! Map<String, dynamic>) {
         throw Exception("Unexpected listing-groups response");

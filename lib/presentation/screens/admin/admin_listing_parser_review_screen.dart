@@ -76,6 +76,10 @@ class _AdminListingParserReviewScreenState
   bool _busy = false;
   bool _rawExpanded = true;
 
+  /// Editable original Telegram poster handle (no `@`).
+  final TextEditingController _ownerController = TextEditingController();
+  bool _savingOwner = false;
+
   /// id -> localized name lookups so metro/district render as names, not ids.
   final Map<int, String> _stationNames = {};
   final Map<int, String> _locationNames = {};
@@ -84,6 +88,12 @@ class _AdminListingParserReviewScreenState
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _ownerController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -98,6 +108,11 @@ class _AdminListingParserReviewScreenState
       await _ensureNameLookups();
       setStateIfMounted(() {
         _bundle = bundle;
+        // Only sync the field from the server while the admin isn't mid-edit;
+        // a save round-trips through here so the normalized value lands too.
+        if (!_savingOwner) {
+          _ownerController.text = bundle.telegramAuthorUsername ?? "";
+        }
         _isLoading = false;
       });
     } catch (e) {
@@ -263,6 +278,40 @@ class _AdminListingParserReviewScreenState
     // (a human_corrected snapshot was captured server-side on save).
     if (result == true) {
       await _load();
+    }
+  }
+
+  /// Persist the manually-typed original Telegram owner handle. Clearing the
+  /// field removes it (falls back to the parser-detected contact telegram).
+  Future<void> _saveOwnerUsername() async {
+    if (_savingOwner) return;
+    FocusScope.of(context).unfocus();
+    final input = _ownerController.text.trim();
+    setState(() => _savingOwner = true);
+    try {
+      final stored = await _reviewService.updateTelegramAuthorUsername(
+        widget.listingId,
+        input.isEmpty ? null : input,
+      );
+      HapticFeedbackUtils.selectionClick();
+      _bundle?.listing["telegram_author_username"] = stored;
+      setStateIfMounted(() {
+        _ownerController.text = stored ?? "";
+        _savingOwner = false;
+      });
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get(
+          "admin_parser_review_owner_saved",
+          fallback: "Telegram owner updated",
+        ),
+      );
+    } catch (e) {
+      HapticFeedbackUtils.selectionClick();
+      if (!mounted) return;
+      ToastTheme.showErrorSimple(context, message: e.toString());
+      setStateIfMounted(() => _savingOwner = false);
     }
   }
 
@@ -454,6 +503,8 @@ class _AdminListingParserReviewScreenState
               delegate: SliverChildListDelegate([
                 if (!bundle.hasParserData) _buildNoParserBanner(context),
                 _buildRawSourceCard(context, bundle),
+                const SizedBox(height: 12),
+                _buildOwnerCard(context),
                 const SizedBox(height: 16),
                 _buildSectionTitle(
                   context,
@@ -586,6 +637,105 @@ class _AdminListingParserReviewScreenState
                     style: TextStyle(fontSize: 14, color: textColor),
                   ),
                 ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Manually-typed original Telegram owner handle. Editable because the parser
+  /// can't always resolve the poster (e.g. forwarded posts, aggregator rooms),
+  /// yet it's used as the listing's Telegram contact fallback.
+  Widget _buildOwnerCard(BuildContext context) {
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, child) {
+        final themeState = ThemeState();
+        final textColor = themeState.cardTextColor;
+        final secondaryTextColor = themeState.cardSecondaryTextColor;
+        final iconColor = themeState.cardIconColor;
+        return ThreeDElevatedSurface(
+          baseColor: themeState.cardColor,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    ThemeIcon(Icons.alternate_email, size: 18, color: iconColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        L10n.get(
+                          "admin_parser_review_owner_section",
+                          fallback: "Telegram owner",
+                        ),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  L10n.get(
+                    "admin_parser_review_owner_help",
+                    fallback:
+                        "Telegram @username of whoever originally posted this listing. "
+                        "Used as the contact handle when no contact telegram is set.",
+                  ),
+                  style: TextStyle(fontSize: 11, color: secondaryTextColor),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _ownerController,
+                  enabled: !_savingOwner,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _saveOwnerUsername(),
+                  style: TextStyle(fontSize: 14, color: textColor),
+                  decoration: InputDecoration(
+                    prefixText: "@",
+                    prefixStyle: TextStyle(fontSize: 14, color: secondaryTextColor),
+                    hintText: L10n.get(
+                      "admin_parser_review_owner_hint",
+                      fallback: "username",
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GhostButtonFactory.iconTextCentered(
+                    onPressed: _savingOwner ? null : _saveOwnerUsername,
+                    icon: _savingOwner
+                        ? Icons.hourglass_top_rounded
+                        : Icons.save_outlined,
+                    text: L10n.get(
+                      "admin_parser_review_owner_save",
+                      fallback: "Save owner",
+                    ),
+                    iconSize: 18,
+                    neumorphicSoftUi: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

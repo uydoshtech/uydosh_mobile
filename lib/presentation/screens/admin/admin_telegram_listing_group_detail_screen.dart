@@ -2,9 +2,12 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
+import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
+import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -164,14 +167,27 @@ class _AdminTelegramListingGroupDetailScreenState
       );
     }
 
+    final feedEntries = homeFeedEntriesWithDateHeaders(_listings);
+
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      itemCount: _listings.length,
+      itemCount: feedEntries.length,
       itemSpacing: 8,
       itemBuilder: (context, index) {
-        final listing = _listings[index];
-        return ListingTile(listing: listing);
+        final entry = feedEntries[index];
+        final listing = entry.listing;
+        if (listing != null) {
+          return ListingTile(key: ValueKey(listing.id), listing: listing);
+        }
+        final day = entry.day!;
+        return DateHeaderWidget(
+          key: ValueKey(
+            "telegram-group-day-${day.year}-${day.month}-${day.day}",
+          ),
+          dateString: AppDateUtils.formatDateHeader(day, context),
+          date: day,
+        );
       },
       showRefreshIndicator: true,
       onRefresh: _refresh,

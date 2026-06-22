@@ -1,4 +1,5 @@
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 
@@ -142,10 +143,34 @@ class ParserReviewBundle {
   final List<ParserCorrectionDiff> correctionDiffs;
 
   bool get hasParserData => parserSnapshot != null;
+
+  /// The original Telegram poster's handle (no `@`) stored on the listing, if
+  /// any. Admin-editable on the review screen. Falls back to the raw source's
+  /// author username so the field is pre-filled even before it's been saved.
+  String? get telegramAuthorUsername {
+    final stored = listing["telegram_author_username"];
+    if (stored is String && stored.trim().isNotEmpty) return stored.trim();
+    final author = rawSource?.authorUsername;
+    if (author != null && author.trim().isNotEmpty) return author.trim();
+    return null;
+  }
+}
+
+class _SetTelegramAuthorUsernameBody implements IJsonEncodable {
+  _SetTelegramAuthorUsernameBody({required this.telegramAuthorUsername});
+  final String? telegramAuthorUsername;
+
+  @override
+  Map<String, dynamic> toJson() =>
+      {"telegram_author_username": telegramAuthorUsername};
 }
 
 abstract class IListingParserReviewAdminService {
   Future<ParserReviewBundle> getParserReview(int listingId);
+
+  /// Sets (or clears, with null/empty) the original Telegram poster's handle.
+  /// Returns the normalized value stored server-side (no `@`, or null).
+  Future<String?> updateTelegramAuthorUsername(int listingId, String? username);
 }
 
 class ListingParserReviewAdminService
@@ -168,6 +193,39 @@ class ListingParserReviewAdminService
       return ParserReviewBundle.fromJson(response);
     } catch (e) {
       logger.d("Error fetching parser review for listing $listingId: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String?> updateTelegramAuthorUsername(
+    int listingId,
+    String? username,
+  ) async {
+    try {
+      final trimmed = username?.trim();
+      final normalized = (trimmed == null || trimmed.isEmpty)
+          ? null
+          : trimmed.replaceAll(RegExp(r"^@+"), "").trim();
+      final response = await _oauthApiClient
+          .patch<dynamic, _SetTelegramAuthorUsernameBody>(
+        "/admin/listings/$listingId/telegram-author-username",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _SetTelegramAuthorUsernameBody(
+          telegramAuthorUsername:
+              (normalized != null && normalized.isEmpty) ? null : normalized,
+        ),
+      );
+      if (response is Map<String, dynamic>) {
+        final stored = response["telegram_author_username"];
+        if (stored is String) return stored;
+      }
+      return normalized;
+    } catch (e) {
+      logger.d(
+        "Error updating telegram author username for listing $listingId: $e",
+      );
       rethrow;
     }
   }

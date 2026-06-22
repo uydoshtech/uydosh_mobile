@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// A single listing entry shown in the [MentionedListingsRibbon].
 class MentionedListingChip {
@@ -13,8 +15,8 @@ class MentionedListingChip {
 /// Persistent, non-closable ribbon listing every housing card mentioned in a
 /// group chat. Tapping a chip jumps the chat to that listing's first mention.
 ///
-/// Styled after the filter ribbon: a single horizontally scrollable row of
-/// pills sitting just under the app bar.
+/// Styled to match the home-screen filter ribbon: a frosted [LiquidGlassPlate]
+/// holding a horizontally scrollable row of neumorphic pills.
 class MentionedListingsRibbon extends StatelessWidget {
   const MentionedListingsRibbon({
     required this.items,
@@ -22,54 +24,59 @@ class MentionedListingsRibbon extends StatelessWidget {
     super.key,
   });
 
+  static const double _chipHeight = 34;
+
   final List<MentionedListingChip> items;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final scheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 12, end: 6),
-              child: Icon(
-                Icons.home_work_outlined,
-                size: 18,
-                color: scheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 4,
-                  vertical: 6,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+      child: LiquidGlassPlate(
+        borderRadius: BorderRadius.circular(18),
+        sigma: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: SizedBox(
+          height: _chipHeight,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 8),
+                child: Icon(
+                  Icons.home_work_outlined,
+                  size: 18,
+                  color: scheme.onSurface.withValues(alpha: 0.7),
                 ),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 6),
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  final label = item.title.trim().isEmpty
-                      ? L10n.get("group_shortlist_ref_label")
-                      : item.title.trim();
-                  return _Chip(
-                    label: label,
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      onTap(item.listingId);
-                    },
-                  );
-                },
               ),
-            ),
-          ],
+              Expanded(
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  padding: EdgeInsets.zero,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final label = item.title.trim().isEmpty
+                        ? L10n.get("group_shortlist_ref_label")
+                        : item.title.trim();
+                    return _Chip(
+                      label: label,
+                      height: _chipHeight,
+                      onTap: () {
+                        HapticFeedbackUtils.impact();
+                        onTap(item.listingId);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -77,42 +84,52 @@ class MentionedListingsRibbon extends StatelessWidget {
 }
 
 class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.onTap});
+  const _Chip({
+    required this.label,
+    required this.height,
+    required this.onTap,
+  });
 
   final String label;
+  final double height;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.primary.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.place_outlined, size: 14, color: scheme.primary),
-              const SizedBox(width: 5),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 160),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: scheme.primary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
+    final radius = BorderRadius.circular(999);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.place_outlined, size: 15, color: scheme.primary),
+            const SizedBox(width: 6),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 150),
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                  height: 1.0,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
