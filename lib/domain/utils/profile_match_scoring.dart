@@ -106,7 +106,7 @@ class ProfileMatchDimension {
 }
 
 /// Below this per-dimension score a viewer-listed dealbreaker triggers a cap.
-const double _dealbreakerConflictThreshold = 0.5;
+const double profileMatchDealbreakerConflictThreshold = 0.5;
 
 enum ProfileMatchFieldStatus {
   /// Both sides filled and aligned (includes soft matches like ±1 scale).
@@ -301,7 +301,7 @@ ProfileMatchFieldResult _finalizeField({
     );
   }
   final listedDealbreaker = ctx.dealbreakers.contains(slug) &&
-      partial < _dealbreakerConflictThreshold;
+      partial < profileMatchDealbreakerConflictThreshold;
   final isDealbreaker =
       builtInDealbreaker || forceDealbreaker || listedDealbreaker;
   return ProfileMatchFieldResult(

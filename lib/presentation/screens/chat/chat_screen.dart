@@ -1409,9 +1409,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     "count": "${_listingAiQuotaRibbon!.chatTranslateRemaining}",
                   },
                 ),
+                // Use [onSurface] (not [primary]) so the hint stays legible on the
+                // dark blue chat surface, where [primary] is a near-invisible navy.
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
             ),

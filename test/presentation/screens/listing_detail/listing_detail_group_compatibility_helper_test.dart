@@ -11,6 +11,7 @@ UserProfile _profile({
   int? noiseLevel,
   bool? cookingHabits,
   String? preferredLanguage,
+  List<String>? dealbreakers,
 }) {
   return UserProfile(
     id: userId,
@@ -22,6 +23,7 @@ UserProfile _profile({
     noiseLevel: noiseLevel,
     cookingHabits: cookingHabits,
     preferredLanguage: preferredLanguage,
+    dealbreakers: dealbreakers,
   );
 }
 
@@ -88,6 +90,72 @@ void main() {
         result.partialMatches.any((m) => m.labelKey == "wakeup_time"),
         isTrue,
       );
+    });
+
+    test(
+      "user-listed cleanliness dealbreaker flags only the conflicting members",
+      () {
+        final profiles = [
+          _profile(userId: 1, cleanliness: 1, dealbreakers: ["cleanliness"]),
+          _profile(userId: 2, cleanliness: 5),
+          _profile(userId: 3, cleanliness: 1),
+        ];
+
+        final matrix =
+            ListingDetailGroupCompatibilityHelper.buildPreferenceMatrix(
+          profiles,
+        );
+        final row = matrix.firstWhere((r) => r.labelKey == "cleanliness");
+        GroupPreferenceMatrixCell cellFor(int userId) =>
+            row.cells.firstWhere((c) => c.userId == userId);
+
+        // 1 (dealbreaker owner) and 2 (the messy roommate) conflict; 3 matches 1.
+        expect(
+          cellFor(1).status,
+          GroupPreferenceMatrixCellStatus.conflict,
+        );
+        expect(
+          cellFor(2).status,
+          GroupPreferenceMatrixCellStatus.conflict,
+        );
+        expect(
+          cellFor(3).status,
+          isNot(GroupPreferenceMatrixCellStatus.conflict),
+        );
+
+        // The field is surfaced as something to discuss.
+        final result =
+            ListingDetailGroupCompatibilityHelper.calculate(profiles);
+        expect(
+          result.discussItems.any((d) => d.labelKey == "cleanliness"),
+          isTrue,
+        );
+      },
+    );
+
+    test("overall percent is capped when a pair hits a dealbreaker", () {
+      final profiles = [
+        _profile(
+          userId: 1,
+          cleanliness: 1,
+          noiseLevel: 2,
+          cookingHabits: true,
+          preferredLanguage: "ru",
+          dealbreakers: ["cleanliness"],
+        ),
+        _profile(
+          userId: 2,
+          cleanliness: 5,
+          noiseLevel: 2,
+          cookingHabits: true,
+          preferredLanguage: "ru",
+        ),
+      ];
+
+      final result = ListingDetailGroupCompatibilityHelper.calculate(profiles);
+
+      expect(result.percent, isNotNull);
+      expect(result.percent! <= 35, isTrue);
     });
   });
 }

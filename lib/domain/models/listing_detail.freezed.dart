@@ -93,6 +93,8 @@ mixin _$ListingDetail {
   int? get groupSizeTarget => throw _privateConstructorUsedError;
   @JsonKey(name: "group_forming_status")
   String? get groupFormingStatus => throw _privateConstructorUsedError;
+  @JsonKey(name: "group_compatibility_report")
+  String? get groupCompatibilityReport => throw _privateConstructorUsedError;
   @JsonKey(includeFromJson: false, includeToJson: false)
   ListingGroupContext? get groupContext => throw _privateConstructorUsedError;
 
@@ -155,6 +157,8 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
       @JsonKey(name: "group_size_target") int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+      @JsonKey(name: "group_compatibility_report")
+      String? groupCompatibilityReport,
       @JsonKey(includeFromJson: false, includeToJson: false)
       ListingGroupContext? groupContext});
 
@@ -220,6 +224,7 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? areaPriceStats = freezed,
     Object? groupSizeTarget = freezed,
     Object? groupFormingStatus = freezed,
+    Object? groupCompatibilityReport = freezed,
     Object? groupContext = freezed,
   }) {
     return _then(_value.copyWith(
@@ -383,6 +388,10 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.groupFormingStatus
           : groupFormingStatus // ignore: cast_nullable_to_non_nullable
               as String?,
+      groupCompatibilityReport: freezed == groupCompatibilityReport
+          ? _value.groupCompatibilityReport
+          : groupCompatibilityReport // ignore: cast_nullable_to_non_nullable
+              as String?,
       groupContext: freezed == groupContext
           ? _value.groupContext
           : groupContext // ignore: cast_nullable_to_non_nullable
@@ -504,6 +513,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
       @JsonKey(name: "group_size_target") int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+      @JsonKey(name: "group_compatibility_report")
+      String? groupCompatibilityReport,
       @JsonKey(includeFromJson: false, includeToJson: false)
       ListingGroupContext? groupContext});
 
@@ -572,6 +583,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? areaPriceStats = freezed,
     Object? groupSizeTarget = freezed,
     Object? groupFormingStatus = freezed,
+    Object? groupCompatibilityReport = freezed,
     Object? groupContext = freezed,
   }) {
     return _then(_$ListingDetailImpl(
@@ -735,6 +747,10 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.groupFormingStatus
           : groupFormingStatus // ignore: cast_nullable_to_non_nullable
               as String?,
+      groupCompatibilityReport: freezed == groupCompatibilityReport
+          ? _value.groupCompatibilityReport
+          : groupCompatibilityReport // ignore: cast_nullable_to_non_nullable
+              as String?,
       groupContext: freezed == groupContext
           ? _value.groupContext
           : groupContext // ignore: cast_nullable_to_non_nullable
@@ -789,6 +805,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "area_price_stats") this.areaPriceStats,
       @JsonKey(name: "group_size_target") this.groupSizeTarget,
       @JsonKey(name: "group_forming_status") this.groupFormingStatus,
+      @JsonKey(name: "group_compatibility_report")
+      this.groupCompatibilityReport,
       @JsonKey(includeFromJson: false, includeToJson: false) this.groupContext})
       : _amenities = amenities,
         _photos = photos;
@@ -925,12 +943,15 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: "group_forming_status")
   final String? groupFormingStatus;
   @override
+  @JsonKey(name: "group_compatibility_report")
+  final String? groupCompatibilityReport;
+  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   final ListingGroupContext? groupContext;
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupContext: $groupContext)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
   }
 
   @override
@@ -1013,6 +1034,8 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.groupSizeTarget == groupSizeTarget) &&
             (identical(other.groupFormingStatus, groupFormingStatus) ||
                 other.groupFormingStatus == groupFormingStatus) &&
+            (identical(other.groupCompatibilityReport, groupCompatibilityReport) ||
+                other.groupCompatibilityReport == groupCompatibilityReport) &&
             (identical(other.groupContext, groupContext) ||
                 other.groupContext == groupContext));
   }
@@ -1061,6 +1084,7 @@ class _$ListingDetailImpl implements _ListingDetail {
         areaPriceStats,
         groupSizeTarget,
         groupFormingStatus,
+        groupCompatibilityReport,
         groupContext
       ]);
 
@@ -1127,6 +1151,8 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "area_price_stats") final AreaPriceStats? areaPriceStats,
       @JsonKey(name: "group_size_target") final int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") final String? groupFormingStatus,
+      @JsonKey(name: "group_compatibility_report")
+      final String? groupCompatibilityReport,
       @JsonKey(includeFromJson: false, includeToJson: false)
       final ListingGroupContext? groupContext}) = _$ListingDetailImpl;
 
@@ -1245,6 +1271,9 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "group_forming_status")
   String? get groupFormingStatus;
+  @override
+  @JsonKey(name: "group_compatibility_report")
+  String? get groupCompatibilityReport;
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   ListingGroupContext? get groupContext;

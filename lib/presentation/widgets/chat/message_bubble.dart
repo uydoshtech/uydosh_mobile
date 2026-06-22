@@ -1458,6 +1458,11 @@ class _ReactionToolbarOverlayAnimatedState
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _curve;
+  final ScrollController _ribbonScrollController = ScrollController();
+
+  /// Expanded swaps the horizontally-scrolling ribbon for a grid that shows
+  /// the entire reaction collection at once.
+  bool _expanded = false;
   bool _closing = false;
 
   @override
@@ -1475,8 +1480,14 @@ class _ReactionToolbarOverlayAnimatedState
     _controller.forward();
   }
 
+  void _toggleExpanded() {
+    HapticFeedback.lightImpact();
+    setState(() => _expanded = !_expanded);
+  }
+
   @override
   void dispose() {
+    _ribbonScrollController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -1491,6 +1502,101 @@ class _ReactionToolbarOverlayAnimatedState
     final followUp = afterOverlayRemoved;
     detach();
     await followUp?.call();
+  }
+
+  Widget _emojiCell(String id) {
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: () {
+          HapticFeedbackUtils.tapticChain();
+          final applyReaction = widget.onEmojiChosen;
+          final matchesOpening =
+              _MessageBubbleState._reactionKeysEqualNullable(
+            widget.selectedReactionId,
+            id,
+          );
+          _animateOut(
+            afterOverlayRemoved: () => applyReaction(
+              id,
+              matchesOpeningSelection: matchesOpening,
+            ),
+          );
+        },
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: _MessageBubbleState._reactionRibbonEmojiBody(
+            reactionId: id,
+            emojiSize: 20,
+            selected: _MessageBubbleState._reactionKeysEqualNullable(
+              widget.selectedReactionId,
+              id,
+            ),
+            onGlassBackground: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCollapsedRibbon() {
+    return SizedBox(
+      width: _kReactionToolbarScrollViewportWidth,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _ribbonScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsetsDirectional.only(end: 30),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final id in MessageReactionCatalog.ids) _emojiCell(id),
+              ],
+            ),
+          ),
+          PositionedDirectional(
+            top: 0,
+            bottom: 0,
+            end: 0,
+            child: _ReactionExpandToggle(
+              expanded: false,
+              onTap: _toggleExpanded,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedGrid() {
+    return SizedBox(
+      width: _kReactionToolbarScrollViewportWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 2,
+            runSpacing: 2,
+            children: [
+              for (final id in MessageReactionCatalog.ids) _emojiCell(id),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: _ReactionExpandToggle(
+              expanded: true,
+              onTap: _toggleExpanded,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1534,58 +1640,13 @@ class _ReactionToolbarOverlayAnimatedState
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                   child: Material(
                     color: Colors.transparent,
-                    child: SizedBox(
-                      width: _kReactionToolbarScrollViewportWidth,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (final id in MessageReactionCatalog.ids)
-                              Material(
-                                type: MaterialType.transparency,
-                                child: InkWell(
-                                  onTap: () {
-                                    HapticFeedbackUtils.tapticChain();
-                                    final applyReaction = widget.onEmojiChosen;
-                                    final reactionId = id;
-                                    final matchesOpening = _MessageBubbleState
-                                        ._reactionKeysEqualNullable(
-                                      widget.selectedReactionId,
-                                      reactionId,
-                                    );
-                                    _animateOut(
-                                      afterOverlayRemoved: () => applyReaction(
-                                        reactionId,
-                                        matchesOpeningSelection: matchesOpening,
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(22),
-                                  customBorder: const CircleBorder(),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 4,
-                                    ),
-                                    child: _MessageBubbleState
-                                        ._reactionRibbonEmojiBody(
-                                      reactionId: id,
-                                      emojiSize: 20,
-                                      selected: _MessageBubbleState
-                                          ._reactionKeysEqualNullable(
-                                        widget.selectedReactionId,
-                                        id,
-                                      ),
-                                      onGlassBackground: true,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: _expanded
+                          ? _buildExpandedGrid()
+                          : _buildCollapsedRibbon(),
                     ),
                   ),
                 ),
@@ -1594,6 +1655,75 @@ class _ReactionToolbarOverlayAnimatedState
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Round affordance at the ribbon's trailing edge. The chevron points **down**
+/// when collapsed (tap to reveal the full reaction collection) and rotates to
+/// point up when expanded (tap to collapse back to the ribbon).
+class _ReactionExpandToggle extends StatelessWidget {
+  const _ReactionExpandToggle({
+    required this.expanded,
+    required this.onTap,
+  });
+
+  final bool expanded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final circle = Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.18),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.28),
+              width: 0.5,
+            ),
+          ),
+          child: AnimatedRotation(
+            // chevron_right (→): +0.25 turn → points down, -0.25 → points up.
+            turns: expanded ? -0.25 : 0.25,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            child: const Icon(
+              CupertinoIcons.chevron_right,
+              size: 14,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (expanded) return circle;
+
+    // Collapsed: soft fade behind the circle so it reads as separate from the
+    // scrolling emoji row beneath it.
+    return Container(
+      width: 44,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 2),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0x00000000),
+            Color(0x33000000),
+          ],
+        ),
+      ),
+      child: circle,
     );
   }
 }

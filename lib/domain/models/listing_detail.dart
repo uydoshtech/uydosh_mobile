@@ -44,6 +44,8 @@ class ListingDetail with _$ListingDetail {
     @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
     @JsonKey(name: "group_size_target") int? groupSizeTarget,
     @JsonKey(name: "group_forming_status") String? groupFormingStatus,
+    @JsonKey(name: "group_compatibility_report")
+    String? groupCompatibilityReport,
     @JsonKey(includeFromJson: false, includeToJson: false)
     ListingGroupContext? groupContext,
   }) = _ListingDetail;

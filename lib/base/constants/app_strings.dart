@@ -24,7 +24,7 @@ class AppStrings {
 
       "location": "Location",
       "create_listing": "Create",
-      "create_choice_title": "What are you looking for?",
+      "create_choice_title": "Where shall we start?",
       "create_choice_housing": "Housing",
       "create_choice_housing_subtitle": "Rent out or find a place",
       "create_choice_roommate_needed_subtitle":
@@ -111,6 +111,7 @@ class AppStrings {
       "group_preference_matrix_title": "Lifestyle preference matrix",
       "group_preference_matrix_subtitle":
           "Compare all participants at a glance",
+      "group_compatibility_report_title": "Group compatibility insight",
       "group_preference_matrix_preference": "Preference",
       "view_member_profiles": "Participant profiles",
       "group_member_profiles_formed": "Group complete",
@@ -1963,7 +1964,7 @@ class AppStrings {
 
       "location": "Район",
       "create_listing": "Создать",
-      "create_choice_title": "Что вы ищете?",
+      "create_choice_title": "С чего начнём?",
       "create_choice_housing": "Жильё",
       "create_choice_housing_subtitle": "Сдать или снять жильё",
       "create_choice_roommate_needed_subtitle":
@@ -2053,6 +2054,7 @@ class AppStrings {
       "group_preference_matrix_title": "Матрица бытовых предпочтений",
       "group_preference_matrix_subtitle":
           "Сравните всех участников одним взглядом",
+      "group_compatibility_report_title": "Сводка совместимости группы",
       "group_preference_matrix_preference": "Предпочтение",
       "view_member_profiles": "Профили участников",
       "group_member_profiles_formed": "Группа сформирована",
@@ -3940,7 +3942,7 @@ class AppStrings {
 
       "location": "Tuman",
       "create_listing": "Yaratish",
-      "create_choice_title": "Nima qidiryapsiz?",
+      "create_choice_title": "Nimadan boshlaymiz?",
       "create_choice_housing": "Uy-joy",
       "create_choice_housing_subtitle": "Ijaraga berish yoki topish",
       "create_choice_roommate_needed_subtitle":
@@ -4025,6 +4027,7 @@ class AppStrings {
       "group_preference_matrix_title": "Turmush tarzi afzalliklari jadvali",
       "group_preference_matrix_subtitle":
           "Barcha ishtirokchilarni tez solishtiring",
+      "group_compatibility_report_title": "Guruh moslik xulosasi",
       "group_preference_matrix_preference": "Afzallik",
       "view_member_profiles": "Ishtirokchi profillari",
       "group_member_profiles_formed": "Guruh to'ldi",

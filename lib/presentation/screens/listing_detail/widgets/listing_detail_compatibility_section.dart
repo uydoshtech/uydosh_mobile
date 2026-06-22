@@ -867,6 +867,79 @@ class _ListingDetailCompatibilitySectionState
     return null;
   }
 
+  void _showMatrixValueBubble(
+    BuildContext context,
+    String message,
+    Offset globalPosition,
+  ) {
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+    HapticFeedbackUtils.selection();
+    late OverlayEntry overlayEntry;
+    var removed = false;
+    void removeOnce() {
+      if (!removed) {
+        removed = true;
+        overlayEntry.remove();
+      }
+    }
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: removeOnce,
+          ),
+          Positioned(
+            left: globalPosition.dx
+                .clamp(12.0, MediaQuery.sizeOf(context).width - 150),
+            top: globalPosition.dy - 48,
+            child: GestureDetector(
+              onTap: removeOnce,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  constraints: const BoxConstraints(maxWidth: 220),
+                  decoration: BoxDecoration(
+                    color: ThemeState().isLightTheme
+                        ? Colors.black
+                        : (ThemeState().isBlueTheme
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.inverseSurface),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ThemeState().isLightTheme
+                          ? Colors.white
+                          : (ThemeState().isBlueTheme
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onInverseSurface),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), removeOnce);
+  }
+
   String _formatUzbekPhoneDisplay(String raw) {
     final d = raw.replaceAll(RegExp(r"\D"), "");
     // Handle +998XXXXXXXXX, 998XXXXXXXXX, or 9XXXXXXXX
@@ -1049,6 +1122,61 @@ class _ListingDetailCompatibilitySectionState
         const SizedBox(height: 6),
         _buildGroupHeaderAvatars(),
       ],
+    );
+  }
+
+  /// AI-generated group compatibility summary shown above the matrix avatars.
+  /// Hidden until the backend has produced a report for this group.
+  Widget _buildGroupCompatibilityReport(Color textColor) {
+    final report = widget.listingDetail.groupCompatibilityReport?.trim();
+    if (report == null || report.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final accent = ListingDetailThemeHelper.locationTextColor;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(_matrixTableCornerRadius),
+        border: Border.all(color: accent.withValues(alpha: 0.20)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ThemeIcon(
+                Icons.auto_awesome_outlined,
+                size: 16,
+                color: accent,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  L10n.get("group_compatibility_report_title"),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            report,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: textColor.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1272,10 +1400,17 @@ class _ListingDetailCompatibilitySectionState
       );
       if (visual == null) return valueText(value, status: status);
 
-      return Tooltip(
-        message: value,
-        child: Semantics(
-          label: "${row.label}: $value",
+      final bubbleMessage = "${row.label}: $value";
+      return Semantics(
+        label: bubbleMessage,
+        button: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (details) => _showMatrixValueBubble(
+            context,
+            bubbleMessage,
+            details.globalPosition,
+          ),
           child: ExcludeSemantics(child: visual),
         ),
       );
@@ -1414,6 +1549,7 @@ class _ListingDetailCompatibilitySectionState
             ],
           ),
           children: [
+            _buildGroupCompatibilityReport(textColor),
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(_matrixTableCornerRadius),

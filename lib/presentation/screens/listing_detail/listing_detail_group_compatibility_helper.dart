@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -141,6 +143,7 @@ bool _listEquals<T>(List<T> a, List<T> b) {
 class _GroupFieldSpec {
   const _GroupFieldSpec({
     required this.labelKey,
+    required this.slug,
     required this.pairScore,
     required this.displayText,
     this.displayIconKey,
@@ -148,9 +151,15 @@ class _GroupFieldSpec {
   });
 
   final String labelKey;
+
+  /// Matching dimension slug ([UserProfile.dealbreakers]) this field maps to.
+  final String slug;
   final double? Function(UserProfile a, UserProfile b) pairScore;
   final String? Function(UserProfile profile) displayText;
   final String? Function(UserProfile profile)? displayIconKey;
+
+  /// Built-in hard conflict for this pair, independent of either user's
+  /// configured dealbreaker list (e.g. non-smoker vs regular smoker).
   final bool Function(UserProfile a, UserProfile b)? isDealbreakerPair;
 }
 
@@ -189,7 +198,6 @@ class ListingDetailGroupCompatibilityHelper {
     final sortedClusters = clusters.toList()
       ..sort((a, b) => b.length.compareTo(a.length));
     final largest = sortedClusters.firstOrNull;
-    final hasDealbreaker = _hasDealbreaker(active, spec);
 
     return participants
         .map(
@@ -201,7 +209,9 @@ class ListingDetailGroupCompatibilityHelper {
               displayText: spec.displayText(profile),
               sortedClusters: sortedClusters,
               largestCluster: largest,
-              hasDealbreaker: hasDealbreaker,
+              // Only flag the participants actually involved in a conflict,
+              // not the whole row, so the matrix points at who disagrees.
+              hasDealbreaker: _participantInDealbreaker(profile, active, spec),
             ),
             valueIconKey: spec.displayIconKey?.call(profile),
           ),
@@ -329,6 +339,7 @@ class ListingDetailGroupCompatibilityHelper {
 
     var pairCount = 0;
     var scoreSum = 0;
+    var hasDealbreaker = false;
     for (var i = 0; i < participants.length; i++) {
       for (var j = i + 1; j < participants.length; j++) {
         final analysis = computeProfileCompatibility(
@@ -338,29 +349,39 @@ class ListingDetailGroupCompatibilityHelper {
         if (analysis.scoredFieldCount == 0) continue;
         pairCount++;
         scoreSum += analysis.percent;
+        if (analysis.hasDealbreaker) hasDealbreaker = true;
       }
     }
 
     if (pairCount == 0) return null;
-    return (scoreSum / pairCount).round();
+    final average = (scoreSum / pairCount).round();
+    // A single irreconcilable pair makes the whole group a hard match: cap the
+    // overall at the dealbreaker ceiling so averaging can't hide the conflict.
+    if (hasDealbreaker) {
+      return math.min(average, (profileMatchDealbreakerCap * 100).round());
+    }
+    return average;
   }
 
   static List<_GroupFieldSpec> _fieldSpecs() {
     return [
       _GroupFieldSpec(
         labelKey: "wakeup_time",
+        slug: ProfileMatchDimension.sleep,
         pairScore: (a, b) => dayPhaseSlotScore(a.wakeupTime, b.wakeupTime),
         displayText: (p) => _formatDay(p.wakeupTime),
         displayIconKey: (p) => _dayIconKey(p.wakeupTime),
       ),
       _GroupFieldSpec(
         labelKey: "sleep_time",
+        slug: ProfileMatchDimension.sleep,
         pairScore: (a, b) => dayPhaseSlotScore(a.sleepTime, b.sleepTime),
         displayText: (p) => _formatDay(p.sleepTime),
         displayIconKey: (p) => _dayIconKey(p.sleepTime),
       ),
       _GroupFieldSpec(
         labelKey: "smoking_preference",
+        slug: ProfileMatchDimension.smoking,
         pairScore: (a, b) => smokingCompatibility(
           a.smokingPreference,
           b.smokingPreference,
@@ -379,6 +400,7 @@ class ListingDetailGroupCompatibilityHelper {
       // preferences and read better as an adjacent pair.
       _GroupFieldSpec(
         labelKey: "alcohol_preference",
+        slug: ProfileMatchDimension.drinking,
         pairScore: (a, b) => preferenceBinaryScore(
           a.alcoholPreference,
           b.alcoholPreference,
@@ -391,24 +413,28 @@ class ListingDetailGroupCompatibilityHelper {
       ),
       _GroupFieldSpec(
         labelKey: "cleanliness",
+        slug: ProfileMatchDimension.cleanliness,
         pairScore: (a, b) => scaleCompatibility(a.cleanliness, b.cleanliness),
         displayText: (p) => _formatCleanliness(p.cleanliness),
         displayIconKey: (p) => _scaleIconKey("cleanliness", p.cleanliness),
       ),
       _GroupFieldSpec(
         labelKey: "noise_level",
+        slug: ProfileMatchDimension.noise,
         pairScore: (a, b) => scaleCompatibility(a.noiseLevel, b.noiseLevel),
         displayText: (p) => _formatNoise(p.noiseLevel),
         displayIconKey: (p) => _scaleIconKey("noise", p.noiseLevel),
       ),
       _GroupFieldSpec(
         labelKey: "sociability",
+        slug: ProfileMatchDimension.sociability,
         pairScore: (a, b) => scaleCompatibility(a.sociability, b.sociability),
         displayText: (p) => _formatSociability(p.sociability),
         displayIconKey: (p) => _scaleIconKey("sociability", p.sociability),
       ),
       _GroupFieldSpec(
         labelKey: "guests",
+        slug: ProfileMatchDimension.guests,
         pairScore: (a, b) =>
             preferenceBinaryScore(a.guestsAllowed, b.guestsAllowed),
         displayText: (p) => _formatBool(p.guestsAllowed),
@@ -416,6 +442,7 @@ class ListingDetailGroupCompatibilityHelper {
       ),
       _GroupFieldSpec(
         labelKey: "cooking_habits",
+        slug: ProfileMatchDimension.cooking,
         pairScore: (a, b) =>
             preferenceBinaryScore(a.cookingHabits, b.cookingHabits),
         displayText: (p) => _formatCooking(p.cookingHabits),
@@ -423,6 +450,7 @@ class ListingDetailGroupCompatibilityHelper {
       ),
       _GroupFieldSpec(
         labelKey: "language",
+        slug: ProfileMatchDimension.language,
         pairScore: (a, b) => preferenceBinaryScore(
           a.preferredLanguage,
           b.preferredLanguage,
@@ -436,6 +464,7 @@ class ListingDetailGroupCompatibilityHelper {
       // Pets compatibility sits last in the matrix by request.
       _GroupFieldSpec(
         labelKey: "pets_preference",
+        slug: ProfileMatchDimension.pets,
         pairScore: (a, b) =>
             petsCompatibility(a.petsPreference, b.petsPreference)?.score,
         displayText: (p) {
@@ -497,14 +526,55 @@ class ListingDetailGroupCompatibilityHelper {
     List<UserProfile> profiles,
     _GroupFieldSpec spec,
   ) {
-    final check = spec.isDealbreakerPair;
-    if (check == null) return false;
     for (var i = 0; i < profiles.length; i++) {
       for (var j = i + 1; j < profiles.length; j++) {
-        if (check(profiles[i], profiles[j])) return true;
+        if (_isPairDealbreaker(profiles[i], profiles[j], spec)) return true;
       }
     }
     return false;
+  }
+
+  /// Whether [profile] is in a dealbreaker conflict with any other active
+  /// participant on this dimension.
+  static bool _participantInDealbreaker(
+    UserProfile profile,
+    List<UserProfile> active,
+    _GroupFieldSpec spec,
+  ) {
+    for (final other in active) {
+      if (other.userId == profile.userId) continue;
+      if (_isPairDealbreaker(profile, other, spec)) return true;
+    }
+    return false;
+  }
+
+  /// A pair conflicts on [spec] when there is a built-in hard conflict, or when
+  /// either user lists this dimension as a dealbreaker and the pair score falls
+  /// below [profileMatchDealbreakerConflictThreshold]. Mirrors the per-field
+  /// dealbreaker logic in `computeProfileCompatibility`.
+  static bool _isPairDealbreaker(
+    UserProfile a,
+    UserProfile b,
+    _GroupFieldSpec spec,
+  ) {
+    if (spec.isDealbreakerPair?.call(a, b) == true) return true;
+
+    final listed = _dealbreakerSlugs(a).contains(spec.slug) ||
+        _dealbreakerSlugs(b).contains(spec.slug);
+    if (!listed) return false;
+
+    final score = spec.pairScore(a, b);
+    return score != null &&
+        score < profileMatchDealbreakerConflictThreshold;
+  }
+
+  static Set<String> _dealbreakerSlugs(UserProfile profile) {
+    final raw = profile.dealbreakers;
+    if (raw == null || raw.isEmpty) return const {};
+    return raw
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
   }
 
   static List<List<UserProfile>> _buildClusters(
