@@ -29,6 +29,15 @@ class UpdateProfileRequest implements IJsonEncodable {
     this.sleepTime,
     this.preferredLanguage,
     this.originCountryIso2,
+    this.birthYear,
+    this.budgetMin,
+    this.budgetMax,
+    this.prefRoommateGender,
+    this.prefAgeMin,
+    this.prefAgeMax,
+    this.prefBudgetOverlapRequired,
+    this.dealbreakers,
+    this.topPriorities,
   });
 
   factory UpdateProfileRequest.fromJson(Map<String, dynamic> json) =>
@@ -74,6 +83,24 @@ class UpdateProfileRequest implements IJsonEncodable {
   final String? preferredLanguage;
   @JsonKey(name: "origin_country_iso2")
   final String? originCountryIso2;
+  @JsonKey(name: "birth_year")
+  final int? birthYear;
+  @JsonKey(name: "budget_min")
+  final int? budgetMin;
+  @JsonKey(name: "budget_max")
+  final int? budgetMax;
+  @JsonKey(name: "pref_roommate_gender")
+  final String? prefRoommateGender;
+  @JsonKey(name: "pref_age_min")
+  final int? prefAgeMin;
+  @JsonKey(name: "pref_age_max")
+  final int? prefAgeMax;
+  @JsonKey(name: "pref_budget_overlap_required")
+  final bool? prefBudgetOverlapRequired;
+  @JsonKey(name: "dealbreakers")
+  final List<String>? dealbreakers;
+  @JsonKey(name: "top_priorities")
+  final List<String>? topPriorities;
 
   @override
   Map<String, dynamic> toJson() {

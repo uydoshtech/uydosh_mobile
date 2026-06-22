@@ -4,6 +4,7 @@ import "package:dio/dio.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter/services.dart" show FilteringTextInputFormatter;
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:telegram_login/telegram_login.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -36,6 +37,7 @@ import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
+import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
@@ -98,6 +100,40 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late ValueNotifier<String?> _petsPreference;
   late ValueNotifier<String?> _wakeupTime;
   late ValueNotifier<String?> _sleepTime;
+
+  // "What I'm looking for" matching preferences.
+  late TextEditingController _birthYearController;
+  late TextEditingController _budgetMinController;
+  late TextEditingController _budgetMaxController;
+  late TextEditingController _prefAgeMinController;
+  late TextEditingController _prefAgeMaxController;
+  late ValueNotifier<String?> _prefRoommateGender;
+  late ValueNotifier<String?> _budgetOverlapRequired;
+  late ValueNotifier<Set<String>> _dealbreakers;
+  late ValueNotifier<Set<String>> _topPriorities;
+
+  static const String _overlapSlugYes = "overlap_yes";
+  static const String _overlapSlugNo = "overlap_no";
+
+  /// Max dimensions a user may flag as a top priority.
+  static const int _maxTopPriorities = 3;
+
+  bool? _overlapBoolFromSlug(String? slug) {
+    if (slug == _overlapSlugYes) return true;
+    if (slug == _overlapSlugNo) return false;
+    return null;
+  }
+
+  String? _overlapSlugFromBool(bool? b) {
+    if (b == null) return null;
+    return b ? _overlapSlugYes : _overlapSlugNo;
+  }
+
+  int? _parseIntOrNull(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return null;
+    return int.tryParse(trimmed);
+  }
 
   List<Region> _regions =
       []; // Initialize to empty list to avoid LateInitializationError
@@ -210,6 +246,31 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _petsPreference = ValueNotifier(widget.profile.petsPreference);
     _wakeupTime = ValueNotifier(widget.profile.wakeupTime);
     _sleepTime = ValueNotifier(widget.profile.sleepTime);
+    _birthYearController = TextEditingController(
+      text: widget.profile.birthYear?.toString() ?? "",
+    );
+    _budgetMinController = TextEditingController(
+      text: widget.profile.budgetMin?.toString() ?? "",
+    );
+    _budgetMaxController = TextEditingController(
+      text: widget.profile.budgetMax?.toString() ?? "",
+    );
+    _prefAgeMinController = TextEditingController(
+      text: widget.profile.prefAgeMin?.toString() ?? "",
+    );
+    _prefAgeMaxController = TextEditingController(
+      text: widget.profile.prefAgeMax?.toString() ?? "",
+    );
+    _prefRoommateGender = ValueNotifier(widget.profile.prefRoommateGender);
+    _budgetOverlapRequired = ValueNotifier(
+      _overlapSlugFromBool(widget.profile.prefBudgetOverlapRequired),
+    );
+    _dealbreakers = ValueNotifier(
+      {...?widget.profile.dealbreakers},
+    );
+    _topPriorities = ValueNotifier(
+      {...?widget.profile.topPriorities},
+    );
     _isLoading = ValueNotifier(false);
     _isLoadingRegions = ValueNotifier(true);
     _isLoadingUniversities = ValueNotifier(true);
@@ -236,6 +297,15 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       _petsPreference,
       _wakeupTime,
       _sleepTime,
+      _birthYearController,
+      _budgetMinController,
+      _budgetMaxController,
+      _prefAgeMinController,
+      _prefAgeMaxController,
+      _prefRoommateGender,
+      _budgetOverlapRequired,
+      _dealbreakers,
+      _topPriorities,
       _isRoleLoaded,
       PriceDisplaySettingsState(),
     ]);
@@ -428,6 +498,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (p.petsPreference != _petsPreference.value) {
       addLabel("pets_preference", fallback: "Pets");
     }
+    if (_matchPrefsDirty()) {
+      addLabel("what_im_looking_for", fallback: "What I'm looking for");
+    }
 
     if (_isPriceDisplayDirty()) {
       addLabel("price_display_currency", fallback: "Price currency");
@@ -510,8 +583,32 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (p.wakeupTime != _wakeupTime.value) return true;
     if (p.sleepTime != _sleepTime.value) return true;
 
+    if (_matchPrefsDirty()) return true;
+
     if (_isPriceDisplayDirty()) return true;
 
+    return false;
+  }
+
+  bool _setEquals(Set<String> a, Iterable<String>? b) {
+    final bs = {...?b};
+    return a.length == bs.length && a.containsAll(bs);
+  }
+
+  bool _matchPrefsDirty() {
+    final p = widget.profile;
+    if (_parseIntOrNull(_birthYearController.text) != p.birthYear) return true;
+    if (_parseIntOrNull(_budgetMinController.text) != p.budgetMin) return true;
+    if (_parseIntOrNull(_budgetMaxController.text) != p.budgetMax) return true;
+    if (_parseIntOrNull(_prefAgeMinController.text) != p.prefAgeMin) return true;
+    if (_parseIntOrNull(_prefAgeMaxController.text) != p.prefAgeMax) return true;
+    if (_prefRoommateGender.value != p.prefRoommateGender) return true;
+    if (_overlapBoolFromSlug(_budgetOverlapRequired.value) !=
+        p.prefBudgetOverlapRequired) {
+      return true;
+    }
+    if (!_setEquals(_dealbreakers.value, p.dealbreakers)) return true;
+    if (!_setEquals(_topPriorities.value, p.topPriorities)) return true;
     return false;
   }
 
@@ -550,6 +647,15 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _petsPreference.dispose();
     _wakeupTime.dispose();
     _sleepTime.dispose();
+    _birthYearController.dispose();
+    _budgetMinController.dispose();
+    _budgetMaxController.dispose();
+    _prefAgeMinController.dispose();
+    _prefAgeMaxController.dispose();
+    _prefRoommateGender.dispose();
+    _budgetOverlapRequired.dispose();
+    _dealbreakers.dispose();
+    _topPriorities.dispose();
     _isLoading.dispose();
     _isLoadingRegions.dispose();
     _isLoadingUniversities.dispose();
@@ -678,6 +784,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         sleepTime: _sleepTime.value,
         preferredLanguage: _selectedLanguage.value,
         originCountryIso2: _resolvedOriginIso2ForForm(),
+        birthYear: _parseIntOrNull(_birthYearController.text),
+        budgetMin: _parseIntOrNull(_budgetMinController.text),
+        budgetMax: _parseIntOrNull(_budgetMaxController.text),
+        prefAgeMin: _parseIntOrNull(_prefAgeMinController.text),
+        prefAgeMax: _parseIntOrNull(_prefAgeMaxController.text),
+        prefRoommateGender: _prefRoommateGender.value,
+        prefBudgetOverlapRequired:
+            _overlapBoolFromSlug(_budgetOverlapRequired.value),
+        dealbreakers: _dealbreakers.value.toList(),
+        topPriorities: _topPriorities.value.toList(),
       );
 
       // Debug logging to see what values are being sent
@@ -1392,6 +1508,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 24),
+
+                // "What I'm looking for" matching preferences
+                _buildLookingForSection(context, theme),
 
                 const SizedBox(height: 32),
 
@@ -2664,6 +2785,349 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
       ),
     );
+  }
+
+  /// Builds the "What I'm looking for" matching-preferences section.
+  Widget _buildLookingForSection(BuildContext context, ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          L10n.get("what_im_looking_for"),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: _getLifestyleHeaderColor(),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          L10n.get("what_im_looking_for_subtitle"),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Preferred roommate gender
+        ValueListenableBuilder<String?>(
+          valueListenable: _prefRoommateGender,
+          builder: (context, value, _) => ProfileDropdownControl(
+            label: L10n.get("preferred_roommate_gender"),
+            value: value,
+            onChanged: (v) => _prefRoommateGender.value = v,
+            icon: Icons.wc,
+            options: [
+              DropdownOption(
+                value: null,
+                label: L10n.get("not_specified"),
+                icon: Icons.not_interested,
+              ),
+              DropdownOption(
+                value: "any",
+                label: L10n.get("any_gender"),
+                icon: Icons.groups,
+              ),
+              DropdownOption(
+                value: "male",
+                label: L10n.get("male"),
+                icon: Icons.male,
+              ),
+              DropdownOption(
+                value: "female",
+                label: L10n.get("female"),
+                icon: Icons.female,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Your year of birth
+        _buildInsetNumberField(
+          label: L10n.get("your_birth_year"),
+          controller: _birthYearController,
+          icon: Icons.cake_outlined,
+          hint: L10n.get("birth_year_hint"),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Preferred roommate age range
+        _buildRangeRow(
+          label: L10n.get("desired_age_range"),
+          icon: Icons.calendar_today_outlined,
+          fromController: _prefAgeMinController,
+          fromHint: L10n.get("age_from_hint"),
+          toController: _prefAgeMaxController,
+          toHint: L10n.get("age_to_hint"),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Your monthly budget range
+        _buildRangeRow(
+          label: L10n.get("your_budget_range"),
+          icon: Icons.payments_outlined,
+          fromController: _budgetMinController,
+          fromHint: L10n.get("budget_from_hint"),
+          toController: _budgetMaxController,
+          toHint: L10n.get("budget_to_hint"),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Require budget overlap
+        ValueListenableBuilder<String?>(
+          valueListenable: _budgetOverlapRequired,
+          builder: (context, value, _) => ProfileDropdownControl(
+            label: L10n.get("require_budget_overlap"),
+            value: value,
+            onChanged: (v) => _budgetOverlapRequired.value = v,
+            icon: Icons.compare_arrows,
+            options: [
+              DropdownOption(
+                value: null,
+                label: L10n.get("not_specified"),
+                icon: Icons.not_interested,
+              ),
+              DropdownOption(
+                value: _overlapSlugYes,
+                label: L10n.get("yes"),
+                icon: Icons.check,
+              ),
+              DropdownOption(
+                value: _overlapSlugNo,
+                label: L10n.get("no"),
+                icon: Icons.close,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Dealbreakers
+        _buildChipsSelector(
+          label: L10n.get("dealbreakers_label"),
+          hint: L10n.get("dealbreakers_hint"),
+          options: ProfileMatchDimension.selectableDealbreakers,
+          notifier: _dealbreakers,
+        ),
+
+        const SizedBox(height: 20),
+
+        // Top priorities (max 3)
+        _buildChipsSelector(
+          label: L10n.get("top_priorities_label"),
+          hint: L10n.get("top_priorities_hint"),
+          options: ProfileMatchDimension.selectablePriorities,
+          notifier: _topPriorities,
+          maxSelection: _maxTopPriorities,
+        ),
+      ],
+    );
+  }
+
+  /// Recessed neumorphic numeric field (digits only) with a heading.
+  Widget _buildInsetNumberField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    String? hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: _getLifestyleHeaderColor(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildBareNumberField(controller: controller, icon: icon, hint: hint),
+      ],
+    );
+  }
+
+  /// A from/to pair of numeric fields under a shared heading.
+  Widget _buildRangeRow({
+    required String label,
+    required IconData icon,
+    required TextEditingController fromController,
+    required String fromHint,
+    required TextEditingController toController,
+    required String toHint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: _getLifestyleHeaderColor(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildBareNumberField(
+                controller: fromController,
+                icon: icon,
+                hint: fromHint,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildBareNumberField(
+                controller: toController,
+                icon: icon,
+                hint: toHint,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBareNumberField({
+    required TextEditingController controller,
+    required IconData icon,
+    String? hint,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final baseColor =
+        isBlueTheme ? BlueThemeColors.surface : theme.colorScheme.surface;
+    final iconColor =
+        isBlueTheme ? Colors.white : theme.colorScheme.onSurfaceVariant;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: baseColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: ThreeDSurfaceStyle.insetRecessedShadows(context),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: isBlueTheme ? Colors.white : theme.colorScheme.onSurface,
+        ),
+        decoration: InputDecoration(
+          prefixIcon: ThemeIcon(icon, color: iconColor),
+          hintText: hint,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          filled: false,
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        ),
+      ),
+    );
+  }
+
+  /// Multi-select chips for dealbreakers / top priorities.
+  Widget _buildChipsSelector({
+    required String label,
+    required String hint,
+    required List<String> options,
+    required ValueNotifier<Set<String>> notifier,
+    int? maxSelection,
+  }) {
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: notifier,
+      builder: (context, selected, _) {
+        final theme = Theme.of(context);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: _getLifestyleHeaderColor(),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              hint,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: options.map((slug) {
+                final isSelected = selected.contains(slug);
+                return FilterChip(
+                  label: Text(_dimensionLabel(slug)),
+                  selected: isSelected,
+                  onSelected: (wantSelected) {
+                    HapticFeedbackUtils.impact();
+                    final next = {...selected};
+                    if (wantSelected) {
+                      if (maxSelection != null &&
+                          next.length >= maxSelection) {
+                        ToastTheme.showInfo(context, message: hint);
+                        return;
+                      }
+                      next.add(slug);
+                    } else {
+                      next.remove(slug);
+                    }
+                    notifier.value = next;
+                  },
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Localized label for a matching dimension slug (chips).
+  String _dimensionLabel(String slug) {
+    switch (slug) {
+      case ProfileMatchDimension.smoking:
+        return L10n.get("smoking_preference");
+      case ProfileMatchDimension.pets:
+        return L10n.get("pets_preference");
+      case ProfileMatchDimension.cleanliness:
+        return L10n.get("cleanliness");
+      case ProfileMatchDimension.noise:
+        return L10n.get("noise_level");
+      case ProfileMatchDimension.sociability:
+        return L10n.get("sociability");
+      case ProfileMatchDimension.drinking:
+        return L10n.get("alcohol_preference");
+      case ProfileMatchDimension.sleep:
+        return L10n.get("sleep_schedule");
+      case ProfileMatchDimension.gender:
+        return L10n.get("match_dim_gender");
+      case ProfileMatchDimension.age:
+        return L10n.get("match_dim_age");
+      case ProfileMatchDimension.budget:
+        return L10n.get("match_dim_budget");
+      default:
+        return slug;
+    }
   }
 
   /// Get theme-aware color for lifestyle preferences header

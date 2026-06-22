@@ -156,6 +156,17 @@ abstract final class ListingShareMessageCodec {
   /// share payload we render a localized "shared a listing" line with the
   /// listing title; otherwise the original content is returned untouched.
   static String previewText(String content) {
+    final ref = ListingRefMessageCodec.parse(content);
+    if (ref != null) {
+      final refTitle = ref.title.trim();
+      if (refTitle.isEmpty) {
+        return L10n.get("messages_preview_referenced_listing_no_title");
+      }
+      return L10n.getWithParams(
+        "messages_preview_referenced_listing",
+        params: {"title": refTitle},
+      );
+    }
     if (!isListingShareContent(content)) return content;
     final payload = parse(content);
     if (payload == null) return content;
@@ -168,6 +179,60 @@ abstract final class ListingShareMessageCodec {
       params: {"title": title},
     );
   }
+}
+
+/// Compact "anchor" message that points at a listing already shared earlier in
+/// the same group chat. Posted by "Continue discussion" so the timeline gets a
+/// tappable breadcrumb (which scrolls to the original card) instead of a
+/// duplicated full listing card.
+const listingRefMessagePrefix = "[[uydosh:listing_ref]]";
+
+class ListingRefMessagePayload {
+  const ListingRefMessagePayload({
+    required this.listingId,
+    required this.title,
+  });
+
+  final int listingId;
+  final String title;
+
+  Map<String, dynamic> toJson() => {
+        "v": 1,
+        "listing_id": listingId,
+        "title": title,
+      };
+
+  factory ListingRefMessagePayload.fromJson(Map<String, dynamic> json) {
+    return ListingRefMessagePayload(
+      listingId: (json["listing_id"] as num).toInt(),
+      title: json["title"] as String? ?? "",
+    );
+  }
+}
+
+abstract final class ListingRefMessageCodec {
+  static bool isListingRefContent(String content) =>
+      content.startsWith(listingRefMessagePrefix);
+
+  static ListingRefMessagePayload? parse(String content) {
+    if (!content.startsWith(listingRefMessagePrefix)) return null;
+    try {
+      final decoded = jsonDecode(
+        content.substring(listingRefMessagePrefix.length).trim(),
+      );
+      if (decoded is! Map) return null;
+      final payload = ListingRefMessagePayload.fromJson(
+        Map<String, dynamic>.from(decoded),
+      );
+      if (payload.listingId <= 0) return null;
+      return payload;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static String encode(ListingRefMessagePayload payload) =>
+      "$listingRefMessagePrefix${jsonEncode(payload.toJson())}";
 }
 
 abstract final class GroupShortlistDiscussMessage {

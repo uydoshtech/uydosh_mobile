@@ -33,6 +33,19 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
       sleepTime: json['sleep_time'] as String?,
       preferredLanguage: json['preferred_language'] as String?,
       originCountryIso2: json['origin_country_iso2'] as String?,
+      birthYear: (json['birth_year'] as num?)?.toInt(),
+      budgetMin: (json['budget_min'] as num?)?.toInt(),
+      budgetMax: (json['budget_max'] as num?)?.toInt(),
+      prefRoommateGender: json['pref_roommate_gender'] as String?,
+      prefAgeMin: (json['pref_age_min'] as num?)?.toInt(),
+      prefAgeMax: (json['pref_age_max'] as num?)?.toInt(),
+      prefBudgetOverlapRequired: json['pref_budget_overlap_required'] as bool?,
+      dealbreakers: (json['dealbreakers'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      topPriorities: (json['top_priorities'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
       region: json['region'] == null
@@ -72,6 +85,15 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'sleep_time': instance.sleepTime,
       'preferred_language': instance.preferredLanguage,
       'origin_country_iso2': instance.originCountryIso2,
+      'birth_year': instance.birthYear,
+      'budget_min': instance.budgetMin,
+      'budget_max': instance.budgetMax,
+      'pref_roommate_gender': instance.prefRoommateGender,
+      'pref_age_min': instance.prefAgeMin,
+      'pref_age_max': instance.prefAgeMax,
+      'pref_budget_overlap_required': instance.prefBudgetOverlapRequired,
+      'dealbreakers': instance.dealbreakers,
+      'top_priorities': instance.topPriorities,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
       'region': instance.region,

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
+import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -390,9 +391,10 @@ class _ListingGroupShortlistSheetState
     final canGoBack = _currentPage > 0;
     final canGoNext = _currentPage < _rows.length - 1;
     final scheme = Theme.of(context).colorScheme;
+    final dotColor = scheme.onSurfaceVariant;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Row(
         children: [
           _ShortlistArrowButton(
@@ -401,14 +403,41 @@ class _ListingGroupShortlistSheetState
             onPressed: canGoBack ? () => _goToPage(_currentPage - 1) : null,
           ),
           Expanded(
-            child: Text(
-              "${_currentPage + 1} / ${_rows.length}",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
+            child: _rows.length > 1
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SmoothPageIndicator(
+                        controller: _pageController,
+                        count: _rows.length,
+                        effect: WormEffect(
+                          dotColor: dotColor,
+                          activeDotColor: dotColor,
+                          dotHeight: 7,
+                          dotWidth: 7,
+                          spacing: 6,
+                          paintStyle: PaintingStyle.stroke,
+                          strokeWidth: 1.2,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "${_currentPage + 1} / ${_rows.length}",
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    "${_currentPage + 1} / ${_rows.length}",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
-            ),
           ),
           _ShortlistArrowButton(
             icon: Icons.chevron_right,
@@ -511,7 +540,8 @@ class _ListingGroupShortlistSheetState
           listingTypeId: groupDetail.listingTypeId,
           listingTitle: groupDetail.title,
           conversationContextType: "listing_group",
-          initialComposerText: composerText,
+          discussListingId: row.listing.id,
+          listingShareToPost: composerText,
         ),
       ),
     );
@@ -791,9 +821,13 @@ class _ShortlistArrowButton extends StatelessWidget {
     return IconButton.filledTonal(
       onPressed: onPressed,
       tooltip: tooltip,
-      icon: Icon(icon, size: 28),
+      icon: Icon(icon, size: 20),
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
       style: IconButton.styleFrom(
-        minimumSize: const Size.square(44),
+        minimumSize: const Size.square(32),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         backgroundColor: scheme.onSurface.withValues(alpha: 0.10),
         foregroundColor: scheme.onSurface,
         disabledBackgroundColor: scheme.onSurface.withValues(alpha: 0.05),

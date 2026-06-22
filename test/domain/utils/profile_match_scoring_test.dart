@@ -166,6 +166,76 @@ void main() {
     });
   });
 
+  group("roommateGenderScore", () {
+    test("no preference yields null", () {
+      expect(roommateGenderScore(null, 1), isNull);
+      expect(roommateGenderScore("", 1), isNull);
+    });
+
+    test("any always matches", () {
+      expect(roommateGenderScore("any", 1), 1.0);
+      expect(roommateGenderScore("any", null), 1.0);
+    });
+
+    test("specific match and mismatch", () {
+      expect(roommateGenderScore("female", 2), 1.0);
+      expect(roommateGenderScore("female", 1), 0.0);
+      expect(roommateGenderScore("male", 1), 1.0);
+    });
+
+    test("specific preference with unknown gender is null", () {
+      expect(roommateGenderScore("male", null), isNull);
+    });
+  });
+
+  group("ageRangeScore", () {
+    test("no range yields null", () {
+      expect(ageRangeScore(null, null, 2000, nowYear: 2026), isNull);
+    });
+
+    test("missing birth year yields null", () {
+      expect(ageRangeScore(18, 25, null, nowYear: 2026), isNull);
+    });
+
+    test("in range is 1.0", () {
+      expect(ageRangeScore(18, 25, 2002, nowYear: 2026), 1.0); // age 24
+    });
+
+    test("just outside range degrades", () {
+      expect(ageRangeScore(18, 25, 1999, nowYear: 2026), 0.5); // age 27
+      expect(ageRangeScore(18, 25, 1997, nowYear: 2026), 0.25); // age 29
+      expect(ageRangeScore(18, 25, 1990, nowYear: 2026), 0.0); // age 36
+    });
+
+    test("open-ended min only", () {
+      expect(ageRangeScore(null, 25, 2010, nowYear: 2026), 1.0); // age 16
+    });
+  });
+
+  group("budgetOverlapScore", () {
+    test("missing budget on either side is null", () {
+      expect(budgetOverlapScore(null, null, 100, 200), isNull);
+      expect(budgetOverlapScore(100, 200, null, null), isNull);
+    });
+
+    test("overlapping ranges score 1.0", () {
+      expect(budgetOverlapScore(100, 300, 250, 500), 1.0);
+    });
+
+    test("near miss is a soft 0.5", () {
+      // a: up to 300, b: from 320; gap 20 <= 15% of 600 (90)
+      expect(budgetOverlapScore(100, 300, 320, 600), 0.5);
+    });
+
+    test("far apart is 0.0", () {
+      expect(budgetOverlapScore(100, 200, 1000, 2000), 0.0);
+    });
+
+    test("open-ended max overlaps", () {
+      expect(budgetOverlapScore(500, null, 100, 800), 1.0);
+    });
+  });
+
   group("computeProfileCompatibility", () {
     test("identical filled profiles score high", () {
       final a = _profile(
@@ -251,6 +321,55 @@ void main() {
         cookingHabits: true,
         regionId: 1,
         preferredLanguage: "uz",
+      );
+
+      final result = computeProfileCompatibility(a, b);
+      expect(result.hasDealbreaker, isTrue);
+      expect(result.percent, lessThanOrEqualTo(35));
+    });
+
+    test("specific gender preference mismatch is a dealbreaker", () {
+      final viewer = UserProfile(
+        id: 1,
+        userId: 1,
+        gender: 1,
+        prefRoommateGender: "female",
+        cleanliness: 3,
+      );
+      final candidate = UserProfile(
+        id: 2,
+        userId: 2,
+        gender: 1, // male, viewer wanted female
+        cleanliness: 3,
+      );
+
+      final result = computeProfileCompatibility(viewer, candidate);
+      expect(result.hasDealbreaker, isTrue);
+      expect(result.percent, lessThanOrEqualTo(35));
+    });
+
+    test("viewer-listed dealbreaker caps an otherwise soft difference", () {
+      final viewer = UserProfile(
+        id: 1,
+        userId: 1,
+        cleanliness: 1,
+        dealbreakers: const ["cleanliness"],
+      );
+      final candidate = UserProfile(id: 2, userId: 2, cleanliness: 5);
+
+      final result = computeProfileCompatibility(viewer, candidate);
+      expect(result.hasDealbreaker, isTrue);
+      expect(result.percent, lessThanOrEqualTo(35));
+    });
+
+    test("reverse-direction dealbreaker also caps the score", () {
+      final a = UserProfile(id: 1, userId: 1, gender: 2, cleanliness: 3);
+      final b = UserProfile(
+        id: 2,
+        userId: 2,
+        gender: 1,
+        prefRoommateGender: "male", // b refuses non-males; a is female
+        cleanliness: 3,
       );
 
       final result = computeProfileCompatibility(a, b);

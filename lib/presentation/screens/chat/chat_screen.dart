@@ -70,6 +70,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_security_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
+import "package:uy_dosh/presentation/widgets/chat/listing_ref_message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/listing_share_message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
@@ -132,6 +133,13 @@ class ChatScreen extends StatefulWidget {
     /// When set, pre-fills the composer on open (e.g. sharing a saved listing
     /// into a group chat). Takes precedence over a persisted draft.
     this.initialComposerText,
+
+    /// When set, the chat opens to discuss this housing listing in a group
+    /// thread. If a listing-share card for it already exists, the chat scrolls
+    /// to and highlights that card; otherwise [listingShareToPost] is posted
+    /// once on open (so the encoded payload never lands in the composer).
+    this.discussListingId,
+    this.listingShareToPost,
   }) : assert(conversationId > 0, "Conversation ID must be positive");
   final int conversationId;
   final int? listingId;
@@ -175,6 +183,8 @@ class ChatScreen extends StatefulWidget {
   final int? otherUserId;
   final String? otherUserAvatar;
   final String? initialComposerText;
+  final int? discussListingId;
+  final String? listingShareToPost;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -187,6 +197,19 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
+
+  // "Discuss in group" flow: scroll to an existing listing card or post a new
+  // one exactly once after the first message load.
+  int? _pendingDiscussListingId;
+  String? _pendingListingShareToPost;
+  bool _pendingDiscussHandled = false;
+  bool _highlightNextSentShare = false;
+
+  // Scroll-to-message + transient highlight for the focused listing card.
+  int? _scrollTargetMessageId;
+  final GlobalKey _scrollTargetKey = GlobalKey();
+  int? _highlightedMessageId;
+  Timer? _highlightTimer;
 
   /// When non-null, send submits an [EditMessage] for this id instead of posting.
   int? _editingMessageId;
@@ -487,6 +510,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController = ScrollController();
     _messageFocusNode = FocusNode(onKeyEvent: _messageComposerOnKeyEvent);
     _peerAvatarUrl = widget.otherUserAvatar;
+    _pendingDiscussListingId = widget.discussListingId;
+    _pendingListingShareToPost = widget.listingShareToPost;
 
     // Load translation prefs FIRST so the very first /translate-unseen call
     // already carries the persisted [_targetLanguageOverride]. Otherwise we'd
@@ -557,6 +582,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     UnreadMessagesState().removeListener(_unreadMessagesListener);
     _incomingRefreshDebounce?.cancel();
+    _highlightTimer?.cancel();
     _messageController.removeListener(_syncComposerDraft);
     _persistComposerDraftIfNeeded();
     _messageController.dispose();
@@ -723,6 +749,10 @@ class _ChatScreenState extends State<ChatScreen> {
       if (m.messageType != "text") continue;
       if (!translateOwnMessages && m.senderId == _currentUserId) continue;
       if ((m.isDeleted ?? false)) continue;
+      // Encoded listing cards / anchors are rendered from their payload, not
+      // their raw text — never spend a translation call on the JSON blob.
+      if (m.content.startsWith(listingShareMessagePrefix)) continue;
+      if (m.content.startsWith(listingRefMessagePrefix)) continue;
       if (_translationsById.containsKey(m.id)) continue;
       if (_translationInFlightIds.contains(m.id)) continue;
       if (_translationCompletedIds.contains(m.id)) continue;
@@ -1356,6 +1386,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       });
                       _finishRefreshSkeletonIfNeeded();
                       _refreshPeerAvatarIfPossible();
+                      _maybeHandlePendingDiscuss();
                       context.read<MessagingBloc>().add(
                             MarkMessagesAsRead(conversationId: conversationId),
                           );
@@ -1381,6 +1412,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       _messageController.clear();
                       _scrollToBottom();
                       HapticFeedbackUtils.impact();
+                      if (_highlightNextSentShare) {
+                        _highlightNextSentShare = false;
+                        _highlightMessage(message.id);
+                      }
                     },
                     messageEdited: (message) {
                       setState(() {
@@ -1592,6 +1627,24 @@ class _ChatScreenState extends State<ChatScreen> {
     required bool isLatest,
   }) {
     if (_isGroupChat) {
+      final refPayload = ListingRefMessageCodec.parse(message.content);
+      if (refPayload != null) {
+        final senderName =
+            message.sender?.profile?.name ?? message.sender?.email ?? "";
+        return ListingRefMessageBubble(
+          key: ValueKey("listing_ref_${message.id}_${message.createdAt}"),
+          message: message,
+          payload: refPayload,
+          isCurrentUser: isCurrentUser,
+          leftAvatarInitials:
+              isCurrentUser ? null : StringUtils.extractInitials(senderName),
+          rightAvatarInitials: _getCurrentUserInitials(),
+          leftAvatarUrl:
+              isCurrentUser ? null : message.sender?.profile?.avatarUrl,
+          rightAvatarUrl: _currentUserProfile?.avatarUrl,
+          onTapAnchor: () => _jumpToSharedListing(refPayload.listingId),
+        );
+      }
       final payload = ListingShareMessageCodec.parse(message.content);
       if (payload != null) {
         final senderName =
@@ -1716,12 +1769,158 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Whether a (non-deleted) listing-share card for [listingId] is already
   /// present among the currently loaded messages of this conversation.
   bool _listingAlreadyShared(int listingId) {
+    return _firstSharedListing(listingId) != null;
+  }
+
+  /// Earliest (non-deleted) listing-share card for [listingId] with its parsed
+  /// payload. [_messages] is chronological ascending, so the first match is the
+  /// oldest mention.
+  ({int id, ListingShareMessagePayload payload})? _firstSharedListing(
+    int listingId,
+  ) {
     for (final candidate in _messages) {
       if (candidate.isDeleted == true) continue;
       final payload = ListingShareMessageCodec.parse(candidate.content);
-      if (payload?.listingId == listingId) return true;
+      if (payload != null && payload.listingId == listingId) {
+        return (id: candidate.id, payload: payload);
+      }
     }
-    return false;
+    return null;
+  }
+
+  /// Tap handler for an anchor breadcrumb: scroll to (and flash) the original
+  /// listing card. If it isn't in the loaded window, tell the user.
+  void _jumpToSharedListing(int listingId) {
+    final existing = _firstSharedListing(listingId);
+    if (existing == null) {
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("group_shortlist_original_not_found"),
+      );
+      return;
+    }
+    unawaited(_focusExistingSharedListing(existing.id));
+  }
+
+  /// Runs once after the first message load when the chat was opened to discuss
+  /// a specific listing. If the card already exists we scroll to it; otherwise
+  /// we post it directly so the encoded payload never appears in the composer.
+  void _maybeHandlePendingDiscuss() {
+    if (_pendingDiscussHandled) return;
+    final listingId = _pendingDiscussListingId;
+    if (listingId == null) return;
+    _pendingDiscussHandled = true;
+
+    final existing = _firstSharedListing(listingId);
+    if (existing != null) {
+      // Continue discussion: drop a compact, tappable anchor into the timeline
+      // instead of re-posting the full card or scrolling away.
+      final sharePayload = _pendingListingShareToPost == null
+          ? null
+          : ListingShareMessageCodec.parse(_pendingListingShareToPost!);
+      _pendingListingShareToPost = null;
+      final title = existing.payload.title.trim().isNotEmpty
+          ? existing.payload.title.trim()
+          : (sharePayload?.title.trim() ?? "");
+      final refContent = ListingRefMessageCodec.encode(
+        ListingRefMessagePayload(listingId: listingId, title: title),
+      );
+      setState(() => _isSendingMessage = true);
+      context.read<MessagingBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              content: refContent,
+            ),
+          );
+      return;
+    }
+
+    final content = _pendingListingShareToPost?.trim();
+    _pendingListingShareToPost = null;
+    if (content == null || content.isEmpty) return;
+    _highlightNextSentShare = true;
+    setState(() => _isSendingMessage = true);
+    context.read<MessagingBloc>().add(
+          SendMessage(conversationId: widget.conversationId, content: content),
+        );
+  }
+
+  /// Scrolls to an already-posted listing card, flashes it, and focuses the
+  /// composer so the user can comment in context.
+  Future<void> _focusExistingSharedListing(int messageId) async {
+    if (!mounted) return;
+    setState(() => _scrollTargetMessageId = messageId);
+    await _scrollToMessageById(messageId);
+    if (!mounted) return;
+    _highlightMessage(messageId);
+    _messageFocusNode.requestFocus();
+  }
+
+  /// Brings the message carrying [_scrollTargetKey] into view. Items are built
+  /// lazily, so when the target is off-screen we step the list toward older
+  /// history (reverse list ⇒ increasing offset) until it mounts, then center it.
+  Future<void> _scrollToMessageById(int messageId) async {
+    const maxAttempts = 14;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      if (!mounted) return;
+      final ctx = _scrollTargetKey.currentContext;
+      if (ctx != null) {
+        await Scrollable.ensureVisible(
+          ctx,
+          alignment: 0.3,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        );
+        return;
+      }
+      if (!_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      final next = (position.pixels + position.viewportDimension * 0.85)
+          .clamp(0.0, position.maxScrollExtent);
+      if (next <= position.pixels) return;
+      await _scrollController.animateTo(
+        next,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 32));
+    }
+  }
+
+  void _highlightMessage(int messageId) {
+    _highlightTimer?.cancel();
+    setState(() => _highlightedMessageId = messageId);
+    _highlightTimer = Timer(const Duration(milliseconds: 1800), () {
+      if (!mounted) return;
+      setState(() {
+        _highlightedMessageId = null;
+        _scrollTargetMessageId = null;
+      });
+    });
+  }
+
+  /// Tags the focused/flashing listing card so it carries [_scrollTargetKey]
+  /// (for `ensureVisible`) and a brief highlight tint. Untouched messages are
+  /// returned as-is to avoid per-row overhead.
+  Widget _wrapMessageForFocus(Message message, Widget child) {
+    final isTarget = _scrollTargetMessageId == message.id;
+    final isHighlighted = _highlightedMessageId == message.id;
+    if (!isTarget && !isHighlighted) return child;
+
+    Widget result = child;
+    if (isHighlighted) {
+      result = DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: result,
+      );
+    }
+    if (isTarget) {
+      result = KeyedSubtree(key: _scrollTargetKey, child: result);
+    }
+    return result;
   }
 
   Future<void> _setListingRating(Message message, int stars) async {
@@ -1791,10 +1990,13 @@ class _ChatScreenState extends State<ChatScreen> {
             :final isCurrentUser,
             :final isLatest,
           ) =>
-            _buildChatMessageBubble(
-              message: message,
-              isCurrentUser: isCurrentUser,
-              isLatest: isLatest,
+            _wrapMessageForFocus(
+              message,
+              _buildChatMessageBubble(
+                message: message,
+                isCurrentUser: isCurrentUser,
+                isLatest: isLatest,
+              ),
             ),
         };
       },

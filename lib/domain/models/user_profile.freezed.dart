@@ -67,7 +67,26 @@ mixin _$UserProfile {
   @JsonKey(name: "preferred_language")
   String? get preferredLanguage => throw _privateConstructorUsedError;
   @JsonKey(name: "origin_country_iso2")
-  String? get originCountryIso2 => throw _privateConstructorUsedError;
+  String? get originCountryIso2 =>
+      throw _privateConstructorUsedError; // ── "What I'm looking for" matching preferences ──
+  @JsonKey(name: "birth_year")
+  int? get birthYear => throw _privateConstructorUsedError;
+  @JsonKey(name: "budget_min")
+  int? get budgetMin => throw _privateConstructorUsedError;
+  @JsonKey(name: "budget_max")
+  int? get budgetMax => throw _privateConstructorUsedError;
+  @JsonKey(name: "pref_roommate_gender")
+  String? get prefRoommateGender => throw _privateConstructorUsedError;
+  @JsonKey(name: "pref_age_min")
+  int? get prefAgeMin => throw _privateConstructorUsedError;
+  @JsonKey(name: "pref_age_max")
+  int? get prefAgeMax => throw _privateConstructorUsedError;
+  @JsonKey(name: "pref_budget_overlap_required")
+  bool? get prefBudgetOverlapRequired => throw _privateConstructorUsedError;
+  @JsonKey(name: "dealbreakers")
+  List<String>? get dealbreakers => throw _privateConstructorUsedError;
+  @JsonKey(name: "top_priorities")
+  List<String>? get topPriorities => throw _privateConstructorUsedError;
   @JsonKey(name: "created_at")
   String? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: "updated_at")
@@ -124,6 +143,16 @@ abstract class $UserProfileCopyWith<$Res> {
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
       @JsonKey(name: "origin_country_iso2") String? originCountryIso2,
+      @JsonKey(name: "birth_year") int? birthYear,
+      @JsonKey(name: "budget_min") int? budgetMin,
+      @JsonKey(name: "budget_max") int? budgetMax,
+      @JsonKey(name: "pref_roommate_gender") String? prefRoommateGender,
+      @JsonKey(name: "pref_age_min") int? prefAgeMin,
+      @JsonKey(name: "pref_age_max") int? prefAgeMax,
+      @JsonKey(name: "pref_budget_overlap_required")
+      bool? prefBudgetOverlapRequired,
+      @JsonKey(name: "dealbreakers") List<String>? dealbreakers,
+      @JsonKey(name: "top_priorities") List<String>? topPriorities,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt,
       UserProfileRegion? region,
@@ -173,6 +202,15 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? sleepTime = freezed,
     Object? preferredLanguage = freezed,
     Object? originCountryIso2 = freezed,
+    Object? birthYear = freezed,
+    Object? budgetMin = freezed,
+    Object? budgetMax = freezed,
+    Object? prefRoommateGender = freezed,
+    Object? prefAgeMin = freezed,
+    Object? prefAgeMax = freezed,
+    Object? prefBudgetOverlapRequired = freezed,
+    Object? dealbreakers = freezed,
+    Object? topPriorities = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? region = freezed,
@@ -279,6 +317,42 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
           ? _value.originCountryIso2
           : originCountryIso2 // ignore: cast_nullable_to_non_nullable
               as String?,
+      birthYear: freezed == birthYear
+          ? _value.birthYear
+          : birthYear // ignore: cast_nullable_to_non_nullable
+              as int?,
+      budgetMin: freezed == budgetMin
+          ? _value.budgetMin
+          : budgetMin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      budgetMax: freezed == budgetMax
+          ? _value.budgetMax
+          : budgetMax // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefRoommateGender: freezed == prefRoommateGender
+          ? _value.prefRoommateGender
+          : prefRoommateGender // ignore: cast_nullable_to_non_nullable
+              as String?,
+      prefAgeMin: freezed == prefAgeMin
+          ? _value.prefAgeMin
+          : prefAgeMin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefAgeMax: freezed == prefAgeMax
+          ? _value.prefAgeMax
+          : prefAgeMax // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefBudgetOverlapRequired: freezed == prefBudgetOverlapRequired
+          ? _value.prefBudgetOverlapRequired
+          : prefBudgetOverlapRequired // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      dealbreakers: freezed == dealbreakers
+          ? _value.dealbreakers
+          : dealbreakers // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      topPriorities: freezed == topPriorities
+          ? _value.topPriorities
+          : topPriorities // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -368,6 +442,16 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       @JsonKey(name: "sleep_time") String? sleepTime,
       @JsonKey(name: "preferred_language") String? preferredLanguage,
       @JsonKey(name: "origin_country_iso2") String? originCountryIso2,
+      @JsonKey(name: "birth_year") int? birthYear,
+      @JsonKey(name: "budget_min") int? budgetMin,
+      @JsonKey(name: "budget_max") int? budgetMax,
+      @JsonKey(name: "pref_roommate_gender") String? prefRoommateGender,
+      @JsonKey(name: "pref_age_min") int? prefAgeMin,
+      @JsonKey(name: "pref_age_max") int? prefAgeMax,
+      @JsonKey(name: "pref_budget_overlap_required")
+      bool? prefBudgetOverlapRequired,
+      @JsonKey(name: "dealbreakers") List<String>? dealbreakers,
+      @JsonKey(name: "top_priorities") List<String>? topPriorities,
       @JsonKey(name: "created_at") String? createdAt,
       @JsonKey(name: "updated_at") String? updatedAt,
       UserProfileRegion? region,
@@ -417,6 +501,15 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? sleepTime = freezed,
     Object? preferredLanguage = freezed,
     Object? originCountryIso2 = freezed,
+    Object? birthYear = freezed,
+    Object? budgetMin = freezed,
+    Object? budgetMax = freezed,
+    Object? prefRoommateGender = freezed,
+    Object? prefAgeMin = freezed,
+    Object? prefAgeMax = freezed,
+    Object? prefBudgetOverlapRequired = freezed,
+    Object? dealbreakers = freezed,
+    Object? topPriorities = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? region = freezed,
@@ -523,6 +616,42 @@ class __$$UserProfileImplCopyWithImpl<$Res>
           ? _value.originCountryIso2
           : originCountryIso2 // ignore: cast_nullable_to_non_nullable
               as String?,
+      birthYear: freezed == birthYear
+          ? _value.birthYear
+          : birthYear // ignore: cast_nullable_to_non_nullable
+              as int?,
+      budgetMin: freezed == budgetMin
+          ? _value.budgetMin
+          : budgetMin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      budgetMax: freezed == budgetMax
+          ? _value.budgetMax
+          : budgetMax // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefRoommateGender: freezed == prefRoommateGender
+          ? _value.prefRoommateGender
+          : prefRoommateGender // ignore: cast_nullable_to_non_nullable
+              as String?,
+      prefAgeMin: freezed == prefAgeMin
+          ? _value.prefAgeMin
+          : prefAgeMin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefAgeMax: freezed == prefAgeMax
+          ? _value.prefAgeMax
+          : prefAgeMax // ignore: cast_nullable_to_non_nullable
+              as int?,
+      prefBudgetOverlapRequired: freezed == prefBudgetOverlapRequired
+          ? _value.prefBudgetOverlapRequired
+          : prefBudgetOverlapRequired // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      dealbreakers: freezed == dealbreakers
+          ? _value._dealbreakers
+          : dealbreakers // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      topPriorities: freezed == topPriorities
+          ? _value._topPriorities
+          : topPriorities // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -579,10 +708,22 @@ class _$UserProfileImpl implements _UserProfile {
       @JsonKey(name: "sleep_time") this.sleepTime,
       @JsonKey(name: "preferred_language") this.preferredLanguage,
       @JsonKey(name: "origin_country_iso2") this.originCountryIso2,
+      @JsonKey(name: "birth_year") this.birthYear,
+      @JsonKey(name: "budget_min") this.budgetMin,
+      @JsonKey(name: "budget_max") this.budgetMax,
+      @JsonKey(name: "pref_roommate_gender") this.prefRoommateGender,
+      @JsonKey(name: "pref_age_min") this.prefAgeMin,
+      @JsonKey(name: "pref_age_max") this.prefAgeMax,
+      @JsonKey(name: "pref_budget_overlap_required")
+      this.prefBudgetOverlapRequired,
+      @JsonKey(name: "dealbreakers") final List<String>? dealbreakers,
+      @JsonKey(name: "top_priorities") final List<String>? topPriorities,
       @JsonKey(name: "created_at") this.createdAt,
       @JsonKey(name: "updated_at") this.updatedAt,
       this.region,
-      this.university});
+      this.university})
+      : _dealbreakers = dealbreakers,
+        _topPriorities = topPriorities;
 
   factory _$UserProfileImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserProfileImplFromJson(json);
@@ -660,6 +801,50 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   @JsonKey(name: "origin_country_iso2")
   final String? originCountryIso2;
+// ── "What I'm looking for" matching preferences ──
+  @override
+  @JsonKey(name: "birth_year")
+  final int? birthYear;
+  @override
+  @JsonKey(name: "budget_min")
+  final int? budgetMin;
+  @override
+  @JsonKey(name: "budget_max")
+  final int? budgetMax;
+  @override
+  @JsonKey(name: "pref_roommate_gender")
+  final String? prefRoommateGender;
+  @override
+  @JsonKey(name: "pref_age_min")
+  final int? prefAgeMin;
+  @override
+  @JsonKey(name: "pref_age_max")
+  final int? prefAgeMax;
+  @override
+  @JsonKey(name: "pref_budget_overlap_required")
+  final bool? prefBudgetOverlapRequired;
+  final List<String>? _dealbreakers;
+  @override
+  @JsonKey(name: "dealbreakers")
+  List<String>? get dealbreakers {
+    final value = _dealbreakers;
+    if (value == null) return null;
+    if (_dealbreakers is EqualUnmodifiableListView) return _dealbreakers;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _topPriorities;
+  @override
+  @JsonKey(name: "top_priorities")
+  List<String>? get topPriorities {
+    final value = _topPriorities;
+    if (value == null) return null;
+    if (_topPriorities is EqualUnmodifiableListView) return _topPriorities;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: "created_at")
   final String? createdAt;
@@ -673,7 +858,7 @@ class _$UserProfileImpl implements _UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegramAvatarUrl: $telegramAvatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, originCountryIso2: $originCountryIso2, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
+    return 'UserProfile(id: $id, userId: $userId, name: $name, gender: $gender, isVerified: $isVerified, regionId: $regionId, universityId: $universityId, avatarUrl: $avatarUrl, telegramAvatarUrl: $telegramAvatarUrl, telegram: $telegram, rating: $rating, aboutMe: $aboutMe, employed: $employed, cleanliness: $cleanliness, noiseLevel: $noiseLevel, sociability: $sociability, guestsAllowed: $guestsAllowed, smokingPreference: $smokingPreference, alcoholPreference: $alcoholPreference, cookingHabits: $cookingHabits, petsPreference: $petsPreference, wakeupTime: $wakeupTime, sleepTime: $sleepTime, preferredLanguage: $preferredLanguage, originCountryIso2: $originCountryIso2, birthYear: $birthYear, budgetMin: $budgetMin, budgetMax: $budgetMax, prefRoommateGender: $prefRoommateGender, prefAgeMin: $prefAgeMin, prefAgeMax: $prefAgeMax, prefBudgetOverlapRequired: $prefBudgetOverlapRequired, dealbreakers: $dealbreakers, topPriorities: $topPriorities, createdAt: $createdAt, updatedAt: $updatedAt, region: $region, university: $university)';
   }
 
   @override
@@ -725,6 +910,25 @@ class _$UserProfileImpl implements _UserProfile {
                 other.preferredLanguage == preferredLanguage) &&
             (identical(other.originCountryIso2, originCountryIso2) ||
                 other.originCountryIso2 == originCountryIso2) &&
+            (identical(other.birthYear, birthYear) ||
+                other.birthYear == birthYear) &&
+            (identical(other.budgetMin, budgetMin) ||
+                other.budgetMin == budgetMin) &&
+            (identical(other.budgetMax, budgetMax) ||
+                other.budgetMax == budgetMax) &&
+            (identical(other.prefRoommateGender, prefRoommateGender) ||
+                other.prefRoommateGender == prefRoommateGender) &&
+            (identical(other.prefAgeMin, prefAgeMin) ||
+                other.prefAgeMin == prefAgeMin) &&
+            (identical(other.prefAgeMax, prefAgeMax) ||
+                other.prefAgeMax == prefAgeMax) &&
+            (identical(other.prefBudgetOverlapRequired,
+                    prefBudgetOverlapRequired) ||
+                other.prefBudgetOverlapRequired == prefBudgetOverlapRequired) &&
+            const DeepCollectionEquality()
+                .equals(other._dealbreakers, _dealbreakers) &&
+            const DeepCollectionEquality()
+                .equals(other._topPriorities, _topPriorities) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -763,6 +967,15 @@ class _$UserProfileImpl implements _UserProfile {
         sleepTime,
         preferredLanguage,
         originCountryIso2,
+        birthYear,
+        budgetMin,
+        budgetMax,
+        prefRoommateGender,
+        prefAgeMin,
+        prefAgeMax,
+        prefBudgetOverlapRequired,
+        const DeepCollectionEquality().hash(_dealbreakers),
+        const DeepCollectionEquality().hash(_topPriorities),
         createdAt,
         updatedAt,
         region,
@@ -819,6 +1032,16 @@ abstract class _UserProfile implements UserProfile {
       @JsonKey(name: "sleep_time") final String? sleepTime,
       @JsonKey(name: "preferred_language") final String? preferredLanguage,
       @JsonKey(name: "origin_country_iso2") final String? originCountryIso2,
+      @JsonKey(name: "birth_year") final int? birthYear,
+      @JsonKey(name: "budget_min") final int? budgetMin,
+      @JsonKey(name: "budget_max") final int? budgetMax,
+      @JsonKey(name: "pref_roommate_gender") final String? prefRoommateGender,
+      @JsonKey(name: "pref_age_min") final int? prefAgeMin,
+      @JsonKey(name: "pref_age_max") final int? prefAgeMax,
+      @JsonKey(name: "pref_budget_overlap_required")
+      final bool? prefBudgetOverlapRequired,
+      @JsonKey(name: "dealbreakers") final List<String>? dealbreakers,
+      @JsonKey(name: "top_priorities") final List<String>? topPriorities,
       @JsonKey(name: "created_at") final String? createdAt,
       @JsonKey(name: "updated_at") final String? updatedAt,
       final UserProfileRegion? region,
@@ -899,7 +1122,35 @@ abstract class _UserProfile implements UserProfile {
   String? get preferredLanguage;
   @override
   @JsonKey(name: "origin_country_iso2")
-  String? get originCountryIso2;
+  String?
+      get originCountryIso2; // ── "What I'm looking for" matching preferences ──
+  @override
+  @JsonKey(name: "birth_year")
+  int? get birthYear;
+  @override
+  @JsonKey(name: "budget_min")
+  int? get budgetMin;
+  @override
+  @JsonKey(name: "budget_max")
+  int? get budgetMax;
+  @override
+  @JsonKey(name: "pref_roommate_gender")
+  String? get prefRoommateGender;
+  @override
+  @JsonKey(name: "pref_age_min")
+  int? get prefAgeMin;
+  @override
+  @JsonKey(name: "pref_age_max")
+  int? get prefAgeMax;
+  @override
+  @JsonKey(name: "pref_budget_overlap_required")
+  bool? get prefBudgetOverlapRequired;
+  @override
+  @JsonKey(name: "dealbreakers")
+  List<String>? get dealbreakers;
+  @override
+  @JsonKey(name: "top_priorities")
+  List<String>? get topPriorities;
   @override
   @JsonKey(name: "created_at")
   String? get createdAt;

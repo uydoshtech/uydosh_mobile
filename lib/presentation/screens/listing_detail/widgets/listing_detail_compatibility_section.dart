@@ -2031,14 +2031,23 @@ class _ListingDetailCompatibilitySectionState
                     ),
                     if (isAuthenticated && !widget.isGroupCompatibility) ...[
                       const SizedBox(width: 8),
-                      Text(
-                        headerPercentText,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _getCompatibilityPercentColor(),
-                        ),
-                      ),
+                      widget.isLoadingCompatibility
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: _getIconColor(),
+                              ),
+                            )
+                          : Text(
+                              headerPercentText,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: _getCompatibilityPercentColor(),
+                              ),
+                            ),
                     ],
                   ],
                 ),
