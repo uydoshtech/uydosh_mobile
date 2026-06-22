@@ -1033,7 +1033,10 @@ class _ListingDetailCompatibilitySectionState
     final themeState = ThemeState();
     final isLightTheme = themeState.isLightTheme;
     final isBlueTheme = themeState.isBlueTheme;
-    final useValueClusterFills = isLightTheme || isBlueTheme;
+    final useValueClusterFills = isLightTheme;
+    // Blue theme keeps the default container background and signals status via
+    // green/orange/red icon colors instead of tinted cell fills.
+    final useStatusIconColors = isBlueTheme;
     final notSpecifiedLabel = L10n.get("not_specified");
     final currentUserId =
         widget.currentUserId ?? UserListingState().currentUserId;
@@ -1153,6 +1156,7 @@ class _ListingDetailCompatibilitySectionState
     }
 
     Color? matrixRowHeaderFillColor(GroupPreferenceMatrixRow row) {
+      if (useStatusIconColors) return null;
       if (!useValueClusterFills) {
         return statusColor(rowStatus(row))?.withValues(alpha: 0.08);
       }
@@ -1176,6 +1180,7 @@ class _ListingDetailCompatibilitySectionState
         return null;
       }
 
+      if (useStatusIconColors) return null;
       if (!useValueClusterFills) {
         return statusColor(cell.status)?.withValues(alpha: 0.08);
       }
@@ -1228,9 +1233,12 @@ class _ListingDetailCompatibilitySectionState
         return valueText(value, status: status);
       }
 
+      final iconColor = useStatusIconColors
+          ? (statusColor(status) ?? textColor).withValues(alpha: 0.9)
+          : textColor.withValues(alpha: 0.9);
       final visual = _buildMatrixValueIcon(
         iconKey,
-        color: textColor.withValues(alpha: 0.9),
+        color: iconColor,
       );
       if (visual == null) return valueText(value, status: status);
 

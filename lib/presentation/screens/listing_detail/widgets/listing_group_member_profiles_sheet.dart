@@ -768,14 +768,11 @@ class _MemberProfilesHeader extends StatelessWidget {
     final scheme = theme.colorScheme;
     final isLightTheme = ThemeState().isLightTheme;
     final subtitleColor = isLightTheme ? Colors.black : scheme.onSurfaceVariant;
-    final progressLabel = groupProgress != null
-        ? L10n.getWithParams(
-            "group_members_progress",
-            params: {
-              "current": "${groupProgress!.current}",
-              "target": "${groupProgress!.target}",
-            },
-          )
+    final membersNeeded = groupProgress != null
+        ? (groupProgress!.target - groupProgress!.current)
+        : 0;
+    final progressLabel = membersNeeded > 0
+        ? L10n.plural("group_members_needed", membersNeeded)
         : null;
 
     return Padding(

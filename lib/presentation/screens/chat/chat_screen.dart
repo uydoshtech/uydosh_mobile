@@ -1918,10 +1918,41 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   /// Brings the message carrying [_scrollTargetKey] into view. Items are built
-  /// lazily, so when the target is off-screen we step the list toward older
-  /// history (reverse list ⇒ increasing offset) until it mounts, then center it.
+  /// lazily, so when the target is off-screen we step the list toward it until
+  /// it mounts, then center it.
+  ///
+  /// The list is reversed (newest at the bottom ⇒ larger scroll offset = older
+  /// messages). We estimate the target's offset from its index so we step in
+  /// the correct direction whether it's above or below the current viewport —
+  /// otherwise jumping from the top of the chat (where the target is *newer*,
+  /// i.e. at a smaller offset) would never move.
   Future<void> _scrollToMessageById(int messageId) async {
-    const maxAttempts = 14;
+    const maxAttempts = 24;
+
+    double? targetOffsetEstimate;
+    if (_scrollController.hasClients) {
+      final grouped = _groupedItemsFor(_messages);
+      final itemIndex = grouped.indexWhere(
+        (it) => it is MessageListItem && it.message.id == messageId,
+      );
+      if (itemIndex >= 0 && grouped.length > 1) {
+        // Reversed list index for this item; fraction → estimated pixels.
+        final listIndex = grouped.length - 1 - itemIndex;
+        final fraction = listIndex / (grouped.length - 1);
+        targetOffsetEstimate =
+            fraction * _scrollController.position.maxScrollExtent;
+      }
+    }
+
+    // Pick the step direction once and keep it. Recomputing it each iteration
+    // against the fixed estimate makes the list oscillate (overshoot → flip →
+    // undershoot → flip…). We only ever reverse a single time, and only if we
+    // hit a boundary without mounting the target.
+    var goUp = targetOffsetEstimate == null ||
+        (_scrollController.hasClients &&
+            targetOffsetEstimate >= _scrollController.position.pixels);
+    var reversedOnce = false;
+
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       if (!mounted) return;
       final ctx = _scrollTargetKey.currentContext;
@@ -1936,15 +1967,23 @@ class _ChatScreenState extends State<ChatScreen> {
       }
       if (!_scrollController.hasClients) return;
       final position = _scrollController.position;
-      final next = (position.pixels + position.viewportDimension * 0.85)
+      final step = position.viewportDimension * 0.85;
+      final next = (goUp ? position.pixels + step : position.pixels - step)
           .clamp(0.0, position.maxScrollExtent);
-      if (next <= position.pixels) return;
+      if ((next - position.pixels).abs() < 1) {
+        // Reached an edge without finding the target. The initial guess may
+        // have been wrong; try the other direction exactly once.
+        if (reversedOnce) return;
+        reversedOnce = true;
+        goUp = !goUp;
+        continue;
+      }
       await _scrollController.animateTo(
         next,
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
       );
-      await Future<void>.delayed(const Duration(milliseconds: 32));
+      await Future<void>.delayed(const Duration(milliseconds: 24));
     }
   }
 
