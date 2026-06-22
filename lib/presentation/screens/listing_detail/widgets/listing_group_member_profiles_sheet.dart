@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 const _sheetScreenMargin = 24.0;
@@ -387,8 +388,7 @@ class _ListingGroupMemberProfilesSheetState
       context: context,
       builder: (dialogContext) {
         final scheme = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+        return UydoshGlassDialog(
           title: Text(
             L10n.get("group_remove_member_title"),
             style: TextStyle(
@@ -466,8 +466,7 @@ class _ListingGroupMemberProfilesSheetState
       context: context,
       builder: (dialogContext) {
         final scheme = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+        return UydoshGlassDialog(
           title: Text(
             L10n.get("group_leave_group_title"),
             style: TextStyle(

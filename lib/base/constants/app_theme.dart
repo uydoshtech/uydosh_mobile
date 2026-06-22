@@ -20,6 +20,9 @@ class AppTheme {
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;
 
+  /// Light blue tinted surface for popup/dropdown panels (replaces pure white).
+  static const Color menuOverlaySurfaceColor = Color(0xFFE8F1FB);
+
   /// Padding inside popup menus (Material default: 8 vertical).
   static const EdgeInsets popupMenuPadding =
       EdgeInsets.symmetric(vertical: 8.0);
@@ -255,11 +258,13 @@ class AppTheme {
         size: 24,
       ),
 
-      // Popup menu theme - White background with blue text and icons.
+      // Popup menu theme - Light blue tinted background with blue text and icons.
       // Material 3 [PopupMenuItem] uses [labelTextStyle], not [textStyle], for labels;
       // without this, labels use [ColorScheme.onSurface] (white here) on a light menu.
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
+        color: menuOverlaySurfaceColor.withValues(
+          alpha: menuOverlaySurfaceOpacity,
+        ),
         textStyle: const TextStyle(
           color: BlueThemeColors.primary, // Blue text
           fontSize: 16,
@@ -460,9 +465,11 @@ class AppTheme {
       iconTheme:
           const IconThemeData(color: LightThemeColors.iconPrimary, size: 24),
 
-      // Popup menu theme - White background with light theme primary text and icons
+      // Popup menu theme - Light blue tinted background with light theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
+        color: menuOverlaySurfaceColor.withValues(
+          alpha: menuOverlaySurfaceOpacity,
+        ),
         textStyle: const TextStyle(
           color: LightThemeColors.primary, // Light theme primary text
           fontSize: 16,
@@ -637,9 +644,11 @@ class AppTheme {
         size: 24,
       ),
 
-      // Popup menu theme - White background with messaging theme primary text and icons
+      // Popup menu theme - Light blue tinted background with messaging theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white.withValues(alpha: menuOverlaySurfaceOpacity),
+        color: menuOverlaySurfaceColor.withValues(
+          alpha: menuOverlaySurfaceOpacity,
+        ),
         textStyle: const TextStyle(
           color: MessagingThemeColors.primary, // Messaging theme primary text
           fontSize: 16,

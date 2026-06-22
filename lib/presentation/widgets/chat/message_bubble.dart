@@ -18,6 +18,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 class MessageBubble extends StatefulWidget {
   const MessageBubble({
@@ -901,7 +902,7 @@ class _MessageBubbleState extends State<MessageBubble>
       context: context,
       barrierDismissible: true,
       builder: (ctx) {
-        return AlertDialog(
+        return UydoshGlassDialog(
           contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
           content: Wrap(
             alignment: WrapAlignment.center,

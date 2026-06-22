@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 /// Modal to pick a new owner (moderation staff). Returns `true` if reassigned.
 Future<bool> showReassignOwnerDialog(
@@ -145,8 +146,9 @@ class _ReassignOwnerDialogState extends State<_ReassignOwnerDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AlertDialog(
+    return UydoshGlassDialog(
       titlePadding: const EdgeInsets.fromLTRB(24, 20, 12, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       title: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

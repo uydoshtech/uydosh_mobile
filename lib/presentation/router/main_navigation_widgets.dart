@@ -258,6 +258,7 @@ class CreateChoiceTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.iconColor,
     super.key,
   });
 
@@ -266,33 +267,39 @@ class CreateChoiceTile extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
+  /// Pastel background color for the large square icon tile. Falls back to a
+  /// tinted primary swatch when not provided.
+  final Color? iconColor;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final swatch =
+        iconColor ?? theme.colorScheme.primary.withValues(alpha: 0.18);
     return Material(
       color: theme.colorScheme.surface.withValues(
         alpha: LiquidGlassRendering.nestedTileFillAlpha(isDark: isDark),
       ),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 96,
+                height: 96,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
+                  color: swatch,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                child: Text(emoji, style: const TextStyle(fontSize: 52)),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,14 +307,14 @@ class CreateChoiceTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: isDark
                             ? theme.colorScheme.onSurfaceVariant
                             : theme.colorScheme.onSurface,
@@ -316,6 +323,7 @@ class CreateChoiceTile extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right,
                 color: theme.colorScheme.onSurfaceVariant,

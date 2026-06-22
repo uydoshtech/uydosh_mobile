@@ -16,6 +16,7 @@ import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/presentation/widgets/common/pressable_transform.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -433,8 +434,10 @@ class _NeumorphicLanguagePickerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final surface = scheme.surface;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final effectsEnabled = LiquidGlassRendering.effectsEnabled(context);
     const borderRadius = BorderRadius.all(Radius.circular(24));
 
     return Dialog(
@@ -443,32 +446,60 @@ class _NeumorphicLanguagePickerDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 360),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            gradient: ThreeDSurfaceStyle.surfaceGradient(context, surface),
-            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                L10n.get("select_language"),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: scheme.onSurface,
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          child: LiquidGlassRendering.backdropBlur(
+            enabled: effectsEnabled,
+            sigma: LiquidGlassRendering.panelBlurSigma,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                gradient: effectsEnabled
+                    ? LiquidGlassRendering.panelGradient(
+                        scheme: scheme,
+                        isDark: isDark,
+                      )
+                    : null,
+                color: effectsEnabled
+                    ? null
+                    : LiquidGlassRendering.bottomSheetFillColor(
+                        scheme,
+                        isDark: isDark,
+                      ),
+                border: Border.all(
+                  color: LiquidGlassRendering.panelBorderColor(scheme.surface),
+                  width: 0.6,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: isDark ? 0.34 : 0.20),
+                    blurRadius: 28,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
               ),
-              const SizedBox(height: 18),
-              const LanguagePickerOptionTile(code: "uz"),
-              const SizedBox(height: 12),
-              const LanguagePickerOptionTile(code: "ru"),
-              const SizedBox(height: 12),
-              const LanguagePickerOptionTile(code: "en"),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    L10n.get("select_language"),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const LanguagePickerOptionTile(code: "uz"),
+                  const SizedBox(height: 12),
+                  const LanguagePickerOptionTile(code: "ru"),
+                  const SizedBox(height: 12),
+                  const LanguagePickerOptionTile(code: "en"),
+                ],
+              ),
+            ),
           ),
         ),
       ),

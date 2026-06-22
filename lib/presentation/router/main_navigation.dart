@@ -733,6 +733,7 @@ class MainNavigationState extends State<MainNavigation>
                   ),
                   CreateChoiceTile(
                     emoji: "👥",
+                    iconColor: const Color(0xFFF4C9CF),
                     title: L10n.get("listing_type_roommate_needed"),
                     subtitle: L10n.get(
                       "create_choice_roommate_needed_subtitle",
@@ -744,9 +745,10 @@ class MainNavigationState extends State<MainNavigation>
                       context.pushCreateListing(listingTypeId: 2);
                     },
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   CreateChoiceTile(
                     emoji: "🤝",
+                    iconColor: const Color(0xFFF6C966),
                     title: L10n.get("create_choice_group_forming"),
                     subtitle: L10n.get(
                       "create_choice_group_forming_subtitle",
@@ -758,9 +760,10 @@ class MainNavigationState extends State<MainNavigation>
                       context.pushCreateGroup();
                     },
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   CreateChoiceTile(
                     emoji: "🏠",
+                    iconColor: const Color(0xFFB9DCEC),
                     title: L10n.get("listing_type_room_needed"),
                     subtitle: L10n.get(
                       "create_choice_room_needed_subtitle",
@@ -773,9 +776,10 @@ class MainNavigationState extends State<MainNavigation>
                     },
                   ),
                   if (AppConfig.servicesFeatureEnabled) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     CreateChoiceTile(
                       emoji: "🛠",
+                      iconColor: const Color(0xFFC6D8C2),
                       title: L10n.get("create_choice_service"),
                       subtitle: L10n.get("create_choice_service_subtitle"),
                       onTap: () {

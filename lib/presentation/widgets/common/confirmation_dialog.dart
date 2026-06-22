@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 /// A reusable confirmation dialog that follows the app's theme guidelines
 /// and provides consistent styling across all confirmation dialogs
@@ -58,8 +59,7 @@ class ConfirmationDialog extends StatelessWidget {
     final confirmTextColor = confirmButtonColor ??
         (isDestructive ? scheme.error : scheme.onSurface);
 
-    return AlertDialog(
-      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+    return UydoshGlassDialog(
       title: Text(
         L10n.get(titleKey),
         style: TextStyle(

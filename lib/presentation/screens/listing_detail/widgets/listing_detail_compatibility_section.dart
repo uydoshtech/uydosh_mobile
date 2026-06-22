@@ -504,7 +504,7 @@ class _ListingDetailCompatibilitySectionState
                 children: [
                   _buildHeaderAvatar(
                     _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
-                    size: 28,
+                    size: 32,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -611,7 +611,7 @@ class _ListingDetailCompatibilitySectionState
                   children: [
                     _buildHeaderAvatar(
                       _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
-                      size: 28,
+                      size: 32,
                     ),
                     const SizedBox(height: 6),
                     Text(

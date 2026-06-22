@@ -5,6 +5,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 class PublishConsentGate {
   PublishConsentGate._();
@@ -45,8 +46,8 @@ class _PublishConsentDialogState extends State<_PublishConsentDialog> {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
 
-    return AlertDialog(
-      backgroundColor: ThemeState().cardColor,
+    return UydoshGlassDialog(
+      fallbackBackgroundColor: ThemeState().cardColor,
       title: Text(
         L10n.get("publish_consent_title"),
         textAlign: TextAlign.center,

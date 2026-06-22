@@ -38,6 +38,7 @@ import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/auth_service.dart";
 import "package:uy_dosh/domain/services/region_service.dart";
 import "package:uy_dosh/domain/services/university_service.dart";
+import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
@@ -2152,6 +2153,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               boxShadow: isSelected
                   ? ThreeDSurfaceStyle.elevatedShadows(context)
                   : ThreeDSurfaceStyle.insetRecessedShadows(context),
+              border: isSelected
+                  ? Border.all(
+                      color: AuthWizardTheme.getSelectedButtonBorderColor(),
+                      width: 2,
+                    )
+                  : null,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

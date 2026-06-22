@@ -16,6 +16,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/common_friend.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -258,6 +259,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
 
               // Merged Profile Information Card
               ListingDetailTileShell(
+                useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                   child: Column(
@@ -521,6 +523,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
               if (_hasNewProfileFields(profile)) ...[
                 const SizedBox(height: 16),
                 ListingDetailTileShell(
+                  useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                     child: Column(
@@ -779,6 +782,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     required int total,
   }) {
     return ListingDetailTileShell(
+      useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -896,6 +900,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     required VoidCallback onTap,
   }) {
     return ListingDetailTileShell(
+      useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 /// Confirmation dialog shown when the user tries to leave an edit form with
 /// pending changes. Displays a localized title/message and a bullet list of
@@ -52,8 +53,7 @@ class _UnsavedChangesDialog extends StatelessWidget {
         : "$baseMessage\n\n${L10n.get("changed_fields")}:\n"
             "$bullet ${changedFieldLabels.join("\n$bullet ")}";
 
-    return AlertDialog(
-      backgroundColor: theme.dialogTheme.backgroundColor,
+    return UydoshGlassDialog(
       title: Text(
         L10n.get("unsaved_changes_title"),
         style: TextStyle(

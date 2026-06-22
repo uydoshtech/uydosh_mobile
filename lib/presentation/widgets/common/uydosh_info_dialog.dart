@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 /// Themed informational [AlertDialog] used by the settings "About" and legal
 /// (privacy/terms) popups.
@@ -70,10 +71,11 @@ class UydoshInfoDialog extends StatelessWidget {
             child: title,
           );
 
-    return AlertDialog(
-      backgroundColor: backgroundColor,
+    return UydoshGlassDialog(
+      fallbackBackgroundColor: backgroundColor,
+      scrollable: scrollable,
       title: Center(child: titleChild),
-      content: scrollable ? SingleChildScrollView(child: content) : content,
+      content: content,
       actions: [
         TextButton(
           onPressed: () {

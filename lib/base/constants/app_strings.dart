@@ -28,11 +28,12 @@ class AppStrings {
       "create_choice_housing": "Housing",
       "create_choice_housing_subtitle": "Rent out or find a place",
       "create_choice_roommate_needed_subtitle":
-          "Already have a place - looking for roommates",
-      "create_choice_room_needed_subtitle": "Need a room or apartment",
+          "You've got a place — we'll find roommates you'll feel at home with",
+      "create_choice_room_needed_subtitle":
+          "We'll find a room or apartment you'll love",
       "create_choice_group_forming": "Gather a group",
       "create_choice_group_forming_subtitle":
-          "Find people to rent housing together",
+          "Team up and rent together — it's more affordable",
       "create_group_title": "Gather a group",
       "listing_type_group_forming": "Gather a group",
       "title_group_forming": "Forming Group",
@@ -1962,14 +1963,16 @@ class AppStrings {
 
       "location": "Район",
       "create_listing": "Создать",
-      "create_choice_title": "Что вы ищите?",
+      "create_choice_title": "Что вы ищете?",
       "create_choice_housing": "Жильё",
       "create_choice_housing_subtitle": "Сдать или снять жильё",
-      "create_choice_roommate_needed_subtitle": "Уже есть жильё — ищу соседей",
-      "create_choice_room_needed_subtitle": "Нужна комната или квартира",
+      "create_choice_roommate_needed_subtitle":
+          "Жильё есть — найдём соседей, с которыми будет комфортно",
+      "create_choice_room_needed_subtitle":
+          "Подберём комнату или квартиру по душе",
       "create_choice_group_forming": "Собрать группу",
       "create_choice_group_forming_subtitle":
-          "Найти людей для совместной аренды",
+          "Объединимся и снимем жильё вместе — выгоднее",
       "create_group_title": "Собрать группу",
       "listing_type_group_forming": "Собрать группу",
       "title_group_forming": "Собираем Группу",
@@ -3941,11 +3944,12 @@ class AppStrings {
       "create_choice_housing": "Uy-joy",
       "create_choice_housing_subtitle": "Ijaraga berish yoki topish",
       "create_choice_roommate_needed_subtitle":
-          "Uy-joyim bor - xonadoshlar qidiryapman",
-      "create_choice_room_needed_subtitle": "Xona yoki kvartira kerak",
+          "Uyingiz bor — o'zingizga mos, qulay xonadoshlarni topamiz",
+      "create_choice_room_needed_subtitle":
+          "Ko'nglingizga mos xona yoki kvartira topamiz",
       "create_choice_group_forming": "Guruh yig'ish",
       "create_choice_group_forming_subtitle":
-          "Birgalikda uy ijaraga olish uchun odamlarni topish",
+          "Birlashamiz va birga ijaraga olamiz — arzonroq",
       "create_group_title": "Guruh yig'ish",
       "listing_type_group_forming": "Guruh yig'ish",
       "title_group_forming": "Guruh Yigamiz",

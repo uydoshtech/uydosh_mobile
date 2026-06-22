@@ -31,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 String? _listingOwnerNameFromProfile(UserProfile profile) {
   final name = profile.name?.trim();
@@ -185,8 +186,7 @@ class _ListingGroupShortlistSheetState
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final scheme = Theme.of(context).colorScheme;
-            return AlertDialog(
-              backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+            return UydoshGlassDialog(
               title: Text(
                 L10n.get("group_shortlist_edit_rating_title"),
                 style: TextStyle(
@@ -289,8 +289,7 @@ class _ListingGroupShortlistSheetState
       context: context,
       builder: (dialogContext) {
         final scheme = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          backgroundColor: Theme.of(dialogContext).dialogTheme.backgroundColor,
+        return UydoshGlassDialog(
           title: Text(
             L10n.get("group_shortlist_remove_title"),
             style: TextStyle(
