@@ -394,7 +394,7 @@ class _ListingGroupShortlistSheetState
     final dotColor = scheme.onSurfaceVariant;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
       child: Row(
         children: [
           _ShortlistArrowButton(
@@ -403,41 +403,33 @@ class _ListingGroupShortlistSheetState
             onPressed: canGoBack ? () => _goToPage(_currentPage - 1) : null,
           ),
           Expanded(
-            child: _rows.length > 1
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SmoothPageIndicator(
-                        controller: _pageController,
-                        count: _rows.length,
-                        effect: WormEffect(
-                          dotColor: dotColor,
-                          activeDotColor: dotColor,
-                          dotHeight: 7,
-                          dotWidth: 7,
-                          spacing: 6,
-                          paintStyle: PaintingStyle.stroke,
-                          strokeWidth: 1.2,
-                        ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${_currentPage + 1} / ${_rows.length}",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        "${_currentPage + 1} / ${_rows.length}",
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ],
-                  )
-                : Text(
-                    "${_currentPage + 1} / ${_rows.length}",
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                        ),
+                ),
+                const SizedBox(height: 6),
+                SmoothPageIndicator(
+                  controller: _pageController,
+                  count: _rows.length,
+                  effect: WormEffect(
+                    dotColor: dotColor,
+                    activeDotColor: dotColor,
+                    dotHeight: 7,
+                    dotWidth: 7,
+                    spacing: 6,
+                    paintStyle: PaintingStyle.stroke,
+                    strokeWidth: 1.2,
                   ),
+                ),
+              ],
+            ),
           ),
           _ShortlistArrowButton(
             icon: Icons.chevron_right,

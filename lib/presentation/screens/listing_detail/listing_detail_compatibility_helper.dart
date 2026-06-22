@@ -74,6 +74,17 @@ class ListingDetailCompatibilityHelper {
             addDifference,
             addDealbreaker,
           );
+        case "roommate_gender":
+        case "age":
+        case "budget":
+          _addLookingForRow(
+            currentProfile,
+            ownerProfile,
+            field,
+            addMatch,
+            addDifference,
+            addDealbreaker,
+          );
         default:
           _addStandardRow(
             currentProfile,
@@ -219,6 +230,95 @@ class ListingDetailCompatibilityHelper {
       case ProfileMatchFieldStatus.incomplete:
         break;
     }
+  }
+
+  /// Rows for the "what I'm looking for" dimensions (gender / age / budget).
+  /// These are directional: [current] is the viewer whose preferences apply.
+  static void _addLookingForRow(
+    UserProfile current,
+    UserProfile owner,
+    ProfileMatchFieldResult field,
+    void Function(String, String, String) addMatch,
+    void Function(String, String, String, String) addDifference,
+    void Function(String, String, String, String) addDealbreaker,
+  ) {
+    if (field.status == ProfileMatchFieldStatus.incomplete) return;
+
+    final String labelKey;
+    final String label;
+    final String currentText;
+    final String ownerText;
+
+    switch (field.labelKey) {
+      case "roommate_gender":
+        labelKey = "match_dim_gender";
+        label = L10n.get("match_dim_gender");
+        currentText = _formatGenderPreference(current.prefRoommateGender);
+        ownerText = _formatGender(owner.gender);
+      case "age":
+        labelKey = "match_dim_age";
+        label = L10n.get("match_dim_age");
+        currentText = _formatAgeRange(current.prefAgeMin, current.prefAgeMax);
+        ownerText = _formatAge(owner.birthYear);
+      case "budget":
+        labelKey = "match_dim_budget";
+        label = L10n.get("match_dim_budget");
+        currentText = _formatBudgetRange(current.budgetMin, current.budgetMax);
+        ownerText = _formatBudgetRange(owner.budgetMin, owner.budgetMax);
+      default:
+        return;
+    }
+
+    switch (field.status) {
+      case ProfileMatchFieldStatus.match:
+        addMatch(labelKey, label, ownerText.isNotEmpty ? ownerText : currentText);
+      case ProfileMatchFieldStatus.dealbreaker:
+        addDealbreaker(labelKey, label, currentText, ownerText);
+      case ProfileMatchFieldStatus.difference:
+        addDifference(labelKey, label, currentText, ownerText);
+      case ProfileMatchFieldStatus.incomplete:
+        break;
+    }
+  }
+
+  static String _formatGenderPreference(String? pref) {
+    switch (pref) {
+      case "any":
+        return L10n.get("any_gender");
+      case "male":
+        return L10n.get("male");
+      case "female":
+        return L10n.get("female");
+      default:
+        return L10n.get("not_specified");
+    }
+  }
+
+  static String _formatGender(int? gender) {
+    if (gender == 1) return L10n.get("male");
+    if (gender == 2) return L10n.get("female");
+    return L10n.get("unknown");
+  }
+
+  static String _formatAge(int? birthYear) {
+    if (birthYear == null) return L10n.get("unknown");
+    final age = DateTime.now().year - birthYear;
+    if (age < 0 || age > 120) return L10n.get("unknown");
+    return "$age";
+  }
+
+  static String _formatAgeRange(int? min, int? max) {
+    if (min != null && max != null) return "$min–$max";
+    if (min != null) return "$min+";
+    if (max != null) return "≤$max";
+    return L10n.get("not_specified");
+  }
+
+  static String _formatBudgetRange(int? min, int? max) {
+    if (min != null && max != null) return "$min–$max";
+    if (min != null) return "$min+";
+    if (max != null) return "≤$max";
+    return L10n.get("not_specified");
   }
 
   static String _formatField(UserProfile profile, String labelKey) {
