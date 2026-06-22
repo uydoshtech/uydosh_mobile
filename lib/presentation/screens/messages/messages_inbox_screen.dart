@@ -606,13 +606,24 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   bool _isIncomingConversation(ConversationSummary conversation) {
     if (_currentUserId == null) return false;
-    if (_isListingGroupConversation(conversation)) return true;
+    // Group chats reuse the legacy two-party columns: the backend always
+    // sets `initiator_id` to the listing owner. So the owner belongs in
+    // "Мои объявления"; every other member is routed to "Чужие объявления"
+    // by `_isOutgoingConversation`.
+    if (_isListingGroupConversation(conversation)) {
+      return conversation.initiatorId == _currentUserId;
+    }
     return conversation.participantId == _currentUserId;
   }
 
   bool _isOutgoingConversation(ConversationSummary conversation) {
     if (_currentUserId == null) return false;
-    if (_isListingGroupConversation(conversation)) return false;
+    // For group chats the owner is `initiator_id`; any member that is not the
+    // owner (including members that live only in `conversation_members` and
+    // match neither legacy column) belongs in "Чужие объявления".
+    if (_isListingGroupConversation(conversation)) {
+      return conversation.initiatorId != _currentUserId;
+    }
     return conversation.initiatorId == _currentUserId;
   }
 

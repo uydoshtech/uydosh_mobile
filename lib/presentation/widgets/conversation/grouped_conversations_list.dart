@@ -995,6 +995,18 @@ class _ConversationParticipantStackState
     ];
   }
 
+  /// A single-conversation group chat ([_listingGroupConversationType] with
+  /// member previews) is always rendered expanded, so its member-avatar
+  /// cluster should stay pinned in the header rather than fading out with the
+  /// expand/collapse animation used for multi-thread listing cards.
+  bool get _isPersistentGroupStack {
+    final convs = widget.conversations;
+    if (convs.length != 1) return false;
+    final conv = convs.first;
+    return conv.conversationType == _listingGroupConversationType &&
+        conv.members.isNotEmpty;
+  }
+
   Widget _memberInitials(ConversationMemberSummary member) {
     return Text(
       StringUtils.extractInitials(member.name),
@@ -1017,6 +1029,10 @@ class _ConversationParticipantStackState
   void _runExpansionFadeAfterFrame() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_isPersistentGroupStack) {
+        _fadeController.value = 1;
+        return;
+      }
       if (widget.isExpanded) {
         _fadeController.reverse();
       } else {
@@ -1044,7 +1060,9 @@ class _ConversationParticipantStackState
       curve: Curves.easeInOut,
     );
 
-    if (widget.isExpanded) {
+    if (_isPersistentGroupStack) {
+      _fadeController.value = 1;
+    } else if (widget.isExpanded) {
       _fadeController.value = 0;
     } else if (slotCount > 1) {
       _fadeController.value = 0;
@@ -1057,6 +1075,10 @@ class _ConversationParticipantStackState
   @override
   void didUpdateWidget(covariant _ConversationParticipantStack oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_isPersistentGroupStack) {
+      if (_fadeController.value != 1) _fadeController.value = 1;
+      return;
+    }
     if (oldWidget.isExpanded != widget.isExpanded) {
       _runExpansionFadeAfterFrame();
     }
