@@ -1370,7 +1370,7 @@ class _ChatScreenState extends State<ChatScreen> {
             for (final m in mentioned)
               MentionedListingChip(listingId: m.listingId, title: m.title),
           ],
-          onTap: _jumpToSharedListing,
+          onTap: (id) => _jumpToSharedListing(id, focusComposer: false),
         ),
       if (_showSecurityRibbon)
         ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
@@ -1849,9 +1849,13 @@ class _ChatScreenState extends State<ChatScreen> {
     return null;
   }
 
-  /// Tap handler for an anchor breadcrumb: scroll to (and flash) the original
-  /// listing card. If it isn't in the loaded window, tell the user.
-  void _jumpToSharedListing(int listingId) {
+  /// Tap handler for an anchor breadcrumb / ribbon chip: scroll to (and flash)
+  /// the original listing card. If it isn't in the loaded window, tell the user.
+  ///
+  /// [focusComposer] is true for the inline anchor (so the user can reply in
+  /// context). The ribbon passes false: opening the keyboard there resizes the
+  /// viewport mid-scroll, which made the first tap appear to do nothing.
+  void _jumpToSharedListing(int listingId, {bool focusComposer = true}) {
     final existing = _firstSharedListing(listingId);
     if (existing == null) {
       ToastTheme.showInfo(
@@ -1860,7 +1864,9 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       return;
     }
-    unawaited(_focusExistingSharedListing(existing.id));
+    unawaited(
+      _focusExistingSharedListing(existing.id, focusComposer: focusComposer),
+    );
   }
 
   /// Runs once after the first message load when the chat was opened to discuss
@@ -1906,15 +1912,46 @@ class _ChatScreenState extends State<ChatScreen> {
         );
   }
 
-  /// Scrolls to an already-posted listing card, flashes it, and focuses the
-  /// composer so the user can comment in context.
-  Future<void> _focusExistingSharedListing(int messageId) async {
+  /// Scrolls to an already-posted listing card and flashes it. When
+  /// [focusComposer] is true it also focuses the composer so the user can
+  /// comment in context; otherwise the keyboard is dismissed first so the
+  /// viewport stays put while we scroll.
+  Future<void> _focusExistingSharedListing(
+    int messageId, {
+    bool focusComposer = true,
+  }) async {
     if (!mounted) return;
+    if (!focusComposer) {
+      // Dismiss the keyboard and wait for the viewport to finish resizing
+      // before scrolling. Scrolling while the keyboard is still animating
+      // closed makes the first tap land on the wrong offset (it looks like
+      // nothing happened), which is why the chip used to need a second tap.
+      final keyboardWasOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+      FocusScope.of(context).unfocus();
+      if (keyboardWasOpen) {
+        await _waitForKeyboardDismissed();
+        if (!mounted) return;
+      }
+    }
     setState(() => _scrollTargetMessageId = messageId);
     await _scrollToMessageById(messageId);
     if (!mounted) return;
     _highlightMessage(messageId);
-    _messageFocusNode.requestFocus();
+    if (focusComposer) {
+      _messageFocusNode.requestFocus();
+    }
+  }
+
+  /// Waits until the on-screen keyboard has finished collapsing (bottom inset
+  /// back to zero) so a subsequent scroll runs against a stable viewport.
+  /// Bails out after a short budget in case the inset never settles.
+  Future<void> _waitForKeyboardDismissed() async {
+    final deadline = DateTime.now().add(const Duration(milliseconds: 450));
+    while (mounted &&
+        MediaQuery.viewInsetsOf(context).bottom > 0 &&
+        DateTime.now().isBefore(deadline)) {
+      await WidgetsBinding.instance.endOfFrame;
+    }
   }
 
   /// Brings the message carrying [_scrollTargetKey] into view. Items are built

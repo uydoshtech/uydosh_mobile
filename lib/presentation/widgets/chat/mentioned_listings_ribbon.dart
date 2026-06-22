@@ -47,7 +47,7 @@ class MentionedListingsRibbon extends StatelessWidget {
               Padding(
                 padding: const EdgeInsetsDirectional.only(end: 8),
                 child: Icon(
-                  Icons.home_work_outlined,
+                  Icons.bookmark,
                   size: 18,
                   color: scheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -61,9 +61,9 @@ class MentionedListingsRibbon extends StatelessWidget {
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final item = items[index];
-                    final label = item.title.trim().isEmpty
-                        ? L10n.get("group_shortlist_ref_label")
-                        : item.title.trim();
+                    final raw = item.title.trim();
+                    final label =
+                        raw.isEmpty ? L10n.get("group_shortlist_ref_label") : raw;
                     return _Chip(
                       label: label,
                       height: _chipHeight,
@@ -90,9 +90,18 @@ class _Chip extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Keep chips compact: long listing titles are clipped to a short, readable
+  /// stub (full title is still reachable by tapping the chip).
+  static const int _maxChars = 14;
+
   final String label;
   final double height;
   final VoidCallback onTap;
+
+  String get _shortLabel {
+    if (label.length <= _maxChars) return label;
+    return "${label.substring(0, _maxChars).trimRight()}…";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,12 +127,16 @@ class _Chip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.place_outlined, size: 15, color: scheme.primary),
+                Icon(
+                  Icons.home_work_outlined,
+                  size: 15,
+                  color: scheme.onSurface,
+                ),
                 const SizedBox(width: 6),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 150),
+                  constraints: const BoxConstraints(maxWidth: 120),
                   child: Text(
-                    label,
+                    _shortLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

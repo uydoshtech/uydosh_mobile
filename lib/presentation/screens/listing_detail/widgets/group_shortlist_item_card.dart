@@ -454,7 +454,7 @@ class _SaverLine extends StatelessWidget {
     this.avatarUrl,
   });
 
-  static const double _avatarSize = 24;
+  static const double _avatarSize = 30;
 
   final String name;
   final String? avatarUrl;
