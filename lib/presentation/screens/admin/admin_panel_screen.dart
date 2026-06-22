@@ -19,6 +19,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_telegram_listing_groups_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -349,6 +350,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminTelegramSyncScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
+                      icon: Icons.groups_outlined,
+                      titleKey: "admin_panel_section_telegram_listing_groups",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminTelegramListingGroupsScreen(),
                           ),
                         );
                       },

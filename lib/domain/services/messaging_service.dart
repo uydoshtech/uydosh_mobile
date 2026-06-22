@@ -8,6 +8,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/domain/models/discussed_listing.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_attachment.dart";
 import "package:uy_dosh/domain/models/messaging_requests.dart";
@@ -39,6 +40,10 @@ abstract class IMessagingService {
   Future<List<ConversationMemberSummary>> getConversationMembers(
     int conversationId,
   );
+
+  /// Listings whose share cards have been posted in this (group) conversation,
+  /// ordered by first mention. Empty for 1:1 threads / chats without cards.
+  Future<List<DiscussedListing>> getDiscussedListings(int conversationId);
 
   /// Open (or reactivate) a conversation.
   ///
@@ -356,6 +361,30 @@ class MessagingService implements IMessagingService {
           .toList();
     } catch (e) {
       throw Exception("Failed to fetch conversation members");
+    }
+  }
+
+  @override
+  Future<List<DiscussedListing>> getDiscussedListings(
+    int conversationId,
+  ) async {
+    try {
+      await _checkAuthentication();
+
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        "/conversations/$conversationId/discussed-listings",
+        (json) => json as Map<String, dynamic>,
+      );
+      final data = response["data"];
+      if (data is! List) return const [];
+      return data
+          .map(
+            (item) =>
+                DiscussedListing.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception("Failed to fetch discussed listings");
     }
   }
 

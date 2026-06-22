@@ -41,6 +41,7 @@ import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_pill_button.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
+import "package:uy_dosh/domain/models/discussed_listing.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
@@ -71,6 +72,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dar
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/chat/listing_ref_message_bubble.dart";
+import "package:uy_dosh/presentation/widgets/chat/mentioned_listings_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/listing_share_message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
@@ -197,6 +199,11 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _currentUserId;
   List<Message> _messages = [];
   bool _isSendingMessage = false;
+
+  // Mentioned-listings ribbon: server-authoritative set of listing cards posted
+  // in this group chat (complete even when only a page of messages is loaded).
+  List<DiscussedListing> _discussedFromServer = const [];
+  bool _discussedFetchInFlight = false;
 
   // "Discuss in group" flow: scroll to an existing listing card or post a new
   // one exactly once after the first message load.
@@ -368,6 +375,48 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       logger.d("❌ [ChatScreen] Error loading group housing context: $e");
     }
+  }
+
+  /// Pulls the authoritative set of listing cards posted in this group chat so
+  /// the quick-jump ribbon is complete regardless of how many messages are
+  /// loaded. Best-effort: failures just leave the ribbon to message-derived
+  /// chips (see [_mentionedListings]).
+  Future<void> _loadDiscussedListings() async {
+    if (!_isGroupChat || _discussedFetchInFlight) return;
+    _discussedFetchInFlight = true;
+    try {
+      final items = await getIt<IMessagingService>().getDiscussedListings(
+        widget.conversationId,
+      );
+      if (!mounted) return;
+      setState(() => _discussedFromServer = items);
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error loading discussed listings: $e");
+    } finally {
+      _discussedFetchInFlight = false;
+    }
+  }
+
+  /// Merges the server-authoritative card list with any share cards present in
+  /// the loaded window (so freshly posted/received cards appear immediately),
+  /// de-duplicated by listing and kept in first-mention order.
+  List<({int listingId, String title})> _mentionedListings() {
+    final result = <({int listingId, String title})>[];
+    final seen = <int>{};
+    for (final d in _discussedFromServer) {
+      if (seen.add(d.listingId)) {
+        result.add((listingId: d.listingId, title: d.title));
+      }
+    }
+    for (final m in _messages) {
+      if (m.isDeleted == true) continue;
+      final payload = ListingShareMessageCodec.parse(m.content);
+      if (payload == null) continue;
+      if (seen.add(payload.listingId)) {
+        result.add((listingId: payload.listingId, title: payload.title));
+      }
+    }
+    return result;
   }
 
   Widget _buildGroupShortlistFloatingPill(BuildContext context) {
@@ -648,6 +697,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (_isGroupChat) {
         unawaited(_loadGroupParticipants());
         unawaited(_loadGroupHousingContext());
+        unawaited(_loadDiscussedListings());
       } else {
         _refreshPeerAvatarIfPossible();
       }
@@ -1310,7 +1360,18 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   List<Widget> _chatLeadingRibbonWidgets() {
+    final mentioned = _isGroupChat
+        ? _mentionedListings()
+        : const <({int listingId, String title})>[];
     return [
+      if (mentioned.isNotEmpty)
+        MentionedListingsRibbon(
+          items: [
+            for (final m in mentioned)
+              MentionedListingChip(listingId: m.listingId, title: m.title),
+          ],
+          onTap: _jumpToSharedListing,
+        ),
       if (_showSecurityRibbon)
         ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
       if (_safetyWarningActive)

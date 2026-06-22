@@ -403,32 +403,20 @@ class _ListingGroupShortlistSheetState
             onPressed: canGoBack ? () => _goToPage(_currentPage - 1) : null,
           ),
           Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${_currentPage + 1} / ${_rows.length}",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      ),
+            child: Center(
+              child: SmoothPageIndicator(
+                controller: _pageController,
+                count: _rows.length,
+                effect: WormEffect(
+                  dotColor: dotColor,
+                  activeDotColor: dotColor,
+                  dotHeight: 7,
+                  dotWidth: 7,
+                  spacing: 6,
+                  paintStyle: PaintingStyle.stroke,
+                  strokeWidth: 1.2,
                 ),
-                const SizedBox(height: 6),
-                SmoothPageIndicator(
-                  controller: _pageController,
-                  count: _rows.length,
-                  effect: WormEffect(
-                    dotColor: dotColor,
-                    activeDotColor: dotColor,
-                    dotHeight: 7,
-                    dotWidth: 7,
-                    spacing: 6,
-                    paintStyle: PaintingStyle.stroke,
-                    strokeWidth: 1.2,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           _ShortlistArrowButton(
