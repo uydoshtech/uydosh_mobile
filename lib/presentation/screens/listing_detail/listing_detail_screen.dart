@@ -244,11 +244,18 @@ class _FloatingGroupChatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isBlueTheme = ThemeState().isBlueTheme;
     final unreadColor = ThemeState().unreadIndicatorColor;
     final surface = isDark
         ? theme.colorScheme.surface.withValues(alpha: 0.84)
         : Colors.white.withValues(alpha: 0.92);
     final foreground = isDark ? Colors.white : Colors.black;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(999),
+      side: isBlueTheme
+          ? const BorderSide(color: Colors.white, width: 1)
+          : BorderSide.none,
+    );
 
     return Stack(
       clipBehavior: Clip.none,
@@ -266,7 +273,7 @@ class _FloatingGroupChatButton extends StatelessWidget {
           ),
           child: Material(
             color: surface,
-            borderRadius: BorderRadius.circular(999),
+            shape: shape,
             child: InkWell(
               borderRadius: BorderRadius.circular(999),
               onTap: onPressed,

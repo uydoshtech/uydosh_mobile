@@ -460,9 +460,12 @@ class _ListingDetailCompatibilitySectionState
   }) {
     return Expanded(
       child: Container(
-        constraints: BoxConstraints(minHeight: isHeader ? 76 : 48),
+        constraints: BoxConstraints(minHeight: isHeader ? 76 : 36),
         alignment: alignment,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: 6,
+          vertical: isHeader ? 8 : 5,
+        ),
         decoration: BoxDecoration(
           color: fillColor,
           border: Border(
@@ -523,10 +526,6 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
-  /// Light surface the matrix table sits on so blue theme can reuse the light
-  /// theme's pale value-cluster fills and dark text without losing contrast.
-  Color _matrixLightSurfaceColor() => const Color(0xFFF5F6F8);
-
   Color _matrixCardTintColor() {
     return _getDescriptionTextColor().withValues(alpha: 0.04);
   }
@@ -546,10 +545,7 @@ class _ListingDetailCompatibilitySectionState
       return const SizedBox.shrink();
     }
 
-    // Blue theme pins a light header to match the light-styled matrix table.
-    final textColor = ThemeState().isBlueTheme
-        ? AppColors.textDark87
-        : _getDescriptionTextColor();
+    final textColor = _getDescriptionTextColor();
     final borderColor = Colors.transparent;
     final orderedUserIds = _orderedMatrixUserIds();
 
@@ -677,11 +673,6 @@ class _ListingDetailCompatibilitySectionState
           ColoredBox(color: _matrixHeaderSurfaceColor()),
         ],
       );
-    }
-
-    // Blue theme: pin a light surface so it matches the light-styled table.
-    if (ThemeState().isBlueTheme) {
-      return ColoredBox(color: _matrixLightSurfaceColor());
     }
 
     return ColoredBox(color: _matrixHeaderSurfaceColor());
@@ -1043,12 +1034,6 @@ class _ListingDetailCompatibilitySectionState
     final isLightTheme = themeState.isLightTheme;
     final isBlueTheme = themeState.isBlueTheme;
     final useValueClusterFills = isLightTheme || isBlueTheme;
-    // Blue theme borrows the light theme's matrix treatment: pale value-cluster
-    // fills, dark accent variants and dark text on a light table surface. The
-    // dark muddy fills it used before were hard to read.
-    final useLightMatrixStyling = isLightTheme || isBlueTheme;
-    final matrixTextColor =
-        useLightMatrixStyling ? AppColors.textDark87 : textColor;
     final notSpecifiedLabel = L10n.get("not_specified");
     final currentUserId =
         widget.currentUserId ?? UserListingState().currentUserId;
@@ -1089,13 +1074,9 @@ class _ListingDetailCompatibilitySectionState
       switch (status) {
         case GroupPreferenceMatrixCellStatus.fullMatch:
         case GroupPreferenceMatrixCellStatus.partialMatch:
-          return useLightMatrixStyling
-              ? AppColors.successDark
-              : AppColors.success;
+          return isLightTheme ? AppColors.successDark : AppColors.success;
         case GroupPreferenceMatrixCellStatus.mismatch:
-          return useLightMatrixStyling
-              ? AppColors.warningDark
-              : AppColors.warning;
+          return isLightTheme ? AppColors.warningDark : AppColors.warning;
         case GroupPreferenceMatrixCellStatus.conflict:
           return AppColors.error;
         case GroupPreferenceMatrixCellStatus.missing:
@@ -1104,7 +1085,7 @@ class _ListingDetailCompatibilitySectionState
     }
 
     ({Color prominent, Color muted}) valueClusterFillPalette() {
-      if (useLightMatrixStyling) {
+      if (isLightTheme) {
         return (
           prominent: const Color(0xFFEAD9C3),
           muted: const Color(0xFFD5DED2),
@@ -1228,8 +1209,8 @@ class _ListingDetailCompatibilitySectionState
           fontSize: orderedUserIds.length >= 5 ? 11 : 12,
           fontWeight: isMissing ? FontWeight.w400 : FontWeight.w600,
           color: isMissing
-              ? matrixTextColor.withValues(alpha: 0.55)
-              : (accentColor ?? matrixTextColor).withValues(alpha: 0.9),
+              ? textColor.withValues(alpha: 0.55)
+              : (accentColor ?? textColor).withValues(alpha: 0.9),
         ),
       );
     }
@@ -1249,7 +1230,7 @@ class _ListingDetailCompatibilitySectionState
 
       final visual = _buildMatrixValueIcon(
         iconKey,
-        color: matrixTextColor.withValues(alpha: 0.9),
+        color: textColor.withValues(alpha: 0.9),
       );
       if (visual == null) return valueText(value, status: status);
 
@@ -1282,7 +1263,7 @@ class _ListingDetailCompatibilitySectionState
             ThemeIcon(
               _getLifestyleIcon(row.labelKey),
               size: 18,
-              color: (accentColor ?? matrixTextColor).withValues(
+              color: (accentColor ?? textColor).withValues(
                 alpha: 0.85,
               ),
             ),
@@ -1298,7 +1279,7 @@ class _ListingDetailCompatibilitySectionState
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: accentColor ?? matrixTextColor,
+                      color: accentColor ?? textColor,
                     ),
                   ),
                   if (row.alignmentSummary != null) ...[
@@ -1310,7 +1291,7 @@ class _ListingDetailCompatibilitySectionState
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: (accentColor ?? matrixTextColor).withValues(
+                        color: (accentColor ?? textColor).withValues(
                           alpha: 0.75,
                         ),
                       ),
@@ -1401,7 +1382,6 @@ class _ListingDetailCompatibilitySectionState
               child: DecoratedBox(
                 key: _matrixTableKey,
                 decoration: BoxDecoration(
-                  color: isBlueTheme ? _matrixLightSurfaceColor() : null,
                   border: Border.all(color: borderColor),
                   borderRadius:
                       BorderRadius.circular(_matrixTableCornerRadius),
@@ -1413,7 +1393,7 @@ class _ListingDetailCompatibilitySectionState
                       child: _buildMatrixUserHeaderRow(
                         key: _matrixUserHeaderKey,
                         orderedUserIds: orderedUserIds,
-                        textColor: matrixTextColor,
+                        textColor: textColor,
                         borderColor: borderColor,
                       ),
                     ),

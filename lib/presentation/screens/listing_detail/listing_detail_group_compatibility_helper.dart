@@ -375,20 +375,19 @@ class ListingDetailGroupCompatibilityHelper {
           p.smokingPreference,
         ),
       ),
+      // Keep alcohol next to smoking — they're the two substance-use
+      // preferences and read better as an adjacent pair.
       _GroupFieldSpec(
-        labelKey: "pets_preference",
-        pairScore: (a, b) =>
-            petsCompatibility(a.petsPreference, b.petsPreference)?.score,
-        displayText: (p) {
-          final pref = p.petsPreference;
-          if (pref == null || pref.isEmpty) return null;
-          return localizedPetsPreference(pref);
-        },
-        isDealbreakerPair: (a, b) =>
-            petsCompatibility(a.petsPreference, b.petsPreference)
-                ?.isDealbreaker ==
-            true,
-        displayIconKey: (p) => _slugIconKey("pets", p.petsPreference),
+        labelKey: "alcohol_preference",
+        pairScore: (a, b) => preferenceBinaryScore(
+          a.alcoholPreference,
+          b.alcoholPreference,
+        ),
+        displayText: (p) => _formatAlcohol(p.alcoholPreference),
+        displayIconKey: (p) => _slugIconKey(
+          "alcohol",
+          p.alcoholPreference,
+        ),
       ),
       _GroupFieldSpec(
         labelKey: "cleanliness",
@@ -407,18 +406,6 @@ class ListingDetailGroupCompatibilityHelper {
         pairScore: (a, b) => scaleCompatibility(a.sociability, b.sociability),
         displayText: (p) => _formatSociability(p.sociability),
         displayIconKey: (p) => _scaleIconKey("sociability", p.sociability),
-      ),
-      _GroupFieldSpec(
-        labelKey: "alcohol_preference",
-        pairScore: (a, b) => preferenceBinaryScore(
-          a.alcoholPreference,
-          b.alcoholPreference,
-        ),
-        displayText: (p) => _formatAlcohol(p.alcoholPreference),
-        displayIconKey: (p) => _slugIconKey(
-          "alcohol",
-          p.alcoholPreference,
-        ),
       ),
       _GroupFieldSpec(
         labelKey: "guests",
@@ -445,6 +432,22 @@ class ListingDetailGroupCompatibilityHelper {
           if (lang == null || lang.isEmpty) return null;
           return LanguageDisplayHelper.getLocalizedLanguageName(lang);
         },
+      ),
+      // Pets compatibility sits last in the matrix by request.
+      _GroupFieldSpec(
+        labelKey: "pets_preference",
+        pairScore: (a, b) =>
+            petsCompatibility(a.petsPreference, b.petsPreference)?.score,
+        displayText: (p) {
+          final pref = p.petsPreference;
+          if (pref == null || pref.isEmpty) return null;
+          return localizedPetsPreference(pref);
+        },
+        isDealbreakerPair: (a, b) =>
+            petsCompatibility(a.petsPreference, b.petsPreference)
+                ?.isDealbreaker ==
+            true,
+        displayIconKey: (p) => _slugIconKey("pets", p.petsPreference),
       ),
     ];
   }
