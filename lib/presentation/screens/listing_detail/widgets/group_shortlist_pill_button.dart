@@ -57,6 +57,7 @@ class GroupShortlistPillButton extends StatelessWidget {
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: compact
                     ? _compactPillChildren(context, count)
                     : _fullPillChildren(context, count),

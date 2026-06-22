@@ -136,6 +136,8 @@ class _ListingDetailCompatibilitySectionState
   bool _showMatrixStickyHeader = false;
   Rect? _matrixStickyHeaderBounds;
   Animation<double>? _transitionAnimation;
+  Animation<double>? _entryAnimation;
+  bool _didScheduleEntrySync = false;
 
   @override
   void initState() {
@@ -159,6 +161,17 @@ class _ListingDetailCompatibilitySectionState
     final route = ModalRoute.of(context);
     if (route is PageRoute) {
       routeObserver.subscribe(this, route);
+    }
+
+    // Defer the first sticky-header sync until the entry (push) transition has
+    // settled. Measuring while the page is still sliding in reads the matrix at
+    // transient coordinates that fall under the app bar, which wrongly pins the
+    // header and hides the in-flow row. No scroll event follows the transition,
+    // so without this the header stays blank until the user scrolls. Mirrors
+    // the didPopNext handling for returning from a pushed route.
+    if (!_didScheduleEntrySync) {
+      _didScheduleEntrySync = true;
+      _recomputeStickyHeaderAfterEntryTransition();
     }
   }
 
@@ -206,6 +219,32 @@ class _ListingDetailCompatibilitySectionState
     if (mounted) _scheduleMatrixStickyHeaderUpdate();
   }
 
+  void _recomputeStickyHeaderAfterEntryTransition() {
+    _entryAnimation?.removeStatusListener(_handleEntryStatus);
+    _entryAnimation = null;
+
+    final animation = ModalRoute.of(context)?.animation;
+    if (animation == null ||
+        animation.status == AnimationStatus.completed ||
+        animation.status == AnimationStatus.dismissed) {
+      _scheduleMatrixStickyHeaderUpdate();
+      return;
+    }
+
+    _entryAnimation = animation;
+    animation.addStatusListener(_handleEntryStatus);
+  }
+
+  void _handleEntryStatus(AnimationStatus status) {
+    if (status != AnimationStatus.dismissed &&
+        status != AnimationStatus.completed) {
+      return;
+    }
+    _entryAnimation?.removeStatusListener(_handleEntryStatus);
+    _entryAnimation = null;
+    if (mounted) _scheduleMatrixStickyHeaderUpdate();
+  }
+
   @override
   void didUpdateWidget(ListingDetailCompatibilitySection oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -233,6 +272,8 @@ class _ListingDetailCompatibilitySectionState
     routeObserver.unsubscribe(this);
     _transitionAnimation?.removeStatusListener(_handleTransitionStatus);
     _transitionAnimation = null;
+    _entryAnimation?.removeStatusListener(_handleEntryStatus);
+    _entryAnimation = null;
     widget.scrollController.removeListener(_handleParentScroll);
     _removeMatrixStickyHeaderOverlay();
     _scrollIntoViewTimer?.cancel();
@@ -517,14 +558,20 @@ class _ListingDetailCompatibilitySectionState
       top: bounds.top,
       width: bounds.width,
       height: _matrixUserHeaderHeight,
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, _) => _buildMatrixStickyHeaderGlassShell(
-          borderColor: borderColor,
-          child: _buildPinnedMatrixUserHeaderRow(
-            orderedUserIds: orderedUserIds,
-            textColor: textColor,
+      // The overlay lives in the root [Overlay], which has no [Material]
+      // ancestor — without one the header's Text widgets render with Flutter's
+      // yellow "missing Material" debug underlines.
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListenableBuilder(
+          listenable: ThemeState(),
+          builder: (context, _) => _buildMatrixStickyHeaderGlassShell(
             borderColor: borderColor,
+            child: _buildPinnedMatrixUserHeaderRow(
+              orderedUserIds: orderedUserIds,
+              textColor: textColor,
+              borderColor: borderColor,
+            ),
           ),
         ),
       ),
@@ -547,7 +594,15 @@ class _ListingDetailCompatibilitySectionState
         children: [
           for (var i = 0; i < orderedUserIds.length; i++)
             Expanded(
-              child: DecoratedBox(
+              // Mirror the in-flow header cell geometry exactly
+              // ([_buildMatrixTableCell] with isHeader: true) so swapping the
+              // faded in-flow row for this pinned overlay doesn't nudge the
+              // avatar/name. The fixed 76px height + center alignment matches
+              // the in-flow minHeight: 76 centering without overflowing.
+              child: Container(
+                alignment: Alignment.center,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border(
                     right: i == orderedUserIds.length - 1
@@ -555,31 +610,26 @@ class _ListingDetailCompatibilitySectionState
                         : BorderSide(color: borderColor),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 5),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildHeaderAvatar(
-                        _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
-                        size: 28,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildHeaderAvatar(
+                      _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
+                      size: 28,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _matrixMemberName(orderedUserIds[i]),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: nameFontSize,
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _matrixMemberName(orderedUserIds[i]),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: nameFontSize,
-                          height: 1.1,
-                          fontWeight: FontWeight.w700,
-                          color: textColor,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

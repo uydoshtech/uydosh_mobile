@@ -280,7 +280,8 @@ class _FloatingGroupChatButton extends StatelessWidget {
                   vertical: 10,
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       CupertinoIcons.chat_bubble_2_fill,
@@ -2547,36 +2548,38 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           right: _floatingGroupActionsBottomInset,
           bottom:
               _floatingGroupActionsBottomInset + MediaQuery.paddingOf(context).bottom,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (showShortlist)
-                GroupShortlistPillButton(
-                  groupListingId: listingDetail.id,
-                  isOwner: listingDetail.groupContext?.isOwner == true,
-                  groupListingDetail: listingDetail,
-                  onChanged: _reloadListingDetail,
-                  compact: true,
-                ),
-              if (showShortlist && showChat)
-                const SizedBox(height: _floatingGroupActionsGap),
-              if (showChat)
-                ListenableBuilder(
-                  listenable: UnreadMessagesState(),
-                  builder: (context, _) {
-                    return _FloatingGroupChatButton(
-                      label: participantLabel,
-                      hasUnread: _hasUnreadGroupChat(listingDetail),
-                      unreadTrigger: UnreadMessagesState().unreadCount,
-                      onPressed: () {
-                        HapticFeedbackUtils.impact();
-                        _openGroupChat(listingDetail);
-                      },
-                    );
-                  },
-                ),
-            ],
+          child: IntrinsicWidth(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (showShortlist)
+                  GroupShortlistPillButton(
+                    groupListingId: listingDetail.id,
+                    isOwner: listingDetail.groupContext?.isOwner == true,
+                    groupListingDetail: listingDetail,
+                    onChanged: _reloadListingDetail,
+                    compact: true,
+                  ),
+                if (showShortlist && showChat)
+                  const SizedBox(height: _floatingGroupActionsGap),
+                if (showChat)
+                  ListenableBuilder(
+                    listenable: UnreadMessagesState(),
+                    builder: (context, _) {
+                      return _FloatingGroupChatButton(
+                        label: participantLabel,
+                        hasUnread: _hasUnreadGroupChat(listingDetail),
+                        unreadTrigger: UnreadMessagesState().unreadCount,
+                        onPressed: () {
+                          HapticFeedbackUtils.impact();
+                          _openGroupChat(listingDetail);
+                        },
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ],
