@@ -655,27 +655,29 @@ class _ListingDetailCompatibilitySectionState
 
   Widget _buildMatrixStickyHeaderBackground({
     required bool isLightTheme,
+    required bool enableGlass,
     required BorderRadius borderRadius,
   }) {
-    if (isLightTheme) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              gradient: LiquidGlassRendering.plateGradient(
-                context: context,
-                isDark: false,
-              ),
-            ),
-          ),
-          ColoredBox(color: _matrixHeaderSurfaceColor()),
-        ],
-      );
+    // When frosted-glass effects are off (reduce motion / accessibility) there
+    // is no backdrop blur to read through, so fall back to an opaque surface
+    // that keeps the header text legible over scrolling content.
+    if (!enableGlass) {
+      return ColoredBox(color: _matrixHeaderSurfaceColor());
     }
 
-    return ColoredBox(color: _matrixHeaderSurfaceColor());
+    // Translucent plate over the glass-shell's backdrop blur so the scrolling
+    // content shows through — matching the see-through in-flow header instead
+    // of a flat opaque slab.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        gradient: LiquidGlassRendering.plateGradient(
+          context: context,
+          isDark: isDark && !isLightTheme,
+        ),
+      ),
+    );
   }
 
   Widget _buildMatrixStickyHeaderGlassShell({
@@ -701,6 +703,7 @@ class _ListingDetailCompatibilitySectionState
           children: [
             _buildMatrixStickyHeaderBackground(
               isLightTheme: isLightTheme,
+              enableGlass: enableGlass,
               borderRadius: topRadius,
             ),
             child,
@@ -982,6 +985,12 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupHeaderTitle(String headerPercentText) {
+    final progress =
+        ListingGroupProgress.fromListingDetail(widget.listingDetail);
+    final membersNeeded =
+        progress == null ? 0 : progress.target - progress.current;
+    final subtitleColor = _getDescriptionTextColor().withValues(alpha: 0.8);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1006,15 +1015,36 @@ class _ListingDetailCompatibilitySectionState
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        Text(
-          L10n.getWithParams(
-            "group_compatibility_subtitle",
-            params: {"count": widget.groupMembers.length.toString()},
-          ),
-          style: TextStyle(
-            fontSize: 13,
-            color: _getDescriptionTextColor().withValues(alpha: 0.8),
-          ),
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                L10n.getWithParams(
+                  "group_compatibility_subtitle",
+                  params: {"count": widget.groupMembers.length.toString()},
+                ),
+                style: TextStyle(fontSize: 13, color: subtitleColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (membersNeeded > 0) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.circle, size: 4, color: subtitleColor),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  L10n.plural(
+                    "group_compatibility_persons_needed",
+                    membersNeeded,
+                  ),
+                  style: TextStyle(fontSize: 13, color: subtitleColor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 6),
         _buildGroupHeaderAvatars(),

@@ -97,6 +97,8 @@ class AppStrings {
           "Based on {scored} of {total} preferences",
       "group_compatibility_title": "Group compatibility:",
       "group_compatibility_subtitle": "Group of {count} people",
+      "group_compatibility_persons_needed_one": "{count} person needed",
+      "group_compatibility_persons_needed_other": "{count} people needed",
       "group_compatibility_full_matches": "Full matches ({count}/{total})",
       "group_compatibility_partial_matches":
           "Partially matches ({count} of {total})",
@@ -2034,6 +2036,9 @@ class AppStrings {
           "На основе {scored} из {total} предпочтений",
       "group_compatibility_title": "Совместимость группы:",
       "group_compatibility_subtitle": "Группа из {count} человек",
+      "group_compatibility_persons_needed_one": "нужен ещё {count} человек",
+      "group_compatibility_persons_needed_few": "нужно ещё {count} человека",
+      "group_compatibility_persons_needed_many": "нужно ещё {count} человек",
       "group_compatibility_full_matches": "Общие совпадения ({count}/{total})",
       "group_compatibility_partial_matches":
           "Частично совпадает ({count} из {total})",
@@ -4004,6 +4009,7 @@ class AppStrings {
           "{total} ta afzallikdan {scored} tasiga asoslangan",
       "group_compatibility_title": "Guruh mosligi:",
       "group_compatibility_subtitle": "{count} kishilik guruh",
+      "group_compatibility_persons_needed_other": "yana {count} kishi kerak",
       "group_compatibility_full_matches": "To'liq mos keladi ({count}/{total})",
       "group_compatibility_partial_matches":
           "Qisman mos keladi ({count} dan {total})",
