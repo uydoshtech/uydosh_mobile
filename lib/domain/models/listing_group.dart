@@ -262,6 +262,8 @@ class ListingGroupShortlistParticipantRating {
     this.avatarUrl,
     this.stars,
     this.reasons = const [],
+    this.categoryRatings = const {},
+    this.verdict,
   });
 
   factory ListingGroupShortlistParticipantRating.fromJson(
@@ -276,6 +278,16 @@ class ListingGroupShortlistParticipantRating {
               ?.whereType<String>()
               .toList(growable: false) ??
           const [],
+      categoryRatings: (json["category_ratings"] as Map?)
+              ?.map(
+                (key, value) => MapEntry(
+                  key.toString(),
+                  (value as num?)?.toInt() ?? 0,
+                ),
+              )
+              .cast<String, int>() ??
+          const {},
+      verdict: json["verdict"] as String?,
     );
   }
 
@@ -284,6 +296,8 @@ class ListingGroupShortlistParticipantRating {
   final String? avatarUrl;
   final int? stars;
   final List<String> reasons;
+  final Map<String, int> categoryRatings;
+  final String? verdict;
 }
 
 /// Shared housing-search preferences for a forming group. `isDefault` is true

@@ -149,6 +149,8 @@ abstract class IMessagingService {
     required int messageId,
     required int stars,
     List<String> reasons = const [],
+    Map<String, int> categoryRatings = const {},
+    String? verdict,
   });
 }
 
@@ -959,6 +961,8 @@ class MessagingService implements IMessagingService {
     required int messageId,
     required int stars,
     List<String> reasons = const [],
+    Map<String, int> categoryRatings = const {},
+    String? verdict,
   }) async {
     await _checkAuthentication();
     try {
@@ -966,7 +970,12 @@ class MessagingService implements IMessagingService {
           await _apiClient.post<Map<String, dynamic>, _ListingRatingBody>(
         "/messages/$messageId/listing-rating",
         (json) => json as Map<String, dynamic>,
-        data: _ListingRatingBody(stars: stars, reasons: reasons),
+        data: _ListingRatingBody(
+          stars: stars,
+          reasons: reasons,
+          categoryRatings: categoryRatings,
+          verdict: verdict,
+        ),
       );
       final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
@@ -995,15 +1004,21 @@ class _ListingRatingBody implements IJsonEncodable {
   _ListingRatingBody({
     required this.stars,
     this.reasons = const [],
+    this.categoryRatings = const {},
+    this.verdict,
   });
 
   final int stars;
   final List<String> reasons;
+  final Map<String, int> categoryRatings;
+  final String? verdict;
 
   @override
   Map<String, dynamic> toJson() => {
         "stars": stars,
         "reasons": reasons,
+        "category_ratings": categoryRatings,
+        if (verdict != null) "verdict": verdict,
       };
 }
 

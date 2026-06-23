@@ -24,6 +24,8 @@ class MessageListingRating {
     this.average,
     this.myStars,
     this.myReasons = const [],
+    this.myCategoryRatings = const {},
+    this.myVerdict,
     this.distribution = const {},
   });
 
@@ -31,6 +33,8 @@ class MessageListingRating {
   final int count;
   final int? myStars;
   final List<String> myReasons;
+  final Map<String, int> myCategoryRatings;
+  final String? myVerdict;
   final Map<int, int> distribution;
 
   factory MessageListingRating.fromJson(Map<String, dynamic> json) {
@@ -43,12 +47,21 @@ class MessageListingRating {
         distribution[star] = (value as num?)?.toInt() ?? 0;
       });
     }
+    final rawCategoryRatings = json["my_category_ratings"];
+    final categoryRatings = <String, int>{};
+    if (rawCategoryRatings is Map) {
+      rawCategoryRatings.forEach((key, value) {
+        categoryRatings[key.toString()] = (value as num?)?.toInt() ?? 0;
+      });
+    }
     return MessageListingRating(
       average: (json["average"] as num?)?.toDouble(),
       count: (json["count"] as num?)?.toInt() ?? 0,
       myStars: (json["my_stars"] as num?)?.toInt(),
       myReasons: (json["my_reasons"] as List?)?.whereType<String>().toList() ??
           const [],
+      myCategoryRatings: categoryRatings,
+      myVerdict: json["my_verdict"] as String?,
       distribution: distribution,
     );
   }
@@ -66,6 +79,8 @@ Map<String, dynamic>? _listingRatingToJson(MessageListingRating? value) {
     "count": value.count,
     "my_stars": value.myStars,
     "my_reasons": value.myReasons,
+    "my_category_ratings": value.myCategoryRatings,
+    "my_verdict": value.myVerdict,
     "distribution": value.distribution.map(
       (key, val) => MapEntry(key.toString(), val),
     ),

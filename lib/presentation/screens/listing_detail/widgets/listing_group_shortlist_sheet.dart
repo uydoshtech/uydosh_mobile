@@ -179,16 +179,23 @@ class _ListingGroupShortlistSheetState
   }
 
   Future<void> _editRating(_ShortlistRow row, int currentStars) async {
+    final currentReasons = _currentUserReasonCodes(row);
+    final currentCategoryRatings = _currentUserCategoryRatings(row);
+    final currentVerdict = _currentUserVerdict(row);
     final result = await showListingRatingDialog(
       context: context,
       currentStars: currentStars,
-      initialReasonCodes: _currentUserReasonCodes(row),
+      initialReasonCodes: currentReasons,
+      initialCategoryRatings: currentCategoryRatings,
+      initialVerdict: currentVerdict,
     );
     if (result == null || !mounted) return;
     final stars = result.stars;
     final reasons = result.reasons;
     if (stars == currentStars &&
-        _setsEqual(_currentUserReasonCodes(row), reasons.toSet())) {
+        _setsEqual(currentReasons, reasons.toSet()) &&
+        _mapsEqual(currentCategoryRatings, result.categoryRatings) &&
+        currentVerdict == result.verdict) {
       return;
     }
 
@@ -198,6 +205,8 @@ class _ListingGroupShortlistSheetState
         housingListingId: row.listing.id,
         stars: stars,
         reasons: reasons,
+        categoryRatings: result.categoryRatings,
+        verdict: result.verdict,
       );
       if (!mounted) return;
       setState(() {
@@ -233,8 +242,33 @@ class _ListingGroupShortlistSheetState
     };
   }
 
+  Map<String, int> _currentUserCategoryRatings(_ShortlistRow row) {
+    for (final participant in row.item.rating?.participants ??
+        const <ListingGroupShortlistParticipantRating>[]) {
+      if (participant.userId == _currentUserId) {
+        return participant.categoryRatings;
+      }
+    }
+    return const {};
+  }
+
+  String? _currentUserVerdict(_ShortlistRow row) {
+    for (final participant in row.item.rating?.participants ??
+        const <ListingGroupShortlistParticipantRating>[]) {
+      if (participant.userId == _currentUserId) {
+        return participant.verdict;
+      }
+    }
+    return null;
+  }
+
   bool _setsEqual(Set<String> left, Set<String> right) {
     return left.length == right.length && left.every(right.contains);
+  }
+
+  bool _mapsEqual(Map<String, int> left, Map<String, int> right) {
+    return left.length == right.length &&
+        left.entries.every((entry) => right[entry.key] == entry.value);
   }
 
   Future<void> _confirmRemove(_ShortlistRow row) async {

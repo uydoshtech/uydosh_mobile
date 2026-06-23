@@ -2104,10 +2104,15 @@ class _ChatScreenState extends State<ChatScreen> {
     final currentStars = message.listingRating?.myStars ?? 0;
     final currentReasons =
         message.listingRating?.myReasons.toSet() ?? const <String>{};
+    final currentCategoryRatings =
+        message.listingRating?.myCategoryRatings ?? const <String, int>{};
+    final currentVerdict = message.listingRating?.myVerdict;
     final result = await showListingRatingDialog(
       context: context,
       currentStars: initialStars,
       initialReasonCodes: currentReasons,
+      initialCategoryRatings: currentCategoryRatings,
+      initialVerdict: currentVerdict,
     );
 
     if (result == null || !mounted) {
@@ -2115,22 +2120,34 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     final reasons = result.reasons;
     if (result.stars == currentStars &&
-        setEquals(currentReasons, reasons.toSet())) {
+        setEquals(currentReasons, reasons.toSet()) &&
+        mapEquals(currentCategoryRatings, result.categoryRatings) &&
+        currentVerdict == result.verdict) {
       return;
     }
-    await _setListingRating(message, result.stars, reasons: reasons);
+    await _setListingRating(
+      message,
+      result.stars,
+      reasons: reasons,
+      categoryRatings: result.categoryRatings,
+      verdict: result.verdict,
+    );
   }
 
   Future<void> _setListingRating(
     Message message,
     int stars, {
     List<String> reasons = const [],
+    Map<String, int> categoryRatings = const {},
+    String? verdict,
   }) async {
     try {
       final updated = await getIt<IMessagingService>().setListingRating(
         messageId: message.id,
         stars: stars,
         reasons: reasons,
+        categoryRatings: categoryRatings,
+        verdict: verdict,
       );
       if (!mounted) return;
       setState(() {

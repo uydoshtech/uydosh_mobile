@@ -83,6 +83,8 @@ abstract class IListingGroupService {
     required int housingListingId,
     required int stars,
     List<String> reasons = const [],
+    Map<String, int> categoryRatings = const {},
+    String? verdict,
   });
 
   /// Shared housing-search preferences for the group (member only).
@@ -299,13 +301,20 @@ class ListingGroupService implements IListingGroupService {
     required int housingListingId,
     required int stars,
     List<String> reasons = const [],
+    Map<String, int> categoryRatings = const {},
+    String? verdict,
   }) async {
     final response =
         await _oauthApiClient.put<Map<String, dynamic>, _ShortlistRatingBody>(
       "/listings/$groupListingId/group/shortlist/$housingListingId/rating",
       _requireResponseMap,
       basePath: EnvironmentUtil.basePath,
-      data: _ShortlistRatingBody(stars: stars, reasons: reasons),
+      data: _ShortlistRatingBody(
+        stars: stars,
+        reasons: reasons,
+        categoryRatings: categoryRatings,
+        verdict: verdict,
+      ),
     );
     final rating = ListingGroupShortlistRating.fromJsonOrNull(
       response["rating"],
@@ -411,14 +420,20 @@ class _ShortlistRatingBody implements IJsonEncodable {
   const _ShortlistRatingBody({
     required this.stars,
     this.reasons = const [],
+    this.categoryRatings = const {},
+    this.verdict,
   });
 
   final int stars;
   final List<String> reasons;
+  final Map<String, int> categoryRatings;
+  final String? verdict;
 
   @override
   Map<String, dynamic> toJson() => {
         "stars": stars,
         "reasons": reasons,
+        "category_ratings": categoryRatings,
+        if (verdict != null) "verdict": verdict,
       };
 }

@@ -30,30 +30,35 @@ const _listingDislikeReasons = [
 
 const _ratingCategories = [
   (
+    code: "price",
     titleKey: "listing_rating_category_price",
     subtitleKey: "listing_rating_category_price_subtitle",
     icon: Icons.attach_money_rounded,
     color: Color(0xFF34C759),
   ),
   (
+    code: "location",
     titleKey: "listing_rating_category_location",
     subtitleKey: "listing_rating_category_location_subtitle",
     icon: Icons.location_on_rounded,
     color: Color(0xFF2F80ED),
   ),
   (
+    code: "condition",
     titleKey: "listing_rating_category_condition",
     subtitleKey: "listing_rating_category_condition_subtitle",
     icon: Icons.home_rounded,
     color: Color(0xFF8E5CF7),
   ),
   (
+    code: "group",
     titleKey: "listing_rating_category_group",
     subtitleKey: "listing_rating_category_group_subtitle",
     icon: Icons.groups_rounded,
     color: Color(0xFFF2994A),
   ),
   (
+    code: "landlord",
     titleKey: "listing_rating_category_landlord",
     subtitleKey: "listing_rating_category_landlord_subtitle",
     icon: Icons.person_rounded,
@@ -65,23 +70,35 @@ class ListingRatingDialogResult {
   const ListingRatingDialogResult({
     required this.stars,
     required this.reasons,
+    required this.categoryRatings,
+    required this.verdict,
   });
 
   final int stars;
   final List<String> reasons;
+  final Map<String, int> categoryRatings;
+  final String verdict;
 }
 
 Future<ListingRatingDialogResult?> showListingRatingDialog({
   required BuildContext context,
   required int currentStars,
   Set<String> initialReasonCodes = const {},
+  Map<String, int> initialCategoryRatings = const {},
+  String? initialVerdict,
 }) {
   return showDialog<ListingRatingDialogResult>(
     context: context,
     builder: (dialogContext) {
       var selected = currentStars.clamp(1, 5).toInt();
-      final categoryRatings =
-          List<int>.filled(_ratingCategories.length, selected);
+      final categoryRatings = List<int>.generate(
+        _ratingCategories.length,
+        (index) {
+          final value = initialCategoryRatings[_ratingCategories[index].code];
+          return value == null ? selected : value.clamp(1, 5).toInt();
+        },
+      );
+      var verdict = initialVerdict ?? _verdictForStars(selected);
       final selectedReasonCodes = {...initialReasonCodes};
       return StatefulBuilder(
         builder: (context, setDialogState) {
@@ -161,6 +178,7 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                               .round()
                               .clamp(1, 5)
                               .toInt();
+                          verdict = _verdictForStars(selected);
                         });
                       },
                     ),
@@ -168,10 +186,13 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                 }),
                 const SizedBox(height: 8),
                 _VerdictCard(
-                  selectedStars: selected,
+                  verdict: verdict,
                   onChanged: (value) {
                     HapticFeedbackUtils.selectionClick();
-                    setDialogState(() => selected = value);
+                    setDialogState(() {
+                      selected = value;
+                      verdict = _verdictForStars(value);
+                    });
                   },
                 ),
                 const SizedBox(height: 14),
@@ -241,6 +262,11 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                     ListingRatingDialogResult(
                       stars: selected,
                       reasons: selectedReasonCodes.toList(),
+                      categoryRatings: {
+                        for (var i = 0; i < _ratingCategories.length; i++)
+                          _ratingCategories[i].code: categoryRatings[i],
+                      },
+                      verdict: verdict,
                     ),
                   ),
                   style: FilledButton.styleFrom(
@@ -271,6 +297,12 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
       );
     },
   );
+}
+
+String _verdictForStars(int stars) {
+  if (stars >= 5) return "yes";
+  if (stars >= 3) return "maybe";
+  return "no";
 }
 
 class _RatingCategoryCard extends StatelessWidget {
@@ -410,11 +442,11 @@ class _InlineStars extends StatelessWidget {
 
 class _VerdictCard extends StatelessWidget {
   const _VerdictCard({
-    required this.selectedStars,
+    required this.verdict,
     required this.onChanged,
   });
 
-  final int selectedStars;
+  final String verdict;
   final ValueChanged<int> onChanged;
 
   @override
@@ -458,7 +490,7 @@ class _VerdictCard extends StatelessWidget {
                     label: L10n.get("listing_rating_verdict_yes"),
                     icon: Icons.thumb_up_alt_outlined,
                     color: AppColors.success,
-                    selected: selectedStars >= 5,
+                    selected: verdict == "yes",
                     onTap: () => onChanged(5),
                   ),
                 ),
@@ -468,7 +500,7 @@ class _VerdictCard extends StatelessWidget {
                     label: L10n.get("listing_rating_verdict_maybe"),
                     icon: Icons.lightbulb_outline_rounded,
                     color: AppColors.warning,
-                    selected: selectedStars >= 3 && selectedStars < 5,
+                    selected: verdict == "maybe",
                     onTap: () => onChanged(4),
                   ),
                 ),
@@ -478,7 +510,7 @@ class _VerdictCard extends StatelessWidget {
                     label: L10n.get("listing_rating_verdict_no"),
                     icon: Icons.thumb_down_alt_outlined,
                     color: AppColors.error,
-                    selected: selectedStars < 3,
+                    selected: verdict == "no",
                     onTap: () => onChanged(2),
                   ),
                 ),
