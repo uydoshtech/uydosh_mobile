@@ -52,12 +52,17 @@ class SearchBottomSheetResult {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.subwayStationIds = const [],
   });
 
   final int listingTypeId;
   final int? gender;
   final int? locationId;
   final int? subwayStationId;
+
+  /// Full multi-station selection. `subwayStationId` mirrors the single value
+  /// when exactly one station is chosen (kept for backward compatibility).
+  final List<int> subwayStationIds;
   final int? subwayLineId;
   final double minPrice;
   final double maxPrice;

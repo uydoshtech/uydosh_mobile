@@ -24,6 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -803,14 +804,23 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                     ),
                   ),
                 ),
-                Text(
-                  L10n.getWithParams(
-                    "common_connections_count",
-                    params: {"count": total.toString()},
-                  ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ThreeDElevatedSurface(
+                  baseColor: Theme.of(context).colorScheme.surface,
+                  useLiquidGlass: true,
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 32),
+                    height: 32,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      total.toString(),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: _getPrimaryColor(),
+                      ),
+                    ),
                   ),
                 ),
               ],

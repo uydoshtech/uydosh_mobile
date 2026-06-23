@@ -82,6 +82,18 @@ abstract class IListingGroupService {
     required int housingListingId,
     required int stars,
   });
+
+  /// Shared housing-search preferences for the group (member only).
+  Future<GroupSearchPrefs> getSearchPrefs({required int groupListingId});
+
+  /// Upserts the shared housing-search preferences (member only) and re-applies
+  /// every active member's housing alert on the backend.
+  Future<GroupSearchPrefs> updateSearchPrefs({
+    required int groupListingId,
+    int? locationId,
+    List<int> subwayStationIds = const [],
+    List<int> subwayLineIds = const [],
+  });
 }
 
 class ListingGroupService implements IListingGroupService {
@@ -299,6 +311,62 @@ class ListingGroupService implements IListingGroupService {
     }
     return rating;
   }
+
+  @override
+  Future<GroupSearchPrefs> getSearchPrefs({
+    required int groupListingId,
+  }) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/listings/$groupListingId/group/search-prefs",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+    );
+    final data = response["data"];
+    if (data is! Map) return const GroupSearchPrefs();
+    return GroupSearchPrefs.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  @override
+  Future<GroupSearchPrefs> updateSearchPrefs({
+    required int groupListingId,
+    int? locationId,
+    List<int> subwayStationIds = const [],
+    List<int> subwayLineIds = const [],
+  }) async {
+    final response =
+        await _oauthApiClient.put<Map<String, dynamic>, _SearchPrefsBody>(
+      "/listings/$groupListingId/group/search-prefs",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: _SearchPrefsBody(
+        locationId: locationId,
+        subwayStationIds: subwayStationIds,
+        subwayLineIds: subwayLineIds,
+      ),
+    );
+    final data = response["data"];
+    if (data is! Map) return const GroupSearchPrefs();
+    return GroupSearchPrefs.fromJson(Map<String, dynamic>.from(data));
+  }
+}
+
+class _SearchPrefsBody implements IJsonEncodable {
+  const _SearchPrefsBody({
+    this.locationId,
+    this.subwayStationIds = const [],
+    this.subwayLineIds = const [],
+  });
+
+  final int? locationId;
+  final List<int> subwayStationIds;
+  final List<int> subwayLineIds;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "locationId": locationId,
+        "subwayStationIds": subwayStationIds,
+        "subwayLineIds": subwayLineIds,
+      };
 }
 
 class _JoinRequestBody implements IJsonEncodable {

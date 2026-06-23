@@ -6,6 +6,7 @@ import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -60,41 +61,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                ImageFiltered(
-                                  // Portrait photos use BoxFit.contain in the
-                                  // foreground; the blurred cover fill avoids
-                                  // empty side bars. Not gated on animation
-                                  // settings — this is static layout chrome.
-                                  imageFilter: ImageFilter.blur(
-                                    sigmaX: 18,
-                                    sigmaY: 18,
-                                  ),
-                                  child: CachedNetworkImage(
-                                    imageUrl: buildPhotoUrl(rawUrl),
-                                    fit: BoxFit.cover,
-                                    memCacheWidth: 320,
-                                    fadeInDuration:
-                                        const Duration(milliseconds: 300),
-                                    fadeInCurve: Curves.easeOut,
-                                    placeholder: (context, url) => Container(
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                      color: Colors.grey[300],
-                                      child: ThemeIcon(
-                                        Icons.image_not_supported,
-                                        color: Colors.grey[600],
-                                        size: 48,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                _buildCoverFill(rawUrl),
                                 ColoredBox(
                                   color: Colors.black.withValues(alpha: 0.12),
                                 ),
@@ -170,6 +137,42 @@ class DetailHostedPhotoGallery extends StatelessWidget {
     );
   }
 
+  /// Cover-fill behind the [BoxFit.contain] foreground photo. For portrait
+  /// photos this fills the empty side bars.
+  ///
+  /// [ImageFiltered] forces a per-frame blur layer that keeps the whole
+  /// carousel tile from being raster-cached while the page scrolls, which is a
+  /// significant cost on low-end Android. Skip the blur there and show a plain
+  /// cover fill — the foreground photo still reads the same.
+  Widget _buildCoverFill(String rawUrl) {
+    final image = CachedNetworkImage(
+      imageUrl: buildPhotoUrl(rawUrl),
+      fit: BoxFit.cover,
+      memCacheWidth: 320,
+      fadeInDuration: const Duration(milliseconds: 300),
+      fadeInCurve: Curves.easeOut,
+      placeholder: (context, url) => Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: Colors.grey[300],
+        child: ThemeIcon(
+          Icons.image_not_supported,
+          color: Colors.grey[600],
+          size: 48,
+        ),
+      ),
+    );
+    if (isAndroidDevice) return image;
+    return ImageFiltered(
+      imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+      child: image,
+    );
+  }
+
   /// Same stroke/dot colors as legacy [ListingDetailPhotoSection] worm indicator.
   static Color _detailPhotoCarouselDotStrokeColor(BuildContext context) {
     if (ThemeState().isLightTheme) return Colors.black;
@@ -218,8 +221,12 @@ class _PhotoGlassPill extends StatelessWidget {
       builder: (context, _) {
         final disableAnimations =
             MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        // The pill's [BackdropFilter] floats over the scrolling carousel, so it
+        // re-blurs every frame. Skip it on Android (low-end GPU cost); the
+        // translucent gradient fill keeps the pill legible without the blur.
+        final enableGlass = !isAndroidDevice &&
+            AnimationSettingsState().uiAnimationsEnabled &&
+            !disableAnimations;
 
         const radius = BorderRadius.all(Radius.circular(999));
 

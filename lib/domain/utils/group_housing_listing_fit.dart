@@ -1,6 +1,7 @@
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
@@ -26,6 +27,7 @@ class GroupHousingListingFit {
   factory GroupHousingListingFit.evaluate({
     required ListingDetail groupListing,
     required Listing housingListing,
+    GroupSearchPrefs? groupSearchPrefs,
   }) {
     final groupSize = groupListing.groupContext?.groupSizeTarget ??
         groupListing.groupSizeTarget;
@@ -36,6 +38,7 @@ class GroupHousingListingFit {
     final location = _evaluateLocation(
       groupListing: groupListing,
       housingListing: housingListing,
+      prefs: groupSearchPrefs,
     );
     final perPersonPriceMid = _resolvePerPersonPriceMid(
       groupSize: groupSize,
@@ -74,7 +77,29 @@ class GroupHousingListingFit {
   static GroupHousingLocationFit _evaluateLocation({
     required ListingDetail groupListing,
     required Listing housingListing,
+    GroupSearchPrefs? prefs,
   }) {
+    // Shared group preferences win when present: a listing matches if it falls
+    // in the chosen district or in ANY of the selected stations.
+    final prefStations = prefs?.subwayStationIds ?? const <int>[];
+    final prefLoc = prefs?.locationId;
+    if (prefStations.isNotEmpty || (prefLoc != null && prefLoc > 0)) {
+      if (prefLoc != null && prefLoc > 0 && housingListing.locationId != null) {
+        if (prefLoc == housingListing.locationId) {
+          return GroupHousingLocationFit.matches;
+        }
+      }
+      if (prefStations.isNotEmpty && housingListing.subwayStationId != null) {
+        return prefStations.contains(housingListing.subwayStationId)
+            ? GroupHousingLocationFit.matches
+            : GroupHousingLocationFit.different;
+      }
+      if (prefLoc != null && prefLoc > 0 && housingListing.locationId != null) {
+        return GroupHousingLocationFit.different;
+      }
+      return GroupHousingLocationFit.unknown;
+    }
+
     final groupLoc = groupListing.locationId;
     final groupStation = groupListing.subwayStationId;
     final groupLine = groupListing.subwayLineId;

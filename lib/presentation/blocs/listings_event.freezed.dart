@@ -1391,6 +1391,7 @@ abstract class _$$$SearchListingsImplImplCopyWith<$Res>
       List<int>? listingTypeIds,
       int? locationId,
       int? subwayStationId,
+      List<int>? subwayStationIds,
       int? subwayLineId,
       int? gender,
       double? minPrice,
@@ -1422,6 +1423,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     Object? listingTypeIds = freezed,
     Object? locationId = freezed,
     Object? subwayStationId = freezed,
+    Object? subwayStationIds = freezed,
     Object? subwayLineId = freezed,
     Object? gender = freezed,
     Object? minPrice = freezed,
@@ -1452,6 +1454,10 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
           ? _value.subwayStationId
           : subwayStationId // ignore: cast_nullable_to_non_nullable
               as int?,
+      subwayStationIds: freezed == subwayStationIds
+          ? _value._subwayStationIds
+          : subwayStationIds // ignore: cast_nullable_to_non_nullable
+              as List<int>?,
       subwayLineId: freezed == subwayLineId
           ? _value.subwayLineId
           : subwayLineId // ignore: cast_nullable_to_non_nullable
@@ -1512,6 +1518,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       final List<int>? listingTypeIds,
       this.locationId,
       this.subwayStationId,
+      final List<int>? subwayStationIds,
       this.subwayLineId,
       this.gender,
       this.minPrice,
@@ -1525,6 +1532,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       this.isRefresh = true,
       this.keepStaleWhileRefreshing = false})
       : _listingTypeIds = listingTypeIds,
+        _subwayStationIds = subwayStationIds,
         _excludeUserIds = excludeUserIds;
 
   @override
@@ -1543,6 +1551,16 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   final int? locationId;
   @override
   final int? subwayStationId;
+  final List<int>? _subwayStationIds;
+  @override
+  List<int>? get subwayStationIds {
+    final value = _subwayStationIds;
+    if (value == null) return null;
+    if (_subwayStationIds is EqualUnmodifiableListView) return _subwayStationIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   final int? subwayLineId;
   @override
@@ -1586,7 +1604,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 
   @override
   String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
+    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
   }
 
   @override
@@ -1602,6 +1620,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
                 other.locationId == locationId) &&
             (identical(other.subwayStationId, subwayStationId) ||
                 other.subwayStationId == subwayStationId) &&
+            const DeepCollectionEquality()
+                .equals(other._subwayStationIds, _subwayStationIds) &&
             (identical(other.subwayLineId, subwayLineId) ||
                 other.subwayLineId == subwayLineId) &&
             (identical(other.gender, gender) || other.gender == gender) &&
@@ -1633,6 +1653,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       const DeepCollectionEquality().hash(_listingTypeIds),
       locationId,
       subwayStationId,
+      const DeepCollectionEquality().hash(_subwayStationIds),
       subwayLineId,
       gender,
       minPrice,
@@ -1870,6 +1891,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
       final List<int>? listingTypeIds,
       final int? locationId,
       final int? subwayStationId,
+      final List<int>? subwayStationIds,
       final int? subwayLineId,
       final int? gender,
       final double? minPrice,
@@ -1887,6 +1909,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
   List<int>? get listingTypeIds;
   int? get locationId;
   int? get subwayStationId;
+  List<int>? get subwayStationIds;
   int? get subwayLineId;
   int? get gender;
   double? get minPrice;

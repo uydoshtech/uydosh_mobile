@@ -228,10 +228,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final subwayLineId = _searchFiltersState.selectedSubwayLine > 0
         ? _searchFiltersState.selectedSubwayLine
         : null;
-    final subwayStationId = _getSelectedSubwayStationId();
+    final stationIds = _searchFiltersState.selectedStationIdsList;
+    final subwayStationId =
+        stationIds.length == 1 ? stationIds.first : _getSelectedSubwayStationId();
 
     final hasAnyLocationConstraint = (locationId != null && locationId > 0) ||
         (subwayLineId != null && subwayLineId > 0) ||
+        stationIds.isNotEmpty ||
         (subwayStationId != null && subwayStationId > 0);
     if (!hasAnyLocationConstraint) {
       ToastTheme.showError(context, message: L10n.get("search_alert_too_wide"));
@@ -244,7 +247,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           await getIt<ISearchAlertService>().createAlertForCurrentSearch(
         listingTypeId: _searchFiltersState.selectedListingTypeId,
         locationId: locationId,
-        subwayStationId: subwayStationId,
+        subwayStationId: stationIds.length > 1 ? null : subwayStationId,
+        subwayStationIds: stationIds.length > 1 ? stationIds : null,
         subwayLineId: subwayLineId,
         gender: _searchFiltersState.selectedGender,
         minPrice: _searchFiltersState.minPrice,
@@ -357,62 +361,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     setState(() {
       _searchFiltersState.setLocationIndex(0);
     });
-  }
-
-  /// Resets all metro-related filters (line and station) to their initial state
-  /// and forces a rebuild of the wheel pickers to ensure proper visual reset
-  void _resetMetroPickers() {
-    void syncPickerScrollToStart() {
-      if (!mounted) return;
-      final lineCtrl = _metroLineScrollController;
-      if (lineCtrl != null &&
-          lineCtrl.hasClients &&
-          lineCtrl.selectedItem != 0) {
-        lineCtrl.jumpToItem(0);
-      }
-      final stationCtrl = _stationPickerController;
-      if (stationCtrl != null &&
-          stationCtrl.hasClients &&
-          stationCtrl.selectedItem != 0) {
-        stationCtrl.jumpToItem(0);
-      }
-    }
-
-    syncPickerScrollToStart();
-    setState(() {
-      _searchFiltersState.setSubwayLine(0);
-      _searchFiltersState.setStationIndex(0);
-      _searchFiltersState.setStationId(0);
-      _currentStations = [];
-    });
-    _resetWheelPickerControllers();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      syncPickerScrollToStart();
-    });
-  }
-
-  /// Clears metro only when the user had a line/station active — avoids flicker
-  /// while scrolling the district wheel with metro already at default.
-  void _resetMetroPickersIfNeeded() {
-    if (_searchFiltersState.selectedSubwayLine > 0 ||
-        _searchFiltersState.selectedStationId > 0 ||
-        _currentStations.isNotEmpty) {
-      _resetMetroPickers();
-    }
-  }
-
-  void _resetWheelPickerControllers() {
-    // Only create a new controller if one doesn"t exist
-    if (_stationPickerController == null) {
-      logger.d(
-        "DEBUG: Creating new station picker controller, stations count: ${_currentStations.length}",
-      );
-      _stationPickerController = FixedExtentScrollController();
-    } else {
-      logger.d(
-        "DEBUG: Keeping existing station picker controller to preserve scroll position",
-      );
-    }
   }
 
   /// Restores the picker to the correct position without disrupting scrolling
@@ -678,7 +626,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           }
                         });
                       },
-                      onMetroReset: _resetMetroPickersIfNeeded,
+                      // Location and metro filters now coexist — selecting a
+                      // district no longer clears the metro selection.
+                      onMetroReset: () {},
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -694,13 +644,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                     getLocalizedName: _getLocalizedName,
                     onSubwayLineChanged: (index) {
                       _metroLineChangedInThisSession = true;
+                      // Location and metro now coexist; changing the line no
+                      // longer resets the chosen district.
                       setState(() {
                         _searchFiltersState.setSubwayLine(index);
-                        if (index > 0) {
-                          if (!widget.metroOnly) {
-                            _resetLocationPicker();
-                          }
-                        }
                       });
                       if (index > 0) {
                         _loadStationsForLine(index);
@@ -708,24 +655,13 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         setState(() {
                           _currentStations = [];
                           _searchFiltersState.setStationIndex(0);
-                          _searchFiltersState.setStationId(0);
                         });
                       }
                     },
-                    onStationChanged: (index) {
+                    onStationChanged: (index) {},
+                    onStationsSelected: (stationIds) {
                       setState(() {
-                        if (index == 0) {
-                          _searchFiltersState.setStationIndex(0);
-                          _searchFiltersState.setStationId(0);
-                        } else {
-                          final stationIndex = index - 1;
-                          if (stationIndex < _currentStations.length) {
-                            final selectedStationId =
-                                _currentStations[stationIndex].id;
-                            _searchFiltersState.setStationIndex(stationIndex);
-                            _searchFiltersState.setStationId(selectedStationId);
-                          }
-                        }
+                        _searchFiltersState.setStationIds(stationIds);
                       });
                     },
                   ),
@@ -774,7 +710,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;
     final locationId = _getSelectedLocationId();
-    final subwayStationId = _getSelectedSubwayStationId();
+    final subwayStationIds = _searchFiltersState.selectedStationIdsList;
+    final subwayStationId = subwayStationIds.length == 1
+        ? subwayStationIds.first
+        : _getSelectedSubwayStationId();
     final subwayLine = _searchFiltersState.selectedSubwayLine;
     final gender = _searchFiltersState.selectedGender;
     final minPrice = _searchFiltersState.minPrice;
@@ -803,6 +742,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           gender: gender > 0 ? gender : null,
           locationId: locationId,
           subwayStationId: subwayStationId,
+          subwayStationIds: subwayStationIds,
           subwayLineId: subwayLine > 0 ? subwayLine : null,
           minPrice: minPrice,
           maxPrice: maxPrice,
@@ -823,6 +763,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               listingTypeId: listingTypeId,
               locationId: locationId,
               subwayStationId: subwayStationId,
+              subwayStationIds: subwayStationIds,
               subwayLineId: subwayLine,
               gender: gender > 0 ? gender : null,
               minPrice: minPrice,
@@ -844,6 +785,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               listingTypeId: listingTypeId,
               locationId: locationId,
               subwayStationId: subwayStationId,
+              subwayStationIds: subwayStationIds,
               subwayLineId: subwayLine,
               gender: gender > 0 ? gender : null,
               minPrice: minPrice,

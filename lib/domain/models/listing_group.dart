@@ -279,3 +279,38 @@ class ListingGroupShortlistParticipantRating {
   final String? avatarUrl;
   final int? stars;
 }
+
+/// Shared housing-search preferences for a forming group. `isDefault` is true
+/// when the group hasn't customized these yet and the values are seeded from
+/// the group-forming listing's own location/station.
+class GroupSearchPrefs {
+  const GroupSearchPrefs({
+    this.locationId,
+    this.subwayStationIds = const [],
+    this.subwayLineIds = const [],
+    this.isDefault = false,
+  });
+
+  factory GroupSearchPrefs.fromJson(Map<String, dynamic> json) {
+    List<int> toIntList(dynamic raw) {
+      if (raw is! List) return const [];
+      return raw
+          .map((e) => (e as num?)?.toInt() ?? 0)
+          .where((e) => e > 0)
+          .toList();
+    }
+
+    final locId = (json["location_id"] as num?)?.toInt();
+    return GroupSearchPrefs(
+      locationId: locId != null && locId > 0 ? locId : null,
+      subwayStationIds: toIntList(json["subway_station_ids"]),
+      subwayLineIds: toIntList(json["subway_line_ids"]),
+      isDefault: json["is_default"] == true,
+    );
+  }
+
+  final int? locationId;
+  final List<int> subwayStationIds;
+  final List<int> subwayLineIds;
+  final bool isDefault;
+}

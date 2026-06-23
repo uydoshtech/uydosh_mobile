@@ -9,6 +9,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
@@ -99,8 +100,14 @@ class ListingDetailContactActionBar extends StatelessWidget {
     top: Radius.circular(20),
   );
 
+  // The frosted footer is a fixed bar with [Scaffold.extendBody] content
+  // scrolling behind it, so its [BackdropFilter] re-blurs every scroll frame.
+  // On Android (especially low-end devices) that's a heavy per-frame GPU cost,
+  // so fall back to the opaque bar there — same trade-off the feed already
+  // makes for Android glass surfaces.
   bool _useLiquidGlass() =>
-      ThemeState().isBlueTheme || ThemeState().isLightTheme;
+      !isAndroidDevice &&
+      (ThemeState().isBlueTheme || ThemeState().isLightTheme);
 
   Color _getOpaqueSurfaceColor(BuildContext context) =>
       Theme.of(context).colorScheme.surface;
@@ -202,7 +209,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       labelColor: secondaryTextColor,
       borderColor: accentColor,
       width: width,
-      enableBackdropBlur: !embedded,
+      enableBackdropBlur: !embedded && !isAndroidDevice,
     );
     if (showSecondaryRequestPill) {
       return _wrapWithRequestPill(button);
@@ -225,7 +232,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       height: 48,
       width: width,
       icon: primaryIcon ?? CupertinoIcons.shield_fill,
-      enableBackdropBlur: !embedded,
+      enableBackdropBlur: !embedded && !isAndroidDevice,
     );
     if (showPrimaryRequestPill) {
       return _wrapWithRequestPill(button);
@@ -265,7 +272,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
       labelColor: secondaryTextColor,
       borderColor: accentColor,
       width: double.infinity,
-      enableBackdropBlur: !embedded,
+      enableBackdropBlur: !embedded && !isAndroidDevice,
     );
 
     return [

@@ -153,12 +153,14 @@ class _ResolvedSearchFilters {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.subwayStationIds,
   });
 
   final int? listingTypeId;
   final List<int>? listingTypeIds;
   final int? locationId;
   final int? subwayStationId;
+  final List<int>? subwayStationIds;
   final int? subwayLineId;
   final int? gender;
   final double? minPrice;
@@ -173,6 +175,7 @@ class HomeScreen extends StatefulWidget {
     this.listingTypeId,
     this.locationId,
     this.subwayStationId,
+    this.subwayStationIds,
     this.subwayLineId,
     this.gender,
     this.minPrice,
@@ -186,6 +189,7 @@ class HomeScreen extends StatefulWidget {
   final int? listingTypeId;
   final int? locationId;
   final int? subwayStationId;
+  final List<int>? subwayStationIds;
   final int? subwayLineId;
   final int? gender;
   final double? minPrice;
@@ -884,6 +888,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final subwayStationId = fromExplicit
         ? widget.subwayStationId
         : _searchFiltersState.selectedStationId;
+    final subwayStationIds = fromExplicit
+        ? widget.subwayStationIds
+        : _searchFiltersState.searchSubwayStationIds;
     final subwayLineId = fromExplicit
         ? widget.subwayLineId
         : _searchFiltersState.selectedSubwayLine;
@@ -913,6 +920,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       listingTypeIds: listingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
+      subwayStationIds: subwayStationIds,
       subwayLineId: subwayLineId,
       gender: gender,
       minPrice: minPrice,
@@ -1203,6 +1211,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               (filters.subwayStationId != null && filters.subwayStationId! > 0)
                   ? filters.subwayStationId
                   : null,
+          subwayStationIds: filters.subwayStationIds,
           subwayLineId:
               (filters.subwayLineId != null && filters.subwayLineId! > 0)
                   ? filters.subwayLineId
@@ -1519,6 +1528,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       subwayStationId: _searchFiltersState.selectedStationId > 0
           ? _searchFiltersState.selectedStationId
           : null,
+      subwayStationIds: _searchFiltersState.searchSubwayStationIds,
       subwayLineId: _searchFiltersState.selectedSubwayLine > 0
           ? _searchFiltersState.selectedSubwayLine
           : null,
@@ -1629,9 +1639,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       explicitNullFallsBackToState: true,
     );
 
+    final alertStationIds = filters.subwayStationIds ?? const <int>[];
     final hasAnyLocationConstraint =
         (filters.locationId != null && filters.locationId! > 0) ||
             (filters.subwayLineId != null && filters.subwayLineId! > 0) ||
+            alertStationIds.isNotEmpty ||
             (filters.subwayStationId != null && filters.subwayStationId! > 0);
     if (!hasAnyLocationConstraint) {
       ToastTheme.showError(
@@ -1652,7 +1664,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         listingTypeId:
             filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId,
         locationId: filters.locationId,
-        subwayStationId: filters.subwayStationId,
+        subwayStationId:
+            alertStationIds.length > 1 ? null : filters.subwayStationId,
+        subwayStationIds: alertStationIds.length > 1 ? alertStationIds : null,
         subwayLineId: filters.subwayLineId,
         gender: filters.gender,
         minPrice: filters.minPrice ?? 0.0,
@@ -1788,6 +1802,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             filters.subwayStationId! > 0)
                         ? filters.subwayStationId
                         : null,
+                    subwayStationIds: filters.subwayStationIds,
                     subwayLineId: (filters.subwayLineId != null &&
                             filters.subwayLineId! > 0)
                         ? filters.subwayLineId
@@ -2040,23 +2055,28 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     await _searchFiltersState.setPrivateRoom(result.privateRoom);
     await _searchFiltersState.setWithPhoto(result.withPhoto);
 
+    // Metro line is just a "whole line" marker now; it coexists with both the
+    // multi-station selection and a chosen location (filters are combined).
     if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
-      await _searchFiltersState.setLocationIndex(0);
       await _searchFiltersState.setSubwayLine(result.subwayLineId!);
     } else {
       await _searchFiltersState.setSubwayLine(0);
     }
 
-    if (result.subwayStationId != null && (result.subwayStationId ?? 0) > 0) {
+    if (result.subwayStationIds.isNotEmpty) {
+      await _searchFiltersState.setStationIds(result.subwayStationIds);
+    } else if (result.subwayStationId != null &&
+        (result.subwayStationId ?? 0) > 0) {
       await _searchFiltersState.setStationId(result.subwayStationId!);
     } else {
-      await _searchFiltersState.setStationId(0);
+      await _searchFiltersState.setStationIds(const []);
     }
 
+    // Location is single-select and now coexists with the metro filters.
     if (result.locationId != null && (result.locationId ?? 0) > 0) {
       await _searchFiltersState.setLocationIndex(result.locationId!);
-      await _searchFiltersState.setSubwayLine(0);
-      await _searchFiltersState.setStationId(0);
+    } else {
+      await _searchFiltersState.setLocationIndex(0);
     }
 
     if (!mounted) return;
@@ -2283,23 +2303,28 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     await _searchFiltersState.setPrivateRoom(result.privateRoom);
     await _searchFiltersState.setWithPhoto(result.withPhoto);
 
+    // Metro line is just a "whole line" marker now; it coexists with both the
+    // multi-station selection and a chosen location (filters are combined).
     if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
-      await _searchFiltersState.setLocationIndex(0);
       await _searchFiltersState.setSubwayLine(result.subwayLineId!);
     } else {
       await _searchFiltersState.setSubwayLine(0);
     }
 
-    if (result.subwayStationId != null && (result.subwayStationId ?? 0) > 0) {
+    if (result.subwayStationIds.isNotEmpty) {
+      await _searchFiltersState.setStationIds(result.subwayStationIds);
+    } else if (result.subwayStationId != null &&
+        (result.subwayStationId ?? 0) > 0) {
       await _searchFiltersState.setStationId(result.subwayStationId!);
     } else {
-      await _searchFiltersState.setStationId(0);
+      await _searchFiltersState.setStationIds(const []);
     }
 
+    // Location is single-select and now coexists with the metro filters.
     if (result.locationId != null && (result.locationId ?? 0) > 0) {
       await _searchFiltersState.setLocationIndex(result.locationId!);
-      await _searchFiltersState.setSubwayLine(0);
-      await _searchFiltersState.setStationId(0);
+    } else {
+      await _searchFiltersState.setLocationIndex(0);
     }
 
     if (!mounted) return;
@@ -2388,6 +2413,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         listingTypeIds: filters.listingTypeIds,
         locationId: filters.locationId,
         subwayStationId: filters.subwayStationId,
+        subwayStationIds: filters.subwayStationIds,
         subwayLineId: filters.subwayLineId,
         gender: filters.gender,
         minPrice: filters.minPrice,

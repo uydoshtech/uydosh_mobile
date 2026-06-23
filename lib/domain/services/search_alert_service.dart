@@ -13,6 +13,7 @@ class _CreateSearchAlertRequest implements IJsonEncodable {
     required this.withPhoto,
     this.locationId,
     this.subwayStationId,
+    this.subwayStationIds,
     this.subwayLineId,
     this.gender,
   });
@@ -24,6 +25,7 @@ class _CreateSearchAlertRequest implements IJsonEncodable {
   final bool withPhoto;
   final int? locationId;
   final int? subwayStationId;
+  final List<int>? subwayStationIds;
   final int? subwayLineId;
   final int? gender;
 
@@ -35,7 +37,11 @@ class _CreateSearchAlertRequest implements IJsonEncodable {
       "maxPrice": maxPrice,
     };
     if (locationId != null) m["locationId"] = locationId;
-    if (subwayStationId != null) m["subwayStationId"] = subwayStationId;
+    if (subwayStationIds != null && subwayStationIds!.isNotEmpty) {
+      m["subwayStationIds"] = subwayStationIds;
+    } else if (subwayStationId != null) {
+      m["subwayStationId"] = subwayStationId;
+    }
     if (subwayLineId != null) m["subwayLineId"] = subwayLineId;
     if (gender != null) m["gender"] = gender;
     if (privateRoom) m["privateRoom"] = true;
@@ -54,6 +60,7 @@ abstract class ISearchAlertService {
     required bool withPhotoOnly,
     int? locationId,
     int? subwayStationId,
+    List<int>? subwayStationIds,
     int? subwayLineId,
     int? gender,
   });
@@ -79,6 +86,7 @@ class SearchAlertService implements ISearchAlertService {
     required bool withPhotoOnly,
     int? locationId,
     int? subwayStationId,
+    List<int>? subwayStationIds,
     int? subwayLineId,
     int? gender,
   }) async {
@@ -91,6 +99,7 @@ class SearchAlertService implements ISearchAlertService {
         withPhoto: withPhotoOnly,
         locationId: locationId,
         subwayStationId: subwayStationId,
+        subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId,
         gender: gender,
       );

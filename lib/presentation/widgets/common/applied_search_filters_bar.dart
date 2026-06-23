@@ -19,6 +19,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     this.gender,
     this.locationId,
     this.subwayStationId,
+    this.subwayStationIds,
     this.subwayLineId,
     this.minPrice,
     this.maxPrice,
@@ -39,6 +40,10 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   final int? gender; // 1 male, 2 female
   final int? locationId;
   final int? subwayStationId;
+
+  /// Full multi-station selection. When non-empty, renders one chip per
+  /// station, collapsing a fully-selected line into a single line chip.
+  final List<int>? subwayStationIds;
   final int? subwayLineId;
   final double? minPrice;
   final double? maxPrice;
@@ -334,84 +339,102 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       out.add(gap);
     }
 
-    final station = subwayStationId ?? 0;
-    if (station > 0) {
-      final lang = L10n.currentLanguage;
+    final lang = L10n.currentLanguage;
+
+    Widget pillChip({
+      required String tooltip,
+      required Widget leading,
+      required String text,
+    }) {
+      return Tooltip(
+        message: tooltip,
+        child: Container(
+          height: chipSize,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: neumorphicChipDecoration(
+            radius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              leading,
+              const SizedBox(width: 6),
+              Text(
+                text.isEmpty ? L10n.get("all") : text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: onSurface,
+                  height: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget stationChip(int station) {
       final stationObj = MetroCache.getStationById(station);
       final stationLine = stationObj?.line;
       final stationColor =
           stationLine == null ? null : AppColors.getMetroLineColor(stationLine);
       final stationName = MetroCache.getStationLabel(station, lang).trim();
-      final stationShort = _truncateLabel(stationName, maxChars: 15);
-      out.add(
-        Tooltip(
-          message: stationName,
-          child: Container(
-            height: chipSize,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: neumorphicChipDecoration(
-              radius: BorderRadius.circular(999),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ThemeIcon(Icons.train, color: stationColor, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  stationShort.isEmpty ? L10n.get("all") : stationShort,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: onSurface,
-                    height: 1.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return pillChip(
+        tooltip: stationName,
+        leading: ThemeIcon(Icons.train, color: stationColor, size: 20),
+        text: _truncateLabel(stationName, maxChars: 15),
       );
-      out.add(gap);
+    }
+
+    Widget lineChip(int line) {
+      final lineName = MetroCache.getLineLabel(line, lang).trim();
+      return pillChip(
+        tooltip: lineName,
+        leading: MLetterIcon(color: AppColors.getMetroLineColor(line), size: 20),
+        text: lineName,
+      );
+    }
+
+    final stationIds = (subwayStationIds != null && subwayStationIds!.isNotEmpty)
+        ? subwayStationIds!
+        : (subwayStationId != null && subwayStationId! > 0
+            ? [subwayStationId!]
+            : const <int>[]);
+
+    if (stationIds.isNotEmpty) {
+      // Group by line so a fully-selected line collapses into one line chip,
+      // while partial selections render an individual chip per station.
+      final selectedSet = stationIds.toSet();
+      final byLine = <int, List<int>>{};
+      for (final id in stationIds) {
+        final line = MetroCache.getStationById(id)?.line ?? 0;
+        byLine.putIfAbsent(line, () => <int>[]).add(id);
+      }
+      final lines = byLine.keys.toList()..sort();
+      for (final line in lines) {
+        final allOnLine = line > 0
+            ? MetroCache.getStationsForLine(line).map((s) => s.id).toList()
+            : const <int>[];
+        final isWholeLine =
+            allOnLine.isNotEmpty && allOnLine.every(selectedSet.contains);
+        if (isWholeLine) {
+          out.add(lineChip(line));
+          out.add(gap);
+        } else {
+          for (final id in byLine[line]!) {
+            out.add(stationChip(id));
+            out.add(gap);
+          }
+        }
+      }
     } else {
       final line = subwayLineId ?? 0;
       if (line > 0) {
-        final lang = L10n.currentLanguage;
-        final trainColor = AppColors.getMetroLineColor(line);
-        final lineName = MetroCache.getLineLabel(line, lang).trim();
-        out.add(
-          Tooltip(
-            message: lineName,
-            child: Container(
-              height: chipSize,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: neumorphicChipDecoration(
-                radius: BorderRadius.circular(999),
-              ),
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MLetterIcon(color: trainColor, size: 20),
-                  const SizedBox(width: 6),
-                  Text(
-                    lineName.isEmpty ? L10n.get("all") : lineName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: onSurface,
-                      height: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
+        out.add(lineChip(line));
         out.add(gap);
       }
     }

@@ -25,7 +25,10 @@ class SearchFiltersState extends ChangeNotifier {
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedStationId =
-      0; // Store the actual station ID instead of just index
+      0; // Deprecated single-station id; kept for backward compat
+  // Canonical multi-station selection. Empty means "no station filter".
+  // The single fields above are derived from this for legacy persistence.
+  List<int> _selectedStationIds = const [];
   int _selectedGender = 1; // 1 = male, 2 = female
   double _minPrice = 10.0; // Default min price
   double _maxPrice = 500.0; // Default visible max price
@@ -183,6 +186,10 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedSubwayLine = readInt("subway_line", 0, min: 0, max: 9999);
     _selectedStationIndex = readInt("station_index", 0, min: 0, max: 9999);
     _selectedStationId = readInt("station_id", 0, min: 0, max: 999999);
+    _selectedStationIds = _stationIdsFromDynamic(m["subway_station_ids"]);
+    if (_selectedStationIds.isEmpty && _selectedStationId > 0) {
+      _selectedStationIds = [_selectedStationId];
+    }
     _selectedGender = readInt("gender", 1, min: 1, max: 2);
     _minPrice = readDouble("min_price", 10.0);
     _maxPrice = readDouble("max_price", 500.0);
@@ -207,6 +214,10 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setInt("search_subway_line", _selectedSubwayLine);
       await prefs.setInt("search_station_index", _selectedStationIndex);
       await prefs.setInt("search_station_id", _selectedStationId);
+      await prefs.setString(
+        _stationIdsPrefsKey,
+        _stationIdsToPrefsString(_selectedStationIds),
+      );
       await prefs.setInt("search_gender", _selectedGender);
       await prefs.setDouble("search_min_price", _minPrice);
       await prefs.setDouble("search_max_price", _maxPrice);
@@ -234,6 +245,8 @@ class SearchFiltersState extends ChangeNotifier {
         "subway_line": _selectedSubwayLine,
         "station_index": _selectedStationIndex,
         "station_id": _selectedStationId,
+        if (_selectedStationIds.isNotEmpty)
+          "subway_station_ids": _selectedStationIds,
         "gender": _selectedGender,
         "min_price": _minPrice,
         "max_price": _maxPrice,
@@ -279,6 +292,45 @@ class SearchFiltersState extends ChangeNotifier {
   int get selectedSubwayLine => _selectedSubwayLine;
   int get selectedStationIndex => _selectedStationIndex;
   int get selectedStationId => _selectedStationId; // Getter for station ID
+
+  /// All currently selected subway station ids (multi-select).
+  List<int> get selectedStationIdsList =>
+      List<int>.unmodifiable(_selectedStationIds);
+
+  /// Station ids sent to search APIs, or null when none are selected.
+  List<int>? get searchSubwayStationIds =>
+      _selectedStationIds.isNotEmpty ? List<int>.from(_selectedStationIds) : null;
+
+  static const String _stationIdsPrefsKey = "search_station_ids";
+
+  static List<int> _sanitizeStationIds(Iterable<int> raw) {
+    final out = <int>[];
+    for (final id in raw) {
+      if (id > 0 && !out.contains(id)) out.add(id);
+    }
+    out.sort();
+    return out;
+  }
+
+  static List<int> _stationIdsFromDynamic(dynamic raw) {
+    if (raw is List) {
+      return _sanitizeStationIds(
+        raw.map((e) => e is num ? e.toInt() : int.tryParse("$e")).whereType<int>(),
+      );
+    }
+    return const [];
+  }
+
+  static List<int> _stationIdsFromPrefsString(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return const [];
+    return _sanitizeStationIds(
+      raw.split(",").map((p) => int.tryParse(p.trim())).whereType<int>(),
+    );
+  }
+
+  static String _stationIdsToPrefsString(List<int> ids) =>
+      _sanitizeStationIds(ids).join(",");
+
   int get selectedGender => _selectedGender;
   double get minPrice => _minPrice;
   double get maxPrice => _maxPrice;
@@ -326,11 +378,18 @@ class SearchFiltersState extends ChangeNotifier {
         "DEBUG: SearchFiltersState.initialize - loaded station index from SharedPreferences: $_selectedStationIndex",
       );
 
-      // Load station ID (new field)
+      // Load station ID (legacy single field)
       _selectedStationId = prefs.getInt("search_station_id") ?? 0;
       logger.d(
         "DEBUG: SearchFiltersState.initialize - loaded station ID from SharedPreferences: $_selectedStationId",
       );
+
+      // Load multi-station selection; upgrade a legacy single id when present.
+      _selectedStationIds =
+          _stationIdsFromPrefsString(prefs.getString(_stationIdsPrefsKey));
+      if (_selectedStationIds.isEmpty && _selectedStationId > 0) {
+        _selectedStationIds = [_selectedStationId];
+      }
 
       // Load gender - use profile default when no saved preference
       final savedGender = prefs.getInt("search_gender");
@@ -361,6 +420,7 @@ class SearchFiltersState extends ChangeNotifier {
           prefs.containsKey("search_subway_line") ||
           prefs.containsKey("search_station_index") ||
           prefs.containsKey("search_station_id") ||
+          prefs.containsKey(_stationIdsPrefsKey) ||
           prefs.containsKey("search_gender") ||
           prefs.containsKey("search_min_price") ||
           prefs.containsKey("search_max_price") ||
@@ -716,22 +776,58 @@ class SearchFiltersState extends ChangeNotifier {
     if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
-  // Update station ID (new method)
+  // Update station ID (legacy single-station method).
+  //
+  // Setting a positive id replaces the selection with that single station.
+  // Setting 0 only clears the legacy single field; it intentionally does NOT
+  // wipe the multi-station selection, because legacy callers invoke
+  // `setStationId(0)` to "reset the station wheel" on metro-line changes —
+  // which must not clear stations the user picked on other lines.
   Future<void> setStationId(int stationId) async {
     logger.d(
       "DEBUG: SearchFiltersState.setStationId - saving station ID: $stationId",
     );
     _selectedStationId = stationId;
+    if (stationId > 0) {
+      _selectedStationIds = [stationId];
+    }
 
     try {
       await _enqueuePrefsWrite((prefs) async {
         await prefs.setInt("search_station_id", stationId);
+        await prefs.setString(
+          _stationIdsPrefsKey,
+          _stationIdsToPrefsString(_selectedStationIds),
+        );
         logger.d(
           "DEBUG: SearchFiltersState.setStationId - saved to SharedPreferences: $stationId",
         );
       });
     } catch (e) {
       logger.d("Error saving station ID: $e");
+    }
+
+    notifyListeners();
+    if (!_remotePersistGated) _scheduleRemotePersist();
+  }
+
+  /// Update the multi-station selection (canonical). Keeps the legacy single
+  /// `station_id` in sync (first id when exactly one is selected, else 0).
+  Future<void> setStationIds(List<int> stationIds) async {
+    final sanitized = _sanitizeStationIds(stationIds);
+    _selectedStationIds = sanitized;
+    _selectedStationId = sanitized.length == 1 ? sanitized.first : 0;
+
+    try {
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setString(
+          _stationIdsPrefsKey,
+          _stationIdsToPrefsString(sanitized),
+        );
+        await prefs.setInt("search_station_id", _selectedStationId);
+      });
+    } catch (e) {
+      logger.d("Error saving station IDs: $e");
     }
 
     notifyListeners();
@@ -814,6 +910,7 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedSubwayLine = 0;
     _selectedStationIndex = 0;
     _selectedStationId = 0;
+    _selectedStationIds = const [];
     _selectedGender = 1;
     _profileDefaultsApplied = false; // Allow profile defaults to re-apply
     _hadSavedFilters = false; // Allow defaults to rebuild on next home load
@@ -831,6 +928,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.remove("search_subway_line");
       await prefs.remove("search_station_index");
       await prefs.remove("search_station_id");
+      await prefs.remove(_stationIdsPrefsKey);
       await prefs.remove("search_gender");
       await prefs.remove("search_min_price");
       await prefs.remove("search_max_price");
@@ -861,6 +959,7 @@ class SearchFiltersState extends ChangeNotifier {
     _selectedSubwayLine = snapshot.selectedSubwayLine;
     _selectedStationIndex = snapshot.selectedStationIndex;
     _selectedStationId = snapshot.selectedStationId;
+    _selectedStationIds = List<int>.from(snapshot.selectedStationIds);
     _selectedGender = snapshot.selectedGender;
     _minPrice = snapshot.minPrice;
     _maxPrice = snapshot.maxPrice;
@@ -888,6 +987,10 @@ class SearchFiltersState extends ChangeNotifier {
         await prefs.setInt(
             "search_station_index", snapshot.selectedStationIndex);
         await prefs.setInt("search_station_id", snapshot.selectedStationId);
+        await prefs.setString(
+          _stationIdsPrefsKey,
+          _stationIdsToPrefsString(snapshot.selectedStationIds),
+        );
         await prefs.setInt("search_gender", snapshot.selectedGender);
         await prefs.setDouble("search_min_price", snapshot.minPrice);
         await prefs.setDouble("search_max_price", snapshot.maxPrice);
@@ -911,6 +1014,7 @@ class SearchFiltersSnapshot {
     required this.selectedSubwayLine,
     required this.selectedStationIndex,
     required this.selectedStationId,
+    required this.selectedStationIds,
     required this.selectedGender,
     required this.minPrice,
     required this.maxPrice,
@@ -926,6 +1030,7 @@ class SearchFiltersSnapshot {
       selectedSubwayLine: s.selectedSubwayLine,
       selectedStationIndex: s.selectedStationIndex,
       selectedStationId: s.selectedStationId,
+      selectedStationIds: List<int>.from(s.selectedStationIdsList),
       selectedGender: s.selectedGender,
       minPrice: s.minPrice,
       maxPrice: s.maxPrice,
@@ -940,6 +1045,7 @@ class SearchFiltersSnapshot {
   final int selectedSubwayLine;
   final int selectedStationIndex;
   final int selectedStationId;
+  final List<int> selectedStationIds;
   final int selectedGender;
   final double minPrice;
   final double maxPrice;

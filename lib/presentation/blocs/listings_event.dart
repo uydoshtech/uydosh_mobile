@@ -41,6 +41,7 @@ class ListingsEvent with _$ListingsEvent {
     List<int>? listingTypeIds,
     int? locationId,
     int? subwayStationId,
+    List<int>? subwayStationIds,
     int? subwayLineId,
     int? gender,
     double? minPrice,

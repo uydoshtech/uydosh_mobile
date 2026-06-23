@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -34,8 +35,7 @@ class ListingDetailTileShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardTheme = Theme.of(context).cardTheme;
-    final shape =
-        cardTheme.shape ??
+    final shape = cardTheme.shape ??
         const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
         );
@@ -50,6 +50,15 @@ class ListingDetailTileShell extends StatelessWidget {
         ? ThreeDElevatedSurface(
             baseColor: glassTintColor,
             useLiquidGlass: true,
+            // Each glass tile's [BackdropFilter] re-samples the layer behind it
+            // every frame. With several stacked on the listing detail screen
+            // that's the dominant scroll cost, so drop the blur while the user
+            // is actively scrolling (and on Android) — same scroll-aware
+            // strategy the feed tiles use. The translucent tint stays, so the
+            // tile still reads as glass; only the (invisible-while-moving) blur
+            // pauses.
+            enableBackdropBlur:
+                LiquidGlassRendering.feedTileBackdropBlurEnabled(context),
             borderRadius: borderRadius,
             child: Material(
               color: Colors.transparent,

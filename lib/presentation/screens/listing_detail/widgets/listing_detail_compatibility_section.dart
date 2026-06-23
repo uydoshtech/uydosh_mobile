@@ -17,6 +17,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/profile_compatibility_field_icons.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
@@ -86,6 +87,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     this.groupPartialMatches = const [],
     this.groupDiscussItems = const [],
     this.groupPreferenceMatrix = const [],
+    this.memberCompatibility = const {},
     this.currentUserId,
     super.key,
   });
@@ -115,6 +117,10 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   final List<GroupCompatibilityPartialMatch> groupPartialMatches;
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
   final List<GroupPreferenceMatrixRow> groupPreferenceMatrix;
+
+  /// Per-member pairwise compatibility with the current viewer, keyed by
+  /// member userId. Used to annotate the matrix header avatars.
+  final Map<int, GroupMemberCompatibilitySummary> memberCompatibility;
   final int? currentUserId;
 
   @override
@@ -125,7 +131,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
 class _ListingDetailCompatibilitySectionState
     extends State<ListingDetailCompatibilitySection> with RouteAware {
   static const double _matrixTableCornerRadius = 10;
-  static const double _matrixUserHeaderHeight = 76;
+  static const double _matrixUserHeaderHeight = 92;
 
   Timer? _scrollIntoViewTimer;
   final GlobalKey _matrixUserHeaderKey = GlobalKey();
@@ -317,6 +323,24 @@ class _ListingDetailCompatibilitySectionState
     return "${parts.first} ${parts.last.characters.first}.";
   }
 
+  /// Viewer-vs-member compatibility percent for a matrix column, or null for
+  /// the current user's own column (no self-compatibility) and members without
+  /// a computed score.
+  int? _matrixMemberPercent(int userId) {
+    return widget.memberCompatibility[userId]?.percent;
+  }
+
+  Color _memberPercentColor(int? percent) {
+    if (percent == null) return _getDescriptionTextColor();
+    if (percent >= 80) {
+      return ThemeState().isLightTheme
+          ? AppColors.successDark
+          : AppColors.success;
+    }
+    if (percent >= 60) return AppColors.warning;
+    return AppColors.error;
+  }
+
   double _matrixStickyHeaderTop(BuildContext context) {
     final scaffoldHeight = Scaffold.maybeOf(context)?.appBarMaxHeight;
     if (scaffoldHeight != null && scaffoldHeight > 0) {
@@ -460,7 +484,9 @@ class _ListingDetailCompatibilitySectionState
   }) {
     return Expanded(
       child: Container(
-        constraints: BoxConstraints(minHeight: isHeader ? 76 : 36),
+        constraints: BoxConstraints(
+          minHeight: isHeader ? _matrixUserHeaderHeight : 36,
+        ),
         alignment: alignment,
         padding: EdgeInsets.symmetric(
           horizontal: 6,
@@ -499,30 +525,62 @@ class _ListingDetailCompatibilitySectionState
               isLast: i == orderedUserIds.length - 1,
               borderColor: borderColor,
               showBottomBorder: cellBottomBorder,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildHeaderAvatar(
-                    _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
-                    size: 32,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _matrixMemberName(orderedUserIds[i]),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: orderedUserIds.length >= 5 ? 11 : 12,
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
-                    ),
-                  ),
-                ],
+              child: _buildMatrixUserHeaderColumn(
+                userId: orderedUserIds[i],
+                textColor: textColor,
+                nameFontSize: orderedUserIds.length >= 5 ? 11 : 12,
               ),
             ),
         ],
       ),
+    );
+  }
+
+  /// Shared avatar + name + compatibility-percent column used by both the
+  /// in-flow matrix header and the pinned sticky overlay so they stay visually
+  /// identical.
+  Widget _buildMatrixUserHeaderColumn({
+    required int userId,
+    required Color textColor,
+    required double nameFontSize,
+  }) {
+    final percent = _matrixMemberPercent(userId);
+    final percentColor = _memberPercentColor(percent);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeaderAvatar(
+          _matrixMemberFor(userId)?.avatarUrl,
+          size: 32,
+          ringColor: percent == null ? null : percentColor,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _matrixMemberName(userId),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: nameFontSize,
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
+        ),
+        if (percent != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            "$percent%",
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: nameFontSize,
+              fontWeight: FontWeight.w700,
+              color: percentColor,
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -593,8 +651,9 @@ class _ListingDetailCompatibilitySectionState
               // Mirror the in-flow header cell geometry exactly
               // ([_buildMatrixTableCell] with isHeader: true) so swapping the
               // faded in-flow row for this pinned overlay doesn't nudge the
-              // avatar/name. The fixed 76px height + center alignment matches
-              // the in-flow minHeight: 76 centering without overflowing.
+              // avatar/name. The fixed [_matrixUserHeaderHeight] + center
+              // alignment matches the in-flow minHeight centering without
+              // overflowing.
               child: Container(
                 alignment: Alignment.center,
                 padding:
@@ -606,26 +665,10 @@ class _ListingDetailCompatibilitySectionState
                         : BorderSide(color: borderColor),
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildHeaderAvatar(
-                      _matrixMemberFor(orderedUserIds[i])?.avatarUrl,
-                      size: 32,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _matrixMemberName(orderedUserIds[i]),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: nameFontSize,
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
+                child: _buildMatrixUserHeaderColumn(
+                  userId: orderedUserIds[i],
+                  textColor: textColor,
+                  nameFontSize: nameFontSize,
                 ),
               ),
             ),
@@ -1003,9 +1046,15 @@ class _ListingDetailCompatibilitySectionState
     return AppColors.error;
   }
 
-  Widget _buildHeaderAvatar(String? avatarUrl, {required double size}) {
+  Widget _buildHeaderAvatar(
+    String? avatarUrl, {
+    required double size,
+    Color? ringColor,
+  }) {
     final resolvedUrl = resolveAvatarUrl(avatarUrl);
-    final borderColor = ChatParticipantAvatarStack.avatarBorderColor(context);
+    final borderColor =
+        ringColor ?? ChatParticipantAvatarStack.avatarBorderColor(context);
+    final borderWidth = ringColor != null ? 2.5 : 1.5;
     final fallback = CircleAvatar(
       radius: size / 2,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -1039,7 +1088,7 @@ class _ListingDetailCompatibilitySectionState
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: 1.5),
+                border: Border.all(color: borderColor, width: borderWidth),
               ),
             ),
           ),
@@ -1167,17 +1216,47 @@ class _ListingDetailCompatibilitySectionState
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            report,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.4,
-              color: textColor.withValues(alpha: 0.9),
+          Text.rich(
+            TextSpan(
+              children: _buildReportSpans(
+                report,
+                TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: textColor.withValues(alpha: 0.9),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Splits a report into spans, rendering names the backend wrapped in
+  /// `**double asterisks**` in bold.
+  List<TextSpan> _buildReportSpans(String text, TextStyle baseStyle) {
+    final spans = <TextSpan>[];
+    final boldPattern = RegExp(r"\*\*(.+?)\*\*");
+    var cursor = 0;
+    for (final match in boldPattern.allMatches(text)) {
+      if (match.start > cursor) {
+        spans.add(
+          TextSpan(text: text.substring(cursor, match.start), style: baseStyle),
+        );
+      }
+      spans.add(
+        TextSpan(
+          text: match.group(1),
+          style: baseStyle.copyWith(fontWeight: FontWeight.w700),
+        ),
+      );
+      cursor = match.end;
+    }
+    if (cursor < text.length) {
+      spans.add(TextSpan(text: text.substring(cursor), style: baseStyle));
+    }
+    return spans;
   }
 
   Widget _buildGroupPreferenceMatrix() {

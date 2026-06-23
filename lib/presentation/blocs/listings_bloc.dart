@@ -37,6 +37,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   List<int>? _lastListingTypeIds;
   int? _lastLocationId;
   int? _lastSubwayStationId;
+  List<int>? _lastSubwayStationIds;
   int? _lastSubwayLineId;
   int? _lastGender;
   double? _lastMinPrice;
@@ -200,7 +201,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       if (_lastListingTypeId != null ||
           (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
           _lastLocationId != null ||
-          _lastSubwayStationId != null) {
+          _lastSubwayStationId != null ||
+          (_lastSubwayStationIds != null && _lastSubwayStationIds!.isNotEmpty)) {
         // Use search with stored parameters
         final response = await _listingService.searchListings(
           page: _currentPage,
@@ -210,6 +212,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           listingTypeIds: _lastListingTypeIds,
           locationId: _lastLocationId,
           subwayStationId: _lastSubwayStationId,
+          subwayStationIds: _lastSubwayStationIds,
           subwayLineId: _lastSubwayLineId,
           gender: _lastGender,
           minPrice: _lastMinPrice,
@@ -484,6 +487,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     _lastListingTypeIds = searchParams["listingTypeIds"] as List<int>?;
     _lastLocationId = searchParams["locationId"] as int?;
     _lastSubwayStationId = searchParams["subwayStationId"] as int?;
+    _lastSubwayStationIds = searchParams["subwayStationIds"] as List<int>?;
     _lastSubwayLineId = searchParams["subwayLineId"] as int?;
     _lastGender = searchParams["gender"] as int?;
     _lastMinPrice = searchParams["minPrice"] as double?;
@@ -538,6 +542,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             "listingTypeIds": e.listingTypeIds,
             "locationId": e.locationId,
             "subwayStationId": e.subwayStationId,
+            "subwayStationIds": e.subwayStationIds,
             "subwayLineId": e.subwayLineId,
             "gender": e.gender,
             "minPrice": e.minPrice,
@@ -570,6 +575,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
               "listingTypeIds": e.listingTypeIds,
               "locationId": e.locationId,
               "subwayStationId": e.subwayStationId,
+              "subwayStationIds": e.subwayStationIds,
               "subwayLineId": e.subwayLineId,
               "gender": e.gender,
               "minPrice": e.minPrice,
@@ -601,6 +607,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       // Use the new comprehensive search method
       final subwayStationId = searchParams?["subwayStationId"] as int?;
+      final subwayStationIds = searchParams?["subwayStationIds"] as List<int>?;
       final locationId = searchParams?["locationId"] as int?;
       final listingTypeId = searchParams?["listingTypeId"] as int?;
       final listingTypeIds = searchParams?["listingTypeIds"] as List<int>?;
@@ -634,6 +641,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         listingTypeIds: listingTypeIds,
         locationId: locationId,
         subwayStationId: subwayStationId,
+        subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId,
         gender: gender,
         minPrice: minPrice,

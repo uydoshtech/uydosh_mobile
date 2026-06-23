@@ -12,6 +12,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
@@ -19,6 +20,7 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
+import "package:uy_dosh/presentation/screens/group_housing/group_search_prefs_edit_sheet.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -48,6 +50,7 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   late final ListingsBloc _bloc;
   final _scrollController = ScrollController();
   List<int> _excludeUserIds = [];
+  GroupSearchPrefs? _searchPrefs;
 
   @override
   void initState() {
@@ -85,6 +88,13 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
     if (_excludeUserIds.isEmpty) {
       _excludeUserIds = [detail.userId];
     }
+    try {
+      _searchPrefs = await getIt<IListingGroupService>().getSearchPrefs(
+        groupListingId: detail.id,
+      );
+    } catch (_) {
+      _searchPrefs = null;
+    }
     if (!mounted) return;
     _runSearch();
   }
@@ -101,12 +111,24 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
         detail.groupContext?.groupSizeTarget ?? detail.groupSizeTarget;
     final totalMax = groupSize != null ? bounds.max * groupSize : bounds.max;
 
+    // Prefer the group's shared search area when it has been customized;
+    // otherwise fall back to the group-forming listing's own geo.
+    final prefs = _searchPrefs;
+    final prefStations = prefs?.subwayStationIds ?? const <int>[];
+    final useShared = prefs != null &&
+        !prefs.isDefault &&
+        (prefStations.isNotEmpty || (prefs.locationId ?? 0) > 0);
+
     _bloc.add(
       ListingsEvent.searchListings(
         listingTypeId: ListingTypeIds.roommateNeeded,
-        locationId: detail.locationId,
-        subwayStationId: detail.subwayStationId,
-        subwayLineId: detail.subwayLineId,
+        locationId: useShared ? prefs.locationId : detail.locationId,
+        subwayStationId: useShared
+            ? (prefStations.length == 1 ? prefStations.first : null)
+            : detail.subwayStationId,
+        subwayStationIds:
+            useShared && prefStations.length > 1 ? prefStations : null,
+        subwayLineId: useShared ? null : detail.subwayLineId,
         gender: detail.gender,
         minPrice: bounds.min > 0 ? bounds.min.toDouble() : null,
         maxPrice: totalMax > 0 ? totalMax.toDouble() : null,
@@ -114,6 +136,28 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
         isRefresh: refresh,
       ),
     );
+  }
+
+  Future<void> _editSearchArea() async {
+    final detail = widget.groupListingDetail;
+    final initial = _searchPrefs ??
+        GroupSearchPrefs(
+          locationId: detail.locationId,
+          subwayStationIds: detail.subwayStationId != null
+              ? [detail.subwayStationId!]
+              : const [],
+          subwayLineIds:
+              detail.subwayLineId != null ? [detail.subwayLineId!] : const [],
+          isDefault: true,
+        );
+    final updated = await showGroupSearchPrefsEditSheet(
+      context: context,
+      groupListingId: detail.id,
+      initial: initial,
+    );
+    if (updated == null || !mounted) return;
+    setState(() => _searchPrefs = updated);
+    _runSearch(refresh: true);
   }
 
   void _onScroll() {
@@ -175,22 +219,36 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => GroupHousingFlow.openShortlistSheet(
-                      context: context,
-                      groupListingId: detail.id,
-                      isOwner: detail.groupContext?.isOwner == true,
-                      groupListingDetail: detail,
-                    ),
-                    icon: const ThemeIcon(Icons.bookmark, size: 18),
-                    label: ListenableBuilder(
-                      listenable: GroupShortlistState(),
-                      builder: (context, _) {
-                        final count = GroupShortlistState()
-                            .shortlistCountForGroup(detail.id);
-                        return Text(GroupHousingFlow.savedListingsLabel(count));
-                      },
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => GroupHousingFlow.openShortlistSheet(
+                            context: context,
+                            groupListingId: detail.id,
+                            isOwner: detail.groupContext?.isOwner == true,
+                            groupListingDetail: detail,
+                          ),
+                          icon: const ThemeIcon(Icons.bookmark, size: 18),
+                          label: ListenableBuilder(
+                            listenable: GroupShortlistState(),
+                            builder: (context, _) {
+                              final count = GroupShortlistState()
+                                  .shortlistCountForGroup(detail.id);
+                              return Text(
+                                GroupHousingFlow.savedListingsLabel(count),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        onPressed: _editSearchArea,
+                        icon: const ThemeIcon(Icons.travel_explore, size: 18),
+                        label: Text(L10n.get("group_search_area")),
+                      ),
+                    ],
                   ),
                 ],
               ),

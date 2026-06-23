@@ -33,6 +33,7 @@ class SearchBottomSheetMetroSection extends StatefulWidget {
     required this.stationPickerController,
     required this.onSubwayLineChanged,
     required this.onStationChanged,
+    required this.onStationsSelected,
     required this.metroLineTutorialKey,
     required this.metroStationTutorialKey,
     required this.getLocalizedName,
@@ -45,6 +46,11 @@ class SearchBottomSheetMetroSection extends StatefulWidget {
   final FixedExtentScrollController? stationPickerController;
   final void Function(int index) onSubwayLineChanged;
   final void Function(int index) onStationChanged;
+
+  /// Multi-station selection callback. Receives the full set of selected
+  /// station ids (across all lines) whenever the user toggles a station or the
+  /// per-line "select all" control.
+  final void Function(List<int> stationIds) onStationsSelected;
   final GlobalKey<TutorialTargetWrapperState> metroLineTutorialKey;
   final GlobalKey<TutorialTargetWrapperState> metroStationTutorialKey;
   final String Function({String? nameUz, String? nameRu, String? nameEn})
@@ -423,7 +429,7 @@ class _SearchBottomSheetMetroSectionState
       // bubble doesn't strobe in/out while they cycle through lines.
       _hintDebounceSettled &&
       widget.searchFiltersState.selectedSubwayLine > 0 &&
-      widget.searchFiltersState.selectedStationId == 0 &&
+      widget.searchFiltersState.selectedStationIdsList.isEmpty &&
       widget.currentStations.isNotEmpty;
 
   TextSpan _buildHintSpan(BuildContext context, ThemeData _) {
@@ -464,70 +470,109 @@ class _SearchBottomSheetMetroSectionState
   }
 
   Widget _buildMetroStationPicker(BuildContext context, ThemeData theme) {
+    final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
+    final selected = widget.searchFiltersState.selectedStationIdsList.toSet();
+    final lineStationIds =
+        widget.currentStations.map((station) => station.id).toList();
+    final allSelected = lineStationIds.isNotEmpty &&
+        lineStationIds.every(selected.contains);
+    final lineColor = widget.searchFiltersState.selectedSubwayLine > 0
+        ? _getLineColor(widget.searchFiltersState.selectedSubwayLine)
+        : theme.colorScheme.onSurfaceVariant;
+
+    void emit(Set<int> next) {
+      final list = next.toList()..sort();
+      widget.onStationsSelected(list);
+    }
+
+    void toggleStation(int id) {
+      final next = {...selected};
+      if (!next.remove(id)) next.add(id);
+      emit(next);
+    }
+
+    void toggleAllOnLine() {
+      final next = {...selected};
+      if (allSelected) {
+        next.removeAll(lineStationIds);
+      } else {
+        next.addAll(lineStationIds);
+      }
+      emit(next);
+    }
+
+    Widget checkbox(bool value, Color color) => ThemeIcon(
+          value ? Icons.check_box : Icons.check_box_outline_blank,
+          color: value ? color : textColor.withValues(alpha: 0.5),
+          size: 22,
+        );
+
     return LiquidGlassPlate(
-      height: 80,
+      height: 220,
       borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: CupertinoPicker(
-              backgroundColor: Colors.transparent,
-              changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
-              itemExtent: 40,
-              scrollController: widget.stationPickerController,
-              onSelectedItemChanged: (index) {
-                SendSoundUtils.playCupertinoWheelSound();
-                widget.onStationChanged(index);
-              },
-              children: [
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ThemeIcon(
-                        Icons.train,
-                        color: widget.searchFiltersState.selectedSubwayLine > 0
-                            ? _getLineColor(
-                                widget.searchFiltersState.selectedSubwayLine,
-                              )
-                            : theme.colorScheme.onSurfaceVariant,
-                        size: 22,
+          // "Select all on this line" toggle — populates the selection with
+          // every station of the current line (whole-line search).
+          InkWell(
+            onTap: toggleAllOnLine,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  checkbox(allSelected, lineColor),
+                  const SizedBox(width: 8),
+                  ThemeIcon(Icons.train, color: lineColor, size: 20),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      L10n.plural(
+                        "all_stations_count",
+                        widget.currentStations.length,
                       ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          L10n.plural(
-                            "all_stations_count",
-                            widget.currentStations.length,
-                          ),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: ThemeState().isBlueTheme
-                                ? Colors.white
-                                : Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: textColor,
                       ),
-                    ],
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                ...widget.currentStations.map((station) {
-                  final transferInfo =
-                      MetroCache.getTransferStationInfo(station.id);
-                  return Center(
+                ],
+              ),
+            ),
+          ),
+          Divider(height: 1, color: textColor.withValues(alpha: 0.12)),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: widget.currentStations.length,
+              itemBuilder: (context, index) {
+                final station = widget.currentStations[index];
+                final isSelected = selected.contains(station.id);
+                final transferInfo =
+                    MetroCache.getTransferStationInfo(station.id);
+                return InkWell(
+                  onTap: () {
+                    SendSoundUtils.playCupertinoWheelSound();
+                    toggleStation(station.id);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        checkbox(isSelected, _getLineColor(station.line)),
+                        const SizedBox(width: 8),
                         ThemeIcon(
                           Icons.train,
                           color: _getLineColor(station.line),
                           size: 20,
                         ),
                         const SizedBox(width: 6),
-                        Flexible(
+                        Expanded(
                           child: Text(
                             MetroCache.getStationName(
                               station,
@@ -536,11 +581,8 @@ class _SearchBottomSheetMetroSectionState
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: ThemeState().isBlueTheme
-                                  ? Colors.white
-                                  : Colors.black,
+                              color: textColor,
                             ),
-                            textAlign: TextAlign.center,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -556,9 +598,9 @@ class _SearchBottomSheetMetroSectionState
                         ],
                       ],
                     ),
-                  );
-                }),
-              ],
+                  ),
+                );
+              },
             ),
           ),
         ],

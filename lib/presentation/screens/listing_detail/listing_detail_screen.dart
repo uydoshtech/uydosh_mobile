@@ -123,6 +123,7 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexibl
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
+import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 
 /// Label for listing author from profile when [UserProfile.name] is empty.
 String? _listingAuthorNameFromProfile(UserProfile profile) {
@@ -405,7 +406,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       return 16.0 + MediaQuery.paddingOf(context).bottom;
     }
 
-    var height = _floatingGroupActionsBottomInset + _floatingGroupActionsShadowBuffer;
+    var height =
+        _floatingGroupActionsBottomInset + _floatingGroupActionsShadowBuffer;
     if (showChat) height += _floatingGroupChatButtonHeight;
     if (showShortlist) {
       if (showChat) height += _floatingGroupActionsGap;
@@ -557,8 +559,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           context: context,
           groupListingDetail: listingDetail,
         ),
-        secondaryLabel:
-            showManageRequestsFallback ? L10n.get("group_manage_requests") : null,
+        secondaryLabel: showManageRequestsFallback
+            ? L10n.get("group_manage_requests")
+            : null,
         onSecondary: showManageRequestsFallback ? openJoinRequestsSheet : null,
         showManageRequestsDot: pendingCount > 0,
         manageRequestsDotTrigger: pendingCount,
@@ -2553,8 +2556,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         Positioned.fill(child: content),
         Positioned(
           right: _floatingGroupActionsBottomInset,
-          bottom:
-              _floatingGroupActionsBottomInset + MediaQuery.paddingOf(context).bottom,
+          bottom: _floatingGroupActionsBottomInset +
+              MediaQuery.paddingOf(context).bottom,
           child: IntrinsicWidth(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -2747,6 +2750,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           List<GroupCompatibilityPartialMatch> groupPartialMatches,
           List<GroupCompatibilityDiscussItem> groupDiscussItems,
           List<GroupPreferenceMatrixRow> groupPreferenceMatrix,
+          Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility,
         })>(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
@@ -2765,6 +2769,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupPartialMatches: s.groupPartialMatches,
         groupDiscussItems: s.groupDiscussItems,
         groupPreferenceMatrix: s.groupPreferenceMatrix,
+        groupMemberCompatibility: s.groupMemberCompatibility,
       ),
       builder: (context, compat) => ListingDetailCompatibilitySection(
         listingDetail: listingDetail,
@@ -2786,6 +2791,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupPartialMatches: compat.groupPartialMatches,
         groupDiscussItems: compat.groupDiscussItems,
         groupPreferenceMatrix: compat.groupPreferenceMatrix,
+        memberCompatibility: compat.groupMemberCompatibility,
         currentUserId: _sessionUserId,
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,
@@ -3178,26 +3184,31 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             ? 0.0
             : 36.0 + MediaQuery.paddingOf(context).bottom;
         return _wrapListingDetailPullToRefresh(
-          CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                // Tight top: global [CardTheme.margin] is all(8); photo
-                // [ListingDetailPhotoSection] has zero top margin so the
-                // carousel sits closer to the app bar. When the liquid
-                // glass app bar is active the body renders behind the
-                // header, so we add [mainShellGlassExtraTopInset] to keep
-                // content clear of the transparent toolbar.
-                padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, bottomPad),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => sections[index],
-                    childCount: sections.length,
+          // Publishes whether the body is actively being scrolled so the glass
+          // tiles inside can drop their expensive [BackdropFilter] blur while
+          // moving (see [ListingDetailTileShell]).
+          FeedScrollScopeHost(
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  // Tight top: global [CardTheme.margin] is all(8); photo
+                  // [ListingDetailPhotoSection] has zero top margin so the
+                  // carousel sits closer to the app bar. When the liquid
+                  // glass app bar is active the body renders behind the
+                  // header, so we add [mainShellGlassExtraTopInset] to keep
+                  // content clear of the transparent toolbar.
+                  padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, bottomPad),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => sections[index],
+                      childCount: sections.length,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
