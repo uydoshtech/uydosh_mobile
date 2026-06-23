@@ -124,6 +124,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 
 /// Label for listing author from profile when [UserProfile.name] is empty.
 String? _listingAuthorNameFromProfile(UserProfile profile) {
@@ -330,6 +331,158 @@ class _FloatingGroupChatButton extends StatelessWidget {
   }
 }
 
+class _FloatingGroupParticipantsButton extends StatelessWidget {
+  const _FloatingGroupParticipantsButton({
+    required this.members,
+    required this.memberCount,
+    required this.currentUserId,
+    required this.showDot,
+    required this.dotTrigger,
+    required this.onPressed,
+  });
+
+  final List<ConversationMemberSummary> members;
+  final int memberCount;
+  final int? currentUserId;
+  final bool showDot;
+  final int dotTrigger;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final accentColor = ThemeState().isBlueTheme
+        ? const Color(0xFF34D399)
+        : theme.colorScheme.primary;
+    final surface = isDark
+        ? theme.colorScheme.surface.withValues(alpha: 0.84)
+        : Colors.white.withValues(alpha: 0.92);
+    final foreground = isDark ? Colors.white : Colors.black;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(999),
+      side: isBlueTheme
+          ? const BorderSide(color: Colors.white, width: 1)
+          : BorderSide(color: accentColor.withValues(alpha: 0.58), width: 1),
+    );
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.32 : 0.16),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: surface,
+            shape: shape,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: onPressed,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: WidgetStatePropertyAll(
+                foreground.withValues(alpha: 0.06),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (members.isEmpty)
+                      _FloatingParticipantIconStack(
+                        count: memberCount,
+                        color: accentColor,
+                      )
+                    else
+                      ChatParticipantAvatarStack(
+                        participants: members,
+                        currentUserId: currentUserId,
+                        avatarSize: 22,
+                        maxVisible: 5,
+                      ),
+                    const SizedBox(width: 9),
+                    Text(
+                      L10n.get("group_floating_participants_label"),
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 14,
+                        height: 1.0,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (showDot)
+          Positioned(
+            right: 2,
+            top: -2,
+            child: PulseThenBlinkDotWidget(
+              trigger: dotTrigger,
+              color: ThemeState().unreadIndicatorColor,
+              size: 10,
+              blinkDuration: const Duration(milliseconds: 750),
+              borderColor: surface,
+              borderWidth: 1.5,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _FloatingParticipantIconStack extends StatelessWidget {
+  const _FloatingParticipantIconStack({
+    required this.count,
+    required this.color,
+  });
+
+  final int count;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    const iconSize = 22.0;
+    const overlap = 9.0;
+    final visibleCount = count.clamp(1, 6).toInt();
+    final step = iconSize - overlap;
+
+    return SizedBox(
+      width: iconSize + (visibleCount - 1) * step,
+      height: iconSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: List.generate(
+          visibleCount,
+          (index) => Positioned(
+            left: index * step,
+            child: Icon(
+              index.isEven ? Icons.person_outline : Icons.person,
+              size: iconSize,
+              color: color,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({
     required this.listingId,
@@ -393,7 +546,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     return ctx?.isOwner == true || ctx?.isMember == true;
   }
 
+  bool _canShowFloatingGroupParticipantsButton(ListingDetail listingDetail) {
+    final groupProgress = ListingGroupProgress.fromListingDetail(listingDetail);
+    if (groupProgress == null) return false;
+    return groupProgress.current >=
+        ListingGroupProgress.minMembersForGroupCompatibility;
+  }
+
   static const double _floatingGroupChatButtonHeight = 40;
+  static const double _floatingGroupParticipantsPillHeight = 40;
   static const double _floatingShortlistPillHeight = 38;
   static const double _floatingGroupActionsGap = 10;
   static const double _floatingGroupActionsBottomInset = 16;
@@ -402,23 +563,29 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   double _groupFormingFloatingActionsBottomPad(ListingDetail listingDetail) {
     final showChat = _canShowFloatingGroupChatButton(listingDetail);
     final showShortlist = _canShowGroupShortlistPill(listingDetail);
-    if (!showChat && !showShortlist) {
+    final showParticipants = _canShowFloatingGroupParticipantsButton(
+      listingDetail,
+    );
+    if (!showChat && !showShortlist && !showParticipants) {
       return 16.0 + MediaQuery.paddingOf(context).bottom;
     }
 
     var height =
         _floatingGroupActionsBottomInset + _floatingGroupActionsShadowBuffer;
+    if (showParticipants) height += _floatingGroupParticipantsPillHeight;
     if (showChat) height += _floatingGroupChatButtonHeight;
     if (showShortlist) {
-      if (showChat) height += _floatingGroupActionsGap;
+      if (showChat || showParticipants) height += _floatingGroupActionsGap;
       height += _floatingShortlistPillHeight;
     }
+    if (showChat && showParticipants) height += _floatingGroupActionsGap;
     return height + MediaQuery.paddingOf(context).bottom;
   }
 
   bool _canShowFloatingGroupActions(ListingDetail listingDetail) =>
       _canShowGroupShortlistPill(listingDetail) ||
-      _canShowFloatingGroupChatButton(listingDetail);
+      _canShowFloatingGroupChatButton(listingDetail) ||
+      _canShowFloatingGroupParticipantsButton(listingDetail);
 
   bool _hasUnreadGroupChat(ListingDetail listingDetail) {
     final conversationId = listingDetail.groupContext?.groupConversationId;
@@ -531,6 +698,37 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
   }
 
+  Future<void> _openGroupMemberProfiles(
+    ListingDetail listingDetail,
+    List<ConversationMemberSummary> groupMembers, {
+    required bool isOwner,
+  }) async {
+    var pageState = context.read<ListingDetailPageBloc>().state;
+    var members =
+        groupMembers.isNotEmpty ? groupMembers : pageState.groupMembers;
+    if (members.isEmpty) {
+      await _loadCompatibility(listingDetail);
+      if (!mounted) return;
+      pageState = context.read<ListingDetailPageBloc>().state;
+      members = pageState.groupMembers;
+    }
+    if (members.isEmpty) return;
+
+    showListingGroupMemberProfilesSheet(
+      context: context,
+      listingId: listingDetail.id,
+      members: members,
+      ownerUserId: listingDetail.user.id,
+      currentUserId: _sessionUserId,
+      isOwner: isOwner,
+      groupProgress: ListingGroupProgress.fromListingDetail(listingDetail),
+      memberCompatibility: pageState.groupMemberCompatibility,
+      groupListingDetail: listingDetail,
+      onMemberTap: (userId) => _navigateToProfile(userId),
+      onChanged: _reloadListingDetail,
+    );
+  }
+
   Widget _buildGroupFormingActionBar(
     ListingDetail listingDetail, {
     required bool isOwner,
@@ -563,10 +761,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             ? L10n.get("group_manage_requests")
             : null,
         onSecondary: showManageRequestsFallback ? openJoinRequestsSheet : null,
-        showManageRequestsDot: pendingCount > 0,
+        showManageRequestsDot: showManageRequestsFallback && pendingCount > 0,
         manageRequestsDotTrigger: pendingCount,
         onViewMemberProfiles: onViewMemberProfiles,
-        showMemberProfilesDot: pendingCount > 0,
+        showMemberProfilesDot: onViewMemberProfiles != null && pendingCount > 0,
         memberProfilesDotTrigger: pendingCount,
       );
     }
@@ -2536,11 +2734,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ListingDetailPageState pageState,
   ) {
     final content = _buildLoadedState(listingDetail, pageState);
-    if (!_canShowFloatingGroupActions(listingDetail)) return content;
+    final groupMembers = pageState.groupMembers;
+    if (!_canShowFloatingGroupActions(listingDetail)) {
+      return content;
+    }
 
     final showShortlist = _canShowGroupShortlistPill(listingDetail);
     final showChat = _canShowFloatingGroupChatButton(listingDetail);
+    final showParticipants =
+        _canShowFloatingGroupParticipantsButton(listingDetail);
     final groupProgress = ListingGroupProgress.fromListingDetail(listingDetail);
+    final pendingRequestsCount =
+        listingDetail.groupContext?.pendingJoinRequestCount ?? 0;
     final participantLabel = groupProgress != null
         ? L10n.getWithParams(
             "group_floating_chat_label",
@@ -2571,7 +2776,27 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                     onChanged: _reloadListingDetail,
                     compact: true,
                   ),
-                if (showShortlist && showChat)
+                if (showShortlist && showParticipants)
+                  const SizedBox(height: _floatingGroupActionsGap),
+                if (showParticipants)
+                  _FloatingGroupParticipantsButton(
+                    members: groupMembers,
+                    memberCount: groupProgress?.current ?? groupMembers.length,
+                    currentUserId: _sessionUserId,
+                    showDot: pendingRequestsCount > 0,
+                    dotTrigger: pendingRequestsCount,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      unawaited(
+                        _openGroupMemberProfiles(
+                          listingDetail,
+                          groupMembers,
+                          isOwner: _isListingOwner(listingDetail.user.id),
+                        ),
+                      );
+                    },
+                  ),
+                if ((showShortlist || showParticipants) && showChat)
                   const SizedBox(height: _floatingGroupActionsGap),
                 if (showChat)
                   ListenableBuilder(
@@ -3133,44 +3358,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               child: Padding(
                 padding:
                     EdgeInsets.only(top: 16, bottom: groupFormingBottomPad),
-                child: BlocSelector<ListingDetailPageBloc,
-                    ListingDetailPageState, List<ConversationMemberSummary>>(
-                  selector: (s) => s.groupMembers,
-                  builder: (context, groupMembers) {
-                    final showMemberProfiles =
-                        ListingGroupProgress.canShowGroupCompatibility(
-                              listingDetail,
-                            ) &&
-                            groupMembers.isNotEmpty;
-                    return _buildGroupFormingActionBar(
-                      listingDetail,
-                      isOwner: isOwner,
-                      onViewMemberProfiles: showMemberProfiles
-                          ? () {
-                              final pageState =
-                                  context.read<ListingDetailPageBloc>().state;
-                              showListingGroupMemberProfilesSheet(
-                                context: context,
-                                listingId: listingDetail.id,
-                                members: groupMembers,
-                                ownerUserId: listingDetail.user.id,
-                                currentUserId: _sessionUserId,
-                                isOwner: isOwner,
-                                groupProgress:
-                                    ListingGroupProgress.fromListingDetail(
-                                  listingDetail,
-                                ),
-                                memberCompatibility:
-                                    pageState.groupMemberCompatibility,
-                                groupListingDetail: listingDetail,
-                                onMemberTap: (userId) =>
-                                    _navigateToProfile(userId),
-                                onChanged: _reloadListingDetail,
-                              );
-                            }
-                          : null,
-                    );
-                  },
+                child: _buildGroupFormingActionBar(
+                  listingDetail,
+                  isOwner: isOwner,
+                  onViewMemberProfiles: null,
                 ),
               ),
             ),

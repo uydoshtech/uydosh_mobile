@@ -261,6 +261,7 @@ class ListingGroupShortlistParticipantRating {
     required this.name,
     this.avatarUrl,
     this.stars,
+    this.reasons = const [],
   });
 
   factory ListingGroupShortlistParticipantRating.fromJson(
@@ -271,6 +272,10 @@ class ListingGroupShortlistParticipantRating {
       name: json["name"] as String? ?? "User",
       avatarUrl: json["avatar_url"] as String?,
       stars: (json["stars"] as num?)?.toInt(),
+      reasons: (json["reasons"] as List?)
+              ?.whereType<String>()
+              .toList(growable: false) ??
+          const [],
     );
   }
 
@@ -278,6 +283,7 @@ class ListingGroupShortlistParticipantRating {
   final String name;
   final String? avatarUrl;
   final int? stars;
+  final List<String> reasons;
 }
 
 /// Shared housing-search preferences for a forming group. `isDefault` is true

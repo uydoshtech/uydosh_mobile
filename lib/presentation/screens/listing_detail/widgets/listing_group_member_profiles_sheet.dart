@@ -44,9 +44,15 @@ const _sheetPendingSectionHeaderHeight = 46.0;
 const _sheetLoadingRequestsHeight = 48.0;
 const _memberCardBaseHeight = 82.0;
 const _memberCardHighlightsHeight = 37.0;
-const _memberCardActionHeight = 29.0;
+const _memberCardLeaveActionHeight = 29.0;
 const _pendingRequestCardBaseHeight = 132.0;
 const _pendingRequestMessageHeight = 28.0;
+
+class _MemberRemovalDecision {
+  const _MemberRemovalDecision({this.reason});
+
+  final String? reason;
+}
 
 Future<void> showListingGroupMemberProfilesSheet({
   required BuildContext context,
@@ -217,18 +223,15 @@ class _ListingGroupMemberProfilesSheetState
     final hasHighlights =
         widget.memberCompatibility[member.userId]?.fieldHighlights.isNotEmpty ??
             false;
-    final hasAction = (widget.isOwner &&
-            member.userId != widget.ownerUserId &&
-            !_isRemoving) ||
-        (!widget.isOwner &&
-            widget.currentUserId != null &&
-            member.userId == widget.currentUserId &&
-            member.userId != widget.ownerUserId &&
-            !_isLeaving);
+    final hasLeaveAction = !widget.isOwner &&
+        widget.currentUserId != null &&
+        member.userId == widget.currentUserId &&
+        member.userId != widget.ownerUserId &&
+        !_isLeaving;
 
     return _memberCardBaseHeight +
         (hasHighlights ? _memberCardHighlightsHeight : 0) +
-        (hasAction ? _memberCardActionHeight : 0);
+        (hasLeaveAction ? _memberCardLeaveActionHeight : 0);
   }
 
   double _estimatedPendingRequestCardsHeight() {
@@ -384,60 +387,15 @@ class _ListingGroupMemberProfilesSheetState
   Future<void> _confirmRemoveMember(ConversationMemberSummary member) async {
     if (_isRemoving) return;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        final scheme = Theme.of(dialogContext).colorScheme;
-        return UydoshGlassDialog(
-          title: Text(
-            L10n.get("group_remove_member_title"),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface,
-            ),
-          ),
-          content: Text(
-            L10n.getWithParams(
-              "group_remove_member_message",
-              params: {"name": member.name},
-            ),
-            style: TextStyle(
-              fontSize: 16,
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          actions: [
-            TextButtonThemed(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
-              child: Text(
-                L10n.get("cancel"),
-                style: const TextStyle(fontSize: 16),
-              ),
-            ),
-            TextButtonThemed(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: TextButton.styleFrom(foregroundColor: scheme.error),
-              child: Text(
-                L10n.get("group_remove_member"),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true || !mounted) return;
+    final decision = await _showRemoveMemberDialog(member);
+    if (decision == null || !mounted) return;
 
     setState(() => _isRemoving = true);
     try {
       await getIt<IListingGroupService>().removeMember(
         listingId: widget.listingId,
         memberUserId: member.userId,
+        reason: decision.reason,
       );
       if (!mounted) return;
       setState(() {
@@ -456,6 +414,137 @@ class _ListingGroupMemberProfilesSheetState
       if (!mounted) return;
       setState(() => _isRemoving = false);
       ToastTheme.showError(context, message: e.toString());
+    }
+  }
+
+  Future<_MemberRemovalDecision?> _showRemoveMemberDialog(
+    ConversationMemberSummary member,
+  ) async {
+    final otherController = TextEditingController();
+    String? selectedReasonKey;
+
+    try {
+      return await showDialog<_MemberRemovalDecision>(
+        context: context,
+        builder: (dialogContext) {
+          final scheme = Theme.of(dialogContext).colorScheme;
+          final reasonKeys = [
+            "group_remove_reason_inactive",
+            "group_remove_reason_rules",
+            "group_remove_reason_not_fit",
+            "group_remove_reason_member_request",
+            "group_remove_reason_other",
+          ];
+
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              String? selectedReason() {
+                if (selectedReasonKey == null) return null;
+                if (selectedReasonKey == "group_remove_reason_other") {
+                  final customReason = otherController.text.trim();
+                  return customReason.isEmpty ? null : customReason;
+                }
+                return L10n.get(selectedReasonKey!);
+              }
+
+              return UydoshGlassDialog(
+                title: Text(
+                  L10n.get("group_remove_member_title"),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      L10n.getWithParams(
+                        "group_remove_member_message",
+                        params: {"name": member.name},
+                      ),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      L10n.get("group_remove_reason_title"),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final reasonKey in reasonKeys)
+                          ChoiceChip(
+                            label: Text(L10n.get(reasonKey)),
+                            selected: selectedReasonKey == reasonKey,
+                            onSelected: (selected) {
+                              setDialogState(() {
+                                selectedReasonKey = selected ? reasonKey : null;
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                    if (selectedReasonKey == "group_remove_reason_other") ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: otherController,
+                        autofocus: true,
+                        maxLength: 80,
+                        onChanged: (_) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          counterText: "",
+                          hintText: L10n.get("group_remove_reason_other_hint"),
+                          isDense: true,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                actions: [
+                  TextButtonThemed(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    style:
+                        TextButton.styleFrom(foregroundColor: scheme.onSurface),
+                    child: Text(
+                      L10n.get("cancel"),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  TextButtonThemed(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop(
+                        _MemberRemovalDecision(reason: selectedReason()),
+                      );
+                    },
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
+                    child: Text(
+                      L10n.get("group_remove_member"),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      otherController.dispose();
     }
   }
 
@@ -926,7 +1015,7 @@ class _MemberProfileCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool canRemove;
   final bool canLeave;
-  final VoidCallback? onRemove;
+  final Future<void> Function()? onRemove;
   final VoidCallback? onLeave;
 
   bool get _isOwner => member.userId == ownerUserId;
@@ -987,6 +1076,38 @@ class _MemberProfileCard extends StatelessWidget {
       ProfileMatchFieldStatus.incomplete => "",
     };
     return "$fieldLabel: $statusLabel";
+  }
+
+  Widget _buildRemoveSwipeBackground(BuildContext context) {
+    final themeState = ThemeState();
+    final foregroundColor =
+        themeState.isBlueTheme ? Colors.white : AppColors.error;
+    final backgroundColor = themeState.isBlueTheme
+        ? AppColors.error.withValues(alpha: 0.38)
+        : AppColors.error.withValues(alpha: 0.20);
+
+    return Container(
+      alignment: AlignmentDirectional.centerEnd,
+      padding: const EdgeInsetsDirectional.only(end: 24),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(Icons.delete_outline_rounded, color: foregroundColor),
+          const SizedBox(width: 8),
+          Text(
+            L10n.get("group_remove_member"),
+            style: TextStyle(
+              color: foregroundColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFieldHighlights(BuildContext context) {
@@ -1119,16 +1240,6 @@ class _MemberProfileCard extends StatelessWidget {
                       ),
                     ],
                     _buildFieldHighlights(context),
-                    if (canRemove && onRemove != null) ...[
-                      const SizedBox(height: 8),
-                      UydoshLinkButton(
-                        text: L10n.get("group_remove_member"),
-                        onPressed: onRemove!,
-                        color: AppColors.error,
-                        padding: EdgeInsets.zero,
-                        alignment: Alignment.centerLeft,
-                      ),
-                    ],
                     if (canLeave && onLeave != null) ...[
                       const SizedBox(height: 8),
                       UydoshLinkButton(
@@ -1154,17 +1265,31 @@ class _MemberProfileCard extends StatelessWidget {
       ),
     );
 
-    if (!highlightCurrentUser) return card;
+    final visibleCard = highlightCurrentUser
+        ? DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.45),
+                width: 1.5,
+              ),
+            ),
+            child: card,
+          )
+        : card;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.45),
-          width: 1.5,
-        ),
-      ),
-      child: card,
+    if (!canRemove || onRemove == null) return visibleCard;
+
+    return Dismissible(
+      key: ValueKey("member-remove-swipe-${member.userId}"),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        HapticFeedbackUtils.impact();
+        await onRemove!.call();
+        return false;
+      },
+      background: _buildRemoveSwipeBackground(context),
+      child: visibleCard,
     );
   }
 }

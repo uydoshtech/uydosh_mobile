@@ -459,11 +459,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
     if (!_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.district &&
         !_isLoadingLocations &&
         _currentLocationId() != _baselineLocationId()) {
       addLabel("location", fallback: "Location");
     }
-    if (!_isLoadingStations) {
+    if (!_isLoadingStations &&
+        (_locationSearchMode == _LocationSearchMode.metro ||
+            _baselineLocationSearchMode == _LocationSearchMode.metro)) {
       final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
       final baseLine =
           _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
@@ -506,12 +509,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_moveInDateValue != _baselineMoveInDateValue) return true;
 
     if (!_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.district &&
         !_isLoadingLocations &&
         _currentLocationId() != _baselineLocationId()) {
       return true;
     }
 
-    if (!_isLoadingStations) {
+    if (!_isLoadingStations &&
+        (_locationSearchMode == _LocationSearchMode.metro ||
+            _baselineLocationSearchMode == _LocationSearchMode.metro)) {
       final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
       final baseLine =
           _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
@@ -1032,7 +1038,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           setState(() => _showLocationError = true);
           return false;
         }
-        if (!_supportsMultiLocation && _selectedLocationIndex < 0) {
+        if (!_supportsMultiLocation &&
+            _locationSearchMode == _LocationSearchMode.metro &&
+            _currentSubwayStationId() == null) {
+          ToastTheme.showError(context, message: L10n.get("location_required"));
+          setState(() => _showLocationError = true);
+          return false;
+        }
+        if (!_supportsMultiLocation &&
+            _locationSearchMode == _LocationSearchMode.district &&
+            _selectedLocationIndex < 0) {
           ToastTheme.showError(context, message: L10n.get("location_required"));
           setState(() => _showLocationError = true);
           return false;
@@ -1274,9 +1289,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return UydoshFormScrollBody(
       topPadding: 12,
       children: [
+        _buildLocationModeToggle(),
+        const SizedBox(height: 12),
         if (_supportsMultiStation) ...[
-          _buildLocationModeToggle(),
-          const SizedBox(height: 12),
           if (_locationSearchMode == _LocationSearchMode.metro) ...[
             MultiStationPicker(
               selectedSubwayLine: _selectedSubwayLine,
@@ -1318,7 +1333,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             if (_selectedSearchLocations.isNotEmpty)
               _buildSelectedLocationChips(),
           ],
-        ] else ...[
+        ] else if (_locationSearchMode == _LocationSearchMode.metro) ...[
           ListingFormMetroSection(
             selectedSubwayLine: _selectedSubwayLine,
             selectedStationIndex: _selectedStationIndex,
@@ -1335,18 +1350,22 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   _currentStations = [];
                   _selectedStationIndex = 0;
                 }
+                if (_showLocationError && index > 0) {
+                  _showLocationError = false;
+                }
               });
             },
             onStationChanged: (index) {
               setState(() {
                 _selectedStationIndex = index;
                 _syncLocationWithStation();
+                _showLocationError = false;
               });
             },
             onDismissKeyboard: _dismissKeyboard,
             pickerHeight: 132,
           ),
-          const SizedBox(height: 10), // Space between metro fields and location
+        ] else ...[
           LocationPicker(
             locations: _currentLocations,
             selectedLocationIndex: _selectedLocationIndex,
@@ -2269,6 +2288,24 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ? null
           : L10n.get("wizard_location_mode_metro");
     }
+    if (_locationSearchMode == _LocationSearchMode.metro) {
+      if (_selectedSubwayLine <= 0 ||
+          _currentStations.isEmpty ||
+          _selectedStationIndex < 0 ||
+          _selectedStationIndex >= _currentStations.length) {
+        return null;
+      }
+      final station = _currentStations[_selectedStationIndex];
+      final stationName = _getLocalizedName(
+        nameUz: station.nameUz,
+        nameRu: station.nameRu,
+        nameEn: station.nameEn,
+      );
+      return L10n.getWithParams(
+        "wizard_metro_value",
+        params: {"line": "$_selectedSubwayLine", "station": stationName},
+      );
+    }
     if (_selectedLocationIndex < 0 ||
         _selectedLocationIndex >= _currentLocations.length) {
       return null;
@@ -2279,22 +2316,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       nameRu: loc.shortNameRu,
       nameEn: loc.shortNameEn,
     );
-    if (_selectedSubwayLine > 0 &&
-        _currentStations.isNotEmpty &&
-        _selectedStationIndex >= 0 &&
-        _selectedStationIndex < _currentStations.length) {
-      final station = _currentStations[_selectedStationIndex];
-      final stationName = _getLocalizedName(
-        nameUz: station.nameUz,
-        nameRu: station.nameRu,
-        nameEn: station.nameEn,
-      );
-      final metro = L10n.getWithParams(
-        "wizard_metro_value",
-        params: {"line": "$_selectedSubwayLine", "station": stationName},
-      );
-      return "$name\n$metro";
-    }
     return name;
   }
 
@@ -2465,7 +2486,20 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _showLocationError = true;
       });
       return;
-    } else if (!_supportsMultiLocation && _selectedLocationIndex < 0) {
+    } else if (!_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.metro &&
+        _currentSubwayStationId() == null) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("location_required"),
+      );
+      setState(() {
+        _showLocationError = true;
+      });
+      return;
+    } else if (!_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.district &&
+        _selectedLocationIndex < 0) {
       ToastTheme.showError(
         context,
         message: L10n.get("location_required"),
@@ -2531,18 +2565,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // Demand-side flows persist either station ids or district ids. The UI
       // toggle makes these mutually exclusive; element 0 doubles as the primary
       // single field for backward-compatible display/search.
-      final usesMetroMode = _supportsMultiStation &&
-          _locationSearchMode == _LocationSearchMode.metro;
-      final usesDistrictMode = _supportsMultiLocation &&
+      final usesMetroMode = _locationSearchMode == _LocationSearchMode.metro;
+      final usesDistrictMode =
           _locationSearchMode == _LocationSearchMode.district;
-      final multiStationIds =
-          usesMetroMode && _selectedSearchStations.isNotEmpty
-              ? _selectedSearchStations.map((s) => s.id).toList()
-              : null;
-      final multiLocationIds =
-          usesDistrictMode && _selectedSearchLocations.isNotEmpty
-              ? _selectedSearchLocations.map((l) => l.id).toList()
-              : null;
+      final multiStationIds = _supportsMultiStation &&
+              usesMetroMode &&
+              _selectedSearchStations.isNotEmpty
+          ? _selectedSearchStations.map((s) => s.id).toList()
+          : null;
+      final multiLocationIds = _supportsMultiLocation &&
+              usesDistrictMode &&
+              _selectedSearchLocations.isNotEmpty
+          ? _selectedSearchLocations.map((l) => l.id).toList()
+          : null;
       final primaryStation = multiStationIds != null
           ? _selectedSearchStations.first
           : usesDistrictMode

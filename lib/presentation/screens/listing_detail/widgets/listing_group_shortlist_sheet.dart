@@ -33,6 +33,40 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
+const _shortlistDislikeReasons = [
+  (
+    code: "too_expensive",
+    labelKey: "group_shortlist_dislike_reason_expensive",
+  ),
+  (code: "too_far", labelKey: "group_shortlist_dislike_reason_far"),
+  (
+    code: "bad_condition",
+    labelKey: "group_shortlist_dislike_reason_condition",
+  ),
+  (
+    code: "owner_doubts",
+    labelKey: "group_shortlist_dislike_reason_owner",
+  ),
+  (
+    code: "not_enough_space",
+    labelKey: "group_shortlist_dislike_reason_space",
+  ),
+  (
+    code: "bad_neighborhood",
+    labelKey: "group_shortlist_dislike_reason_neighborhood",
+  ),
+];
+
+class _RatingDialogResult {
+  const _RatingDialogResult({
+    required this.stars,
+    required this.reasons,
+  });
+
+  final int stars;
+  final List<String> reasons;
+}
+
 String? _listingOwnerNameFromProfile(UserProfile profile) {
   final name = profile.name?.trim();
   if (name != null && name.isNotEmpty) return name;
@@ -179,13 +213,15 @@ class _ListingGroupShortlistSheetState
   }
 
   Future<void> _editRating(_ShortlistRow row, int currentStars) async {
-    final stars = await showDialog<int>(
+    final result = await showDialog<_RatingDialogResult>(
       context: context,
       builder: (dialogContext) {
         var selected = currentStars.clamp(0, 5).toInt();
+        final selectedReasonCodes = _currentUserReasonCodes(row);
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final scheme = Theme.of(context).colorScheme;
+            final showDislikeReasons = selected > 0 && selected < 5;
             return UydoshGlassDialog(
               title: Text(
                 L10n.get("group_shortlist_edit_rating_title"),
@@ -195,30 +231,98 @@ class _ListingGroupShortlistSheetState
                   color: scheme.onSurface,
                 ),
               ),
-              content: Row(
+              scrollable: true,
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(5, (index) {
-                  final value = index + 1;
-                  final filled = selected >= value;
-                  return IconButton(
-                    iconSize: 48,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 56,
-                      height: 56,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(5, (index) {
+                      final value = index + 1;
+                      final filled = selected >= value;
+                      return IconButton(
+                        iconSize: 48,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 56,
+                          height: 56,
+                        ),
+                        onPressed: () {
+                          HapticFeedbackUtils.selectionClick();
+                          setDialogState(() {
+                            selected = value;
+                            if (value >= 5) selectedReasonCodes.clear();
+                          });
+                        },
+                        icon: Icon(
+                          filled
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
+                          color: filled
+                              ? AppColors.getThemeAwareWarningIconColor(context)
+                              : scheme.onSurfaceVariant,
+                        ),
+                      );
+                    }),
+                  ),
+                  if (showDislikeReasons) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      L10n.get("group_shortlist_dislike_reasons_title"),
+                      style: TextStyle(
+                        color: scheme.onSurface,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    onPressed: () {
-                      HapticFeedbackUtils.selectionClick();
-                      setDialogState(() => selected = value);
-                    },
-                    icon: Icon(
-                      filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: filled
-                          ? AppColors.getThemeAwareWarningIconColor(context)
-                          : scheme.onSurfaceVariant,
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _shortlistDislikeReasons.map((reason) {
+                        final isSelected =
+                            selectedReasonCodes.contains(reason.code);
+                        return ChoiceChip(
+                          label: Text(L10n.get(reason.labelKey)),
+                          selected: isSelected,
+                          onSelected: (value) {
+                            HapticFeedbackUtils.selectionClick();
+                            setDialogState(() {
+                              if (value) {
+                                selectedReasonCodes.add(reason.code);
+                              } else {
+                                selectedReasonCodes.remove(reason.code);
+                              }
+                            });
+                          },
+                          selectedColor:
+                              AppColors.getThemeAwareWarningIconColor(context)
+                                  .withValues(alpha: 0.18),
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? scheme.onSurface
+                                : scheme.onSurfaceVariant,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.getThemeAwareWarningIconColor(
+                                    context,
+                                  )
+                                : scheme.outlineVariant,
+                          ),
+                          backgroundColor:
+                              scheme.surface.withValues(alpha: 0.24),
+                          showCheckmark: false,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        );
+                      }).toList(),
                     ),
-                  );
-                }),
+                  ],
+                ],
               ),
               actions: [
                 TextButtonThemed(
@@ -233,7 +337,14 @@ class _ListingGroupShortlistSheetState
                 TextButtonThemed(
                   onPressed: selected <= 0
                       ? null
-                      : () => Navigator.of(dialogContext).pop(selected),
+                      : () => Navigator.of(dialogContext).pop(
+                            _RatingDialogResult(
+                              stars: selected,
+                              reasons: selected < 5
+                                  ? selectedReasonCodes.toList()
+                                  : const [],
+                            ),
+                          ),
                   child: Text(
                     L10n.get("done"),
                     style: const TextStyle(
@@ -248,13 +359,20 @@ class _ListingGroupShortlistSheetState
         );
       },
     );
-    if (stars == null || stars == currentStars || !mounted) return;
+    if (result == null || !mounted) return;
+    final stars = result.stars;
+    final reasons = result.reasons;
+    if (stars == currentStars &&
+        _setsEqual(_currentUserReasonCodes(row), reasons.toSet())) {
+      return;
+    }
 
     try {
       final rating = await getIt<IListingGroupService>().rateShortlistItem(
         groupListingId: widget.groupListingId,
         housingListingId: row.listing.id,
         stars: stars,
+        reasons: reasons,
       );
       if (!mounted) return;
       setState(() {
@@ -280,6 +398,18 @@ class _ListingGroupShortlistSheetState
         message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
       );
     }
+  }
+
+  Set<String> _currentUserReasonCodes(_ShortlistRow row) {
+    return {
+      for (final participant in row.item.rating?.participants ??
+          const <ListingGroupShortlistParticipantRating>[])
+        if (participant.userId == _currentUserId) ...participant.reasons,
+    };
+  }
+
+  bool _setsEqual(Set<String> left, Set<String> right) {
+    return left.length == right.length && left.every(right.contains);
   }
 
   Future<void> _confirmRemove(_ShortlistRow row) async {
@@ -620,12 +750,10 @@ class _ListingGroupShortlistSheetState
                   onOpen: () => _openListing(row),
                   onRemove: () => _confirmRemove(row),
                   onRate: (stars) => _editRating(row, stars),
-                  onContactLandlord: widget.isOwner
-                      ? () => _contactLandlord(row)
-                      : null,
-                  onDiscussInGroup: hasGroupChat
-                      ? () => _discussInGroup(row)
-                      : null,
+                  onContactLandlord:
+                      widget.isOwner ? () => _contactLandlord(row) : null,
+                  onDiscussInGroup:
+                      hasGroupChat ? () => _discussInGroup(row) : null,
                 ),
               );
             },

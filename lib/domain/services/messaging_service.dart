@@ -148,11 +148,11 @@ abstract class IMessagingService {
   Future<Message> setListingRating({
     required int messageId,
     required int stars,
+    List<String> reasons = const [],
   });
 }
 
 class MessagingService implements IMessagingService {
-
   MessagingService(this._apiClient);
   final IOAuthApiClient _apiClient;
 
@@ -191,14 +191,13 @@ class MessagingService implements IMessagingService {
 
       // Check if response is a list directly (not wrapped in an object)
       if (response is List) {
-        final conversations =
-            (response as List)
-                .map(
-                  (item) => ConversationSummary.fromJson(
-                    item as Map<String, dynamic>,
-                  ),
-                )
-                .toList();
+        final conversations = (response as List)
+            .map(
+              (item) => ConversationSummary.fromJson(
+                item as Map<String, dynamic>,
+              ),
+            )
+            .toList();
 
         return PageableResponse<ConversationSummary>(
           data: conversations,
@@ -214,14 +213,13 @@ class MessagingService implements IMessagingService {
 
       if (conversationsData is List) {
         // Direct list format
-        final conversations =
-            conversationsData
-                .map(
-                  (item) => ConversationSummary.fromJson(
-                    item as Map<String, dynamic>,
-                  ),
-                )
-                .toList();
+        final conversations = conversationsData
+            .map(
+              (item) => ConversationSummary.fromJson(
+                item as Map<String, dynamic>,
+              ),
+            )
+            .toList();
 
         return PageableResponse<ConversationSummary>(
           data: conversations,
@@ -235,14 +233,13 @@ class MessagingService implements IMessagingService {
         final conversationsList =
             conversationsData["conversations"] as List? ?? [];
 
-        final conversations =
-            conversationsList
-                .map(
-                  (item) => ConversationSummary.fromJson(
-                    item as Map<String, dynamic>,
-                  ),
-                )
-                .toList();
+        final conversations = conversationsList
+            .map(
+              (item) => ConversationSummary.fromJson(
+                item as Map<String, dynamic>,
+              ),
+            )
+            .toList();
 
         return PageableResponse<ConversationSummary>(
           data: conversations,
@@ -304,13 +301,12 @@ class MessagingService implements IMessagingService {
         conversationsData = <dynamic>[];
       }
 
-      final conversations =
-          conversationsData
-              .map(
-                (json) =>
-                    ConversationSummary.fromJson(json as Map<String, dynamic>),
-              )
-              .toList();
+      final conversations = conversationsData
+          .map(
+            (json) =>
+                ConversationSummary.fromJson(json as Map<String, dynamic>),
+          )
+          .toList();
 
       return PageableResponse<ConversationSummary>(
         data: conversations,
@@ -379,8 +375,7 @@ class MessagingService implements IMessagingService {
       if (data is! List) return const [];
       return data
           .map(
-            (item) =>
-                DiscussedListing.fromJson(item as Map<String, dynamic>),
+            (item) => DiscussedListing.fromJson(item as Map<String, dynamic>),
           )
           .toList();
     } catch (e) {
@@ -439,21 +434,21 @@ class MessagingService implements IMessagingService {
 
       final response = await _apiClient
           .post<Conversation, CreateConversationRequest>("/conversations", (
-            json,
-          ) {
-            // Extract the data field from the response
-            final jsonMap = json as Map<String, dynamic>;
-            final conversationData = jsonMap["data"] as Map<String, dynamic>;
+        json,
+      ) {
+        // Extract the data field from the response
+        final jsonMap = json as Map<String, dynamic>;
+        final conversationData = jsonMap["data"] as Map<String, dynamic>;
 
-            // Remove fields that don't exist in the Conversation model
-            final cleanJsonMap = Map<String, dynamic>.from(conversationData);
-            cleanJsonMap.remove("initiator");
-            cleanJsonMap.remove("participant");
-            cleanJsonMap.remove("last_message_sender");
-            cleanJsonMap.remove("listing");
+        // Remove fields that don't exist in the Conversation model
+        final cleanJsonMap = Map<String, dynamic>.from(conversationData);
+        cleanJsonMap.remove("initiator");
+        cleanJsonMap.remove("participant");
+        cleanJsonMap.remove("last_message_sender");
+        cleanJsonMap.remove("listing");
 
-            return Conversation.fromJson(cleanJsonMap);
-          }, data: request);
+        return Conversation.fromJson(cleanJsonMap);
+      }, data: request);
 
       return response;
     } catch (e) {
@@ -539,10 +534,9 @@ class MessagingService implements IMessagingService {
 
       // Check if response is a list directly (not wrapped in an object)
       if (response is List) {
-        final messages =
-            (response as List)
-                .map((item) => Message.fromJson(item as Map<String, dynamic>))
-                .toList();
+        final messages = (response as List)
+            .map((item) => Message.fromJson(item as Map<String, dynamic>))
+            .toList();
 
         return PageableResponse<Message>(
           data: messages,
@@ -558,10 +552,9 @@ class MessagingService implements IMessagingService {
 
       if (messagesData is List) {
         // Direct list format
-        final messages =
-            messagesData
-                .map((item) => Message.fromJson(item as Map<String, dynamic>))
-                .toList();
+        final messages = messagesData
+            .map((item) => Message.fromJson(item as Map<String, dynamic>))
+            .toList();
 
         return PageableResponse<Message>(
           data: messages,
@@ -574,10 +567,9 @@ class MessagingService implements IMessagingService {
         // Nested structure: data.messages
         final messagesList = messagesData["messages"] as List? ?? [];
 
-        final messages =
-            messagesList
-                .map((item) => Message.fromJson(item as Map<String, dynamic>))
-                .toList();
+        final messages = messagesList
+            .map((item) => Message.fromJson(item as Map<String, dynamic>))
+            .toList();
 
         return PageableResponse<Message>(
           data: messages,
@@ -623,12 +615,12 @@ class MessagingService implements IMessagingService {
         replyToMessageId: replyToMessageId,
       );
 
-      final response = await _apiClient
-          .post<Map<String, dynamic>, SendMessageRequest>(
-            "/conversations/$conversationId/messages",
-            (json) => json as Map<String, dynamic>,
-            data: request,
-          );
+      final response =
+          await _apiClient.post<Map<String, dynamic>, SendMessageRequest>(
+        "/conversations/$conversationId/messages",
+        (json) => json as Map<String, dynamic>,
+        data: request,
+      );
 
       // Extract message data from the nested structure
       final messageData = response["data"] as Map<String, dynamic>?;
@@ -669,12 +661,12 @@ class MessagingService implements IMessagingService {
     try {
       final request = SendMessageRequest(content: newContent);
 
-      final response = await _apiClient
-          .put<Map<String, dynamic>, SendMessageRequest>(
-            "/messages/$messageId",
-            (json) => json as Map<String, dynamic>,
-            data: request,
-          );
+      final response =
+          await _apiClient.put<Map<String, dynamic>, SendMessageRequest>(
+        "/messages/$messageId",
+        (json) => json as Map<String, dynamic>,
+        data: request,
+      );
 
       final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
@@ -761,7 +753,8 @@ class MessagingService implements IMessagingService {
     int limit = 8,
   }) async {
     await _checkAuthentication();
-    final response = await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
+    final response =
+        await _apiClient.post<Map<String, dynamic>, IJsonEncodable>(
       "/conversations/$conversationId/safety-check",
       (json) => json as Map<String, dynamic>,
       data: _SafetyCheckRequest(limit: limit),
@@ -838,12 +831,12 @@ class MessagingService implements IMessagingService {
         mimeType: mimeType,
       );
 
-      final response = await _apiClient
-          .post<MessageAttachment, UploadAttachmentRequest>(
-            "/messages/$messageId/attachments",
-            (json) => MessageAttachment.fromJson(json as Map<String, dynamic>),
-            data: request,
-          );
+      final response =
+          await _apiClient.post<MessageAttachment, UploadAttachmentRequest>(
+        "/messages/$messageId/attachments",
+        (json) => MessageAttachment.fromJson(json as Map<String, dynamic>),
+        data: request,
+      );
       return response;
     } catch (e) {
       throw Exception("Failed to upload attachment");
@@ -907,10 +900,10 @@ class MessagingService implements IMessagingService {
     try {
       final response =
           await _apiClient.post<Map<String, dynamic>, _MessageReactionBody>(
-            "/messages/$messageId/reactions",
-            (json) => json as Map<String, dynamic>,
-            data: _MessageReactionBody(reaction: reaction),
-          );
+        "/messages/$messageId/reactions",
+        (json) => json as Map<String, dynamic>,
+        data: _MessageReactionBody(reaction: reaction),
+      );
       final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
         throw Exception("No message data found in response");
@@ -937,10 +930,10 @@ class MessagingService implements IMessagingService {
     try {
       final response =
           await _apiClient.delete<Map<String, dynamic>, _EmptyRequest>(
-            "/messages/$messageId/reactions",
-            (json) => json as Map<String, dynamic>,
-            data: _EmptyRequest(),
-          );
+        "/messages/$messageId/reactions",
+        (json) => json as Map<String, dynamic>,
+        data: _EmptyRequest(),
+      );
       final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
         throw Exception("No message data found in response");
@@ -965,15 +958,16 @@ class MessagingService implements IMessagingService {
   Future<Message> setListingRating({
     required int messageId,
     required int stars,
+    List<String> reasons = const [],
   }) async {
     await _checkAuthentication();
     try {
       final response =
           await _apiClient.post<Map<String, dynamic>, _ListingRatingBody>(
-            "/messages/$messageId/listing-rating",
-            (json) => json as Map<String, dynamic>,
-            data: _ListingRatingBody(stars: stars),
-          );
+        "/messages/$messageId/listing-rating",
+        (json) => json as Map<String, dynamic>,
+        data: _ListingRatingBody(stars: stars, reasons: reasons),
+      );
       final messageData = response["data"] as Map<String, dynamic>?;
       if (messageData == null) {
         throw Exception("No message data found in response");
@@ -998,11 +992,19 @@ class MessagingService implements IMessagingService {
 }
 
 class _ListingRatingBody implements IJsonEncodable {
-  _ListingRatingBody({required this.stars});
+  _ListingRatingBody({
+    required this.stars,
+    this.reasons = const [],
+  });
+
   final int stars;
+  final List<String> reasons;
 
   @override
-  Map<String, dynamic> toJson() => {"stars": stars};
+  Map<String, dynamic> toJson() => {
+        "stars": stars,
+        "reasons": stars < 5 ? reasons : const <String>[],
+      };
 }
 
 class _MessageReactionBody implements IJsonEncodable {

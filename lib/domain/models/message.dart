@@ -23,12 +23,14 @@ class MessageListingRating {
     required this.count,
     this.average,
     this.myStars,
+    this.myReasons = const [],
     this.distribution = const {},
   });
 
   final double? average;
   final int count;
   final int? myStars;
+  final List<String> myReasons;
   final Map<int, int> distribution;
 
   factory MessageListingRating.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,8 @@ class MessageListingRating {
       average: (json["average"] as num?)?.toDouble(),
       count: (json["count"] as num?)?.toInt() ?? 0,
       myStars: (json["my_stars"] as num?)?.toInt(),
+      myReasons: (json["my_reasons"] as List?)?.whereType<String>().toList() ??
+          const [],
       distribution: distribution,
     );
   }
@@ -61,6 +65,7 @@ Map<String, dynamic>? _listingRatingToJson(MessageListingRating? value) {
     "average": value.average,
     "count": value.count,
     "my_stars": value.myStars,
+    "my_reasons": value.myReasons,
     "distribution": value.distribution.map(
       (key, val) => MapEntry(key.toString(), val),
     ),
@@ -102,7 +107,9 @@ class Message with _$Message {
     @JsonKey(name: "sender_id") required int senderId,
     required String content,
     @JsonKey(name: "message_type") required String messageType,
-    @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
+    @JsonKey(name: "created_at") required String createdAt,
+    @JsonKey(name: "updated_at") required String updatedAt,
+    @JsonKey(name: "reply_to_message_id") int? replyToMessageId,
     @JsonKey(name: "is_edited") bool? isEdited,
     @JsonKey(name: "edited_at") String? editedAt,
     @JsonKey(name: "is_deleted") bool? isDeleted,

@@ -50,6 +50,7 @@ abstract class IListingGroupService {
   Future<void> removeMember({
     required int listingId,
     required int memberUserId,
+    String? reason,
   });
 
   Future<void> leaveGroup({required int listingId});
@@ -81,6 +82,7 @@ abstract class IListingGroupService {
     required int groupListingId,
     required int housingListingId,
     required int stars,
+    List<String> reasons = const [],
   });
 
   /// Shared housing-search preferences for the group (member only).
@@ -192,12 +194,13 @@ class ListingGroupService implements IListingGroupService {
   Future<void> removeMember({
     required int listingId,
     required int memberUserId,
+    String? reason,
   }) async {
-    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
+    await _oauthApiClient.delete<Map<String, dynamic>, _MemberRemovalBody>(
       "/listings/$listingId/group/members/$memberUserId",
       (json) => json as Map<String, dynamic>,
       basePath: EnvironmentUtil.basePath,
-      data: const _EmptyBody(),
+      data: _MemberRemovalBody(reason: reason),
     );
   }
 
@@ -295,13 +298,14 @@ class ListingGroupService implements IListingGroupService {
     required int groupListingId,
     required int housingListingId,
     required int stars,
+    List<String> reasons = const [],
   }) async {
     final response =
         await _oauthApiClient.put<Map<String, dynamic>, _ShortlistRatingBody>(
       "/listings/$groupListingId/group/shortlist/$housingListingId/rating",
       _requireResponseMap,
       basePath: EnvironmentUtil.basePath,
-      data: _ShortlistRatingBody(stars: stars),
+      data: _ShortlistRatingBody(stars: stars, reasons: reasons),
     );
     final rating = ListingGroupShortlistRating.fromJsonOrNull(
       response["rating"],
@@ -383,6 +387,19 @@ class _JoinRequestBody implements IJsonEncodable {
   }
 }
 
+class _MemberRemovalBody implements IJsonEncodable {
+  const _MemberRemovalBody({this.reason});
+
+  final String? reason;
+
+  @override
+  Map<String, dynamic> toJson() {
+    final trimmed = reason?.trim();
+    if (trimmed == null || trimmed.isEmpty) return {};
+    return {"reason": trimmed};
+  }
+}
+
 class _EmptyBody implements IJsonEncodable {
   const _EmptyBody();
 
@@ -391,10 +408,17 @@ class _EmptyBody implements IJsonEncodable {
 }
 
 class _ShortlistRatingBody implements IJsonEncodable {
-  const _ShortlistRatingBody({required this.stars});
+  const _ShortlistRatingBody({
+    required this.stars,
+    this.reasons = const [],
+  });
 
   final int stars;
+  final List<String> reasons;
 
   @override
-  Map<String, dynamic> toJson() => {"stars": stars};
+  Map<String, dynamic> toJson() => {
+        "stars": stars,
+        "reasons": stars < 5 ? reasons : const <String>[],
+      };
 }
