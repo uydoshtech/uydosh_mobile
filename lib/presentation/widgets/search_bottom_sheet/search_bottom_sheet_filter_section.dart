@@ -83,6 +83,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
       children: [
         // Price Range ([PriceRangePicker] already uses 3D plate chrome)
         PriceRangePicker(
+          title: L10n.get("price_picker_range_title"),
           minPrice: 10,
           maxPrice: 1000,
           initialVisibleMaxPrice: 500,

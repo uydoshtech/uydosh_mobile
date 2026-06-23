@@ -33,18 +33,19 @@ import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_alerts.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
-import "package:uy_dosh/presentation/widgets/common/gender_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/group_size_target_picker.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/multi_location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/multi_station_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
@@ -58,6 +59,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class CreateListingScreen extends StatefulWidget {
@@ -74,6 +76,8 @@ class CreateListingScreen extends StatefulWidget {
   State<CreateListingScreen> createState() => _CreateListingScreenState();
 }
 
+enum _LocationSearchMode { metro, district }
+
 class _CreateListingScreenState extends State<CreateListingScreen> {
   // Controllers
   final TextEditingController _titleController = TextEditingController();
@@ -83,7 +87,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   // Wizard navigation
   final PageController _pageController = PageController();
-  static const int _stepCount = 5;
+  static const int _stepCount = 4;
   int _currentStep = 0;
   FixedExtentScrollController? _locationScrollController;
   FixedExtentScrollController? _metroLineScrollController;
@@ -122,6 +126,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool get _supportsMultiStation =>
       _selectedListingTypeId == 1 || _isGroupFormingFlow;
 
+  bool get _supportsMultiLocation => _supportsMultiStation;
+
   int _groupSizeTarget = 3;
 
   bool get _pricePickerSingleHandle =>
@@ -130,6 +136,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
+  _LocationSearchMode _locationSearchMode = _LocationSearchMode.metro;
   bool _isSubmitting = false;
   bool _isLoadingLocations = false;
   bool _isLoadingStations = false;
@@ -159,6 +166,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final List<SubwayStation> _selectedSearchStations = [];
   List<int> _baselineSearchStationIds = [];
 
+  /// Multi-location selection shown as chips for demand-side flows when the
+  /// author chooses "By district" instead of "By metro". Order matters:
+  /// element 0 is the primary location persisted on the listing row.
+  final List<Location> _selectedSearchLocations = [];
+  List<int> _baselineSearchLocationIds = [];
+
+  /// Caches every station object seen across lines so the multi-select control
+  /// (which reports ids) can be mapped back to full [SubwayStation]s, including
+  /// ones selected on a line the user has since scrolled away from.
+  final Map<int, SubwayStation> _stationCache = {};
+
   final Set<int> _selectedAmenityIds = {};
   List<String> _selectedPhotos = [];
   int? _primaryPhotoIndex; // Track which photo is primary
@@ -171,7 +189,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String _baselineTitle = "";
   String _baselineDescription = "";
   int _baselineListingTypeId = 2;
-  int _baselineGender = 1;
   double _baselineRoommatePrice = 10.0;
   double _baselineRoomBudgetMin = 10.0;
   double _baselineRoomBudgetMax = 50.0;
@@ -181,6 +198,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _baselineSelectedSubwayLine = 0;
   int _baselineSelectedStationIndex = 0;
   int _baselineSelectedLocationIndex = -1;
+  _LocationSearchMode _baselineLocationSearchMode = _LocationSearchMode.metro;
   Set<int> _baselineAmenityIds = {};
   List<String> _baselineSelectedPhotos = [];
 
@@ -243,7 +261,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _baselineTitle = _titleController.text;
     _baselineDescription = _descriptionController.text;
     _baselineListingTypeId = _selectedListingTypeId;
-    _baselineGender = _selectedGender;
     _baselineRoommatePrice = _roommatePrice;
     _baselineRoomBudgetMin = _roomBudgetMin;
     _baselineRoomBudgetMax = _roomBudgetMax;
@@ -253,8 +270,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _baselineSelectedSubwayLine = _selectedSubwayLine;
     _baselineSelectedStationIndex = _selectedStationIndex;
     _baselineSelectedLocationIndex = _selectedLocationIndex;
+    _baselineLocationSearchMode = _locationSearchMode;
     _baselineSearchStationIds =
         _selectedSearchStations.map((s) => s.id).toList();
+    _baselineSearchLocationIds =
+        _selectedSearchLocations.map((l) => l.id).toList();
     _baselineAmenityIds = Set<int>.from(_selectedAmenityIds);
     _baselineSelectedPhotos = List<String>.from(_selectedPhotos);
     _baselineCaptured = true;
@@ -279,31 +299,24 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return _currentStations[_selectedStationIndex].id;
   }
 
-  /// Station currently highlighted in the metro wheel (or null when no line /
-  /// no stations loaded).
-  SubwayStation? _currentPickedStation() {
-    if (_selectedSubwayLine <= 0 || _currentStations.isEmpty) return null;
-    if (_selectedStationIndex < 0 ||
-        _selectedStationIndex >= _currentStations.length) {
-      return null;
-    }
-    return _currentStations[_selectedStationIndex];
-  }
-
-  /// Adds the wheel's current station to the multi-station chip selection.
-  void _addCurrentStationToSelection() {
-    final station = _currentPickedStation();
-    if (station == null) return;
-    if (_selectedSearchStations.any((s) => s.id == station.id)) {
-      ToastTheme.showInfo(
-        context,
-        message: L10n.get("wizard_station_already_added"),
-      );
-      return;
-    }
-    HapticFeedbackUtils.impact();
+  /// Receives the full set of selected station ids from [MultiStationPicker]
+  /// and rebuilds the [SubwayStation] objects (id order preserved; element 0 is
+  /// the primary station persisted on the listing).
+  void _onSearchStationsSelected(List<int> ids) {
     setState(() {
-      _selectedSearchStations.add(station);
+      _selectedSearchLocations.clear();
+      final next = <SubwayStation>[];
+      for (final id in ids) {
+        final station = _stationCache[id] ??
+            _selectedSearchStations
+                .where((s) => s.id == id)
+                .cast<SubwayStation?>()
+                .firstWhere((s) => s != null, orElse: () => null);
+        if (station != null) next.add(station);
+      }
+      _selectedSearchStations
+        ..clear()
+        ..addAll(next);
     });
   }
 
@@ -314,11 +327,59 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     });
   }
 
+  void _onSearchLocationsSelected(List<int> ids) {
+    setState(() {
+      _selectedSearchStations.clear();
+      _selectedSubwayLine = 0;
+      _currentStations = [];
+      _selectedStationIndex = 0;
+
+      final next = <Location>[];
+      for (final id in ids) {
+        final location = _currentLocations
+            .where((l) => l.id == id)
+            .cast<Location?>()
+            .firstWhere((l) => l != null, orElse: () => null);
+        if (location != null) next.add(location);
+      }
+      _selectedSearchLocations
+        ..clear()
+        ..addAll(next);
+      _selectedLocationIndex = next.isEmpty
+          ? -1
+          : _currentLocations.indexWhere((l) => l.id == next.first.id);
+      if (_showLocationError && next.isNotEmpty) {
+        _showLocationError = false;
+      }
+    });
+  }
+
+  void _removeSearchLocation(int locationId) {
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _selectedSearchLocations.removeWhere((l) => l.id == locationId);
+      _selectedLocationIndex = _selectedSearchLocations.isEmpty
+          ? -1
+          : _currentLocations.indexWhere(
+              (l) => l.id == _selectedSearchLocations.first.id,
+            );
+    });
+  }
+
   bool _searchStationsMatchBaseline() {
     final currentIds = _selectedSearchStations.map((s) => s.id).toList();
     if (currentIds.length != _baselineSearchStationIds.length) return false;
     for (var i = 0; i < currentIds.length; i++) {
       if (currentIds[i] != _baselineSearchStationIds[i]) return false;
+    }
+    return true;
+  }
+
+  bool _searchLocationsMatchBaseline() {
+    final currentIds = _selectedSearchLocations.map((l) => l.id).toList();
+    if (currentIds.length != _baselineSearchLocationIds.length) return false;
+    for (var i = 0; i < currentIds.length; i++) {
+      if (currentIds[i] != _baselineSearchLocationIds[i]) return false;
     }
     return true;
   }
@@ -388,9 +449,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_selectedListingTypeId != _baselineListingTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
     }
-    if (_selectedGender != _baselineGender) {
-      addLabel("gender", fallback: "Gender");
-    }
     if (_isPriceDirty()) {
       addLabel("listing_price_label", fallback: "Price");
     }
@@ -400,7 +458,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_moveInDateValue != _baselineMoveInDateValue) {
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
-    if (!_isLoadingLocations && _currentLocationId() != _baselineLocationId()) {
+    if (!_supportsMultiLocation &&
+        !_isLoadingLocations &&
+        _currentLocationId() != _baselineLocationId()) {
       addLabel("location", fallback: "Location");
     }
     if (!_isLoadingStations) {
@@ -414,6 +474,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
     if (!_searchStationsMatchBaseline()) {
       addLabel("select_metro_line_optional", fallback: "Metro");
+    }
+    if (_locationSearchMode != _baselineLocationSearchMode ||
+        !_searchLocationsMatchBaseline()) {
+      addLabel("location", fallback: "Location");
     }
     if (!_amenityIdsMatchBaseline()) {
       addLabel("amenities", fallback: "Amenities");
@@ -437,12 +501,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       return true;
     }
     if (_selectedListingTypeId != _baselineListingTypeId) return true;
-    if (_selectedGender != _baselineGender) return true;
     if (_isPriceDirty()) return true;
     if (_isPrivateRoom != _baselinePrivateRoom) return true;
     if (_moveInDateValue != _baselineMoveInDateValue) return true;
 
-    if (!_isLoadingLocations && _currentLocationId() != _baselineLocationId()) {
+    if (!_supportsMultiLocation &&
+        !_isLoadingLocations &&
+        _currentLocationId() != _baselineLocationId()) {
       return true;
     }
 
@@ -457,6 +522,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
 
     if (!_searchStationsMatchBaseline()) return true;
+    if (_locationSearchMode != _baselineLocationSearchMode) return true;
+    if (!_searchLocationsMatchBaseline()) return true;
     if (!_amenityIdsMatchBaseline()) return true;
     if (!_photosMatchBaseline()) return true;
 
@@ -494,8 +561,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       if (!mounted || !leave) return;
     }
     if (!mounted) return;
+    // Use pop() (not maybePop()) so this bypasses the PopScope step-back guard
+    // and leaves the wizard entirely, regardless of the current step. The
+    // unsaved-changes confirmation has already been handled above.
     setState(() => _allowPopWithoutConfirm = true);
-    Navigator.of(context).maybePop();
+    Navigator.of(context).pop();
   }
 
   Future<String?> _getUserRole() async {
@@ -582,6 +652,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _onStationsLoaded(List<SubwayStation> stations) {
     setState(() {
       _currentStations = stations;
+      for (final station in stations) {
+        _stationCache[station.id] = station;
+      }
       _selectedStationIndex = 0;
       _isLoadingStations = false;
     });
@@ -790,18 +863,18 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         final useLiquidGlassAppBar = widget.showAppBar && liquidGlassEnabled;
         final embeddedInGlassShell = !widget.showAppBar && liquidGlassEnabled;
         final appBarTheme = theme.appBarTheme;
-        // When the liquid-glass app bar is shown, the body extends behind it
-        // ([extendBodyBehindAppBar]), so the fixed wizard header must clear the
-        // toolbar height to avoid sitting under the translucent bar.
+        // Keep the wizard header close to the app bar. The body is already
+        // wrapped in a SafeArea, so adding a full toolbar height here creates
+        // an oversized gap under the liquid-glass title.
         final scrollTopPad = embeddedInGlassShell
             ? 4.0 + themeState.mainShellGlassExtraTopInset(context)
             : useLiquidGlassAppBar
-                ? 4.0 + kToolbarHeight
+                ? 12.0
                 : 16.0;
 
         return PopScope(
-          canPop: _allowPopWithoutConfirm ||
-              (_currentStep == 0 && !_isFormDirty()),
+          canPop:
+              _allowPopWithoutConfirm || (_currentStep == 0 && !_isFormDirty()),
           onPopInvokedWithResult: _onPopInvoked,
           child: Scaffold(
             extendBodyBehindAppBar: useLiquidGlassAppBar,
@@ -909,12 +982,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String _stepTitle(int index) {
     switch (index) {
       case 0:
-        return L10n.get("wizard_step_basics");
-      case 1:
         return L10n.get("wizard_step_location");
-      case 2:
+      case 1:
         return L10n.get("wizard_step_details");
-      case 3:
+      case 2:
         return L10n.get("wizard_step_description");
       default:
         return L10n.get("wizard_step_review");
@@ -946,15 +1017,29 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// field and returns false so navigation past the step is blocked.
   bool _validateStep(int index) {
     switch (index) {
-      case 1: // Location
-        if (_selectedLocationIndex < 0) {
+      case 0: // Location
+        if (_supportsMultiLocation &&
+            _locationSearchMode == _LocationSearchMode.metro &&
+            _selectedSearchStations.isEmpty) {
+          ToastTheme.showError(context, message: L10n.get("location_required"));
+          setState(() => _showLocationError = true);
+          return false;
+        }
+        if (_supportsMultiLocation &&
+            _locationSearchMode == _LocationSearchMode.district &&
+            _selectedSearchLocations.isEmpty) {
+          ToastTheme.showError(context, message: L10n.get("location_required"));
+          setState(() => _showLocationError = true);
+          return false;
+        }
+        if (!_supportsMultiLocation && _selectedLocationIndex < 0) {
           ToastTheme.showError(context, message: L10n.get("location_required"));
           setState(() => _showLocationError = true);
           return false;
         }
         setState(() => _showLocationError = false);
         return true;
-      case 2: // Details — price is the only required field
+      case 1: // Details — price is the only required field
         if (!_priceTouched) {
           ToastTheme.showError(context, message: L10n.get("price_required"));
           setState(() => _showPriceError = true);
@@ -970,7 +1055,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         }
         setState(() => _showPriceError = false);
         return true;
-      case 3: // Description — title + description required
+      case 2: // Description — title + description required
         final title = _titleController.text.trim();
         final description = _descriptionController.text.trim();
         if (title.isEmpty) {
@@ -1009,7 +1094,28 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       children: [
         Padding(
           padding: EdgeInsets.fromLTRB(16, topPad, 16, 12),
-          child: _buildStepProgress(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Surface the type chosen before entering the wizard as a compact
+              // badge once the user moves past the first step.
+              if (_currentStep > 0) ...[
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: ListingTypeBadge(
+                    listingTypeCode: ListingTypeHelper.getCodeFromId(
+                      _selectedListingTypeId,
+                    ),
+                    useShortLabel: true,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              _buildStepProgress(),
+            ],
+          ),
         ),
         Expanded(
           child: PageView(
@@ -1017,7 +1123,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             physics: const NeverScrollableScrollPhysics(),
             onPageChanged: (index) => setState(() => _currentStep = index),
             children: [
-              _buildStepBasics(),
               _buildStepLocation(),
               _buildStepDetails(),
               _buildStepDescription(),
@@ -1100,13 +1205,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final isLast = _currentStep == _stepCount - 1;
     final label = theme.textTheme.labelLarge;
     final baseSize = label?.fontSize ?? 14;
-    final textStyle =
-        label?.copyWith(fontSize: baseSize * 1.1, height: 1.0) ??
-            TextStyle(
-              fontSize: baseSize * 1.1,
-              height: 1.0,
-              fontWeight: FontWeight.w500,
-            );
+    final textStyle = label?.copyWith(fontSize: baseSize * 1.1, height: 1.0) ??
+        TextStyle(
+          fontSize: baseSize * 1.1,
+          height: 1.0,
+          fontWeight: FontWeight.w500,
+        );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -1122,13 +1226,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           if (!isFirst) ...[
             Expanded(
               child: GhostButtonFactory.iconText(
-                onPressed: _isSubmitting
-                    ? null
-                    : () => _goToStep(_currentStep - 1),
+                onPressed:
+                    _isSubmitting ? null : () => _goToStep(_currentStep - 1),
                 icon: Icons.arrow_back,
                 text: L10n.get("wizard_back"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textStyle: textStyle,
+                borderColor: Colors.transparent,
               ),
             ),
             const SizedBox(width: 12),
@@ -1163,177 +1267,281 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   // ===========================================================================
-  // Step 1 — Basics (listing type, gender, optional group size)
-  // ===========================================================================
-
-  Widget _buildStepBasics() {
-    return UydoshFormScrollBody(
-      topPadding: 12,
-      children: [
-        LabeledFieldOverlay(
-          label: L10n.get("listing_type_label"),
-          child: ListingTypePicker(
-            selectedListingTypeId: _selectedListingTypeId,
-            userGender: _selectedGender,
-            onListingTypeChanged: (listingTypeId) {
-              setState(() => _selectedListingTypeId = listingTypeId);
-              _updateTitle();
-            },
-            useThemeColors: true,
-            showArrows: false,
-            height: 132,
-          ),
-        ),
-        const SizedBox(height: 16),
-        LabeledFieldOverlay(
-          label: L10n.get("gender"),
-          child: GenderPicker(
-            selectedGender: _selectedGender,
-            onGenderChanged: (gender) {
-              setState(() => _selectedGender = gender);
-              _updateTitle();
-            },
-            useThemeColors: true,
-            showArrows: false,
-            height: 132,
-          ),
-        ),
-        if (_isGroupFormingFlow) ...[
-          const SizedBox(height: 16),
-          LabeledFieldOverlay(
-            label: L10n.get("group_size_target_label"),
-            child: GroupSizeTargetPicker(
-              groupSizeTarget: _groupSizeTarget,
-              onChanged: (value) {
-                setState(() => _groupSizeTarget = value);
-              },
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  // ===========================================================================
-  // Step 2 — Location (metro + location)
+  // Step 1 — Location (metro + location)
   // ===========================================================================
 
   Widget _buildStepLocation() {
     return UydoshFormScrollBody(
       topPadding: 12,
       children: [
-        // Metro Line and Station Selection
-        ListingFormMetroSection(
-          selectedSubwayLine: _selectedSubwayLine,
-          selectedStationIndex: _selectedStationIndex,
-          currentStations: _currentStations,
-          isLoadingStations: _isLoadingStations,
-          metroLineScrollController: _metroLineScrollController,
-          metroStationScrollController: _metroStationScrollController,
-          onLineChanged: (index) {
-            setState(() {
-              _selectedSubwayLine = index;
-              if (index > 0) {
-                _loadStationsForLine(index);
-              } else {
-                _currentStations = [];
-                _selectedStationIndex = 0;
-              }
-            });
-          },
-          onStationChanged: (index) {
-            setState(() {
-              _selectedStationIndex = index;
-              _syncLocationWithStation();
-            });
-          },
-          onDismissKeyboard: _dismissKeyboard,
-          pickerHeight: 132,
-        ),
-        if (_supportsMultiStation) _buildMultiStationSection(),
-        const SizedBox(height: 10), // Space between metro fields and location
-        // Location Field - Full Row
-        LocationPicker(
-          locations: _currentLocations,
-          selectedLocationIndex: _selectedLocationIndex,
-          scrollController: _locationScrollController,
-          onLocationChanged: (locationIndex) {
-            setState(() {
-              _selectedLocationIndex = locationIndex;
-              // Clear location error when user selects a location
-              if (_showLocationError && locationIndex >= 0) {
-                _showLocationError = false;
-              }
-            });
-          },
-          isLoading: _isLoadingLocations,
-          isRequired: true,
-          useThemeColors: true,
-          useColoredIcons: true,
-          showError: _showLocationError,
-          showArrows: false,
-        ),
+        if (_supportsMultiStation) ...[
+          _buildLocationModeToggle(),
+          const SizedBox(height: 12),
+          if (_locationSearchMode == _LocationSearchMode.metro) ...[
+            MultiStationPicker(
+              selectedSubwayLine: _selectedSubwayLine,
+              currentStations: _currentStations,
+              selectedStationIds:
+                  _selectedSearchStations.map((s) => s.id).toSet(),
+              metroLineScrollController: _metroLineScrollController,
+              isLoadingStations: _isLoadingStations,
+              onSubwayLineChanged: (index) {
+                setState(() {
+                  _selectedSubwayLine = index;
+                  if (index > 0) {
+                    _loadStationsForLine(index);
+                  } else {
+                    _currentStations = [];
+                    _selectedStationIndex = 0;
+                  }
+                });
+              },
+              onStationsSelected: _onSearchStationsSelected,
+            ),
+            if (_selectedSearchStations.isNotEmpty)
+              _buildSelectedStationChips(),
+          ] else ...[
+            MultiLocationPicker(
+              locations: _currentLocations,
+              selectedLocationIds:
+                  _selectedSearchLocations.map((l) => l.id).toSet(),
+              isLoading: _isLoadingLocations,
+              accentColor: _getBorderColor(),
+              getLocationName: (location) => _getLocalizedName(
+                nameUz: location.shortNameUz,
+                nameRu: location.shortNameRu,
+                nameEn: location.shortNameEn,
+                shortName: location.shortName,
+              ),
+              onLocationsSelected: _onSearchLocationsSelected,
+            ),
+            if (_selectedSearchLocations.isNotEmpty)
+              _buildSelectedLocationChips(),
+          ],
+        ] else ...[
+          ListingFormMetroSection(
+            selectedSubwayLine: _selectedSubwayLine,
+            selectedStationIndex: _selectedStationIndex,
+            currentStations: _currentStations,
+            isLoadingStations: _isLoadingStations,
+            metroLineScrollController: _metroLineScrollController,
+            metroStationScrollController: _metroStationScrollController,
+            onLineChanged: (index) {
+              setState(() {
+                _selectedSubwayLine = index;
+                if (index > 0) {
+                  _loadStationsForLine(index);
+                } else {
+                  _currentStations = [];
+                  _selectedStationIndex = 0;
+                }
+              });
+            },
+            onStationChanged: (index) {
+              setState(() {
+                _selectedStationIndex = index;
+                _syncLocationWithStation();
+              });
+            },
+            onDismissKeyboard: _dismissKeyboard,
+            pickerHeight: 132,
+          ),
+          const SizedBox(height: 10), // Space between metro fields and location
+          LocationPicker(
+            locations: _currentLocations,
+            selectedLocationIndex: _selectedLocationIndex,
+            scrollController: _locationScrollController,
+            onLocationChanged: (locationIndex) {
+              setState(() {
+                _selectedLocationIndex = locationIndex;
+                // Clear location error when user selects a location
+                if (_showLocationError && locationIndex >= 0) {
+                  _showLocationError = false;
+                }
+              });
+            },
+            isLoading: _isLoadingLocations,
+            isRequired: true,
+            useThemeColors: true,
+            useColoredIcons: true,
+            showError: _showLocationError,
+            showArrows: false,
+          ),
+        ],
       ],
     );
   }
 
-  /// Multi-station picker affordance shown under the metro wheel for
-  /// demand-side flows: an "add" action plus removable chips for each station
-  /// the author wants to live near.
-  Widget _buildMultiStationSection() {
-    final theme = Theme.of(context);
+  Widget _buildLocationModeToggle() {
     final accent = _getBorderColor();
-    final canAdd = _currentPickedStation() != null;
+    final selectedIndex =
+        _locationSearchMode == _LocationSearchMode.metro ? 0 : 1;
+    final selectedTextColor =
+        ThemeData.estimateBrightnessForColor(accent) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
+    final unselectedTextColor = ThemeState().unselectedTabTextColor;
+
+    const height = 52.0;
+    const thumbInset = 2.0;
+    const innerRadius = 24.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final innerTrack =
+            (constraints.maxWidth - thumbInset * 2).clamp(0.0, double.infinity);
+        final segmentWidth = innerTrack / 2;
+        final thumbLeft = thumbInset + selectedIndex * segmentWidth;
+
+        final thumbDecoration = BoxDecoration(
+          borderRadius: BorderRadius.circular(innerRadius),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              accent.withValues(alpha: 0.38),
+              accent.withValues(alpha: 0.58),
+            ],
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.20),
+            width: 0.6,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.28),
+              blurRadius: 12,
+              spreadRadius: 0.4,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        );
+
+        return LiquidGlassPlate(
+          height: height,
+          borderRadius: BorderRadius.circular(height / 2),
+          padding: EdgeInsets.zero,
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: thumbLeft,
+                top: thumbInset,
+                bottom: thumbInset,
+                width: segmentWidth,
+                child: DecoratedBox(decoration: thumbDecoration),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () =>
+                          _setLocationSearchMode(_LocationSearchMode.metro),
+                      child: SizedBox(
+                        height: height,
+                        child: _LocationModeTabContent(
+                          isSelected:
+                              _locationSearchMode == _LocationSearchMode.metro,
+                          label: L10n.get("wizard_location_mode_metro"),
+                          icon: Icons.train,
+                          selectedTextColor: selectedTextColor,
+                          unselectedTextColor: unselectedTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () =>
+                          _setLocationSearchMode(_LocationSearchMode.district),
+                      child: SizedBox(
+                        height: height,
+                        child: _LocationModeTabContent(
+                          isSelected: _locationSearchMode ==
+                              _LocationSearchMode.district,
+                          label: L10n.get("wizard_location_mode_district"),
+                          icon: Icons.location_on,
+                          selectedTextColor: selectedTextColor,
+                          unselectedTextColor: unselectedTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _setLocationSearchMode(_LocationSearchMode mode) {
+    if (_locationSearchMode == mode) return;
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _locationSearchMode = mode;
+      _showLocationError = false;
+      if (mode == _LocationSearchMode.metro) {
+        _selectedSearchLocations.clear();
+        _selectedLocationIndex = -1;
+      } else {
+        _selectedSearchStations.clear();
+        _selectedSubwayLine = 0;
+        _selectedStationIndex = 0;
+        _currentStations = [];
+        _selectedLocationIndex = _selectedSearchLocations.isEmpty
+            ? -1
+            : _currentLocations.indexWhere(
+                (l) => l.id == _selectedSearchLocations.first.id,
+              );
+      }
+    });
+  }
+
+  /// Removable chips for each station the author wants to live near.
+  Widget _buildSelectedStationChips() {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            L10n.get("wizard_stations_hint"),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.colorScheme.onSurfaceVariant,
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              L10n.getWithParams(
+                "wizard_stations_count",
+                params: {"count": "${_selectedSearchStations.length}"},
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          GhostButtonFactory.iconText(
-            onPressed: canAdd ? _addCurrentStationToSelection : null,
-            icon: Icons.add_location_alt_outlined,
-            text: L10n.get("wizard_add_station"),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final station in _selectedSearchStations)
+                _buildStationChip(station),
+            ],
           ),
-          if (_selectedSearchStations.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(
-                L10n.get("wizard_selected_stations"),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final station in _selectedSearchStations)
-                  _buildStationChip(station, accent),
-              ],
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildStationChip(SubwayStation station, Color accent) {
+  Widget _buildStationChip(SubwayStation station) {
     final theme = Theme.of(context);
+    final accent = AppColors.getMetroLineColor(station.line);
     final name = _getLocalizedName(
       nameUz: station.nameUz,
       nameRu: station.nameRu,
@@ -1373,46 +1581,135 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     );
   }
 
+  Widget _buildSelectedLocationChips() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              L10n.getWithParams(
+                "wizard_locations_count",
+                params: {"count": "${_selectedSearchLocations.length}"},
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final location in _selectedSearchLocations)
+                _buildLocationChip(location),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationChip(Location location) {
+    final theme = Theme.of(context);
+    final accent = _getBorderColor();
+    final name = _getLocalizedName(
+      nameUz: location.shortNameUz,
+      nameRu: location.shortNameRu,
+      nameEn: location.shortNameEn,
+      shortName: location.shortName,
+    );
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withValues(alpha: 0.5)),
+      ),
+      padding: const EdgeInsetsDirectional.only(start: 12, end: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: ThemeState().isLightTheme
+                  ? Colors.black
+                  : theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _removeSearchLocation(location.id),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(Icons.close, size: 14, color: accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ===========================================================================
-  // Step 3 — Details (price, amenities, move-in date, private room)
+  // Step 2 — Details (price, amenities, move-in date, private room)
   // ===========================================================================
 
   Widget _buildStepDetails() {
     return UydoshFormScrollBody(
       topPadding: 12,
       children: [
-        LabeledFieldOverlay(
-          label: L10n.get(
-            _isGroupFormingFlow
-                ? "group_budget_per_person_label"
-                : "listing_price_label",
+        if (_isGroupFormingFlow) ...[
+          LabeledFieldOverlay(
+            label: L10n.get("group_size_target_label"),
+            child: GroupSizeTargetPicker(
+              groupSizeTarget: _groupSizeTarget,
+              onChanged: (value) {
+                setState(() => _groupSizeTarget = value);
+              },
+            ),
           ),
-          child: PriceRangePicker(
-            key: ValueKey<int>(_selectedListingTypeId),
-            minPrice: _priceSliderMin,
-            maxPrice: _priceSliderMax,
-            initialVisibleMaxPrice: _priceSliderInitialVisibleMax,
-            maxExpansionStep: _priceSliderExpansionStep,
-            initialMinPrice:
-                _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
-            initialMaxPrice:
-                _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
-            useSinglePrice: _pricePickerSingleHandle,
-            showErrorBorder: _showPriceError,
-            onPriceRangeChanged: (minPrice, maxPrice) {
-              _dismissKeyboard();
-              setState(() {
-                if (_pricePickerSingleHandle) {
-                  _roommatePrice = minPrice;
-                } else {
-                  _roomBudgetMin = minPrice;
-                  _roomBudgetMax = maxPrice;
-                }
-                _priceTouched = true;
-                _showPriceError = false;
-              });
-            },
+          const SizedBox(height: 16),
+        ],
+        PriceRangePicker(
+          key: ValueKey<int>(_selectedListingTypeId),
+          title: L10n.get(
+            _pricePickerSingleHandle
+                ? "price_picker_single_title"
+                : "price_picker_range_title",
           ),
+          minPrice: _priceSliderMin,
+          maxPrice: _priceSliderMax,
+          initialVisibleMaxPrice: _priceSliderInitialVisibleMax,
+          maxExpansionStep: _priceSliderExpansionStep,
+          initialMinPrice:
+              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
+          initialMaxPrice:
+              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
+          useSinglePrice: _pricePickerSingleHandle,
+          showErrorBorder: _showPriceError,
+          onPriceRangeChanged: (minPrice, maxPrice) {
+            _dismissKeyboard();
+            setState(() {
+              if (_pricePickerSingleHandle) {
+                _roommatePrice = minPrice;
+              } else {
+                _roomBudgetMin = minPrice;
+                _roomBudgetMax = maxPrice;
+              }
+              _priceTouched = true;
+              _showPriceError = false;
+            });
+          },
         ),
         if (!_isGroupFormingFlow) ...[
           const SizedBox(height: 16),
@@ -1658,7 +1955,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   // ===========================================================================
-  // Step 4 — Description (title, description, photos)
+  // Step 3 — Description (title, description, photos)
   // ===========================================================================
 
   Widget _buildStepDescription() {
@@ -1796,7 +2093,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   // ===========================================================================
-  // Step 5 — Review (read-only summary with edit jumps)
+  // Step 4 — Review (read-only summary with edit jumps)
   // ===========================================================================
 
   Widget _buildStepReview() {
@@ -1819,28 +2116,29 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _summaryTile(
           label: _summaryLabel("listing_type_label", fallback: "Listing type"),
           value: _reviewListingTypeValue(),
-          stepIndex: 0,
         ),
         if (_isGroupFormingFlow)
           _summaryTile(
-            label:
-                _summaryLabel("group_size_target_label", fallback: "Group size"),
+            label: _summaryLabel("group_size_target_label",
+                fallback: "Group size"),
             value: L10n.plural("group_size_target_option", _groupSizeTarget),
-            stepIndex: 0,
+            stepIndex: 1,
           ),
         _summaryTile(
           label: _summaryLabel("location", fallback: "Location"),
           value: locationValue ?? notSet,
-          stepIndex: 1,
+          stepIndex: 0,
         ),
-        if (_supportsMultiStation && _selectedSearchStations.isNotEmpty)
+        if (_supportsMultiStation &&
+            _locationSearchMode == _LocationSearchMode.metro &&
+            _selectedSearchStations.isNotEmpty)
           _summaryTile(
             label: _summaryLabel(
               "wizard_selected_stations",
               fallback: "Selected stations",
             ),
             value: _reviewStationsValue(),
-            stepIndex: 1,
+            stepIndex: 0,
           ),
         _summaryTile(
           label: _summaryLabel(
@@ -1850,14 +2148,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             fallback: "Price",
           ),
           value: _priceTouched ? _reviewPriceValue() : notSet,
-          stepIndex: 2,
+          stepIndex: 1,
         ),
         _summaryTile(
           label: _summaryLabel("move_in_date_label", fallback: "Move-in date"),
-          value: _moveInDateValue.isNotEmpty
-              ? _moveInDateController.text
-              : notSet,
-          stepIndex: 2,
+          value:
+              _moveInDateValue.isNotEmpty ? _moveInDateController.text : notSet,
+          stepIndex: 1,
         ),
         if (!_isGroupFormingFlow)
           _summaryTile(
@@ -1865,7 +2162,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             value: _isPrivateRoom
                 ? L10n.get("yes", fallback: "Yes")
                 : L10n.get("no", fallback: "No"),
-            stepIndex: 2,
+            stepIndex: 1,
           ),
         if (!_isGroupFormingFlow)
           _summaryTile(
@@ -1876,22 +2173,22 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     "wizard_amenities_count",
                     params: {"count": "${_selectedAmenityIds.length}"},
                   ),
-            stepIndex: 2,
+            stepIndex: 1,
           ),
         _summaryTile(
           label: _summaryLabel("listing_title_label", fallback: "Title"),
           value: _titleController.text.trim().isEmpty
               ? notSet
               : _titleController.text.trim(),
-          stepIndex: 3,
+          stepIndex: 2,
         ),
         _summaryTile(
-          label:
-              _summaryLabel("listing_description_label", fallback: "Description"),
+          label: _summaryLabel("listing_description_label",
+              fallback: "Description"),
           value: _descriptionController.text.trim().isEmpty
               ? notSet
               : _descriptionController.text.trim(),
-          stepIndex: 3,
+          stepIndex: 2,
         ),
         if (_selectedListingTypeId != 1 && !_isGroupFormingFlow)
           _summaryTile(
@@ -1902,7 +2199,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     "wizard_photos_count",
                     params: {"count": "${_selectedPhotos.length}"},
                   ),
-            stepIndex: 3,
+            stepIndex: 2,
           ),
       ],
     );
@@ -1917,19 +2214,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   String _reviewListingTypeValue() {
-    final genderLabel = L10n.get(_selectedGender == 2 ? "female" : "male");
     String typeKey;
     switch (_selectedListingTypeId) {
       case ListingTypeIds.roommateNeeded:
-        typeKey = _selectedGender == 2
-            ? "listing_type_roommate_needed_female"
-            : "listing_type_roommate_needed";
+        typeKey = "listing_type_roommate_needed";
       case ListingTypeIds.groupForming:
         typeKey = "listing_type_short_group_forming";
       default:
         typeKey = "listing_type_room_needed";
     }
-    return "${L10n.get(typeKey)} · $genderLabel";
+    return L10n.get(typeKey);
   }
 
   String _reviewStationsValue() {
@@ -1944,6 +2238,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         .join(", ");
   }
 
+  String _reviewLocationsValue() {
+    return _selectedSearchLocations
+        .map(
+          (l) => _getLocalizedName(
+            nameUz: l.shortNameUz,
+            nameRu: l.shortNameRu,
+            nameEn: l.shortNameEn,
+            shortName: l.shortName,
+          ),
+        )
+        .join(", ");
+  }
+
   String _reviewPriceValue() {
     if (_pricePickerSingleHandle) {
       return "${_roommatePrice.round()}";
@@ -1952,6 +2259,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   String? _reviewLocationValue() {
+    if (_supportsMultiLocation) {
+      if (_locationSearchMode == _LocationSearchMode.district) {
+        return _selectedSearchLocations.isEmpty
+            ? null
+            : _reviewLocationsValue();
+      }
+      return _selectedSearchStations.isEmpty
+          ? null
+          : L10n.get("wizard_location_mode_metro");
+    }
     if (_selectedLocationIndex < 0 ||
         _selectedLocationIndex >= _currentLocations.length) {
       return null;
@@ -1984,13 +2301,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   Widget _summaryTile({
     required String label,
     required String value,
-    required int stepIndex,
+    int? stepIndex,
   }) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: () => _goToStep(stepIndex),
+        onTap: stepIndex == null ? null : () => _goToStep(stepIndex),
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
@@ -2029,12 +2346,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              ThemeIcon(
-                Icons.edit_outlined,
-                size: 18,
-                color: _getBorderColor(),
-              ),
+              if (stepIndex != null) ...[
+                const SizedBox(width: 8),
+                ThemeIcon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: _getBorderColor(),
+                ),
+              ],
             ],
           ),
         ),
@@ -2123,8 +2442,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       return;
     }
 
-    // Validate location (mandatory)
-    if (_selectedLocationIndex < 0) {
+    // Validate location/search area (mandatory)
+    if (_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.metro &&
+        _selectedSearchStations.isEmpty) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("location_required"),
+      );
+      setState(() {
+        _showLocationError = true;
+      });
+      return;
+    } else if (_supportsMultiLocation &&
+        _locationSearchMode == _LocationSearchMode.district &&
+        _selectedSearchLocations.isEmpty) {
+      ToastTheme.showError(
+        context,
+        message: L10n.get("location_required"),
+      );
+      setState(() {
+        _showLocationError = true;
+      });
+      return;
+    } else if (!_supportsMultiLocation && _selectedLocationIndex < 0) {
       ToastTheme.showError(
         context,
         message: L10n.get("location_required"),
@@ -2178,24 +2519,45 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     try {
       // Get the selected location and station (if available)
-      final selectedLocation = _currentLocations[_selectedLocationIndex];
+      final selectedLocation = _selectedLocationIndex >= 0 &&
+              _selectedLocationIndex < _currentLocations.length
+          ? _currentLocations[_selectedLocationIndex]
+          : null;
       final selectedStation =
           _selectedSubwayLine > 0 && _currentStations.isNotEmpty
               ? _currentStations[_selectedStationIndex]
               : null;
 
-      // Demand-side flows persist the full chip selection; element 0 doubles as
-      // the primary single station. Other flows keep the single wheel pick.
+      // Demand-side flows persist either station ids or district ids. The UI
+      // toggle makes these mutually exclusive; element 0 doubles as the primary
+      // single field for backward-compatible display/search.
+      final usesMetroMode = _supportsMultiStation &&
+          _locationSearchMode == _LocationSearchMode.metro;
+      final usesDistrictMode = _supportsMultiLocation &&
+          _locationSearchMode == _LocationSearchMode.district;
       final multiStationIds =
-          _supportsMultiStation && _selectedSearchStations.isNotEmpty
+          usesMetroMode && _selectedSearchStations.isNotEmpty
               ? _selectedSearchStations.map((s) => s.id).toList()
+              : null;
+      final multiLocationIds =
+          usesDistrictMode && _selectedSearchLocations.isNotEmpty
+              ? _selectedSearchLocations.map((l) => l.id).toList()
               : null;
       final primaryStation = multiStationIds != null
           ? _selectedSearchStations.first
-          : selectedStation;
+          : usesDistrictMode
+              ? null
+              : selectedStation;
+      final primaryLocation = multiLocationIds != null
+          ? _selectedSearchLocations.first
+          : usesMetroMode
+              ? null
+              : selectedLocation;
       final effectiveSubwayLineId = multiStationIds != null
           ? _selectedSearchStations.first.line
-          : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
+          : usesDistrictMode
+              ? null
+              : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
@@ -2216,18 +2578,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       );
       logger.d("  description: \"${_descriptionController.text.trim()}\"");
       logger.d(
-        "  subwayStationId: ${selectedStation?.id ?? "null (optional)"}",
+        "  subwayStationId: ${primaryStation?.id ?? "null (optional)"}",
       );
       logger.d(
-        "  subwayLineId: ${_selectedSubwayLine > 0 ? _selectedSubwayLine : "null (optional)"}",
+        "  subwayLineId: ${effectiveSubwayLineId ?? "null (optional)"}",
       );
-      logger.d("  locationId: ${selectedLocation.id}");
+      logger.d("  locationId: ${primaryLocation?.id ?? "null (optional)"}");
+      logger.d("  locationIds: ${multiLocationIds ?? "null"}");
       logger.d("  amenityIds: ${_selectedAmenityIds.toList()}");
       logger.d(
-        "Selected Location: ${selectedLocation.shortName} (ID: ${selectedLocation.id})",
+        "Selected Location: ${primaryLocation?.shortName ?? "None selected"} (ID: ${primaryLocation?.id ?? "null"})",
       );
       logger.d(
-        "Selected Station: ${selectedStation?.nameEn ?? "None selected"} (ID: ${selectedStation?.id ?? "null"})",
+        "Selected Station: ${primaryStation?.nameEn ?? "None selected"} (ID: ${primaryStation?.id ?? "null"})",
       );
 
       logger.d("==========================");
@@ -2257,7 +2620,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         maxPrice: priceBounds.max,
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
-        locationId: selectedLocation.id,
+        locationId: primaryLocation?.id,
+        locationIds: multiLocationIds,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: primaryStation?.id, // Now optional, moved to end
         subwayStationIds: multiStationIds, // Multi-station (demand-side flows)
@@ -2279,7 +2643,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
       getIt<AppAnalyticsService>().logListingCreated(
         listingTypeId: listingTypeId,
-        locationId: selectedLocation.id,
+        locationId: primaryLocation?.id,
         success: true,
       );
       unawaited(getIt<AppAnalyticsService>().refreshHasActiveListingProperty());
@@ -2324,6 +2688,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _currentStations = [];
         _selectedSearchStations.clear(); // Clear multi-station chips
         _baselineSearchStationIds = [];
+        _selectedSearchLocations.clear(); // Clear multi-location chips
+        _baselineSearchLocationIds = [];
+        _locationSearchMode = _LocationSearchMode.metro;
         _selectedAmenityIds.clear(); // Clear selected amenities
         _selectedPhotos.clear(); // Clear selected photos
         _primaryPhotoIndex = null; // Reset primary photo index
@@ -2374,6 +2741,59 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _isSubmitting = false;
       });
     }
+  }
+}
+
+class _LocationModeTabContent extends StatelessWidget {
+  const _LocationModeTabContent({
+    required this.isSelected,
+    required this.label,
+    required this.icon,
+    required this.selectedTextColor,
+    required this.unselectedTextColor,
+  });
+
+  final bool isSelected;
+  final String label;
+  final IconData icon;
+  final Color selectedTextColor;
+  final Color unselectedTextColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      opacity: isSelected ? 1.0 : 0.82,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        scale: isSelected ? 1.0 : 0.96,
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThemeIcon(icon, color: targetColor, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                    color: targetColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

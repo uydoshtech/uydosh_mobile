@@ -18,8 +18,9 @@ abstract class IListingCrudService {
     required int price,
     required String description,
     required int gender,
-    required int locationId,
     required List<int> amenityIds,
+    int? locationId,
+    List<int>? locationIds,
     int? minPrice,
     int? maxPrice,
     int? subwayStationId,
@@ -38,8 +39,9 @@ abstract class IListingCrudService {
     required int price,
     required String description,
     required int gender,
-    required int locationId,
     required List<int> amenityIds,
+    int? locationId,
+    List<int>? locationIds,
     int? minPrice,
     int? maxPrice,
     int? subwayStationId,
@@ -107,8 +109,9 @@ class ListingCrudService implements IListingCrudService {
     required int price,
     required String description,
     required int gender,
-    required int locationId,
     required List<int> amenityIds,
+    int? locationId,
+    List<int>? locationIds,
     int? minPrice,
     int? maxPrice,
     int? subwayStationId,
@@ -137,6 +140,7 @@ class ListingCrudService implements IListingCrudService {
         subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId,
         locationId: locationId,
+        locationIds: locationIds,
         amenityIds: amenityIds,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
@@ -154,11 +158,11 @@ class ListingCrudService implements IListingCrudService {
 
       final response = await _oauthApiClient
           .post<Map<String, dynamic>, CreateListingRequest>(
-            "/listings",
-            (json) => json as Map<String, dynamic>,
-            basePath: EnvironmentUtil.basePath,
-            data: request,
-          );
+        "/listings",
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+        data: request,
+      );
 
       if (kDebugMode) {
         logger.d("=== CREATE LISTING RESPONSE DEBUG ===");
@@ -226,8 +230,9 @@ class ListingCrudService implements IListingCrudService {
     required int price,
     required String description,
     required int gender,
-    required int locationId,
     required List<int> amenityIds,
+    int? locationId,
+    List<int>? locationIds,
     int? minPrice,
     int? maxPrice,
     int? subwayStationId,
@@ -256,6 +261,7 @@ class ListingCrudService implements IListingCrudService {
         subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId,
         locationId: locationId,
+        locationIds: locationIds,
         amenityIds: amenityIds,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
@@ -274,22 +280,22 @@ class ListingCrudService implements IListingCrudService {
       try {
         response = await _oauthApiClient
             .put<Map<String, dynamic>, CreateListingRequest>(
-              "/listings/$listingId",
-              (json) => json as Map<String, dynamic>,
-              basePath: EnvironmentUtil.basePath,
-              data: request,
-            );
+          "/listings/$listingId",
+          (json) => json as Map<String, dynamic>,
+          basePath: EnvironmentUtil.basePath,
+          data: request,
+        );
       } catch (e) {
         if (kDebugMode) {
           logger.d("PUT method failed: $e, trying PATCH...");
         }
         response = await _oauthApiClient
             .patch<Map<String, dynamic>, CreateListingRequest>(
-              "/listings/$listingId",
-              (json) => json as Map<String, dynamic>,
-              basePath: EnvironmentUtil.basePath,
-              data: request,
-            );
+          "/listings/$listingId",
+          (json) => json as Map<String, dynamic>,
+          basePath: EnvironmentUtil.basePath,
+          data: request,
+        );
       }
 
       if (kDebugMode) {
@@ -431,13 +437,13 @@ class ListingCrudService implements IListingCrudService {
         isPrimary: isPrimary,
       );
 
-      final response = await _oauthApiClient
-          .post<Map<String, dynamic>, PhotoUploadRequest>(
-            "/listings/$listingId/photos",
-            (json) => json as Map<String, dynamic>,
-            basePath: EnvironmentUtil.basePath,
-            data: requestData,
-          );
+      final response =
+          await _oauthApiClient.post<Map<String, dynamic>, PhotoUploadRequest>(
+        "/listings/$listingId/photos",
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+        data: requestData,
+      );
 
       // Backend returns { message, photo: { id, ... } }.
       final photo = response["photo"];

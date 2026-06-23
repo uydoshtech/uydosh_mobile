@@ -137,7 +137,7 @@ class _DescriptionCounterToolbarState extends State<DescriptionCounterToolbar> {
   }
 
   static const double _actionSpacing = 6;
-  static const double _footerHeight = 22;
+  static const double _footerHeight = 36;
   static const double _footerVerticalPadding = 12;
   static const double _counterRowGap = 2;
   static const double _counterTextRowHeight = 14;

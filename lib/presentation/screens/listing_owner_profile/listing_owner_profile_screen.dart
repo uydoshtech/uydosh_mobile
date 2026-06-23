@@ -553,29 +553,30 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                           const SizedBox(height: 16),
                         ],
 
-                        // Wake-up Time field
-                        if (profile.wakeupTime != null) ...[
-                          _buildProfileField(
-                            icon: Icons.wb_sunny,
-                            label: L10n.get("wakeup_time"),
-                            value: _getTimePreferenceText(
-                              profile.wakeupTime!,
-                              context,
-                            ),
-                            context: context,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-
-                        // Sleep Time field
-                        if (profile.sleepTime != null) ...[
-                          _buildProfileField(
-                            icon: Icons.bedtime,
-                            label: L10n.get("sleep_time"),
-                            value: _getTimePreferenceText(
-                              profile.sleepTime!,
-                              context,
-                            ),
+                        // Wake-up / sleep pair
+                        if (profile.wakeupTime != null ||
+                            profile.sleepTime != null) ...[
+                          _buildProfileFieldPair(
+                            first: profile.wakeupTime == null
+                                ? null
+                                : (
+                                    icon: Icons.wb_sunny,
+                                    label: L10n.get("wakeup_time"),
+                                    value: _getTimePreferenceText(
+                                      profile.wakeupTime!,
+                                      context,
+                                    ),
+                                  ),
+                            second: profile.sleepTime == null
+                                ? null
+                                : (
+                                    icon: Icons.bedtime,
+                                    label: L10n.get("sleep_time"),
+                                    value: _getTimePreferenceText(
+                                      profile.sleepTime!,
+                                      context,
+                                    ),
+                                  ),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -636,29 +637,30 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
                           const SizedBox(height: 16),
                         ],
 
-                        // Smoking Preference field
-                        if (profile.smokingPreference != null) ...[
-                          _buildProfileField(
-                            icon: Icons.smoking_rooms,
-                            label: L10n.get("smoking_preference"),
-                            value: _getSmokingPreferenceText(
-                              profile.smokingPreference!,
-                              context,
-                            ),
-                            context: context,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-
-                        // Alcohol Preference field
-                        if (profile.alcoholPreference != null) ...[
-                          _buildProfileField(
-                            icon: Icons.local_bar,
-                            label: L10n.get("alcohol_preference"),
-                            value: _getAlcoholPreferenceText(
-                              profile.alcoholPreference!,
-                              context,
-                            ),
+                        // Smoking / alcohol pair
+                        if (profile.smokingPreference != null ||
+                            profile.alcoholPreference != null) ...[
+                          _buildProfileFieldPair(
+                            first: profile.smokingPreference == null
+                                ? null
+                                : (
+                                    icon: Icons.smoking_rooms,
+                                    label: L10n.get("smoking_preference"),
+                                    value: _getSmokingPreferenceText(
+                                      profile.smokingPreference!,
+                                      context,
+                                    ),
+                                  ),
+                            second: profile.alcoholPreference == null
+                                ? null
+                                : (
+                                    icon: Icons.local_bar,
+                                    label: L10n.get("alcohol_preference"),
+                                    value: _getAlcoholPreferenceText(
+                                      profile.alcoholPreference!,
+                                      context,
+                                    ),
+                                  ),
                             context: context,
                           ),
                           const SizedBox(height: 16),
@@ -866,8 +868,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
     return Text(
       name,
       maxLines: 1,
-      overflow:
-          name.length < 12 ? TextOverflow.clip : TextOverflow.ellipsis,
+      overflow: name.length < 12 ? TextOverflow.clip : TextOverflow.ellipsis,
       textAlign: TextAlign.center,
       style: const TextStyle(fontSize: 11, height: 1.2),
     );
@@ -1184,6 +1185,75 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
               ),
               Text(
                 value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileFieldPair({
+    required ({IconData icon, String label, String value})? first,
+    required ({IconData icon, String label, String value})? second,
+    required BuildContext context,
+  }) {
+    if (first == null && second == null) return const SizedBox.shrink();
+
+    if (first == null || second == null) {
+      final item = first ?? second!;
+      return _buildProfileField(
+        icon: item.icon,
+        label: item.label,
+        value: item.value,
+        context: context,
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildProfileFieldPairItem(first, context)),
+        const SizedBox(width: 12),
+        Expanded(child: _buildProfileFieldPairItem(second, context)),
+      ],
+    );
+  }
+
+  Widget _buildProfileFieldPairItem(
+    ({IconData icon, String label, String value}) item,
+    BuildContext context,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ThemeIcon(
+          item.icon,
+          size: 20,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                item.value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

@@ -1104,38 +1104,36 @@ class _EditListingScreenState extends State<EditListingScreen>
                           height: 10,
                         ), // Space between location and price range
                         // Price — single handle for roommate needed, range for room needed.
-                        LabeledFieldOverlay(
-                          label: L10n.get(
-                            _isGroupFormingFlow
-                                ? "group_budget_per_person_label"
-                                : "listing_price_label",
+                        PriceRangePicker(
+                          key: ValueKey<int>(_selectedListingTypeId),
+                          title: L10n.get(
+                            _pricePickerSingleHandle
+                                ? "price_picker_single_title"
+                                : "price_picker_range_title",
                           ),
-                          child: PriceRangePicker(
-                            key: ValueKey<int>(_selectedListingTypeId),
-                            minPrice: _priceSliderMin,
-                            maxPrice: _priceSliderMax,
-                            initialVisibleMaxPrice:
-                                _priceSliderInitialVisibleMax,
-                            maxExpansionStep: _priceSliderExpansionStep,
-                            initialMinPrice: _pricePickerSingleHandle
-                                ? _roommatePrice
-                                : _roomBudgetMin,
-                            initialMaxPrice: _pricePickerSingleHandle
-                                ? _roommatePrice
-                                : _roomBudgetMax,
-                            useSinglePrice: _pricePickerSingleHandle,
-                            onPriceRangeChanged: (minPrice, maxPrice) {
-                              _dismissKeyboard();
-                              setState(() {
-                                if (_pricePickerSingleHandle) {
-                                  _roommatePrice = minPrice;
-                                } else {
-                                  _roomBudgetMin = minPrice;
-                                  _roomBudgetMax = maxPrice;
-                                }
-                              });
-                            },
-                          ),
+                          minPrice: _priceSliderMin,
+                          maxPrice: _priceSliderMax,
+                          initialVisibleMaxPrice:
+                              _priceSliderInitialVisibleMax,
+                          maxExpansionStep: _priceSliderExpansionStep,
+                          initialMinPrice: _pricePickerSingleHandle
+                              ? _roommatePrice
+                              : _roomBudgetMin,
+                          initialMaxPrice: _pricePickerSingleHandle
+                              ? _roommatePrice
+                              : _roomBudgetMax,
+                          useSinglePrice: _pricePickerSingleHandle,
+                          onPriceRangeChanged: (minPrice, maxPrice) {
+                            _dismissKeyboard();
+                            setState(() {
+                              if (_pricePickerSingleHandle) {
+                                _roommatePrice = minPrice;
+                              } else {
+                                _roomBudgetMin = minPrice;
+                                _roomBudgetMax = maxPrice;
+                              }
+                            });
+                          },
                         ),
                         const SizedBox(
                           height: 10,

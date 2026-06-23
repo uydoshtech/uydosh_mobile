@@ -42,6 +42,8 @@ class AppStrings {
       "group_size_target_option_other": "{count} people total",
       "group_budget_per_person_label": "Budget per person range (y.e./mo)",
       "group_budget_per_person_heading": "Budget per person",
+      "price_picker_single_title": "Monthly price",
+      "price_picker_range_title": "Monthly budget range",
       "group_budget_per_person_amount_line":
           "Each member pays {range} per month",
       "group_budget_total_apartment_line":
@@ -678,6 +680,10 @@ class AppStrings {
       "wizard_selected_stations": "Selected stations",
       "wizard_stations_count": "{count} stations",
       "wizard_station_already_added": "That station is already added",
+      "wizard_location_mode_metro": "By metro",
+      "wizard_location_mode_district": "By district",
+      "all_locations_count": "All {count} districts",
+      "wizard_locations_count": "{count} districts",
       "update_listing_button": "Update Listing",
       "save_changes": "Save Changes",
       "changed_fields": "Changed",
@@ -1004,8 +1010,7 @@ class AppStrings {
       // Slider labels
       "lifestyle_preferences": "Lifestyle",
       "what_im_looking_for": "What I'm looking for",
-      "what_im_looking_for_subtitle":
-          "Used to better match you with roommates",
+      "what_im_looking_for_subtitle": "Used to better match you with roommates",
       "preferred_roommate_gender": "Preferred roommate gender",
       "any_gender": "Any",
       "your_birth_year": "Your year of birth",
@@ -1325,7 +1330,8 @@ class AppStrings {
       "admin_telegram_listing_groups_listing_count": "{count} listing(s)",
       "admin_telegram_listing_groups_summary_scraped": "Scraped listings",
       "admin_telegram_listing_groups_summary_groups": "Groups",
-      "admin_telegram_listing_groups_summary_duplicates": "Groups with duplicates",
+      "admin_telegram_listing_groups_summary_duplicates":
+          "Groups with duplicates",
       "admin_telegram_listing_groups_summary_ungrouped": "Ungrouped listings",
       "admin_telegram_listing_groups_sort_title": "Sort groups",
       "admin_telegram_listing_groups_sort_count": "Most listings",
@@ -2007,6 +2013,8 @@ class AppStrings {
       "group_size_target_option_many": "{count} человек всего",
       "group_budget_per_person_label": "Диапазон бюджета на человека в месяц",
       "group_budget_per_person_heading": "Бюджет на человека",
+      "price_picker_single_title": "Цена за месяц",
+      "price_picker_range_title": "Диапазон бюджета в месяц",
       "group_budget_per_person_amount_line":
           "С каждого участника: {range} в месяц",
       "group_budget_total_apartment_line":
@@ -2636,7 +2644,7 @@ class AppStrings {
       "listing_active": "Активно",
       "listing_inactive": "Неактивно",
 
-      "create_listing_button": "Создать объявление",
+      "create_listing_button": "Создать",
       "wizard_step_counter": "Шаг {current} из {total}",
       "wizard_step_basics": "Основное",
       "wizard_step_location": "Локация",
@@ -2656,6 +2664,10 @@ class AppStrings {
       "wizard_selected_stations": "Выбранные станции",
       "wizard_stations_count": "Станций: {count}",
       "wizard_station_already_added": "Эта станция уже добавлена",
+      "wizard_location_mode_metro": "По метро",
+      "wizard_location_mode_district": "По районам",
+      "all_locations_count": "Все районы: {count}",
+      "wizard_locations_count": "Районов: {count}",
       "update_listing_button": "Обновить объявление",
       "save_changes": "Сохранить изменения",
       "changed_fields": "Изменено",
@@ -2983,8 +2995,7 @@ class AppStrings {
       // Slider labels
       "lifestyle_preferences": "Образ жизни",
       "what_im_looking_for": "Что я ищу",
-      "what_im_looking_for_subtitle":
-          "Поможет точнее подобрать соседей",
+      "what_im_looking_for_subtitle": "Поможет точнее подобрать соседей",
       "preferred_roommate_gender": "Желаемый пол соседа",
       "any_gender": "Любой",
       "your_birth_year": "Ваш год рождения",
@@ -3309,18 +3320,25 @@ class AppStrings {
           "Учитываются группы, которые пользователь создал или к которым присоединился.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
-      "admin_panel_section_telegram_listing_groups": "Группы объявлений Telegram",
+      "admin_panel_section_telegram_listing_groups":
+          "Группы объявлений Telegram",
       "admin_telegram_listing_groups_title": "Группы объявлений Telegram",
       "admin_telegram_listing_groups_loading": "Загрузка групп…",
-      "admin_telegram_listing_groups_empty": "Импортированные объявления не найдены",
-      "admin_telegram_listing_groups_detail_empty": "В этой группе нет объявлений",
-      "admin_telegram_listing_groups_error": "Не удалось загрузить группы объявлений",
+      "admin_telegram_listing_groups_empty":
+          "Импортированные объявления не найдены",
+      "admin_telegram_listing_groups_detail_empty":
+          "В этой группе нет объявлений",
+      "admin_telegram_listing_groups_error":
+          "Не удалось загрузить группы объявлений",
       "admin_telegram_listing_groups_unknown": "Без контакта (без группы)",
       "admin_telegram_listing_groups_listing_count": "Объявлений: {count}",
-      "admin_telegram_listing_groups_summary_scraped": "Импортированные объявления",
+      "admin_telegram_listing_groups_summary_scraped":
+          "Импортированные объявления",
       "admin_telegram_listing_groups_summary_groups": "Группы",
-      "admin_telegram_listing_groups_summary_duplicates": "Группы с дубликатами",
-      "admin_telegram_listing_groups_summary_ungrouped": "Объявления без группы",
+      "admin_telegram_listing_groups_summary_duplicates":
+          "Группы с дубликатами",
+      "admin_telegram_listing_groups_summary_ungrouped":
+          "Объявления без группы",
       "admin_telegram_listing_groups_sort_title": "Сортировка групп",
       "admin_telegram_listing_groups_sort_count": "Больше объявлений",
       "admin_telegram_listing_groups_sort_recent": "Недавняя активность",
@@ -4008,6 +4026,8 @@ class AppStrings {
       "group_budget_per_person_label":
           "Har bir kishi uchun byudjet diapazoni (y.e./oy)",
       "group_budget_per_person_heading": "Har bir kishi uchun byudjet",
+      "price_picker_single_title": "Oylik narx",
+      "price_picker_range_title": "Oylik byudjet diapazoni",
       "group_budget_per_person_amount_line":
           "Har bir a'zo oyiga {range} to'laydi",
       "group_budget_total_apartment_line":
@@ -4649,7 +4669,8 @@ class AppStrings {
       "wizard_step_review": "Tekshirish",
       "wizard_next": "Keyingi",
       "wizard_back": "Orqaga",
-      "wizard_review_subtitle": "Hammasi to'g'ri ekanini tekshiring va e'lon qiling.",
+      "wizard_review_subtitle":
+          "Hammasi to'g'ri ekanini tekshiring va e'lon qiling.",
       "wizard_review_not_set": "Belgilanmagan",
       "wizard_amenities_count": "{count} ta tanlandi",
       "wizard_photos_count": "{count} ta qo'shildi",
@@ -4660,6 +4681,10 @@ class AppStrings {
       "wizard_selected_stations": "Tanlangan stansiyalar",
       "wizard_stations_count": "{count} ta stansiya",
       "wizard_station_already_added": "Bu stansiya allaqachon qo'shilgan",
+      "wizard_location_mode_metro": "Metro bo'yicha",
+      "wizard_location_mode_district": "Tuman bo'yicha",
+      "all_locations_count": "Barcha {count} tuman",
+      "wizard_locations_count": "{count} ta tuman",
       "update_listing_button": "E'loni yangilash",
       "save_changes": "O'zgarishlarni saqlash",
       "changed_fields": "O'zgargan",
@@ -5316,12 +5341,14 @@ class AppStrings {
       "admin_panel_section_telegram_listing_groups": "Telegram e'lon guruhlari",
       "admin_telegram_listing_groups_title": "Telegram e'lon guruhlari",
       "admin_telegram_listing_groups_loading": "Guruhlar yuklanmoqda…",
-      "admin_telegram_listing_groups_empty": "Import qilingan e'lonlar topilmadi",
+      "admin_telegram_listing_groups_empty":
+          "Import qilingan e'lonlar topilmadi",
       "admin_telegram_listing_groups_detail_empty": "Bu guruhda e'lonlar yo'q",
       "admin_telegram_listing_groups_error": "Guruhlarni yuklashda xatolik",
       "admin_telegram_listing_groups_unknown": "Kontaktsiz (guruhsiz)",
       "admin_telegram_listing_groups_listing_count": "{count} ta e'lon",
-      "admin_telegram_listing_groups_summary_scraped": "Import qilingan e'lonlar",
+      "admin_telegram_listing_groups_summary_scraped":
+          "Import qilingan e'lonlar",
       "admin_telegram_listing_groups_summary_groups": "Guruhlar",
       "admin_telegram_listing_groups_summary_duplicates": "Dublikatli guruhlar",
       "admin_telegram_listing_groups_summary_ungrouped": "Guruhsiz e'lonlar",

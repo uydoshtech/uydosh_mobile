@@ -131,7 +131,11 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
 class _ListingDetailCompatibilitySectionState
     extends State<ListingDetailCompatibilitySection> with RouteAware {
   static const double _matrixTableCornerRadius = 10;
-  static const double _matrixUserHeaderHeight = 82;
+  static const double _matrixUserHeaderHeight = 106;
+  // Horizontal inset applied to the section's content by the outer
+  // ExpansionTile [childrenPadding]; used to extend the pinned matrix plate
+  // back out to the surrounding card's edges.
+  static const double _matrixSectionContentPadding = 20;
 
   Timer? _scrollIntoViewTimer;
   final GlobalKey _matrixUserHeaderKey = GlobalKey();
@@ -141,6 +145,10 @@ class _ListingDetailCompatibilitySectionState
   bool _isMatrixExpanded = true;
   bool _showMatrixStickyHeader = false;
   Rect? _matrixStickyHeaderBounds;
+  // Horizontal offset + width of the avatar/text columns inside the (now
+  // full-bleed) sticky plate, so extending the plate doesn't shift them.
+  double _matrixStickyHeaderContentLeft = 0;
+  double _matrixStickyHeaderContentWidth = 0;
   Animation<double>? _transitionAnimation;
   Animation<double>? _entryAnimation;
   bool _didScheduleEntrySync = false;
@@ -417,14 +425,23 @@ class _ListingDetailCompatibilitySectionState
     if (shouldPin) {
       final tableOrigin = tableBox.localToGlobal(Offset.zero);
       final stickyTop = math.max(headerTop, pinTop);
+      // Extend the plate out to the surrounding card's edges (the section's
+      // [childrenPadding] insets the table by [_matrixSectionContentPadding]
+      // on each side), but keep the avatar / text columns anchored to the
+      // original in-flow table geometry so they don't shift.
+      final plateLeft = tableOrigin.dx - _matrixSectionContentPadding;
+      final plateWidth =
+          tableBox.size.width + _matrixSectionContentPadding * 2;
       _setMatrixStickyHeaderVisible(
         true,
         bounds: Rect.fromLTWH(
-          tableOrigin.dx,
+          plateLeft,
           stickyTop,
-          tableBox.size.width,
+          plateWidth,
           _matrixUserHeaderHeight,
         ),
+        contentLeft: tableOrigin.dx - plateLeft,
+        contentWidth: tableBox.size.width,
       );
     } else {
       _setMatrixStickyHeaderVisible(false);
@@ -434,6 +451,8 @@ class _ListingDetailCompatibilitySectionState
   void _setMatrixStickyHeaderVisible(
     bool visible, {
     Rect? bounds,
+    double contentLeft = 0,
+    double contentWidth = 0,
   }) {
     if (!visible) {
       if (!_showMatrixStickyHeader) return;
@@ -450,7 +469,12 @@ class _ListingDetailCompatibilitySectionState
     final boundsChanged = _matrixStickyHeaderBounds == null ||
         (_matrixStickyHeaderBounds!.left - nextBounds.left).abs() > 0.5 ||
         (_matrixStickyHeaderBounds!.top - nextBounds.top).abs() > 0.5 ||
-        (_matrixStickyHeaderBounds!.width - nextBounds.width).abs() > 0.5;
+        (_matrixStickyHeaderBounds!.width - nextBounds.width).abs() > 0.5 ||
+        (_matrixStickyHeaderContentLeft - contentLeft).abs() > 0.5 ||
+        (_matrixStickyHeaderContentWidth - contentWidth).abs() > 0.5;
+
+    _matrixStickyHeaderContentLeft = contentLeft;
+    _matrixStickyHeaderContentWidth = contentWidth;
 
     if (!_showMatrixStickyHeader || boundsChanged) {
       final becameVisible = !_showMatrixStickyHeader;
@@ -565,7 +589,7 @@ class _ListingDetailCompatibilitySectionState
       children: [
         _buildHeaderAvatar(
           _matrixMemberFor(userId)?.avatarUrl,
-          size: 32,
+          size: 44,
           ringColor: percent == null ? null : percentColor,
         ),
         const SizedBox(height: 6),
@@ -642,10 +666,22 @@ class _ListingDetailCompatibilitySectionState
           listenable: ThemeState(),
           builder: (context, _) => _buildMatrixStickyHeaderGlassShell(
             borderColor: borderColor,
-            child: _buildPinnedMatrixUserHeaderRow(
-              orderedUserIds: orderedUserIds,
-              textColor: textColor,
-              borderColor: borderColor,
+            // The plate spans the full viewport, but the avatar / text columns
+            // stay pinned to the original table geometry so they don't drift.
+            child: Padding(
+              padding:
+                  EdgeInsets.only(left: _matrixStickyHeaderContentLeft),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  width: _matrixStickyHeaderContentWidth,
+                  child: _buildPinnedMatrixUserHeaderRow(
+                    orderedUserIds: orderedUserIds,
+                    textColor: textColor,
+                    borderColor: borderColor,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -1490,7 +1526,7 @@ class _ListingDetailCompatibilitySectionState
       );
       if (visual == null) return valueText(value, status: status);
 
-      final bubbleMessage = "${row.label}: $value";
+      final bubbleMessage = value;
       return Semantics(
         label: bubbleMessage,
         button: true,
@@ -2242,8 +2278,16 @@ class _ListingDetailCompatibilitySectionState
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Colors.transparent),
           ),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-          childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: _matrixSectionContentPadding,
+            vertical: 6,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            _matrixSectionContentPadding,
+            0,
+            _matrixSectionContentPadding,
+            _matrixSectionContentPadding,
+          ),
           iconColor: chevronColor,
           collapsedIconColor: chevronColor,
           title: KeyedSubtree(

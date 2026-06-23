@@ -24,6 +24,7 @@ class PriceRangePicker extends StatefulWidget {
     this.useSinglePrice = false,
     this.showErrorBorder = false,
     this.useGlassPlate = false,
+    this.title,
   });
 
   final Function(double minPrice, double maxPrice) onPriceRangeChanged;
@@ -54,6 +55,7 @@ class PriceRangePicker extends StatefulWidget {
   /// When true, draws a pulsing red outline to highlight a missing selection.
   final bool showErrorBorder;
   final bool useGlassPlate;
+  final String? title;
 
   @override
   State<PriceRangePicker> createState() => _PriceRangePickerState();
@@ -414,6 +416,37 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           ),
         );
 
+        Widget withOptionalTitle(Widget child) {
+          final title = widget.title?.trim();
+          if (title == null || title.isEmpty) return child;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: 16,
+                  end: 16,
+                  bottom: 8,
+                ),
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: themeState.isLightTheme
+                        ? Colors.black
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              child,
+            ],
+          );
+        }
+
         if (widget.useGlassPlate) {
           Widget plate = LiquidGlassPlate(
             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -428,15 +461,20 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
               child: plate,
             );
           }
-          return Container(margin: const EdgeInsets.all(5), child: plate);
+          return Container(
+            margin: const EdgeInsets.all(5),
+            child: withOptionalTitle(plate),
+          );
         }
 
         return Container(
           margin: const EdgeInsets.all(5),
-          child: WheelPickerPlateContainer(
-            theme: theme,
-            showErrorBorder: widget.showErrorBorder,
-            child: content,
+          child: withOptionalTitle(
+            WheelPickerPlateContainer(
+              theme: theme,
+              showErrorBorder: widget.showErrorBorder,
+              child: content,
+            ),
           ),
         );
       },

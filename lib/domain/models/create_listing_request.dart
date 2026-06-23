@@ -1,17 +1,19 @@
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 
-class CreateListingRequest implements IJsonEncodable { // Make user ID optional - server might extract it from JWT token
+class CreateListingRequest implements IJsonEncodable {
+  // Make user ID optional - server might extract it from JWT token
 
   CreateListingRequest({
     required this.title,
     required this.listingTypeId,
     required this.price,
-    this.minPrice,
-    this.maxPrice,
     required this.description,
     required this.gender,
-    required this.locationId,
     required this.amenityIds,
+    this.minPrice,
+    this.maxPrice,
+    this.locationId, // Optional: omitted in metro-mode (derived from station)
+    this.locationIds, // Multi-location selection (demand-side listings)
     this.cityId,
     this.subwayStationId, // Made optional
     this.subwayStationIds, // Multi-station selection (demand-side listings)
@@ -28,7 +30,8 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   final int? maxPrice;
   final String description;
   final int gender;
-  final int locationId;
+  final int? locationId;
+  final List<int>? locationIds;
   final List<int> amenityIds;
   final int? cityId;
   final int? subwayStationId; // Made optional
@@ -49,7 +52,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
       if (maxPrice != null) "maxPrice": maxPrice,
       "description": description,
       "gender": gender,
-      "locationId": locationId,
+      if (locationId != null) "locationId": locationId,
       "cityId": cityId,
       "amenityIds": amenityIds,
       "subwayStationId":
@@ -78,6 +81,12 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     // form) leaves any previously saved multi-station set untouched server-side.
     if (subwayStationIds != null) {
       json["subwayStationIds"] = subwayStationIds;
+    }
+
+    // Only include when provided so omitting it (e.g. the single-screen edit
+    // form) leaves any previously saved multi-location set untouched server-side.
+    if (locationIds != null) {
+      json["locationIds"] = locationIds;
     }
 
     return json;
