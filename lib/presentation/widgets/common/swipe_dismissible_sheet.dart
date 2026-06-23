@@ -131,6 +131,7 @@ class SwipeDismissibleSheetShell extends StatelessWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
           child: GestureDetector(

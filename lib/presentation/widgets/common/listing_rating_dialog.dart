@@ -336,7 +336,7 @@ class _RatingCategoryCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
               radius: 21,

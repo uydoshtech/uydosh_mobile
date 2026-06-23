@@ -681,6 +681,18 @@ class _GroupRatingSection extends StatelessWidget {
       color: theme.brightness == Brightness.light ? Colors.black : null,
       fontWeight: FontWeight.w700,
     );
+    final currentUserParticipants = currentUserId == null
+        ? const <ListingGroupShortlistParticipantRating>[]
+        : rating.participants
+            .where((participant) => participant.userId == currentUserId)
+            .toList();
+    final otherParticipants = rating.participants
+        .where((participant) => participant.userId != currentUserId)
+        .toList();
+    final orderedParticipants = [
+      ...currentUserParticipants,
+      ...otherParticipants,
+    ];
 
     return Container(
       width: double.infinity,
@@ -722,20 +734,29 @@ class _GroupRatingSection extends StatelessWidget {
               style: headerStyle,
             ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: rating.participants.map((participant) {
-              final canEdit = currentUserId != null &&
-                  participant.userId == currentUserId &&
-                  participant.stars != null &&
-                  onRate != null;
-              return _ParticipantRatingChip(
-                participant: participant,
-                isCurrentUser: canEdit,
-                onTap: canEdit ? () => onRate!(participant.stars!) : null,
-              );
-            }).toList(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < orderedParticipants.length; i++) ...[
+                Builder(
+                  builder: (context) {
+                    final participant = orderedParticipants[i];
+                    final isCurrentUser = currentUserId != null &&
+                        participant.userId == currentUserId;
+                    final canEdit = isCurrentUser &&
+                        participant.stars != null &&
+                        onRate != null;
+                    return _ParticipantRatingChip(
+                      participant: participant,
+                      isCurrentUser: isCurrentUser,
+                      onTap: canEdit ? () => onRate!(participant.stars!) : null,
+                    );
+                  },
+                ),
+                if (i < orderedParticipants.length - 1)
+                  const SizedBox(height: 6),
+              ],
+            ],
           ),
         ],
       ),
