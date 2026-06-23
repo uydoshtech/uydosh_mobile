@@ -191,6 +191,37 @@ class AppStrings {
       "group_shortlist_dislike_reason_owner": "Doubts about the owner",
       "group_shortlist_dislike_reason_space": "Not enough space",
       "group_shortlist_dislike_reason_neighborhood": "Bad neighborhood",
+      "listing_rating_screen_title": "Rate housing option",
+      "listing_rating_screen_subtitle":
+          "Your opinion will help the group make a decision",
+      "listing_rating_category_price": "Price",
+      "listing_rating_category_price_subtitle":
+          "Fits the budget, price is fair",
+      "listing_rating_category_location": "Location",
+      "listing_rating_category_location_subtitle":
+          "Close to study/work, transport, area",
+      "listing_rating_category_condition": "Housing condition",
+      "listing_rating_category_condition_subtitle":
+          "Renovation, cleanliness, furniture, kitchen, bathroom",
+      "listing_rating_category_group": "Group convenience",
+      "listing_rating_category_group_subtitle":
+          "Enough space, layout, private space",
+      "listing_rating_category_landlord": "Terms and landlord",
+      "listing_rating_category_landlord_subtitle": "Rules, trust in the owner",
+      "listing_rating_label_excellent": "Excellent",
+      "listing_rating_label_good": "Good",
+      "listing_rating_label_normal": "Normal",
+      "listing_rating_label_bad": "Bad",
+      "listing_rating_verdict_title": "Final verdict",
+      "listing_rating_verdict_subtitle":
+          "Do you want to move forward with this option?",
+      "listing_rating_verdict_yes": "Yes,\nfits",
+      "listing_rating_verdict_maybe": "Maybe\nconsider",
+      "listing_rating_verdict_no": "No,\ndoesn't fit",
+      "listing_rating_reasons_title": "What bothers you?",
+      "listing_rating_optional": "optional",
+      "listing_rating_submit": "Submit rating",
+      "listing_rating_participants_summary": "Rated by group participants",
       "group_shortlist_rating_updated": "Rating updated",
       "group_shortlist_contact_landlord": "Contact landlord",
       "group_shortlist_remove_title": "Remove from saved list?",
@@ -2180,6 +2211,38 @@ class AppStrings {
       "group_shortlist_dislike_reason_owner": "Сомнения по хозяину",
       "group_shortlist_dislike_reason_space": "Мало места",
       "group_shortlist_dislike_reason_neighborhood": "Плохой район",
+      "listing_rating_screen_title": "Оцените вариант жилья",
+      "listing_rating_screen_subtitle":
+          "Ваше мнение поможет группе принять решение",
+      "listing_rating_category_price": "Цена",
+      "listing_rating_category_price_subtitle":
+          "Соответствует бюджету, цена адекватная",
+      "listing_rating_category_location": "Локация",
+      "listing_rating_category_location_subtitle":
+          "Близость к учёбе/работе, транспорт, район",
+      "listing_rating_category_condition": "Состояние жилья",
+      "listing_rating_category_condition_subtitle":
+          "Ремонт, чистота, мебель, кухня, санузел",
+      "listing_rating_category_group": "Удобство для группы",
+      "listing_rating_category_group_subtitle":
+          "Хватит ли места всем, планировка, личное пространство",
+      "listing_rating_category_landlord": "Условия и арендодатель",
+      "listing_rating_category_landlord_subtitle":
+          "Правила, адекватность хозяина, доверие",
+      "listing_rating_label_excellent": "Отлично",
+      "listing_rating_label_good": "Хорошо",
+      "listing_rating_label_normal": "Нормально",
+      "listing_rating_label_bad": "Плохо",
+      "listing_rating_verdict_title": "Итоговый вердикт",
+      "listing_rating_verdict_subtitle":
+          "Хотите ли вы двигаться дальше с этим вариантом?",
+      "listing_rating_verdict_yes": "Да,\nподходит",
+      "listing_rating_verdict_maybe": "Можно\nрассмотреть",
+      "listing_rating_verdict_no": "Нет, не\nподходит",
+      "listing_rating_reasons_title": "Что смущает?",
+      "listing_rating_optional": "необязательно",
+      "listing_rating_submit": "Отправить оценку",
+      "listing_rating_participants_summary": "Оценяют участники группы",
       "group_shortlist_rating_updated": "Оценка обновлена",
       "group_shortlist_contact_landlord": "Связаться с арендодателем",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
@@ -4203,6 +4266,37 @@ class AppStrings {
       "group_shortlist_dislike_reason_owner": "Uy egasiga shubha bor",
       "group_shortlist_dislike_reason_space": "Joy kam",
       "group_shortlist_dislike_reason_neighborhood": "Yomon hudud",
+      "listing_rating_screen_title": "Uy-joy variantini baholang",
+      "listing_rating_screen_subtitle":
+          "Fikringiz guruhga qaror qabul qilishga yordam beradi",
+      "listing_rating_category_price": "Narx",
+      "listing_rating_category_price_subtitle": "Byudjetga mos, narxi adolatli",
+      "listing_rating_category_location": "Joylashuv",
+      "listing_rating_category_location_subtitle":
+          "O'qish/ishga yaqinlik, transport, hudud",
+      "listing_rating_category_condition": "Uy holati",
+      "listing_rating_category_condition_subtitle":
+          "Ta'mir, tozalik, mebel, oshxona, sanuzel",
+      "listing_rating_category_group": "Guruh uchun qulaylik",
+      "listing_rating_category_group_subtitle":
+          "Hammaga joy yetadimi, reja, shaxsiy hudud",
+      "listing_rating_category_landlord": "Shartlar va uy egasi",
+      "listing_rating_category_landlord_subtitle":
+          "Qoidalar, uy egasiga ishonch",
+      "listing_rating_label_excellent": "A'lo",
+      "listing_rating_label_good": "Yaxshi",
+      "listing_rating_label_normal": "Normal",
+      "listing_rating_label_bad": "Yomon",
+      "listing_rating_verdict_title": "Yakuniy xulosa",
+      "listing_rating_verdict_subtitle":
+          "Bu variant bilan davom etishni xohlaysizmi?",
+      "listing_rating_verdict_yes": "Ha,\nmos",
+      "listing_rating_verdict_maybe": "Ko'rib\nchiqish mumkin",
+      "listing_rating_verdict_no": "Yo'q,\nmos emas",
+      "listing_rating_reasons_title": "Nima shubha uyg'otdi?",
+      "listing_rating_optional": "ixtiyoriy",
+      "listing_rating_submit": "Bahoni yuborish",
+      "listing_rating_participants_summary": "Guruh a'zolari baholamoqda",
       "group_shortlist_rating_updated": "Baho yangilandi",
       "group_shortlist_contact_landlord": "Ijara beruvchi bilan bog'lanish",
       "group_shortlist_remove_title":

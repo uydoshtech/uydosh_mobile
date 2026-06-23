@@ -6,6 +6,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
@@ -68,20 +69,30 @@ class OutgoingConversationTile extends StatelessWidget {
             conversationSummaryShowsBudgetBadge(conversation);
         final isListingMarketplace =
             conversationSummaryIsListingMarketplaceChat(conversation);
+        final isListingGroup = _isListingGroupConversation(conversation);
+        final keepCounterpartyIdentity = isListingMarketplace && !isListingGroup;
 
-        // Same rule as [ConversationTile]: for listing chats the row is framed
-        // around the counterparty; keep their avatar even when you sent last.
+        // Same rule as [ConversationTile]: one-to-one listing chats are framed
+        // around the counterparty, while group/gig rows show the last sender.
         final lastSenderIsCurrentUser = currentUserId != null &&
             conversation.lastMessageSenderId == currentUserId;
         final profileState = ProfileCompletionState();
-        final rawAvatar = isListingMarketplace
+        final lastSenderMember =
+            _memberForUserId(conversation, conversation.lastMessageSenderId);
+        final lastSenderDisplayName = lastSenderIsCurrentUser
+            ? profileState.cachedName ?? lastSenderMember?.name
+            : lastSenderMember?.name ?? conversation.otherUserName;
+        final titleText = keepCounterpartyIdentity
+            ? conversation.otherUserName ?? "Unknown User"
+            : lastSenderDisplayName ?? "Unknown User";
+        final rawAvatar = keepCounterpartyIdentity
             ? conversation.otherUserAvatar
             : (lastSenderIsCurrentUser
-                ? profileState.effectiveAvatarUrl
-                : conversation.otherUserAvatar);
-        final initialsName = isListingMarketplace
+                ? profileState.effectiveAvatarUrl ?? lastSenderMember?.avatarUrl
+                : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
+        final initialsName = keepCounterpartyIdentity
             ? null
-            : (lastSenderIsCurrentUser ? profileState.cachedName : null);
+            : lastSenderDisplayName;
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
 
@@ -133,7 +144,7 @@ class OutgoingConversationTile extends StatelessWidget {
                       children: [
                         if (isListingMarketplace) ...[
                           Text(
-                            conversation.otherUserName ?? "Unknown User",
+                            titleText,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: textColor,
@@ -169,7 +180,7 @@ class OutgoingConversationTile extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     child: Text(
-                      conversation.otherUserName ?? "Unknown User",
+                      titleText,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: textColor,
@@ -384,5 +395,23 @@ class OutgoingConversationTile extends StatelessWidget {
     } catch (e) {
       return "";
     }
+  }
+
+  bool _isListingGroupConversation(ConversationSummary conversation) {
+    final contextType = conversation.contextType?.trim().toLowerCase();
+    final conversationType =
+        conversation.conversationType?.trim().toLowerCase();
+    return contextType == "listing_group" || conversationType == "listing_group";
+  }
+
+  ConversationMemberSummary? _memberForUserId(
+    ConversationSummary conversation,
+    int? userId,
+  ) {
+    if (userId == null) return null;
+    for (final member in conversation.members) {
+      if (member.userId == userId) return member;
+    }
+    return null;
   }
 }

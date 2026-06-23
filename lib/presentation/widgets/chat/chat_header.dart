@@ -25,12 +25,18 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
     this.subtitle,
     this.peerAvatarUrl,
     this.peerInitials,
+
     /// When set (group chats), renders an overlapping avatar stack instead of
     /// [peerAvatarUrl] / [peerInitials].
     this.groupParticipants,
     this.currentUserId,
+
     /// Opens the peer's profile (e.g. [ListingOwnerProfileScreen]) when set.
     this.onPeerAvatarTap,
+
+    /// Opens group participants when the group avatar stack is tapped.
+    this.onGroupParticipantsTap,
+
     /// Placed immediately to the left of the 3-dot overflow menu (e.g. gig
     /// "invite to book" on task chats).
     this.actionBeforeMenu,
@@ -47,6 +53,7 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   final int? currentUserId;
   final List<ActionMenuItem> actionMenuItems;
   final VoidCallback? onPeerAvatarTap;
+  final VoidCallback? onGroupParticipantsTap;
   final Widget? actionBeforeMenu;
 
   @override
@@ -60,12 +67,12 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         final themeState = ThemeState();
         final appBarBackgroundColor = themeState.appBarBackgroundColor;
         final textColor = themeState.textColor;
-        final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+        final useLiquidGlass =
+            themeState.isBlueTheme || themeState.isLightTheme;
         final appBarTheme = Theme.of(context).appBarTheme;
-        final onBarColor =
-            useLiquidGlass
-                ? (appBarTheme.foregroundColor ?? textColor)
-                : textColor;
+        final onBarColor = useLiquidGlass
+            ? (appBarTheme.foregroundColor ?? textColor)
+            : textColor;
 
         return UydoshAppBar(
           leading: ThreeDAppBarIconButton.backLeading(context),
@@ -120,12 +127,12 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
               ),
             ],
           ),
-          backgroundColor:
-              useLiquidGlass
-                  ? liquidGlassAppBarMaterialColor(context)
-                  : appBarBackgroundColor,
-          surfaceTintColor:
-              useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
+          backgroundColor: useLiquidGlass
+              ? liquidGlassAppBarMaterialColor(context)
+              : appBarBackgroundColor,
+          surfaceTintColor: useLiquidGlass
+              ? Colors.transparent
+              : appBarTheme.surfaceTintColor,
           elevation: useLiquidGlass ? 0 : null,
           scrolledUnderElevation: useLiquidGlass ? 0 : null,
           shadowColor:
@@ -158,9 +165,27 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   Widget _peerAvatar() {
     final participants = groupParticipants;
     if (participants != null && participants.isNotEmpty) {
-      return ChatParticipantAvatarStack(
+      final stack = ChatParticipantAvatarStack(
         participants: participants,
         currentUserId: currentUserId,
+      );
+      final tap = onGroupParticipantsTap;
+      if (tap == null) {
+        return stack;
+      }
+      return Tooltip(
+        message: L10n.get("view_member_profiles"),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: tap,
+              customBorder: const CircleBorder(),
+              child: stack,
+            ),
+          ),
+        ),
       );
     }
 

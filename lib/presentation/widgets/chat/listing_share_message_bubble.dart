@@ -28,6 +28,7 @@ class ListingShareMessageBubble extends StatelessWidget {
     required this.onOpenListing,
     required this.onRate,
     this.rating,
+    this.optionNumber,
     this.onOpenPreviousListing,
     this.onOpenNextListing,
     this.leftAvatarInitials,
@@ -40,6 +41,7 @@ class ListingShareMessageBubble extends StatelessWidget {
   final Message message;
   final ListingShareMessagePayload payload;
   final MessageListingRating? rating;
+  final int? optionNumber;
   final bool isCurrentUser;
   final VoidCallback onOpenListing;
   final Future<void> Function(int stars) onRate;
@@ -91,8 +93,20 @@ class ListingShareMessageBubble extends StatelessWidget {
                     children: [
                       if (payload.intro != null &&
                           payload.intro!.isNotEmpty) ...[
-                        Text(
-                          payload.intro!,
+                        Text.rich(
+                          TextSpan(
+                            text: payload.intro!,
+                            children: [
+                              if (optionNumber != null)
+                                TextSpan(
+                                  text: " #$optionNumber",
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                            ],
+                          ),
                           style: TextStyle(
                             color: textColor.withValues(alpha: 0.85),
                             fontSize: 14,

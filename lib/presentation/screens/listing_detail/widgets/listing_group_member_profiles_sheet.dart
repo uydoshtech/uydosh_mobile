@@ -54,6 +54,144 @@ class _MemberRemovalDecision {
   final String? reason;
 }
 
+class _RemoveMemberDialog extends StatefulWidget {
+  const _RemoveMemberDialog({required this.member});
+
+  final ConversationMemberSummary member;
+
+  @override
+  State<_RemoveMemberDialog> createState() => _RemoveMemberDialogState();
+}
+
+class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
+  static const _otherReasonKey = "group_remove_reason_other";
+  static const _reasonKeys = [
+    "group_remove_reason_inactive",
+    "group_remove_reason_rules",
+    "group_remove_reason_not_fit",
+    "group_remove_reason_member_request",
+    _otherReasonKey,
+  ];
+
+  final _otherController = TextEditingController();
+  String? _selectedReasonKey;
+
+  @override
+  void dispose() {
+    _otherController.dispose();
+    super.dispose();
+  }
+
+  String? _selectedReason() {
+    final reasonKey = _selectedReasonKey;
+    if (reasonKey == null) return null;
+    if (reasonKey == _otherReasonKey) {
+      final customReason = _otherController.text.trim();
+      return customReason.isEmpty ? null : customReason;
+    }
+    return L10n.get(reasonKey);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return UydoshGlassDialog(
+      title: Text(
+        L10n.get("group_remove_member_title"),
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              L10n.getWithParams(
+                "group_remove_member_message",
+                params: {"name": widget.member.name},
+              ),
+              style: TextStyle(
+                fontSize: 16,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              L10n.get("group_remove_reason_title"),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final reasonKey in _reasonKeys)
+                  ChoiceChip(
+                    label: Text(L10n.get(reasonKey)),
+                    selected: _selectedReasonKey == reasonKey,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedReasonKey = selected ? reasonKey : null;
+                      });
+                    },
+                  ),
+              ],
+            ),
+            if (_selectedReasonKey == _otherReasonKey) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _otherController,
+                autofocus: true,
+                maxLength: 80,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: L10n.get("group_remove_reason_other_hint"),
+                  isDense: true,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButtonThemed(
+          onPressed: () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(foregroundColor: scheme.onSurface),
+          child: Text(
+            L10n.get("cancel"),
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        TextButtonThemed(
+          onPressed: () {
+            Navigator.of(context).pop(
+              _MemberRemovalDecision(reason: _selectedReason()),
+            );
+          },
+          style: TextButton.styleFrom(foregroundColor: scheme.error),
+          child: Text(
+            L10n.get("group_remove_member"),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 Future<void> showListingGroupMemberProfilesSheet({
   required BuildContext context,
   required int listingId,
@@ -420,132 +558,12 @@ class _ListingGroupMemberProfilesSheetState
   Future<_MemberRemovalDecision?> _showRemoveMemberDialog(
     ConversationMemberSummary member,
   ) async {
-    final otherController = TextEditingController();
-    String? selectedReasonKey;
-
-    try {
-      return await showDialog<_MemberRemovalDecision>(
-        context: context,
-        builder: (dialogContext) {
-          final scheme = Theme.of(dialogContext).colorScheme;
-          final reasonKeys = [
-            "group_remove_reason_inactive",
-            "group_remove_reason_rules",
-            "group_remove_reason_not_fit",
-            "group_remove_reason_member_request",
-            "group_remove_reason_other",
-          ];
-
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              String? selectedReason() {
-                if (selectedReasonKey == null) return null;
-                if (selectedReasonKey == "group_remove_reason_other") {
-                  final customReason = otherController.text.trim();
-                  return customReason.isEmpty ? null : customReason;
-                }
-                return L10n.get(selectedReasonKey!);
-              }
-
-              return UydoshGlassDialog(
-                title: Text(
-                  L10n.get("group_remove_member_title"),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface,
-                  ),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      L10n.getWithParams(
-                        "group_remove_member_message",
-                        params: {"name": member.name},
-                      ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      L10n.get("group_remove_reason_title"),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final reasonKey in reasonKeys)
-                          ChoiceChip(
-                            label: Text(L10n.get(reasonKey)),
-                            selected: selectedReasonKey == reasonKey,
-                            onSelected: (selected) {
-                              setDialogState(() {
-                                selectedReasonKey = selected ? reasonKey : null;
-                              });
-                            },
-                          ),
-                      ],
-                    ),
-                    if (selectedReasonKey == "group_remove_reason_other") ...[
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: otherController,
-                        autofocus: true,
-                        maxLength: 80,
-                        onChanged: (_) => setDialogState(() {}),
-                        decoration: InputDecoration(
-                          counterText: "",
-                          hintText: L10n.get("group_remove_reason_other_hint"),
-                          isDense: true,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                actions: [
-                  TextButtonThemed(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    style:
-                        TextButton.styleFrom(foregroundColor: scheme.onSurface),
-                    child: Text(
-                      L10n.get("cancel"),
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  TextButtonThemed(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop(
-                        _MemberRemovalDecision(reason: selectedReason()),
-                      );
-                    },
-                    style: TextButton.styleFrom(foregroundColor: scheme.error),
-                    child: Text(
-                      L10n.get("group_remove_member"),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    } finally {
-      otherController.dispose();
-    }
+    return showDialog<_MemberRemovalDecision>(
+      context: context,
+      builder: (_) {
+        return _RemoveMemberDialog(member: member);
+      },
+    );
   }
 
   Future<void> _confirmLeaveGroup() async {
@@ -850,6 +868,17 @@ class _MemberProfilesHeader extends StatelessWidget {
   final bool isGroupFull;
   final ListingGroupProgress? groupProgress;
 
+  String _memberNamesLabel() {
+    final names = members.map((member) => member.name).toList();
+    if (names.length <= 1) return names.join(", ");
+
+    final splitIndex = (names.length / 2).ceil();
+    return [
+      names.take(splitIndex).join(", "),
+      names.skip(splitIndex).join(", "),
+    ].where((line) => line.isNotEmpty).join("\n");
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -919,7 +948,7 @@ class _MemberProfilesHeader extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  members.map((member) => member.name).join(", "),
+                  _memberNamesLabel(),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: subtitleColor,
                     fontWeight: FontWeight.w600,

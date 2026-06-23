@@ -1003,7 +1003,7 @@ class _ListingRatingBody implements IJsonEncodable {
   @override
   Map<String, dynamic> toJson() => {
         "stars": stars,
-        "reasons": stars < 5 ? reasons : const <String>[],
+        "reasons": reasons,
       };
 }
 

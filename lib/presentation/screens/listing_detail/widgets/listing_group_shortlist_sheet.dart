@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -27,45 +26,12 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortl
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_rating_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
-
-const _shortlistDislikeReasons = [
-  (
-    code: "too_expensive",
-    labelKey: "group_shortlist_dislike_reason_expensive",
-  ),
-  (code: "too_far", labelKey: "group_shortlist_dislike_reason_far"),
-  (
-    code: "bad_condition",
-    labelKey: "group_shortlist_dislike_reason_condition",
-  ),
-  (
-    code: "owner_doubts",
-    labelKey: "group_shortlist_dislike_reason_owner",
-  ),
-  (
-    code: "not_enough_space",
-    labelKey: "group_shortlist_dislike_reason_space",
-  ),
-  (
-    code: "bad_neighborhood",
-    labelKey: "group_shortlist_dislike_reason_neighborhood",
-  ),
-];
-
-class _RatingDialogResult {
-  const _RatingDialogResult({
-    required this.stars,
-    required this.reasons,
-  });
-
-  final int stars;
-  final List<String> reasons;
-}
 
 String? _listingOwnerNameFromProfile(UserProfile profile) {
   final name = profile.name?.trim();
@@ -213,151 +179,10 @@ class _ListingGroupShortlistSheetState
   }
 
   Future<void> _editRating(_ShortlistRow row, int currentStars) async {
-    final result = await showDialog<_RatingDialogResult>(
+    final result = await showListingRatingDialog(
       context: context,
-      builder: (dialogContext) {
-        var selected = currentStars.clamp(0, 5).toInt();
-        final selectedReasonCodes = _currentUserReasonCodes(row);
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final scheme = Theme.of(context).colorScheme;
-            final showDislikeReasons = selected > 0 && selected < 5;
-            return UydoshGlassDialog(
-              title: Text(
-                L10n.get("group_shortlist_edit_rating_title"),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
-                ),
-              ),
-              scrollable: true,
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(5, (index) {
-                      final value = index + 1;
-                      final filled = selected >= value;
-                      return IconButton(
-                        iconSize: 48,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 56,
-                          height: 56,
-                        ),
-                        onPressed: () {
-                          HapticFeedbackUtils.selectionClick();
-                          setDialogState(() {
-                            selected = value;
-                            if (value >= 5) selectedReasonCodes.clear();
-                          });
-                        },
-                        icon: Icon(
-                          filled
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          color: filled
-                              ? AppColors.getThemeAwareWarningIconColor(context)
-                              : scheme.onSurfaceVariant,
-                        ),
-                      );
-                    }),
-                  ),
-                  if (showDislikeReasons) ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      L10n.get("group_shortlist_dislike_reasons_title"),
-                      style: TextStyle(
-                        color: scheme.onSurface,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _shortlistDislikeReasons.map((reason) {
-                        final isSelected =
-                            selectedReasonCodes.contains(reason.code);
-                        return ChoiceChip(
-                          label: Text(L10n.get(reason.labelKey)),
-                          selected: isSelected,
-                          onSelected: (value) {
-                            HapticFeedbackUtils.selectionClick();
-                            setDialogState(() {
-                              if (value) {
-                                selectedReasonCodes.add(reason.code);
-                              } else {
-                                selectedReasonCodes.remove(reason.code);
-                              }
-                            });
-                          },
-                          selectedColor:
-                              AppColors.getThemeAwareWarningIconColor(context)
-                                  .withValues(alpha: 0.18),
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? scheme.onSurface
-                                : scheme.onSurfaceVariant,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
-                          ),
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.getThemeAwareWarningIconColor(
-                                    context,
-                                  )
-                                : scheme.outlineVariant,
-                          ),
-                          backgroundColor:
-                              scheme.surface.withValues(alpha: 0.24),
-                          showCheckmark: false,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButtonThemed(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  style:
-                      TextButton.styleFrom(foregroundColor: scheme.onSurface),
-                  child: Text(
-                    L10n.get("cancel"),
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-                TextButtonThemed(
-                  onPressed: selected <= 0
-                      ? null
-                      : () => Navigator.of(dialogContext).pop(
-                            _RatingDialogResult(
-                              stars: selected,
-                              reasons: selected < 5
-                                  ? selectedReasonCodes.toList()
-                                  : const [],
-                            ),
-                          ),
-                  child: Text(
-                    L10n.get("done"),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      currentStars: currentStars,
+      initialReasonCodes: _currentUserReasonCodes(row),
     );
     if (result == null || !mounted) return;
     final stars = result.stars;
@@ -686,7 +511,6 @@ class _ListingGroupShortlistSheetState
                 ),
           ),
         ),
-        if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
         if (_loading)
           const SizedBox(
             height: 200,
@@ -737,7 +561,7 @@ class _ListingGroupShortlistSheetState
                   groupDetail?.groupContext?.hasGroupChat == true;
 
               return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
                 child: GroupShortlistItemCard(
                   item: row.item,
                   listing: row.listing,
@@ -758,6 +582,7 @@ class _ListingGroupShortlistSheetState
               );
             },
           ),
+        if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
         if (!_loading && _rows.isNotEmpty && groupDetail != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

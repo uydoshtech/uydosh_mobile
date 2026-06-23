@@ -54,6 +54,7 @@ class GroupShortlistItemCard extends StatelessWidget {
   final VoidCallback? onDiscussInGroup;
 
   static const double _thumbSize = 72;
+  static const double _actionButtonGap = 2;
 
   static List<InlineSpan> _pricePerPersonSpans({
     required String price,
@@ -93,11 +94,9 @@ class GroupShortlistItemCard extends StatelessWidget {
         isLightTheme ? Colors.black87 : AppColors.textLight70;
     final actionButtonStyle = TextButton.styleFrom(
       foregroundColor: actionButtonForegroundColor,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-    );
-    final removeButtonStyle = TextButton.styleFrom(
-      foregroundColor: theme.colorScheme.error,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      minimumSize: const Size(0, 32),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
     final perPersonPrice = fit.formatPerPersonPriceLabel();
     final showDiscuss = onDiscussInGroup != null;
@@ -162,6 +161,32 @@ class GroupShortlistItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(width: 6),
+                Tooltip(
+                  message: L10n.get("group_shortlist_remove"),
+                  child: IconButton(
+                    onPressed: isRemoving
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            onRemove();
+                          },
+                    icon: isRemoving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.delete_outline),
+                    color: theme.colorScheme.error,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 36,
+                      height: 36,
+                    ),
+                  ),
+                ),
               ],
             ),
             if (ownerName != null || ownerAvatarUrl != null) ...[
@@ -189,7 +214,7 @@ class GroupShortlistItemCard extends StatelessWidget {
               ),
             ],
             if (showDiscuss) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: _actionButtonGap),
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
@@ -210,7 +235,7 @@ class GroupShortlistItemCard extends StatelessWidget {
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: _actionButtonGap),
             Row(
               children: [
                 Expanded(
@@ -236,43 +261,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: isRemoving
-                        ? null
-                        : () {
-                            HapticFeedbackUtils.impact();
-                            onRemove();
-                          },
-                    style: removeButtonStyle,
-                    icon: isRemoving
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.delete_outline, size: 20),
-                    label: Text(
-                      L10n.get("group_shortlist_remove"),
-                      style: _plusOneFontSize(
-                        context,
-                        theme.textTheme.labelLarge,
-                      ).copyWith(
-                        color: theme.colorScheme.error,
-                        height: 1.0,
-                      ),
-                      textHeightBehavior: const TextHeightBehavior(
-                        applyHeightToFirstAscent: false,
-                        applyHeightToLastDescent: false,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
             if (isOwner && onContactLandlord != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: _actionButtonGap),
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(

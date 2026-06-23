@@ -6,6 +6,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
@@ -55,26 +56,37 @@ class ConversationTile extends StatelessWidget {
         final unreadColor = themeState.unreadIndicatorColor;
         final unreadTextColor = themeState.unreadIndicatorTextColor;
 
-        // Non–listing chats: show whoever sent the last message (mirrors the
-        // preview line). Listing marketplace: the title is always the
-        // counterparty — same avatar as [ChatHeader], not your face when you
-        // replied last.
+        // Non–listing chats and listing-group chats show whoever sent the last
+        // message (mirrors the preview line). One-to-one listing marketplace
+        // chats stay framed around the counterparty — same avatar as
+        // [ChatHeader], not your face when you replied last.
         final isListingMarketplace =
             conversationSummaryIsListingMarketplaceChat(conversation);
+        final isListingGroup = _isListingGroupConversation(conversation);
+        final keepCounterpartyIdentity = isListingMarketplace && !isListingGroup;
         final lastSenderIsCurrentUser = currentUserId != null &&
             conversation.lastMessageSenderId == currentUserId;
         final profileState = ProfileCompletionState();
-        // Listing chats title the row with the counterparty (same as [ChatHeader]).
-        // Showing the last sender's avatar there looked like the peer's face —
-        // e.g. "UyDosh" + current user's initials when you replied last.
-        final rawAvatar = isListingMarketplace
+        final lastSenderMember =
+            _memberForUserId(conversation, conversation.lastMessageSenderId);
+        final lastSenderDisplayName = lastSenderIsCurrentUser
+            ? profileState.cachedName ?? lastSenderMember?.name
+            : lastSenderMember?.name ?? conversation.otherUserName;
+        final titleText = keepCounterpartyIdentity
+            ? conversation.otherUserName ?? "Unknown User"
+            : lastSenderDisplayName ?? "Unknown User";
+        // One-to-one listing chats title the row with the counterparty (same as
+        // [ChatHeader]). Showing the last sender's avatar there looked like the
+        // peer's face — e.g. "UyDosh" + current user's initials when you
+        // replied last.
+        final rawAvatar = keepCounterpartyIdentity
             ? conversation.otherUserAvatar
             : (lastSenderIsCurrentUser
-                ? profileState.effectiveAvatarUrl
-                : conversation.otherUserAvatar);
-        final initialsName = isListingMarketplace
+                ? profileState.effectiveAvatarUrl ?? lastSenderMember?.avatarUrl
+                : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
+        final initialsName = keepCounterpartyIdentity
             ? null
-            : (lastSenderIsCurrentUser ? profileState.cachedName : null);
+            : lastSenderDisplayName;
         final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
         const avatarSize = 40.0;
         final unreadBoldName = conversation.unreadCount != null &&
@@ -131,7 +143,7 @@ class ConversationTile extends StatelessWidget {
                   iconColor: iconColor,
                 )
               : Text(
-                  conversation.otherUserName ?? "Unknown User",
+                  titleText,
                   style: TextStyle(
                     fontWeight:
                         unreadBoldName ? FontWeight.bold : FontWeight.normal,
@@ -313,5 +325,23 @@ class ConversationTile extends StatelessWidget {
     } catch (e) {
       return "";
     }
+  }
+
+  bool _isListingGroupConversation(ConversationSummary conversation) {
+    final contextType = conversation.contextType?.trim().toLowerCase();
+    final conversationType =
+        conversation.conversationType?.trim().toLowerCase();
+    return contextType == "listing_group" || conversationType == "listing_group";
+  }
+
+  ConversationMemberSummary? _memberForUserId(
+    ConversationSummary conversation,
+    int? userId,
+  ) {
+    if (userId == null) return null;
+    for (final member in conversation.members) {
+      if (member.userId == userId) return member;
+    }
+    return null;
   }
 }

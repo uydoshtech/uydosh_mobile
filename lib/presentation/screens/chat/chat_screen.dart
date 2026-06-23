@@ -39,7 +39,9 @@ import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_pill_button.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_member_profiles_sheet.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/discussed_listing.dart";
 import "package:uy_dosh/domain/models/message.dart";
@@ -67,6 +69,7 @@ import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_input.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_security_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
@@ -84,6 +87,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_rating_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -291,11 +295,6 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
 
-  /// Oval shortlist pill height; half floats above the composer panel edge.
-  static const double _groupShortlistPillHeight = 36;
-  static const double _groupShortlistPillFloatAbove =
-      _groupShortlistPillHeight / 2;
-
   /// Memoized output of [MessageGroupingUtils.groupMessagesAsItems] — invalidated when
   /// [messages] reference, [_currentUserId], or [_newMessageIds] meaningfully change.
   List<MessageGroupListItem>? _cachedGroupedItems;
@@ -322,11 +321,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _groupListingDetail?.groupContext?.canUseHousingShortlist == true;
 
   double get _composerBottomReserveHeight {
-    var height = _glassComposerEstimatedHeight;
-    if (_showGroupShortlistPill) {
-      height += _groupShortlistPillFloatAbove;
-    }
-    return height;
+    return _glassComposerEstimatedHeight;
   }
 
   Future<void> _loadGroupParticipants() async {
@@ -338,9 +333,8 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       if (!mounted) return;
       setState(() {
-        _groupParticipants = members.isNotEmpty
-            ? members
-            : _participantsFromMessages();
+        _groupParticipants =
+            members.isNotEmpty ? members : _participantsFromMessages();
       });
     } catch (e) {
       logger.d("❌ [ChatScreen] Error fetching group participants: $e");
@@ -361,17 +355,21 @@ class _ChatScreenState extends State<ChatScreen> {
       final detail = await getIt<IListingService>().getListingDetail(listingId);
       if (!mounted) return;
       final ctx = detail.groupContext;
-      if (ctx?.canUseHousingShortlist != true) return;
-      final count = ctx?.groupShortlistCount ??
-          await getIt<IListingGroupService>().getShortlistCount(
-            groupListingId: listingId,
-          );
+      final canUseShortlist = ctx?.canUseHousingShortlist == true;
+      final count = canUseShortlist
+          ? ctx?.groupShortlistCount ??
+              await getIt<IListingGroupService>().getShortlistCount(
+                groupListingId: listingId,
+              )
+          : null;
       if (!mounted) return;
       setState(() {
         _groupListingDetail = detail;
         _groupChatIsOwner = ctx?.isOwner == true;
       });
-      GroupShortlistState().setShortlistCountForGroup(listingId, count);
+      if (count != null) {
+        GroupShortlistState().setShortlistCountForGroup(listingId, count);
+      }
     } catch (e) {
       logger.d("❌ [ChatScreen] Error loading group housing context: $e");
     }
@@ -419,7 +417,15 @@ class _ChatScreenState extends State<ChatScreen> {
     return result;
   }
 
-  Widget _buildGroupShortlistFloatingPill(BuildContext context) {
+  int? _listingShareOptionNumber(ListingShareMessagePayload payload) {
+    final index = _mentionedListings().indexWhere(
+      (item) => item.listingId == payload.listingId,
+    );
+    if (index < 0) return null;
+    return index + 1;
+  }
+
+  Widget _buildGroupShortlistFooterPill(BuildContext context) {
     final listingId = widget.listingId;
     if (listingId == null) return const SizedBox.shrink();
 
@@ -430,44 +436,81 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _buildGroupParticipantsFooterPill(BuildContext context) {
+    final participants = _groupParticipants;
+    final count = participants.length;
+    final label = count > 0
+        ? "${L10n.get("group_floating_participants_label")} $count"
+        : L10n.get("group_floating_participants_label");
+
+    return _GroupParticipantsFooterPill(
+      participants: participants,
+      currentUserId: _currentUserId,
+      semanticsLabel: label,
+      onTap: participants.isEmpty
+          ? null
+          : () => unawaited(_openGroupParticipantsSheet()),
+    );
+  }
+
+  Widget _groupChatFooterRibbon({required bool blendWithGlassBackdrop}) {
+    final themeState = ThemeState();
+    final stripDecoration = blendWithGlassBackdrop
+        ? const BoxDecoration()
+        : BoxDecoration(
+            color: themeState.chatInputBarBackgroundColor,
+            border: Border(
+              bottom: BorderSide(color: themeState.borderColor, width: 0.5),
+            ),
+          );
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        MediaQuery.viewPaddingOf(context).bottom + 12,
+      ),
+      decoration: stripDecoration,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            if (_showGroupShortlistPill)
+              _buildGroupShortlistFooterPill(context),
+            if (_showGroupShortlistPill) const SizedBox(width: 10),
+            _buildGroupParticipantsFooterPill(context),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _chatComposerColumn({required bool blendWithGlassBackdrop}) {
-    final showPill = _showGroupShortlistPill;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (showPill) const SizedBox(height: _groupShortlistPillFloatAbove),
         _chatComposerWithListener(
           blendWithGlassBackdrop: blendWithGlassBackdrop,
         ),
-        QuickQuestionsWidget(
-          onQuestionTap: _onQuestionTap,
-          conversationContextType: widget.conversationContextType,
-          listingTypeId: widget.listingTypeId,
-          isViewerServiceOfferer: _isViewerServiceOfferer,
-          isViewerListingAuthor: _isViewerListingOwner,
-          blendWithGlassBackdrop: blendWithGlassBackdrop,
-        ),
+        if (_isGroupChat)
+          _groupChatFooterRibbon(blendWithGlassBackdrop: blendWithGlassBackdrop)
+        else
+          QuickQuestionsWidget(
+            onQuestionTap: _onQuestionTap,
+            conversationContextType: widget.conversationContextType,
+            listingTypeId: widget.listingTypeId,
+            isViewerServiceOfferer: _isViewerServiceOfferer,
+            isViewerListingAuthor: _isViewerListingOwner,
+            blendWithGlassBackdrop: blendWithGlassBackdrop,
+          ),
       ],
     );
   }
 
   Widget _chatComposerSection({required bool blendWithGlassBackdrop}) {
-    final showPill = _showGroupShortlistPill;
-    final composer = _chatComposerColumn(
+    return _chatComposerColumn(
       blendWithGlassBackdrop: blendWithGlassBackdrop,
-    );
-    if (!showPill) return composer;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        composer,
-        Positioned(
-          top: -_groupShortlistPillFloatAbove,
-          left: 16,
-          child: _buildGroupShortlistFloatingPill(context),
-        ),
-      ],
     );
   }
 
@@ -1261,8 +1304,8 @@ class _ChatScreenState extends State<ChatScreen> {
   EdgeInsets _messagesListPadding(BuildContext context) {
     const base = EdgeInsets.all(16);
     if (!ThemeState().isBlueTheme) return base;
-    final extra = _composerBottomReserveHeight +
-        MediaQuery.viewPaddingOf(context).bottom;
+    final extra =
+        _composerBottomReserveHeight + MediaQuery.viewPaddingOf(context).bottom;
     return base.copyWith(bottom: base.bottom + extra);
   }
 
@@ -1327,8 +1370,7 @@ class _ChatScreenState extends State<ChatScreen> {
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final enableGlass =
         AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
-    final showPill = _showGroupShortlistPill;
-    final glassPanel = ClipRRect(
+    return ClipRRect(
       borderRadius: topRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(
@@ -1343,19 +1385,6 @@ class _ChatScreenState extends State<ChatScreen> {
           child: _chatComposerColumn(blendWithGlassBackdrop: true),
         ),
       ),
-    );
-    if (!showPill) return glassPanel;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        glassPanel,
-        Positioned(
-          top: -_groupShortlistPillFloatAbove,
-          left: 16,
-          child: _buildGroupShortlistFloatingPill(context),
-        ),
-      ],
     );
   }
 
@@ -1602,12 +1631,14 @@ class _ChatScreenState extends State<ChatScreen> {
             subtitle: _chatHeaderSubtitle(),
             peerAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
             peerInitials: _isGroupChat ? null : widget.otherUserInitials,
-            groupParticipants:
-                _isGroupChat && _groupParticipants.isNotEmpty
-                    ? _groupParticipants
-                    : null,
+            groupParticipants: _isGroupChat && _groupParticipants.isNotEmpty
+                ? _groupParticipants
+                : null,
             currentUserId: _currentUserId,
             onPeerAvatarTap: _isGroupChat ? null : _navigateToUserProfile,
+            onGroupParticipantsTap: _isGroupChat
+                ? () => unawaited(_openGroupParticipantsSheet())
+                : null,
             actionBeforeMenu: widget.gigRequestId != null
                 ? _buildInviteToBookAppBarButton(context)
                 : null,
@@ -1725,6 +1756,7 @@ class _ChatScreenState extends State<ChatScreen> {
           message: message,
           payload: payload,
           rating: message.listingRating,
+          optionNumber: _listingShareOptionNumber(payload),
           isCurrentUser: isCurrentUser,
           leftAvatarInitials:
               isCurrentUser ? null : StringUtils.extractInitials(senderName),
@@ -1739,7 +1771,10 @@ class _ChatScreenState extends State<ChatScreen> {
           onOpenNextListing: nextPayload == null
               ? null
               : () => _openSharedListing(nextPayload.listingId),
-          onRate: (stars) => _setListingRating(message, stars),
+          onRate: (stars) => _openListingRatingDialog(
+            message,
+            initialStars: stars,
+          ),
         );
       }
     }
@@ -1771,8 +1806,8 @@ class _ChatScreenState extends State<ChatScreen> {
       otherUserAvatarUrl: _isGroupChat ? null : _peerAvatarUrl,
       translation: _translationsById[message.id],
       isTranslating: _translationInFlightIds.contains(message.id),
-      showOriginal: _showOriginalAll ^
-          _showOriginalMessageIds.contains(message.id),
+      showOriginal:
+          _showOriginalAll ^ _showOriginalMessageIds.contains(message.id),
       onToggleTranslation: _translationsById[message.id] == null
           ? null
           : () {
@@ -2062,11 +2097,40 @@ class _ChatScreenState extends State<ChatScreen> {
     return result;
   }
 
-  Future<void> _setListingRating(Message message, int stars) async {
+  Future<void> _openListingRatingDialog(
+    Message message, {
+    required int initialStars,
+  }) async {
+    final currentStars = message.listingRating?.myStars ?? 0;
+    final currentReasons =
+        message.listingRating?.myReasons.toSet() ?? const <String>{};
+    final result = await showListingRatingDialog(
+      context: context,
+      currentStars: initialStars,
+      initialReasonCodes: currentReasons,
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+    final reasons = result.reasons;
+    if (result.stars == currentStars &&
+        setEquals(currentReasons, reasons.toSet())) {
+      return;
+    }
+    await _setListingRating(message, result.stars, reasons: reasons);
+  }
+
+  Future<void> _setListingRating(
+    Message message,
+    int stars, {
+    List<String> reasons = const [],
+  }) async {
     try {
       final updated = await getIt<IMessagingService>().setListingRating(
         messageId: message.id,
         stars: stars,
+        reasons: reasons,
       );
       if (!mounted) return;
       setState(() {
@@ -2472,22 +2536,64 @@ class _ChatScreenState extends State<ChatScreen> {
     context.pushGigRequestDetail(id);
   }
 
+  Future<void> _openGroupParticipantsSheet() async {
+    if (!_isGroupChat || _groupParticipants.isEmpty) return;
+    UiFeedbackUtils.selection();
+
+    if (_groupListingDetail == null) {
+      await _loadGroupHousingContext();
+      if (!mounted) return;
+    }
+
+    final listingId = widget.listingId;
+    if (listingId == null) return;
+
+    final detail = _groupListingDetail;
+    final ownerUserId = detail?.user.id ??
+        widget.listingOwnerUserId ??
+        _groupParticipants.first.userId;
+    final isOwner = _groupChatIsOwner ||
+        (_currentUserId != null && _currentUserId == ownerUserId);
+
+    await showListingGroupMemberProfilesSheet(
+      context: context,
+      listingId: listingId,
+      members: _groupParticipants,
+      ownerUserId: ownerUserId,
+      currentUserId: _currentUserId,
+      isOwner: isOwner,
+      groupProgress: detail == null
+          ? null
+          : ListingGroupProgress.fromListingDetail(detail),
+      groupListingDetail: detail,
+      onMemberTap: _navigateToProfile,
+      onChanged: () {
+        unawaited(_loadGroupParticipants());
+        unawaited(_loadGroupHousingContext());
+      },
+    );
+  }
+
+  void _navigateToProfile(int userId) {
+    UiFeedbackUtils.selection();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => ListingOwnerProfileBloc(
+            getIt<IUserProfileService>(),
+            getIt<IFollowService>(),
+          ),
+          child: ListingOwnerProfileScreen(userId: userId),
+        ),
+      ),
+    );
+  }
+
   void _navigateToUserProfile() {
     // Prefer widget.otherUserId, fall back to deriving from messages
     final otherUserId = widget.otherUserId ?? _getOtherUserIdFromMessages();
     if (otherUserId != null) {
-      UiFeedbackUtils.selection();
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => BlocProvider(
-            create: (context) => ListingOwnerProfileBloc(
-              getIt<IUserProfileService>(),
-              getIt<IFollowService>(),
-            ),
-            child: ListingOwnerProfileScreen(userId: otherUserId),
-          ),
-        ),
-      );
+      _navigateToProfile(otherUserId);
     }
   }
 
@@ -2744,6 +2850,110 @@ class _ChatScreenState extends State<ChatScreen> {
             if (mounted) setState(() => _adminDeleteBusy = false);
           }
         },
+      ),
+    );
+  }
+}
+
+class _GroupParticipantsFooterPill extends StatelessWidget {
+  const _GroupParticipantsFooterPill({
+    required this.participants,
+    required this.currentUserId,
+    required this.semanticsLabel,
+    required this.onTap,
+  });
+
+  final List<ConversationMemberSummary> participants;
+  final int? currentUserId;
+  final String semanticsLabel;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final foreground = isDark ? Colors.white : theme.colorScheme.onSurface;
+    final radius = BorderRadius.circular(999);
+
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: semanticsLabel,
+      child: Tooltip(
+        message: semanticsLabel,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.10),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: radius,
+              splashColor: foreground.withValues(alpha: 0.08),
+              highlightColor: foreground.withValues(alpha: 0.05),
+              child: Ink(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    theme.colorScheme.surface,
+                  ),
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: isDark ? 0.42 : 0.12,
+                    ),
+                    width: 0.8,
+                  ),
+                ),
+                child: Opacity(
+                  opacity: onTap == null ? 0.55 : 1,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 9,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (participants.isEmpty)
+                          Icon(
+                            Icons.groups_2_outlined,
+                            size: 20,
+                            color: foreground,
+                          )
+                        else
+                          ChatParticipantAvatarStack(
+                            participants: participants,
+                            currentUserId: currentUserId,
+                            avatarSize: 22,
+                            maxVisible: 4,
+                          ),
+                        const SizedBox(width: 8),
+                        Text(
+                          L10n.get("group_floating_participants_label"),
+                          style: TextStyle(
+                            color: foreground,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
