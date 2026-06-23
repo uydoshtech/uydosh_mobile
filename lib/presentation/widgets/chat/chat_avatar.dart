@@ -64,8 +64,7 @@ class ChatAvatar extends StatelessWidget {
           color: hasAvatar ? base : null,
           boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           border: Border.all(
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+            color: isBlueTheme ? Colors.white : Colors.black,
             width: 1,
           ),
         ),

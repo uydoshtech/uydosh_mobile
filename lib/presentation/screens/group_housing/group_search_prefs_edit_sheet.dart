@@ -58,6 +58,7 @@ class _GroupSearchPrefsEditSheet extends StatefulWidget {
 class _GroupSearchPrefsEditSheetState
     extends State<_GroupSearchPrefsEditSheet> {
   late final Set<int> _stationIds;
+  final Set<int> _expandedLines = {};
   int? _locationId;
   var _saving = false;
 
@@ -92,6 +93,13 @@ class _GroupSearchPrefsEditSheetState
   void _toggleLocation(int id) {
     HapticFeedbackUtils.selection();
     setState(() => _locationId = _locationId == id ? null : id);
+  }
+
+  void _toggleLineExpanded(int line) {
+    HapticFeedbackUtils.selection();
+    setState(() {
+      if (!_expandedLines.remove(line)) _expandedLines.add(line);
+    });
   }
 
   /// Lines whose every station is selected become "whole line" markers so the
@@ -191,16 +199,26 @@ class _GroupSearchPrefsEditSheetState
                     ),
                     const SizedBox(height: 8),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 6,
+                      runSpacing: 6,
                       children: [
                         for (final loc in LocationCache.getAllLocations())
                           FilterChip(
                             label: Text(
                               LocationCache.getLocationShortName(loc.id, lang),
+                              style: theme.textTheme.bodySmall,
                             ),
                             selected: _locationId == loc.id,
                             onSelected: (_) => _toggleLocation(loc.id),
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                           ),
                       ],
                     ),
@@ -242,6 +260,7 @@ class _GroupSearchPrefsEditSheetState
     final lineColor = AppColors.getMetroLineColor(line);
     final ids = stations.map((s) => s.id).toList();
     final allSelected = ids.every(_stationIds.contains);
+    final expanded = _expandedLines.contains(line);
 
     Widget checkbox(bool value, Color color) => ThemeIcon(
           value ? Icons.check_box : Icons.check_box_outline_blank,
@@ -274,29 +293,45 @@ class _GroupSearchPrefsEditSheetState
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: onSurface.withValues(alpha: 0.6)),
                 ),
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: () => _toggleLineExpanded(line),
+                  customBorder: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: ThemeIcon(
+                      expanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: onSurface.withValues(alpha: 0.6),
+                      size: 22,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-        for (final station in stations)
-          InkWell(
-            onTap: () => _toggleStation(station.id),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 18, top: 6, bottom: 6),
-              child: Row(
-                children: [
-                  checkbox(_stationIds.contains(station.id), lineColor),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      MetroCache.getStationName(station, lang),
-                      style: theme.textTheme.bodyMedium,
+        if (expanded)
+          for (final station in stations)
+            InkWell(
+              onTap: () => _toggleStation(station.id),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 18, top: 6, bottom: 6),
+                child: Row(
+                  children: [
+                    checkbox(_stationIds.contains(station.id), lineColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        MetroCache.getStationName(station, lang),
+                        style: theme.textTheme.bodyMedium,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
         const SizedBox(height: 8),
       ],
     );

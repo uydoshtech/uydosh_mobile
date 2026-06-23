@@ -89,17 +89,14 @@ class GroupShortlistItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isLightTheme = theme.brightness == Brightness.light;
-    final openButtonBorderColor = isLightTheme ? Colors.black : Colors.white;
     final actionButtonForegroundColor =
         isLightTheme ? Colors.black87 : AppColors.textLight70;
-    final actionButtonStyle = OutlinedButton.styleFrom(
+    final actionButtonStyle = TextButton.styleFrom(
       foregroundColor: actionButtonForegroundColor,
-      side: BorderSide(color: openButtonBorderColor),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
     );
-    final removeButtonStyle = OutlinedButton.styleFrom(
+    final removeButtonStyle = TextButton.styleFrom(
       foregroundColor: theme.colorScheme.error,
-      side: BorderSide(color: theme.colorScheme.error),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
     );
     final perPersonPrice = fit.formatPerPersonPriceLabel();
@@ -195,7 +192,7 @@ class GroupShortlistItemCard extends StatelessWidget {
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: TextButton.icon(
                   onPressed: isRemoving ? null : onDiscussInGroup,
                   style: actionButtonStyle,
                   icon: const Icon(Icons.forum_outlined, size: 20),
@@ -217,7 +214,7 @@ class GroupShortlistItemCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: TextButton.icon(
                     onPressed: isRemoving
                         ? null
                         : () {
@@ -241,7 +238,7 @@ class GroupShortlistItemCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: TextButton.icon(
                     onPressed: isRemoving
                         ? null
                         : () {
@@ -278,7 +275,7 @@ class GroupShortlistItemCard extends StatelessWidget {
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: TextButton.icon(
                   onPressed: isRemoving ? null : onContactLandlord,
                   style: actionButtonStyle,
                   icon: const Icon(Icons.chat_bubble_outline, size: 20),

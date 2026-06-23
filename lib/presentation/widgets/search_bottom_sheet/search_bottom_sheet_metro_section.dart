@@ -393,10 +393,17 @@ class _SearchBottomSheetMetroSectionState
           child: _wrapStationPickerWithHintAnchor(
             TutorialTargetWrapper(
               key: widget.metroStationTutorialKey,
-              child: widget.searchFiltersState.selectedSubwayLine > 0 &&
-                      widget.currentStations.isNotEmpty
-                  ? _buildMetroStationPicker(context, theme)
-                  : _buildMetroStationPlaceholder(context, theme),
+              // Smoothly grow/shrink the plate (80 -> 220) when a line is
+              // selected/cleared instead of snapping to the new height.
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeInOutCubic,
+                alignment: Alignment.topCenter,
+                child: widget.searchFiltersState.selectedSubwayLine > 0 &&
+                        widget.currentStations.isNotEmpty
+                    ? _buildMetroStationPicker(context, theme)
+                    : _buildMetroStationPlaceholder(context, theme),
+              ),
             ),
           ),
         ),

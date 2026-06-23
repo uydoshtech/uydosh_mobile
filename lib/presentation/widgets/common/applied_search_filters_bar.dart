@@ -41,8 +41,9 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   final int? locationId;
   final int? subwayStationId;
 
-  /// Full multi-station selection. When non-empty, renders one chip per
-  /// station, collapsing a fully-selected line into a single line chip.
+  /// Full multi-station selection. A single station renders as a station chip;
+  /// multiple stations collapse into one chip per line showing a colored disk
+  /// with the count of selected stations on that line.
   final List<int>? subwayStationIds;
   final int? subwayLineId;
   final double? minPrice;
@@ -185,6 +186,13 @@ class AppliedSearchFiltersBar extends StatelessWidget {
 
     final out = <Widget>[];
 
+    final selectedStationIds =
+        (subwayStationIds != null && subwayStationIds!.isNotEmpty)
+            ? subwayStationIds!
+            : (subwayStationId != null && subwayStationId! > 0
+                ? [subwayStationId!]
+                : const <int>[]);
+
     final typeIds = listingTypeIds != null && listingTypeIds!.length > 1
         ? listingTypeIds!
         : (listingTypeId != null && listingTypeId! > 0 ? [listingTypeId!] : null);
@@ -301,7 +309,9 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       out.add(gap);
     }
 
-    final loc = locationId ?? 0;
+    // The district is dropped from the search when more than one metro station
+    // is selected (metro takes priority), so don't show a misleading chip here.
+    final loc = selectedStationIds.length > 1 ? 0 : (locationId ?? 0);
     if (loc > 0) {
       final lang = L10n.currentLanguage;
       out.add(
@@ -399,36 +409,82 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       );
     }
 
-    final stationIds = (subwayStationIds != null && subwayStationIds!.isNotEmpty)
-        ? subwayStationIds!
-        : (subwayStationId != null && subwayStationId! > 0
-            ? [subwayStationId!]
-            : const <int>[]);
+    // Compact chip for a line with several selected stations: a colored disk
+    // carrying the station count, followed by the line name.
+    Widget lineCountChip(int line, int count) {
+      final lineName = MetroCache.getLineLabel(line, lang).trim();
+      final lineColor = AppColors.getMetroLineColor(line);
+      final tooltip = lineName.isEmpty
+          ? "$count"
+          : L10n.plural(
+              "entire_line_stations",
+              count,
+              params: {"line": lineName},
+            );
+      return Tooltip(
+        message: tooltip,
+        child: Container(
+          height: chipSize,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: neumorphicChipDecoration(
+            radius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: lineColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  "$count",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                lineName.isEmpty ? L10n.get("all") : lineName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: onSurface,
+                  height: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-    if (stationIds.isNotEmpty) {
-      // Group by line so a fully-selected line collapses into one line chip,
-      // while partial selections render an individual chip per station.
-      final selectedSet = stationIds.toSet();
-      final byLine = <int, List<int>>{};
-      for (final id in stationIds) {
-        final line = MetroCache.getStationById(id)?.line ?? 0;
-        byLine.putIfAbsent(line, () => <int>[]).add(id);
-      }
-      final lines = byLine.keys.toList()..sort();
-      for (final line in lines) {
-        final allOnLine = line > 0
-            ? MetroCache.getStationsForLine(line).map((s) => s.id).toList()
-            : const <int>[];
-        final isWholeLine =
-            allOnLine.isNotEmpty && allOnLine.every(selectedSet.contains);
-        if (isWholeLine) {
-          out.add(lineChip(line));
+    if (selectedStationIds.isNotEmpty) {
+      if (selectedStationIds.length == 1) {
+        out.add(stationChip(selectedStationIds.first));
+        out.add(gap);
+      } else {
+        // Collapse many stations into one chip per line with a station count,
+        // so the ribbon stays compact instead of listing every station.
+        final byLine = <int, int>{};
+        for (final id in selectedStationIds) {
+          final line = MetroCache.getStationById(id)?.line ?? 0;
+          byLine.update(line, (v) => v + 1, ifAbsent: () => 1);
+        }
+        final lines = byLine.keys.toList()..sort();
+        for (final line in lines) {
+          out.add(lineCountChip(line, byLine[line]!));
           out.add(gap);
-        } else {
-          for (final id in byLine[line]!) {
-            out.add(stationChip(id));
-            out.add(gap);
-          }
         }
       }
     } else {

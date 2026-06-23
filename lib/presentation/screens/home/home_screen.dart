@@ -2437,6 +2437,7 @@ bool _searchFiltersSnapshotEquals(
       a.selectedSubwayLine == b.selectedSubwayLine &&
       a.selectedStationIndex == b.selectedStationIndex &&
       a.selectedStationId == b.selectedStationId &&
+      _listEquals(a.selectedStationIds, b.selectedStationIds) &&
       a.selectedGender == b.selectedGender &&
       a.minPrice == b.minPrice &&
       a.maxPrice == b.maxPrice &&

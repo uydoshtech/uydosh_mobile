@@ -131,7 +131,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
 class _ListingDetailCompatibilitySectionState
     extends State<ListingDetailCompatibilitySection> with RouteAware {
   static const double _matrixTableCornerRadius = 10;
-  static const double _matrixUserHeaderHeight = 92;
+  static const double _matrixUserHeaderHeight = 82;
 
   Timer? _scrollIntoViewTimer;
   final GlobalKey _matrixUserHeaderKey = GlobalKey();
@@ -297,10 +297,24 @@ class _ListingDetailCompatibilitySectionState
     final matrixUserIds = widget.groupPreferenceMatrix.first.cells
         .map((cell) => cell.userId)
         .toList(growable: false);
-    if (currentUserId == null) return matrixUserIds;
+    // Current user always pinned first; everyone else is ordered by their
+    // match percentage with the viewer (highest first). Members without a
+    // computed score sink to the bottom, preserving their matrix order.
+    final others = matrixUserIds
+        .where((id) => id != currentUserId)
+        .toList()
+      ..sort((a, b) {
+        final pa = _matrixMemberPercent(a);
+        final pb = _matrixMemberPercent(b);
+        if (pa == null && pb == null) return 0;
+        if (pa == null) return 1;
+        if (pb == null) return -1;
+        return pb.compareTo(pa);
+      });
     return [
-      if (matrixUserIds.contains(currentUserId)) currentUserId,
-      ...matrixUserIds.where((id) => id != currentUserId),
+      if (currentUserId != null && matrixUserIds.contains(currentUserId))
+        currentUserId,
+      ...others,
     ];
   }
 
@@ -566,10 +580,17 @@ class _ListingDetailCompatibilitySectionState
             color: textColor,
           ),
         ),
-        if (percent != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            "$percent%",
+        const SizedBox(height: 2),
+        // Always reserve the percent line's height so columns without a score
+        // (e.g. the current user's own column) keep their avatar/name aligned
+        // with the scored columns.
+        Visibility(
+          visible: percent != null,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: Text(
+            "${percent ?? 0}%",
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -579,7 +600,7 @@ class _ListingDetailCompatibilitySectionState
               color: percentColor,
             ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -1275,17 +1296,7 @@ class _ListingDetailCompatibilitySectionState
     // green/orange/red icon colors instead of tinted cell fills.
     final useStatusIconColors = isBlueTheme;
     final notSpecifiedLabel = L10n.get("not_specified");
-    final currentUserId =
-        widget.currentUserId ?? UserListingState().currentUserId;
-    final matrixUserIds = widget.groupPreferenceMatrix.first.cells
-        .map((cell) => cell.userId)
-        .toList(growable: false);
-    final orderedUserIds = currentUserId == null
-        ? matrixUserIds
-        : [
-            if (matrixUserIds.contains(currentUserId)) currentUserId,
-            ...matrixUserIds.where((id) => id != currentUserId),
-          ];
+    final orderedUserIds = _orderedMatrixUserIds();
     final cellsByRowAndUserId = {
       for (final row in widget.groupPreferenceMatrix)
         row: {

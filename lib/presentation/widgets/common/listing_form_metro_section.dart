@@ -11,7 +11,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line and station selection for create/edit listing forms.
-/// Displays side-by-side pickers for line (optional) and station.
+/// Displays stacked pickers for line (optional) and station on separate rows.
 class ListingFormMetroSection extends StatefulWidget {
   const ListingFormMetroSection({
     required this.selectedSubwayLine,
@@ -24,10 +24,15 @@ class ListingFormMetroSection extends StatefulWidget {
     required this.onStationChanged,
     required this.onDismissKeyboard,
     this.embeddedInPlate = false,
+    this.pickerHeight = 80,
     super.key,
   });
 
   final bool embeddedInPlate;
+
+  /// Height of the line/station wheel pickers. Larger values reveal more
+  /// adjacent options (e.g. neighbouring stations) at once.
+  final double pickerHeight;
   final int selectedSubwayLine;
   final int selectedStationIndex;
   final List<SubwayStation> currentStations;
@@ -109,20 +114,17 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: LabeledFieldOverlay(
-            label: L10n.get("select_metro_line_optional"),
-            child: _buildLinePicker(context),
-          ),
+        LabeledFieldOverlay(
+          label: L10n.get("select_metro_line_optional"),
+          child: _buildLinePicker(context),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: LabeledFieldOverlay(
-            label: L10n.get("metro_station_label"),
-            child: _buildStationPicker(context),
-          ),
+        const SizedBox(height: 10),
+        LabeledFieldOverlay(
+          label: L10n.get("metro_station_label"),
+          child: _buildStationPicker(context),
         ),
       ],
     );
@@ -131,7 +133,7 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
   Widget _buildLinePicker(BuildContext context) {
     return Container(
       decoration: _pickerDecoration(context),
-      height: 80,
+      height: widget.pickerHeight,
       child: Row(
         children: [
           Expanded(
@@ -254,7 +256,7 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
     if (widget.currentStations.isNotEmpty) {
       return Container(
         decoration: _pickerDecoration(context),
-        height: 80,
+        height: widget.pickerHeight,
         child: Row(
           children: [
             Expanded(
@@ -338,7 +340,7 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
   }) {
     return Container(
       decoration: _pickerDecoration(context),
-      height: 80,
+      height: widget.pickerHeight,
       child: Center(
         child:
             child ??

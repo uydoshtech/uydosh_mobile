@@ -14,6 +14,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
     required this.amenityIds,
     this.cityId,
     this.subwayStationId, // Made optional
+    this.subwayStationIds, // Multi-station selection (demand-side listings)
     this.subwayLineId, // Add subway line ID parameter
     this.moveInDate, // Add move-in date parameter
     this.privateRoom, // Add private room parameter
@@ -31,6 +32,7 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
   final List<int> amenityIds;
   final int? cityId;
   final int? subwayStationId; // Made optional
+  final List<int>? subwayStationIds; // Multi-station selection
   final int? subwayLineId; // Add subway line ID
   final String? moveInDate; // Add move-in date field
   final bool? privateRoom; // Add private room field
@@ -70,6 +72,12 @@ class CreateListingRequest implements IJsonEncodable { // Make user ID optional 
 
     if (groupSizeTarget != null) {
       json["groupSizeTarget"] = groupSizeTarget;
+    }
+
+    // Only include when provided so omitting it (e.g. the single-screen edit
+    // form) leaves any previously saved multi-station set untouched server-side.
+    if (subwayStationIds != null) {
+      json["subwayStationIds"] = subwayStationIds;
     }
 
     return json;
