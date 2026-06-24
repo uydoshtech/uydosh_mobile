@@ -27,7 +27,7 @@ class SuspiciousMessageBottomSheet {
         final radius = BorderRadius.circular(18);
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.only(bottom: 12),
           child: GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(

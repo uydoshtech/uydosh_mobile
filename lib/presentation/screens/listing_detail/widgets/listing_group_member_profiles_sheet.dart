@@ -77,6 +77,23 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
   final _otherController = TextEditingController();
   String? _selectedReasonKey;
 
+  IconData _reasonIcon(String reasonKey) {
+    switch (reasonKey) {
+      case "group_remove_reason_inactive":
+        return Icons.schedule_rounded;
+      case "group_remove_reason_rules":
+        return Icons.gavel_rounded;
+      case "group_remove_reason_not_fit":
+        return Icons.group_remove_rounded;
+      case "group_remove_reason_member_request":
+        return Icons.logout_rounded;
+      case _otherReasonKey:
+        return Icons.more_horiz_rounded;
+      default:
+        return Icons.info_outline_rounded;
+    }
+  }
+
   @override
   void dispose() {
     _otherController.dispose();
@@ -151,12 +168,14 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
               runSpacing: 8,
               children: [
                 for (final reasonKey in _reasonKeys)
-                  ChoiceChip(
-                    label: Text(L10n.get(reasonKey)),
-                    selected: _selectedReasonKey == reasonKey,
-                    onSelected: (selected) {
+                  _RemovalReasonChip(
+                    label: L10n.get(reasonKey),
+                    icon: _reasonIcon(reasonKey),
+                    isSelected: _selectedReasonKey == reasonKey,
+                    onTap: () {
                       setState(() {
-                        _selectedReasonKey = selected ? reasonKey : null;
+                        _selectedReasonKey =
+                            _selectedReasonKey == reasonKey ? null : reasonKey;
                       });
                     },
                   ),
@@ -208,6 +227,73 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
   }
 }
 
+class _RemovalReasonChip extends StatelessWidget {
+  const _RemovalReasonChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final chipColor = ListingDetailThemeHelper.amenityChipBackgroundColor;
+    final borderColor = ListingDetailThemeHelper.amenityChipBorderColor;
+    final foregroundColor = isSelected
+        ? (ThemeState().isBlueTheme ? Colors.white : scheme.primary)
+        : ListingDetailThemeHelper.amenityIconColor;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? borderColor.withValues(
+                    alpha: ThemeState().isBlueTheme ? 0.24 : 0.12)
+                : chipColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? foregroundColor : borderColor,
+              width: isSelected ? 1.4 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThemeIcon(icon, size: 17, color: foregroundColor),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: foregroundColor,
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future<bool> showListingGroupMemberProfilesSheet({
   required BuildContext context,
   required int listingId,
@@ -228,22 +314,25 @@ Future<bool> showListingGroupMemberProfilesSheet({
     builder: (sheetContext) {
       final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
       return Padding(
-        padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
-        child: GlassBottomSheetSurface(
-          borderRadius: BorderRadius.circular(18),
-          child: Material(
-            type: MaterialType.transparency,
-            child: _ListingGroupMemberProfilesSheet(
-              listingId: listingId,
-              members: members,
-              ownerUserId: ownerUserId,
-              currentUserId: currentUserId,
-              isOwner: isOwner,
-              groupProgress: groupProgress,
-              memberCompatibility: memberCompatibility,
-              groupListingDetail: groupListingDetail,
-              onMemberTap: onMemberTap,
-              onChanged: onChanged,
+        padding: EdgeInsets.only(bottom: bottomInset + 12),
+        child: SizedBox(
+          width: MediaQuery.sizeOf(sheetContext).width,
+          child: GlassBottomSheetSurface(
+            borderRadius: BorderRadius.circular(18),
+            child: Material(
+              type: MaterialType.transparency,
+              child: _ListingGroupMemberProfilesSheet(
+                listingId: listingId,
+                members: members,
+                ownerUserId: ownerUserId,
+                currentUserId: currentUserId,
+                isOwner: isOwner,
+                groupProgress: groupProgress,
+                memberCompatibility: memberCompatibility,
+                groupListingDetail: groupListingDetail,
+                onMemberTap: onMemberTap,
+                onChanged: onChanged,
+              ),
             ),
           ),
         ),

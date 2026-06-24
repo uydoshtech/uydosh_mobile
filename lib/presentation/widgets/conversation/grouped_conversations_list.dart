@@ -707,6 +707,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                                 color: textColor,
                               ),
                               iconColor: iconColor,
+                              iconSize: 24.6,
                               titleMaxLines: 2,
                             ),
                             const SizedBox(height: 4),

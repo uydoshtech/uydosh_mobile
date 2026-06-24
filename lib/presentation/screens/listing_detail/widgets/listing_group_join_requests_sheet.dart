@@ -30,7 +30,7 @@ Future<void> showListingGroupJoinRequestsSheet({
     builder: (sheetContext) {
       final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
       return Padding(
-        padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
+        padding: EdgeInsets.only(bottom: bottomInset + 12),
         child: GlassBottomSheetSurface(
           borderRadius: BorderRadius.circular(18),
           child: Material(

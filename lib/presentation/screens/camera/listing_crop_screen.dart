@@ -301,7 +301,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         return Theme(
           data: darkTheme,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            padding: const EdgeInsets.only(bottom: 12),
             child: GlassBottomSheetSurface(
               borderRadius: radius,
               child: Material(

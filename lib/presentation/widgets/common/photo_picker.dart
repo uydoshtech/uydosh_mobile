@@ -284,7 +284,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
         final theme = Theme.of(context);
         final radius = const BorderRadius.vertical(top: Radius.circular(20));
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.only(bottom: 12),
           child: GlassBottomSheetSurface(
             borderRadius: radius,
             child: Material(

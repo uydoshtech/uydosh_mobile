@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/pending_listing_moderation_state.dart";
@@ -154,8 +155,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 headerIcon: Icons.manage_accounts,
                 titleKey: "admin_panel_category_management",
                 expanded: _expandedCategories.contains(0),
-                onHeaderTap: () =>
-                    _toggleCategory(0, isLastBlock: !isAdmin),
+                onHeaderTap: () => _toggleCategory(0, isLastBlock: !isAdmin),
                 children: [
                   if (isAdmin) ...[
                     _AdminMenuRow(
@@ -190,16 +190,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminComplaintsScreen(),
+                            builder: (context) => const AdminComplaintsScreen(),
                           ),
                         );
                       },
                     ),
                     _AdminMenuRow(
                       icon: Icons.home_work_outlined,
-                      titleKey:
-                          "admin_panel_section_listing_complaints",
+                      titleKey: "admin_panel_section_listing_complaints",
                       iconColor: iconColor,
                       onTap: () {
                         Navigator.of(context).push(
@@ -228,19 +226,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       );
                     },
                   ),
-                  _AdminMenuRow(
-                    icon: Icons.work_outline,
-                    titleKey: "admin_panel_section_gig_moderation",
-                    iconColor: iconColor,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const AdminGigModerationQueueScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                  if (AppConfig.servicesFeatureEnabled)
+                    _AdminMenuRow(
+                      icon: Icons.work_outline,
+                      titleKey: "admin_panel_section_gig_moderation",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminGigModerationQueueScreen(),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
               if (isAdmin) ...[
@@ -250,8 +249,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.map_outlined,
                   titleKey: "admin_panel_category_maps",
                   expanded: _expandedCategories.contains(1),
-                  onHeaderTap: () =>
-                      _toggleCategory(1, isLastBlock: false),
+                  onHeaderTap: () => _toggleCategory(1, isLastBlock: false),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.map_outlined,
@@ -286,8 +284,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminSubwayMapScreen(),
+                            builder: (context) => const AdminSubwayMapScreen(),
                           ),
                         );
                       },
@@ -300,8 +297,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.insights_outlined,
                   titleKey: "admin_panel_category_analytics",
                   expanded: _expandedCategories.contains(2),
-                  onHeaderTap: () =>
-                      _toggleCategory(2, isLastBlock: false),
+                  onHeaderTap: () => _toggleCategory(2, isLastBlock: false),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.analytics_outlined,
@@ -338,20 +334,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   headerIcon: Icons.settings_outlined,
                   titleKey: "admin_panel_category_settings",
                   expanded: _expandedCategories.contains(3),
-                  onHeaderTap: () =>
-                      _toggleCategory(3, isLastBlock: true),
+                  onHeaderTap: () => _toggleCategory(3, isLastBlock: true),
                   children: [
                     _AdminMenuRow(
                       icon: Icons.import_export,
                       titleKey: "admin_panel_section_telegram_sync",
                       iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
+                      onTap: () async {
+                        await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminTelegramSyncScreen(),
                           ),
                         );
+                        if (!mounted) return;
+                        unawaited(PendingListingModerationState().refresh());
                       },
                     ),
                     _AdminMenuRow(

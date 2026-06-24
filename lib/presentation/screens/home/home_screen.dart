@@ -1754,7 +1754,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         final theme = Theme.of(context);
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.only(bottom: 16),
           child: LiquidGlassPlate(
             borderRadius: BorderRadius.circular(20),
             sigma: 18,

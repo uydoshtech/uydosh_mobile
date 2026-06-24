@@ -453,7 +453,7 @@ class _RatingCategoryCard extends StatelessWidget {
   }
 }
 
-class _InlineStars extends StatelessWidget {
+class _InlineStars extends StatefulWidget {
   const _InlineStars({
     required this.stars,
     required this.onChanged,
@@ -463,26 +463,129 @@ class _InlineStars extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   @override
+  State<_InlineStars> createState() => _InlineStarsState();
+}
+
+class _InlineStarsState extends State<_InlineStars>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    )..value = 1;
+  }
+
+  @override
+  void didUpdateWidget(covariant _InlineStars oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stars != widget.stars) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap(int value) {
+    widget.onChanged(value);
+    _controller.forward(from: 0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
         final value = index + 1;
-        final filled = stars >= value;
+        final filled = widget.stars >= value;
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => onChanged(value),
+          onTap: () => _handleTap(value),
           child: Padding(
             padding: const EdgeInsets.only(right: 2),
-            child: Icon(
-              filled ? Icons.star_rounded : Icons.star_outline_rounded,
-              size: 25,
-              color: filled ? AppColors.warning : scheme.onSurfaceVariant,
+            child: _AnimatedRatingStar(
+              controller: _controller,
+              index: index,
+              filled: filled,
+              outlineColor: scheme.onSurfaceVariant,
             ),
           ),
         );
       }),
     );
+  }
+}
+
+class _AnimatedRatingStar extends StatelessWidget {
+  const _AnimatedRatingStar({
+    required this.controller,
+    required this.index,
+    required this.filled,
+    required this.outlineColor,
+  });
+
+  final AnimationController controller;
+  final int index;
+  final bool filled;
+  final Color outlineColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!filled) {
+      return Icon(
+        Icons.star_outline_rounded,
+        size: 25,
+        color: outlineColor,
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        final progress = _starProgress(controller.value, index);
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              Icons.star_outline_rounded,
+              size: 25,
+              color: outlineColor,
+            ),
+            Opacity(
+              opacity: progress,
+              child: Transform.translate(
+                offset: Offset((1 - progress) * -4, 0),
+                child: Transform.scale(
+                  scale: 0.86 + (progress * 0.14),
+                  child: child,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      child: const Icon(
+        Icons.star_rounded,
+        size: 25,
+        color: AppColors.warning,
+      ),
+    );
+  }
+
+  static double _starProgress(double value, int index) {
+    const delayPerStar = 0.10;
+    const activeWindow = 0.46;
+    final start = index * delayPerStar;
+    final progress =
+        ((value - start) / activeWindow).clamp(0.0, 1.0).toDouble();
+    return Curves.easeOutCubic.transform(progress);
   }
 }

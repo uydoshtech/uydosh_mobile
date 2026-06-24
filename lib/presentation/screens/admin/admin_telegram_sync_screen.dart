@@ -4,6 +4,7 @@ import "package:flutter/services.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/pending_listing_moderation_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -434,6 +435,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
         skipListingImport: _skipListingImport,
         importUserId: importUserId,
       );
+      if ((r.listingImport?.imported ?? 0) > 0) {
+        await PendingListingModerationState().refresh();
+      }
       setStateIfMounted(() {
         _lastResult = r;
         _running = false;

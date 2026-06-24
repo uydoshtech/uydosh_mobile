@@ -411,7 +411,7 @@ class MainNavigationState extends State<MainNavigation>
             ? Colors.black.withValues(alpha: 0.78)
             : theme.colorScheme.onSurfaceVariant;
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.only(bottom: 12),
           child: GlassBottomSheetSurface(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: Material(
