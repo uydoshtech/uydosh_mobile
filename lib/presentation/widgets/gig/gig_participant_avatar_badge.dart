@@ -1,7 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
-import "package:uy_dosh/base/utils/string_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 
 /// Circular avatar chip with optional ring stroke (clips image to oval).
 ///
@@ -28,56 +26,15 @@ class GigParticipantAvatarBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final url = resolveAvatarUrl(avatarUrl);
 
-    Widget fallback() {
-      final initials = StringUtils.extractInitials(displayName ?? "");
-      return Container(
-        color: scheme.primaryContainer,
-        alignment: Alignment.center,
-        child: initials.isNotEmpty
-            ? Text(
-                initials,
-                style: TextStyle(
-                  color: scheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                  fontSize: size * 0.35,
-                ),
-              )
-            : Icon(
-                Icons.person,
-                size: size * 0.5,
-                color: scheme.onPrimaryContainer,
-              ),
-      );
-    }
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipOval(
-              child: url != null
-                  ? NetworkAvatarImage(
-                      imageUrl: url,
-                      size: size,
-                      fallback: fallback(),
-                    )
-                  : fallback(),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: ringColor, width: 1.5),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return UyDoshAvatar(
+      avatarUrl: avatarUrl,
+      displayName: displayName,
+      customSize: size,
+      backgroundColor: scheme.primaryContainer,
+      foregroundColor: scheme.onPrimaryContainer,
+      borderColor: ringColor,
+      borderWidth: 1.5,
     );
   }
 }

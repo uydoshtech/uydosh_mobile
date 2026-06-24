@@ -21,7 +21,6 @@ import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
-import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_item_card.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -52,6 +51,9 @@ String? _listingOwnerAvatarUrlFromProfile(UserProfile profile) {
   }
   return null;
 }
+
+const _shortlistSheetTopChromeHeight = 70.0;
+const _shortlistSheetNavigationHeight = 46.0;
 
 Future<void> showListingGroupShortlistSheet({
   required BuildContext context,
@@ -514,129 +516,182 @@ class _ListingGroupShortlistSheetState
     );
   }
 
+  void _openGroupHousingSearch(ListingDetail groupDetail) {
+    Navigator.of(context).pop();
+    GroupHousingFlow.openSearch(
+      context: context,
+      groupListingDetail: groupDetail,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
     final mediaQuery = MediaQuery.of(context);
-    final maxHeight =
-        (mediaQuery.size.height - mediaQuery.padding.top - 24) * 0.82;
+    final maxSheetHeight = (mediaQuery.size.height -
+            mediaQuery.padding.top -
+            mediaQuery.padding.bottom -
+            24) *
+        0.82;
+    final reservedHeight = _shortlistSheetTopChromeHeight +
+        (_rows.length > 1 ? _shortlistSheetNavigationHeight : 0);
+    final maxCarouselHeight =
+        (maxSheetHeight - reservedHeight).clamp(0.0, maxSheetHeight).toDouble();
     final scheme = Theme.of(context).colorScheme;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 10),
-        Center(
-          child: Container(
-            width: 38,
-            height: 4,
-            decoration: BoxDecoration(
-              color: scheme.onSurface.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(99),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          child: Text(
-            GroupHousingFlow.savedListingsLabel(_rows.length),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-        ),
-        if (_loading)
-          const SizedBox(
-            height: 200,
-            child: Center(child: HouseLoadingIndicator()),
-          )
-        else if (_rows.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: UydoshEmptyColumn(
-              title: L10n.get("group_shortlist_empty_title"),
-              subtitle: L10n.get("group_shortlist_empty_subtitle"),
-              action: FilledButton.icon(
-                onPressed: groupDetail == null
-                    ? null
-                    : () {
-                        Navigator.of(context).pop();
-                        GroupHousingFlow.openSearch(
-                          context: context,
-                          groupListingDetail: groupDetail,
-                        );
-                      },
-                icon: const Icon(Icons.search),
-                label: Text(L10n.get("group_find_housing")),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxSheetHeight),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 10),
+          Center(
+            child: Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.onSurface.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(99),
               ),
             ),
-          )
-        else
-          _ExpandablePageView(
-            controller: _pageController,
-            itemCount: _rows.length,
-            maxHeight: maxHeight,
-            onPageChanged: (page) {
-              setState(() => _currentPage = page);
-            },
-            itemBuilder: (context, index) {
-              final row = _rows[index];
-              final fit = groupDetail == null
-                  ? const GroupHousingListingFit(
-                      budget: GroupHousingBudgetFit.unknown,
-                      location: GroupHousingLocationFit.unknown,
-                    )
-                  : GroupHousingListingFit.evaluate(
-                      groupListing: groupDetail,
-                      housingListing: row.listing,
-                    );
-              final isRemoving = _removingId == row.listing.id;
-              final hasGroupChat =
-                  groupDetail?.groupContext?.hasGroupChat == true;
-
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-                child: GroupShortlistItemCard(
-                  item: row.item,
-                  listing: row.listing,
-                  fit: fit,
-                  ownerName: row.ownerName,
-                  ownerAvatarUrl: row.ownerAvatarUrl,
-                  isOwner: widget.isOwner,
-                  isRemoving: isRemoving,
-                  currentUserId: _currentUserId,
-                  onOpen: () => _openListing(row),
-                  onRemove: () => _confirmRemove(row),
-                  onRate: (stars) => _editRating(row, stars),
-                  onContactLandlord:
-                      widget.isOwner ? () => _contactLandlord(row) : null,
-                  onDiscussInGroup:
-                      hasGroupChat ? () => _discussInGroup(row) : null,
-                ),
-              );
-            },
           ),
-        if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
-        if (!_loading && _rows.isNotEmpty && groupDetail != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push<void>(
-                  MaterialPageRoute<void>(
-                    builder: (_) => GroupHousingSearchScreen(
-                      groupListingDetail: groupDetail,
-                    ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 12, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    GroupHousingFlow.savedListingsLabel(_rows.length),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (!_loading && _rows.isNotEmpty && groupDetail != null) ...[
+                  const SizedBox(width: 8),
+                  _ContinueSearchPillButton(
+                    onPressed: () => _openGroupHousingSearch(groupDetail),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (_loading)
+            const SizedBox(
+              height: 200,
+              child: Center(child: HouseLoadingIndicator()),
+            )
+          else if (_rows.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: UydoshEmptyColumn(
+                title: L10n.get("group_shortlist_empty_title"),
+                subtitle: L10n.get("group_shortlist_empty_subtitle"),
+                action: FilledButton.icon(
+                  onPressed: groupDetail == null
+                      ? null
+                      : () => _openGroupHousingSearch(groupDetail),
+                  icon: const Icon(Icons.search),
+                  label: Text(L10n.get("group_find_housing")),
+                ),
+              ),
+            )
+          else
+            _ExpandablePageView(
+              controller: _pageController,
+              itemCount: _rows.length,
+              maxHeight: maxCarouselHeight,
+              onPageChanged: (page) {
+                setState(() => _currentPage = page);
+              },
+              itemBuilder: (context, index) {
+                final row = _rows[index];
+                final fit = groupDetail == null
+                    ? const GroupHousingListingFit(
+                        budget: GroupHousingBudgetFit.unknown,
+                        location: GroupHousingLocationFit.unknown,
+                      )
+                    : GroupHousingListingFit.evaluate(
+                        groupListing: groupDetail,
+                        housingListing: row.listing,
+                      );
+                final isRemoving = _removingId == row.listing.id;
+                final hasGroupChat =
+                    groupDetail?.groupContext?.hasGroupChat == true;
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+                  child: GroupShortlistItemCard(
+                    item: row.item,
+                    listing: row.listing,
+                    fit: fit,
+                    ownerName: row.ownerName,
+                    ownerAvatarUrl: row.ownerAvatarUrl,
+                    isOwner: widget.isOwner,
+                    isRemoving: isRemoving,
+                    currentUserId: _currentUserId,
+                    onOpen: () => _openListing(row),
+                    onRemove: () => _confirmRemove(row),
+                    onRate: (stars) => _editRating(row, stars),
+                    onContactLandlord:
+                        widget.isOwner ? () => _contactLandlord(row) : null,
+                    onDiscussInGroup:
+                        hasGroupChat ? () => _discussInGroup(row) : null,
                   ),
                 );
               },
-              icon: const Icon(Icons.search),
-              label: Text(L10n.get("group_find_housing")),
+            ),
+          if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContinueSearchPillButton extends StatelessWidget {
+  const _ContinueSearchPillButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final label = L10n.get("group_continue_search");
+
+    return Tooltip(
+      message: label,
+      child: Material(
+        color: scheme.onSurface.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search, size: 18, color: scheme.onSurface),
+                const SizedBox(width: 7),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 }
@@ -719,8 +774,11 @@ class _ExpandablePageViewState extends State<_ExpandablePageView> {
           widget.onPageChanged(page);
         },
         itemBuilder: (context, index) {
+          final canScrollVertically = _heights[index] > widget.maxHeight;
           return SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
+            physics: canScrollVertically
+                ? const BouncingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
             child: _MeasureSize(
               onChange: (size) => _setHeight(index, size.height),
               child: widget.itemBuilder(context, index),

@@ -5,12 +5,14 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
@@ -30,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
@@ -50,6 +53,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   late final ListingsBloc _bloc;
   final _scrollController = ScrollController();
   List<int> _excludeUserIds = [];
+  List<ConversationMemberSummary> _groupMembers = const [];
+  int? _currentUserId;
   GroupSearchPrefs? _searchPrefs;
 
   @override
@@ -65,6 +70,7 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
       );
     }
     _scrollController.addListener(_onScroll);
+    unawaited(_loadCurrentUserId());
     _loadParticipantsAndSearch();
   }
 
@@ -77,11 +83,21 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
 
   Future<void> _loadParticipantsAndSearch() async {
     final detail = widget.groupListingDetail;
+    var membersForUi = const <ConversationMemberSummary>[];
     try {
       final members = await getIt<IListingGroupService>().listMembers(
         listingId: detail.id,
       );
       _excludeUserIds = members.map((m) => m.userId).toSet().toList();
+      membersForUi = members
+          .map(
+            (m) => ConversationMemberSummary(
+              userId: m.userId,
+              name: m.name,
+              avatarUrl: m.avatarUrl,
+            ),
+          )
+          .toList(growable: false);
     } catch (_) {
       _excludeUserIds = [detail.userId];
     }
@@ -96,7 +112,14 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
       _searchPrefs = null;
     }
     if (!mounted) return;
+    setState(() => _groupMembers = membersForUi);
     _runSearch();
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final userId = await SessionManager.getUserId();
+    if (!mounted) return;
+    setState(() => _currentUserId = userId);
   }
 
   void _runSearch({bool refresh = false}) {
@@ -208,15 +231,32 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    L10n.getWithParams(
-                      "group_housing_search_banner",
-                      params: {
-                        "count": _groupSizeLabel,
-                        "budget": perPerson,
-                      },
-                    ),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  Row(
+                    children: [
+                      if (_groupMembers.isNotEmpty) ...[
+                        ChatParticipantAvatarStack(
+                          participants: _groupMembers,
+                          currentUserId: _currentUserId,
+                          avatarSize: 24,
+                          maxVisible: 5,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(
+                        child: Text(
+                          L10n.getWithParams(
+                            "group_housing_search_banner",
+                            params: {
+                              "count": _groupSizeLabel,
+                              "budget": perPerson,
+                            },
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -229,6 +269,9 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                             isOwner: detail.groupContext?.isOwner == true,
                             groupListingDetail: detail,
                           ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
                           icon: const ThemeIcon(Icons.bookmark, size: 18),
                           label: ListenableBuilder(
                             listenable: GroupShortlistState(),
@@ -237,6 +280,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                                   .shortlistCountForGroup(detail.id);
                               return Text(
                                 GroupHousingFlow.savedListingsLabel(count),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               );
                             },
                           ),
@@ -245,8 +290,15 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                       const SizedBox(width: 8),
                       OutlinedButton.icon(
                         onPressed: _editSearchArea,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
                         icon: const ThemeIcon(Icons.travel_explore, size: 18),
-                        label: Text(L10n.get("group_search_area")),
+                        label: Text(
+                          L10n.get("group_search_area"),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),

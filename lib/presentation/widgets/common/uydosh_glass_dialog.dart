@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Frosted-glass dialog surface that gives every app popup the same "liquid
@@ -154,17 +155,52 @@ class UydoshGlassDialog extends StatelessWidget {
       ),
     );
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: insetPadding,
-      clipBehavior: Clip.none,
-      child: Semantics(
-        scopesRoute: true,
-        explicitChildNodes: true,
-        namesRoute: semanticLabel != null,
-        label: semanticLabel,
-        child: card,
+    return _UydoshDialogRouteTransition(
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: insetPadding,
+        clipBehavior: Clip.none,
+        child: Semantics(
+          scopesRoute: true,
+          explicitChildNodes: true,
+          namesRoute: semanticLabel != null,
+          label: semanticLabel,
+          child: card,
+        ),
+      ),
+    );
+  }
+}
+
+class _UydoshDialogRouteTransition extends StatelessWidget {
+  const _UydoshDialogRouteTransition({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+      return child;
+    }
+    if (!AnimationSettingsState().uiAnimationsEnabled) {
+      return child;
+    }
+
+    final routeAnimation = ModalRoute.of(context)?.animation;
+    if (routeAnimation == null) return child;
+
+    final curvedAnimation = CurvedAnimation(
+      parent: routeAnimation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
+    return FadeTransition(
+      opacity: curvedAnimation,
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.965, end: 1).animate(curvedAnimation),
+        child: child,
       ),
     );
   }

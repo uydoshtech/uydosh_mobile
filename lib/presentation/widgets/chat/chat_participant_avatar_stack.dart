@@ -1,10 +1,11 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 
 /// Overlapping participant avatars for group-chat app bars.
 class ChatParticipantAvatarStack extends StatelessWidget {
@@ -105,56 +106,32 @@ class _MemberAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = resolveAvatarUrl(member.avatarUrl);
     final initials = StringUtils.extractInitials(member.name);
     final borderColor = ChatParticipantAvatarStack.avatarBorderColor(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final surface = Theme.of(context).colorScheme.surface;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final primary = Theme.of(context).colorScheme.primary;
+    final base = (!isCurrentUser && isBlueTheme)
+        ? Colors.white
+        : (isCurrentUser
+            ? Color.lerp(surface, onSurface, 0.06)!
+            : Color.lerp(surface, onSurface, 0.02)!);
+    final glyphColor = (!isCurrentUser && isBlueTheme)
+        ? primary
+        : Theme.of(context).colorScheme.onSurface;
 
-    if (url == null) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: borderColor,
-            width: ChatParticipantAvatarStack._avatarBorderWidth,
-          ),
-        ),
-        child: ChatAvatar(
-          isCurrentUser: isCurrentUser,
-          initials: initials,
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipOval(
-              child: NetworkAvatarImage(
-                imageUrl: url,
-                size: size,
-                fallback: ChatAvatar(
-                  isCurrentUser: isCurrentUser,
-                  initials: initials,
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: borderColor,
-                  width: ChatParticipantAvatarStack._avatarBorderWidth,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return UyDoshAvatar(
+      avatarUrl: member.avatarUrl,
+      initials: initials,
+      size: UyDoshAvatarSize.small,
+      customSize: size,
+      backgroundColor: base,
+      backgroundGradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+      foregroundColor: glyphColor,
+      borderColor: borderColor,
+      borderWidth: ChatParticipantAvatarStack._avatarBorderWidth,
+      fontWeight: FontWeight.w800,
     );
   }
 }

@@ -11,6 +11,7 @@ import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_geo_label_rows.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 
@@ -55,6 +56,7 @@ class GroupShortlistItemCard extends StatelessWidget {
 
   static const double _thumbSize = 72;
   static const double _actionButtonGap = 2;
+  static const double _actionButtonIconSize = 20;
 
   static List<InlineSpan> _pricePerPersonSpans({
     required String price,
@@ -219,31 +221,18 @@ class GroupShortlistItemCard extends StatelessWidget {
             ],
             if (showDiscuss) ...[
               const SizedBox(height: _actionButtonGap),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: isRemoving ? null : onDiscussInGroup,
-                  style: actionButtonStyle,
-                  icon: const Icon(Icons.forum_outlined, size: 20),
-                  label: Text(
-                    L10n.get(discussLabelKey),
-                    style: _plusOneFontSize(
-                      context,
-                      theme.textTheme.labelLarge,
-                    ).copyWith(height: 1.0),
-                    textHeightBehavior: const TextHeightBehavior(
-                      applyHeightToFirstAscent: false,
-                      applyHeightToLastDescent: false,
-                    ),
-                  ),
-                ),
+              _ShortlistActionButton(
+                onPressed: isRemoving ? null : onDiscussInGroup,
+                style: actionButtonStyle,
+                icon: Icons.forum_outlined,
+                label: L10n.get(discussLabelKey),
               ),
             ],
             const SizedBox(height: _actionButtonGap),
             Row(
               children: [
                 Expanded(
-                  child: TextButton.icon(
+                  child: _ShortlistActionButton(
                     onPressed: isRemoving
                         ? null
                         : () {
@@ -251,42 +240,19 @@ class GroupShortlistItemCard extends StatelessWidget {
                             onOpen();
                           },
                     style: actionButtonStyle,
-                    icon: const Icon(Icons.open_in_new, size: 20),
-                    label: Text(
-                      L10n.get("group_shortlist_open_listing"),
-                      style: _plusOneFontSize(
-                        context,
-                        theme.textTheme.labelLarge,
-                      ).copyWith(height: 1.0),
-                      textHeightBehavior: const TextHeightBehavior(
-                        applyHeightToFirstAscent: false,
-                        applyHeightToLastDescent: false,
-                      ),
-                    ),
+                    icon: Icons.open_in_new,
+                    label: L10n.get("group_shortlist_open_listing"),
                   ),
                 ),
               ],
             ),
             if (isOwner && onContactLandlord != null) ...[
               const SizedBox(height: _actionButtonGap),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: isRemoving ? null : onContactLandlord,
-                  style: actionButtonStyle,
-                  icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                  label: Text(
-                    L10n.get("group_shortlist_contact_landlord"),
-                    style: _plusOneFontSize(
-                      context,
-                      theme.textTheme.labelLarge,
-                    ).copyWith(height: 1.0),
-                    textHeightBehavior: const TextHeightBehavior(
-                      applyHeightToFirstAscent: false,
-                      applyHeightToLastDescent: false,
-                    ),
-                  ),
-                ),
+              _ShortlistActionButton(
+                onPressed: isRemoving ? null : onContactLandlord,
+                style: actionButtonStyle,
+                icon: Icons.chat_bubble_outline,
+                label: L10n.get("group_shortlist_contact_landlord"),
               ),
             ],
           ],
@@ -377,6 +343,65 @@ class GroupShortlistItemCard extends StatelessWidget {
       default:
         return shortNameEn ?? nameEn ?? nameRu ?? nameUz ?? "";
     }
+  }
+}
+
+class _ShortlistActionButton extends StatelessWidget {
+  const _ShortlistActionButton({
+    required this.onPressed,
+    required this.style,
+    required this.icon,
+    required this.label,
+  });
+
+  static const double _iconSlotWidth = 26;
+  static const double _labelGap = 8;
+
+  final VoidCallback? onPressed;
+  final ButtonStyle style;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: onPressed,
+        style: style,
+        child: Row(
+          children: [
+            SizedBox(
+              width: _iconSlotWidth,
+              child: Center(
+                child: Icon(
+                  icon,
+                  size: GroupShortlistItemCard._actionButtonIconSize,
+                ),
+              ),
+            ),
+            const SizedBox(width: _labelGap),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: _plusOneFontSize(
+                  context,
+                  theme.textTheme.labelLarge,
+                ).copyWith(height: 1.0),
+                textHeightBehavior: const TextHeightBehavior(
+                  applyHeightToFirstAscent: false,
+                  applyHeightToLastDescent: false,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -596,60 +621,20 @@ class _ListingLocationRows extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (districtLabel.isNotEmpty)
-            _PlaceLabelRow(
-              icon: Icons.location_on,
-              iconColor: Colors.red,
-              label: districtLabel,
-            ),
+            ListingDistrictLabelRow(label: districtLabel),
           if (!hasPlaceLabel)
-            _PlaceLabelRow(
-              icon: Icons.location_on,
-              iconColor: Colors.red,
+            ListingDistrictLabelRow(
               label: GroupShortlistItemCard._fallbackLocationLabel(),
             ),
           if (stationLabel.isNotEmpty) ...[
             const SizedBox(height: 6),
-            _PlaceLabelRow(
-              icon: Icons.train,
-              iconColor: GroupShortlistItemCard.stationLineColorFor(listing),
+            ListingMetroLabelRow(
               label: stationLabel,
+              lineColor: GroupShortlistItemCard.stationLineColorFor(listing),
             ),
           ],
         ],
       ),
-    );
-  }
-}
-
-class _PlaceLabelRow extends StatelessWidget {
-  const _PlaceLabelRow({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: iconColor, size: 20),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 16,
-              color: ListingDetailThemeHelper.locationTextColor,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

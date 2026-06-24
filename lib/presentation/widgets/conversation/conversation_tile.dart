@@ -4,13 +4,12 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
@@ -53,7 +52,6 @@ class ConversationTile extends StatelessWidget {
     final iconColor = themeState.cardIconColor;
     final avatarColor = themeState.avatarColor;
     final avatarIconColor = themeState.avatarIconColor;
-    final avatarBorderColor = avatarCircleBorderColor(context);
     final unreadColor = themeState.unreadIndicatorColor;
     final unreadTextColor = themeState.unreadIndicatorTextColor;
 
@@ -87,68 +85,22 @@ class ConversationTile extends StatelessWidget {
             : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
     final initialsName =
         keepCounterpartyIdentity ? null : lastSenderDisplayName;
-    final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
-    const avatarSize = 40.0;
     final unreadBoldName = conversation.unreadCount != null &&
         conversation.unreadCount! > 0 &&
         currentUserId != null &&
         conversation.lastMessageSenderId != currentUserId;
 
-    final avatarFallback = Container(
-      width: avatarSize,
-      height: avatarSize,
-      color: avatarColor,
-      alignment: Alignment.center,
-      child: ConversationAvatarContent(
+    final avatarLeading = UyDoshAvatar(
+      avatarUrl: rawAvatar,
+      size: UyDoshAvatarSize.medium,
+      backgroundColor: avatarColor,
+      foregroundColor: avatarIconColor,
+      fallback: ConversationAvatarContent(
         conversation: conversation,
         iconColor: avatarIconColor,
         userNameOverride: initialsName,
       ),
     );
-
-    Widget avatarCircle({required Widget child}) => SizedBox(
-          width: avatarSize,
-          height: avatarSize,
-          child: Stack(
-            children: [
-              Positioned.fill(child: ClipOval(child: child)),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: avatarBorderColor, width: 1),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-    final avatarFallbackLeading = Container(
-      width: avatarSize,
-      height: avatarSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: avatarColor,
-        border: Border.all(color: avatarBorderColor, width: 1),
-      ),
-      alignment: Alignment.center,
-      child: ConversationAvatarContent(
-        conversation: conversation,
-        iconColor: avatarIconColor,
-        userNameOverride: initialsName,
-      ),
-    );
-
-    final avatarLeading = resolvedAvatarUrl != null
-        ? avatarCircle(
-            child: NetworkAvatarImage(
-              imageUrl: resolvedAvatarUrl,
-              size: avatarSize,
-              fallback: avatarFallback,
-            ),
-          )
-        : avatarFallbackLeading;
 
     final listTile = ListTile(
       onTap: onTap,
@@ -172,11 +124,20 @@ class ConversationTile extends StatelessWidget {
             )
           : Text(
               titleText,
-              style: TextStyle(
-                fontWeight:
-                    unreadBoldName ? FontWeight.bold : FontWeight.normal,
-                color: textColor,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 15,
+                        fontWeight:
+                            unreadBoldName ? FontWeight.bold : FontWeight.w600,
+                        height: 1.15,
+                        color: textColor,
+                      ) ??
+                  TextStyle(
+                    fontSize: 15,
+                    fontWeight:
+                        unreadBoldName ? FontWeight.bold : FontWeight.w600,
+                    height: 1.15,
+                    color: textColor,
+                  ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

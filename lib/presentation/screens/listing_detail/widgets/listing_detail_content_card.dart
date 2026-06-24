@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_description_translation.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_geo_label_rows.dart";
 import "package:uy_dosh/presentation/widgets/common/deferred_yandex_map.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -327,94 +328,43 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         line: transferInfo["connectedStationLine"] as int,
       );
 
-      return Row(
-        children: [
-          ThemeIcon(
-            Icons.train,
-            color: ListingDetailThemeHelper.lineColor(station.line),
-            size: 20,
+      return ListingMetroLabelRow(
+        label: MetroCache.formatStationLabel(
+          widget.getLocalizedName(
+            nameUz: station.nameUz,
+            nameRu: station.nameRu,
+            nameEn: station.nameEn,
+            language: widget.currentLanguage,
           ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              MetroCache.formatStationLabel(
-                widget.getLocalizedName(
-                  nameUz: station.nameUz,
-                  nameRu: station.nameRu,
-                  nameEn: station.nameEn,
-                  language: widget.currentLanguage,
-                ),
-                widget.currentLanguage,
-              ),
-              style: TextStyle(
-                fontSize: 15,
-                color: ListingDetailThemeHelper.locationTextColor,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+          widget.currentLanguage,
+        ),
+        lineColor: ListingDetailThemeHelper.lineColor(station.line),
+        connectedLabel: MetroCache.formatStationLabel(
+          widget.getLocalizedName(
+            nameUz: connectedStation.nameUz,
+            nameRu: connectedStation.nameRu,
+            nameEn: connectedStation.nameEn,
+            language: widget.currentLanguage,
           ),
-          const SizedBox(width: 4),
-          ThemeIcon(
-            Icons.swap_horiz,
-            color: ListingDetailThemeHelper.locationTextColor,
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          ThemeIcon(
-            Icons.train,
-            color: ListingDetailThemeHelper.lineColor(connectedStation.line),
-            size: 20,
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              MetroCache.formatStationLabel(
-                widget.getLocalizedName(
-                  nameUz: connectedStation.nameUz,
-                  nameRu: connectedStation.nameRu,
-                  nameEn: connectedStation.nameEn,
-                  language: widget.currentLanguage,
-                ),
-                widget.currentLanguage,
-              ),
-              style: TextStyle(
-                fontSize: 15,
-                color: ListingDetailThemeHelper.locationTextColor,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+          widget.currentLanguage,
+        ),
+        connectedLineColor: ListingDetailThemeHelper.lineColor(
+          connectedStation.line,
+        ),
       );
     }
 
-    return Row(
-      children: [
-        ThemeIcon(
-          Icons.train,
-          color: ListingDetailThemeHelper.lineColor(station.line),
-          size: 20,
+    return ListingMetroLabelRow(
+      label: MetroCache.formatStationLabel(
+        widget.getLocalizedName(
+          nameUz: station.nameUz,
+          nameRu: station.nameRu,
+          nameEn: station.nameEn,
+          language: widget.currentLanguage,
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            MetroCache.formatStationLabel(
-              widget.getLocalizedName(
-                nameUz: station.nameUz,
-                nameRu: station.nameRu,
-                nameEn: station.nameEn,
-                language: widget.currentLanguage,
-              ),
-              widget.currentLanguage,
-            ),
-            style: TextStyle(
-              fontSize: 15,
-              color: ListingDetailThemeHelper.locationTextColor,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
+        widget.currentLanguage,
+      ),
+      lineColor: ListingDetailThemeHelper.lineColor(station.line),
     );
   }
 
@@ -502,25 +452,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   }
 
   Widget _buildLocationsSummary(List<LocationDetail> locations) {
-    return Row(
-      children: [
-        ThemeIconFactory.detail(
-          icon: Icons.location_on,
-          color: Colors.red,
-          size: 20,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            _locationSummaryLabel(locations),
-            style: TextStyle(
-              fontSize: 15,
-              color: ListingDetailThemeHelper.locationTextColor,
-            ),
-          ),
-        ),
-      ],
-    );
+    return ListingDistrictLabelRow(label: _locationSummaryLabel(locations));
   }
 
   Widget _buildExpandedGeoList({

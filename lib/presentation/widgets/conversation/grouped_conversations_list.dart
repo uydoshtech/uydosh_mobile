@@ -7,7 +7,6 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -18,10 +17,10 @@ import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
@@ -131,9 +130,9 @@ class GroupedConversationsList extends StatefulWidget {
     /// detail. When null, the cluster stays non-interactive.
     this.onGroupListingTap,
   }) : assert(
-         leadingItemCount == 0 || leadingItemBuilder != null,
-         "leadingItemBuilder is required when leadingItemCount > 0",
-       );
+          leadingItemCount == 0 || leadingItemBuilder != null,
+          "leadingItemBuilder is required when leadingItemCount > 0",
+        );
   final List<ConversationSummary> conversations;
   final int? currentUserId;
   final Function(ConversationSummary) onConversationTap;
@@ -528,8 +527,8 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
         : hasIncomingUnread
             ? (stored ?? true)
             : (stored ?? false);
-    final canToggleExpansion = !isSingletonThreadGroup &&
-        (!onlyOneGroup || conversations.length > 1);
+    final canToggleExpansion =
+        !isSingletonThreadGroup && (!onlyOneGroup || conversations.length > 1);
     return (isExpanded: isExpanded, canToggleExpansion: canToggleExpansion);
   }
 
@@ -537,21 +536,21 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     final segment = _segments[segmentIndex];
     return switch (segment) {
       _GroupedDateHeaderSegment(:final day, :final isFirst) => DateHeaderWidget(
-        dateString: AppDateUtils.formatDateHeader(day, context),
-        date: day,
-        padding: isFirst
-            ? const EdgeInsets.only(top: 8, bottom: 6)
-            : const EdgeInsets.only(top: 4, bottom: 6),
-      ),
+          dateString: AppDateUtils.formatDateHeader(day, context),
+          date: day,
+          padding: isFirst
+              ? const EdgeInsets.only(top: 8, bottom: 6)
+              : const EdgeInsets.only(top: 4, bottom: 6),
+        ),
       _GroupedCardSegment(:final listingId, :final conversations) => () {
-        final expansion = _groupCardExpansionState(listingId, conversations);
-        return _buildGroupCard(
-          listingId: listingId,
-          conversations: conversations,
-          isExpanded: expansion.isExpanded,
-          canToggleExpansion: expansion.canToggleExpansion,
-        );
-      }(),
+          final expansion = _groupCardExpansionState(listingId, conversations);
+          return _buildGroupCard(
+            listingId: listingId,
+            conversations: conversations,
+            isExpanded: expansion.isExpanded,
+            canToggleExpansion: expansion.canToggleExpansion,
+          );
+        }(),
     };
   }
 
@@ -638,293 +637,287 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
     final unreadTextColor = themeState.unreadIndicatorTextColor;
 
     // Get location and metro station info from the first conversation
-        final firstConversation = conversations.first;
-        final hasLocation = firstConversation.locationNameUz != null ||
-            firstConversation.locationNameRu != null ||
-            firstConversation.locationNameEn != null;
-        final hasSubwayStation =
-            firstConversation.subwayStationNameUz != null ||
-                firstConversation.subwayStationNameRu != null ||
-                firstConversation.subwayStationNameEn != null;
-        final hasBudgetBadge =
-            conversationSummaryShowsBudgetBadge(firstConversation);
+    final firstConversation = conversations.first;
+    final hasLocation = firstConversation.locationNameUz != null ||
+        firstConversation.locationNameRu != null ||
+        firstConversation.locationNameEn != null;
+    final hasSubwayStation = firstConversation.subwayStationNameUz != null ||
+        firstConversation.subwayStationNameRu != null ||
+        firstConversation.subwayStationNameEn != null;
+    final hasBudgetBadge =
+        conversationSummaryShowsBudgetBadge(firstConversation);
 
-        final groupUnreadCount = _getGroupUnreadCount(conversations);
+    final groupUnreadCount = _getGroupUnreadCount(conversations);
 
-        final useLiquidGlass =
-            themeState.isBlueTheme || themeState.isLightTheme;
-        final glassTintColor = themeState.primaryColor;
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final glassTintColor = themeState.primaryColor;
 
-        return ThreeDElevatedSurface(
-          baseColor: useLiquidGlass ? glassTintColor : cardColor,
-          margin: EdgeInsets.zero,
-          useLiquidGlass: useLiquidGlass,
-          child: Column(
+    return ThreeDElevatedSurface(
+      baseColor: useLiquidGlass ? glassTintColor : cardColor,
+      margin: EdgeInsets.zero,
+      useLiquidGlass: useLiquidGlass,
+      child: Column(
+        children: [
+          // Group header. Custom Row layout (rather than [ListTile]) so we
+          // can keep the title/subtitle on the left, the unread badge +
+          // expand chevron on the right rail, and overlay the
+          // participant-avatar cluster at the geometric center of the
+          // header via a [Stack] (see [Positioned.fill] below). The
+          // overlay is wrapped in [IgnorePointer] so taps still hit the
+          // [InkWell] underneath.
+          Stack(
+            alignment: Alignment.center,
             children: [
-              // Group header. Custom Row layout (rather than [ListTile]) so we
-              // can keep the title/subtitle on the left, the unread badge +
-              // expand chevron on the right rail, and overlay the
-              // participant-avatar cluster at the geometric center of the
-              // header via a [Stack] (see [Positioned.fill] below). The
-              // overlay is wrapped in [IgnorePointer] so taps still hit the
-              // [InkWell] underneath.
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Plain [GestureDetector] (rather than [InkWell]) — the
-                  // Material ink ripple looks heavy across the full-width
-                  // glass tile when expanding/collapsing. The haptic tap
-                  // below is enough feedback on its own.
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: canToggleExpansion
-                        ? () {
-                            HapticFeedbackUtils.impact();
-                            setState(() {
-                              _expandedGroups[listingId] = !isExpanded;
-                            });
-                          }
-                        : null,
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                        16,
-                        12,
-                        12,
-                        10,
-                      ),
-                      // Avoid [IntrinsicHeight] / trailing [Spacer]: unbounded
-                      // height under vertical scroll (e.g. web) throws.
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ConversationListingTitleWithCategoryIcon(
-                                  conversation: firstConversation,
-                                  textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: textColor,
-                                  ),
-                                  iconColor: iconColor,
-                                  titleMaxLines: 2,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  L10n.plural(
-                                    "conversations_count",
-                                    conversations.length,
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: secondaryTextColor,
-                                  ),
-                                ),
-                                if (!conversationSummaryIsListingMarketplaceChat(
-                                      firstConversation,
-                                    ) &&
-                                    (firstConversation.gigOwnerName != null &&
-                                        firstConversation.gigOwnerName!
-                                            .trim()
-                                            .isNotEmpty)) ...[
-                                  const SizedBox(height: 8),
-                                  ConversationGigOwnerRow(
-                                    conversation: firstConversation,
-                                    textColor: textColor,
-                                    mutedColor: secondaryTextColor,
-                                    avatarColor: avatarColor,
-                                    avatarIconColor: avatarIconColor,
-                                  ),
-                                ],
-                                if (hasLocation ||
-                                    hasSubwayStation ||
-                                    hasBudgetBadge) ...[
-                                  const SizedBox(height: 8),
-                                  ConversationLocationInfo(
-                                    conversation: firstConversation,
-                                    textColor: secondaryTextColor,
-                                    showPrice: true,
-                                  ),
-                                ],
-                              ],
+              // Plain [GestureDetector] (rather than [InkWell]) — the
+              // Material ink ripple looks heavy across the full-width
+              // glass tile when expanding/collapsing. The haptic tap
+              // below is enough feedback on its own.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: canToggleExpansion
+                    ? () {
+                        HapticFeedbackUtils.impact();
+                        setState(() {
+                          _expandedGroups[listingId] = !isExpanded;
+                        });
+                      }
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    16,
+                    12,
+                    12,
+                    10,
+                  ),
+                  // Avoid [IntrinsicHeight] / trailing [Spacer]: unbounded
+                  // height under vertical scroll (e.g. web) throws.
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ConversationListingTitleWithCategoryIcon(
+                              conversation: firstConversation,
+                              textStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: textColor,
+                              ),
+                              iconColor: iconColor,
+                              titleMaxLines: 2,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              if (groupUnreadCount > 0) ...[
-                                Container(
-                                  width: 18,
-                                  height: 18,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Color.lerp(
-                                              unreadColor,
-                                              Colors.white,
-                                              0.32,
-                                            ) ??
-                                            unreadColor,
-                                        Color.lerp(
-                                              unreadColor,
-                                              Colors.black,
-                                              0.22,
-                                            ) ??
-                                            unreadColor,
-                                      ],
+                            const SizedBox(height: 4),
+                            Text(
+                              L10n.plural(
+                                "conversations_count",
+                                conversations.length,
+                              ),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                            if (!conversationSummaryIsListingMarketplaceChat(
+                                  firstConversation,
+                                ) &&
+                                (firstConversation.gigOwnerName != null &&
+                                    firstConversation.gigOwnerName!
+                                        .trim()
+                                        .isNotEmpty)) ...[
+                              const SizedBox(height: 8),
+                              ConversationGigOwnerRow(
+                                conversation: firstConversation,
+                                textColor: textColor,
+                                mutedColor: secondaryTextColor,
+                                avatarColor: avatarColor,
+                                avatarIconColor: avatarIconColor,
+                              ),
+                            ],
+                            if (hasLocation ||
+                                hasSubwayStation ||
+                                hasBudgetBadge) ...[
+                              const SizedBox(height: 8),
+                              ConversationLocationInfo(
+                                conversation: firstConversation,
+                                textColor: secondaryTextColor,
+                                showPrice: true,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (groupUnreadCount > 0) ...[
+                            Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color.lerp(
+                                          unreadColor,
+                                          Colors.white,
+                                          0.32,
+                                        ) ??
+                                        unreadColor,
+                                    Color.lerp(
+                                          unreadColor,
+                                          Colors.black,
+                                          0.22,
+                                        ) ??
+                                        unreadColor,
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.24,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.24,
-                                        ),
-                                        blurRadius: 6,
-                                        offset: const Offset(-2, -2),
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.22,
-                                        ),
-                                        blurRadius: 6,
-                                        offset: const Offset(2, 2),
-                                      ),
-                                    ],
+                                    blurRadius: 6,
+                                    offset: const Offset(-2, -2),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      "$groupUnreadCount",
-                                      style: TextStyle(
-                                        color: unreadTextColor,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: 0.22,
                                     ),
+                                    blurRadius: 6,
+                                    offset: const Offset(2, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "$groupUnreadCount",
+                                  style: TextStyle(
+                                    color: unreadTextColor,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                              ],
-                              if (canToggleExpansion)
-                                listingId == _groupCoachActiveListingId
-                                    ? CompositedTransformTarget(
-                                        link: _groupCoachLayerLink,
-                                        child: AnimatedRotation(
-                                          turns: isExpanded ? 0.0 : 0.5,
-                                          duration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                          child: ThemeIcon(
-                                            Icons.expand_less,
-                                            color: iconColor,
-                                          ),
-                                        ),
-                                      )
-                                    : AnimatedRotation(
-                                        turns: isExpanded ? 0.0 : 0.5,
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        curve: Curves.easeInOut,
-                                        child: ThemeIcon(
-                                          Icons.expand_less,
-                                          color: iconColor,
-                                        ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          if (canToggleExpansion)
+                            listingId == _groupCoachActiveListingId
+                                ? CompositedTransformTarget(
+                                    link: _groupCoachLayerLink,
+                                    child: AnimatedRotation(
+                                      turns: isExpanded ? 0.0 : 0.5,
+                                      duration: const Duration(
+                                        milliseconds: 300,
                                       ),
-                            ],
-                          ),
+                                      curve: Curves.easeInOut,
+                                      child: ThemeIcon(
+                                        Icons.expand_less,
+                                        color: iconColor,
+                                      ),
+                                    ),
+                                  )
+                                : AnimatedRotation(
+                                    turns: isExpanded ? 0.0 : 0.5,
+                                    duration: const Duration(
+                                      milliseconds: 300,
+                                    ),
+                                    curve: Curves.easeInOut,
+                                    child: ThemeIcon(
+                                      Icons.expand_less,
+                                      color: iconColor,
+                                    ),
+                                  ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                  // Participant cluster overlay docked in the top-right
-                  // corner of the header. Always rendered; visibility is
-                  // animated inside [_ConversationParticipantStack] so
-                  // multi-person groups can stagger per avatar instead of
-                  // one [AnimatedOpacity] over the whole stack.
-                  //
-                  // For group chats the member-avatar cluster is a tappable
-                  // shortcut to the group listing detail; for plain listing
-                  // cards it stays inert ([IgnorePointer]) so taps fall
-                  // through to the expand/collapse [GestureDetector] below.
-                  PositionedDirectional(
-                    top: 10,
-                    end: 12,
-                    child: _buildParticipantStackOverlay(
-                      listingId: listingId,
-                      conversations: conversations,
-                      isExpanded: isExpanded,
-                      avatarColor: avatarColor,
-                      avatarIconColor: avatarIconColor,
-                      ringColor: useLiquidGlass
-                          ? glassTintColor.withValues(alpha: 0.48)
-                          : cardColor,
-                    ),
-                  ),
-                ],
+                ),
               ),
-              // Group content with animation. [AnimatedCrossFade] (rather
-              // than [AnimatedSize] swapping in a [SizedBox.shrink]) keeps
-              // the conversation tiles visible while the height collapses,
-              // and fades them out in step with the size change so the
-              // closing tile feels like one continuous gesture instead of
-              // "content vanishes, then padding shrinks".
-              AnimatedCrossFade(
-                duration: const Duration(milliseconds: 280),
-                sizeCurve: Curves.easeInOut,
-                firstCurve: Curves.easeIn,
-                secondCurve: Curves.easeOut,
-                crossFadeState: isExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                firstChild: const SizedBox(width: double.infinity, height: 0),
-                secondChild: Column(
-                  children: [
-                    const Divider(height: 1),
-                    ...conversations.map(
-                      (conversation) => widget.useOutgoingInnerTiles
-                          ? OutgoingConversationTile(
-                              conversation: conversation,
-                              currentUserId: widget.currentUserId,
-                              showActivityTimeOnly: widget.showActivityTimeOnly,
-                              isGrouped: true,
-                              onTap: () =>
-                                  widget.onConversationTap(conversation),
-                              onLongPress:
-                                  widget.onConversationLongPress == null
-                                      ? null
-                                      : () => widget.onConversationLongPress!(
-                                            conversation,
-                                          ),
-                            )
-                          : ConversationTile(
-                              conversation: conversation,
-                              currentUserId: widget.currentUserId,
-                              onTap: () =>
-                                  widget.onConversationTap(conversation),
-                              isGrouped: true,
-                              showActivityTimeOnly: widget.showActivityTimeOnly,
-                              onLongPress:
-                                  widget.onConversationLongPress == null
-                                      ? null
-                                      : () => widget.onConversationLongPress!(
-                                            conversation,
-                                          ),
-                            ),
-                    ),
-                  ],
+              // Participant cluster overlay docked in the top-right
+              // corner of the header. Always rendered; visibility is
+              // animated inside [_ConversationParticipantStack] so
+              // multi-person groups can stagger per avatar instead of
+              // one [AnimatedOpacity] over the whole stack.
+              //
+              // For group chats the member-avatar cluster is a tappable
+              // shortcut to the group listing detail; for plain listing
+              // cards it stays inert ([IgnorePointer]) so taps fall
+              // through to the expand/collapse [GestureDetector] below.
+              PositionedDirectional(
+                top: 10,
+                end: 12,
+                child: _buildParticipantStackOverlay(
+                  listingId: listingId,
+                  conversations: conversations,
+                  isExpanded: isExpanded,
+                  avatarColor: avatarColor,
+                  avatarIconColor: avatarIconColor,
+                  ringColor: useLiquidGlass
+                      ? glassTintColor.withValues(alpha: 0.48)
+                      : cardColor,
                 ),
               ),
             ],
           ),
-        );
+          // Group content with animation. [AnimatedCrossFade] (rather
+          // than [AnimatedSize] swapping in a [SizedBox.shrink]) keeps
+          // the conversation tiles visible while the height collapses,
+          // and fades them out in step with the size change so the
+          // closing tile feels like one continuous gesture instead of
+          // "content vanishes, then padding shrinks".
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 280),
+            sizeCurve: Curves.easeInOut,
+            firstCurve: Curves.easeIn,
+            secondCurve: Curves.easeOut,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: Column(
+              children: [
+                const Divider(height: 1),
+                ...conversations.map(
+                  (conversation) => widget.useOutgoingInnerTiles
+                      ? OutgoingConversationTile(
+                          conversation: conversation,
+                          currentUserId: widget.currentUserId,
+                          showActivityTimeOnly: widget.showActivityTimeOnly,
+                          isGrouped: true,
+                          onTap: () => widget.onConversationTap(conversation),
+                          onLongPress: widget.onConversationLongPress == null
+                              ? null
+                              : () => widget.onConversationLongPress!(
+                                    conversation,
+                                  ),
+                        )
+                      : ConversationTile(
+                          conversation: conversation,
+                          currentUserId: widget.currentUserId,
+                          onTap: () => widget.onConversationTap(conversation),
+                          isGrouped: true,
+                          showActivityTimeOnly: widget.showActivityTimeOnly,
+                          onLongPress: widget.onConversationLongPress == null
+                              ? null
+                              : () => widget.onConversationLongPress!(
+                                    conversation,
+                                  ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   int _getGroupUnreadCount(List<ConversationSummary> conversations) {
@@ -1277,46 +1270,13 @@ class _ParticipantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = resolveAvatarUrl(avatar.url);
-
-    Widget fallback() => Container(
-          color: avatarColor,
-          alignment: Alignment.center,
-          child: avatar.fallbackContent,
-        );
-
-    // Pipeline: an explicit [SizedBox] locks the 36×36 footprint, [ClipOval]
-    // forces a perfectly circular image clip (more reliable than relying on
-    // [Container.clipBehavior] + [BoxShape.circle], which can render
-    // unevenly when the child has its own width/height), and the outer
-    // [DecoratedBox] paints the thin separator ring on top so the border
-    // never gets eaten by the clip.
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipOval(
-              child: url != null
-                  ? NetworkAvatarImage(
-                      imageUrl: url,
-                      size: size,
-                      fallback: fallback(),
-                    )
-                  : fallback(),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: ringColor, width: 1.5),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return UyDoshAvatar(
+      avatarUrl: avatar.url,
+      customSize: size,
+      backgroundColor: avatarColor,
+      borderColor: ringColor,
+      borderWidth: 1.5,
+      fallback: avatar.fallbackContent,
     );
   }
 }

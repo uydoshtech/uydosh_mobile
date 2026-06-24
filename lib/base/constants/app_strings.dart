@@ -101,8 +101,7 @@ class AppStrings {
           "Based on {scored} of {total} preferences",
       "group_compatibility_title": "Group compatibility:",
       "group_compatibility_subtitle": "Group of {count} people",
-      "group_compatibility_persons_needed_one": "{count} person needed",
-      "group_compatibility_persons_needed_other": "{count} people needed",
+      "group_compatibility_target_description": "for a group of {count} people",
       "group_compatibility_full_matches": "Full matches ({count}/{total})",
       "group_compatibility_partial_matches":
           "Partially matches ({count} of {total})",
@@ -119,6 +118,7 @@ class AppStrings {
       "view_member_profiles": "Participant profiles",
       "group_member_profiles_formed": "Group complete",
       "group_find_housing": "Find housing",
+      "group_continue_search": "Continue search",
       "group_search_area": "Search area",
       "group_search_area_hint":
           "Pick the districts and metro stations the whole group is searching.",
@@ -2131,9 +2131,7 @@ class AppStrings {
           "На основе {scored} из {total} предпочтений",
       "group_compatibility_title": "Совместимость группы:",
       "group_compatibility_subtitle": "Группа из {count} человек",
-      "group_compatibility_persons_needed_one": "нужен ещё {count} человек",
-      "group_compatibility_persons_needed_few": "нужно ещё {count} человека",
-      "group_compatibility_persons_needed_many": "нужно ещё {count} человек",
+      "group_compatibility_target_description": "в группу из {count} человек",
       "group_compatibility_full_matches": "Общие совпадения ({count}/{total})",
       "group_compatibility_partial_matches":
           "Частично совпадает ({count} из {total})",
@@ -2150,6 +2148,7 @@ class AppStrings {
       "view_member_profiles": "Профили участников",
       "group_member_profiles_formed": "Группа сформирована",
       "group_find_housing": "Найти жильё для группы",
+      "group_continue_search": "Продолжить поиск",
       "group_search_area": "Область поиска",
       "group_search_area_hint":
           "Выберите районы и станции метро, по которым ищет вся группа.",
@@ -4203,7 +4202,7 @@ class AppStrings {
           "{total} ta afzallikdan {scored} tasiga asoslangan",
       "group_compatibility_title": "Guruh mosligi:",
       "group_compatibility_subtitle": "{count} kishilik guruh",
-      "group_compatibility_persons_needed_other": "yana {count} kishi kerak",
+      "group_compatibility_target_description": "{count} kishilik guruhga",
       "group_compatibility_full_matches": "To'liq mos keladi ({count}/{total})",
       "group_compatibility_partial_matches":
           "Qisman mos keladi ({count} dan {total})",
@@ -4220,6 +4219,7 @@ class AppStrings {
       "view_member_profiles": "Ishtirokchi profillari",
       "group_member_profiles_formed": "Guruh to'ldi",
       "group_find_housing": "Uy-joy qidirish",
+      "group_continue_search": "Qidirishni davom ettirish",
       "group_search_area": "Qidiruv hududi",
       "group_search_area_hint":
           "Butun guruh qidiradigan tumanlar va metro bekatlarini tanlang.",

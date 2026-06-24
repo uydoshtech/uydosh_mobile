@@ -4,13 +4,12 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
@@ -55,7 +54,6 @@ class OutgoingConversationTile extends StatelessWidget {
     final iconColor = themeState.cardIconColor;
     final avatarColor = themeState.avatarColor;
     final avatarIconColor = themeState.avatarIconColor;
-    final avatarBorderColor = avatarCircleBorderColor(context);
     final outlineVariant = Theme.of(context).colorScheme.outlineVariant;
     final unreadColor = themeState.unreadIndicatorColor;
     final unreadTextColor = themeState.unreadIndicatorTextColor;
@@ -92,68 +90,22 @@ class OutgoingConversationTile extends StatelessWidget {
             : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
     final initialsName =
         keepCounterpartyIdentity ? null : lastSenderDisplayName;
-    final resolvedAvatarUrl = resolveAvatarUrl(rawAvatar);
-    const avatarSize = 40.0;
 
     final showFullListingBanner = !isGrouped;
     final showMarketplaceCounterpartyNameOnly =
         isGrouped && isListingMarketplace;
 
-    final avatarFallback = Container(
-      width: avatarSize,
-      height: avatarSize,
-      color: avatarColor,
-      alignment: Alignment.center,
-      child: ConversationAvatarContent(
+    final avatarLeading = UyDoshAvatar(
+      avatarUrl: rawAvatar,
+      size: UyDoshAvatarSize.medium,
+      backgroundColor: avatarColor,
+      foregroundColor: avatarIconColor,
+      fallback: ConversationAvatarContent(
         conversation: conversation,
         iconColor: avatarIconColor,
         userNameOverride: initialsName,
       ),
     );
-
-    Widget avatarCircle({required Widget child}) => SizedBox(
-          width: avatarSize,
-          height: avatarSize,
-          child: Stack(
-            children: [
-              Positioned.fill(child: ClipOval(child: child)),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: avatarBorderColor, width: 1),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-    final avatarFallbackLeading = Container(
-      width: avatarSize,
-      height: avatarSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: avatarColor,
-        border: Border.all(color: avatarBorderColor, width: 1),
-      ),
-      alignment: Alignment.center,
-      child: ConversationAvatarContent(
-        conversation: conversation,
-        iconColor: avatarIconColor,
-        userNameOverride: initialsName,
-      ),
-    );
-
-    final avatarLeading = resolvedAvatarUrl != null
-        ? avatarCircle(
-            child: NetworkAvatarImage(
-              imageUrl: resolvedAvatarUrl,
-              size: avatarSize,
-              fallback: avatarFallback,
-            ),
-          )
-        : avatarFallbackLeading;
 
     final tileBody = InkWell(
       onTap: onTap,
@@ -171,7 +123,9 @@ class OutgoingConversationTile extends StatelessWidget {
                     Text(
                       titleText,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        height: 1.15,
+                        fontWeight: FontWeight.w600,
                         color: textColor,
                       ),
                       maxLines: 1,
@@ -205,7 +159,9 @@ class OutgoingConversationTile extends StatelessWidget {
               child: Text(
                 titleText,
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  height: 1.15,
+                  fontWeight: FontWeight.w600,
                   color: textColor,
                 ),
                 maxLines: 1,

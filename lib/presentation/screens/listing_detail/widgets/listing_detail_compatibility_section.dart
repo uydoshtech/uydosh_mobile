@@ -13,7 +13,6 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
@@ -24,9 +23,9 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
@@ -159,8 +158,7 @@ class _ListingDetailCompatibilitySectionState
     widget.scrollController.addListener(_handleParentScroll);
     final isAuthenticated = AuthenticationState().isAuthenticated;
     final isProfileComplete = ProfileCompletionState().isProfileComplete;
-    _isCompatibilitySectionExpanded =
-        !isAuthenticated || !isProfileComplete;
+    _isCompatibilitySectionExpanded = !isAuthenticated || !isProfileComplete;
   }
 
   @override
@@ -213,8 +211,7 @@ class _ListingDetailCompatibilitySectionState
     _transitionAnimation = null;
 
     final secondary = ModalRoute.of(context)?.secondaryAnimation;
-    if (secondary == null ||
-        secondary.status == AnimationStatus.dismissed) {
+    if (secondary == null || secondary.status == AnimationStatus.dismissed) {
       _scheduleMatrixStickyHeaderUpdate();
       return;
     }
@@ -308,9 +305,7 @@ class _ListingDetailCompatibilitySectionState
     // Current user always pinned first; everyone else is ordered by their
     // match percentage with the viewer (highest first). Members without a
     // computed score sink to the bottom, preserving their matrix order.
-    final others = matrixUserIds
-        .where((id) => id != currentUserId)
-        .toList()
+    final others = matrixUserIds.where((id) => id != currentUserId).toList()
       ..sort((a, b) {
         final pa = _matrixMemberPercent(a);
         final pb = _matrixMemberPercent(b);
@@ -416,8 +411,7 @@ class _ListingDetailCompatibilitySectionState
         tableBox.localToGlobal(Offset(0, tableBox.size.height)).dy;
     final viewportHeight = MediaQuery.sizeOf(context).height;
 
-    final matrixVisible =
-        tableBottom > pinTop && tableTop < viewportHeight;
+    final matrixVisible = tableBottom > pinTop && tableTop < viewportHeight;
     // Pin as soon as the app bar starts covering the in-flow header, not
     // after it has fully scrolled away (that left a visible gap).
     final shouldPin = matrixVisible && headerTop < pinTop;
@@ -430,8 +424,7 @@ class _ListingDetailCompatibilitySectionState
       // on each side), but keep the avatar / text columns anchored to the
       // original in-flow table geometry so they don't shift.
       final plateLeft = tableOrigin.dx - _matrixSectionContentPadding;
-      final plateWidth =
-          tableBox.size.width + _matrixSectionContentPadding * 2;
+      final plateWidth = tableBox.size.width + _matrixSectionContentPadding * 2;
       _setMatrixStickyHeaderVisible(
         true,
         bounds: Rect.fromLTWH(
@@ -634,8 +627,7 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Color _matrixHeaderSurfaceColor() {
-    final cardBase =
-        Theme.of(context).cardTheme.color ??
+    final cardBase = Theme.of(context).cardTheme.color ??
         Theme.of(context).colorScheme.surface;
     return Color.alphaBlend(_matrixCardTintColor(), cardBase);
   }
@@ -669,8 +661,7 @@ class _ListingDetailCompatibilitySectionState
             // The plate spans the full viewport, but the avatar / text columns
             // stay pinned to the original table geometry so they don't drift.
             child: Padding(
-              padding:
-                  EdgeInsets.only(left: _matrixStickyHeaderContentLeft),
+              padding: EdgeInsets.only(left: _matrixStickyHeaderContentLeft),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: SizedBox(
@@ -713,8 +704,7 @@ class _ListingDetailCompatibilitySectionState
               // overflowing.
               child: Container(
                 alignment: Alignment.center,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border(
                     right: i == orderedUserIds.length - 1
@@ -1108,49 +1098,18 @@ class _ListingDetailCompatibilitySectionState
     required double size,
     Color? ringColor,
   }) {
-    final resolvedUrl = resolveAvatarUrl(avatarUrl);
     final borderColor =
         ringColor ?? ChatParticipantAvatarStack.avatarBorderColor(context);
     final borderWidth = ringColor != null ? 2.5 : 1.5;
-    final fallback = CircleAvatar(
-      radius: size / 2,
+
+    return UyDoshAvatar(
+      avatarUrl: avatarUrl,
+      customSize: size,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: ThemeIcon(
-        Icons.person_outline,
-        size: size * 0.45,
-        color: _getIconColor(),
-      ),
-    );
-
-    Widget avatarContent;
-    if (resolvedUrl == null) {
-      avatarContent = fallback;
-    } else {
-      avatarContent = ClipOval(
-        child: NetworkAvatarImage(
-          imageUrl: resolvedUrl,
-          size: size,
-          fallback: fallback,
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned.fill(child: avatarContent),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: borderWidth),
-              ),
-            ),
-          ),
-        ],
-      ),
+      foregroundColor: _getIconColor(),
+      borderColor: borderColor,
+      borderWidth: borderWidth,
+      fallbackIcon: Icons.person_outline,
     );
   }
 
@@ -1168,6 +1127,7 @@ class _ListingDetailCompatibilitySectionState
         ListingGroupProgress.fromListingDetail(widget.listingDetail);
     final membersNeeded =
         progress == null ? 0 : progress.target - progress.current;
+    final targetMemberCount = progress?.target ?? widget.groupMembers.length;
     final subtitleColor = _getDescriptionTextColor().withValues(alpha: 0.8);
 
     return Column(
@@ -1198,31 +1158,32 @@ class _ListingDetailCompatibilitySectionState
           children: [
             Flexible(
               child: Text(
+                membersNeeded > 0
+                    ? L10n.plural("group_members_needed", membersNeeded)
+                    : L10n.get("group_member_profiles_formed"),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: subtitleColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.circle, size: 4, color: subtitleColor),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
                 L10n.getWithParams(
-                  "group_compatibility_subtitle",
-                  params: {"count": widget.groupMembers.length.toString()},
+                  "group_compatibility_target_description",
+                  params: {"count": targetMemberCount.toString()},
                 ),
                 style: TextStyle(fontSize: 13, color: subtitleColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (membersNeeded > 0) ...[
-              const SizedBox(width: 6),
-              Icon(Icons.circle, size: 4, color: subtitleColor),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  L10n.plural(
-                    "group_compatibility_persons_needed",
-                    membersNeeded,
-                  ),
-                  style: TextStyle(fontSize: 13, color: subtitleColor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
           ],
         ),
         const SizedBox(height: 6),
@@ -1686,8 +1647,7 @@ class _ListingDetailCompatibilitySectionState
                 key: _matrixTableKey,
                 decoration: BoxDecoration(
                   border: Border.all(color: borderColor),
-                  borderRadius:
-                      BorderRadius.circular(_matrixTableCornerRadius),
+                  borderRadius: BorderRadius.circular(_matrixTableCornerRadius),
                 ),
                 child: Column(
                   children: [
@@ -2001,9 +1961,8 @@ class _ListingDetailCompatibilitySectionState
         final hasPhone = showContacts &&
             (widget.phoneNumber?.trim().isNotEmpty ?? false) &&
             widget.onPhone != null;
-        final phoneDisplay = hasPhone
-            ? _formatUzbekPhoneDisplay(widget.phoneNumber!)
-            : null;
+        final phoneDisplay =
+            hasPhone ? _formatUzbekPhoneDisplay(widget.phoneNumber!) : null;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2041,8 +2000,7 @@ class _ListingDetailCompatibilitySectionState
                             ),
                             children: [
                               TextSpan(
-                                text:
-                                    "${item.label}: ${item.currentText} ",
+                                text: "${item.label}: ${item.currentText} ",
                               ),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
@@ -2135,8 +2093,7 @@ class _ListingDetailCompatibilitySectionState
                             ),
                             children: [
                               TextSpan(
-                                text:
-                                    "${item.label}: ${item.currentText} ",
+                                text: "${item.label}: ${item.currentText} ",
                               ),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,

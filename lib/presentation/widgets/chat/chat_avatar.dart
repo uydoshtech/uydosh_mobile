@@ -1,10 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
-import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 
 /// Reusable chat avatar. Shows the user's profile picture when [avatarUrl] is
 /// provided, otherwise falls back to initials, then to a person icon.
@@ -31,10 +28,7 @@ class ChatAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final diameter = 32.0;
     final hasInitials = initials != null && initials!.trim().isNotEmpty;
-    final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl);
-    final hasAvatar = resolvedAvatarUrl != null;
     final isBlueTheme = ThemeState().isBlueTheme;
-    final borderColor = avatarCircleBorderColor(context);
 
     // Match the profile avatar's 3D chrome: gradient + neumorphic shadows.
     // Keep a subtle tint difference so "me" reads distinct.
@@ -52,64 +46,16 @@ class ChatAvatar extends StatelessWidget {
         ? primary
         : Theme.of(context).colorScheme.onSurface;
 
-    final fallback = _buildFallback(context, glyphColor, hasInitials);
-
-    return SizedBox(
-      width: diameter,
-      height: diameter,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: hasAvatar
-              ? null
-              : ThreeDSurfaceStyle.surfaceGradient(context, base),
-          color: hasAvatar ? base : null,
-          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ClipOval(
-                child: hasAvatar
-                    ? NetworkAvatarImage(
-                        imageUrl: resolvedAvatarUrl,
-                        size: diameter,
-                        fallback: fallback,
-                      )
-                    : fallback,
-              ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderColor, width: 1),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFallback(
-    BuildContext context,
-    Color glyphColor,
-    bool hasInitials,
-  ) {
-    return Center(
-      child: hasInitials
-          ? Text(
-              initials!.trim(),
-              style: TextStyle(
-                color: glyphColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-                letterSpacing: 0.3,
-              ),
-            )
-          : ThemeIcon(Icons.person, size: 16, color: glyphColor),
+    return UyDoshAvatar(
+      avatarUrl: avatarUrl,
+      initials: hasInitials ? initials : null,
+      size: UyDoshAvatarSize.small,
+      customSize: diameter,
+      backgroundColor: base,
+      backgroundGradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
+      foregroundColor: glyphColor,
+      boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      fontWeight: FontWeight.w800,
     );
   }
 }

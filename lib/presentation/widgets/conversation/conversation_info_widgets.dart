@@ -5,14 +5,13 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/utils/currency_display_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
-import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 /// Shared widgets for displaying conversation/listing info in the messages inbox.
@@ -51,40 +50,16 @@ class ConversationGigOwnerRow extends StatelessWidget {
     final name = conversation.gigOwnerName?.trim();
     if (name == null || name.isEmpty) return const SizedBox.shrink();
 
-    final url = resolveAvatarUrl(conversation.gigOwnerAvatar);
-
-    Widget fallbackAvatar() {
-      final initials = StringUtils.extractInitials(name);
-      return CircleAvatar(
-        radius: _avatarSize / 2,
-        backgroundColor: avatarColor,
-        child: initials.isNotEmpty
-            ? Text(
-                initials,
-                style: TextStyle(
-                  color: avatarIconColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              )
-            : ThemeIcon(Icons.person, color: avatarIconColor, size: 16),
-      );
-    }
-
-    final avatar = url != null
-        ? ClipOval(
-            child: NetworkAvatarImage(
-              imageUrl: url,
-              size: _avatarSize,
-              fallback: fallbackAvatar(),
-            ),
-          )
-        : fallbackAvatar();
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        avatar,
+        UyDoshAvatar(
+          avatarUrl: conversation.gigOwnerAvatar,
+          displayName: name,
+          customSize: _avatarSize,
+          backgroundColor: avatarColor,
+          foregroundColor: avatarIconColor,
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
