@@ -251,7 +251,7 @@ class GroupShortlistItemCard extends StatelessWidget {
               _ShortlistActionButton(
                 onPressed: isRemoving ? null : onContactLandlord,
                 style: actionButtonStyle,
-                icon: Icons.chat_bubble_outline,
+                icon: Icons.person_add_outlined,
                 label: L10n.get("group_shortlist_contact_landlord"),
               ),
             ],
@@ -830,41 +830,57 @@ class _EmptyRatingPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(5, (index) {
-            final stars = index + 1;
-            return InkWell(
-              onTap: onRate == null
-                  ? null
-                  : () {
-                      HapticFeedbackUtils.selectionClick();
-                      onRate!(stars);
-                    },
-              borderRadius: BorderRadius.circular(16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-                child: Icon(
-                  Icons.star_outline_rounded,
-                  size: 22,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+    final scheme = theme.colorScheme;
+    final accentColor = AppColors.getThemeAwareWarningIconColor(context);
+    final promptColor = theme.brightness == Brightness.light
+        ? Colors.black
+        : scheme.onSurfaceVariant;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentColor.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (index) {
+                final stars = index + 1;
+                return InkWell(
+                  onTap: onRate == null
+                      ? null
+                      : () {
+                          HapticFeedbackUtils.selectionClick();
+                          onRate!(stars);
+                        },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                    child: Icon(
+                      Icons.star_outline_rounded,
+                      size: 24,
+                      color: accentColor,
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              L10n.get("group_shortlist_rate_cta"),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: promptColor,
+                fontWeight: FontWeight.w700,
               ),
-            );
-          }),
+            ),
+          ],
         ),
-        Text(
-          L10n.get("group_shortlist_rate_prompt"),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.brightness == Brightness.light
-                ? Colors.black
-                : theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

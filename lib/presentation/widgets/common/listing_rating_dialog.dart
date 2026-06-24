@@ -1,30 +1,42 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
 const _listingDislikeReasons = [
   (
     code: "too_expensive",
     labelKey: "group_shortlist_dislike_reason_expensive",
+    icon: Icons.payments_rounded,
   ),
-  (code: "too_far", labelKey: "group_shortlist_dislike_reason_far"),
+  (
+    code: "too_far",
+    labelKey: "group_shortlist_dislike_reason_far",
+    icon: Icons.location_off_rounded,
+  ),
   (
     code: "bad_condition",
     labelKey: "group_shortlist_dislike_reason_condition",
+    icon: Icons.home_repair_service_rounded,
   ),
   (
     code: "owner_doubts",
     labelKey: "group_shortlist_dislike_reason_owner",
+    icon: Icons.person_search_rounded,
   ),
   (
     code: "not_enough_space",
     labelKey: "group_shortlist_dislike_reason_space",
+    icon: Icons.square_foot_rounded,
   ),
   (
     code: "bad_neighborhood",
     labelKey: "group_shortlist_dislike_reason_neighborhood",
+    icon: Icons.location_city_rounded,
   ),
 ];
 
@@ -140,7 +152,9 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                               fontSize: 13,
                               height: 1.25,
                               fontWeight: FontWeight.w500,
-                              color: scheme.onSurfaceVariant,
+                              color: ThemeState().isLightTheme
+                                  ? Colors.black
+                                  : scheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -204,42 +218,25 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                 ),
                 const SizedBox(height: 9),
                 Wrap(
-                  spacing: 7,
-                  runSpacing: 7,
+                  spacing: 10,
+                  runSpacing: 12,
                   children: _listingDislikeReasons.map((reason) {
                     final isSelected =
                         selectedReasonCodes.contains(reason.code);
-                    return ChoiceChip(
-                      label: Text(L10n.get(reason.labelKey)),
-                      selected: isSelected,
-                      onSelected: (value) {
+                    return _DislikeReasonChip(
+                      label: L10n.get(reason.labelKey),
+                      icon: reason.icon,
+                      isSelected: isSelected,
+                      onTap: () {
                         HapticFeedbackUtils.selectionClick();
                         setDialogState(() {
-                          if (value) {
-                            selectedReasonCodes.add(reason.code);
-                          } else {
+                          if (isSelected) {
                             selectedReasonCodes.remove(reason.code);
+                          } else {
+                            selectedReasonCodes.add(reason.code);
                           }
                         });
                       },
-                      selectedColor: AppColors.warning.withValues(alpha: 0.16),
-                      backgroundColor:
-                          scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                      showCheckmark: false,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppColors.warning.withValues(alpha: 0.55)
-                            : scheme.outlineVariant.withValues(alpha: 0.45),
-                      ),
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? scheme.onSurface
-                            : scheme.onSurfaceVariant,
-                        fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w600,
-                      ),
                     );
                   }).toList(),
                 ),
@@ -290,6 +287,68 @@ String _verdictForStars(int stars) {
   if (stars >= 5) return "yes";
   if (stars >= 3) return "maybe";
   return "no";
+}
+
+class _DislikeReasonChip extends StatelessWidget {
+  const _DislikeReasonChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final chipBase = isSelected
+        ? (isBlueTheme ? BlueThemeColors.warning : AppColors.warning)
+        : (isBlueTheme
+            ? BlueThemeColors.card
+            : theme.colorScheme.surfaceContainerHighest);
+    final contentColor = isSelected
+        ? Colors.white
+        : (isBlueTheme ? BlueThemeColors.textSecondary : Colors.grey[600]!);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemeIcon(
+              icon,
+              size: 18,
+              color: contentColor,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: contentColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _RatingCategoryCard extends StatelessWidget {

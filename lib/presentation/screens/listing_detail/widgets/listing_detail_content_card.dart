@@ -558,8 +558,6 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     final canShowInlineMap =
         displayStations.length <= 1 && locations.length <= 1;
     final canOpen = canShowInlineMap && widget.onOpenInYandexMaps != null;
-    final hasExpandedGeoList =
-        displayStations.length > 1 || locations.length > 1;
 
     if (!hasMap) return const SizedBox.shrink();
 
@@ -587,7 +585,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         child: ExpansionTile(
           backgroundColor: Colors.transparent,
           collapsedBackgroundColor: Colors.transparent,
-          initiallyExpanded: hasExpandedGeoList,
+          initiallyExpanded: false,
           onExpansionChanged: canShowInlineMap
               ? _onMapExpansionChanged
               : (_) => HapticFeedbackUtils.impact(),

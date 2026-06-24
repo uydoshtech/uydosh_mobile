@@ -187,6 +187,7 @@ class _ListingGroupShortlistSheetState
       currentStars: currentStars,
       initialReasonCodes: currentReasons,
       initialCategoryRatings: currentCategoryRatings,
+      prefillMissingCategoryRatings: false,
     );
     if (result == null || !mounted) return;
     final stars = result.stars;
