@@ -225,6 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// When non-null, send submits an [EditMessage] for this id instead of posting.
   int? _editingMessageId;
+  Message? _replyingToMessage;
   bool _hasLoadedMessagesForConversation =
       false; // Track if we've completed initial fetch (avoids loading when bloc is overwritten by RefreshConversations)
   final Set<int> _newMessageIds =
@@ -323,7 +324,8 @@ class _ChatScreenState extends State<ChatScreen> {
       _groupListingDetail?.groupContext?.canUseHousingShortlist == true;
 
   double get _composerBottomReserveHeight {
-    return _glassComposerEstimatedHeight;
+    return _glassComposerEstimatedHeight +
+        (_replyingToMessage == null ? 0 : 64);
   }
 
   Future<void> _loadGroupParticipants() async {
@@ -1428,13 +1430,25 @@ class _ChatScreenState extends State<ChatScreen> {
           },
         );
       },
-      child: ChatMessageInput(
-        controller: _messageController,
-        focusNode: _messageFocusNode,
-        onSend: _sendMessage,
-        isSendingMessage: _isSendingMessage,
-        blendWithGlassBackdrop: blendWithGlassBackdrop,
-        isEditingExistingMessage: _editingMessageId != null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_replyingToMessage != null)
+            _ComposerReplyPreview(
+              senderName: _messageSenderDisplayName(_replyingToMessage!),
+              preview: _messagePreviewText(_replyingToMessage!),
+              blendWithGlassBackdrop: blendWithGlassBackdrop,
+              onCancel: _clearReplyMode,
+            ),
+          ChatMessageInput(
+            controller: _messageController,
+            focusNode: _messageFocusNode,
+            onSend: _sendMessage,
+            isSendingMessage: _isSendingMessage,
+            blendWithGlassBackdrop: blendWithGlassBackdrop,
+            isEditingExistingMessage: _editingMessageId != null,
+          ),
+        ],
       ),
     );
   }
@@ -1903,6 +1917,10 @@ class _ChatScreenState extends State<ChatScreen> {
           isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
               ? () => _onLongPressOwnMessageForEdit(message)
               : null,
+      onTapReplyPreview: (replyId) => _jumpToMessageById(
+        replyId,
+        focusComposer: false,
+      ),
     );
   }
 
@@ -2054,6 +2072,16 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _jumpToMessageById(
+    int messageId, {
+    bool focusComposer = false,
+  }) {
+    return _focusExistingSharedListing(
+      messageId,
+      focusComposer: focusComposer,
+    );
+  }
+
   /// Waits until the on-screen keyboard has finished collapsing (bottom inset
   /// back to zero) so a subsequent scroll runs against a stable viewport.
   /// Bails out after a short budget in case the inset never settles.
@@ -2172,6 +2200,19 @@ class _ChatScreenState extends State<ChatScreen> {
     return result;
   }
 
+  Widget _wrapMessageForReplyGesture(Message message, Widget child) {
+    if (!_canReplyToMessage(message)) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity.abs() < 350) return;
+        _startReplyToMessage(message);
+      },
+      child: child,
+    );
+  }
+
   Future<void> _openListingRatingDialog(
     Message message, {
     required int initialStars,
@@ -2284,12 +2325,15 @@ class _ChatScreenState extends State<ChatScreen> {
             :final isCurrentUser,
             :final isLatest,
           ) =>
-            _wrapMessageForFocus(
+            _wrapMessageForReplyGesture(
               message,
-              _buildChatMessageBubble(
-                message: message,
-                isCurrentUser: isCurrentUser,
-                isLatest: isLatest,
+              _wrapMessageForFocus(
+                message,
+                _buildChatMessageBubble(
+                  message: message,
+                  isCurrentUser: isCurrentUser,
+                  isLatest: isLatest,
+                ),
               ),
             ),
         };
@@ -2357,6 +2401,55 @@ class _ChatScreenState extends State<ChatScreen> {
     return true;
   }
 
+  bool _canReplyToMessage(Message message) {
+    if (message.isDeleted == true) return false;
+    return message.messageType.toLowerCase() != "system";
+  }
+
+  void _startReplyToMessage(Message message) {
+    if (!_canReplyToMessage(message) || !mounted) return;
+    setState(() {
+      _editingMessageId = null;
+      _replyingToMessage = message;
+    });
+    HapticFeedbackUtils.lightImpact();
+    _messageFocusNode.requestFocus();
+  }
+
+  void _clearReplyMode() {
+    if (_replyingToMessage == null) return;
+    setState(() => _replyingToMessage = null);
+  }
+
+  String _messageSenderDisplayName(Message message) {
+    if (message.senderId == _currentUserId) {
+      return L10n.get("chat_reply_sender_you");
+    }
+    final name = message.sender?.profile?.name?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    final email = message.sender?.email?.trim();
+    if (email != null && email.isNotEmpty) return email;
+    if (!_isGroupChat) {
+      final peerName = widget.otherUserName?.trim();
+      if (peerName != null && peerName.isNotEmpty) return peerName;
+    }
+    return L10n.get("chat_reply_sender_unknown");
+  }
+
+  String _messagePreviewText(Message message) {
+    final listingShare = ListingShareMessageCodec.parse(message.content);
+    if (listingShare != null) return listingShare.title;
+    final listingRef = ListingRefMessageCodec.parse(message.content);
+    if (listingRef != null) {
+      return listingRef.title.trim().isEmpty
+          ? L10n.get("group_shortlist_ref_label")
+          : listingRef.title.trim();
+    }
+    final text = message.content.trim().replaceAll(RegExp(r"\s+"), " ");
+    if (text.isNotEmpty) return text;
+    return L10n.get("chat_reply_attachment_fallback");
+  }
+
   /// Opens composer edit mode, or explains that this bubble was already revised.
   void _onLongPressOwnMessageForEdit(Message message) {
     if (!_isOwnTextBubbleForLongPressEdit(message) || !mounted) return;
@@ -2376,6 +2469,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!_messageIsEditable(message) || !mounted) return;
     setState(() {
       _editingMessageId = message.id;
+      _replyingToMessage = null;
       _messageController.value = TextEditingValue(
         text: message.content,
         selection: TextSelection.collapsed(offset: message.content.length),
@@ -2447,7 +2541,9 @@ class _ChatScreenState extends State<ChatScreen> {
       _isSendingMessage = true;
     });
 
+    final replyToMessageId = _replyingToMessage?.id;
     _messageController.clear();
+    _clearReplyMode();
     ChatComposerDraftState().clearDraft(widget.conversationId);
 
     // Dismiss the keyboard once the message has been submitted so the user
@@ -2462,7 +2558,11 @@ class _ChatScreenState extends State<ChatScreen> {
       conversationId: widget.conversationId,
     );
     context.read<MessagingBloc>().add(
-          SendMessage(conversationId: widget.conversationId, content: content),
+          SendMessage(
+            conversationId: widget.conversationId,
+            content: content,
+            replyToMessageId: replyToMessageId,
+          ),
         );
   }
 
@@ -2551,7 +2651,10 @@ class _ChatScreenState extends State<ChatScreen> {
         ? question
         : question[0].toLowerCase() + question.substring(1);
     _messageController.text = "$greeting $lowercasedQuestion";
-    setState(() => _editingMessageId = null);
+    setState(() {
+      _editingMessageId = null;
+      _replyingToMessage = null;
+    });
     // Don't steal focus / open keyboard when tapping a quick question.
     // If keyboard is already open, tapping a chip should dismiss it.
     FocusScope.of(context).unfocus();
@@ -2945,6 +3048,104 @@ class _ChatScreenState extends State<ChatScreen> {
             if (mounted) setState(() => _adminDeleteBusy = false);
           }
         },
+      ),
+    );
+  }
+}
+
+class _ComposerReplyPreview extends StatelessWidget {
+  const _ComposerReplyPreview({
+    required this.senderName,
+    required this.preview,
+    required this.blendWithGlassBackdrop,
+    required this.onCancel,
+  });
+
+  final String senderName;
+  final String preview;
+  final bool blendWithGlassBackdrop;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeState = ThemeState();
+    final accent = theme.colorScheme.primary;
+    final background = blendWithGlassBackdrop
+        ? Colors.transparent
+        : themeState.chatInputBarBackgroundColor;
+    final borderColor = themeState.borderColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: background,
+        border: Border(
+          top: BorderSide(color: borderColor),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 12, 0),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 38,
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: BorderRadius.circular(99),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    ThemeIcon(
+                      Icons.reply_rounded,
+                      size: 15,
+                      color: accent,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        L10n.getWithParams(
+                          "chat_replying_to",
+                          params: {"name": senderName},
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  preview,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: L10n.get("chat_reply_cancel"),
+            onPressed: onCancel,
+            icon: const ThemeIcon(Icons.close_rounded, size: 20),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
       ),
     );
   }

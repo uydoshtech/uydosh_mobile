@@ -434,6 +434,11 @@ class AppStrings {
       "chat_edit_hold_already_edited_toast":
           "You can only change a message once—and you’ve already saved your edit.",
       "chat_message_edited_label": "Edited",
+      "chat_replying_to": "Replying to {name}",
+      "chat_reply_cancel": "Cancel reply",
+      "chat_reply_sender_you": "You",
+      "chat_reply_sender_unknown": "Message",
+      "chat_reply_attachment_fallback": "Attachment",
       "archive_failed_has_unread":
           "Can't archive: this chat has unread messages",
       "undo": "Undo",
@@ -2458,6 +2463,11 @@ class AppStrings {
       "chat_edit_hold_already_edited_toast":
           "Каждое сообщение можно изменить только один раз — вы уже сохранили правку.",
       "chat_message_edited_label": "Изменено",
+      "chat_replying_to": "Ответ для {name}",
+      "chat_reply_cancel": "Отменить ответ",
+      "chat_reply_sender_you": "Вы",
+      "chat_reply_sender_unknown": "Сообщение",
+      "chat_reply_attachment_fallback": "Вложение",
       "archive_failed_has_unread":
           "Нельзя архивировать чат с непрочитанными сообщениями",
       "undo": "Отменить",
@@ -4517,6 +4527,11 @@ class AppStrings {
       "chat_edit_hold_already_edited_toast":
           "Har bir xabarni faqat bir marta o‘zgartirish mumkin — tahriringiz allaqachon saqlangan.",
       "chat_message_edited_label": "Tahrirlangan",
+      "chat_replying_to": "{name} ga javob",
+      "chat_reply_cancel": "Javobni bekor qilish",
+      "chat_reply_sender_you": "Siz",
+      "chat_reply_sender_unknown": "Xabar",
+      "chat_reply_attachment_fallback": "Ilova",
       "archive_failed_has_unread":
           "O'qilmagan xabari bor suhbatni arxivlab bo'lmaydi",
       "undo": "Bekor qilish",

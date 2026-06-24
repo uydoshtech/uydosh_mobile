@@ -13,6 +13,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/message.dart";
 import "package:uy_dosh/domain/models/message_translation.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_bubble_with_tail.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
@@ -40,6 +41,7 @@ class MessageBubble extends StatefulWidget {
     this.onSetReaction,
     this.onClearReaction,
     this.onLongPressEditOwnMessage,
+    this.onTapReplyPreview,
   });
   final Message message;
   final bool isCurrentUser;
@@ -85,6 +87,9 @@ class MessageBubble extends StatefulWidget {
 
   /// Long-press on **own** text bubbles opens edit in the parent.
   final VoidCallback? onLongPressEditOwnMessage;
+
+  /// Tapping the quoted reply preview scrolls/highlights the original message.
+  final ValueChanged<int>? onTapReplyPreview;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -354,6 +359,10 @@ class _MessageBubbleState extends State<MessageBubble>
                                   _buildMessageContent(
                                     _displayText(),
                                     textColor,
+                                    replyPreview: _buildReplyPreview(
+                                      context,
+                                      textColor,
+                                    ),
                                   ),
                                   if (widget.translation == null &&
                                       widget.isTranslating) ...[
@@ -1131,7 +1140,86 @@ class _MessageBubbleState extends State<MessageBubble>
   static const _baseFontSize = 14.0;
   static const _emojiFontSize = 28.0; // 2x base size for emojis
 
-  Widget _buildMessageContent(String text, Color color) {
+  Widget _buildReplyPreview(BuildContext context, Color textColor) {
+    final reply = widget.message.replyToMessage;
+    if (reply == null) return const SizedBox.shrink();
+    final accent = textColor.withValues(alpha: 0.78);
+    final content = Container(
+      constraints: const BoxConstraints(maxWidth: 260),
+      padding: const EdgeInsetsDirectional.fromSTEB(9, 7, 10, 7),
+      decoration: BoxDecoration(
+        color: textColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: BorderDirectional(
+          start: BorderSide(color: accent, width: 3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _replySenderName(reply),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            _replyPreviewText(reply),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: textColor.withValues(alpha: 0.76),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              height: 1.15,
+            ),
+          ),
+        ],
+      ),
+    );
+    if (widget.onTapReplyPreview == null) return content;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () => widget.onTapReplyPreview!(reply.id),
+        child: content,
+      ),
+    );
+  }
+
+  String _replySenderName(Message reply) {
+    final name = reply.sender?.profile?.name?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    final email = reply.sender?.email?.trim();
+    if (email != null && email.isNotEmpty) return email;
+    return L10n.get("chat_reply_sender_unknown");
+  }
+
+  String _replyPreviewText(Message reply) {
+    final listingShare = ListingShareMessageCodec.parse(reply.content);
+    if (listingShare != null) return listingShare.title;
+    final listingRef = ListingRefMessageCodec.parse(reply.content);
+    if (listingRef != null) {
+      final title = listingRef.title.trim();
+      return title.isEmpty ? L10n.get("group_shortlist_ref_label") : title;
+    }
+    final text = reply.content.trim().replaceAll(RegExp(r"\s+"), " ");
+    if (text.isNotEmpty) return text;
+    return L10n.get("chat_reply_attachment_fallback");
+  }
+
+  Widget _buildMessageContent(
+    String text,
+    Color color, {
+    Widget? replyPreview,
+  }) {
     final spans = <InlineSpan>[];
     var lastEnd = 0;
 
@@ -1169,8 +1257,20 @@ class _MessageBubbleState extends State<MessageBubble>
       );
     }
 
-    return Text.rich(
+    final messageContent = Text.rich(
       TextSpan(children: spans),
+    );
+    if (replyPreview == null || widget.message.replyToMessage == null) {
+      return messageContent;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        replyPreview,
+        const SizedBox(height: 8),
+        messageContent,
+      ],
     );
   }
 
@@ -1511,8 +1611,7 @@ class _ReactionToolbarOverlayAnimatedState
         onTap: () {
           HapticFeedbackUtils.tapticChain();
           final applyReaction = widget.onEmojiChosen;
-          final matchesOpening =
-              _MessageBubbleState._reactionKeysEqualNullable(
+          final matchesOpening = _MessageBubbleState._reactionKeysEqualNullable(
             widget.selectedReactionId,
             id,
           );
