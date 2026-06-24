@@ -1437,6 +1437,9 @@ class _ChatScreenState extends State<ChatScreen> {
             _ComposerReplyPreview(
               senderName: _messageSenderDisplayName(_replyingToMessage!),
               preview: _messagePreviewText(_replyingToMessage!),
+              avatarUrl: _messageSenderAvatarUrl(_replyingToMessage!),
+              initials: _messageSenderInitials(_replyingToMessage!),
+              isCurrentUser: _replyingToMessage!.senderId == _currentUserId,
               blendWithGlassBackdrop: blendWithGlassBackdrop,
               onCancel: _clearReplyMode,
             ),
@@ -2202,13 +2205,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _wrapMessageForReplyGesture(Message message, Widget child) {
     if (!_canReplyToMessage(message)) return child;
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity.abs() < 350) return;
-        _startReplyToMessage(message);
-      },
+    return _ReplySwipeWrapper(
+      onReply: () => _startReplyToMessage(message),
       child: child,
     );
   }
@@ -2448,6 +2446,29 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = message.content.trim().replaceAll(RegExp(r"\s+"), " ");
     if (text.isNotEmpty) return text;
     return L10n.get("chat_reply_attachment_fallback");
+  }
+
+  String? _messageSenderAvatarUrl(Message message) {
+    if (message.senderId == _currentUserId) {
+      return _currentUserProfile?.avatarUrl;
+    }
+    return message.sender?.profile?.avatarUrl ??
+        (!_isGroupChat ? _peerAvatarUrl : null);
+  }
+
+  String? _messageSenderInitials(Message message) {
+    if (message.senderId == _currentUserId) {
+      return StringUtils.extractInitials(_currentUserProfile?.name);
+    }
+    final name = message.sender?.profile?.name?.trim();
+    if (name != null && name.isNotEmpty) {
+      return StringUtils.extractInitials(name);
+    }
+    final email = message.sender?.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return StringUtils.extractInitials(email);
+    }
+    return null;
   }
 
   /// Opens composer edit mode, or explains that this bubble was already revised.
@@ -3057,12 +3078,18 @@ class _ComposerReplyPreview extends StatelessWidget {
   const _ComposerReplyPreview({
     required this.senderName,
     required this.preview,
+    required this.isCurrentUser,
     required this.blendWithGlassBackdrop,
     required this.onCancel,
+    this.avatarUrl,
+    this.initials,
   });
 
   final String senderName;
   final String preview;
+  final String? avatarUrl;
+  final String? initials;
+  final bool isCurrentUser;
   final bool blendWithGlassBackdrop;
   final VoidCallback onCancel;
 
@@ -3071,79 +3098,326 @@ class _ComposerReplyPreview extends StatelessWidget {
     final theme = Theme.of(context);
     final themeState = ThemeState();
     final accent = theme.colorScheme.primary;
-    final background = blendWithGlassBackdrop
-        ? Colors.transparent
-        : themeState.chatInputBarBackgroundColor;
     final borderColor = themeState.borderColor;
+    final isDark = theme.brightness == Brightness.dark;
+    final replyLabelColor =
+        themeState.isLightTheme ? Colors.black : Colors.white;
+    final tileTint = theme.colorScheme.surface;
+    final tileFill = blendWithGlassBackdrop
+        ? tileTint.withValues(alpha: isDark ? 0.18 : 0.34)
+        : tileTint.withValues(alpha: isDark ? 0.78 : 0.86);
 
     return Container(
       decoration: BoxDecoration(
-        color: background,
+        color: blendWithGlassBackdrop
+            ? Colors.transparent
+            : themeState.chatInputBarBackgroundColor,
         border: Border(
           top: BorderSide(color: borderColor),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 12, 0),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 38,
-            decoration: BoxDecoration(
-              color: accent,
-              borderRadius: BorderRadius.circular(99),
-            ),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: blendWithGlassBackdrop ? 12 : 6,
+            sigmaY: blendWithGlassBackdrop ? 12 : 6,
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    ThemeIcon(
-                      Icons.reply_rounded,
-                      size: 15,
-                      color: accent,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        L10n.getWithParams(
-                          "chat_replying_to",
-                          params: {"name": senderName},
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: accent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  preview,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tileFill,
+                  Color.lerp(tileFill, accent, isDark ? 0.12 : 0.06)!,
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.32),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 4, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _ReplyOwnerAvatar(
+                    avatarUrl: avatarUrl,
+                    initials: initials,
+                    isCurrentUser: isCurrentUser,
+                    size: 30,
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    width: 3,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            ThemeIcon(
+                              Icons.reply_rounded,
+                              size: 15,
+                              color: replyLabelColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                L10n.getWithParams(
+                                  "chat_replying_to",
+                                  params: {"name": senderName},
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: replyLabelColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.15,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          preview,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.74,
+                            ),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            height: 1.18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: L10n.get("chat_reply_cancel"),
+                    onPressed: onCancel,
+                    icon: const ThemeIcon(Icons.close_rounded, size: 20),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          IconButton(
-            tooltip: L10n.get("chat_reply_cancel"),
-            onPressed: onCancel,
-            icon: const ThemeIcon(Icons.close_rounded, size: 20),
-            visualDensity: VisualDensity.compact,
+        ),
+      ),
+    );
+  }
+}
+
+class _ReplyOwnerAvatar extends StatelessWidget {
+  const _ReplyOwnerAvatar({
+    required this.isCurrentUser,
+    this.avatarUrl,
+    this.initials,
+    this.size = 24,
+  });
+
+  final bool isCurrentUser;
+  final String? avatarUrl;
+  final String? initials;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl);
+    final theme = Theme.of(context);
+    final hasInitials = initials != null && initials!.trim().isNotEmpty;
+    final base = isCurrentUser
+        ? Color.lerp(
+            theme.colorScheme.surface,
+            theme.colorScheme.onSurface,
+            0.06,
+          )!
+        : Color.lerp(
+            theme.colorScheme.surface,
+            theme.colorScheme.onSurface,
+            0.02,
+          )!;
+    final fallback = Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      color: base,
+      child: hasInitials
+          ? Text(
+              initials!.trim(),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: size * 0.36,
+                fontWeight: FontWeight.w800,
+              ),
+            )
+          : ThemeIcon(
+              Icons.person_rounded,
+              size: size * 0.56,
+              color: theme.colorScheme.onSurface,
+            ),
+    );
+
+    return ClipOval(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: resolvedAvatarUrl == null
+            ? fallback
+            : NetworkAvatarImage(
+                imageUrl: resolvedAvatarUrl,
+                size: size,
+                fallback: fallback,
+              ),
+      ),
+    );
+  }
+}
+
+class _ReplySwipeWrapper extends StatefulWidget {
+  const _ReplySwipeWrapper({
+    required this.child,
+    required this.onReply,
+  });
+
+  final Widget child;
+  final VoidCallback onReply;
+
+  @override
+  State<_ReplySwipeWrapper> createState() => _ReplySwipeWrapperState();
+}
+
+class _ReplySwipeWrapperState extends State<_ReplySwipeWrapper> {
+  static const double _triggerDistance = 54;
+  static const double _maxOffset = 82;
+
+  double _dragOffset = 0;
+  bool _animateBack = false;
+  bool _armed = false;
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    final delta = details.primaryDelta ?? 0;
+    final next = (_dragOffset + delta).clamp(-_maxOffset, _maxOffset);
+    final armed = next.abs() >= _triggerDistance;
+    if (armed && !_armed) {
+      HapticFeedbackUtils.lightImpact();
+    }
+    setState(() {
+      _animateBack = false;
+      _dragOffset = next.toDouble();
+      _armed = armed;
+    });
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final shouldReply =
+        _dragOffset.abs() >= _triggerDistance || velocity.abs() >= 650;
+    setState(() {
+      _animateBack = true;
+      _dragOffset = 0;
+      _armed = false;
+    });
+    if (shouldReply) {
+      widget.onReply();
+    }
+  }
+
+  void _handleDragCancel() {
+    setState(() {
+      _animateBack = true;
+      _dragOffset = 0;
+      _armed = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final direction = _dragOffset == 0 ? 1.0 : _dragOffset.sign;
+    final progress = (_dragOffset.abs() / _triggerDistance).clamp(0.0, 1.0);
+    final iconAlignment = direction < 0
+        ? AlignmentDirectional.centerEnd
+        : AlignmentDirectional.centerStart;
+    final iconPadding = direction < 0
+        ? const EdgeInsetsDirectional.only(end: 20)
+        : const EdgeInsetsDirectional.only(start: 20);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragUpdate: _handleDragUpdate,
+      onHorizontalDragEnd: _handleDragEnd,
+      onHorizontalDragCancel: _handleDragCancel,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Align(
+                alignment: iconAlignment,
+                child: Padding(
+                  padding: iconPadding,
+                  child: Opacity(
+                    opacity: progress,
+                    child: Transform.scale(
+                      scale: 0.82 + (0.18 * progress),
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.14 + (0.10 * progress),
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: ThemeIcon(
+                          Icons.reply_rounded,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            duration: _animateBack
+                ? const Duration(milliseconds: 180)
+                : Duration.zero,
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(_dragOffset, 0, 0),
+            child: widget.child,
           ),
         ],
       ),
@@ -3177,75 +3451,43 @@ class _GroupParticipantsFooterPill extends StatelessWidget {
       label: semanticsLabel,
       child: Tooltip(
         message: semanticsLabel,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
             borderRadius: radius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.10),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
+            onTap: onTap,
+            child: Ink(
+              height: 38,
+              padding: const EdgeInsetsDirectional.only(start: 8, end: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface.withValues(
+                  alpha: ThemeState().isBlueTheme ? 0.16 : 0.10,
+                ),
+                borderRadius: radius,
+                border: Border.all(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.10),
+                ),
               ),
-            ],
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: radius,
-              splashColor: foreground.withValues(alpha: 0.08),
-              highlightColor: foreground.withValues(alpha: 0.05),
-              child: Ink(
-                decoration: BoxDecoration(
-                  borderRadius: radius,
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                    context,
-                    theme.colorScheme.surface,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ChatParticipantAvatarStack(
+                    participants: participants,
+                    currentUserId: currentUserId,
+                    avatarSize: 22,
+                    maxVisible: 4,
                   ),
-                  border: Border.all(
-                    color: (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: isDark ? 0.42 : 0.12,
-                    ),
-                    width: 0.8,
-                  ),
-                ),
-                child: Opacity(
-                  opacity: onTap == null ? 0.55 : 1,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 9,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (participants.isEmpty)
-                          Icon(
-                            Icons.groups_2_outlined,
-                            size: 20,
-                            color: foreground,
-                          )
-                        else
-                          ChatParticipantAvatarStack(
-                            participants: participants,
-                            currentUserId: currentUserId,
-                            avatarSize: 22,
-                            maxVisible: 4,
-                          ),
-                        const SizedBox(width: 8),
-                        Text(
-                          L10n.get("group_floating_participants_label"),
-                          style: TextStyle(
-                            color: foreground,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            height: 1.1,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(width: 8),
+                  Text(
+                    semanticsLabel,
+                    style: TextStyle(
+                      color: foreground.withValues(
+                          alpha: onTap == null ? 0.55 : 1),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

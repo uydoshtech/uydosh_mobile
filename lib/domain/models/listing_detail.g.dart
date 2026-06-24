@@ -50,9 +50,15 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
           ? null
           : SubwayStationDetail.fromJson(
               json['subway_station'] as Map<String, dynamic>),
+      searchSubwayStations: (json['search_subway_stations'] as List<dynamic>?)
+          ?.map((e) => SubwayStationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
       location: json['location'] == null
           ? null
           : LocationDetail.fromJson(json['location'] as Map<String, dynamic>),
+      searchLocations: (json['search_locations'] as List<dynamic>?)
+          ?.map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
       amenities: (json['amenities'] as List<dynamic>?)
           ?.map((e) => Amenity.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -105,7 +111,9 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'contact_phone': instance.contactPhone,
       'contact_telegram': instance.contactTelegram,
       'subway_station': instance.subwayStation,
+      'search_subway_stations': instance.searchSubwayStations,
       'location': instance.location,
+      'search_locations': instance.searchLocations,
       'amenities': instance.amenities,
       'photos': instance.photos,
       'area_price_stats': instance.areaPriceStats,

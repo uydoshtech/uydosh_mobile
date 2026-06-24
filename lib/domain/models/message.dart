@@ -133,7 +133,7 @@ class Message with _$Message {
     // Related data
     MessageSender? sender,
     List<MessageAttachment>? attachments,
-    Message? replyToMessage,
+    @JsonKey(name: "reply_to_message") Message? replyToMessage,
     @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
     @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
     @JsonKey(

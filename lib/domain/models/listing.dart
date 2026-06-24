@@ -23,7 +23,10 @@ class Listing with _$Listing {
     @JsonKey(name: "price") required int price,
     @JsonKey(name: "min_price") int? minPrice,
     @JsonKey(name: "max_price") int? maxPrice,
-    @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "description") String? description,
+    @JsonKey(name: "is_active") required bool isActive,
+    @JsonKey(name: "created_at") required String createdAt,
+    @JsonKey(name: "updated_at") required String updatedAt,
+    @JsonKey(name: "description") String? description,
     @JsonKey(name: "city_id") int? cityId,
     @JsonKey(name: "subway_station_id") int? subwayStationId,
     @JsonKey(name: "subway_line_id") int? subwayLineId,
@@ -37,10 +40,15 @@ class Listing with _$Listing {
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
     @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
     @JsonKey(name: "room_scan_floor_area_m2") double? roomScanFloorAreaM2,
-    @JsonKey(name: "room_scan_world_plus_x_bearing_deg") double? roomScanWorldPlusXBearingDeg,
-    @JsonKey(name: "room_scan_north_correction_deg") double? roomScanNorthCorrectionDeg,
+    @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+    double? roomScanWorldPlusXBearingDeg,
+    @JsonKey(name: "room_scan_north_correction_deg")
+    double? roomScanNorthCorrectionDeg,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+    @JsonKey(name: "search_subway_stations")
+    List<SubwayStationDetail>? searchSubwayStations,
     @JsonKey(name: "location") LocationDetail? location,
+    @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
     @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
     @JsonKey(name: "amenities") List<Amenity>? amenities,
     List<Photo>? photos,
@@ -59,7 +67,8 @@ class Listing with _$Listing {
 class SubwayStationDetail with _$SubwayStationDetail {
   const factory SubwayStationDetail({
     required int id,
-    required int line, @JsonKey(name: "name_uz") String? nameUz,
+    required int line,
+    @JsonKey(name: "name_uz") String? nameUz,
     @JsonKey(name: "name_ru") String? nameRu,
     @JsonKey(name: "name_en") String? nameEn,
   }) = _SubwayStationDetail;
@@ -88,7 +97,8 @@ class LocationDetail with _$LocationDetail {
 class ListingTypeDetail with _$ListingTypeDetail {
   const factory ListingTypeDetail({
     required int id,
-    required String code, @JsonKey(name: "name_uz") String? nameUz,
+    required String code,
+    @JsonKey(name: "name_uz") String? nameUz,
     @JsonKey(name: "name_ru") String? nameRu,
     @JsonKey(name: "name_en") String? nameEn,
   }) = _ListingTypeDetail;

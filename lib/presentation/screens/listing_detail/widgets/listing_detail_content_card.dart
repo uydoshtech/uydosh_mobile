@@ -44,13 +44,17 @@ class ListingDetailContentCard extends StatefulWidget {
   final String? ownerAvatarUrl;
   final VoidCallback? onAuthorTap;
   final VoidCallback? onOpenInYandexMaps;
+
   /// Pre-formatted move-in date (avoids DateTime.parse in build).
   final String? formattedMoveInDate;
+
   /// Pre-formatted publication date (avoids DateTime.parse in build).
   final String? formattedPublicationDate;
+
   /// Pre-built amenity chips (avoids .map().toList() in build).
   final List<Widget>? amenityChips;
-  final String Function(BuildContext context, String moveInDate)? formatMoveInDate;
+  final String Function(BuildContext context, String moveInDate)?
+      formatMoveInDate;
   final String Function({
     required String language,
     String? nameUz,
@@ -209,6 +213,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         overlayEntry.remove();
       }
     }
+
     overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -217,14 +222,16 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             onTap: removeOnce,
           ),
           Positioned(
-            left: globalPosition.dx.clamp(12.0, MediaQuery.sizeOf(context).width - 150),
+            left: globalPosition.dx
+                .clamp(12.0, MediaQuery.sizeOf(context).width - 150),
             top: globalPosition.dy - 48,
             child: GestureDetector(
               onTap: removeOnce,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: ThemeState().isLightTheme
                         ? Colors.black
@@ -411,11 +418,144 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     );
   }
 
+  List<SubwayStationDetail> _effectiveSearchStations() {
+    final stations = widget.listingDetail.searchSubwayStations;
+    if (stations != null && stations.isNotEmpty) return stations;
+    final station = widget.listingDetail.subwayStation;
+    return station == null ? const <SubwayStationDetail>[] : [station];
+  }
+
+  List<LocationDetail> _effectiveSearchLocations() {
+    final locations = widget.listingDetail.searchLocations;
+    if (locations != null && locations.isNotEmpty) return locations;
+    final location = widget.listingDetail.location;
+    return location == null ? const <LocationDetail>[] : [location];
+  }
+
+  String _stationSummaryLabel(List<SubwayStationDetail> stations) {
+    if (stations.length == 1) {
+      return MetroCache.formatStationLabel(
+        widget.getLocalizedName(
+          nameUz: stations.first.nameUz,
+          nameRu: stations.first.nameRu,
+          nameEn: stations.first.nameEn,
+          language: widget.currentLanguage,
+        ),
+        widget.currentLanguage,
+      );
+    }
+    switch (widget.currentLanguage) {
+      case "uz":
+        return "${stations.length} bekat";
+      case "en":
+        return "${stations.length} stations";
+      case "ru":
+      default:
+        return "${stations.length} станций";
+    }
+  }
+
+  String _locationSummaryLabel(List<LocationDetail> locations) {
+    if (locations.length == 1) {
+      return widget.getLocalizedName(
+        nameUz: locations.first.nameUz,
+        nameRu: locations.first.nameRu,
+        nameEn: locations.first.nameEn,
+        language: widget.currentLanguage,
+      );
+    }
+    return L10n.pluralForLanguage(
+      "districts_count",
+      locations.length,
+      widget.currentLanguage,
+    );
+  }
+
+  Widget _buildSubwayStationsSummary(List<SubwayStationDetail> stations) {
+    if (stations.length == 1) return _buildSubwayStationDisplay(stations.first);
+    final lineIds = <int>[];
+    for (final station in stations) {
+      if (!lineIds.contains(station.line)) lineIds.add(station.line);
+    }
+    return Row(
+      children: [
+        for (var i = 0; i < lineIds.length; i++) ...[
+          ThemeIcon(
+            Icons.train,
+            color: ListingDetailThemeHelper.lineColor(lineIds[i]),
+            size: 20,
+          ),
+          SizedBox(width: i == lineIds.length - 1 ? 8 : 2),
+        ],
+        Expanded(
+          child: Text(
+            _stationSummaryLabel(stations),
+            style: TextStyle(
+              fontSize: 15,
+              color: ListingDetailThemeHelper.locationTextColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationsSummary(List<LocationDetail> locations) {
+    return Row(
+      children: [
+        ThemeIconFactory.detail(
+          icon: Icons.location_on,
+          color: Colors.red,
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            _locationSummaryLabel(locations),
+            style: TextStyle(
+              fontSize: 15,
+              color: ListingDetailThemeHelper.locationTextColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpandedGeoList({
+    required List<SubwayStationDetail> stations,
+    required List<LocationDetail> locations,
+  }) {
+    final showStations = stations.length > 1;
+    final showLocations = locations.length > 1;
+    if (!showStations && !showLocations) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showStations)
+          for (final station in stations) ...[
+            _buildSubwayStationDisplay(station),
+            const SizedBox(height: 8),
+          ],
+        if (showLocations)
+          for (final location in locations) ...[
+            _buildLocationsSummary([location]),
+            const SizedBox(height: 8),
+          ],
+      ],
+    );
+  }
+
   Widget _buildInlineLocationMapSection() {
-    final hasLocation = widget.listingDetail.location != null;
-    final hasSubway = widget.listingDetail.subwayStation != null;
+    final stations = _effectiveSearchStations();
+    final locations = _effectiveSearchLocations();
+    final hasLocation = locations.isNotEmpty;
+    final hasSubway = stations.isNotEmpty;
     final hasMap = hasLocation || hasSubway;
-    final canOpen = widget.onOpenInYandexMaps != null;
+    final canShowInlineMap = stations.length <= 1 && locations.length <= 1;
+    final canOpen = canShowInlineMap && widget.onOpenInYandexMaps != null;
 
     if (!hasMap) return const SizedBox.shrink();
 
@@ -423,33 +563,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasSubway) _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
+        if (hasSubway) _buildSubwayStationsSummary(stations),
         if (hasSubway && hasLocation) const SizedBox(height: 8),
-        if (hasLocation)
-          Row(
-            children: [
-              ThemeIconFactory.detail(
-                icon: Icons.location_on,
-                color: Colors.red,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.getLocalizedName(
-                    nameUz: widget.listingDetail.location!.nameUz,
-                    nameRu: widget.listingDetail.location!.nameRu,
-                    nameEn: widget.listingDetail.location!.nameEn,
-                    language: widget.currentLanguage,
-                  ),
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: ListingDetailThemeHelper.locationTextColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        if (hasLocation) _buildLocationsSummary(locations),
       ],
     );
 
@@ -475,12 +591,14 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
           collapsedIconColor: ListingDetailThemeHelper.locationTextColor,
           title: title,
           children: [
-            DeferredYandexMap(
-              apiKey: AppConfig.yandexMapsApiKey,
-              height: 250,
-              listingDetail: widget.listingDetail,
-              autoLoad: _mapAutoLoad,
-            ),
+            _buildExpandedGeoList(stations: stations, locations: locations),
+            if (canShowInlineMap)
+              DeferredYandexMap(
+                apiKey: AppConfig.yandexMapsApiKey,
+                height: 250,
+                listingDetail: widget.listingDetail,
+                autoLoad: _mapAutoLoad,
+              ),
             if (canOpen) ...[
               const SizedBox(height: 16),
               Center(
@@ -517,8 +635,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isEmpty)
               Text(
                 ListingUtils.usesPresetListingTitle(
-                      widget.listingDetail.listingTypeId,
-                    )
+                  widget.listingDetail.listingTypeId,
+                )
                     ? L10n.get(
                         ListingUtils.presetListingTitleL10nKey(
                           listingTypeId: widget.listingDetail.listingTypeId,
@@ -535,18 +653,16 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isNotEmpty)
               ListingDescriptionTranslation(
                 listingId: widget.listingDetail.id,
-                listingTitle:
-                    ListingUtils.usesPresetListingTitle(
-                          widget.listingDetail.listingTypeId,
-                        )
-                        ? L10n.get(
-                            ListingUtils.presetListingTitleL10nKey(
-                              listingTypeId:
-                                  widget.listingDetail.listingTypeId,
-                              gender: widget.listingDetail.gender,
-                            ),
-                          )
-                        : widget.listingDetail.title,
+                listingTitle: ListingUtils.usesPresetListingTitle(
+                  widget.listingDetail.listingTypeId,
+                )
+                    ? L10n.get(
+                        ListingUtils.presetListingTitleL10nKey(
+                          listingTypeId: widget.listingDetail.listingTypeId,
+                          gender: widget.listingDetail.gender,
+                        ),
+                      )
+                    : widget.listingDetail.title,
                 listingTitleStyle: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -585,146 +701,137 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                        if ((widget.amenityChips != null &&
-                                widget.amenityChips!.isNotEmpty) ||
-                            (widget.listingDetail.amenities != null &&
-                                widget.listingDetail.amenities!.isNotEmpty)) ...[
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: widget.amenityChips ??
-                                _sortedAmenitiesForDetails(
-                                  widget.listingDetail.amenities ?? <Amenity>[],
-                                )
-                                    .map((amenity) =>
-                                        _buildAmenityChip(context, amenity))
-                                    .toList(),
+                if ((widget.amenityChips != null &&
+                        widget.amenityChips!.isNotEmpty) ||
+                    (widget.listingDetail.amenities != null &&
+                        widget.listingDetail.amenities!.isNotEmpty)) ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.amenityChips ??
+                        _sortedAmenitiesForDetails(
+                          widget.listingDetail.amenities ?? <Amenity>[],
+                        )
+                            .map((amenity) =>
+                                _buildAmenityChip(context, amenity))
+                            .toList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+                if (widget.listingDetail.moveInDate != null &&
+                    widget.listingDetail.moveInDate!.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: ThemeIconFactory.detail(
+                            icon: CupertinoIcons.square_arrow_right,
+                            color: ListingDetailThemeHelper.dateIconColor,
+                            size: 20,
                           ),
-                          const SizedBox(height: 24),
-                        ],
-                        if (widget.listingDetail.moveInDate != null &&
-                            widget.listingDetail.moveInDate!.isNotEmpty) ...[
-                          Row(
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
                             children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Center(
-                                  child: ThemeIconFactory.detail(
-                                    icon: CupertinoIcons.square_arrow_right,
-                                    color:
-                                        ListingDetailThemeHelper.dateIconColor,
-                                    size: 20,
-                                  ),
+                              TextSpan(
+                                text: "${L10n.get("move_in_date_label")} ",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: ListingDetailThemeHelper.dateTextColor,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text:
-                                            "${L10n.get("move_in_date_label")} ",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: ListingDetailThemeHelper
-                                              .dateTextColor,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: widget.formattedMoveInDate ??
-                                            (widget.formatMoveInDate != null
-                                                ? widget.formatMoveInDate!(
-                                                    context,
-                                                    widget.listingDetail.moveInDate!,
-                                                  )
-                                                : widget.listingDetail.moveInDate!),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: ListingDetailThemeHelper
-                                              .dateTextColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              TextSpan(
+                                text: widget.formattedMoveInDate ??
+                                    (widget.formatMoveInDate != null
+                                        ? widget.formatMoveInDate!(
+                                            context,
+                                            widget.listingDetail.moveInDate!,
+                                          )
+                                        : widget.listingDetail.moveInDate!),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: ListingDetailThemeHelper.dateTextColor,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                Row(
+                  children: [
+                    _buildAuthorAvatar(),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            "${L10n.get("author")}: ",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: ListingDetailThemeHelper.dateTextColor,
+                            ),
+                          ),
+                          if (widget.onAuthorTap != null)
+                            UydoshLinkButton(
+                              text: _authorDisplayLabel(),
+                              onPressed: widget.onAuthorTap!,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: ListingDetailThemeHelper.dateTextColor,
+                              padding: EdgeInsets.zero,
+                              alignment: Alignment.centerLeft,
+                            )
+                          else
+                            Text(
+                              _authorDisplayLabel(),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: ListingDetailThemeHelper.dateTextColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                         ],
-                        Row(
-                          children: [
-                            _buildAuthorAvatar(),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "${L10n.get("author")}: ",
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: ListingDetailThemeHelper
-                                          .dateTextColor,
-                                    ),
-                                  ),
-                                  if (widget.onAuthorTap != null)
-                                    UydoshLinkButton(
-                                      text: _authorDisplayLabel(),
-                                      onPressed: widget.onAuthorTap!,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: ListingDetailThemeHelper
-                                          .dateTextColor,
-                                      padding: EdgeInsets.zero,
-                                      alignment: Alignment.centerLeft,
-                                    )
-                                  else
-                                    Text(
-                                      _authorDisplayLabel(),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: ListingDetailThemeHelper
-                                            .dateTextColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Center(
+                        child: ThemeIconFactory.detail(
+                          icon: Icons.schedule,
+                          color: ListingDetailThemeHelper.dateIconColor,
+                          size: 20,
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Center(
-                                child: ThemeIconFactory.detail(
-                                  icon: Icons.schedule,
-                                  color:
-                                      ListingDetailThemeHelper.dateIconColor,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                              Expanded(
-                              child: Text(
-                                "${L10n.get("publication_date")} ${_getPublicationDateText(context)}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color:
-                                      ListingDetailThemeHelper.dateTextColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "${L10n.get("publication_date")} ${_getPublicationDateText(context)}",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: ListingDetailThemeHelper.dateTextColor,
                         ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
             if (widget.listingDetail.location != null ||
                 widget.listingDetail.subwayStation != null) ...[

@@ -1939,7 +1939,7 @@ abstract class AppLocalizations {
   /// No description provided for @listing_detail_nearby_room_offers.
   ///
   /// In en, this message translates to:
-  /// **'Rooms nearby'**
+  /// **'Find housing'**
   String get listing_detail_nearby_room_offers;
 
   /// No description provided for @listing_detail_nearby_room_seekers.

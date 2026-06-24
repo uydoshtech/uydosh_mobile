@@ -16,7 +16,12 @@ class ListingDetail with _$ListingDetail {
     @JsonKey(name: "price") required int price,
     @JsonKey(name: "min_price") int? minPrice,
     @JsonKey(name: "max_price") int? maxPrice,
-    @JsonKey(name: "is_active") required bool isActive, @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, required UserDetail user, @JsonKey(name: "listing_type") required ListingTypeDetail listingType, String? description,
+    @JsonKey(name: "is_active") required bool isActive,
+    @JsonKey(name: "created_at") required String createdAt,
+    @JsonKey(name: "updated_at") required String updatedAt,
+    required UserDetail user,
+    @JsonKey(name: "listing_type") required ListingTypeDetail listingType,
+    String? description,
     @JsonKey(name: "city_id") int? cityId,
     @JsonKey(name: "description_ru") String? descriptionRu,
     @JsonKey(name: "description_en") String? descriptionEn,
@@ -33,12 +38,17 @@ class ListingDetail with _$ListingDetail {
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
     @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
     @JsonKey(name: "room_scan_floor_area_m2") double? roomScanFloorAreaM2,
-    @JsonKey(name: "room_scan_world_plus_x_bearing_deg") double? roomScanWorldPlusXBearingDeg,
-    @JsonKey(name: "room_scan_north_correction_deg") double? roomScanNorthCorrectionDeg,
+    @JsonKey(name: "room_scan_world_plus_x_bearing_deg")
+    double? roomScanWorldPlusXBearingDeg,
+    @JsonKey(name: "room_scan_north_correction_deg")
+    double? roomScanNorthCorrectionDeg,
     @JsonKey(name: "contact_phone") String? contactPhone,
     @JsonKey(name: "contact_telegram") String? contactTelegram,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+    @JsonKey(name: "search_subway_stations")
+    List<SubwayStationDetail>? searchSubwayStations,
     LocationDetail? location,
+    @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
     List<Amenity>? amenities,
     List<Photo>? photos,
     @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
@@ -58,7 +68,8 @@ class ListingDetail with _$ListingDetail {
 class UserDetail with _$UserDetail {
   const factory UserDetail({
     required int id,
-    @JsonKey(name: "created_at") required String createdAt, String? email, // Add email field from API response
+    @JsonKey(name: "created_at") required String createdAt,
+    String? email, // Add email field from API response
     String? phone, // Make phone optional since it was removed from database
   }) = _UserDetail;
 

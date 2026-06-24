@@ -74,8 +74,14 @@ mixin _$Listing {
   double? get roomScanNorthCorrectionDeg => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations =>
+      throw _privateConstructorUsedError;
   @JsonKey(name: "location")
   LocationDetail? get location => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations =>
+      throw _privateConstructorUsedError;
   @JsonKey(name: "listing_type")
   ListingTypeDetail? get listingType => throw _privateConstructorUsedError;
   @JsonKey(name: "amenities")
@@ -132,7 +138,10 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "room_scan_north_correction_deg")
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location") LocationDetail? location,
+      @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
       List<Photo>? photos,
@@ -190,7 +199,9 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? roomScanWorldPlusXBearingDeg = freezed,
     Object? roomScanNorthCorrectionDeg = freezed,
     Object? subwayStation = freezed,
+    Object? searchSubwayStations = freezed,
     Object? location = freezed,
+    Object? searchLocations = freezed,
     Object? listingType = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
@@ -307,10 +318,18 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
               as SubwayStationDetail?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value.searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       location: freezed == location
           ? _value.location
           : location // ignore: cast_nullable_to_non_nullable
               as LocationDetail?,
+      searchLocations: freezed == searchLocations
+          ? _value.searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
       listingType: freezed == listingType
           ? _value.listingType
           : listingType // ignore: cast_nullable_to_non_nullable
@@ -418,7 +437,10 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "room_scan_north_correction_deg")
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location") LocationDetail? location,
+      @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
       @JsonKey(name: "listing_type") ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") List<Amenity>? amenities,
       List<Photo>? photos,
@@ -477,7 +499,9 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? roomScanWorldPlusXBearingDeg = freezed,
     Object? roomScanNorthCorrectionDeg = freezed,
     Object? subwayStation = freezed,
+    Object? searchSubwayStations = freezed,
     Object? location = freezed,
+    Object? searchLocations = freezed,
     Object? listingType = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
@@ -594,10 +618,18 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
               as SubwayStationDetail?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value._searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       location: freezed == location
           ? _value.location
           : location // ignore: cast_nullable_to_non_nullable
               as LocationDetail?,
+      searchLocations: freezed == searchLocations
+          ? _value._searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
       listingType: freezed == listingType
           ? _value.listingType
           : listingType // ignore: cast_nullable_to_non_nullable
@@ -659,7 +691,11 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "room_scan_north_correction_deg")
       this.roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") this.subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location") this.location,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations,
       @JsonKey(name: "listing_type") this.listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
       final List<Photo>? photos,
@@ -669,7 +705,9 @@ class _$ListingImpl implements _Listing {
       @JsonKey(
           name: "group_member_count", fromJson: _nullableListingIntFromJson)
       this.groupMemberCount})
-      : _amenities = amenities,
+      : _searchSubwayStations = searchSubwayStations,
+        _searchLocations = searchLocations,
+        _amenities = amenities,
         _photos = photos;
 
   factory _$ListingImpl.fromJson(Map<String, dynamic> json) =>
@@ -755,9 +793,35 @@ class _$ListingImpl implements _Listing {
   @override
   @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
+  final List<SubwayStationDetail>? _searchSubwayStations;
+  @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations {
+    final value = _searchSubwayStations;
+    if (value == null) return null;
+    if (_searchSubwayStations is EqualUnmodifiableListView) {
+      return _searchSubwayStations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: "location")
   final LocationDetail? location;
+  final List<LocationDetail>? _searchLocations;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations {
+    final value = _searchLocations;
+    if (value == null) return null;
+    if (_searchLocations is EqualUnmodifiableListView) {
+      return _searchLocations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: "listing_type")
   final ListingTypeDetail? listingType;
@@ -794,7 +858,7 @@ class _$ListingImpl implements _Listing {
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, location: $location, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
   }
 
   @override
@@ -854,8 +918,12 @@ class _$ListingImpl implements _Listing {
                     roomScanNorthCorrectionDeg) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
+            const DeepCollectionEquality()
+                .equals(other._searchSubwayStations, _searchSubwayStations) &&
             (identical(other.location, location) ||
                 other.location == location) &&
+            const DeepCollectionEquality()
+                .equals(other._searchLocations, _searchLocations) &&
             (identical(other.listingType, listingType) ||
                 other.listingType == listingType) &&
             const DeepCollectionEquality()
@@ -900,7 +968,9 @@ class _$ListingImpl implements _Listing {
         roomScanWorldPlusXBearingDeg,
         roomScanNorthCorrectionDeg,
         subwayStation,
+        const DeepCollectionEquality().hash(_searchSubwayStations),
         location,
+        const DeepCollectionEquality().hash(_searchLocations),
         listingType,
         const DeepCollectionEquality().hash(_amenities),
         const DeepCollectionEquality().hash(_photos),
@@ -958,7 +1028,11 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "room_scan_north_correction_deg")
       final double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location") final LocationDetail? location,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations,
       @JsonKey(name: "listing_type") final ListingTypeDetail? listingType,
       @JsonKey(name: "amenities") final List<Amenity>? amenities,
       final List<Photo>? photos,
@@ -1052,8 +1126,14 @@ abstract class _Listing implements Listing {
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;
   @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations;
+  @override
   @JsonKey(name: "location")
   LocationDetail? get location;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations;
   @override
   @JsonKey(name: "listing_type")
   ListingTypeDetail? get listingType;

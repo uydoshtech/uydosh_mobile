@@ -39,10 +39,13 @@ import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_form_scroll_body.dart";
 import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/multi_location_picker.dart";
+import "package:uy_dosh/presentation/widgets/common/multi_station_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
@@ -64,6 +67,8 @@ class EditListingScreen extends StatefulWidget {
   @override
   State<EditListingScreen> createState() => _EditListingScreenState();
 }
+
+enum _LocationSearchMode { metro, district }
 
 class _EditListingScreenState extends State<EditListingScreen>
     with TickerProviderStateMixin {
@@ -88,6 +93,10 @@ class _EditListingScreenState extends State<EditListingScreen>
   bool get _isGroupFormingFlow =>
       _selectedListingTypeId == ListingTypeIds.groupForming;
 
+  bool get _supportsMultiSearch =>
+      _selectedListingTypeId == ListingTypeIds.roomNeeded ||
+      _isGroupFormingFlow;
+
   /// Scalar rent for "roommate needed" (listing type 2).
   double _roommatePrice = 50.0;
 
@@ -104,8 +113,20 @@ class _EditListingScreenState extends State<EditListingScreen>
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
+  _LocationSearchMode _locationSearchMode = _LocationSearchMode.metro;
   List<SubwayStation> _currentStations = [];
   List<Location> _currentLocations = [];
+
+  static const List<int> _listingTypePickerOrder = [
+    ListingTypeIds.roommateNeeded,
+    ListingTypeIds.groupForming,
+    ListingTypeIds.roomNeeded,
+  ];
+
+  final List<SubwayStation> _selectedSearchStations = [];
+  final List<Location> _selectedSearchLocations = [];
+  final Map<int, SubwayStation> _stationCache = {};
+
   bool _isLoadingStations = false;
   bool _isLoadingLocations = false;
   bool _isSubmitting = false;
@@ -196,6 +217,72 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
   }
 
+  SubwayStation _stationFromDetail(SubwayStationDetail station) {
+    return SubwayStation(
+      id: station.id,
+      line: station.line,
+      ordinal: 0,
+      nameUz: station.nameUz,
+      nameRu: station.nameRu,
+      nameEn: station.nameEn,
+    );
+  }
+
+  Location _locationFromDetail(LocationDetail location) {
+    return Location(
+      id: location.id,
+      createdAt: "",
+      updatedAt: "",
+      nameUz: location.nameUz,
+      nameRu: location.nameRu,
+      nameEn: location.nameEn,
+      shortNameUz: location.shortNameUz,
+      shortNameRu: location.shortNameRu,
+      shortNameEn: location.shortNameEn,
+    );
+  }
+
+  void _seedMultiSearchFromDetail() {
+    final d = widget.listingDetail;
+    final stations = d.searchSubwayStations ?? const <SubwayStationDetail>[];
+    final locations = d.searchLocations ?? const <LocationDetail>[];
+
+    _selectedSearchStations.clear();
+    _selectedSearchLocations.clear();
+    _stationCache.clear();
+
+    if (stations.isNotEmpty) {
+      final mapped = stations.map(_stationFromDetail).toList();
+      _locationSearchMode = _LocationSearchMode.metro;
+      _selectedSearchStations.addAll(mapped);
+      _stationCache.addEntries(mapped.map((s) => MapEntry(s.id, s)));
+      _selectedSubwayLine = mapped.first.line;
+      return;
+    }
+
+    if (locations.isNotEmpty) {
+      _locationSearchMode = _LocationSearchMode.district;
+      _selectedSearchLocations.addAll(locations.map(_locationFromDetail));
+      return;
+    }
+
+    final station = d.subwayStation;
+    if (station != null) {
+      final mapped = _stationFromDetail(station);
+      _locationSearchMode = _LocationSearchMode.metro;
+      _selectedSearchStations.add(mapped);
+      _stationCache[mapped.id] = mapped;
+      _selectedSubwayLine = mapped.line;
+      return;
+    }
+
+    final location = d.location;
+    if (location != null) {
+      _locationSearchMode = _LocationSearchMode.district;
+      _selectedSearchLocations.add(_locationFromDetail(location));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -207,7 +294,9 @@ class _EditListingScreenState extends State<EditListingScreen>
     _initializeForm();
     unawaited(_initGender());
     _listingTypeScrollController = FixedExtentScrollController(
-      initialItem: [2, 1].indexOf(_selectedListingTypeId).clamp(0, 1),
+      initialItem: _listingTypePickerOrder
+          .indexOf(_selectedListingTypeId)
+          .clamp(0, _listingTypePickerOrder.length - 1),
     );
     _genderScrollController = FixedExtentScrollController(
       initialItem: [1, 2].indexOf(_selectedGender).clamp(0, 1),
@@ -357,15 +446,21 @@ class _EditListingScreenState extends State<EditListingScreen>
       _roomBudgetMax =
           storedMax.toDouble().clamp(_priceSliderMin, _priceSliderMax);
     } else if (_selectedListingTypeId == 1 ||
-        widget.listingDetail.listingType.code == ListingTypeCodes.groupForming) {
+        widget.listingDetail.listingType.code ==
+            ListingTypeCodes.groupForming) {
       _deriveBudgetRangeFromRoommatePrice();
     } else {
       _roomBudgetMin = _roommatePrice;
       _roomBudgetMax = _roommatePrice;
     }
 
+    _seedMultiSearchFromDetail();
+
     // Set subway line and station
-    if (widget.listingDetail.subwayStation != null) {
+    if (_selectedSearchStations.isNotEmpty) {
+      _selectedSubwayLine = _selectedSearchStations.first.line;
+      _loadStationsForLine(_selectedSubwayLine);
+    } else if (widget.listingDetail.subwayStation != null) {
       _selectedSubwayLine = widget.listingDetail.subwayStation!.line;
       _loadStationsForLine(_selectedSubwayLine);
     }
@@ -524,9 +619,22 @@ class _EditListingScreenState extends State<EditListingScreen>
   void _onStationsLoaded(List<SubwayStation> stations) {
     setState(() {
       _currentStations = stations;
+      for (final station in stations) {
+        _stationCache[station.id] = station;
+      }
 
       // Find and set the current station index
-      if (widget.listingDetail.subwayStation != null) {
+      final selectedStationId = _selectedSearchStations
+          .where((station) => station.line == _selectedSubwayLine)
+          .map((station) => station.id)
+          .cast<int?>()
+          .firstWhere((id) => id != null, orElse: () => null);
+      if (selectedStationId != null) {
+        final stationIndex = stations.indexWhere(
+          (station) => station.id == selectedStationId,
+        );
+        _selectedStationIndex = stationIndex >= 0 ? stationIndex : 0;
+      } else if (widget.listingDetail.subwayStation != null) {
         final currentStationId = widget.listingDetail.subwayStation!.id;
         final stationIndex = stations.indexWhere(
           (station) => station.id == currentStationId,
@@ -548,7 +656,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Only derive location from the station when the listing has no saved
     // location; otherwise the wheel must match [listingDetail.location] like
     // the detail screen (station.location_id can differ).
-    if (widget.listingDetail.location == null) {
+    if (!_supportsMultiSearch && widget.listingDetail.location == null) {
       _syncLocationWithStation();
     }
   }
@@ -582,6 +690,96 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
   }
 
+  void _setLocationSearchMode(_LocationSearchMode mode) {
+    if (_locationSearchMode == mode) return;
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _locationSearchMode = mode;
+      _showLocationError = false;
+      if (mode == _LocationSearchMode.metro) {
+        _selectedSearchLocations.clear();
+        _selectedLocationIndex = -1;
+      } else {
+        _selectedSearchStations.clear();
+        _selectedSubwayLine = 0;
+        _selectedStationIndex = 0;
+        _currentStations = [];
+        _selectedLocationIndex = _selectedSearchLocations.isEmpty
+            ? -1
+            : _currentLocations.indexWhere(
+                (location) => location.id == _selectedSearchLocations.first.id,
+              );
+      }
+    });
+  }
+
+  void _onSearchStationsSelected(List<int> ids) {
+    setState(() {
+      _selectedSearchLocations.clear();
+      _selectedLocationIndex = -1;
+      _showLocationError = false;
+      final next = <SubwayStation>[];
+      for (final id in ids) {
+        final station = _stationCache[id] ??
+            _selectedSearchStations
+                .where((station) => station.id == id)
+                .cast<SubwayStation?>()
+                .firstWhere((station) => station != null, orElse: () => null);
+        if (station != null) next.add(station);
+      }
+      _selectedSearchStations
+        ..clear()
+        ..addAll(next);
+    });
+  }
+
+  void _removeSearchStation(int stationId) {
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _selectedSearchStations.removeWhere((station) => station.id == stationId);
+    });
+  }
+
+  void _onSearchLocationsSelected(List<int> ids) {
+    setState(() {
+      _selectedSearchStations.clear();
+      _selectedSubwayLine = 0;
+      _selectedStationIndex = 0;
+      _currentStations = [];
+      _showLocationError = false;
+      final next = <Location>[];
+      for (final id in ids) {
+        final location = _currentLocations
+            .where((location) => location.id == id)
+            .cast<Location?>()
+            .firstWhere((location) => location != null, orElse: () => null);
+        if (location != null) next.add(location);
+      }
+      _selectedSearchLocations
+        ..clear()
+        ..addAll(next);
+      _selectedLocationIndex = next.isEmpty
+          ? -1
+          : _currentLocations.indexWhere(
+              (location) => location.id == next.first.id,
+            );
+    });
+  }
+
+  void _removeSearchLocation(int locationId) {
+    HapticFeedbackUtils.impact();
+    setState(() {
+      _selectedSearchLocations.removeWhere(
+        (location) => location.id == locationId,
+      );
+      _selectedLocationIndex = _selectedSearchLocations.isEmpty
+          ? -1
+          : _currentLocations.indexWhere(
+              (location) => location.id == _selectedSearchLocations.first.id,
+            );
+    });
+  }
+
   void _onLocationsLoaded(List<Location> locations) {
     setState(() {
       // Sort locations alphabetically by localized name
@@ -601,7 +799,13 @@ class _EditListingScreenState extends State<EditListingScreen>
         });
 
       // Index must be into [_currentLocations] (sorted), not the raw API list.
-      if (widget.listingDetail.location != null) {
+      if (_selectedSearchLocations.isNotEmpty) {
+        final currentLocationId = _selectedSearchLocations.first.id;
+        final locationIndex = _currentLocations.indexWhere(
+          (location) => location.id == currentLocationId,
+        );
+        _selectedLocationIndex = locationIndex >= 0 ? locationIndex : -1;
+      } else if (widget.listingDetail.location != null) {
         final currentLocationId = widget.listingDetail.location!.id;
         final locationIndex = _currentLocations.indexWhere(
           (location) => location.id == currentLocationId,
@@ -613,7 +817,7 @@ class _EditListingScreenState extends State<EditListingScreen>
 
       _isLoadingLocations = false;
     });
-    if (widget.listingDetail.location == null) {
+    if (!_supportsMultiSearch && widget.listingDetail.location == null) {
       _syncLocationWithStation();
     }
   }
@@ -705,6 +909,292 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
   }
 
+  Widget _buildLocationModeToggle() {
+    final theme = Theme.of(context);
+    final accent = _getBorderColor();
+    final selectedColor =
+        ThemeState().isBlueTheme ? Colors.white : theme.colorScheme.onSurface;
+    final unselectedColor = selectedColor.withValues(alpha: 0.62);
+    const height = 60.0;
+
+    Widget tab({
+      required _LocationSearchMode mode,
+      required IconData icon,
+      required String label,
+    }) {
+      final selected = _locationSearchMode == mode;
+      return Expanded(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _setLocationSearchMode(mode),
+          child: SizedBox.expand(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              margin: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: selected ? accent.withValues(alpha: 0.28) : null,
+                borderRadius: BorderRadius.circular(999),
+                border: selected
+                    ? Border.all(color: accent.withValues(alpha: 0.45))
+                    : null,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ThemeIcon(
+                    icon,
+                    size: 22,
+                    color: selected ? selectedColor : unselectedColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? selectedColor : unselectedColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return LiquidGlassPlate(
+      height: height,
+      borderRadius: BorderRadius.circular(999),
+      padding: EdgeInsets.zero,
+      child: Row(
+        children: [
+          tab(
+            mode: _LocationSearchMode.metro,
+            icon: Icons.train,
+            label: L10n.get("wizard_location_mode_metro"),
+          ),
+          tab(
+            mode: _LocationSearchMode.district,
+            icon: Icons.location_on,
+            label: L10n.get("wizard_location_mode_district"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDemandSideGeoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildLocationModeToggle(),
+        const SizedBox(height: 12),
+        if (_locationSearchMode == _LocationSearchMode.metro) ...[
+          MultiStationPicker(
+            selectedSubwayLine: _selectedSubwayLine,
+            currentStations: _currentStations,
+            selectedStationIds:
+                _selectedSearchStations.map((station) => station.id).toSet(),
+            metroLineScrollController: _metroLineScrollController,
+            isLoadingStations: _isLoadingStations,
+            onSubwayLineChanged: (index) {
+              setState(() {
+                _selectedSubwayLine = index;
+                if (index > 0) {
+                  _loadStationsForLine(index);
+                } else {
+                  _currentStations = [];
+                  _selectedStationIndex = 0;
+                }
+              });
+            },
+            onStationsSelected: _onSearchStationsSelected,
+          ),
+          if (_selectedSearchStations.isNotEmpty) _buildSelectedStationChips(),
+        ] else ...[
+          MultiLocationPicker(
+            locations: _currentLocations,
+            selectedLocationIds:
+                _selectedSearchLocations.map((location) => location.id).toSet(),
+            onLocationsSelected: _onSearchLocationsSelected,
+            getLocationName: (location) => _getLocalizedName(
+              nameUz: location.shortNameUz,
+              nameRu: location.shortNameRu,
+              nameEn: location.shortNameEn,
+              shortName: location.shortName,
+            ),
+            isLoading: _isLoadingLocations,
+            accentColor: _getBorderColor(),
+          ),
+          if (_selectedSearchLocations.isNotEmpty)
+            _buildSelectedLocationChips(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSelectedStationChips() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              L10n.getWithParams(
+                "wizard_stations_count",
+                params: {"count": "${_selectedSearchStations.length}"},
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final station in _selectedSearchStations)
+                _buildStationChip(station),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStationChip(SubwayStation station) {
+    final theme = Theme.of(context);
+    final accent = AppColors.getMetroLineColor(station.line);
+    final name = _getLocalizedName(
+      nameUz: station.nameUz,
+      nameRu: station.nameRu,
+      nameEn: station.nameEn,
+    );
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withValues(alpha: 0.5)),
+      ),
+      padding: const EdgeInsetsDirectional.only(start: 12, end: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: ThemeState().isLightTheme
+                  ? Colors.black
+                  : theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _removeSearchStation(station.id),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(Icons.close, size: 14, color: accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectedLocationChips() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              L10n.getWithParams(
+                "wizard_locations_count",
+                params: {"count": "${_selectedSearchLocations.length}"},
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final location in _selectedSearchLocations)
+                _buildLocationChip(location),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationChip(Location location) {
+    final theme = Theme.of(context);
+    final accent = _getBorderColor();
+    final name = _getLocalizedName(
+      nameUz: location.shortNameUz,
+      nameRu: location.shortNameRu,
+      nameEn: location.shortNameEn,
+      shortName: location.shortName,
+    );
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withValues(alpha: 0.5)),
+      ),
+      padding: const EdgeInsetsDirectional.only(start: 12, end: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: ThemeState().isLightTheme
+                  ? Colors.black
+                  : theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _removeSearchLocation(location.id),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Icon(Icons.close, size: 14, color: accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _normListingText(String? s) => (s ?? "").trim();
 
   List<String> _computeChangedFieldLabels({
@@ -754,13 +1244,23 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
 
-    if (baseline.locationId != currentLocationId) {
-      addLabel("location", fallback: "Location");
-    }
+    if (_supportsMultiSearch) {
+      final multiLocationChanged =
+          _locationSearchMode == _LocationSearchMode.metro
+              ? !_searchStationsMatchBaseline()
+              : !_searchLocationsMatchBaseline();
+      if (multiLocationChanged) {
+        addLabel("location", fallback: "Location");
+      }
+    } else {
+      if (baseline.locationId != currentLocationId) {
+        addLabel("location", fallback: "Location");
+      }
 
-    if (baseline.subwayStationId != currentSubwayStationId ||
-        baseline.subwayLineId != currentSubwayLineId) {
-      addLabel("select_metro_line_optional", fallback: "Metro");
+      if (baseline.subwayStationId != currentSubwayStationId ||
+          baseline.subwayLineId != currentSubwayLineId) {
+        addLabel("select_metro_line_optional", fallback: "Metro");
+      }
     }
 
     if (!_amenityIdsMatchBaseline()) {
@@ -803,6 +1303,38 @@ class _EditListingScreenState extends State<EditListingScreen>
     return _currentStations[_selectedStationIndex].id;
   }
 
+  List<int> _baselineSearchStationIds() {
+    final stations = widget.listingDetail.searchSubwayStations;
+    if (stations != null && stations.isNotEmpty) {
+      return stations.map((station) => station.id).toList();
+    }
+    final id = widget.listingDetail.subwayStationId;
+    return id != null ? [id] : const <int>[];
+  }
+
+  List<int> _baselineSearchLocationIds() {
+    final locations = widget.listingDetail.searchLocations;
+    if (locations != null && locations.isNotEmpty) {
+      return locations.map((location) => location.id).toList();
+    }
+    final id = widget.listingDetail.locationId;
+    return id != null ? [id] : const <int>[];
+  }
+
+  bool _searchStationsMatchBaseline() {
+    return listEquals(
+      _selectedSearchStations.map((station) => station.id).toList(),
+      _baselineSearchStationIds(),
+    );
+  }
+
+  bool _searchLocationsMatchBaseline() {
+    return listEquals(
+      _selectedSearchLocations.map((location) => location.id).toList(),
+      _baselineSearchLocationIds(),
+    );
+  }
+
   bool _amenityIdsMatchBaseline() {
     final baseline =
         widget.listingDetail.amenities?.map((a) => a.id).toSet() ?? <int>{};
@@ -831,28 +1363,36 @@ class _EditListingScreenState extends State<EditListingScreen>
       return true;
     }
 
-    if (_isGroupFormingFlow &&
-        _groupSizeTarget != (d.groupSizeTarget ?? 3)) {
+    if (_isGroupFormingFlow && _groupSizeTarget != (d.groupSizeTarget ?? 3)) {
       return true;
     }
 
     if (_priceForUpdateRequest() != d.price) return true;
 
-    if (!_isGroupFormingFlow &&
-        _isPrivateRoom != (d.privateRoom ?? false)) {
+    if (!_isGroupFormingFlow && _isPrivateRoom != (d.privateRoom ?? false)) {
       return true;
     }
 
     if (_moveInDateValue != _baselineMoveInDate(d)) return true;
 
-    if (!_isLoadingLocations && d.locationId != _currentLocationId()) {
-      return true;
-    }
+    if (_supportsMultiSearch) {
+      if (_locationSearchMode == _LocationSearchMode.metro) {
+        if (_selectedSearchLocations.isNotEmpty) return true;
+        if (!_searchStationsMatchBaseline()) return true;
+      } else {
+        if (_selectedSearchStations.isNotEmpty) return true;
+        if (!_searchLocationsMatchBaseline()) return true;
+      }
+    } else {
+      if (!_isLoadingLocations && d.locationId != _currentLocationId()) {
+        return true;
+      }
 
-    if (!_isLoadingStations) {
-      if (d.subwayStationId != _currentSubwayStationId()) return true;
-      final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
-      if (d.subwayLineId != curLine) return true;
+      if (!_isLoadingStations) {
+        if (d.subwayStationId != _currentSubwayStationId()) return true;
+        final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
+        if (d.subwayLineId != curLine) return true;
+      }
     }
 
     if (!_amenityIdsMatchBaseline()) return true;
@@ -1049,57 +1589,62 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ],
                         const SizedBox(height: 10),
 
-                        // Metro Line and Station Selection (Third Row)
-                        ListingFormMetroSection(
-                          selectedSubwayLine: _selectedSubwayLine,
-                          selectedStationIndex: _selectedStationIndex,
-                          currentStations: _currentStations,
-                          isLoadingStations: _isLoadingStations,
-                          metroLineScrollController: _metroLineScrollController,
-                          metroStationScrollController:
-                              _metroStationScrollController,
-                          onLineChanged: (index) {
-                            setState(() {
-                              _selectedSubwayLine = index;
-                              if (index > 0) {
-                                _loadStationsForLine(index);
-                              } else {
-                                _currentStations = [];
-                                _selectedStationIndex = 0;
-                              }
-                            });
-                          },
-                          onStationChanged: (index) {
-                            setState(() {
-                              _selectedStationIndex = index;
-                              _syncLocationWithStation();
-                            });
-                          },
-                          onDismissKeyboard: _dismissKeyboard,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ), // Space between metro fields and location
-                        // Location Field - Full Row
-                        LocationPicker(
-                          locations: _currentLocations,
-                          selectedLocationIndex: _selectedLocationIndex,
-                          scrollController: _locationScrollController,
-                          onLocationChanged: (locationIndex) {
-                            setState(() {
-                              _selectedLocationIndex = locationIndex;
-                              // Clear location error when user selects a location
-                              if (_showLocationError && locationIndex >= 0) {
-                                _showLocationError = false;
-                              }
-                            });
-                          },
-                          isLoading: _isLoadingLocations,
-                          useThemeColors: true,
-                          useColoredIcons: true,
-                          showError: _showLocationError,
-                          showArrows: false,
-                        ),
+                        if (_supportsMultiSearch) ...[
+                          _buildDemandSideGeoSection(),
+                        ] else ...[
+                          // Metro Line and Station Selection (Third Row)
+                          ListingFormMetroSection(
+                            selectedSubwayLine: _selectedSubwayLine,
+                            selectedStationIndex: _selectedStationIndex,
+                            currentStations: _currentStations,
+                            isLoadingStations: _isLoadingStations,
+                            metroLineScrollController:
+                                _metroLineScrollController,
+                            metroStationScrollController:
+                                _metroStationScrollController,
+                            onLineChanged: (index) {
+                              setState(() {
+                                _selectedSubwayLine = index;
+                                if (index > 0) {
+                                  _loadStationsForLine(index);
+                                } else {
+                                  _currentStations = [];
+                                  _selectedStationIndex = 0;
+                                }
+                              });
+                            },
+                            onStationChanged: (index) {
+                              setState(() {
+                                _selectedStationIndex = index;
+                                _syncLocationWithStation();
+                              });
+                            },
+                            onDismissKeyboard: _dismissKeyboard,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ), // Space between metro fields and location
+                          // Location Field - Full Row
+                          LocationPicker(
+                            locations: _currentLocations,
+                            selectedLocationIndex: _selectedLocationIndex,
+                            scrollController: _locationScrollController,
+                            onLocationChanged: (locationIndex) {
+                              setState(() {
+                                _selectedLocationIndex = locationIndex;
+                                // Clear location error when user selects a location
+                                if (_showLocationError && locationIndex >= 0) {
+                                  _showLocationError = false;
+                                }
+                              });
+                            },
+                            isLoading: _isLoadingLocations,
+                            useThemeColors: true,
+                            useColoredIcons: true,
+                            showError: _showLocationError,
+                            showArrows: false,
+                          ),
+                        ],
                         const SizedBox(
                           height: 10,
                         ), // Space between location and price range
@@ -1113,8 +1658,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                           ),
                           minPrice: _priceSliderMin,
                           maxPrice: _priceSliderMax,
-                          initialVisibleMaxPrice:
-                              _priceSliderInitialVisibleMax,
+                          initialVisibleMaxPrice: _priceSliderInitialVisibleMax,
                           maxExpansionStep: _priceSliderExpansionStep,
                           initialMinPrice: _pricePickerSingleHandle
                               ? _roommatePrice
@@ -1382,91 +1926,93 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 ),
                               ),
                               if (!_isGroupFormingFlow) ...[
-                              const SizedBox(width: 12),
-                              // Private Room Toggle (50% width)
-                              Expanded(
-                                child: Container(
-                                  clipBehavior: Clip.antiAlias,
-                                  decoration: ThreeDSurfaceStyle
-                                      .wheelPickerPlateDecoration(
-                                    context,
-                                    theme: theme,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12.0,
-                                      vertical: 16.0,
+                                const SizedBox(width: 12),
+                                // Private Room Toggle (50% width)
+                                Expanded(
+                                  child: Container(
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: ThreeDSurfaceStyle
+                                        .wheelPickerPlateDecoration(
+                                      context,
+                                      theme: theme,
                                     ),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        ThemeIcon(
-                                          Icons.lock_outline,
-                                          color: _isPrivateRoom
-                                              ? _getBorderColor()
-                                              : (Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7)
-                                                  : Colors.grey[600]),
-                                          size: 22,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                L10n.get("private_room")
-                                                    .replaceFirst(" ", "\n"),
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      ThemeState().isLightTheme
-                                                          ? Colors.black
-                                                          : theme.colorScheme
-                                                              .onSurfaceVariant,
-                                                ),
-                                              ),
-                                            ],
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0,
+                                        vertical: 16.0,
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          ThemeIcon(
+                                            Icons.lock_outline,
+                                            color: _isPrivateRoom
+                                                ? _getBorderColor()
+                                                : (Theme.of(context)
+                                                            .brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.7)
+                                                    : Colors.grey[600]),
+                                            size: 22,
                                           ),
-                                        ),
-                                        NeumorphicToggle(
-                                          value: _isPrivateRoom,
-                                          activeAccentColor: _getBorderColor(),
-                                          activeTrackColor: _getBorderColor()
-                                              .withValues(alpha: 0.3),
-                                          inactiveThumbColor:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.7)
-                                                  : Colors.grey.shade600,
-                                          inactiveTrackColor:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? theme.colorScheme
-                                                      .onSurfaceVariant
-                                                      .withOpacity(0.3)
-                                                  : Colors.grey.shade300,
-                                          onChanged: (value) {
-                                            HapticFeedbackUtils.impact();
-                                            setState(() {
-                                              _isPrivateRoom = value;
-                                            });
-                                          },
-                                        ),
-                                      ],
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  L10n.get("private_room")
+                                                      .replaceFirst(" ", "\n"),
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: ThemeState()
+                                                            .isLightTheme
+                                                        ? Colors.black
+                                                        : theme.colorScheme
+                                                            .onSurfaceVariant,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          NeumorphicToggle(
+                                            value: _isPrivateRoom,
+                                            activeAccentColor:
+                                                _getBorderColor(),
+                                            activeTrackColor: _getBorderColor()
+                                                .withValues(alpha: 0.3),
+                                            inactiveThumbColor:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.7)
+                                                    : Colors.grey.shade600,
+                                            inactiveTrackColor:
+                                                Theme.of(context).brightness ==
+                                                        Brightness.dark
+                                                    ? theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.3)
+                                                    : Colors.grey.shade300,
+                                            onChanged: (value) {
+                                              HapticFeedbackUtils.impact();
+                                              setState(() {
+                                                _isPrivateRoom = value;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                               ],
                             ],
                           ),
@@ -1656,8 +2202,18 @@ class _EditListingScreenState extends State<EditListingScreen>
       return;
     }
 
-    // Validate location (mandatory)
-    if (_selectedLocationIndex < 0) {
+    final usesMetroSearch = _supportsMultiSearch &&
+        _locationSearchMode == _LocationSearchMode.metro;
+    final usesDistrictSearch = _supportsMultiSearch &&
+        _locationSearchMode == _LocationSearchMode.district;
+
+    // Validate location/search area (mandatory)
+    final missingLocation = usesMetroSearch
+        ? _selectedSearchStations.isEmpty
+        : usesDistrictSearch
+            ? _selectedSearchLocations.isEmpty
+            : _selectedLocationIndex < 0;
+    if (missingLocation) {
       ToastTheme.showError(
         context,
         message: L10n.get("location_required"),
@@ -1689,11 +2245,34 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     try {
       // Get the selected location and station (if available)
-      final selectedLocation = _currentLocations[_selectedLocationIndex];
-      final selectedStation =
-          _selectedSubwayLine > 0 && _currentStations.isNotEmpty
+      final selectedLocation = usesDistrictSearch
+          ? _selectedSearchLocations.first
+          : !_supportsMultiSearch
+              ? _currentLocations[_selectedLocationIndex]
+              : null;
+      final selectedStation = usesMetroSearch
+          ? _selectedSearchStations.first
+          : _selectedSubwayLine > 0 &&
+                  _currentStations.isNotEmpty &&
+                  _selectedStationIndex >= 0 &&
+                  _selectedStationIndex < _currentStations.length
               ? _currentStations[_selectedStationIndex]
               : null;
+      final multiStationIds = _supportsMultiSearch
+          ? (usesMetroSearch
+              ? _selectedSearchStations.map((station) => station.id).toList()
+              : <int>[])
+          : null;
+      final multiLocationIds = _supportsMultiSearch
+          ? (usesDistrictSearch
+              ? _selectedSearchLocations.map((location) => location.id).toList()
+              : <int>[])
+          : null;
+      final effectiveSubwayLineId = usesMetroSearch
+          ? selectedStation!.line
+          : usesDistrictSearch
+              ? null
+              : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
@@ -1712,12 +2291,12 @@ class _EditListingScreenState extends State<EditListingScreen>
         maxPrice: priceBounds.max,
         description: _descriptionController.text.trim(),
         gender: _selectedGender,
-        locationId: selectedLocation.id,
+        locationId: selectedLocation?.id,
+        locationIds: multiLocationIds,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: selectedStation?.id, // Made optional, moved to end
-        subwayLineId: _selectedSubwayLine > 0
-            ? _selectedSubwayLine
-            : null, // Add subway line ID
+        subwayStationIds: multiStationIds,
+        subwayLineId: effectiveSubwayLineId, // Add subway line ID
         moveInDate: _moveInDateValue.isNotEmpty
             ? _moveInDateValue
             : null, // Add move-in date
@@ -1816,10 +2395,9 @@ class _EditListingScreenState extends State<EditListingScreen>
       // Show success message
       final changedFields = _computeChangedFieldLabels(
         baseline: widget.listingDetail,
-        currentLocationId: selectedLocation.id,
+        currentLocationId: selectedLocation?.id,
         currentSubwayStationId: selectedStation?.id,
-        currentSubwayLineId:
-            _selectedSubwayLine > 0 ? _selectedSubwayLine : null,
+        currentSubwayLineId: effectiveSubwayLineId,
       );
       final baseSuccess = L10n.get("listing_updated_success");
       final changedPrefix = L10n.get("changed_fields", fallback: "Changed");

@@ -1,0 +1,12 @@
+---
+description: Always localize user-facing Flutter copy
+alwaysApply: true
+---
+
+# L10n for user-facing text
+
+- Use `L10n.get(...)`, `context.l10n...`, or the existing generated localization APIs for all user-facing Flutter strings.
+- This includes `Text`, button labels, app bar titles, placeholders, validation messages, toasts, dialogs, tooltips, semantics/accessibility labels, empty states, and error messages shown to users.
+- When adding a new key, update every supported locale file and regenerate localization outputs when this repo requires it.
+- Avoid hardcoded English, Russian, or Uzbek in production UI.
+- Acceptable exceptions: brand/product names, currency/unit codes, protocol/URL pieces, analytics/log/debug-only text, icon labels like `3D`, punctuation/separators, and user/server-provided content.

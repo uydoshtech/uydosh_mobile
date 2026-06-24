@@ -7,6 +7,7 @@ import "package:flutter/services.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
@@ -18,6 +19,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_bubble_with_tail.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/message_reaction_catalog.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
@@ -1158,15 +1160,29 @@ class _MessageBubbleState extends State<MessageBubble>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            _replySenderName(reply),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: accent,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ReplyQuoteAvatar(
+                avatarUrl: _replySenderAvatarUrl(reply),
+                initials: _replySenderInitials(reply),
+                isCurrentUser:
+                    reply.senderId == widget.currentUserProfile?.userId,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  _replySenderName(reply),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 2),
           Text(
@@ -1195,11 +1211,36 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   String _replySenderName(Message reply) {
+    if (reply.senderId == widget.currentUserProfile?.userId) {
+      return L10n.get("chat_reply_sender_you");
+    }
     final name = reply.sender?.profile?.name?.trim();
     if (name != null && name.isNotEmpty) return name;
     final email = reply.sender?.email?.trim();
     if (email != null && email.isNotEmpty) return email;
     return L10n.get("chat_reply_sender_unknown");
+  }
+
+  String? _replySenderAvatarUrl(Message reply) {
+    if (reply.senderId == widget.currentUserProfile?.userId) {
+      return widget.currentUserProfile?.avatarUrl;
+    }
+    return reply.sender?.profile?.avatarUrl;
+  }
+
+  String? _replySenderInitials(Message reply) {
+    if (reply.senderId == widget.currentUserProfile?.userId) {
+      return StringUtils.extractInitials(widget.currentUserProfile?.name);
+    }
+    final name = reply.sender?.profile?.name?.trim();
+    if (name != null && name.isNotEmpty) {
+      return StringUtils.extractInitials(name);
+    }
+    final email = reply.sender?.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return StringUtils.extractInitials(email);
+    }
+    return null;
   }
 
   String _replyPreviewText(Message reply) {
@@ -1311,6 +1352,65 @@ class _MessageBubbleState extends State<MessageBubble>
       color: isReadByRecipient
           ? readColor
           : ownBubbleTextColor.withValues(alpha: 0.45),
+    );
+  }
+}
+
+class _ReplyQuoteAvatar extends StatelessWidget {
+  const _ReplyQuoteAvatar({
+    required this.isCurrentUser,
+    this.avatarUrl,
+    this.initials,
+  });
+
+  final bool isCurrentUser;
+  final String? avatarUrl;
+  final String? initials;
+
+  static const double _size = 22;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl);
+    final theme = Theme.of(context);
+    final hasInitials = initials != null && initials!.trim().isNotEmpty;
+    final base = isCurrentUser
+        ? Color.lerp(
+            theme.colorScheme.surface, theme.colorScheme.onSurface, 0.06)!
+        : Color.lerp(
+            theme.colorScheme.surface, theme.colorScheme.onSurface, 0.02)!;
+    final fallback = Container(
+      width: _size,
+      height: _size,
+      alignment: Alignment.center,
+      color: base,
+      child: hasInitials
+          ? Text(
+              initials!.trim(),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+              ),
+            )
+          : ThemeIcon(
+              Icons.person_rounded,
+              size: 13,
+              color: theme.colorScheme.onSurface,
+            ),
+    );
+    return ClipOval(
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: resolvedAvatarUrl == null
+            ? fallback
+            : NetworkAvatarImage(
+                imageUrl: resolvedAvatarUrl,
+                size: _size,
+                fallback: fallback,
+              ),
+      ),
     );
   }
 }

@@ -27,9 +27,9 @@ _$MessageImpl _$$MessageImplFromJson(Map<String, dynamic> json) =>
       attachments: (json['attachments'] as List<dynamic>?)
           ?.map((e) => MessageAttachment.fromJson(e as Map<String, dynamic>))
           .toList(),
-      replyToMessage: json['replyToMessage'] == null
+      replyToMessage: json['reply_to_message'] == null
           ? null
-          : Message.fromJson(json['replyToMessage'] as Map<String, dynamic>),
+          : Message.fromJson(json['reply_to_message'] as Map<String, dynamic>),
       isReadByCurrentUser: json['is_read_by_current_user'] as bool?,
       isReadByRecipient: json['is_read_by_recipient'] as bool?,
       reactions: _messageReactionsFromJson(json['reactions']),
@@ -54,7 +54,7 @@ Map<String, dynamic> _$$MessageImplToJson(_$MessageImpl instance) =>
       'previous_content': instance.previousContent,
       'sender': instance.sender,
       'attachments': instance.attachments,
-      'replyToMessage': instance.replyToMessage,
+      'reply_to_message': instance.replyToMessage,
       'is_read_by_current_user': instance.isReadByCurrentUser,
       'is_read_by_recipient': instance.isReadByRecipient,
       'reactions': _messageReactionsToJson(instance.reactions),

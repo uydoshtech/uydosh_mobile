@@ -42,9 +42,15 @@ _$ListingImpl _$$ListingImplFromJson(Map<String, dynamic> json) =>
           ? null
           : SubwayStationDetail.fromJson(
               json['subway_station'] as Map<String, dynamic>),
+      searchSubwayStations: (json['search_subway_stations'] as List<dynamic>?)
+          ?.map((e) => SubwayStationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
       location: json['location'] == null
           ? null
           : LocationDetail.fromJson(json['location'] as Map<String, dynamic>),
+      searchLocations: (json['search_locations'] as List<dynamic>?)
+          ?.map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
       listingType: json['listing_type'] == null
           ? null
           : ListingTypeDetail.fromJson(
@@ -90,7 +96,9 @@ Map<String, dynamic> _$$ListingImplToJson(_$ListingImpl instance) =>
           instance.roomScanWorldPlusXBearingDeg,
       'room_scan_north_correction_deg': instance.roomScanNorthCorrectionDeg,
       'subway_station': instance.subwayStation,
+      'search_subway_stations': instance.searchSubwayStations,
       'location': instance.location,
+      'search_locations': instance.searchLocations,
       'listing_type': instance.listingType,
       'amenities': instance.amenities,
       'photos': instance.photos,

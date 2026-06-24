@@ -535,10 +535,12 @@ class _ListingTileState extends State<ListingTile> {
                             ListenableBuilder(
                               listenable: LanguageState(),
                               builder: (context, child) {
-                                final hasLocation =
-                                    widget.listing.location != null;
-                                final hasStation =
-                                    widget.listing.subwayStation != null;
+                                final searchStations =
+                                    _effectiveSearchStations();
+                                final searchLocations =
+                                    _effectiveSearchLocations();
+                                final hasLocation = searchLocations.isNotEmpty;
+                                final hasStation = searchStations.isNotEmpty;
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
@@ -554,15 +556,8 @@ class _ListingTileState extends State<ListingTile> {
                                           const SizedBox(width: 6),
                                           Expanded(
                                             child: Text(
-                                              _shortenDistrictSuffix(
-                                                _getLocalizedName(
-                                                  nameUz: widget
-                                                      .listing.location!.nameUz,
-                                                  nameRu: widget
-                                                      .listing.location!.nameRu,
-                                                  nameEn: widget
-                                                      .listing.location!.nameEn,
-                                                ),
+                                              _locationSummaryLabel(
+                                                searchLocations,
                                               ),
                                               style: TextStyle(
                                                 fontSize: 14,
@@ -577,8 +572,8 @@ class _ListingTileState extends State<ListingTile> {
                                     if (hasStation) ...[
                                       if (hasLocation)
                                         const SizedBox(height: 8),
-                                      _buildSubwayStationDisplay(
-                                        widget.listing.subwayStation!,
+                                      _buildSubwayStationsSummary(
+                                        searchStations,
                                       ),
                                     ] else if (hasLocation)
                                       // Reserve the metro-row height
@@ -698,7 +693,7 @@ class _ListingTileState extends State<ListingTile> {
     if (widget.trailingAction != null) {
       return Padding(
         padding: const EdgeInsets.only(right: 10),
-        child: widget.trailingAction!,
+        child: widget.trailingAction,
       );
     }
 
@@ -1459,6 +1454,83 @@ class _ListingTileState extends State<ListingTile> {
     } else {
       return Colors.black; // Default text for light theme
     }
+  }
+
+  List<SubwayStationDetail> _effectiveSearchStations() {
+    final stations = widget.listing.searchSubwayStations;
+    if (stations != null && stations.isNotEmpty) return stations;
+    final station = widget.listing.subwayStation;
+    return station == null ? const <SubwayStationDetail>[] : [station];
+  }
+
+  List<LocationDetail> _effectiveSearchLocations() {
+    final locations = widget.listing.searchLocations;
+    if (locations != null && locations.isNotEmpty) return locations;
+    final location = widget.listing.location;
+    return location == null ? const <LocationDetail>[] : [location];
+  }
+
+  String _stationSummaryLabel(List<SubwayStationDetail> stations) {
+    if (stations.length == 1) {
+      return MetroCache.formatStationLabel(
+        _getLocalizedName(
+          nameUz: stations.first.nameUz,
+          nameRu: stations.first.nameRu,
+          nameEn: stations.first.nameEn,
+        ),
+        LanguageState().currentLanguage,
+      );
+    }
+    final count = stations.length;
+    switch (LanguageState().currentLanguage) {
+      case "uz":
+        return "$count bekat";
+      case "en":
+        return "$count stations";
+      case "ru":
+      default:
+        return "$count станций";
+    }
+  }
+
+  String _locationSummaryLabel(List<LocationDetail> locations) {
+    if (locations.length == 1) {
+      return _shortenDistrictSuffix(
+        _getLocalizedName(
+          nameUz: locations.first.nameUz,
+          nameRu: locations.first.nameRu,
+          nameEn: locations.first.nameEn,
+        ),
+      );
+    }
+    final count = locations.length;
+    return L10n.plural("districts_count", count);
+  }
+
+  Widget _buildSubwayStationsSummary(List<SubwayStationDetail> stations) {
+    if (stations.length == 1) {
+      return _buildSubwayStationDisplay(stations.first);
+    }
+    final lineIds = <int>[];
+    for (final station in stations) {
+      if (!lineIds.contains(station.line)) lineIds.add(station.line);
+    }
+    return Row(
+      children: [
+        for (var i = 0; i < lineIds.length; i++) ...[
+          ThemeIcon(Icons.train, color: _getLineColor(lineIds[i]), size: 20),
+          SizedBox(width: i == lineIds.length - 1 ? 6 : 2),
+        ],
+        Expanded(
+          child: Text(
+            _stationSummaryLabel(stations),
+            style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 
   // Build subway station display with transfer station support

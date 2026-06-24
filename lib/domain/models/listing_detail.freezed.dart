@@ -84,7 +84,13 @@ mixin _$ListingDetail {
   String? get contactTelegram => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations =>
+      throw _privateConstructorUsedError;
   LocationDetail? get location => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations =>
+      throw _privateConstructorUsedError;
   List<Amenity>? get amenities => throw _privateConstructorUsedError;
   List<Photo>? get photos => throw _privateConstructorUsedError;
   @JsonKey(name: "area_price_stats")
@@ -151,7 +157,10 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       LocationDetail? location,
+      @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
       List<Amenity>? amenities,
       List<Photo>? photos,
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
@@ -218,7 +227,9 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? contactPhone = freezed,
     Object? contactTelegram = freezed,
     Object? subwayStation = freezed,
+    Object? searchSubwayStations = freezed,
     Object? location = freezed,
+    Object? searchLocations = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
@@ -364,10 +375,18 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
               as SubwayStationDetail?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value.searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       location: freezed == location
           ? _value.location
           : location // ignore: cast_nullable_to_non_nullable
               as LocationDetail?,
+      searchLocations: freezed == searchLocations
+          ? _value.searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
       amenities: freezed == amenities
           ? _value.amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -507,7 +526,10 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       LocationDetail? location,
+      @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
       List<Amenity>? amenities,
       List<Photo>? photos,
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
@@ -577,7 +599,9 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? contactPhone = freezed,
     Object? contactTelegram = freezed,
     Object? subwayStation = freezed,
+    Object? searchSubwayStations = freezed,
     Object? location = freezed,
+    Object? searchLocations = freezed,
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
@@ -723,10 +747,18 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
               as SubwayStationDetail?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value._searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       location: freezed == location
           ? _value.location
           : location // ignore: cast_nullable_to_non_nullable
               as LocationDetail?,
+      searchLocations: freezed == searchLocations
+          ? _value._searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
       amenities: freezed == amenities
           ? _value._amenities
           : amenities // ignore: cast_nullable_to_non_nullable
@@ -799,7 +831,11 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "contact_phone") this.contactPhone,
       @JsonKey(name: "contact_telegram") this.contactTelegram,
       @JsonKey(name: "subway_station") this.subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       this.location,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations,
       final List<Amenity>? amenities,
       final List<Photo>? photos,
       @JsonKey(name: "area_price_stats") this.areaPriceStats,
@@ -808,7 +844,9 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "group_compatibility_report")
       this.groupCompatibilityReport,
       @JsonKey(includeFromJson: false, includeToJson: false) this.groupContext})
-      : _amenities = amenities,
+      : _searchSubwayStations = searchSubwayStations,
+        _searchLocations = searchLocations,
+        _amenities = amenities,
         _photos = photos;
 
   factory _$ListingDetailImpl.fromJson(Map<String, dynamic> json) =>
@@ -911,8 +949,34 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
+  final List<SubwayStationDetail>? _searchSubwayStations;
+  @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations {
+    final value = _searchSubwayStations;
+    if (value == null) return null;
+    if (_searchSubwayStations is EqualUnmodifiableListView) {
+      return _searchSubwayStations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   final LocationDetail? location;
+  final List<LocationDetail>? _searchLocations;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations {
+    final value = _searchLocations;
+    if (value == null) return null;
+    if (_searchLocations is EqualUnmodifiableListView) {
+      return _searchLocations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   final List<Amenity>? _amenities;
   @override
   List<Amenity>? get amenities {
@@ -951,7 +1015,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, location: $location, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
   }
 
   @override
@@ -1010,8 +1074,7 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.roomScanHeightM == roomScanHeightM) &&
             (identical(other.roomScanFloorAreaM2, roomScanFloorAreaM2) ||
                 other.roomScanFloorAreaM2 == roomScanFloorAreaM2) &&
-            (identical(other.roomScanWorldPlusXBearingDeg,
-                    roomScanWorldPlusXBearingDeg) ||
+            (identical(other.roomScanWorldPlusXBearingDeg, roomScanWorldPlusXBearingDeg) ||
                 other.roomScanWorldPlusXBearingDeg ==
                     roomScanWorldPlusXBearingDeg) &&
             (identical(other.roomScanNorthCorrectionDeg, roomScanNorthCorrectionDeg) ||
@@ -1023,8 +1086,12 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.contactTelegram == contactTelegram) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
+            const DeepCollectionEquality()
+                .equals(other._searchSubwayStations, _searchSubwayStations) &&
             (identical(other.location, location) ||
                 other.location == location) &&
+            const DeepCollectionEquality()
+                .equals(other._searchLocations, _searchLocations) &&
             const DeepCollectionEquality()
                 .equals(other._amenities, _amenities) &&
             const DeepCollectionEquality().equals(other._photos, _photos) &&
@@ -1034,7 +1101,8 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.groupSizeTarget == groupSizeTarget) &&
             (identical(other.groupFormingStatus, groupFormingStatus) ||
                 other.groupFormingStatus == groupFormingStatus) &&
-            (identical(other.groupCompatibilityReport, groupCompatibilityReport) ||
+            (identical(
+                    other.groupCompatibilityReport, groupCompatibilityReport) ||
                 other.groupCompatibilityReport == groupCompatibilityReport) &&
             (identical(other.groupContext, groupContext) ||
                 other.groupContext == groupContext));
@@ -1078,7 +1146,9 @@ class _$ListingDetailImpl implements _ListingDetail {
         contactPhone,
         contactTelegram,
         subwayStation,
+        const DeepCollectionEquality().hash(_searchSubwayStations),
         location,
+        const DeepCollectionEquality().hash(_searchLocations),
         const DeepCollectionEquality().hash(_amenities),
         const DeepCollectionEquality().hash(_photos),
         areaPriceStats,
@@ -1145,7 +1215,11 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "contact_phone") final String? contactPhone,
       @JsonKey(name: "contact_telegram") final String? contactTelegram,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       final LocationDetail? location,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations,
       final List<Amenity>? amenities,
       final List<Photo>? photos,
       @JsonKey(name: "area_price_stats") final AreaPriceStats? areaPriceStats,
@@ -1257,7 +1331,13 @@ abstract class _ListingDetail implements ListingDetail {
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;
   @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations;
+  @override
   LocationDetail? get location;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations;
   @override
   List<Amenity>? get amenities;
   @override
