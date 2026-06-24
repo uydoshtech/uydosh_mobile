@@ -243,6 +243,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _groupMembersFetchInFlight = false;
   Map<int, GroupMemberCompatibilitySummary> _groupMemberCompatibility = {};
   ListingDetail? _groupListingDetail;
+  bool _groupHousingContextLoaded = false;
   bool _groupChatIsOwner = false;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
@@ -323,6 +324,9 @@ class _ChatScreenState extends State<ChatScreen> {
       widget.listingId != null &&
       _groupListingDetail?.groupContext?.canUseHousingShortlist == true;
 
+  bool get _waitingForGroupFooterActions =>
+      _isGroupChat && widget.listingId != null && !_groupHousingContextLoaded;
+
   double get _composerBottomReserveHeight {
     return _glassComposerEstimatedHeight +
         (_replyingToMessage == null ? 0 : 64);
@@ -372,6 +376,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (!mounted) return;
       setState(() {
         _groupListingDetail = detail;
+        _groupHousingContextLoaded = true;
         _groupChatIsOwner = ctx?.isOwner == true;
       });
       if (count != null) {
@@ -379,6 +384,8 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } catch (e) {
       logger.d("❌ [ChatScreen] Error loading group housing context: $e");
+      if (!mounted) return;
+      setState(() => _groupHousingContextLoaded = true);
     }
   }
 
@@ -479,23 +486,26 @@ class _ChatScreenState extends State<ChatScreen> {
         MediaQuery.viewPaddingOf(context).bottom + 12,
       ),
       decoration: stripDecoration,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            if (_showGroupShortlistPill)
-              _buildGroupShortlistFooterPill(context),
-            if (_showGroupShortlistPill) const SizedBox(width: 10),
-            _buildGroupParticipantsFooterPill(context),
-          ],
-        ),
-      ),
+      child: _waitingForGroupFooterActions
+          ? const SizedBox(height: 38, width: double.infinity)
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  if (_showGroupShortlistPill)
+                    _buildGroupShortlistFooterPill(context),
+                  if (_showGroupShortlistPill) const SizedBox(width: 10),
+                  _buildGroupParticipantsFooterPill(context),
+                ],
+              ),
+            ),
     );
   }
 
   Widget _chatComposerColumn({required bool blendWithGlassBackdrop}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _chatComposerWithListener(
           blendWithGlassBackdrop: blendWithGlassBackdrop,

@@ -54,6 +54,17 @@ Color preferenceSegmentSelectedBorderColor(BuildContext context) {
   return scheme.primary;
 }
 
+/// Outline color for circular user avatars.
+///
+/// Light surfaces get a black ring; dark surfaces get a white ring.
+Color avatarCircleBorderColor(BuildContext context, {Color? background}) {
+  if (background != null) return background;
+
+  return Theme.of(context).brightness == Brightness.dark
+      ? Colors.white
+      : Colors.black;
+}
+
 /// Extension on [ThemeState] providing theme-aware color helpers.
 /// Use these instead of duplicating _getThemeAware* logic across screens and widgets.
 extension ThemeHelper on ThemeState {

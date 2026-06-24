@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -33,6 +34,7 @@ class ChatAvatar extends StatelessWidget {
     final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl);
     final hasAvatar = resolvedAvatarUrl != null;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final borderColor = avatarCircleBorderColor(context);
 
     // Match the profile avatar's 3D chrome: gradient + neumorphic shadows.
     // Keep a subtle tint difference so "me" reads distinct.
@@ -63,19 +65,29 @@ class ChatAvatar extends StatelessWidget {
               : ThreeDSurfaceStyle.surfaceGradient(context, base),
           color: hasAvatar ? base : null,
           boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-          border: Border.all(
-            color: isBlueTheme ? Colors.white : Colors.black,
-            width: 1,
-          ),
         ),
-        child: ClipOval(
-          child: hasAvatar
-              ? NetworkAvatarImage(
-                  imageUrl: resolvedAvatarUrl,
-                  size: diameter,
-                  fallback: fallback,
-                )
-              : fallback,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ClipOval(
+                child: hasAvatar
+                    ? NetworkAvatarImage(
+                        imageUrl: resolvedAvatarUrl,
+                        size: diameter,
+                        fallback: fallback,
+                      )
+                    : fallback,
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: borderColor, width: 1),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

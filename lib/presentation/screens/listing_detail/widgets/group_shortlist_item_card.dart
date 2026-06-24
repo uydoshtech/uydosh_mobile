@@ -100,10 +100,14 @@ class GroupShortlistItemCard extends StatelessWidget {
     );
     final perPersonPrice = fit.formatPerPersonPriceLabel();
     final showDiscuss = onDiscussInGroup != null;
-    final rating = item.rating;
-    final hasGroupActivity = (rating?.count ?? 0) > 0 ||
-        (rating?.participants.any((participant) => participant.stars != null) ??
-            false);
+    final rating = item.rating ??
+        const ListingGroupShortlistRating(
+          count: 0,
+          participants: [],
+        );
+    final showRatingSection = item.rating != null || onRate != null;
+    final hasGroupActivity = rating.count > 0 ||
+        rating.participants.any((participant) => participant.stars != null);
     final discussLabelKey = hasGroupActivity
         ? "group_shortlist_continue_discussion"
         : "group_shortlist_start_listing_discussion";
@@ -205,7 +209,7 @@ class GroupShortlistItemCard extends StatelessWidget {
             ],
             const SizedBox(height: 10),
             ..._buildFitChecks(),
-            if (rating != null && rating.participants.isNotEmpty) ...[
+            if (showRatingSection) ...[
               const SizedBox(height: 8),
               _GroupRatingSection(
                 rating: rating,
@@ -746,11 +750,11 @@ class _GroupRatingSection extends StatelessWidget {
               if (!hasSummary) return participantList;
 
               final summaryCard = _GroupRatingAiSummary(summary: summary);
-              if (constraints.maxWidth >= 430) {
+              if (constraints.maxWidth >= 560) {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(width: 210, child: participantList),
+                    SizedBox(width: 300, child: participantList),
                     const SizedBox(width: 12),
                     Expanded(child: summaryCard),
                   ],
@@ -786,26 +790,95 @@ class _ParticipantRatingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (participants.isEmpty) {
+      return _EmptyRatingPrompt(onRate: onRate);
+    }
+
+    final currentUserHasRating = currentUserId != null &&
+        participants.any(
+          (participant) =>
+              participant.userId == currentUserId && participant.stars != null,
+        );
+    final showRatingPrompt = onRate != null && !currentUserHasRating;
+
+    final chips = [
+      for (final participant in participants)
+        Builder(
+          builder: (context) {
+            final isCurrentUser =
+                currentUserId != null && participant.userId == currentUserId;
+            final canEdit =
+                isCurrentUser && participant.stars != null && onRate != null;
+            return _ParticipantRatingChip(
+              participant: participant,
+              isCurrentUser: isCurrentUser,
+              onTap: canEdit ? () => onRate!(participant.stars!) : null,
+            );
+          },
+        ),
+    ];
+
+    final chipWrap = Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: chips,
+    );
+
+    if (!showRatingPrompt) return chipWrap;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < participants.length; i++) ...[
-          Builder(
-            builder: (context) {
-              final participant = participants[i];
-              final isCurrentUser =
-                  currentUserId != null && participant.userId == currentUserId;
-              final canEdit =
-                  isCurrentUser && participant.stars != null && onRate != null;
-              return _ParticipantRatingChip(
-                participant: participant,
-                isCurrentUser: isCurrentUser,
-                onTap: canEdit ? () => onRate!(participant.stars!) : null,
-              );
-            },
+        _EmptyRatingPrompt(onRate: onRate),
+        const SizedBox(height: 6),
+        chipWrap,
+      ],
+    );
+  }
+}
+
+class _EmptyRatingPrompt extends StatelessWidget {
+  const _EmptyRatingPrompt({this.onRate});
+
+  final ValueChanged<int>? onRate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (index) {
+            final stars = index + 1;
+            return InkWell(
+              onTap: onRate == null
+                  ? null
+                  : () {
+                      HapticFeedbackUtils.selectionClick();
+                      onRate!(stars);
+                    },
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                child: Icon(
+                  Icons.star_outline_rounded,
+                  size: 22,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            );
+          }),
+        ),
+        Text(
+          L10n.get("group_shortlist_rate_prompt"),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.brightness == Brightness.light
+                ? Colors.black
+                : theme.colorScheme.onSurfaceVariant,
           ),
-          if (i < participants.length - 1) const SizedBox(height: 6),
-        ],
+        ),
       ],
     );
   }

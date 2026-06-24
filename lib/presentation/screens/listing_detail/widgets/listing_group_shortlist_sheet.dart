@@ -517,7 +517,9 @@ class _ListingGroupShortlistSheetState
   @override
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.64;
+    final mediaQuery = MediaQuery.of(context);
+    final maxHeight =
+        (mediaQuery.size.height - mediaQuery.padding.top - 24) * 0.82;
     final scheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -643,8 +645,8 @@ class _ListingGroupShortlistSheetState
 /// page's content (capped at [maxHeight]) instead of forcing a fixed viewport.
 ///
 /// Each page's natural height is measured on layout; the container animates to
-/// that height so cards are shown in full without an inner scroll. If a card is
-/// taller than [maxHeight] it falls back to scrolling within the cap.
+/// that height so cards are shown in full without an inner scroll. [maxHeight]
+/// only prevents the sheet from covering the app bar on very small screens.
 class _ExpandablePageView extends StatefulWidget {
   const _ExpandablePageView({
     required this.controller,
@@ -718,7 +720,7 @@ class _ExpandablePageViewState extends State<_ExpandablePageView> {
         },
         itemBuilder: (context, index) {
           return SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             child: _MeasureSize(
               onChange: (size) => _setHeight(index, size.height),
               child: widget.itemBuilder(context, index),

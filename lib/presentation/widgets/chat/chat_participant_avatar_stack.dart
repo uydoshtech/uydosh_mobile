@@ -1,6 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
@@ -25,24 +24,9 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   static const double _overlapFraction = 0.22;
   static const double _avatarBorderWidth = 1;
 
-  /// Ring stroke for circle avatars — visible on both light and blue themes.
-  ///
-  /// Light theme uses a black ring; blue theme uses a white ring. Other themes
-  /// keep [ColorScheme.surface] so overlapping stacks still read as cut-outs on
-  /// card backgrounds.
+  /// Ring stroke for circle avatars — visible on both light and dark themes.
   static Color avatarBorderColor(BuildContext context, {Color? background}) {
-    if (background != null) return background;
-
-    final themeState = ThemeState();
-    final scheme = Theme.of(context).colorScheme;
-
-    if (themeState.isLightTheme) {
-      return AppColors.textDark;
-    }
-    if (themeState.isBlueTheme) {
-      return AppColors.textLight;
-    }
-    return scheme.surface;
+    return avatarCircleBorderColor(context, background: background);
   }
 
   /// Puts the viewer first so the leftmost avatar is always "you".
@@ -76,7 +60,8 @@ class ChatParticipantAvatarStack extends StatelessWidget {
     final visible = ordered.take(maxVisible).toList();
     final overflow = participants.length - visible.length;
     final step = avatarSize * (1 - _overlapFraction);
-    final width = avatarSize + (visible.length - 1) * step + (overflow > 0 ? step : 0);
+    final width =
+        avatarSize + (visible.length - 1) * step + (overflow > 0 ? step : 0);
 
     return SizedBox(
       width: width,
@@ -90,8 +75,8 @@ class ChatParticipantAvatarStack extends StatelessWidget {
               top: 0,
               child: _MemberAvatar(
                 member: visible[i],
-                isCurrentUser: currentUserId != null &&
-                    visible[i].userId == currentUserId,
+                isCurrentUser:
+                    currentUserId != null && visible[i].userId == currentUserId,
                 size: avatarSize,
               ),
             ),
