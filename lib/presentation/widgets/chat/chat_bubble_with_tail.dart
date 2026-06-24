@@ -138,6 +138,9 @@ class _GlassBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final enableBlur = AnimationSettingsState().uiAnimationsEnabled &&
+        !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -153,21 +156,12 @@ class _GlassBubble extends StatelessWidget {
               tailWidth: tailWidth,
               tailHeight: tailHeight,
             ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: (AnimationSettingsState().uiAnimationsEnabled &&
-                        !(MediaQuery.maybeOf(context)?.disableAnimations ??
-                            false))
-                    ? 18
-                    : 0,
-                sigmaY: (AnimationSettingsState().uiAnimationsEnabled &&
-                        !(MediaQuery.maybeOf(context)?.disableAnimations ??
-                            false))
-                    ? 18
-                    : 0,
-              ),
-              child: const SizedBox.expand(),
-            ),
+            child: enableBlur
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: const SizedBox.expand(),
+                  )
+                : const SizedBox.expand(),
           ),
         ),
         CustomPaint(

@@ -142,15 +142,16 @@ class NeumorphicHintBubble extends StatelessWidget {
         Positioned.fill(
           child: ClipPath(
             clipper: clipper,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: enableBlur ? 18 : 0,
-                sigmaY: enableBlur ? 18 : 0,
-              ),
-              child: const DecoratedBox(
-                decoration: BoxDecoration(gradient: fillGradient),
-              ),
-            ),
+            child: enableBlur
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(gradient: fillGradient),
+                    ),
+                  )
+                : const DecoratedBox(
+                    decoration: BoxDecoration(gradient: fillGradient),
+                  ),
           ),
         ),
         // 3. Inner top-left highlight.
@@ -344,8 +345,7 @@ class _BubbleShadowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BubbleShadowPainter oldDelegate) =>
-      oldDelegate.shadow != shadow ||
-      oldDelegate.clipper.shouldReclip(clipper);
+      oldDelegate.shadow != shadow || oldDelegate.clipper.shouldReclip(clipper);
 }
 
 class _BubbleBorderPainter extends CustomPainter {

@@ -1081,15 +1081,13 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                   child: Stack(
                     children: [
                       // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
-                      Positioned.fill(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: enableGlass ? 18 : 0,
-                            sigmaY: enableGlass ? 18 : 0,
+                      if (enableGlass)
+                        Positioned.fill(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                            child: const SizedBox.expand(),
                           ),
-                          child: const SizedBox.expand(),
                         ),
-                      ),
                       DecoratedBox(
                         decoration: BoxDecoration(
                           borderRadius: radius,
@@ -1730,6 +1728,13 @@ class _ArchivedChatsFab extends StatelessWidget {
             : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
 
         const radius = BorderRadius.all(Radius.circular(999));
+        Widget archivePill(Widget child) {
+          if (!enableGlass) return child;
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: child,
+          );
+        }
 
         return Semantics(
           button: true,
@@ -1738,12 +1743,8 @@ class _ArchivedChatsFab extends StatelessWidget {
             type: MaterialType.transparency,
             child: ClipRRect(
               borderRadius: radius,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: enableGlass ? 18 : 0,
-                  sigmaY: enableGlass ? 18 : 0,
-                ),
-                child: InkWell(
+              child: archivePill(
+                InkWell(
                   borderRadius: radius,
                   onTap: () {
                     UiFeedbackUtils.selection();

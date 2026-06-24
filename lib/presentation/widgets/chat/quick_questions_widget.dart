@@ -10,7 +10,6 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_config.dart";
 
 class QuickQuestionsWidget extends StatelessWidget {
-
   const QuickQuestionsWidget({
     required this.onQuestionTap,
     this.conversationContextType,
@@ -54,18 +53,16 @@ class QuickQuestionsWidget extends StatelessWidget {
         final disableAnimations =
             MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final glassAnimationsEnabled =
-            AnimationSettingsState().uiAnimationsEnabled &&
-            !disableAnimations;
+            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
-        final stripDecoration =
-            blendWithGlassBackdrop
-                ? const BoxDecoration()
-                : BoxDecoration(
-                  color: stripColor,
-                  border: Border(
-                    bottom: BorderSide(color: borderColor, width: 0.5),
-                  ),
-                );
+        final stripDecoration = blendWithGlassBackdrop
+            ? const BoxDecoration()
+            : BoxDecoration(
+                color: stripColor,
+                border: Border(
+                  bottom: BorderSide(color: borderColor, width: 0.5),
+                ),
+              );
 
         final keys = quickQuestionKeysFor(
           conversationContextType: conversationContextType,
@@ -142,59 +139,58 @@ class QuickQuestionsWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: label,
     );
+    final glassPill = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.26),
+            BlueThemeColors.primaryLight.withValues(alpha: 0.32),
+            BlueThemeColors.primary.withValues(alpha: 0.48),
+          ],
+          stops: const [0.0, 0.42, 1.0],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.45),
+          width: 1,
+        ),
+      ),
+      child: paddedLabel,
+    );
 
-    final Widget pillBody =
-        useGlassBluePills
-            ? ClipRRect(
+    final Widget pillBody = useGlassBluePills
+        ? ClipRRect(
+            borderRadius: borderRadius,
+            child: glassAnimationsEnabled
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                    child: glassPill,
+                  )
+                : glassPill,
+          )
+        : DecoratedBox(
+            decoration: BoxDecoration(
+              color: backgroundColor,
               borderRadius: borderRadius,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: glassAnimationsEnabled ? 14 : 0,
-                  sigmaY: glassAnimationsEnabled ? 14 : 0,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: borderRadius,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.26),
-                        BlueThemeColors.primaryLight.withValues(alpha: 0.32),
-                        BlueThemeColors.primary.withValues(alpha: 0.48),
-                      ],
-                      stops: const [0.0, 0.42, 1.0],
-                    ),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.45),
-                      width: 1,
-                    ),
-                  ),
-                  child: paddedLabel,
+              border: Border.all(
+                color: backgroundColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            )
-            : DecoratedBox(
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: borderRadius,
-                border: Border.all(
-                  color: backgroundColor.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            );
+            ),
+          );
 
     return GestureDetector(
       onTap: () {

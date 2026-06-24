@@ -1516,32 +1516,31 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: 108,
-                  child: OutlinedButton.icon(
-                    onPressed: _isResolvingCurrentLocation
-                        ? null
-                        : _useCurrentLocationForAddress,
-                    icon: _isResolvingCurrentLocation
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.my_location, size: 18),
-                    label: Text(
-                      L10n.get("use_current_location"),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _getBorderColor(),
-                      side: BorderSide(color: _getBorderColor()),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: const Size(0, 56),
-                      textStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                  width: 56,
+                  child: Tooltip(
+                    message: L10n.get("use_current_location"),
+                    child: Semantics(
+                      button: true,
+                      label: L10n.get("use_current_location"),
+                      child: OutlinedButton(
+                        onPressed: _isResolvingCurrentLocation
+                            ? null
+                            : _useCurrentLocationForAddress,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _getBorderColor(),
+                          side: BorderSide(color: _getBorderColor()),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(56, 56),
+                        ),
+                        child: _isResolvingCurrentLocation
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.my_location, size: 20),
                       ),
                     ),
                   ),

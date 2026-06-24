@@ -49,6 +49,7 @@ import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/lifecycle_ticker_mode.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
@@ -179,7 +180,8 @@ void main() async {
       LogConfig.instance.setConsoleVerbose();
     }
     LogConfig.instance.printConfig();
-    if (!kReleaseMode && LogConfig.instance.uiUxLogLevel != AppLogLevel.nothing) {
+    if (!kReleaseMode &&
+        LogConfig.instance.uiUxLogLevel != AppLogLevel.nothing) {
       logUiUx(
         "trace enabled — open an address field and type 2+ characters",
         tag: "UI/UX",
@@ -201,8 +203,10 @@ void main() async {
     // Keep the OS app icon badge in sync with unread messages.
     // This will get corrected by server-backed refreshes (e.g. inbox load) shortly after launch.
     void syncBadge() {
-      getIt<IAppBadgeService>().setBadgeCount(UnreadMessagesState().unreadCount);
+      getIt<IAppBadgeService>()
+          .setBadgeCount(UnreadMessagesState().unreadCount);
     }
+
     UnreadMessagesState().addListener(syncBadge);
     syncBadge();
 
@@ -412,7 +416,9 @@ void _annotateCrashlyticsWithFlutterError(FlutterErrorDetails details) {
     final exceptionText = details.exceptionAsString();
     crashlytics.setCustomKey(
       "flutter_error_exception",
-      exceptionText.length > 240 ? exceptionText.substring(0, 240) : exceptionText,
+      exceptionText.length > 240
+          ? exceptionText.substring(0, 240)
+          : exceptionText,
     );
 
     final ctx = details.context;
@@ -489,7 +495,8 @@ class _MyAppState extends State<MyApp> {
       return const RoomPlanScanScreen(listingId: 0);
     }
     final onboardingState = OnboardingState();
-    if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
+    if (onboardingState.showOnboarding &&
+        !onboardingState.hasSeenOnboardingScreens) {
       return const OnboardingScreen();
     } else {
       return AppRouter.initialRoute;
@@ -519,8 +526,7 @@ class _MyAppState extends State<MyApp> {
           create: (_) => ConversationsBloc(getIt<IMessagingService>()),
         ),
         BlocProvider<CurrentUserProfileBloc>(
-          create: (_) =>
-              CurrentUserProfileBloc(getIt<IUserProfileService>()),
+          create: (_) => CurrentUserProfileBloc(getIt<IUserProfileService>()),
         ),
       ],
       child: ListenableBuilder(
@@ -546,20 +552,30 @@ class _MyAppState extends State<MyApp> {
                     ? const SplashScreen()
                     : const QuickSplashScreen()),
             builder: (context, child) {
+              Widget subtree = _AchievementUnlockListener(
+                navigatorKey: widget.navigatorKey,
+                child: _BlocAuthListener(
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              );
+
+              final mediaQuery = MediaQuery.maybeOf(context);
+              if (mediaQuery != null) {
+                subtree = MediaQuery(
+                  data: UiPerformancePolicy.reducedEffectsMediaQuery(
+                    mediaQuery,
+                  ),
+                  child: subtree,
+                );
+              }
+
               // Pauses all `vsync`-bound tickers below this point whenever the
               // app is not in `AppLifecycleState.resumed`. Eliminates idle
               // CPU/GPU drain from infinite `repeat()` animations during the
               // `inactive`/`hidden` states (notification shade, Control
               // Center, incoming call UI, brief app-switch peeks) — Flutter's
               // own scheduler only auto-pauses frames in `paused`/`detached`.
-              return LifecycleTickerMode(
-                child: _AchievementUnlockListener(
-                  navigatorKey: widget.navigatorKey,
-                  child: _BlocAuthListener(
-                    child: child ?? const SizedBox.shrink(),
-                  ),
-                ),
-              );
+              return LifecycleTickerMode(child: subtree);
             },
           );
         },
@@ -743,7 +759,8 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 2000));
     if (mounted) {
       final onboardingState = OnboardingState();
-      if (onboardingState.showOnboarding && !onboardingState.hasSeenOnboardingScreens) {
+      if (onboardingState.showOnboarding &&
+          !onboardingState.hasSeenOnboardingScreens) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const OnboardingScreen()),
         );
@@ -1050,8 +1067,7 @@ class _QuickSplashScreenState extends State<QuickSplashScreen>
                     Center(
                       child: Container(
                         constraints: BoxConstraints(maxWidth: width * 0.9),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 24.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
@@ -1083,8 +1099,7 @@ class _QuickSplashScreenState extends State<QuickSplashScreen>
                     Center(
                       child: Container(
                         constraints: BoxConstraints(maxWidth: width * 0.8),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 32.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: Text(
                           L10n.get("splash_subtitle"),
                           style: TextStyle(

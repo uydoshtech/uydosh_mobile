@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "dart:ui";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/messaging_archive_undo_snackbar.dart";
 
 enum ToastDismissReason { completed, preempted }
@@ -39,33 +40,37 @@ class ToastTheme {
     BorderRadius? borderRadius,
   }) {
     final r = borderRadius ?? BorderRadius.circular(_toastCornerRadius);
+    final surface = DecoratedBox(
+      decoration: BoxDecoration(
+        color: baseColor.withOpacity(_toastFillOpacity),
+        borderRadius: r,
+        border: Border.all(
+          color: Colors.white.withOpacity(0.22),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.14),
+            blurRadius: UiPerformancePolicy.reduceEffectsForDevice ? 8 : 18,
+            offset: const Offset(0, 10),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: child,
+    );
+
     return ClipRRect(
       borderRadius: r,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: _toastBlurSigma,
-          sigmaY: _toastBlurSigma,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: baseColor.withOpacity(_toastFillOpacity),
-            borderRadius: r,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.22),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.14),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-                spreadRadius: 1,
+      child: UiPerformancePolicy.reduceEffectsForDevice
+          ? surface
+          : BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: _toastBlurSigma,
+                sigmaY: _toastBlurSigma,
               ),
-            ],
-          ),
-          child: child,
-        ),
-      ),
+              child: surface,
+            ),
     );
   }
 
@@ -372,23 +377,22 @@ class ToastTheme {
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
-      builder:
-          (context) => _TopToastOverlay(
-            message: message,
-            backgroundColor: backgroundColor,
-            duration: duration,
-            leadingIcon: leadingIcon,
-            onDismiss: () {
-              overlayEntry.remove();
-              _currentToastOverlay = null;
-              final cb = _currentToastOnDismissed;
-              _currentToastOnDismissed = null;
-              cb?.call();
-              final closed = _currentToastOnClosed;
-              _currentToastOnClosed = null;
-              closed?.call(ToastDismissReason.completed);
-            },
-          ),
+      builder: (context) => _TopToastOverlay(
+        message: message,
+        backgroundColor: backgroundColor,
+        duration: duration,
+        leadingIcon: leadingIcon,
+        onDismiss: () {
+          overlayEntry.remove();
+          _currentToastOverlay = null;
+          final cb = _currentToastOnDismissed;
+          _currentToastOnDismissed = null;
+          cb?.call();
+          final closed = _currentToastOnClosed;
+          _currentToastOnClosed = null;
+          closed?.call(ToastDismissReason.completed);
+        },
+      ),
     );
 
     _currentToastOverlay = overlayEntry;
@@ -458,7 +462,7 @@ class ToastTheme {
   /// Telegram-style archive ribbon with countdown + Undo at the bottom.
   /// Other screens should use rolling [showWarning] / [showSuccess] instead.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
-  showMessagingArchiveUndoSnackBar(
+      showMessagingArchiveUndoSnackBar(
     BuildContext context, {
     required String message,
     required String undoLabel,
@@ -501,7 +505,6 @@ class ToastTheme {
 
 /// Custom animated toast content with rolling animation
 class _RollingToastContent extends StatefulWidget {
-
   const _RollingToastContent({
     required this.message,
     required this.backgroundColor,
@@ -624,7 +627,6 @@ class _RollingToastContentState extends State<_RollingToastContent>
 /// This toast appears right below the app header (AppBar) with a small buffer space
 /// to ensure it doesn"t overlap with the header content.
 class _TopToastOverlay extends StatefulWidget {
-
   const _TopToastOverlay({
     required this.message,
     required this.backgroundColor,
@@ -740,8 +742,7 @@ class _TopToastOverlayState extends State<_TopToastOverlay>
   Widget build(BuildContext context) {
     final foregroundColor = ToastTheme._foregroundOn(widget.backgroundColor);
     return Positioned(
-      top:
-          kToolbarHeight +
+      top: kToolbarHeight +
           MediaQuery.of(context).padding.top +
           8, // Position below AppBar with small buffer
       left: 0,

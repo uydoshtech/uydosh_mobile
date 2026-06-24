@@ -1,6 +1,7 @@
 import "package:flutter/foundation.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 class AnimationSettingsState extends ChangeNotifier {
   factory AnimationSettingsState() => _instance;
@@ -27,7 +28,8 @@ class AnimationSettingsState extends ChangeNotifier {
 
   bool get isInitialized => _isInitialized;
 
-  bool get uiAnimationsEnabled => _uiAnimationsEnabled;
+  bool get uiAnimationsEnabled =>
+      _uiAnimationsEnabled && !UiPerformancePolicy.reduceEffectsForDevice;
   bool get searchPulseEnabled => _uiAnimationsEnabled && _searchPulseEnabled;
   bool get bellIdleEnabled => _uiAnimationsEnabled && _bellIdleEnabled;
   bool get bellTapEnabled => _uiAnimationsEnabled && _bellTapEnabled;
@@ -96,5 +98,3 @@ class AnimationSettingsState extends ChangeNotifier {
     await _saveBool(_keyBellTapEnabled, enabled);
   }
 }
-
-

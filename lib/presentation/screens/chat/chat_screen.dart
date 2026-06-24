@@ -1493,21 +1493,22 @@ class _ChatScreenState extends State<ChatScreen> {
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final enableGlass =
         AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final panel = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: topRadius,
+        color: BlueThemeColors.background.withValues(alpha: 0.44),
+      ),
+      child: _chatComposerColumn(blendWithGlassBackdrop: enableGlass),
+    );
+
     return ClipRRect(
       borderRadius: topRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: enableGlass ? 18 : 0,
-          sigmaY: enableGlass ? 18 : 0,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: topRadius,
-            color: BlueThemeColors.background.withValues(alpha: 0.44),
-          ),
-          child: _chatComposerColumn(blendWithGlassBackdrop: true),
-        ),
-      ),
+      child: enableGlass
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: panel,
+            )
+          : panel,
     );
   }
 
@@ -3214,6 +3215,21 @@ class _ComposerReplyPreview extends StatelessWidget {
     final tileFill = blendWithGlassBackdrop
         ? tileTint.withValues(alpha: isDark ? 0.18 : 0.34)
         : tileTint.withValues(alpha: isDark ? 0.78 : 0.86);
+    final disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableBackdropBlur =
+        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+
+    Widget maybeBlurReplyPreview(Widget child) {
+      if (!enableBackdropBlur) return child;
+      return BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: blendWithGlassBackdrop ? 12 : 6,
+          sigmaY: blendWithGlassBackdrop ? 12 : 6,
+        ),
+        child: child,
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -3227,12 +3243,8 @@ class _ComposerReplyPreview extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: blendWithGlassBackdrop ? 12 : 6,
-            sigmaY: blendWithGlassBackdrop ? 12 : 6,
-          ),
-          child: DecoratedBox(
+        child: maybeBlurReplyPreview(
+          DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               gradient: LinearGradient(

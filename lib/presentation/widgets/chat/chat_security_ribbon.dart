@@ -108,20 +108,20 @@ class ChatSecurityRibbon extends StatelessWidget {
         final enableGlass =
             AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
 
+        final ribbon = Material(
+          color: Colors.transparent,
+          child: ribbonContent,
+        );
+
         return ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: enableGlass ? 18 : 0,
-              sigmaY: enableGlass ? 18 : 0,
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: ribbonContent,
-            ),
-          ),
+          child: enableGlass
+              ? BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: ribbon,
+                )
+              : ribbon,
         );
       },
     );
   }
 }
-

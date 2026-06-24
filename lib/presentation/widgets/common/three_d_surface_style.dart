@@ -1,11 +1,13 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Neumorphic-style elevation shared by [ThreeDPillButton] and listing-detail tiles.
 abstract final class ThreeDSurfaceStyle {
   ThreeDSurfaceStyle._();
 
-  static Color _darkShadowColor(BuildContext context) => Colors.black.withValues(
+  static Color _darkShadowColor(BuildContext context) =>
+      Colors.black.withValues(
         alpha: Theme.of(context).brightness == Brightness.dark ? 0.45 : 0.20,
       );
 
@@ -14,18 +16,30 @@ abstract final class ThreeDSurfaceStyle {
         alpha: LiquidGlassRendering.neumorphicLightShadowAlpha(context),
       );
 
-  static List<BoxShadow> elevatedShadows(BuildContext context) => [
+  static List<BoxShadow> elevatedShadows(BuildContext context) {
+    if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
+      return [
         BoxShadow(
-          color: _lightShadowColor(context),
-          offset: const Offset(-3, -3),
-          blurRadius: 10,
-        ),
-        BoxShadow(
-          color: _darkShadowColor(context),
-          offset: const Offset(6, 6),
-          blurRadius: 14,
+          color: _darkShadowColor(context).withValues(alpha: 0.55),
+          offset: const Offset(0, 3),
+          blurRadius: 8,
         ),
       ];
+    }
+
+    return [
+      BoxShadow(
+        color: _lightShadowColor(context),
+        offset: const Offset(-3, -3),
+        blurRadius: 10,
+      ),
+      BoxShadow(
+        color: _darkShadowColor(context),
+        offset: const Offset(6, 6),
+        blurRadius: 14,
+      ),
+    ];
+  }
 
   static List<BoxShadow> pressedShadows(BuildContext context) => [
         BoxShadow(
@@ -38,23 +52,42 @@ abstract final class ThreeDSurfaceStyle {
   /// Recessed / “pressed” look (e.g. selected language card). Uses negative
   /// [BoxShadow.spreadRadius] so shadows read as inside the rounded rect.
   static List<BoxShadow> insetRecessedShadows(BuildContext context) => [
-        BoxShadow(
-          color: _darkShadowColor(context),
-          offset: const Offset(4, 4),
-          blurRadius: 12,
-          spreadRadius: -6,
-        ),
-        BoxShadow(
-          color: _lightShadowColor(context),
-          offset: const Offset(-4, -4),
-          blurRadius: 12,
-          spreadRadius: -6,
-        ),
+        if (!UiPerformancePolicy.complexShadowsEnabled(context))
+          BoxShadow(
+            color: _darkShadowColor(context).withValues(alpha: 0.45),
+            offset: const Offset(0, 2),
+            blurRadius: 6,
+            spreadRadius: -4,
+          )
+        else ...[
+          BoxShadow(
+            color: _darkShadowColor(context),
+            offset: const Offset(4, 4),
+            blurRadius: 12,
+            spreadRadius: -6,
+          ),
+          BoxShadow(
+            color: _lightShadowColor(context),
+            offset: const Offset(-4, -4),
+            blurRadius: 12,
+            spreadRadius: -6,
+          ),
+        ],
       ];
 
   /// Softer dual-shadow for flat “soft UI” buttons that match [ColorScheme.surface].
   static List<BoxShadow> neumorphicSoftRaisedShadows(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
+      return [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: isDark ? 0.32 : 0.12),
+          offset: const Offset(0, 3),
+          blurRadius: 8,
+        ),
+      ];
+    }
+
     return [
       BoxShadow(
         color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.72),
@@ -93,6 +126,10 @@ abstract final class ThreeDSurfaceStyle {
     Color base, {
     double depthScale = 1.0,
   }) {
+    if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
+      return const [];
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cool = Color.lerp(base, const Color(0xFF9EB7E8), 0.42)!;
     return [
@@ -129,7 +166,8 @@ abstract final class ThreeDSurfaceStyle {
   }
 
   /// Active-tab orb on the curved bottom bar — sphere gradient + depth, no halo.
-  static BoxDecoration navActiveOrbDecoration(BuildContext context, Color base) {
+  static BoxDecoration navActiveOrbDecoration(
+      BuildContext context, Color base) {
     final isDarkBase = base.computeLuminance() < 0.15;
     return BoxDecoration(
       shape: BoxShape.circle,
@@ -175,8 +213,8 @@ abstract final class ThreeDSurfaceStyle {
     Brightness brightness, {
     double? highlightAlpha,
   }) {
-    final topAlpha = highlightAlpha ??
-        (brightness == Brightness.dark ? 0.22 : 0.45);
+    final topAlpha =
+        highlightAlpha ?? (brightness == Brightness.dark ? 0.22 : 0.45);
     return RadialGradient(
       center: const Alignment(-0.55, -0.62),
       radius: 1.05,
@@ -199,9 +237,9 @@ abstract final class ThreeDSurfaceStyle {
   /// Right strip inside wheel rows (arrow column) — matches plate corners.
   static const BorderRadius wheelPickerPlateArrowStripBorderRadius =
       BorderRadius.only(
-        topRight: Radius.circular(wheelPickerCornerRadius),
-        bottomRight: Radius.circular(wheelPickerCornerRadius),
-      );
+    topRight: Radius.circular(wheelPickerCornerRadius),
+    bottomRight: Radius.circular(wheelPickerCornerRadius),
+  );
 
   /// Outer chrome for [CupertinoPicker] wheels: same gradient + shadows as [ThreeDPillButton].
   ///

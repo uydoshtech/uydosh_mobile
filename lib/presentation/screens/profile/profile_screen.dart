@@ -174,8 +174,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       final telegramId = me["telegram_id"];
       setState(() {
-        _telegramLinked =
-            telegramId is String ? telegramId.trim().isNotEmpty : telegramId != null;
+        _telegramLinked = telegramId is String
+            ? telegramId.trim().isNotEmpty
+            : telegramId != null;
         _canUnbindTelegram = _hasAlternateSignInMethod(me);
         if (_telegramLinked == false && _expandedSectionIndex == null) {
           _expandedSectionIndex = 0;
@@ -187,8 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   bool _hasAlternateSignInMethod(Map<String, dynamic> me) {
-    bool hasValue(dynamic value) =>
-        value is String && value.trim().isNotEmpty;
+    bool hasValue(dynamic value) => value is String && value.trim().isNotEmpty;
     return hasValue(me["firebase_uid"]) ||
         hasValue(me["email"]) ||
         hasValue(me["phone_number"]);
@@ -240,8 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case "Telegram OIDC is not configured":
         return L10n.get("telegram_bind_not_configured");
       default:
-        return L10n.get("telegram_link_failed")
-            .replaceAll("{error}", code);
+        return L10n.get("telegram_link_failed").replaceAll("{error}", code);
     }
   }
 
@@ -265,9 +264,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return L10n.get("telegram_bind_not_available");
     }
     return L10n.get("telegram_link_failed").replaceAll(
-          "{error}",
-          ErrorMessageHelper.sanitizeErrorMessage(error),
-        );
+      "{error}",
+      ErrorMessageHelper.sanitizeErrorMessage(error),
+    );
   }
 
   Future<void> _linkTelegramAccount() async {
@@ -296,7 +295,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
 
-      final url = await getIt<IAuthService>().fetchTelegramOAuthBindAuthorizationUrl(
+      final url =
+          await getIt<IAuthService>().fetchTelegramOAuthBindAuthorizationUrl(
         languageCode: LanguageState().currentLanguage,
         returnTo: telegramOAuthWebReturnTo(),
       );
@@ -380,18 +380,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         message: backendCode != null && backendCode.isNotEmpty
             ? _telegramUnbindErrorMessage(backendCode)
             : L10n.get("telegram_unlink_failed").replaceAll(
-                  "{error}",
-                  ErrorMessageHelper.sanitizeErrorMessage(e),
-                ),
+                "{error}",
+                ErrorMessageHelper.sanitizeErrorMessage(e),
+              ),
       );
     } catch (e) {
       if (!mounted) return;
       ToastTheme.showWarning(
         context,
         message: L10n.get("telegram_unlink_failed").replaceAll(
-              "{error}",
-              ErrorMessageHelper.sanitizeErrorMessage(e),
-            ),
+          "{error}",
+          ErrorMessageHelper.sanitizeErrorMessage(e),
+        ),
       );
     } finally {
       if (mounted) {
@@ -505,7 +505,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }(),
         () async {
           try {
-            favoritesCount = await getIt<IFavoriteService>().getUserFavoritesCount();
+            favoritesCount =
+                await getIt<IFavoriteService>().getUserFavoritesCount();
           } catch (_) {}
         }(),
         () async {
@@ -784,10 +785,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       actions: actions,
-      backgroundColor:
-          useLiquidGlass
-              ? liquidGlassAppBarMaterialColor(context)
-              : appBarTheme.backgroundColor,
+      backgroundColor: useLiquidGlass
+          ? liquidGlassAppBarMaterialColor(context)
+          : appBarTheme.backgroundColor,
       surfaceTintColor:
           useLiquidGlass ? Colors.transparent : appBarTheme.surfaceTintColor,
       elevation: useLiquidGlass ? 0 : null,
@@ -797,10 +797,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       forceMaterialTransparency: useLiquidGlass,
       flexibleSpace:
           useLiquidGlass ? const LiquidGlassAppBarFlexibleSpace() : null,
-      foregroundColor:
-          useLiquidGlass
-              ? (appBarTheme.foregroundColor ?? themeState.textColor)
-              : appBarTheme.foregroundColor,
+      foregroundColor: useLiquidGlass
+          ? (appBarTheme.foregroundColor ?? themeState.textColor)
+          : appBarTheme.foregroundColor,
     );
   }
 
@@ -814,115 +813,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ProfileHeaderSection(
-                profile: profile,
-                cachedGoogleDisplayName: _cachedGoogleDisplayName,
-                cachedGooglePhotoUrl: _cachedGooglePhotoUrl,
-                userRole: _userRole,
-                userRoleLoaded: _userRoleLoaded,
-                userBlocked: _userBlocked,
-                initialFollowCounts: _prefetchedFollowCounts,
-                getRoleLabel: (role) => _getRoleLabel(role, context),
-                onEditProfile: () => _openEditProfileScreen(context, profile),
-                onAvatarUpdated: () {
-                  if (!mounted) return;
-                  context.read<CurrentUserProfileBloc>().add(
-                        const CurrentUserProfileEvent.fetchProfile(),
-                      );
-                },
-              ),
-              const SizedBox(height: 16),
-              ProfileStatsSection(
-                profile: profile,
-                cachedGoogleDisplayName: _cachedGoogleDisplayName,
-                cachedTelegramPhotoUrl: _cachedTelegramPhotoUrl,
-                expandedSectionIndex: _expandedSectionIndex,
-                onExpandedSectionChanged: (index) {
-                  setState(() => _expandedSectionIndex = index);
-                },
-                getLocalizedRegionName: _getLocalizedRegionName,
-                getLocalizedUniversityName: _getLocalizedUniversityName,
-                telegramLinked: _telegramLinked,
-                canUnbindTelegram: _canUnbindTelegram,
-                isLinkingTelegram: _isLinkingTelegram,
-                isUnlinkingTelegram: _isUnlinkingTelegram,
-                onLinkTelegram: _telegramLinked == false ? _linkTelegramAccount : null,
-                onUnlinkTelegram:
-                    _telegramLinked == true && _canUnbindTelegram
-                        ? _unlinkTelegramAccount
-                        : null,
-              ),
-              const SizedBox(height: 24),
-              ProfileListingsSection(
-                userRole: _userRole,
-                expandedMenuGroupIndex: _expandedProfileMenuGroupIndex,
-                onExpandedMenuGroupChanged: (index) {
-                  setState(() => _expandedProfileMenuGroupIndex = index);
-                },
-                onAchievementsOpened: () => setState(() {}),
-              ),
-              const SizedBox(height: 24),
-              // AI allowance upsell tile (Использование AI-помощника)
-              // if (!_userBlocked && AuthenticationState().isAuthenticated)
-              //   ValueListenableBuilder<bool>(
-              //     valueListenable:
-              //         ClientGeminiListingUiConfig.hideGeminiListingUi,
-              //     builder: (context, hideListingGeminiUi, _) {
-              //       final allowanceVisible =
-              //           AiAllowanceUpsellBanner.willShowContent(
-              //         snapshot: _listingAiQuota,
-              //         isLoading: _listingAiQuotaLoading,
-              //       );
-              //       return Column(
-              //         mainAxisSize: MainAxisSize.min,
-              //         crossAxisAlignment: CrossAxisAlignment.stretch,
-              //         children: [
-              //           AiAllowanceUpsellBanner(
-              //             snapshot: _listingAiQuota,
-              //             isLoading: _listingAiQuotaLoading,
-              //             hideListingGeminiUi: hideListingGeminiUi,
-              //             onUpgradeTap: () {
-              //               Navigator.of(context).push<void>(
-              //                 MaterialPageRoute<void>(
-              //                   builder: (_) =>
-              //                       const AiPremiumPlaceholderScreen(),
-              //                 ),
-              //               );
-              //             },
-              //           ),
-              //           if (allowanceVisible) const SizedBox(height: 24),
-              //         ],
-              //       );
-              //     },
-              //   ),
-              Builder(
-                builder: (context) {
-                  final firebaseEmail =
-                      FirebaseAuth.instance.currentUser?.email;
-                  final currentEmail =
-                      (firebaseEmail ?? _cachedUserEmail)?.trim().toLowerCase();
-                  // Email allowlist + any admin: moderators often sign in with a
-                  // non-founder Google account, so the founder email check alone
-                  // is not enough to keep staff from self-deleting.
-                  final deleteProtected =
-                      currentEmail == _kProtectedDeleteAccountEmail ||
+            profile: profile,
+            cachedGoogleDisplayName: _cachedGoogleDisplayName,
+            cachedGooglePhotoUrl: _cachedGooglePhotoUrl,
+            userRole: _userRole,
+            userRoleLoaded: _userRoleLoaded,
+            userBlocked: _userBlocked,
+            initialFollowCounts: _prefetchedFollowCounts,
+            getRoleLabel: (role) => _getRoleLabel(role, context),
+            onEditProfile: () => _openEditProfileScreen(context, profile),
+            onAvatarUpdated: () {
+              if (!mounted) return;
+              context.read<CurrentUserProfileBloc>().add(
+                    const CurrentUserProfileEvent.fetchProfile(),
+                  );
+            },
+          ),
+          const SizedBox(height: 16),
+          ProfileStatsSection(
+            profile: profile,
+            cachedGoogleDisplayName: _cachedGoogleDisplayName,
+            cachedTelegramPhotoUrl: _cachedTelegramPhotoUrl,
+            expandedSectionIndex: _expandedSectionIndex,
+            onExpandedSectionChanged: (index) {
+              setState(() => _expandedSectionIndex = index);
+            },
+            getLocalizedRegionName: _getLocalizedRegionName,
+            getLocalizedUniversityName: _getLocalizedUniversityName,
+            telegramLinked: _telegramLinked,
+            canUnbindTelegram: _canUnbindTelegram,
+            isLinkingTelegram: _isLinkingTelegram,
+            isUnlinkingTelegram: _isUnlinkingTelegram,
+            onLinkTelegram:
+                _telegramLinked == false ? _linkTelegramAccount : null,
+            onUnlinkTelegram: _telegramLinked == true && _canUnbindTelegram
+                ? _unlinkTelegramAccount
+                : null,
+          ),
+          const SizedBox(height: 24),
+          ProfileListingsSection(
+            userRole: _userRole,
+            expandedMenuGroupIndex: _expandedProfileMenuGroupIndex,
+            onExpandedMenuGroupChanged: (index) {
+              setState(() => _expandedProfileMenuGroupIndex = index);
+            },
+            onAchievementsOpened: () => setState(() {}),
+          ),
+          const SizedBox(height: 24),
+          // AI allowance upsell tile (Использование AI-помощника)
+          // if (!_userBlocked && AuthenticationState().isAuthenticated)
+          //   ValueListenableBuilder<bool>(
+          //     valueListenable:
+          //         ClientGeminiListingUiConfig.hideGeminiListingUi,
+          //     builder: (context, hideListingGeminiUi, _) {
+          //       final allowanceVisible =
+          //           AiAllowanceUpsellBanner.willShowContent(
+          //         snapshot: _listingAiQuota,
+          //         isLoading: _listingAiQuotaLoading,
+          //       );
+          //       return Column(
+          //         mainAxisSize: MainAxisSize.min,
+          //         crossAxisAlignment: CrossAxisAlignment.stretch,
+          //         children: [
+          //           AiAllowanceUpsellBanner(
+          //             snapshot: _listingAiQuota,
+          //             isLoading: _listingAiQuotaLoading,
+          //             hideListingGeminiUi: hideListingGeminiUi,
+          //             onUpgradeTap: () {
+          //               Navigator.of(context).push<void>(
+          //                 MaterialPageRoute<void>(
+          //                   builder: (_) =>
+          //                       const AiPremiumPlaceholderScreen(),
+          //                 ),
+          //               );
+          //             },
+          //           ),
+          //           if (allowanceVisible) const SizedBox(height: 24),
+          //         ],
+          //       );
+          //     },
+          //   ),
+          Builder(
+            builder: (context) {
+              final firebaseEmail = FirebaseAuth.instance.currentUser?.email;
+              final currentEmail =
+                  (firebaseEmail ?? _cachedUserEmail)?.trim().toLowerCase();
+              // Email allowlist + any admin: moderators often sign in with a
+              // non-founder Google account, so the founder email check alone
+              // is not enough to keep staff from self-deleting.
+              final deleteProtected =
+                  currentEmail == _kProtectedDeleteAccountEmail ||
                       (_userRole?.toLowerCase().trim() == "admin");
 
-                  return ProfileSettingsSection(
-                    onLogout: () => _showLogoutDialog(context),
-                    canDeleteAccount: !deleteProtected,
-                    onDeleteAccount: () => _showDeleteAccountDialog(context),
-                    onDeleteAccountDisabledTap: () {
-                      ToastTheme.showInfo(
-                        context,
-                        message: L10n.get("delete_account_not_allowed"),
-                      );
-                    },
+              return ProfileSettingsSection(
+                onLogout: () => _showLogoutDialog(context),
+                canDeleteAccount: !deleteProtected,
+                onDeleteAccount: () => _showDeleteAccountDialog(context),
+                onDeleteAccountDisabledTap: () {
+                  ToastTheme.showInfo(
+                    context,
+                    message: L10n.get("delete_account_not_allowed"),
                   );
                 },
-              ),
-              const SizedBox(height: 32),
-            ],
+              );
+            },
           ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 
@@ -1072,11 +1070,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _openSupportChat(BuildContext context) {
     HapticFeedbackUtils.impact();
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const SupportChatScreen(),
-      ),
-    ).then((_) => SupportUnreadState().refresh());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (context) => const SupportChatScreen(),
+          ),
+        )
+        .then((_) => SupportUnreadState().refresh());
   }
 
   Future<void> _openEditProfileScreen(
@@ -1143,6 +1143,13 @@ class _SupportChatFab extends StatelessWidget {
             themeState.isLightTheme ? scheme.surface : themeState.cardColor;
 
         const radius = BorderRadius.all(Radius.circular(999));
+        Widget supportPill(Widget child) {
+          if (!enableGlass) return child;
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: child,
+          );
+        }
 
         final pill = Semantics(
           button: true,
@@ -1151,12 +1158,8 @@ class _SupportChatFab extends StatelessWidget {
             type: MaterialType.transparency,
             child: ClipRRect(
               borderRadius: radius,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: enableGlass ? 18 : 0,
-                  sigmaY: enableGlass ? 18 : 0,
-                ),
-                child: InkWell(
+              child: supportPill(
+                InkWell(
                   borderRadius: radius,
                   onTap: onPressed,
                   child: DecoratedBox(

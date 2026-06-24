@@ -196,8 +196,7 @@ class _AchievementUnlockBottomSheetState
     return path;
   }
 
-  String _getDescriptionKey(String achievementKey) =>
-      "${achievementKey}_desc";
+  String _getDescriptionKey(String achievementKey) => "${achievementKey}_desc";
 
   @override
   Widget build(BuildContext context) {
@@ -350,49 +349,49 @@ class _GlassBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final enableGlass = AnimationSettingsState().uiAnimationsEnabled &&
+        !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
+    final badge = DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: isDark ? 0.10 : 0.46),
+            surfaceTint.withValues(alpha: isDark ? 0.30 : 0.40),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(
+            alpha: isDark ? 0.18 : 0.60,
+          ),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.10),
+            blurRadius: enableGlass ? 14 : 8,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Center(child: child),
+    );
+
     return SizedBox(
       width: 84,
       height: 84,
       child: ClipOval(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: (AnimationSettingsState().uiAnimationsEnabled &&
-                    !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
-                ? (isDark ? 18 : 22)
-                : 0,
-            sigmaY: (AnimationSettingsState().uiAnimationsEnabled &&
-                    !(MediaQuery.maybeOf(context)?.disableAnimations ?? false))
-                ? (isDark ? 18 : 22)
-                : 0,
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: isDark ? 0.10 : 0.46),
-                  surfaceTint.withValues(alpha: isDark ? 0.30 : 0.40),
-                ],
-              ),
-              border: Border.all(
-                color: Colors.white.withValues(
-                  alpha: isDark ? 0.18 : 0.60,
+        child: enableGlass
+            ? BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: isDark ? 18 : 22,
+                  sigmaY: isDark ? 18 : 22,
                 ),
-                width: 0.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.10),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Center(child: child),
-          ),
-        ),
+                child: badge,
+              )
+            : badge,
       ),
     );
   }

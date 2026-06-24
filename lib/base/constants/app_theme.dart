@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 /// Theme manager for switching between different app themes
 class AppTheme {
@@ -116,6 +117,7 @@ class AppTheme {
         onInverseSurface: BlueThemeColors.textPrimary,
       ),
       useMaterial3: true,
+      pageTransitionsTheme: const UiPerformancePageTransitionsTheme(),
 
       // Cursor and text selection theme for better visibility in blue theme
       textSelectionTheme: TextSelectionThemeData(
@@ -359,6 +361,7 @@ class AppTheme {
         surfaceContainerLowest: LightThemeColors.background,
       ),
       useMaterial3: true,
+      pageTransitionsTheme: const UiPerformancePageTransitionsTheme(),
 
       // Cursor and text selection theme for better visibility in light theme
       textSelectionTheme: TextSelectionThemeData(
@@ -549,6 +552,7 @@ class AppTheme {
         onInverseSurface: MessagingThemeColors.textOnCard,
       ),
       useMaterial3: true,
+      pageTransitionsTheme: const UiPerformancePageTransitionsTheme(),
 
       // Cursor and text selection theme for better visibility
       textSelectionTheme: TextSelectionThemeData(

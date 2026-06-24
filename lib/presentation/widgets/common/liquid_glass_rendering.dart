@@ -4,7 +4,7 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 
 /// Shared liquid-glass rendering helpers (drawer, bottom sheets, plates).
@@ -21,10 +21,10 @@ abstract final class LiquidGlassRendering {
         tileMode: TileMode.clamp,
       );
 
-  /// Frosted-glass blur is structural UI chrome — not a decorative animation.
-  /// Only respect the platform reduce-motion / disable-animations flag.
+  /// Frosted-glass blur is structural UI chrome, but still expensive on
+  /// Android because it samples and blends the backdrop while scrolling.
   static bool effectsEnabled(BuildContext context) =>
-      !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
+      UiPerformancePolicy.backdropBlurEnabled(context);
 
   /// Drawer blur strength.
   static const double panelBlurSigma = 22;
@@ -127,7 +127,6 @@ abstract final class LiquidGlassRendering {
   /// while scrolling). Skip it on Android always, and on other platforms while
   /// the user is actively scrolling the feed.
   static bool feedTileBackdropBlurEnabled(BuildContext context) {
-    if (isAndroidDevice) return false;
     if (!effectsEnabled(context)) return false;
     if (!AnimationSettingsState().uiAnimationsEnabled) return false;
     if (FeedScrollScope.isUserScrollingOf(context)) return false;
@@ -137,7 +136,7 @@ abstract final class LiquidGlassRendering {
   /// Dual neumorphic shadows on every feed row add GPU overdraw during flings.
   /// Android feed tiles use a single, lighter drop shadow instead.
   static bool feedTileUseCompactShadows(BuildContext context) {
-    return isAndroidDevice;
+    return UiPerformancePolicy.compactShadowsPreferred(context);
   }
 
   static List<BoxShadow> feedTileCompactShadows(BuildContext context) {
@@ -154,6 +153,9 @@ abstract final class LiquidGlassRendering {
   /// Neumorphic top-left highlight strength (listing cards, 3D buttons).
   static double neumorphicLightShadowAlpha(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
+      return isDark ? 0.04 : 0.18;
+    }
     if (!kIsWeb) return isDark ? 0.06 : 0.65;
     return isDark ? 0.04 : 0.65;
   }
@@ -248,7 +250,7 @@ abstract final class LiquidGlassRendering {
     required List<double> saturationMatrix,
     required Widget child,
   }) {
-    if (!enabled) return child;
+    if (!enabled || sigma <= 0) return child;
     return BackdropFilter(
       filter: ColorFilter.matrix(saturationMatrix),
       child: backdropBlur(enabled: true, sigma: sigma, child: child),

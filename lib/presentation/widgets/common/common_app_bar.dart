@@ -14,7 +14,8 @@ const double standardAppBarToolbarHeight = kToolbarHeight;
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({
-    required this.title, super.key,
+    required this.title,
+    super.key,
     this.actions,
     this.leading,
     this.showBackButton = false,
@@ -40,8 +41,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final injectDefaultBack = showBackButton && leading == null;
-    final effectiveLeading =
-        leading ??
+    final effectiveLeading = leading ??
         (injectDefaultBack
             ? ThreeDAppBarIconButton.backLeading(context)
             : null);
@@ -49,47 +49,42 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final appBarTheme = theme.appBarTheme;
     final defaultBg = backgroundColor ?? appBarTheme.backgroundColor;
-    final resolvedBg =
-        liquidGlass
-            ? liquidGlassAppBarMaterialColor(context)
-            : (defaultBg ?? Colors.transparent);
+    final resolvedBg = liquidGlass
+        ? liquidGlassAppBarMaterialColor(context)
+        : (defaultBg ?? Colors.transparent);
 
     return UydoshAppBar(
-      title:
-          centerTitle
-              ? Text(
-                title,
-                style:
-                    Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ) ??
-                    const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textLight,
-                    ),
-              )
-              : Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    title,
-                    style:
-                        Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ) ??
-                        const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textLight,
-                        ),
+      title: centerTitle
+          ? Text(
+              title,
+              style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ) ??
+                  const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textLight,
                   ),
+            )
+          : Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  title,
+                  style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ) ??
+                      const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textLight,
+                      ),
                 ),
               ),
+            ),
       backgroundColor: resolvedBg,
-      foregroundColor:
-          foregroundColor ??
+      foregroundColor: foregroundColor ??
           Theme.of(context).appBarTheme.foregroundColor ??
           AppColors.textLight,
       elevation: elevation ?? 0,
@@ -116,8 +111,7 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final base =
-        theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
+    final base = theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
     final isLight = ThemeState().isLightTheme;
     final disableAnimations =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
@@ -125,48 +119,53 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
         AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
     // "Liquid glass": blur + translucent tint + subtle highlights.
     // Light theme: weaker tint so content behind the bar stays visible through the blur.
-    final blurSigma = enableGlass ? (isLight ? 22.0 : 18.0) : 0.0;
     final tintHigh = isLight ? 0.12 : 0.28;
     final tintLow = isLight ? 0.04 : 0.12;
     final sheenHigh = isLight ? 0.05 : 0.10;
     final shadowOpacity = isLight ? 0.06 : 0.10;
-
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                base.withValues(alpha: tintHigh),
-                base.withValues(alpha: tintLow),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: shadowOpacity),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
+    final background = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            base.withValues(alpha: tintHigh),
+            base.withValues(alpha: tintLow),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: shadowOpacity),
+            blurRadius: enableGlass ? 18 : 8,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: sheenHigh),
+              Colors.white.withValues(alpha: 0),
             ],
           ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withValues(alpha: sheenHigh),
-                  Colors.white.withValues(alpha: 0),
-                ],
-              ),
-            ),
-            child: const SizedBox.expand(),
-          ),
         ),
+        child: const SizedBox.expand(),
       ),
+    );
+
+    return ClipRect(
+      child: enableGlass
+          ? BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: isLight ? 22.0 : 18.0,
+                sigmaY: isLight ? 22.0 : 18.0,
+              ),
+              child: background,
+            )
+          : background,
     );
   }
 }
