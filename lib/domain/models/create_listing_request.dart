@@ -19,6 +19,8 @@ class CreateListingRequest implements IJsonEncodable {
     this.subwayStationIds, // Multi-station selection (demand-side listings)
     this.subwayLineId, // Add subway line ID parameter
     this.addressText,
+    this.addressLatitude,
+    this.addressLongitude,
     this.moveInDate, // Add move-in date parameter
     this.privateRoom, // Add private room parameter
     this.userId, // Add user ID parameter
@@ -39,6 +41,8 @@ class CreateListingRequest implements IJsonEncodable {
   final List<int>? subwayStationIds; // Multi-station selection
   final int? subwayLineId; // Add subway line ID
   final String? addressText;
+  final double? addressLatitude;
+  final double? addressLongitude;
   final String? moveInDate; // Add move-in date field
   final bool? privateRoom; // Add private room field
   final int? userId;
@@ -62,6 +66,8 @@ class CreateListingRequest implements IJsonEncodable {
       "subwayLineId":
           subwayLineId, // Always include, sends null when no metro line
       if (addressText != null) "addressText": addressText,
+      if (addressLatitude != null) "addressLatitude": addressLatitude,
+      if (addressLongitude != null) "addressLongitude": addressLongitude,
       "privateRoom":
           privateRoom, // Always include, sends null when no private room preference
     };

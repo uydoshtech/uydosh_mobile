@@ -501,7 +501,6 @@ class _AdminListingParserReviewScreenState
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                if (!bundle.hasParserData) _buildNoParserBanner(context),
                 _buildRawSourceCard(context, bundle),
                 const SizedBox(height: 12),
                 _buildOwnerCard(context),
@@ -540,36 +539,9 @@ class _AdminListingParserReviewScreenState
     );
   }
 
-  Widget _buildNoParserBanner(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          ThemeIcon(Icons.info_outline, size: 18, color: scheme.onSurfaceVariant),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              L10n.get(
-                "admin_parser_review_no_parser",
-                fallback:
-                    "No parser snapshot for this listing (not a tracked Telegram import). You can still edit and approve.",
-              ),
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildRawSourceCard(BuildContext context, ParserReviewBundle bundle) {
     final raw = bundle.rawSource;
+    final isManualListing = !bundle.hasParserData;
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
@@ -594,14 +566,25 @@ class _AdminListingParserReviewScreenState
                   onTap: () => setState(() => _rawExpanded = !_rawExpanded),
                   child: Row(
                     children: [
-                      ThemeIcon(Icons.telegram, size: 20, color: iconColor),
+                      ThemeIcon(
+                        isManualListing
+                            ? Icons.edit_note_rounded
+                            : Icons.telegram,
+                        size: 20,
+                        color: iconColor,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          L10n.get(
-                            "admin_parser_review_raw_source",
-                            fallback: "Raw Telegram post",
-                          ),
+                          isManualListing
+                              ? L10n.get(
+                                  "admin_parser_review_manual_source",
+                                  fallback: "Manually added listing",
+                                )
+                              : L10n.get(
+                                  "admin_parser_review_raw_source",
+                                  fallback: "Raw Telegram post",
+                                ),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
@@ -622,18 +605,23 @@ class _AdminListingParserReviewScreenState
                     const SizedBox(height: 6),
                     Text(
                       meta.join(" · "),
-                      style:
-                          TextStyle(fontSize: 12, color: secondaryTextColor),
+                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
                     ),
                   ],
                   const SizedBox(height: 10),
                   SelectableText(
-                    (raw?.text == null || raw!.text!.trim().isEmpty)
+                    isManualListing
                         ? L10n.get(
-                            "admin_parser_review_raw_empty",
-                            fallback: "(no text in source)",
+                            "admin_parser_review_manual_source_description",
+                            fallback:
+                                "This listing was added manually by a user, not imported from Telegram.",
                           )
-                        : raw.text!.trim(),
+                        : (raw?.text == null || raw!.text!.trim().isEmpty)
+                            ? L10n.get(
+                                "admin_parser_review_raw_empty",
+                                fallback: "(no text in source)",
+                              )
+                            : raw.text!.trim(),
                     style: TextStyle(fontSize: 14, color: textColor),
                   ),
                 ],
@@ -665,7 +653,8 @@ class _AdminListingParserReviewScreenState
               children: [
                 Row(
                   children: [
-                    ThemeIcon(Icons.alternate_email, size: 18, color: iconColor),
+                    ThemeIcon(Icons.alternate_email,
+                        size: 18, color: iconColor),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -703,7 +692,8 @@ class _AdminListingParserReviewScreenState
                   style: TextStyle(fontSize: 14, color: textColor),
                   decoration: InputDecoration(
                     prefixText: "@",
-                    prefixStyle: TextStyle(fontSize: 14, color: secondaryTextColor),
+                    prefixStyle:
+                        TextStyle(fontSize: 14, color: secondaryTextColor),
                     hintText: L10n.get(
                       "admin_parser_review_owner_hint",
                       fallback: "username",
@@ -834,7 +824,8 @@ class _AdminListingParserReviewScreenState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: (chipColor ?? scheme.primary).withValues(alpha: 0.15),
+                    color:
+                        (chipColor ?? scheme.primary).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -861,8 +852,7 @@ class _AdminListingParserReviewScreenState
                         "admin_parser_review_parser_label",
                         fallback: "Parser",
                       ),
-                      style:
-                          TextStyle(fontSize: 10, color: secondaryTextColor),
+                      style: TextStyle(fontSize: 10, color: secondaryTextColor),
                     ),
                     _buildValue(
                       row,
@@ -883,8 +873,7 @@ class _AdminListingParserReviewScreenState
                         "admin_parser_review_current_label",
                         fallback: "Current",
                       ),
-                      style:
-                          TextStyle(fontSize: 10, color: secondaryTextColor),
+                      style: TextStyle(fontSize: 10, color: secondaryTextColor),
                     ),
                     _buildValue(
                       row,
@@ -955,8 +944,7 @@ class _AdminListingParserReviewScreenState
     final textColor = themeState.cardTextColor;
     final secondaryTextColor = themeState.cardSecondaryTextColor;
     // Surface the non-confirmed corrections first (the interesting ones).
-    final diffs = [...bundle.correctionDiffs]
-      ..sort((a, b) {
+    final diffs = [...bundle.correctionDiffs]..sort((a, b) {
         int rank(String t) => t == "confirmed" ? 1 : 0;
         return rank(a.correctionType).compareTo(rank(b.correctionType));
       });

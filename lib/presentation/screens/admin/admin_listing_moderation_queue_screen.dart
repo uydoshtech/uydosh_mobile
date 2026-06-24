@@ -595,28 +595,40 @@ class _AdminListingModerationQueueScreenState
                 firstChild: const SizedBox(width: double.infinity, height: 0),
                 secondChild: Column(
                   children: [
-                    const Divider(height: 1),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Row(
                             children: [
                               Expanded(
-                                child: GhostButtonFactory.iconTextCentered(
+                                child: PrimaryButton(
                                   onPressed: busy
                                       ? null
                                       : () => _openListingDetail(item.id),
-                                  icon: Icons.open_in_new_rounded,
-                                  text: L10n.get(
-                                    "admin_listing_moderation_open",
-                                  ),
-                                  iconSize: 18,
-                                  neumorphicSoftUi: true,
+                                  surfaceGradientBase: scheme.primary,
+                                  textColor: scheme.onPrimary,
+                                  borderRadius: BorderRadius.circular(8),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                     vertical: 12,
+                                  ),
+                                  child: ButtonIconLabel(
+                                    slotWidth: 26,
+                                    leading: ThemeIcon(
+                                      Icons.open_in_new_rounded,
+                                      size: 18,
+                                      color: scheme.onPrimary,
+                                    ),
+                                    label: Text(
+                                      L10n.get(
+                                        "admin_listing_moderation_open",
+                                      ),
+                                      style: TextStyle(
+                                        color: scheme.onPrimary,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

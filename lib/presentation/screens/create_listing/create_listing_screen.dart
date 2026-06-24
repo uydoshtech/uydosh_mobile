@@ -88,6 +88,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final TextEditingController _moveInDateController = TextEditingController();
   final TextEditingController _addressTextController = TextEditingController();
   String _moveInDateValue = "";
+  String? _identifiedAddressText;
+  double? _addressLatitude;
+  double? _addressLongitude;
 
   // Wizard navigation
   final PageController _pageController = PageController();
@@ -223,7 +226,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.addListener(_markDirty);
     _descriptionController.addListener(_markDirty);
     _moveInDateController.addListener(_markDirty);
-    _addressTextController.addListener(_markDirty);
+    _addressTextController.addListener(_onAddressTextChanged);
     final initialListingTypeId = _initialListingTypeId;
     if (initialListingTypeId != null) {
       _selectedListingTypeId = initialListingTypeId;
@@ -270,6 +273,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   void _markDirty() {
     if (mounted) setState(() {});
+  }
+
+  void _onAddressTextChanged() {
+    if (_identifiedAddressText != null &&
+        _normListingText(_addressTextController.text) !=
+            _normListingText(_identifiedAddressText)) {
+      _identifiedAddressText = null;
+      _addressLatitude = null;
+      _addressLongitude = null;
+    }
+    _markDirty();
   }
 
   void _captureBaseline() {
@@ -830,9 +844,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
       if (!mounted) return;
       if (result.hasAddress) {
+        final address = result.addressText!.trim();
         setState(() {
-          _addressTextController.text = result.addressText!.trim();
+          _identifiedAddressText = address;
+          _addressLatitude = position.latitude;
+          _addressLongitude = position.longitude;
         });
+        _addressTextController.text = address;
         return;
       }
 
@@ -966,7 +984,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.removeListener(_markDirty);
     _descriptionController.removeListener(_markDirty);
     _moveInDateController.removeListener(_markDirty);
-    _addressTextController.removeListener(_markDirty);
+    _addressTextController.removeListener(_onAddressTextChanged);
     _titleController.dispose();
     _descriptionController.dispose();
     _moveInDateController.dispose();
@@ -2781,6 +2799,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
       final addressText =
           _isRoommateNeededFlow ? _addressTextController.text.trim() : "";
+      final addressLatitude = addressText.isNotEmpty && _isRoommateNeededFlow
+          ? _addressLatitude
+          : null;
+      final addressLongitude = addressText.isNotEmpty && _isRoommateNeededFlow
+          ? _addressLongitude
+          : null;
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
@@ -2810,6 +2834,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       logger.d("  locationIds: ${multiLocationIds ?? "null"}");
       logger.d(
         "  addressText: ${addressText.isEmpty ? "null" : "\"$addressText\""}",
+      );
+      logger.d(
+        "  addressLatitude: ${addressLatitude?.toStringAsFixed(8) ?? "null"}",
+      );
+      logger.d(
+        "  addressLongitude: ${addressLongitude?.toStringAsFixed(8) ?? "null"}",
       );
       logger.d("  amenityIds: ${_selectedAmenityIds.toList()}");
       logger.d(
@@ -2849,6 +2879,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         locationId: primaryLocation?.id,
         locationIds: multiLocationIds,
         addressText: addressText.isEmpty ? null : addressText,
+        addressLatitude: addressLatitude,
+        addressLongitude: addressLongitude,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: primaryStation?.id, // Now optional, moved to end
         subwayStationIds: multiStationIds, // Multi-station (demand-side flows)
@@ -2913,6 +2945,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;
+        _identifiedAddressText = null;
+        _addressLatitude = null;
+        _addressLongitude = null;
         _currentStations = [];
         _selectedSearchStations.clear(); // Clear multi-station chips
         _baselineSearchStationIds = [];

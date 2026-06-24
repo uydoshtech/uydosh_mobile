@@ -1534,8 +1534,9 @@ class AppStrings {
       "admin_parser_review_error": "Couldn't load parser review",
       "admin_parser_review_raw_source": "Raw Telegram post",
       "admin_parser_review_raw_empty": "(no text in source)",
-      "admin_parser_review_no_parser":
-          "No parser snapshot for this listing (not a tracked Telegram import). You can still edit and approve.",
+      "admin_parser_review_manual_source": "Manually added listing",
+      "admin_parser_review_manual_source_description":
+          "This listing was added manually by a user, not imported from Telegram.",
       "admin_parser_review_section_fields": "Parser predictions vs. current",
       "admin_parser_review_section_corrections": "Recorded corrections",
       "admin_parser_review_parser_label": "Parser",
@@ -3625,8 +3626,9 @@ class AppStrings {
       "admin_parser_review_error": "Не удалось загрузить проверку парсера",
       "admin_parser_review_raw_source": "Исходный пост из Telegram",
       "admin_parser_review_raw_empty": "(в источнике нет текста)",
-      "admin_parser_review_no_parser":
-          "Для этого объявления нет снимка парсера (не отслеживаемый импорт из Telegram). Вы всё равно можете отредактировать и одобрить.",
+      "admin_parser_review_manual_source": "Объявление добавлено вручную",
+      "admin_parser_review_manual_source_description":
+          "Объявление добавлено пользователем вручную, не импортировано из Telegram.",
       "admin_parser_review_section_fields": "Парсер vs. текущие значения",
       "admin_parser_review_section_corrections": "Зафиксированные исправления",
       "admin_parser_review_parser_label": "Парсер",
@@ -5717,8 +5719,9 @@ class AppStrings {
       "admin_parser_review_error": "Parser tekshiruvini yuklab bo'lmadi",
       "admin_parser_review_raw_source": "Telegram'dagi asl post",
       "admin_parser_review_raw_empty": "(manbada matn yo'q)",
-      "admin_parser_review_no_parser":
-          "Bu e'lon uchun parser snapshot yo'q (kuzatiladigan Telegram importi emas). Baribir tahrirlash va tasdiqlash mumkin.",
+      "admin_parser_review_manual_source": "E'lon qo'lda qo'shilgan",
+      "admin_parser_review_manual_source_description":
+          "Bu e'lon foydalanuvchi tomonidan qo'lda qo'shilgan, Telegramdan import qilinmagan.",
       "admin_parser_review_section_fields": "Parser bashorati vs. joriy",
       "admin_parser_review_section_corrections": "Qayd etilgan tuzatishlar",
       "admin_parser_review_parser_label": "Parser",
