@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -39,10 +40,29 @@ class _ListingDetailComplaintsCardState
     _blinkController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
-    )..repeat(reverse: true);
+    );
     _blinkAnimation = Tween<double>(begin: 0.25, end: 1.0).animate(
       CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBlink();
+  }
+
+  void _syncBlink() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_blinkController.isAnimating) {
+        _blinkController.repeat(reverse: true);
+      }
+    } else {
+      _blinkController.stop();
+      _blinkController.value = 1.0;
+    }
   }
 
   @override

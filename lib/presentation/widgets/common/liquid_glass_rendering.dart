@@ -24,6 +24,7 @@ abstract final class LiquidGlassRendering {
   /// Frosted-glass blur is structural UI chrome, but still expensive on
   /// Android because it samples and blends the backdrop while scrolling.
   static bool effectsEnabled(BuildContext context) =>
+      AnimationSettingsState().uiAnimationsEnabled &&
       UiPerformancePolicy.backdropBlurEnabled(context);
 
   /// Drawer blur strength.

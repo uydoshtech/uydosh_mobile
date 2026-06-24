@@ -1207,6 +1207,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haptic_feedback_description => 'Vibration for taps and gestures';
 
   @override
+  String get ui_animations_optimized_for_device => 'Optimized for this device';
+
+  @override
   String get current_language => 'English';
 
   @override

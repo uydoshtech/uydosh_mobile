@@ -1,7 +1,6 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Snackbar body used for the "archive with countdown + undo" ribbon.
 ///
@@ -114,18 +113,17 @@ class _MessagingArchiveUndoCountdownContentState
                       children: [
                         AnimatedBuilder(
                           animation: _controller,
-                          builder:
-                              (context, _) => SizedBox.expand(
-                                child: CircularProgressIndicator(
-                                  value: 1.0 - _controller.value,
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    widget.accentColor,
-                                  ),
-                                  backgroundColor: widget.accentColor
-                                      .withValues(alpha: 0.22),
-                                ),
+                          builder: (context, _) => SizedBox.expand(
+                            child: CircularProgressIndicator(
+                              value: 1.0 - _controller.value,
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation(
+                                widget.accentColor,
                               ),
+                              backgroundColor:
+                                  widget.accentColor.withValues(alpha: 0.22),
+                            ),
+                          ),
                         ),
                         AnimatedBuilder(
                           animation: _controller,
@@ -187,11 +185,7 @@ class GlassyMessagingArchiveUndoSurface extends StatelessWidget {
         final scheme = theme.colorScheme;
         final isDark = theme.brightness == Brightness.dark;
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled &&
-            !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         final baseSurface = isDark ? Colors.black : scheme.surface;
         final surfaceTint =
@@ -230,25 +224,14 @@ class GlassyMessagingArchiveUndoSurface extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: borderRadius,
-            child:
-                enableGlass
-                    ? BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: isDark ? 22 : 26,
-                        sigmaY: isDark ? 22 : 26,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: DecoratedBox(
-                          decoration: decoration,
-                          child: child,
-                        ),
-                      ),
-                    )
-                    : Material(
-                      color: Colors.transparent,
-                      child: DecoratedBox(decoration: decoration, child: child),
-                    ),
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: enableGlass,
+              sigma: isDark ? 22 : 26,
+              child: Material(
+                color: Colors.transparent,
+                child: DecoratedBox(decoration: decoration, child: child),
+              ),
+            ),
           ),
         );
       },

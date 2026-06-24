@@ -4,6 +4,7 @@ import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
@@ -68,7 +69,6 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     );
     _idleTurns = Tween<double>(begin: -0.012, end: 0.012).animate(_idleCurve);
     _animationSettings.addListener(_syncFromSettings);
-    _syncFromSettings();
   }
 
   @override
@@ -77,14 +77,15 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final tickersEnabled = TickerMode.of(context);
     if (tickersEnabled != _tickersEnabled) {
       _tickersEnabled = tickersEnabled;
-      _syncFromSettings();
     }
+    _syncFromSettings();
   }
 
   void _syncFromSettings() {
     if (!mounted) return;
     final wiggleEnabled = _animationSettings.bellIdleEnabled &&
         _animationSettings.uiAnimationsEnabled &&
+        UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
         widget.iconData == Icons.add_alert &&
         _tickersEnabled;
     if (wiggleEnabled) {
@@ -124,8 +125,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final tip = widget.tooltip ?? L10n.get("search");
     // Match the profile button shape (circle-ish), but keep the same 56x56 size.
     final radius = const BorderRadius.all(Radius.circular(999));
-    final fg =
-        widget.foregroundColor ??
+    final fg = widget.foregroundColor ??
         (ThemeState().isBlueTheme ? Colors.white : Colors.black);
 
     final themeState = ThemeState();

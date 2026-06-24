@@ -34,7 +34,8 @@ class AnimationSettingsState extends ChangeNotifier {
   bool get bellIdleEnabled => _uiAnimationsEnabled && _bellIdleEnabled;
   bool get bellTapEnabled => _uiAnimationsEnabled && _bellTapEnabled;
 
-  /// Raw values (ignores master toggle); useful for UI presentation.
+  /// Raw persisted values before effective animation policy gates.
+  bool get uiAnimationsPreferenceEnabled => _uiAnimationsEnabled;
   bool get searchPulseEnabledRaw => _searchPulseEnabled;
   bool get bellIdleEnabledRaw => _bellIdleEnabled;
   bool get bellTapEnabledRaw => _bellTapEnabled;

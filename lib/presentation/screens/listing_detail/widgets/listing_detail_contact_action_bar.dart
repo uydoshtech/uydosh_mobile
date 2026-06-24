@@ -1,15 +1,13 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_green_chat_cta_button.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
@@ -527,12 +525,21 @@ class _SlowBlinkingRequestPillState extends State<_SlowBlinkingRequestPill>
       .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   @override
-  void initState() {
-    super.initState();
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    if (!disableAnimations) {
-      _controller.repeat(reverse: true);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBlink();
+  }
+
+  void _syncBlink() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_controller.isAnimating) {
+        _controller.repeat(reverse: true);
+      }
+    } else {
+      _controller.stop();
+      _controller.value = 1.0;
     }
   }
 
@@ -614,10 +621,7 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
     final isDark = theme.brightness == Brightness.dark;
     final scheme = theme.colorScheme;
 
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
     const radius = BorderRadius.all(Radius.circular(12));
 
@@ -718,11 +722,9 @@ class _GlassNeumorphicCtaButtonState extends State<_GlassNeumorphicCtaButton> {
                     fit: StackFit.expand,
                     children: [
                       if (useBackdropBlur)
-                        BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: isDark ? 18 : 22,
-                            sigmaY: isDark ? 18 : 22,
-                          ),
+                        LiquidGlassRendering.backdropBlur(
+                          enabled: useBackdropBlur,
+                          sigma: isDark ? 18 : 22,
                           child: const SizedBox.expand(),
                         ),
                       face,

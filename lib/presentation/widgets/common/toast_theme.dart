@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
-import "dart:ui";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/messaging_archive_undo_snackbar.dart";
 
 enum ToastDismissReason { completed, preempted }
@@ -62,15 +62,11 @@ class ToastTheme {
 
     return ClipRRect(
       borderRadius: r,
-      child: UiPerformancePolicy.reduceEffectsForDevice
-          ? surface
-          : BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: _toastBlurSigma,
-                sigmaY: _toastBlurSigma,
-              ),
-              child: surface,
-            ),
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: !UiPerformancePolicy.reduceEffectsForDevice,
+        sigma: _toastBlurSigma,
+        child: surface,
+      ),
     );
   }
 

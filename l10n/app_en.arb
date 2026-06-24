@@ -550,6 +550,7 @@
   "onboarding_toggle_description": "Show welcome screens",
   "haptic_feedback": "Haptic feedback",
   "haptic_feedback_description": "Vibration for taps and gestures",
+  "ui_animations_optimized_for_device": "Optimized for this device",
   "current_language": "English",
   "language": "Language",
   "language_english": "English",

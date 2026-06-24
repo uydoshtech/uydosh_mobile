@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -59,7 +60,26 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
     _rotateController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncRotation();
+  }
+
+  void _syncRotation() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_rotateController.isAnimating) {
+        _rotateController.repeat();
+      }
+    } else {
+      _rotateController.stop();
+      _rotateController.value = 0;
+    }
   }
 
   @override
@@ -99,8 +119,7 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
         },
       );
     }
-    final hasDimensions =
-        line1 != null && lineHeight != null && line2 != null;
+    final hasDimensions = line1 != null && lineHeight != null && line2 != null;
     final variant = Theme.of(context).colorScheme.onSurfaceVariant;
     return SizedBox(
       width: double.infinity,

@@ -1,17 +1,16 @@
 import "dart:math";
-import "dart:ui";
 
 import "package:confetti/confetti.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/simple_fireworks.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -349,8 +348,7 @@ class _GlassBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enableGlass = AnimationSettingsState().uiAnimationsEnabled &&
-        !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     final badge = DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -383,15 +381,11 @@ class _GlassBadge extends StatelessWidget {
       width: 84,
       height: 84,
       child: ClipOval(
-        child: enableGlass
-            ? BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: isDark ? 18 : 22,
-                  sigmaY: isDark ? 18 : 22,
-                ),
-                child: badge,
-              )
-            : badge,
+        child: LiquidGlassRendering.backdropBlur(
+          enabled: enableGlass,
+          sigma: isDark ? 18 : 22,
+          child: badge,
+        ),
       ),
     );
   }

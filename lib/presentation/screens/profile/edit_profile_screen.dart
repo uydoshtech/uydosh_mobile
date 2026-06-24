@@ -30,6 +30,7 @@ import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/auth/update_profile_request.dart";
 import "package:uy_dosh/domain/models/region.dart";
@@ -321,7 +322,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _savePulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
+    );
     _savePulseOpacity = Tween<double>(begin: 0.45, end: 1.0).animate(
       CurvedAnimation(
         parent: _savePulseController,
@@ -345,6 +346,25 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           }
         });
       }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncSavePulse();
+  }
+
+  void _syncSavePulse() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_savePulseController.isAnimating) {
+        _savePulseController.repeat(reverse: true);
+      }
+    } else {
+      _savePulseController.stop();
+      _savePulseController.value = 1.0;
     }
   }
 
@@ -603,8 +623,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     if (_parseIntOrNull(_birthYearController.text) != p.birthYear) return true;
     if (_parseIntOrNull(_budgetMinController.text) != p.budgetMin) return true;
     if (_parseIntOrNull(_budgetMaxController.text) != p.budgetMax) return true;
-    if (_parseIntOrNull(_prefAgeMinController.text) != p.prefAgeMin) return true;
-    if (_parseIntOrNull(_prefAgeMaxController.text) != p.prefAgeMax) return true;
+    if (_parseIntOrNull(_prefAgeMinController.text) != p.prefAgeMin)
+      return true;
+    if (_parseIntOrNull(_prefAgeMaxController.text) != p.prefAgeMax)
+      return true;
     if (_prefRoommateGender.value != p.prefRoommateGender) return true;
     if (_overlapBoolFromSlug(_budgetOverlapRequired.value) !=
         p.prefBudgetOverlapRequired) {
@@ -3092,8 +3114,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                     if (isSelected) {
                       next.remove(slug);
                     } else {
-                      if (maxSelection != null &&
-                          next.length >= maxSelection) {
+                      if (maxSelection != null && next.length >= maxSelection) {
                         ToastTheme.showInfo(context, message: hint);
                         return;
                       }

@@ -226,6 +226,7 @@ void main() async {
       AuthenticationState().initialize(),
       OnboardingState().initialize(),
       ThemeState().initialize(),
+      UiPerformancePolicy.initialize(),
       // Determines splash variant (full animated vs quick static). Cheap:
       // a single SharedPreferences read + PackageInfo lookup.
       AppLaunchState().initialize(),
@@ -315,6 +316,7 @@ void main() async {
     // link wiring, analytics user-id hydration) until the splash/first
     // screen is already painting. Keeps the cold-start critical path short.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      unawaited(UiPerformancePolicy.maybeCalibrateAfterStartup());
       // Analytics "app opened" event: deferred from the critical path so the
       // first frame doesn't wait on Firebase Analytics' lazy init.
       unawaited(
@@ -487,6 +489,7 @@ class _MyAppState extends State<MyApp> {
   late final Listenable _themeAndLocaleListenable = Listenable.merge([
     ThemeState(),
     LanguageState(),
+    UiPerformancePolicy.listenable,
   ]);
 
   Widget _getInitialScreen() {

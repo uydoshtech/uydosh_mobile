@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
@@ -49,6 +50,7 @@ class _NotifySearchAlertAppBarButtonState
   late final Animation<double> _savedScale;
   late final Animation<double> _savedRingScale;
   late final Animation<double> _savedRingOpacity;
+  bool _tickersEnabled = true;
 
   @override
   void initState() {
@@ -200,6 +202,12 @@ class _NotifySearchAlertAppBarButtonState
     ]).animate(_savedController);
 
     _animationSettings.addListener(_syncFromSettings);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tickersEnabled = TickerMode.of(context);
     _syncFromSettings();
   }
 
@@ -216,7 +224,10 @@ class _NotifySearchAlertAppBarButtonState
 
   void _syncFromSettings() {
     if (!mounted) return;
-    final idleEnabled = _animationSettings.bellIdleEnabled;
+    final idleEnabled = _animationSettings.bellIdleEnabled &&
+        _animationSettings.uiAnimationsEnabled &&
+        UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        _tickersEnabled;
     if (idleEnabled) {
       if (!_idleController.isAnimating) {
         _idleController.repeat(reverse: true);
@@ -246,8 +257,7 @@ class _NotifySearchAlertAppBarButtonState
     super.dispose();
   }
 
-  Color _iconColor() =>
-      ThemeState().isBlueTheme ? Colors.white : Colors.black;
+  Color _iconColor() => ThemeState().isBlueTheme ? Colors.white : Colors.black;
 
   void _handlePressed() {
     if (!widget.enabled) return;
@@ -334,8 +344,8 @@ class _NotifySearchAlertAppBarButtonState
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color:
-                                          AppColors.success.withValues(alpha: 0.9),
+                                      color: AppColors.success
+                                          .withValues(alpha: 0.9),
                                       width: 1.75,
                                     ),
                                   ),

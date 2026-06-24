@@ -1,8 +1,6 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Side of the bubble where the speech-bubble tail emerges.
 enum HintBubbleTailSide { top, bottom }
@@ -83,10 +81,7 @@ class NeumorphicHintBubble extends StatelessWidget {
       tailRightInset: tailRightInset,
     );
 
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableBlur =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableBlur = LiquidGlassRendering.effectsEnabled(context);
 
     // Very light grey tint with high luminance + low alpha so the backdrop
     // shows through. Two stops give the surface a gentle top-light feel.
@@ -142,16 +137,13 @@ class NeumorphicHintBubble extends StatelessWidget {
         Positioned.fill(
           child: ClipPath(
             clipper: clipper,
-            child: enableBlur
-                ? BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(gradient: fillGradient),
-                    ),
-                  )
-                : const DecoratedBox(
-                    decoration: BoxDecoration(gradient: fillGradient),
-                  ),
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: enableBlur,
+              sigma: LiquidGlassRendering.switchGlassBlurSigma,
+              child: const DecoratedBox(
+                decoration: BoxDecoration(gradient: fillGradient),
+              ),
+            ),
           ),
         ),
         // 3. Inner top-left highlight.

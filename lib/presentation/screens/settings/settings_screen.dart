@@ -16,6 +16,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -567,9 +568,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAnimationsToggleMenuItems(BuildContext context) {
     return ListenableBuilder(
-      listenable: AnimationSettingsState(),
+      listenable: Listenable.merge([
+        AnimationSettingsState(),
+        UiPerformancePolicy.listenable,
+      ]),
       builder: (context, _) {
         final animations = AnimationSettingsState();
+        final optimizedForDevice = animations.uiAnimationsPreferenceEnabled &&
+            !animations.uiAnimationsEnabled;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -584,11 +590,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: _getTextColor(),
                 ),
               ),
-              subtitle: L10n.text(
-                "ui_animations_description",
-                style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
-              ),
-              value: animations.uiAnimationsEnabled,
+              subtitle: _buildAnimationsSubtitle(optimizedForDevice),
+              value: animations.uiAnimationsPreferenceEnabled,
               onChanged: (value) async {
                 await animations.setUiAnimationsEnabled(value);
               },
@@ -596,6 +599,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildAnimationsSubtitle(bool optimizedForDevice) {
+    final secondaryStyle = TextStyle(
+      color: _getSecondaryTextColor(),
+      fontSize: 12,
+    );
+    if (!optimizedForDevice) {
+      return L10n.text("ui_animations_description", style: secondaryStyle);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        L10n.text("ui_animations_description", style: secondaryStyle),
+        const SizedBox(height: 2),
+        L10n.text(
+          "ui_animations_optimized_for_device",
+          style: secondaryStyle.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 

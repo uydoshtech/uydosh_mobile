@@ -1016,6 +1016,7 @@ class AppStrings {
       "sound_effects_description": "Short UI sounds for actions",
       "ui_animations": "UI animations",
       "ui_animations_description": "Motion effects like pulsing and swinging",
+      "ui_animations_optimized_for_device": "Optimized for this device",
       "ui_animation_search_pulse": "Search button pulse",
       "ui_animation_bell_idle": "Bell idle swing",
       "ui_animation_bell_tap": "Bell tap animation",
@@ -3080,6 +3081,8 @@ class AppStrings {
       "sound_effects_description": "Короткие UI-звуки для действий",
       "ui_animations": "Анимации интерфейса",
       "ui_animations_description": "Эффекты движения: пульсация и качание",
+      "ui_animations_optimized_for_device":
+          "Оптимизировано для этого устройства",
       "ui_animation_search_pulse": "Пульсация кнопки поиска",
       "ui_animation_bell_idle": "Качание колокольчика",
       "ui_animation_bell_tap": "Анимация колокольчика при тапе",
@@ -5177,6 +5180,8 @@ class AppStrings {
       "sound_effects_description": "Harakatlar uchun qisqa UI-ovozlar",
       "ui_animations": "Interfeys animatsiyalari",
       "ui_animations_description": "Pulsatsiya va tebranish kabi effektlar",
+      "ui_animations_optimized_for_device":
+          "Ushbu qurilma uchun optimallashtirilgan",
       "ui_animation_search_pulse": "Qidiruv tugmasi pulsatsiyasi",
       "ui_animation_bell_idle": "Qo‘ng‘iroq tebranishi",
       "ui_animation_bell_tap": "Qo‘ng‘iroq bosish animatsiyasi",

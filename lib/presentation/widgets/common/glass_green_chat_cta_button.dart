@@ -1,10 +1,8 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -51,11 +49,8 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final enableBlur = widget.enableBackdropBlur &&
-        AnimationSettingsState().uiAnimationsEnabled &&
-        !disableAnimations;
+        LiquidGlassRendering.effectsEnabled(context);
 
     final blurSigma = enableBlur ? (isDark ? 18.0 : 22.0) : 0.0;
 
@@ -169,11 +164,9 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
                     fit: StackFit.expand,
                     children: [
                       if (enableBlur)
-                        BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: blurSigma,
-                            sigmaY: blurSigma,
-                          ),
+                        LiquidGlassRendering.backdropBlur(
+                          enabled: enableBlur,
+                          sigma: blurSigma,
                           child: const SizedBox.expand(),
                         ),
                       Positioned.fill(child: face),

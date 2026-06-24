@@ -2,6 +2,7 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -97,7 +98,6 @@ class _NotifySearchAlertGhostButtonState
     _ringOpacity = Tween<double>(begin: 0.5, end: 0).animate(_ringOpacityCurve);
 
     _animationSettings.addListener(_syncFromSettings);
-    _syncFromSettings();
   }
 
   @override
@@ -106,14 +106,16 @@ class _NotifySearchAlertGhostButtonState
     final tickersEnabled = TickerMode.of(context);
     if (tickersEnabled != _tickersEnabled) {
       _tickersEnabled = tickersEnabled;
-      _syncFromSettings();
     }
+    _syncFromSettings();
   }
 
   void _syncFromSettings() {
     if (!mounted) return;
-    final idleEnabled =
-        _animationSettings.bellIdleEnabled && _tickersEnabled;
+    final idleEnabled = _animationSettings.bellIdleEnabled &&
+        _animationSettings.uiAnimationsEnabled &&
+        UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        _tickersEnabled;
     if (idleEnabled) {
       if (!_idleController.isAnimating) {
         _idleController.repeat(reverse: true);

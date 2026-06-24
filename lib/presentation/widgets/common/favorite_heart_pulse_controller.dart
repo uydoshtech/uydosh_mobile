@@ -1,6 +1,7 @@
 import "package:flutter/scheduler.dart";
 import "package:flutter/widgets.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 /// Drives listing/gig favorite heart motion: a soft idle “breathing” pulse when
 /// the item isn’t favorited (outline heart) plus the familiar tap “pop”.
@@ -47,6 +48,7 @@ class FavoriteHeartPulseController {
       SchedulerBinding.instance.addPostFrameCallback((_) => _syncIdlePulse());
     };
     _settings.addListener(_settingsListener);
+    UiPerformancePolicy.listenable.addListener(_settingsListener);
 
     listenable = Listenable.merge([_tapCtrl, _idleCtrl, _busyCtrl]);
   }
@@ -71,8 +73,7 @@ class FavoriteHeartPulseController {
 
   /// Current scale = tap pop × (network "heartbeat" or idle breathing).
   double get scale =>
-      _tapScale.value *
-      (_networkBusy ? _busyScale.value : _idleScale.value);
+      _tapScale.value * (_networkBusy ? _busyScale.value : _idleScale.value);
 
   Future<void> playTapPulse() async {
     _tapCtrl
@@ -136,6 +137,7 @@ class FavoriteHeartPulseController {
   void dispose() {
     _disposed = true;
     _settings.removeListener(_settingsListener);
+    UiPerformancePolicy.listenable.removeListener(_settingsListener);
     _tapCtrl.dispose();
     _idleCtrl.dispose();
     _busyCtrl.dispose();

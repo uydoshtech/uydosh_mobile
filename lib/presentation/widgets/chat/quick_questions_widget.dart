@@ -1,13 +1,11 @@
-import "dart:ui" show ImageFilter;
-
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_config.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 class QuickQuestionsWidget extends StatelessWidget {
   const QuickQuestionsWidget({
@@ -50,10 +48,8 @@ class QuickQuestionsWidget extends StatelessWidget {
         final pillTextColor = themeState.pillTextColor;
         final borderColor = themeState.borderColor;
         final bottomPad = MediaQuery.viewPaddingOf(context).bottom + 12;
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final glassAnimationsEnabled =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+            LiquidGlassRendering.effectsEnabled(context);
 
         final stripDecoration = blendWithGlassBackdrop
             ? const BoxDecoration()
@@ -163,12 +159,11 @@ class QuickQuestionsWidget extends StatelessWidget {
     final Widget pillBody = useGlassBluePills
         ? ClipRRect(
             borderRadius: borderRadius,
-            child: glassAnimationsEnabled
-                ? BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                    child: glassPill,
-                  )
-                : glassPill,
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: glassAnimationsEnabled,
+              sigma: LiquidGlassRendering.plateBlurSigma,
+              child: glassPill,
+            ),
           )
         : DecoratedBox(
             decoration: BoxDecoration(

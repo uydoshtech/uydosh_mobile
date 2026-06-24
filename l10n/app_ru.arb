@@ -542,6 +542,7 @@
   "onboarding_toggle_description": "Показать приветствие",
   "haptic_feedback": "Виброотклик",
   "haptic_feedback_description": "Вибрация при нажатиях и жестах",
+  "ui_animations_optimized_for_device": "Оптимизировано для этого устройства",
   "current_language": "Русский",
   "language": "Язык",
   "language_english": "English",

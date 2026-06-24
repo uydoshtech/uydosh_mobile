@@ -1,6 +1,7 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 
@@ -42,8 +43,25 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
     _blinkOpacity = Tween<double>(begin: 1.0, end: 0.20).animate(
       CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
     );
+  }
 
-    _blinkController.repeat(reverse: true);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBlink();
+  }
+
+  void _syncBlink() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_blinkController.isAnimating) {
+        _blinkController.repeat(reverse: true);
+      }
+    } else {
+      _blinkController.stop();
+      _blinkController.value = 0;
+    }
   }
 
   @override
@@ -58,7 +76,8 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
       listenable: ThemeState(),
       builder: (context, child) {
         final scheme = Theme.of(context).colorScheme;
-        final disableAnimations = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+        final disableAnimations =
+            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final title = widget.title.trimRight();
         final titleWithBang =
             (title.endsWith("!") || title.endsWith("！")) ? title : "$title!";
@@ -68,16 +87,14 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
         final yellow = Colors.amber.shade700;
         final bg = Color.lerp(yellow, Colors.white, 0.82)!;
 
-        final border =
-            (widget.severity == ChatSafetyWarningSeverity.high
-                    ? scheme.error
-                    : yellow)
-                .withValues(alpha: 0.30);
-
-        final iconColor =
-            widget.severity == ChatSafetyWarningSeverity.high
+        final border = (widget.severity == ChatSafetyWarningSeverity.high
                 ? scheme.error
-                : Colors.black.withValues(alpha: 0.82);
+                : yellow)
+            .withValues(alpha: 0.30);
+
+        final iconColor = widget.severity == ChatSafetyWarningSeverity.high
+            ? scheme.error
+            : Colors.black.withValues(alpha: 0.82);
 
         return Material(
           color: bg,
@@ -135,8 +152,8 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
                       size: 18,
                       color: Colors.black.withValues(alpha: 0.78),
                     ),
-                    semanticsLabel: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
+                    semanticsLabel:
+                        MaterialLocalizations.of(context).closeButtonTooltip,
                     onPressed: widget.onClose!,
                     padding: const EdgeInsets.all(8),
                     contentSlotSize: 20,
@@ -149,4 +166,3 @@ class _ChatSafetyWarningRibbonState extends State<ChatSafetyWarningRibbon>
     );
   }
 }
-

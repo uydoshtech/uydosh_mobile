@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:ui" show ImageFilter;
 
 import "package:dio/dio.dart";
 import "package:firebase_auth/firebase_auth.dart";
@@ -27,7 +26,6 @@ import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/util/telegram_oauth_web_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/support_unread_state.dart";
@@ -55,6 +53,7 @@ import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
@@ -1134,19 +1133,16 @@ class _SupportChatFab extends StatelessWidget {
         final textColor =
             themeState.isBlueTheme ? Colors.white : themeState.textColor;
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         final baseTint =
             themeState.isLightTheme ? scheme.surface : themeState.cardColor;
 
         const radius = BorderRadius.all(Radius.circular(999));
         Widget supportPill(Widget child) {
-          if (!enableGlass) return child;
-          return BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          return LiquidGlassRendering.backdropBlur(
+            enabled: enableGlass,
+            sigma: LiquidGlassRendering.switchGlassBlurSigma,
             child: child,
           );
         }

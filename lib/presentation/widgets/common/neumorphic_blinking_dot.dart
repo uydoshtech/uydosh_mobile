@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 /// A softly pulsing, neumorphic-looking dot. Designed for status/attention cues
 /// (e.g. "profile is incomplete"). It combines:
@@ -29,9 +30,23 @@ class _NeumorphicBlinkingDotState extends State<NeumorphicBlinkingDot>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.duration)
-      ..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: widget.duration);
     _pulse = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_controller.isAnimating) {
+        _controller.repeat(reverse: true);
+      }
+    } else {
+      _controller.stop();
+      _controller.value = 1.0;
+    }
   }
 
   @override

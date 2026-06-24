@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:ui" show ImageFilter;
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart";
@@ -90,6 +89,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_rating_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -1489,10 +1489,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _blueGlassComposerPanel() {
     const topRadius = BorderRadius.vertical(top: Radius.circular(20));
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     final panel = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: topRadius,
@@ -1503,12 +1500,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return ClipRRect(
       borderRadius: topRadius,
-      child: enableGlass
-          ? BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: panel,
-            )
-          : panel,
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: enableGlass,
+        sigma: LiquidGlassRendering.switchGlassBlurSigma,
+        child: panel,
+      ),
     );
   }
 
@@ -3215,18 +3211,12 @@ class _ComposerReplyPreview extends StatelessWidget {
     final tileFill = blendWithGlassBackdrop
         ? tileTint.withValues(alpha: isDark ? 0.18 : 0.34)
         : tileTint.withValues(alpha: isDark ? 0.78 : 0.86);
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableBackdropBlur =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableBackdropBlur = LiquidGlassRendering.effectsEnabled(context);
 
     Widget maybeBlurReplyPreview(Widget child) {
-      if (!enableBackdropBlur) return child;
-      return BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: blendWithGlassBackdrop ? 12 : 6,
-          sigmaY: blendWithGlassBackdrop ? 12 : 6,
-        ),
+      return LiquidGlassRendering.backdropBlur(
+        enabled: enableBackdropBlur,
+        sigma: blendWithGlassBackdrop ? 12 : 6,
         child: child,
       );
     }

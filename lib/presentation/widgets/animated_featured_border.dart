@@ -2,11 +2,12 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 class AnimatedFeaturedBorder extends StatefulWidget {
-
   const AnimatedFeaturedBorder({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.borderWidth = 3.0,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
   });
@@ -40,7 +41,8 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final shouldTick = TickerMode.of(context);
+    final shouldTick = TickerMode.of(context) &&
+        UiPerformancePolicy.decorativeAnimationsEnabled(context);
     if (shouldTick && !_retained) {
       SharedFeaturedSweep.instance.retain();
       _retained = true;
@@ -187,8 +189,7 @@ class SharedFeaturedSweep with WidgetsBindingObserver {
   }
 
   void _updateRunning() {
-    final shouldRun =
-        _refCount > 0 && _appResumed && _scrollPauseCount == 0;
+    final shouldRun = _refCount > 0 && _appResumed && _scrollPauseCount == 0;
     if (shouldRun && !_ticker.isActive) {
       // Reset origin so the resumed phase doesn't jump after a long pause.
       _origin = Duration.zero;

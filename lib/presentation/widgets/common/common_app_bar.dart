@@ -1,10 +1,8 @@
-import "dart:ui";
-
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 
@@ -113,10 +111,7 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
     final theme = Theme.of(context);
     final base = theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
     final isLight = ThemeState().isLightTheme;
-    final disableAnimations =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final enableGlass =
-        AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     // "Liquid glass": blur + translucent tint + subtle highlights.
     // Light theme: weaker tint so content behind the bar stays visible through the blur.
     final tintHigh = isLight ? 0.12 : 0.28;
@@ -157,15 +152,11 @@ class _LiquidGlassAppBarBackground extends StatelessWidget {
     );
 
     return ClipRect(
-      child: enableGlass
-          ? BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: isLight ? 22.0 : 18.0,
-                sigmaY: isLight ? 22.0 : 18.0,
-              ),
-              child: background,
-            )
-          : background,
+      child: LiquidGlassRendering.backdropBlur(
+        enabled: enableGlass,
+        sigma: isLight ? 22.0 : 18.0,
+        child: background,
+      ),
     );
   }
 }

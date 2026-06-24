@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 /// Subtle pulse + circular halo wrapper.
 ///
@@ -33,6 +34,7 @@ class _PulsingBorderWrapperState extends State<PulsingBorderWrapper>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scale;
+  bool _motionEnabled = false;
 
   @override
   void initState() {
@@ -41,20 +43,29 @@ class _PulsingBorderWrapperState extends State<PulsingBorderWrapper>
     _scale = Tween<double>(begin: 1.0, end: widget.scaleTo).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _sync();
   }
 
   @override
   void didUpdateWidget(covariant PulsingBorderWrapper oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.enabled != widget.enabled || oldWidget.duration != widget.duration) {
+    if (oldWidget.enabled != widget.enabled ||
+        oldWidget.duration != widget.duration) {
       _controller.duration = widget.duration;
       _sync();
     }
   }
 
   void _sync() {
-    if (!widget.enabled) {
+    _motionEnabled = widget.enabled &&
+        UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (!_motionEnabled) {
       _controller.stop();
       _controller.value = 0;
       return;
@@ -72,8 +83,7 @@ class _PulsingBorderWrapperState extends State<PulsingBorderWrapper>
 
   @override
   Widget build(BuildContext context) {
-    final haloColor =
-        widget.haloColor ??
+    final haloColor = widget.haloColor ??
         Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18);
 
     return DecoratedBox(
@@ -90,11 +100,10 @@ class _PulsingBorderWrapperState extends State<PulsingBorderWrapper>
       child: Padding(
         padding: widget.padding,
         child: ScaleTransition(
-          scale: widget.enabled ? _scale : const AlwaysStoppedAnimation(1.0),
+          scale: _motionEnabled ? _scale : const AlwaysStoppedAnimation(1.0),
           child: widget.child,
         ),
       ),
     );
   }
 }
-

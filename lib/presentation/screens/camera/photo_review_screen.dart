@@ -1,6 +1,5 @@
 import "dart:io";
 import "dart:math" as math;
-import "dart:ui" show ImageFilter;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -8,6 +7,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/watermark_service.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Result returned by [PhotoReviewScreen] via [Navigator.pop]:
 ///   - the original [path] when the user accepts the photo,
@@ -46,8 +46,7 @@ class PhotoReviewScreen extends StatelessWidget {
         child: PhotoReviewBody(
           path: path,
           onRetake: () => Navigator.of(context).pop<PhotoReviewResult>(null),
-          onUsePhoto: () =>
-              Navigator.of(context).pop<PhotoReviewResult>(path),
+          onUsePhoto: () => Navigator.of(context).pop<PhotoReviewResult>(path),
         ),
       ),
     );
@@ -295,8 +294,7 @@ class UyDoshReviewPillButton extends StatefulWidget {
   final bool primary;
 
   @override
-  State<UyDoshReviewPillButton> createState() =>
-      _UyDoshReviewPillButtonState();
+  State<UyDoshReviewPillButton> createState() => _UyDoshReviewPillButtonState();
 }
 
 class _UyDoshReviewPillButtonState extends State<UyDoshReviewPillButton> {
@@ -316,10 +314,7 @@ class _UyDoshReviewPillButtonState extends State<UyDoshReviewPillButton> {
             ? BlueThemeColors.primary.withValues(alpha: _pressed ? 0.55 : 0.42)
             : Colors.black.withValues(alpha: _pressed ? 0.42 : 0.30);
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         // Slimmer pill (vertical 14 → 9, horizontal 22 → 18) so the row of
         // controls takes less vertical real-estate over the photo.
@@ -400,18 +395,14 @@ class _UyDoshReviewPillButtonState extends State<UyDoshReviewPillButton> {
               ),
               child: ClipRRect(
                 borderRadius: radius,
-                child: enableGlass
-                    ? BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                        child: DecoratedBox(
-                          decoration: glassDecoration,
-                          child: content,
-                        ),
-                      )
-                    : DecoratedBox(
-                        decoration: glassDecoration,
-                        child: content,
-                      ),
+                child: LiquidGlassRendering.backdropBlur(
+                  enabled: enableGlass,
+                  sigma: LiquidGlassRendering.switchGlassBlurSigma,
+                  child: DecoratedBox(
+                    decoration: glassDecoration,
+                    child: content,
+                  ),
+                ),
               ),
             ),
           ),

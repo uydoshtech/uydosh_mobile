@@ -1223,6 +1223,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get haptic_feedback_description => 'Bosish va jestlar uchun tebranish';
 
   @override
+  String get ui_animations_optimized_for_device =>
+      'Ushbu qurilma uchun optimallashtirilgan';
+
+  @override
   String get current_language => 'O\'zbekcha';
 
   @override

@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/screens/permissions/notification_permission
 import "package:uy_dosh/base/utils/animation_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed_centered.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -60,9 +61,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     ).animate(
       CurvedAnimation(parent: _rotateController, curve: Curves.easeInOut),
     );
-
-    // Start the rotation animation when the first page is shown
-    _rotateController.repeat(reverse: true);
   }
 
   void _setupLocationAnimation() {
@@ -74,9 +72,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _locationBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _locationController, curve: Curves.easeInOut),
     );
-
-    // Start the location animation
-    _locationController.repeat(reverse: true);
   }
 
   void _setupShieldAnimation() {
@@ -91,8 +86,32 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     ).animate(
       CurvedAnimation(parent: _shieldController, curve: Curves.easeInOut),
     );
+  }
 
-    _shieldController.repeat(reverse: true);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncDecorativeLoops();
+  }
+
+  void _syncDecorativeLoops() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    final controllers = [
+      _rotateController,
+      _locationController,
+      _shieldController,
+    ];
+    for (final controller in controllers) {
+      if (enabled) {
+        if (!controller.isAnimating) {
+          controller.repeat(reverse: true);
+        }
+      } else {
+        controller.stop();
+        controller.value = 0.5;
+      }
+    }
   }
 
   void _startAutoSwitchTimer() {

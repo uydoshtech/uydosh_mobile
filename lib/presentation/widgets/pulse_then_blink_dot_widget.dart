@@ -1,6 +1,7 @@
 import "dart:math" as math;
 
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 /// Unread badge that pulses (scale) a few times on [trigger] changes,
 /// then continues blinking to attract attention.
@@ -56,16 +57,17 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
     duration: widget.blinkDuration,
   );
 
-  late final Animation<double> _blink = Tween<double>(begin: 0.0, end: 1.0)
-      .animate(
-        CurvedAnimation(parent: _blinkController, curve: Curves.linear),
-      );
+  late final Animation<double> _blink =
+      Tween<double>(begin: 0.0, end: 1.0).animate(
+    CurvedAnimation(parent: _blinkController, curve: Curves.linear),
+  );
 
   /// Single merged listenable — avoids allocating [Listenable.merge] every build.
   late final Listenable _pulseAndBlink =
       Listenable.merge([_blinkController, _pulseController]);
 
   int _lastTrigger = 0;
+  bool _blinkEnabled = false;
 
   static Duration _pulseTotalDuration(int pulseCount, Duration pulseStep) {
     final steps = (pulseCount <= 0) ? 0 : pulseCount * 2;
@@ -76,7 +78,6 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
   void initState() {
     super.initState();
     _lastTrigger = widget.trigger;
-    _blinkController.repeat(reverse: true);
 
     // If we mount with an already-incremented trigger (e.g. app resumed with
     // unread that just arrived), play the pulse once so it’s noticeable.
@@ -89,12 +90,18 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBlink();
+  }
+
+  @override
   void didUpdateWidget(covariant PulseThenBlinkDotWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.blinkDuration != widget.blinkDuration) {
       _blinkController.duration = widget.blinkDuration;
-      if (_blinkController.isAnimating) {
+      if (_blinkController.isAnimating && _blinkEnabled) {
         _blinkController
           ..stop()
           ..repeat(reverse: true);
@@ -113,6 +120,21 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
     _playPulseThenBlink();
   }
 
+  void _syncBlink() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    _blinkEnabled = enabled;
+    if (_pulseController.isAnimating) return;
+    if (enabled) {
+      if (!_blinkController.isAnimating) {
+        _blinkController.repeat(reverse: true);
+      }
+    } else {
+      _blinkController.stop();
+      _blinkController.value = 1.0;
+    }
+  }
+
   Future<void> _playPulseThenBlink() async {
     if (!mounted) return;
 
@@ -129,7 +151,7 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
     await _pulseController.forward();
 
     if (!mounted) return;
-    _blinkController.repeat(reverse: true);
+    _syncBlink();
   }
 
   double _pulseScaleValue() {
@@ -156,12 +178,13 @@ class _PulseThenBlinkDotWidgetState extends State<PulseThenBlinkDotWidget>
       animation: _pulseAndBlink,
       builder: (context, child) {
         // Blink: hide/show like the existing BlinkingDotWidget behavior.
-        if (_blink.value < 0.5 && !_pulseController.isAnimating) {
+        if (_blinkEnabled &&
+            _blink.value < 0.5 &&
+            !_pulseController.isAnimating) {
           return const SizedBox.shrink();
         }
 
-        final scale =
-            _pulseController.isAnimating ? _pulseScaleValue() : 1.0;
+        final scale = _pulseController.isAnimating ? _pulseScaleValue() : 1.0;
 
         return Transform.scale(
           scale: scale,

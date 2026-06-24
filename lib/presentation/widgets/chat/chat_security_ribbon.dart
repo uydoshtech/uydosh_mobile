@@ -1,10 +1,8 @@
-import "dart:ui";
-
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class ChatSecurityRibbon extends StatelessWidget {
@@ -103,10 +101,7 @@ class ChatSecurityRibbon extends StatelessWidget {
           );
         }
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         final ribbon = Material(
           color: Colors.transparent,
@@ -114,12 +109,11 @@ class ChatSecurityRibbon extends StatelessWidget {
         );
 
         return ClipRect(
-          child: enableGlass
-              ? BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                  child: ribbon,
-                )
-              : ribbon,
+          child: LiquidGlassRendering.backdropBlur(
+            enabled: enableGlass,
+            sigma: LiquidGlassRendering.switchGlassBlurSigma,
+            child: ribbon,
+          ),
         );
       },
     );

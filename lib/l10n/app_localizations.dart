@@ -2278,6 +2278,12 @@ abstract class AppLocalizations {
   /// **'Vibration for taps and gestures'**
   String get haptic_feedback_description;
 
+  /// No description provided for @ui_animations_optimized_for_device.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimized for this device'**
+  String get ui_animations_optimized_for_device;
+
   /// No description provided for @current_language.
   ///
   /// In en, this message translates to:

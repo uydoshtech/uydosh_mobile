@@ -1208,6 +1208,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get haptic_feedback_description => 'Вибрация при нажатиях и жестах';
 
   @override
+  String get ui_animations_optimized_for_device =>
+      'Оптимизировано для этого устройства';
+
+  @override
   String get current_language => 'Русский';
 
   @override

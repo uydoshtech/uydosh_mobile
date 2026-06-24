@@ -1,6 +1,5 @@
 import "dart:async";
 import "dart:math" as math;
-import "dart:ui" show ImageFilter;
 
 import "package:firebase_messaging/firebase_messaging.dart"
     show AuthorizationStatus;
@@ -43,6 +42,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -1063,10 +1063,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final scheme = Theme.of(context).colorScheme;
         final baseTint = isDark ? BlueThemeColors.background : scheme.surface;
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         // Important: don't clip the switch itself, otherwise its drop shadow
         // gets cut off at the bottom. Only the glass background is clipped.
@@ -1083,8 +1080,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
                       // Blur is subtle on flat backgrounds, so we also apply a clear glass tint.
                       if (enableGlass)
                         Positioned.fill(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                          child: LiquidGlassRendering.backdropBlur(
+                            enabled: enableGlass,
+                            sigma: LiquidGlassRendering.switchGlassBlurSigma,
                             child: const SizedBox.expand(),
                           ),
                         ),
@@ -1718,10 +1716,7 @@ class _ArchivedChatsFab extends StatelessWidget {
         final textColor =
             themeState.isBlueTheme ? Colors.white : themeState.textColor;
 
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-        final enableGlass =
-            AnimationSettingsState().uiAnimationsEnabled && !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         final baseTint = themeState.isBlueTheme
             ? BlueThemeColors.background
@@ -1729,9 +1724,9 @@ class _ArchivedChatsFab extends StatelessWidget {
 
         const radius = BorderRadius.all(Radius.circular(999));
         Widget archivePill(Widget child) {
-          if (!enableGlass) return child;
-          return BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          return LiquidGlassRendering.backdropBlur(
+            enabled: enableGlass,
+            sigma: LiquidGlassRendering.switchGlassBlurSigma,
             child: child,
           );
         }

@@ -1,5 +1,3 @@
-import "dart:ui" show ImageFilter;
-
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
@@ -8,6 +6,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 /// Listing-style photo gallery tile: elevated shell, 16:9 carousel with blur fill,
@@ -219,14 +218,10 @@ class _PhotoGlassPill extends StatelessWidget {
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
       builder: (context, _) {
-        final disableAnimations =
-            MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         // The pill's [BackdropFilter] floats over the scrolling carousel, so it
         // re-blurs every frame. Skip it on Android (low-end GPU cost); the
         // translucent gradient fill keeps the pill legible without the blur.
-        final enableGlass = !isAndroidDevice &&
-            AnimationSettingsState().uiAnimationsEnabled &&
-            !disableAnimations;
+        final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         const radius = BorderRadius.all(Radius.circular(999));
 
@@ -264,18 +259,14 @@ class _PhotoGlassPill extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: radius,
-            child: enableGlass
-                ? BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                    child: DecoratedBox(
-                      decoration: glassDecoration,
-                      child: content,
-                    ),
-                  )
-                : DecoratedBox(
-                    decoration: glassDecoration,
-                    child: content,
-                  ),
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: enableGlass,
+              sigma: LiquidGlassRendering.switchGlassBlurSigma,
+              child: DecoratedBox(
+                decoration: glassDecoration,
+                child: content,
+              ),
+            ),
           ),
         );
       },

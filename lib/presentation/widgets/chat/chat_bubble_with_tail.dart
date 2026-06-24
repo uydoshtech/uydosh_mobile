@@ -1,9 +1,7 @@
-import "dart:ui";
-
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/chat/bubble_with_tail_painter.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Reusable chat bubble with tail, matching chat/support message styling.
@@ -138,8 +136,7 @@ class _GlassBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enableBlur = AnimationSettingsState().uiAnimationsEnabled &&
-        !(MediaQuery.maybeOf(context)?.disableAnimations ?? false);
+    final enableBlur = LiquidGlassRendering.effectsEnabled(context);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -156,12 +153,11 @@ class _GlassBubble extends StatelessWidget {
               tailWidth: tailWidth,
               tailHeight: tailHeight,
             ),
-            child: enableBlur
-                ? BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                    child: const SizedBox.expand(),
-                  )
-                : const SizedBox.expand(),
+            child: LiquidGlassRendering.backdropBlur(
+              enabled: enableBlur,
+              sigma: LiquidGlassRendering.switchGlassBlurSigma,
+              child: const SizedBox.expand(),
+            ),
           ),
         ),
         CustomPaint(
