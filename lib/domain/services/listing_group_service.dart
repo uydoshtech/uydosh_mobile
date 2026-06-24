@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 
@@ -226,7 +227,11 @@ class ListingGroupService implements IListingGroupService {
       "/listings/$groupListingId/group/shortlist",
       _requireResponseMap,
       basePath: EnvironmentUtil.basePath,
-      queryParameters: {"page": page, "limit": limit},
+      queryParameters: {
+        "page": page,
+        "limit": limit,
+        "language": L10n.currentLanguage,
+      },
     );
     final data = response["data"];
     if (data is! List) return const [];
@@ -314,6 +319,7 @@ class ListingGroupService implements IListingGroupService {
         reasons: reasons,
         categoryRatings: categoryRatings,
         verdict: verdict,
+        language: L10n.currentLanguage,
       ),
     );
     final rating = ListingGroupShortlistRating.fromJsonOrNull(
@@ -422,12 +428,14 @@ class _ShortlistRatingBody implements IJsonEncodable {
     this.reasons = const [],
     this.categoryRatings = const {},
     this.verdict,
+    this.language,
   });
 
   final int stars;
   final List<String> reasons;
   final Map<String, int> categoryRatings;
   final String? verdict;
+  final String? language;
 
   @override
   Map<String, dynamic> toJson() => {
@@ -435,5 +443,6 @@ class _ShortlistRatingBody implements IJsonEncodable {
         "reasons": reasons,
         "category_ratings": categoryRatings,
         if (verdict != null) "verdict": verdict,
+        if (language != null) "language": language,
       };
 }

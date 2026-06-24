@@ -223,6 +223,7 @@ class ListingGroupShortlistRating {
     required this.count,
     required this.participants,
     this.average,
+    this.summary,
   });
 
   factory ListingGroupShortlistRating.fromJson(Map<String, dynamic> json) {
@@ -230,6 +231,7 @@ class ListingGroupShortlistRating {
     return ListingGroupShortlistRating(
       average: (json["average"] as num?)?.toDouble(),
       count: (json["count"] as num?)?.toInt() ?? 0,
+      summary: json["summary"] as String?,
       participants: rawParticipants is List
           ? rawParticipants
               .whereType<Map>()
@@ -252,6 +254,7 @@ class ListingGroupShortlistRating {
 
   final double? average;
   final int count;
+  final String? summary;
   final List<ListingGroupShortlistParticipantRating> participants;
 }
 

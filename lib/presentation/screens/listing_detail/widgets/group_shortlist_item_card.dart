@@ -686,6 +686,8 @@ class _GroupRatingSection extends StatelessWidget {
         : rating.participants
             .where((participant) => participant.userId == currentUserId)
             .toList();
+    final summary = rating.summary?.trim();
+    final hasSummary = summary != null && summary.isNotEmpty;
     final otherParticipants = rating.participants
         .where((participant) => participant.userId != currentUserId)
         .toList();
@@ -734,29 +736,134 @@ class _GroupRatingSection extends StatelessWidget {
               style: headerStyle,
             ),
           const SizedBox(height: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final participantList = _ParticipantRatingList(
+                participants: orderedParticipants,
+                currentUserId: currentUserId,
+                onRate: onRate,
+              );
+              if (!hasSummary) return participantList;
+
+              final summaryCard = _GroupRatingAiSummary(summary: summary);
+              if (constraints.maxWidth >= 430) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 210, child: participantList),
+                    const SizedBox(width: 12),
+                    Expanded(child: summaryCard),
+                  ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  participantList,
+                  const SizedBox(height: 8),
+                  summaryCard,
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ParticipantRatingList extends StatelessWidget {
+  const _ParticipantRatingList({
+    required this.participants,
+    this.currentUserId,
+    this.onRate,
+  });
+
+  final List<ListingGroupShortlistParticipantRating> participants;
+  final int? currentUserId;
+  final ValueChanged<int>? onRate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < participants.length; i++) ...[
+          Builder(
+            builder: (context) {
+              final participant = participants[i];
+              final isCurrentUser =
+                  currentUserId != null && participant.userId == currentUserId;
+              final canEdit =
+                  isCurrentUser && participant.stars != null && onRate != null;
+              return _ParticipantRatingChip(
+                participant: participant,
+                isCurrentUser: isCurrentUser,
+                onTap: canEdit ? () => onRate!(participant.stars!) : null,
+              );
+            },
+          ),
+          if (i < participants.length - 1) const SizedBox(height: 6),
+        ],
+      ],
+    );
+  }
+}
+
+class _GroupRatingAiSummary extends StatelessWidget {
+  const _GroupRatingAiSummary({required this.summary});
+
+  final String summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+      decoration: BoxDecoration(
+        color: scheme.surface.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              for (var i = 0; i < orderedParticipants.length; i++) ...[
-                Builder(
-                  builder: (context) {
-                    final participant = orderedParticipants[i];
-                    final isCurrentUser = currentUserId != null &&
-                        participant.userId == currentUserId;
-                    final canEdit = isCurrentUser &&
-                        participant.stars != null &&
-                        onRate != null;
-                    return _ParticipantRatingChip(
-                      participant: participant,
-                      isCurrentUser: isCurrentUser,
-                      onTap: canEdit ? () => onRate!(participant.stars!) : null,
-                    );
-                  },
+              Icon(
+                Icons.auto_awesome_rounded,
+                size: 14,
+                color: AppColors.getThemeAwareWarningIconColor(context),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  L10n.get("group_shortlist_ai_summary_title"),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                if (i < orderedParticipants.length - 1)
-                  const SizedBox(height: 6),
-              ],
+              ),
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            summary,
+            maxLines: 5,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.82),
+              height: 1.25,
+            ),
           ),
         ],
       ),
