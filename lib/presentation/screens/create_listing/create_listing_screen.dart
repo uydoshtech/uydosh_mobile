@@ -1114,20 +1114,18 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Surface the type chosen before entering the wizard as a compact
-              // badge once the user moves past the first step.
-              if (_currentStep > 0) ...[
-                Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: ListingTypeBadge(
-                    listingTypeCode: ListingTypeHelper.getCodeFromId(
-                      _selectedListingTypeId,
-                    ),
-                    useShortLabel: true,
-                    fontSize: 12,
+              // badge throughout the flow.
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: ListingTypeBadge(
+                  listingTypeCode: ListingTypeHelper.getCodeFromId(
+                    _selectedListingTypeId,
                   ),
+                  useShortLabel: true,
+                  fontSize: 12,
                 ),
-                const SizedBox(height: 12),
-              ],
+              ),
+              const SizedBox(height: 12),
               _buildStepProgress(),
             ],
           ),

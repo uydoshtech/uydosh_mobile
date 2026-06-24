@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_theme.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -22,7 +23,7 @@ abstract final class UydoshDropdownChrome {
     final isLightTheme = ThemeState().isLightTheme;
     final isBlueTheme = ThemeState().isBlueTheme;
     if (isBlueTheme) {
-      return Colors.blue.shade600.withValues(
+      return AppTheme.menuOverlaySurfaceColor.withValues(
         alpha: AppTheme.menuOverlaySurfaceOpacity,
       );
     }
@@ -44,6 +45,20 @@ abstract final class UydoshDropdownChrome {
           ? Colors.white
           : (isLightTheme ? Colors.grey[800] : Colors.grey[200]),
     );
+  }
+
+  /// Foreground for rows inside the opened menu panel.
+  static Color menuItemForeground(BuildContext context) {
+    if (ThemeState().isBlueTheme) {
+      return BlueThemeColors.primary;
+    }
+    return ThemeState().isLightTheme ? Colors.grey[800]! : Colors.grey[200]!;
+  }
+
+  static TextStyle? menuItemStyle(BuildContext context) {
+    return Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: menuItemForeground(context),
+        );
   }
 
   static Color _caretColor(BuildContext context, {Color? override}) {
@@ -129,8 +144,10 @@ class UydoshDropdownFormField<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveStyle =
         style ?? UydoshDropdownChrome.selectedItemStyle(context);
-    final effectiveIcon =
-        icon ??
+    final menuItemStyle = UydoshDropdownChrome.menuItemStyle(context);
+    final menuItemForeground = UydoshDropdownChrome.menuItemForeground(context);
+    final selectedItemForeground = effectiveStyle?.color;
+    final effectiveIcon = icon ??
         UydoshDropdownChrome.arrowIcon(
           context,
           color: dropdownIconColor,
@@ -143,13 +160,41 @@ class UydoshDropdownFormField<T> extends StatelessWidget {
       cb(v);
     }
 
+    final decoratedItems = items.map((item) {
+      return DropdownMenuItem<T>(
+        key: item.key,
+        value: item.value,
+        enabled: item.enabled,
+        alignment: item.alignment,
+        onTap: item.onTap,
+        child: DefaultTextStyle.merge(
+          style: menuItemStyle,
+          child: IconTheme(
+            data: IconThemeData(color: menuItemForeground),
+            child: item.child,
+          ),
+        ),
+      );
+    }).toList();
+
     return DropdownButtonFormField<T>(
       value: value,
-      items: items,
+      items: decoratedItems,
       onTap: onChanged == null ? null : () => HapticFeedbackUtils.impact(),
       onChanged: onChanged == null ? null : handleChange,
       decoration: decoration,
       style: effectiveStyle,
+      selectedItemBuilder: (context) {
+        return items.map((item) {
+          return DefaultTextStyle.merge(
+            style: effectiveStyle,
+            child: IconTheme(
+              data: IconThemeData(color: selectedItemForeground),
+              child: item.child,
+            ),
+          );
+        }).toList();
+      },
       icon: effectiveIcon,
       elevation: elevation,
       borderRadius: menuBorderRadius ?? BorderRadius.circular(16),
@@ -188,10 +233,15 @@ class UydoshDropdown extends StatelessWidget {
     final theme = Theme.of(context);
     final isLightTheme = ThemeState().isLightTheme;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final menuItemForeground = UydoshDropdownChrome.menuItemForeground(context);
+    final menuItemStyle = UydoshDropdownChrome.menuItemStyle(context);
+    final selectedItemForeground = isBlueTheme
+        ? Colors.white
+        : (isLightTheme ? Colors.grey[800] : Colors.grey[200]);
 
     return Padding(
-      padding:
-          contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: contentPadding ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           if (icon != null) ...[
@@ -227,6 +277,31 @@ class UydoshDropdown extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 icon: UydoshDropdownChrome.arrowIcon(context),
                 style: UydoshDropdownChrome.selectedItemStyle(context),
+                selectedItemBuilder: (context) {
+                  return options.map((option) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (option.icon != null) ...[
+                          ThemeIcon(
+                            option.icon,
+                            color: selectedItemForeground,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Flexible(
+                          child: Text(
+                            option.label,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                UydoshDropdownChrome.selectedItemStyle(context),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList();
+                },
                 dropdownColor: UydoshDropdownChrome.menuPanelColor(context),
                 items: options.map((option) {
                   return DropdownMenuItem<String?>(
@@ -237,11 +312,7 @@ class UydoshDropdown extends StatelessWidget {
                         if (option.icon != null) ...[
                           ThemeIcon(
                             option.icon,
-                            color: isBlueTheme
-                                ? Colors.white
-                                : (isLightTheme
-                                    ? Colors.grey[700]
-                                    : Colors.grey[200]),
+                            color: menuItemForeground,
                             size: 18,
                           ),
                           const SizedBox(width: 10),
@@ -250,13 +321,7 @@ class UydoshDropdown extends StatelessWidget {
                           child: Text(
                             option.label,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: isBlueTheme
-                                  ? Colors.white
-                                  : (isLightTheme
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200]),
-                            ),
+                            style: menuItemStyle,
                           ),
                         ),
                       ],

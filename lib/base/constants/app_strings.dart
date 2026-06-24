@@ -2472,7 +2472,7 @@ class AppStrings {
       "chat_message_edited_label": "Изменено",
       "chat_replying_to": "Ответ для {name}",
       "chat_reply_cancel": "Отменить ответ",
-      "chat_reply_sender_you": "Вы",
+      "chat_reply_sender_you": "вас",
       "chat_reply_sender_unknown": "Сообщение",
       "chat_reply_attachment_fallback": "Вложение",
       "archive_failed_has_unread":
