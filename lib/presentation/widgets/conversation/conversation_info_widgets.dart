@@ -334,13 +334,26 @@ class ConversationLocationInfo extends StatelessWidget {
     );
   }
 
+  bool _shouldHideSingleDistrictWithMultipleStations({
+    required List<SubwayStationDetail> stations,
+    required List<LocationDetail> locations,
+  }) {
+    return stations.length > 1 && locations.length == 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
         final searchStations = _effectiveSearchStations();
-        final searchLocations = _effectiveSearchLocations();
+        final effectiveSearchLocations = _effectiveSearchLocations();
+        final searchLocations = _shouldHideSingleDistrictWithMultipleStations(
+          stations: searchStations,
+          locations: effectiveSearchLocations,
+        )
+            ? const <LocationDetail>[]
+            : effectiveSearchLocations;
         final hasLocation = searchLocations.isNotEmpty;
         final hasSubwayStation = searchStations.isNotEmpty;
 

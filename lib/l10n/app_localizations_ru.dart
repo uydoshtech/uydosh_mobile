@@ -246,6 +246,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get view_listing => 'Посмотреть объявление';
 
   @override
+  String get view_group => 'Посмотреть группу';
+
+  @override
   String get menu_messages => 'Сообщения';
 
   @override
@@ -880,6 +883,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get listing_details => 'Детали';
+
+  @override
+  String listing_detail_id(String id) {
+    return 'ID объявления: $id';
+  }
 
   @override
   String get author => 'Автор';

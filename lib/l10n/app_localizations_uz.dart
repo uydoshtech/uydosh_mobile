@@ -246,6 +246,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get view_listing => 'E\'lonni ko\'rish';
 
   @override
+  String get view_group => 'Guruhni ko\'rish';
+
+  @override
   String get menu_messages => 'Xabarlar';
 
   @override
@@ -895,6 +898,11 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get listing_details => 'Tafsilotlar';
+
+  @override
+  String listing_detail_id(String id) {
+    return 'E\'lon ID: $id';
+  }
 
   @override
   String get author => 'Muallif';

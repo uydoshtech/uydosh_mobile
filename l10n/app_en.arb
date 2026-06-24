@@ -110,6 +110,7 @@
   },
   "profile_interlocutor": "Interlocutor's Profile",
   "view_listing": "View Listing",
+  "view_group": "View Group",
   "menu_messages": "Messages",
   "notifications_alerts_explainer": "Here are your alerts.\nAs soon as matching housing or a neighbor appears — we'll send you a push notification.",
   "notifications_alerts_explainer_enabled": "Notifications are enabled.\n\nHere are your alerts. As soon as matching housing or a neighbor appears — we'll send you a push notification.",
@@ -397,6 +398,14 @@
   "open_in_yandex_maps": "Open in Yandex Maps",
   "open_in_yandex_maps_confirmation": "A browser with Yandex Maps will be opened.",
   "listing_details": "Details",
+  "listing_detail_id": "Listing ID: {id}",
+  "@listing_detail_id": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "author": "Author",
   "show_details": "Show details",
   "hide_details": "Hide details",

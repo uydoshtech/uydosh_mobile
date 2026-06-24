@@ -342,6 +342,7 @@ class AppStrings {
       "chat_safety_sheet_copied": "Copied",
       "profile_interlocutor": "Interlocutor's Profile",
       "view_listing": "View Listing",
+      "view_group": "View Group",
       "chat_menu_translate_to": "Translate to…",
       "chat_menu_show_original": "Show original messages",
       "chat_menu_show_translated": "Show translated messages",
@@ -793,6 +794,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Details",
+      "listing_detail_id": "Listing ID: {id}",
       "author": "Author",
       "listing_views_by_others": "{count} views",
       "listing_views_count_one": "{count} view",
@@ -2373,6 +2375,7 @@ class AppStrings {
       "chat_safety_sheet_copied": "Скопировано",
       "profile_interlocutor": "Профиль Собеседника",
       "view_listing": "Посмотреть объявление",
+      "view_group": "Посмотреть группу",
       "chat_menu_translate_to": "Перевести на…",
       "chat_menu_show_original": "Оригиналы",
       "chat_menu_show_translated": "Переводы",
@@ -2832,6 +2835,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Детали",
+      "listing_detail_id": "ID объявления: {id}",
       "author": "Автор",
       "listing_views_by_others": "{count} просмотров",
       "listing_views_count_one": "{count} просмотр",
@@ -4440,6 +4444,7 @@ class AppStrings {
       "chat_safety_sheet_copied": "Nusxalandi",
       "profile_interlocutor": "Suhbatdosh profili",
       "view_listing": "E'lonni ko'rish",
+      "view_group": "Guruhni ko'rish",
       "chat_menu_translate_to": "Tarjima qilish…",
       "chat_menu_show_original": "Asl xabarlarni ko‘rsatish",
       "chat_menu_show_translated": "Tarjima qilingan xabarlarni ko‘rsatish",
@@ -4905,6 +4910,7 @@ class AppStrings {
 
       // ===== LISTING DETAILS =====
       "listing_details": "Tafsilotlar",
+      "listing_detail_id": "E'lon ID: {id}",
       "author": "Muallif",
       "listing_views_by_others": "{count} ko'rilgan",
       "listing_views_count_other": "{count} ko'rilgan",

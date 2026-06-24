@@ -2951,7 +2951,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     // Profile option - show when other user ID is available
-    if (otherUserId != null) {
+    if (!_isGroupChat && otherUserId != null) {
       items.add(
         ActionMenuItem(
           value: "profile",
@@ -2963,13 +2963,13 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    // View listing option - only show when listingId is available
+    // View listing/group option - only show when listingId is available
     if (widget.listingId != null) {
       items.add(
         ActionMenuItem(
           value: "view_listing",
           icon: Icons.article,
-          textKey: "view_listing",
+          textKey: _isGroupChat ? "view_group" : "view_listing",
           onPressed: _navigateToListingDetail,
         ),
       );

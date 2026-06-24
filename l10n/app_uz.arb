@@ -110,6 +110,7 @@
   },
   "profile_interlocutor": "Suhbatdosh profili",
   "view_listing": "E'lonni ko'rish",
+  "view_group": "Guruhni ko'rish",
   "menu_messages": "Xabarlar",
   "notifications_alerts_explainer": "Bu yerda sizning ogohlantirishlaringiz.\nMos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
   "notifications_alerts_explainer_enabled": "Bildirishnomalar yoqilgan.\n\nBu yerda sizning ogohlantirishlaringiz. Mos uy-joy yoki qo‘shni paydo bo‘lishi bilanoq — sizga push-bildirishnoma yuboramiz.",
@@ -397,6 +398,14 @@
   "open_in_yandex_maps": "Yandex Xaritalarida ochish",
   "open_in_yandex_maps_confirmation": "Brauzerda Yandex Xaritalari ochiladi.",
   "listing_details": "Tafsilotlar",
+  "listing_detail_id": "E'lon ID: {id}",
+  "@listing_detail_id": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "author": "Muallif",
   "show_details": "Tafsilotlarni ko'rsatish",
   "hide_details": "Tafsilotlarni yashirish",

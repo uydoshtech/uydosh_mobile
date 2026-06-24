@@ -244,6 +244,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get view_listing => 'View Listing';
 
   @override
+  String get view_group => 'View Group';
+
+  @override
   String get menu_messages => 'Messages';
 
   @override
@@ -882,6 +885,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get listing_details => 'Details';
+
+  @override
+  String listing_detail_id(String id) {
+    return 'Listing ID: $id';
+  }
 
   @override
   String get author => 'Author';

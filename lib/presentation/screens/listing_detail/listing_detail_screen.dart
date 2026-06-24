@@ -1770,6 +1770,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ToastReporting.errorKey(context, "room_3d_open_error");
   }
 
+  void _showListingId() {
+    ToastReporting.infoMessage(
+      context,
+      L10n.getWithParams(
+        "listing_detail_id",
+        params: {"id": widget.listingId.toString()},
+      ),
+    );
+  }
+
   Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
     if (_isOpeningRoom3d) return;
     final raw = listingDetail.pointCloudUrl;
@@ -2581,10 +2591,14 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 context,
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              title: L10n.text(
-                "listing_details",
-                style: appBarTheme.titleTextStyle,
-                textAlign: TextAlign.center,
+              title: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _showListingId,
+                child: L10n.text(
+                  "listing_details",
+                  style: appBarTheme.titleTextStyle,
+                  textAlign: TextAlign.center,
+                ),
               ),
               actionsPadding: const EdgeInsets.only(right: 8),
               actions: [

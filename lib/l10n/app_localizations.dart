@@ -544,6 +544,12 @@ abstract class AppLocalizations {
   /// **'View Listing'**
   String get view_listing;
 
+  /// No description provided for @view_group.
+  ///
+  /// In en, this message translates to:
+  /// **'View Group'**
+  String get view_group;
+
   /// No description provided for @menu_messages.
   ///
   /// In en, this message translates to:
@@ -1689,6 +1695,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Details'**
   String get listing_details;
+
+  /// No description provided for @listing_detail_id.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing ID: {id}'**
+  String listing_detail_id(String id);
 
   /// No description provided for @author.
   ///

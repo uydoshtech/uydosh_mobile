@@ -110,6 +110,7 @@
   },
   "profile_interlocutor": "Профиль собеседника",
   "view_listing": "Посмотреть объявление",
+  "view_group": "Посмотреть группу",
   "menu_messages": "Сообщения",
   "notifications_alerts_explainer": "Здесь ваши оповещения.\nКак только появится подходящее жильё или сосед — мы пришлём push-уведомление.",
   "notifications_alerts_explainer_enabled": "Уведомления включены.\n\nЗдесь ваши оповещения. Как только появится подходящее жильё или сосед — мы пришлём push-уведомление.",
@@ -389,6 +390,14 @@
   "open_in_yandex_maps": "Открыть в Яндекс Картах",
   "open_in_yandex_maps_confirmation": "Браузер с Яндекс Картами будет открыт.",
   "listing_details": "Детали",
+  "listing_detail_id": "ID объявления: {id}",
+  "@listing_detail_id": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "author": "Автор",
   "show_details": "Показать детали",
   "hide_details": "Скрыть детали",
