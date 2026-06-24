@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
@@ -110,15 +111,30 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              L10n.getWithParams(
-                "group_remove_member_message",
-                params: {"name": widget.member.name},
-              ),
-              style: TextStyle(
-                fontSize: 16,
-                color: scheme.onSurfaceVariant,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                UyDoshAvatar(
+                  avatarUrl: widget.member.avatarUrl,
+                  displayName: widget.member.name,
+                  customSize: 30,
+                  borderColor: scheme.outlineVariant.withValues(alpha: 0.55),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    L10n.getWithParams(
+                      "group_remove_member_message",
+                      params: {"name": widget.member.name},
+                    ),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: scheme.onSurfaceVariant,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Text(
@@ -192,7 +208,7 @@ class _RemoveMemberDialogState extends State<_RemoveMemberDialog> {
   }
 }
 
-Future<void> showListingGroupMemberProfilesSheet({
+Future<bool> showListingGroupMemberProfilesSheet({
   required BuildContext context,
   required int listingId,
   required List<ConversationMemberSummary> members,
@@ -205,9 +221,9 @@ Future<void> showListingGroupMemberProfilesSheet({
   ListingDetail? groupListingDetail,
   VoidCallback? onChanged,
 }) async {
-  if (members.isEmpty) return;
+  if (members.isEmpty) return false;
 
-  await showAppBottomSheet<void>(
+  final leftGroup = await showAppBottomSheet<bool>(
     context: context,
     builder: (sheetContext) {
       final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
@@ -234,6 +250,7 @@ Future<void> showListingGroupMemberProfilesSheet({
       );
     },
   );
+  return leftGroup == true;
 }
 
 class _ListingGroupMemberProfilesSheet extends StatefulWidget {
@@ -633,7 +650,7 @@ class _ListingGroupMemberProfilesSheetState
       );
       widget.onChanged?.call();
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (!mounted) return;

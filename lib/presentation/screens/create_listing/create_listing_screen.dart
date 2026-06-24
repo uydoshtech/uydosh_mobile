@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:geolocator/geolocator.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
@@ -14,6 +15,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/services/yandex_geosuggest_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -58,6 +60,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -83,6 +86,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _moveInDateController = TextEditingController();
+  final TextEditingController _addressTextController = TextEditingController();
   String _moveInDateValue = "";
 
   // Wizard navigation
@@ -121,23 +125,32 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool get _isGroupFormingFlow =>
       _selectedListingTypeId == ListingTypeIds.groupForming;
 
-  /// Demand-side flows (looking for a place) let the author pick several metro
-  /// stations they'd be happy to live near: room-needed (1) and group-forming.
-  bool get _supportsMultiStation =>
-      _selectedListingTypeId == 1 || _isGroupFormingFlow;
+  bool get _isRoommateNeededFlow =>
+      _selectedListingTypeId == ListingTypeIds.roommateNeeded;
 
-  bool get _supportsMultiLocation => _supportsMultiStation;
+  /// Listings can be close to several metro stations. Element 0 is persisted
+  /// as the primary station for older API consumers.
+  bool get _supportsMultiStation =>
+      _selectedListingTypeId == ListingTypeIds.roomNeeded ||
+      _isRoommateNeededFlow ||
+      _isGroupFormingFlow;
+
+  /// Demand-side flows can search across several districts. Supply-side
+  /// roommate listings describe one apartment, so district mode stays singular.
+  bool get _supportsMultiLocation =>
+      _selectedListingTypeId == ListingTypeIds.roomNeeded ||
+      _isGroupFormingFlow;
 
   int _groupSizeTarget = 3;
 
-  bool get _pricePickerSingleHandle =>
-      _selectedListingTypeId == ListingTypeIds.roommateNeeded;
+  bool get _pricePickerSingleHandle => _isRoommateNeededFlow;
   bool _isPrivateRoom = false; // Add private room toggle
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
   _LocationSearchMode _locationSearchMode = _LocationSearchMode.metro;
   bool _isSubmitting = false;
+  bool _isResolvingCurrentLocation = false;
   bool _isLoadingLocations = false;
   bool _isLoadingStations = false;
 
@@ -188,6 +201,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _baselineCaptured = false;
   String _baselineTitle = "";
   String _baselineDescription = "";
+  String _baselineAddressText = "";
   int _baselineListingTypeId = 2;
   double _baselineRoommatePrice = 10.0;
   double _baselineRoomBudgetMin = 10.0;
@@ -209,6 +223,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.addListener(_markDirty);
     _descriptionController.addListener(_markDirty);
     _moveInDateController.addListener(_markDirty);
+    _addressTextController.addListener(_markDirty);
     final initialListingTypeId = _initialListingTypeId;
     if (initialListingTypeId != null) {
       _selectedListingTypeId = initialListingTypeId;
@@ -260,6 +275,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _captureBaseline() {
     _baselineTitle = _titleController.text;
     _baselineDescription = _descriptionController.text;
+    _baselineAddressText = _addressTextController.text;
     _baselineListingTypeId = _selectedListingTypeId;
     _baselineRoommatePrice = _roommatePrice;
     _baselineRoomBudgetMin = _roomBudgetMin;
@@ -305,8 +321,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _onSearchStationsSelected(List<int> ids) {
     setState(() {
       _selectedSearchLocations.clear();
+      final incomingIds = ids.toSet();
+      final addedIds = <int>{};
       final next = <SubwayStation>[];
+      for (final station in _selectedSearchStations) {
+        if (incomingIds.contains(station.id) && addedIds.add(station.id)) {
+          next.add(station);
+        }
+      }
       for (final id in ids) {
+        if (!addedIds.add(id)) continue;
         final station = _stationCache[id] ??
             _selectedSearchStations
                 .where((s) => s.id == id)
@@ -317,6 +341,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _selectedSearchStations
         ..clear()
         ..addAll(next);
+      if (_showLocationError && next.isNotEmpty) {
+        _showLocationError = false;
+      }
     });
   }
 
@@ -446,6 +473,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _normListingText(_baselineDescription)) {
       addLabel("listing_description_label", fallback: "Description");
     }
+    if (_normListingText(_addressTextController.text) !=
+        _normListingText(_baselineAddressText)) {
+      addLabel("listing_address_text_label", fallback: "Address");
+    }
     if (_selectedListingTypeId != _baselineListingTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
     }
@@ -501,6 +532,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
     if (_normListingText(_descriptionController.text) !=
         _normListingText(_baselineDescription)) {
+      return true;
+    }
+    if (_normListingText(_addressTextController.text) !=
+        _normListingText(_baselineAddressText)) {
       return true;
     }
     if (_selectedListingTypeId != _baselineListingTypeId) return true;
@@ -751,6 +786,81 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
+  Future<void> _useCurrentLocationForAddress() async {
+    if (_isResolvingCurrentLocation) return;
+    HapticFeedbackUtils.impact();
+    _dismissKeyboard();
+
+    setState(() => _isResolvingCurrentLocation = true);
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("location_services_disabled"),
+        );
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("location_permission_denied"),
+        );
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 12),
+      );
+
+      final result = await getIt<YandexGeosuggestService>().reverseGeocode(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        lang: L10n.currentLanguage,
+      );
+
+      if (!mounted) return;
+      if (result.hasAddress) {
+        setState(() {
+          _addressTextController.text = result.addressText!.trim();
+        });
+        return;
+      }
+
+      ToastTheme.showError(
+        context,
+        message: L10n.get("current_location_address_failed"),
+      );
+    } on TimeoutException {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("current_location_address_failed"),
+      );
+    } catch (e, st) {
+      logger.w("Failed to resolve current location address",
+          error: e, stackTrace: st);
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("current_location_address_failed"),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isResolvingCurrentLocation = false);
+      }
+    }
+  }
+
   int _priceForCreateRequest() {
     if (_pricePickerSingleHandle) {
       return _roommatePrice.round();
@@ -847,9 +957,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _titleController.removeListener(_markDirty);
     _descriptionController.removeListener(_markDirty);
     _moveInDateController.removeListener(_markDirty);
+    _addressTextController.removeListener(_markDirty);
     _titleController.dispose();
     _descriptionController.dispose();
     _moveInDateController.dispose();
+    _addressTextController.dispose();
     _locationScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
@@ -1024,7 +1136,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _validateStep(int index) {
     switch (index) {
       case 0: // Location
-        if (_supportsMultiLocation &&
+        if (_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _selectedSearchStations.isEmpty) {
           ToastTheme.showError(context, message: L10n.get("location_required"));
@@ -1038,7 +1150,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           setState(() => _showLocationError = true);
           return false;
         }
-        if (!_supportsMultiLocation &&
+        if (!_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _currentSubwayStationId() == null) {
           ToastTheme.showError(context, message: L10n.get("location_required"));
@@ -1289,48 +1401,47 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       children: [
         _buildLocationModeToggle(),
         const SizedBox(height: 12),
-        if (_supportsMultiStation) ...[
-          if (_locationSearchMode == _LocationSearchMode.metro) ...[
-            MultiStationPicker(
-              selectedSubwayLine: _selectedSubwayLine,
-              currentStations: _currentStations,
-              selectedStationIds:
-                  _selectedSearchStations.map((s) => s.id).toSet(),
-              metroLineScrollController: _metroLineScrollController,
-              isLoadingStations: _isLoadingStations,
-              onSubwayLineChanged: (index) {
-                setState(() {
-                  _selectedSubwayLine = index;
-                  if (index > 0) {
-                    _loadStationsForLine(index);
-                  } else {
-                    _currentStations = [];
-                    _selectedStationIndex = 0;
-                  }
-                });
-              },
-              onStationsSelected: _onSearchStationsSelected,
+        if (_locationSearchMode == _LocationSearchMode.metro &&
+            _supportsMultiStation) ...[
+          MultiStationPicker(
+            selectedSubwayLine: _selectedSubwayLine,
+            currentStations: _currentStations,
+            selectedStationIds:
+                _selectedSearchStations.map((s) => s.id).toSet(),
+            metroLineScrollController: _metroLineScrollController,
+            isLoadingStations: _isLoadingStations,
+            onSubwayLineChanged: (index) {
+              setState(() {
+                _selectedSubwayLine = index;
+                if (index > 0) {
+                  _loadStationsForLine(index);
+                } else {
+                  _currentStations = [];
+                  _selectedStationIndex = 0;
+                }
+              });
+            },
+            onStationsSelected: _onSearchStationsSelected,
+          ),
+          if (_selectedSearchStations.isNotEmpty) _buildSelectedStationChips(),
+        ] else if (_locationSearchMode == _LocationSearchMode.district &&
+            _supportsMultiLocation) ...[
+          MultiLocationPicker(
+            locations: _currentLocations,
+            selectedLocationIds:
+                _selectedSearchLocations.map((l) => l.id).toSet(),
+            isLoading: _isLoadingLocations,
+            accentColor: _getBorderColor(),
+            getLocationName: (location) => _getLocalizedName(
+              nameUz: location.shortNameUz,
+              nameRu: location.shortNameRu,
+              nameEn: location.shortNameEn,
+              shortName: location.shortName,
             ),
-            if (_selectedSearchStations.isNotEmpty)
-              _buildSelectedStationChips(),
-          ] else ...[
-            MultiLocationPicker(
-              locations: _currentLocations,
-              selectedLocationIds:
-                  _selectedSearchLocations.map((l) => l.id).toSet(),
-              isLoading: _isLoadingLocations,
-              accentColor: _getBorderColor(),
-              getLocationName: (location) => _getLocalizedName(
-                nameUz: location.shortNameUz,
-                nameRu: location.shortNameRu,
-                nameEn: location.shortNameEn,
-                shortName: location.shortName,
-              ),
-              onLocationsSelected: _onSearchLocationsSelected,
-            ),
-            if (_selectedSearchLocations.isNotEmpty)
-              _buildSelectedLocationChips(),
-          ],
+            onLocationsSelected: _onSearchLocationsSelected,
+          ),
+          if (_selectedSearchLocations.isNotEmpty)
+            _buildSelectedLocationChips(),
         ] else if (_locationSearchMode == _LocationSearchMode.metro) ...[
           ListingFormMetroSection(
             selectedSubwayLine: _selectedSubwayLine,
@@ -1383,6 +1494,60 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             useColoredIcons: true,
             showError: _showLocationError,
             showArrows: false,
+          ),
+        ],
+        if (_isRoommateNeededFlow) ...[
+          const SizedBox(height: 12),
+          LabeledFieldOverlay(
+            label: L10n.get("listing_address_field_label"),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: YandexAddressSuggestField(
+                    hintText: L10n.get("listing_address_text_label"),
+                    controller: _addressTextController,
+                    dirtyOutlineColor: _getBorderColor(),
+                    decoration: UydoshPlateFieldDecoration.forHint(
+                      context,
+                      hintText: L10n.get("listing_address_text_label"),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 108,
+                  child: OutlinedButton.icon(
+                    onPressed: _isResolvingCurrentLocation
+                        ? null
+                        : _useCurrentLocationForAddress,
+                    icon: _isResolvingCurrentLocation
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.my_location, size: 18),
+                    label: Text(
+                      L10n.get("use_current_location"),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _getBorderColor(),
+                      side: BorderSide(color: _getBorderColor()),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(0, 56),
+                      textStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ],
@@ -2146,6 +2311,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           value: locationValue ?? notSet,
           stepIndex: 0,
         ),
+        if (_isRoommateNeededFlow)
+          _summaryTile(
+            label: _summaryLabel("listing_address_text_label",
+                fallback: "Address"),
+            value: _addressTextController.text.trim().isEmpty
+                ? notSet
+                : _addressTextController.text.trim(),
+            stepIndex: 0,
+          ),
         if (_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _selectedSearchStations.isNotEmpty)
@@ -2276,12 +2450,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   String? _reviewLocationValue() {
-    if (_supportsMultiLocation) {
-      if (_locationSearchMode == _LocationSearchMode.district) {
-        return _selectedSearchLocations.isEmpty
-            ? null
-            : _reviewLocationsValue();
-      }
+    if (_locationSearchMode == _LocationSearchMode.district &&
+        _supportsMultiLocation) {
+      return _selectedSearchLocations.isEmpty ? null : _reviewLocationsValue();
+    }
+    if (_locationSearchMode == _LocationSearchMode.metro &&
+        _supportsMultiStation) {
       return _selectedSearchStations.isEmpty
           ? null
           : L10n.get("wizard_location_mode_metro");
@@ -2462,7 +2636,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
 
     // Validate location/search area (mandatory)
-    if (_supportsMultiLocation &&
+    if (_supportsMultiStation &&
         _locationSearchMode == _LocationSearchMode.metro &&
         _selectedSearchStations.isEmpty) {
       ToastTheme.showError(
@@ -2484,7 +2658,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _showLocationError = true;
       });
       return;
-    } else if (!_supportsMultiLocation &&
+    } else if (!_supportsMultiStation &&
         _locationSearchMode == _LocationSearchMode.metro &&
         _currentSubwayStationId() == null) {
       ToastTheme.showError(
@@ -2591,6 +2765,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           : usesDistrictMode
               ? null
               : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
+      final addressText =
+          _isRoommateNeededFlow ? _addressTextController.text.trim() : "";
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
@@ -2618,6 +2794,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       );
       logger.d("  locationId: ${primaryLocation?.id ?? "null (optional)"}");
       logger.d("  locationIds: ${multiLocationIds ?? "null"}");
+      logger.d(
+        "  addressText: ${addressText.isEmpty ? "null" : "\"$addressText\""}",
+      );
       logger.d("  amenityIds: ${_selectedAmenityIds.toList()}");
       logger.d(
         "Selected Location: ${primaryLocation?.shortName ?? "None selected"} (ID: ${primaryLocation?.id ?? "null"})",
@@ -2655,6 +2834,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         gender: _selectedGender,
         locationId: primaryLocation?.id,
         locationIds: multiLocationIds,
+        addressText: addressText.isEmpty ? null : addressText,
         amenityIds: _selectedAmenityIds.toList(),
         subwayStationId: primaryStation?.id, // Now optional, moved to end
         subwayStationIds: multiStationIds, // Multi-station (demand-side flows)
@@ -2707,6 +2887,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // Clear form
       _titleController.clear();
       _descriptionController.clear();
+      _addressTextController.clear();
       setState(() {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;

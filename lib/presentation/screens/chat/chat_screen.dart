@@ -58,6 +58,7 @@ import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
+import "package:uy_dosh/presentation/router/main_navigation.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
@@ -102,6 +103,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_segmented_switch.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 
 class ChatScreen extends StatefulWidget {
   /// Root [Navigator] route name for this conversation. Push with
@@ -286,6 +288,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Completer<void>? _refreshCompleter;
   bool _isAdmin = false;
   bool _adminDeleteBusy = false;
+  bool _showScrollToBottomButton = false;
   Timer? _incomingRefreshDebounce;
   late final VoidCallback _unreadMessagesListener;
   int _lastObservedUnreadCount = 0;
@@ -295,6 +298,8 @@ class _ChatScreenState extends State<ChatScreen> {
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
   static const String _chatTranslateAutoTarget = "";
   static const double _translateTargetSwitchHeight = 135 * 60 / 145;
+  static const double _scrollToBottomShowOffset = 220;
+  static const double _scrollToBottomHideOffset = 120;
 
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
@@ -330,6 +335,16 @@ class _ChatScreenState extends State<ChatScreen> {
   double get _composerBottomReserveHeight {
     return _glassComposerEstimatedHeight +
         (_replyingToMessage == null ? 0 : 64);
+  }
+
+  void _handleMessageListScroll() {
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.position.pixels;
+    final shouldShow = _showScrollToBottomButton
+        ? offset > _scrollToBottomHideOffset
+        : offset > _scrollToBottomShowOffset;
+    if (shouldShow == _showScrollToBottomButton) return;
+    setState(() => _showScrollToBottomButton = shouldShow);
   }
 
   Future<void> _loadGroupParticipants() async {
@@ -453,6 +468,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildGroupParticipantsFooterPill(BuildContext context) {
     final participants = _groupParticipants;
     final count = participants.length;
+    final pendingJoinRequestCount =
+        _groupListingDetail?.groupContext?.pendingJoinRequestCount ?? 0;
     final label = count > 0
         ? "${L10n.get("group_floating_participants_label")} $count"
         : L10n.get("group_floating_participants_label");
@@ -461,6 +478,8 @@ class _ChatScreenState extends State<ChatScreen> {
       participants: participants,
       currentUserId: _currentUserId,
       semanticsLabel: label,
+      showDot: pendingJoinRequestCount > 0,
+      dotTrigger: pendingJoinRequestCount,
       onTap: participants.isEmpty
           ? null
           : () => unawaited(_openGroupParticipantsSheet()),
@@ -687,6 +706,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.addListener(_syncComposerDraft);
     unawaited(_restoreComposerDraft());
     _scrollController = ScrollController();
+    _scrollController.addListener(_handleMessageListScroll);
     _messageFocusNode = FocusNode(onKeyEvent: _messageComposerOnKeyEvent);
     _peerAvatarUrl = widget.otherUserAvatar;
     _pendingDiscussListingId = widget.discussListingId;
@@ -765,6 +785,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.removeListener(_syncComposerDraft);
     _persistComposerDraftIfNeeded();
     _messageController.dispose();
+    _scrollController.removeListener(_handleMessageListScroll);
     _scrollController.dispose();
     _messageFocusNode.dispose();
     // Surface any achievement that was unlocked while the user was inside
@@ -1712,7 +1733,64 @@ class _ChatScreenState extends State<ChatScreen> {
                 backgroundColor: Colors.transparent,
               ),
             ),
+          Positioned(
+            right: 16,
+            bottom: _scrollToBottomButtonBottomOffset(context),
+            child: _buildScrollToBottomButton(),
+          ),
         ],
+      ),
+    );
+  }
+
+  double _scrollToBottomButtonBottomOffset(BuildContext context) {
+    if (!ThemeState().isBlueTheme) return 16;
+    return _composerBottomReserveHeight +
+        MediaQuery.viewPaddingOf(context).bottom +
+        16;
+  }
+
+  Widget _buildScrollToBottomButton() {
+    final theme = Theme.of(context);
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return AnimatedScale(
+      scale: _showScrollToBottomButton ? 1 : 0.88,
+      duration:
+          reduceMotion ? Duration.zero : const Duration(milliseconds: 160),
+      curve: Curves.easeOutCubic,
+      child: AnimatedOpacity(
+        opacity: _showScrollToBottomButton ? 1 : 0,
+        duration:
+            reduceMotion ? Duration.zero : const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        child: IgnorePointer(
+          ignoring: !_showScrollToBottomButton,
+          child: Tooltip(
+            message: L10n.get("chat_scroll_to_bottom"),
+            child: Material(
+              color: theme.colorScheme.surface,
+              elevation: 8,
+              shadowColor: Colors.black.withValues(alpha: 0.18),
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _scrollToBottom,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 28,
+                    semanticLabel: L10n.get("chat_scroll_to_bottom"),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -2236,6 +2314,7 @@ class _ChatScreenState extends State<ChatScreen> {
       currentStars: initialStars,
       initialReasonCodes: currentReasons,
       initialCategoryRatings: currentCategoryRatings,
+      prefillMissingCategoryRatings: false,
     );
 
     if (result == null || !mounted) {
@@ -2658,6 +2737,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
+      if (_showScrollToBottomButton) {
+        setState(() => _showScrollToBottomButton = false);
+      }
       _scrollController.animateTo(
         0,
         duration: const Duration(milliseconds: 300),
@@ -2782,7 +2864,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final memberCompatibility = await _loadGroupMemberCompatibility();
     if (!mounted) return;
 
-    await showListingGroupMemberProfilesSheet(
+    final leftGroup = await showListingGroupMemberProfilesSheet(
       context: context,
       listingId: listingId,
       members: _groupParticipants,
@@ -2801,6 +2883,22 @@ class _ChatScreenState extends State<ChatScreen> {
         unawaited(_loadGroupHousingContext());
       },
     );
+    if (leftGroup && mounted) {
+      _navigateHomeAfterLeavingGroup();
+    }
+  }
+
+  void _navigateHomeAfterLeavingGroup() {
+    context.read<ConversationsBloc>().add(const ConversationsRefresh());
+
+    final mainState = mainNavigationKey.currentState;
+    if (mainState != null) {
+      mainState.navigateToIndex(0);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+
+    context.pushMainNavigationAndRemoveUntil();
   }
 
   void _navigateToProfile(int userId) {
@@ -3440,12 +3538,16 @@ class _GroupParticipantsFooterPill extends StatelessWidget {
     required this.participants,
     required this.currentUserId,
     required this.semanticsLabel,
+    required this.showDot,
+    required this.dotTrigger,
     required this.onTap,
   });
 
   final List<ConversationMemberSummary> participants;
   final int? currentUserId;
   final String semanticsLabel;
+  final bool showDot;
+  final int dotTrigger;
   final VoidCallback? onTap;
 
   @override
@@ -3455,54 +3557,73 @@ class _GroupParticipantsFooterPill extends StatelessWidget {
     final foreground = isDark ? Colors.white : theme.colorScheme.onSurface;
     final radius = BorderRadius.circular(999);
 
-    return Semantics(
-      button: true,
-      enabled: onTap != null,
-      label: semanticsLabel,
-      child: Tooltip(
-        message: semanticsLabel,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: radius,
-            onTap: onTap,
-            child: Ink(
-              height: 38,
-              padding: const EdgeInsetsDirectional.only(start: 8, end: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(
-                  alpha: ThemeState().isBlueTheme ? 0.16 : 0.10,
-                ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Semantics(
+          button: true,
+          enabled: onTap != null,
+          label: semanticsLabel,
+          child: Tooltip(
+            message: semanticsLabel,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
                 borderRadius: radius,
-                border: Border.all(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.10),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ChatParticipantAvatarStack(
-                    participants: participants,
-                    currentUserId: currentUserId,
-                    avatarSize: 22,
-                    maxVisible: 4,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    semanticsLabel,
-                    style: TextStyle(
-                      color: foreground.withValues(
-                          alpha: onTap == null ? 0.55 : 1),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                onTap: onTap,
+                child: Ink(
+                  height: 38,
+                  padding: const EdgeInsetsDirectional.only(start: 8, end: 12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface.withValues(
+                      alpha: ThemeState().isBlueTheme ? 0.16 : 0.10,
+                    ),
+                    borderRadius: radius,
+                    border: Border.all(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.10),
                     ),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ChatParticipantAvatarStack(
+                        participants: participants,
+                        currentUserId: currentUserId,
+                        avatarSize: 22,
+                        maxVisible: 4,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        semanticsLabel,
+                        style: TextStyle(
+                          color: foreground.withValues(
+                              alpha: onTap == null ? 0.55 : 1),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
+        if (showDot)
+          Positioned(
+            right: 1,
+            top: -2,
+            child: PulseThenBlinkDotWidget(
+              trigger: dotTrigger,
+              color: ThemeState().unreadIndicatorColor,
+              size: 10,
+              blinkDuration: const Duration(milliseconds: 750),
+              borderColor: theme.colorScheme.surface,
+              borderWidth: 1.5,
+            ),
+          ),
+      ],
     );
   }
 }

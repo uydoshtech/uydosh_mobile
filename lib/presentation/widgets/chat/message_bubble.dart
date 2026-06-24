@@ -1455,7 +1455,7 @@ class _SystemMessageBubble extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 6),
+        padding: const EdgeInsetsDirectional.fromSTEB(48, 6, 48, 26),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: backgroundColor,

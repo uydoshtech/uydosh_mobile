@@ -14,7 +14,6 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
@@ -22,7 +21,6 @@ import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_item_card.dart";
-import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_rating_dialog.dart";
@@ -428,40 +426,14 @@ class _ListingGroupShortlistSheetState
 
   Future<void> _contactLandlord(_ShortlistRow row) async {
     try {
-      final detail = await getIt<IListingService>().getListingDetail(
-        row.listing.id,
+      await getIt<IListingGroupService>().inviteLandlordToGroupChat(
+        groupListingId: widget.groupListingId,
+        housingListingId: row.listing.id,
       );
       if (!context.mounted) return;
-      await ConversationEntryFlow.openListingThread(
-        context: context,
-        listingDetail: detail,
-        analyticsListingRouteId: detail.id,
-        pushNewThread: (conversation) async {
-          await ConversationEntryFlow.pushChatShell(
-            context,
-            conversationId: conversation.id,
-            chatScreenChild: ChatScreen(
-              conversationId: conversation.id,
-              listingId: detail.id,
-              listingTypeId: detail.listingTypeId,
-              listingOwnerUserId: detail.user.id,
-              listingTitle: detail.title,
-            ),
-          );
-        },
-        pushExistingThread: (summary, currentUserId) async {
-          await ConversationEntryFlow.pushChatShell(
-            context,
-            conversationId: summary.id,
-            chatScreenChild: ChatScreen(
-              conversationId: summary.id,
-              listingId: detail.id,
-              listingTypeId: detail.listingTypeId,
-              listingOwnerUserId: detail.user.id,
-              listingTitle: detail.title,
-            ),
-          );
-        },
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_landlord_invite_sent"),
       );
     } catch (e) {
       if (!context.mounted) return;

@@ -85,16 +85,18 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
   required int currentStars,
   Set<String> initialReasonCodes = const {},
   Map<String, int> initialCategoryRatings = const {},
+  bool prefillMissingCategoryRatings = true,
 }) {
   return showDialog<ListingRatingDialogResult>(
     context: context,
     builder: (dialogContext) {
-      var selected = currentStars.clamp(1, 5).toInt();
+      var selected = currentStars.clamp(0, 5).toInt();
       final categoryRatings = List<int>.generate(
         _ratingCategories.length,
         (index) {
           final value = initialCategoryRatings[_ratingCategories[index].code];
-          return value == null ? selected : value.clamp(1, 5).toInt();
+          if (value != null) return value.clamp(1, 5).toInt();
+          return prefillMissingCategoryRatings ? selected : 0;
         },
       );
       final selectedReasonCodes = {...initialReasonCodes};
@@ -171,11 +173,10 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                         HapticFeedbackUtils.selectionClick();
                         setDialogState(() {
                           categoryRatings[index] = value;
-                          selected = (categoryRatings.reduce((a, b) => a + b) /
-                                  categoryRatings.length)
-                              .round()
-                              .clamp(1, 5)
-                              .toInt();
+                          selected = _averageSelectedCategoryStars(
+                                categoryRatings,
+                              ) ??
+                              selected;
                         });
                       },
                     ),
@@ -250,7 +251,8 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                       reasons: selectedReasonCodes.toList(),
                       categoryRatings: {
                         for (var i = 0; i < _ratingCategories.length; i++)
-                          _ratingCategories[i].code: categoryRatings[i],
+                          if (categoryRatings[i] > 0)
+                            _ratingCategories[i].code: categoryRatings[i],
                       },
                       verdict: _verdictForStars(selected),
                     ),
@@ -273,6 +275,15 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
       );
     },
   );
+}
+
+int? _averageSelectedCategoryStars(List<int> ratings) {
+  final selectedRatings = ratings.where((rating) => rating > 0).toList();
+  if (selectedRatings.isEmpty) return null;
+  return (selectedRatings.reduce((a, b) => a + b) / selectedRatings.length)
+      .round()
+      .clamp(1, 5)
+      .toInt();
 }
 
 String _verdictForStars(int stars) {
@@ -368,6 +379,7 @@ class _RatingCategoryCard extends StatelessWidget {
   }
 
   static String _ratingLabel(int stars) {
+    if (stars <= 0) return "";
     if (stars >= 5) return L10n.get("listing_rating_label_excellent");
     if (stars >= 4) return L10n.get("listing_rating_label_good");
     if (stars >= 3) return L10n.get("listing_rating_label_normal");

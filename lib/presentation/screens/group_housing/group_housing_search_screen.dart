@@ -491,8 +491,8 @@ class _GroupShortlistBookmarkActionState
         return Opacity(
           opacity: _seeded && !_loading ? 1 : 0.55,
           child: SizedBox(
-            width: 20,
-            height: 20,
+            width: 25,
+            height: 25,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
@@ -514,12 +514,12 @@ class _GroupShortlistBookmarkActionState
                     ),
                     child: SizedBox(
                       key: ValueKey(isOn ? "bookmark-on" : "bookmark-off"),
-                      width: 20,
-                      height: 20,
+                      width: 25,
+                      height: 25,
                       child: Icon(
                         isOn ? Icons.bookmark : Icons.bookmark_border,
                         color: iconColor,
-                        size: 20,
+                        size: 25,
                       ),
                     ),
                   ),

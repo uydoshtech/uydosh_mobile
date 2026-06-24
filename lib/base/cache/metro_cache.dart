@@ -801,6 +801,30 @@ class MetroCache {
     return expandedIds.toList();
   }
 
+  /// Collapse mirrored transfer partners to a single display item while keeping
+  /// the first station encountered, so search/order semantics stay unchanged.
+  static List<T> dedupeTransferStationPairs<T>(
+    Iterable<T> stations,
+    int Function(T station) stationIdOf,
+  ) {
+    final result = <T>[];
+    final seenKeys = <String>{};
+
+    for (final station in stations) {
+      final stationId = stationIdOf(station);
+      final transferPartnerId = getTransferPartnerStationId(stationId);
+      final key = transferPartnerId == null
+          ? "$stationId"
+          : stationId < transferPartnerId
+              ? "$stationId:$transferPartnerId"
+              : "$transferPartnerId:$stationId";
+
+      if (seenKeys.add(key)) result.add(station);
+    }
+
+    return result;
+  }
+
   /// Get all transfer station pairs as a list of pairs
   static List<Map<String, int>> getAllTransferStationPairs() {
     final pairs = <Map<String, int>>[];

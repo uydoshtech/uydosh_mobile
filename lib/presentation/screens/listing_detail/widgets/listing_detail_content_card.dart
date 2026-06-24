@@ -1,5 +1,6 @@
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -375,11 +376,46 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     return station == null ? const <SubwayStationDetail>[] : [station];
   }
 
-  List<LocationDetail> _effectiveSearchLocations() {
+  List<LocationDetail> _effectiveSearchLocations(
+    List<SubwayStationDetail> stations,
+  ) {
+    final stationLocations = _locationsForStations(stations);
+    if (stationLocations.isNotEmpty) return stationLocations;
     final locations = widget.listingDetail.searchLocations;
     if (locations != null && locations.isNotEmpty) return locations;
     final location = widget.listingDetail.location;
     return location == null ? const <LocationDetail>[] : [location];
+  }
+
+  List<LocationDetail> _locationsForStations(
+    List<SubwayStationDetail> stations,
+  ) {
+    if (stations.isEmpty) return const <LocationDetail>[];
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    final locationIds = <int>{};
+    final locations = <LocationDetail>[];
+    for (final stationDetail in displayStations) {
+      final locationId =
+          MetroCache.getStationById(stationDetail.id)?.locationId;
+      if (locationId == null || !locationIds.add(locationId)) continue;
+      final location = LocationCache.getLocationById(locationId);
+      if (location == null) continue;
+      locations.add(
+        LocationDetail(
+          id: location.id,
+          nameUz: location.nameUz ?? location.shortNameUz ?? "",
+          nameRu: location.nameRu ?? location.shortNameRu ?? "",
+          nameEn: location.nameEn ?? location.shortNameEn ?? "",
+          shortNameUz: location.shortNameUz ?? location.nameUz ?? "",
+          shortNameRu: location.shortNameRu ?? location.nameRu ?? "",
+          shortNameEn: location.shortNameEn ?? location.nameEn ?? "",
+        ),
+      );
+    }
+    return locations;
   }
 
   String _stationSummaryLabel(List<SubwayStationDetail> stations) {
@@ -422,9 +458,15 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   }
 
   Widget _buildSubwayStationsSummary(List<SubwayStationDetail> stations) {
-    if (stations.length == 1) return _buildSubwayStationDisplay(stations.first);
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    if (displayStations.length == 1) {
+      return _buildSubwayStationDisplay(displayStations.first);
+    }
     final lineIds = <int>[];
-    for (final station in stations) {
+    for (final station in displayStations) {
       if (!lineIds.contains(station.line)) lineIds.add(station.line);
     }
     return Row(
@@ -439,7 +481,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         ],
         Expanded(
           child: Text(
-            _stationSummaryLabel(stations),
+            _stationSummaryLabel(displayStations),
             style: TextStyle(
               fontSize: 15,
               color: ListingDetailThemeHelper.locationTextColor,
@@ -459,7 +501,11 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     required List<SubwayStationDetail> stations,
     required List<LocationDetail> locations,
   }) {
-    final showStations = stations.length > 1;
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    final showStations = displayStations.length > 1;
     final showLocations = locations.length > 1;
     if (!showStations && !showLocations) return const SizedBox.shrink();
 
@@ -467,10 +513,16 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (showStations)
-          for (final station in stations) ...[
+          for (final station in displayStations) ...[
             _buildSubwayStationDisplay(station),
             const SizedBox(height: 8),
           ],
+        if (showStations && showLocations)
+          Divider(
+            height: 16,
+            thickness: 1,
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.35),
+          ),
         if (showLocations)
           for (final location in locations) ...[
             _buildLocationsSummary([location]),
@@ -480,27 +532,34 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     );
   }
 
-  bool _shouldHideSingleDistrictWithMultipleStations({
-    required List<SubwayStationDetail> stations,
-    required List<LocationDetail> locations,
-  }) {
-    return stations.length > 1 && locations.length == 1;
+  List<LocationDetail> _visibleInlineLocations(
+    List<SubwayStationDetail> stations,
+  ) {
+    return _effectiveSearchLocations(stations);
+  }
+
+  bool _hasInlineLocationMapContent() {
+    final stations = _effectiveSearchStations();
+    final locations = _visibleInlineLocations(stations);
+
+    return stations.isNotEmpty || locations.isNotEmpty;
   }
 
   Widget _buildInlineLocationMapSection() {
     final stations = _effectiveSearchStations();
-    final effectiveLocations = _effectiveSearchLocations();
-    final locations = _shouldHideSingleDistrictWithMultipleStations(
-      stations: stations,
-      locations: effectiveLocations,
-    )
-        ? const <LocationDetail>[]
-        : effectiveLocations;
+    final locations = _visibleInlineLocations(stations);
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
     final hasLocation = locations.isNotEmpty;
-    final hasSubway = stations.isNotEmpty;
+    final hasSubway = displayStations.isNotEmpty;
     final hasMap = hasLocation || hasSubway;
-    final canShowInlineMap = stations.length <= 1 && locations.length <= 1;
+    final canShowInlineMap =
+        displayStations.length <= 1 && locations.length <= 1;
     final canOpen = canShowInlineMap && widget.onOpenInYandexMaps != null;
+    final hasExpandedGeoList =
+        displayStations.length > 1 || locations.length > 1;
 
     if (!hasMap) return const SizedBox.shrink();
 
@@ -508,7 +567,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasSubway) _buildSubwayStationsSummary(stations),
+        if (hasSubway) _buildSubwayStationsSummary(displayStations),
         if (hasSubway && hasLocation) const SizedBox(height: 8),
         if (hasLocation) _buildLocationsSummary(locations),
       ],
@@ -528,8 +587,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
         child: ExpansionTile(
           backgroundColor: Colors.transparent,
           collapsedBackgroundColor: Colors.transparent,
-          initiallyExpanded: false,
-          onExpansionChanged: _onMapExpansionChanged,
+          initiallyExpanded: hasExpandedGeoList,
+          onExpansionChanged: canShowInlineMap
+              ? _onMapExpansionChanged
+              : (_) => HapticFeedbackUtils.impact(),
           tilePadding: EdgeInsets.zero,
           childrenPadding: const EdgeInsets.only(top: 12),
           iconColor: ListingDetailThemeHelper.locationTextColor,
@@ -778,8 +839,7 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 ),
               ],
             ),
-            if (widget.listingDetail.location != null ||
-                widget.listingDetail.subwayStation != null) ...[
+            if (_hasInlineLocationMapContent()) ...[
               const SizedBox(height: 16),
               _buildInlineLocationMapSection(),
             ],

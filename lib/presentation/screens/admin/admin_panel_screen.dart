@@ -628,7 +628,7 @@ class _AdminMenuRow extends StatelessWidget {
               PulseThenBlinkDotWidget(
                 trigger: notificationDotTrigger,
                 color: unreadColor,
-                size: 10,
+                size: 20,
                 blinkDuration: const Duration(milliseconds: 750),
                 borderColor: dotBorderColor,
                 borderWidth: 1.5,

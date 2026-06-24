@@ -9,6 +9,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/navigation/top_named_route_tracker.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
@@ -19,6 +20,7 @@ import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/push/register_fcm_token_request.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
@@ -26,6 +28,7 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_pending_action.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 final class _EmptyJson implements IJsonEncodable {
   const _EmptyJson();
@@ -262,6 +265,8 @@ class PushNotificationService implements IPushNotificationService {
       "group_join_rejected" => "$type:${data["listingId"] ?? ""}",
       "group_shortlist_added" =>
         "$type:${data["listingId"] ?? ""}:${data["housingListingId"] ?? ""}",
+      "group_landlord_invite" =>
+        "$type:${data["listingId"] ?? ""}:${data["inviteId"] ?? ""}",
       _ => "$type:${data["conversationId"] ?? ""}",
     };
   }
@@ -298,7 +303,89 @@ class PushNotificationService implements IPushNotificationService {
       _navigateToListingFromGroupPush(message);
     } else if (type == "group_shortlist_added") {
       _navigateToGroupChatFromShortlistPush(message);
+    } else if (type == "group_landlord_invite") {
+      _handleLandlordInviteTap(message);
     }
+  }
+
+  void _handleLandlordInviteTap(RemoteMessage message) {
+    final groupListingId = int.tryParse(message.data["listingId"] ?? "");
+    final inviteId = int.tryParse(message.data["inviteId"] ?? "");
+    if (groupListingId == null ||
+        groupListingId <= 0 ||
+        inviteId == null ||
+        inviteId <= 0) {
+      _navigateToListingFromGroupPush(message);
+      return;
+    }
+
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) return;
+    final navigatorKey = getIt<GlobalKey<NavigatorState>>();
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) return;
+
+    unawaited(() async {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(L10n.get("group_landlord_invite_dialog_title")),
+          content: Text(L10n.get("group_landlord_invite_dialog_message")),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(L10n.get("group_landlord_invite_decline")),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(L10n.get("group_landlord_invite_accept")),
+            ),
+          ],
+        ),
+      );
+      if (accepted == null || !context.mounted) return;
+
+      try {
+        final service = getIt<IListingGroupService>();
+        if (accepted) {
+          final conversationId = await service.acceptLandlordInvite(
+            groupListingId: groupListingId,
+            inviteId: inviteId,
+          );
+          if (!context.mounted) return;
+          ToastTheme.showSuccess(
+            context,
+            message: L10n.get("group_landlord_invite_accepted"),
+          );
+          Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(
+              settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+              builder: (_) => ChatScreen(
+                conversationId: conversationId,
+                listingId: groupListingId,
+                conversationContextType: "listing_group",
+              ),
+            ),
+          );
+        } else {
+          await service.declineLandlordInvite(
+            groupListingId: groupListingId,
+            inviteId: inviteId,
+          );
+          if (!context.mounted) return;
+          ToastTheme.showInfo(
+            context,
+            message: L10n.get("group_landlord_invite_declined"),
+          );
+        }
+      } catch (e) {
+        logger.d("📲 Landlord invite action failed: $e");
+        if (!context.mounted) return;
+        ToastTheme.showError(
+          context,
+          message: L10n.get("error_generic_try_again"),
+        );
+      }
+    }());
   }
 
   /// When notification opens a chat that is **already** on screen (no new

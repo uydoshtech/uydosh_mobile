@@ -916,8 +916,6 @@ class _GroupRatingAiSummary extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             summary,
-            maxLines: 5,
-            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurface.withValues(alpha: 0.82),
               height: 1.25,

@@ -224,7 +224,16 @@ class AppStrings {
       "listing_rating_submit": "Submit rating",
       "listing_rating_participants_summary": "Rated by group participants",
       "group_shortlist_rating_updated": "Rating updated",
-      "group_shortlist_contact_landlord": "Contact landlord",
+      "group_shortlist_contact_landlord": "Invite landlord to chat",
+      "group_landlord_invite_sent":
+          "Invite sent. The landlord will only see new messages after joining.",
+      "group_landlord_invite_dialog_title": "Join group chat?",
+      "group_landlord_invite_dialog_message":
+          "You were invited to discuss this listing with the group. You will only see messages sent after you join.",
+      "group_landlord_invite_accept": "Join chat",
+      "group_landlord_invite_decline": "Decline",
+      "group_landlord_invite_accepted": "You joined the group chat",
+      "group_landlord_invite_declined": "Invite declined",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
           "{title} will be removed from the group saved list.",
@@ -441,6 +450,7 @@ class AppStrings {
       "chat_reply_sender_you": "You",
       "chat_reply_sender_unknown": "Message",
       "chat_reply_attachment_fallback": "Attachment",
+      "chat_scroll_to_bottom": "Scroll to latest message",
       "archive_failed_has_unread":
           "Can't archive: this chat has unread messages",
       "undo": "Undo",
@@ -815,6 +825,15 @@ class AppStrings {
 
       "listing_description_hint": "Enter listing text",
       "listing_description_label": "Description",
+      "listing_address_field_label": "Address:",
+      "listing_address_text_label": "Address (optional)",
+      "use_current_location": "Use current location",
+      "location_services_disabled":
+          "Location services are off. Turn them on to use current location.",
+      "location_permission_denied":
+          "Location permission is required to use current location.",
+      "current_location_address_failed":
+          "Could not determine the address from your current location.",
       "listing_title_hint": "Enter listing title",
       "view_similar_results": "View similar",
       "listing_detail_nearby_room_offers": "Find housing",
@@ -2256,7 +2275,16 @@ class AppStrings {
       "listing_rating_submit": "Отправить оценку",
       "listing_rating_participants_summary": "Оценяют участники группы",
       "group_shortlist_rating_updated": "Оценка обновлена",
-      "group_shortlist_contact_landlord": "Связаться с арендодателем",
+      "group_shortlist_contact_landlord": "Пригласить арендодателя в чат",
+      "group_landlord_invite_sent":
+          "Приглашение отправлено. Арендодатель увидит только новые сообщения после входа.",
+      "group_landlord_invite_dialog_title": "Войти в групповой чат?",
+      "group_landlord_invite_dialog_message":
+          "Вас пригласили обсудить это объявление с группой. Вы увидите только сообщения, отправленные после входа.",
+      "group_landlord_invite_accept": "Войти в чат",
+      "group_landlord_invite_decline": "Отклонить",
+      "group_landlord_invite_accepted": "Вы вошли в групповой чат",
+      "group_landlord_invite_declined": "Приглашение отклонено",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
           "«{title}» будет удалено из списка сохранённых группы.",
@@ -2476,6 +2504,7 @@ class AppStrings {
       "chat_reply_sender_you": "вас",
       "chat_reply_sender_unknown": "Сообщение",
       "chat_reply_attachment_fallback": "Вложение",
+      "chat_scroll_to_bottom": "К последнему сообщению",
       "archive_failed_has_unread":
           "Нельзя архивировать чат с непрочитанными сообщениями",
       "undo": "Отменить",
@@ -2860,6 +2889,15 @@ class AppStrings {
 
       "listing_description_hint": "Введите текст объявления",
       "listing_description_label": "Описание",
+      "listing_address_field_label": "Адрес:",
+      "listing_address_text_label": "Адрес (необязательно)",
+      "use_current_location": "Моя геолокация",
+      "location_services_disabled":
+          "Геолокация выключена. Включите её, чтобы использовать текущее местоположение.",
+      "location_permission_denied":
+          "Для текущего местоположения нужен доступ к геолокации.",
+      "current_location_address_failed":
+          "Не удалось определить адрес по текущему местоположению.",
       "listing_title_hint": "Введите заголовок объявления",
       "view_similar_results": "Похожие объявления",
       "listing_detail_nearby_room_offers": "Найти жилье",
@@ -4325,7 +4363,17 @@ class AppStrings {
       "listing_rating_submit": "Bahoni yuborish",
       "listing_rating_participants_summary": "Guruh a'zolari baholamoqda",
       "group_shortlist_rating_updated": "Baho yangilandi",
-      "group_shortlist_contact_landlord": "Ijara beruvchi bilan bog'lanish",
+      "group_shortlist_contact_landlord":
+          "Ijara beruvchini chatga taklif qilish",
+      "group_landlord_invite_sent":
+          "Taklif yuborildi. Ijara beruvchi qo'shilgandan keyingi yangi xabarlarni ko'radi.",
+      "group_landlord_invite_dialog_title": "Guruh chatiga qo'shilasizmi?",
+      "group_landlord_invite_dialog_message":
+          "Siz bu e'lonni guruh bilan muhokama qilishga taklif qilindingiz. Faqat qo'shilganingizdan keyingi xabarlarni ko'rasiz.",
+      "group_landlord_invite_accept": "Chatga qo'shilish",
+      "group_landlord_invite_decline": "Rad etish",
+      "group_landlord_invite_accepted": "Guruh chatiga qo'shildingiz",
+      "group_landlord_invite_declined": "Taklif rad etildi",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",
       "group_shortlist_remove_message":
@@ -4550,6 +4598,7 @@ class AppStrings {
       "chat_reply_sender_you": "Siz",
       "chat_reply_sender_unknown": "Xabar",
       "chat_reply_attachment_fallback": "Ilova",
+      "chat_scroll_to_bottom": "Oxirgi xabarga o'tish",
       "archive_failed_has_unread":
           "O'qilmagan xabari bor suhbatni arxivlab bo'lmaydi",
       "undo": "Bekor qilish",
@@ -4933,6 +4982,15 @@ class AppStrings {
 
       "listing_description_hint": "E'lon matnini kiriting",
       "listing_description_label": "Tavsif",
+      "listing_address_field_label": "Manzil:",
+      "listing_address_text_label": "Manzil (ixtiyoriy)",
+      "use_current_location": "Joriy joylashuv",
+      "location_services_disabled":
+          "Joylashuv xizmatlari o‘chiq. Joriy joylashuvdan foydalanish uchun ularni yoqing.",
+      "location_permission_denied":
+          "Joriy joylashuvdan foydalanish uchun joylashuv ruxsati kerak.",
+      "current_location_address_failed":
+          "Joriy joylashuv bo‘yicha manzilni aniqlab bo‘lmadi.",
       "listing_title_hint": "E'lon sarlavhasini kiriting",
       "view_similar_results": "O‘xshash e'lonlar",
       "listing_detail_nearby_room_offers": "Uy-joy topish",

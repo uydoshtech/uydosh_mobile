@@ -240,7 +240,11 @@ class ConversationLocationInfo extends StatelessWidget {
     List<SubwayStationDetail> stations,
     TextStyle textStyle,
   ) {
-    final lineIds = _stationLineIds(stations);
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    final lineIds = _stationLineIds(displayStations);
     return Row(
       children: [
         for (var i = 0; i < lineIds.length; i++) ...[
@@ -255,7 +259,7 @@ class ConversationLocationInfo extends StatelessWidget {
         ],
         Expanded(
           child: Text(
-            _stationSummaryLabel(stations),
+            _stationSummaryLabel(displayStations),
             style: textStyle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

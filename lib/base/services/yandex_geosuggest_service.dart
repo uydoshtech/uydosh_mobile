@@ -37,8 +37,23 @@ class YandexGeosuggestFetchResult {
   bool get isConfiguredError =>
       httpStatus == 403 ||
       httpStatus == 503 ||
-      (errorMessage != null &&
-          errorMessage!.toLowerCase().contains("api key"));
+      (errorMessage != null && errorMessage!.toLowerCase().contains("api key"));
+}
+
+class YandexReverseGeocodeResult {
+  const YandexReverseGeocodeResult({
+    this.addressText,
+    this.httpStatus,
+    this.errorMessage,
+    this.isConnectionError = false,
+  });
+
+  final String? addressText;
+  final int? httpStatus;
+  final String? errorMessage;
+  final bool isConnectionError;
+
+  bool get hasAddress => addressText != null && addressText!.trim().isNotEmpty;
 }
 
 /// Client for Yandex Geosuggest address hints.
@@ -65,6 +80,7 @@ class YandexGeosuggestService {
 
   static const directEndpoint = "https://suggest-maps.yandex.ru/v1/suggest";
   static const backendPath = "/app/geosuggest/suggest";
+  static const reverseBackendPath = "/app/geosuggest/reverse";
 
   /// Greater Tashkent — biases suggestions toward the app's primary market.
   static const defaultBBox = "69.05,41.15~69.45,41.42";
@@ -133,6 +149,86 @@ class YandexGeosuggestService {
     );
   }
 
+  Future<YandexReverseGeocodeResult> reverseGeocode({
+    required double latitude,
+    required double longitude,
+    String lang = "ru",
+  }) async {
+    final oauthApiClient = _oauthApiClient;
+    if (oauthApiClient == null) {
+      return const YandexReverseGeocodeResult(
+        errorMessage: "Reverse geocode backend unavailable",
+        isConnectionError: true,
+      );
+    }
+
+    try {
+      final uri = _reverseBackendUri();
+      _logTerminal(
+        "reverse backend request uri=$uri lat=$latitude lon=$longitude "
+        "lang=${_normalizeLang(lang)}",
+      );
+
+      final response = await oauthApiClient.dio.get<Map<String, dynamic>>(
+        uri,
+        queryParameters: <String, dynamic>{
+          "latitude": latitude,
+          "longitude": longitude,
+          "lang": _normalizeLang(lang),
+        },
+        options: Options(
+          validateStatus: (status) => status != null && status < 600,
+        ),
+      );
+
+      final status = response.statusCode;
+      final data = response.data;
+      if (status != null && status >= 200 && status < 300) {
+        final rawAddress = data?["addressText"];
+        final address = rawAddress is String ? rawAddress.trim() : null;
+        _logTerminal(
+          "reverse backend response status=$status hasAddress=${address != null && address.isNotEmpty}",
+        );
+        return YandexReverseGeocodeResult(
+          addressText: address != null && address.isNotEmpty ? address : null,
+          httpStatus: status,
+        );
+      }
+
+      final message = _messageFromBackendBody(data, status);
+      _logTerminal("reverse backend failed: $message body=$data");
+      return YandexReverseGeocodeResult(
+        httpStatus: status,
+        errorMessage: message,
+        isConnectionError: status == null,
+      );
+    } on DioException catch (e, st) {
+      final status = e.response?.statusCode;
+      final data = e.response?.data is Map<String, dynamic>
+          ? e.response!.data as Map<String, dynamic>
+          : null;
+      final message = _messageFromBackendBody(data, status);
+      _logTerminal("reverse backend failed: $message");
+      logger.w(
+        "Reverse geocode backend failed ← status=$status",
+        error: e,
+        stackTrace: st,
+      );
+      return YandexReverseGeocodeResult(
+        httpStatus: status,
+        errorMessage: message,
+        isConnectionError: e.response == null,
+      );
+    } catch (e, st) {
+      _logTerminal("reverse backend parse error: $e");
+      logger.w("Reverse geocode backend parse error", error: e, stackTrace: st);
+      return const YandexReverseGeocodeResult(
+        errorMessage: "Reverse geocode parse/network error",
+        isConnectionError: true,
+      );
+    }
+  }
+
   Future<YandexGeosuggestFetchResult?> _fetchViaBackend({
     required String text,
     required String sessionToken,
@@ -166,7 +262,8 @@ class YandexGeosuggestService {
 
       final status = response.statusCode;
       if (status == 404) {
-        _logTerminal("backend proxy missing (HTTP 404) — falling back to direct");
+        _logTerminal(
+            "backend proxy missing (HTTP 404) — falling back to direct");
         return null;
       }
 
@@ -191,7 +288,8 @@ class YandexGeosuggestService {
     } on DioException catch (e, st) {
       final status = e.response?.statusCode;
       if (status == 404) {
-        _logTerminal("backend proxy missing (HTTP 404) — falling back to direct");
+        _logTerminal(
+            "backend proxy missing (HTTP 404) — falling back to direct");
         return null;
       }
       if (_shouldFallbackToDirect(e)) {
@@ -282,7 +380,8 @@ class YandexGeosuggestService {
 
       final message = _messageForHttpStatus(status);
       _logTerminal("$message body=${response.data}");
-      logger.w("Geosuggest direct failed ← status=$status body=${response.data}");
+      logger
+          .w("Geosuggest direct failed ← status=$status body=${response.data}");
       return YandexGeosuggestFetchResult(
         suggestions: const [],
         httpStatus: status,
@@ -317,7 +416,16 @@ class YandexGeosuggestService {
 
   String _backendUri() {
     final base = EnvironmentUtil.basePath;
-    return base.endsWith("/") ? "${base}app/geosuggest/suggest" : "$base$backendPath";
+    return base.endsWith("/")
+        ? "${base}app/geosuggest/suggest"
+        : "$base$backendPath";
+  }
+
+  String _reverseBackendUri() {
+    final base = EnvironmentUtil.basePath;
+    return base.endsWith("/")
+        ? "${base}app/geosuggest/reverse"
+        : "$base$reverseBackendPath";
   }
 
   static bool _shouldFallbackToDirect(DioException error) {
@@ -425,7 +533,8 @@ class YandexGeosuggestService {
     return suggestions;
   }
 
-  static YandexGeosuggestSuggestion? _parseSuggestion(Map<String, dynamic> item) {
+  static YandexGeosuggestSuggestion? _parseSuggestion(
+      Map<String, dynamic> item) {
     final address = item["address"];
     String? formattedAddress;
     if (address is Map<String, dynamic>) {

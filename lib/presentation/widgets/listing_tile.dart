@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -529,65 +530,63 @@ class _ListingTileState extends State<ListingTile> {
                           // Price is shown in the footer (right side); see
                           // [_buildTileFooter].
                           // Location and metro on separate lines.
-                          if (widget.listing.location != null ||
-                              widget.listing.subwayStation != null) ...[
-                            const SizedBox(height: 12),
-                            ListenableBuilder(
-                              listenable: LanguageState(),
-                              builder: (context, child) {
-                                final searchStations =
-                                    _effectiveSearchStations();
-                                final searchLocations =
-                                    _effectiveSearchLocations();
-                                final hasLocation = searchLocations.isNotEmpty;
-                                final hasStation = searchStations.isNotEmpty;
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (hasLocation)
-                                      Row(
-                                        children: [
-                                          const ThemeIcon(
-                                            Icons.location_on,
-                                            color: AppColors.error,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              _locationSummaryLabel(
-                                                searchLocations,
-                                              ),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: _getLocationTextColor(),
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
+                          ListenableBuilder(
+                            listenable: LanguageState(),
+                            builder: (context, child) {
+                              final searchStations = _effectiveSearchStations();
+                              final searchLocations =
+                                  _effectiveSearchLocations(searchStations);
+                              final hasLocation = searchLocations.isNotEmpty;
+                              final hasStation = searchStations.isNotEmpty;
+                              if (!hasLocation && !hasStation) {
+                                return const SizedBox.shrink();
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 12),
+                                  if (hasLocation)
+                                    Row(
+                                      children: [
+                                        const ThemeIcon(
+                                          Icons.location_on,
+                                          color: AppColors.error,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            _locationSummaryLabel(
+                                              searchLocations,
                                             ),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: _getLocationTextColor(),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ],
-                                      ),
-                                    if (hasStation) ...[
-                                      if (hasLocation)
-                                        const SizedBox(height: 8),
-                                      _buildSubwayStationsSummary(
-                                        searchStations,
-                                      ),
-                                    ] else if (hasLocation)
-                                      // Reserve the metro-row height
-                                      // (8px gap + 20px icon row) so
-                                      // tiles without a station match
-                                      // the height of those with one.
-                                      const SizedBox(
-                                        height: 8 + 20,
-                                      ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  if (hasStation) ...[
+                                    if (hasLocation) const SizedBox(height: 8),
+                                    _buildSubwayStationsSummary(
+                                      searchStations,
+                                    ),
+                                  ] else if (hasLocation)
+                                    // Reserve the metro-row height
+                                    // (8px gap + 20px icon row) so
+                                    // tiles without a station match
+                                    // the height of those with one.
+                                    const SizedBox(
+                                      height: 8 + 20,
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -1463,11 +1462,46 @@ class _ListingTileState extends State<ListingTile> {
     return station == null ? const <SubwayStationDetail>[] : [station];
   }
 
-  List<LocationDetail> _effectiveSearchLocations() {
+  List<LocationDetail> _effectiveSearchLocations(
+    List<SubwayStationDetail> stations,
+  ) {
+    final stationLocations = _locationsForStations(stations);
+    if (stationLocations.isNotEmpty) return stationLocations;
     final locations = widget.listing.searchLocations;
     if (locations != null && locations.isNotEmpty) return locations;
     final location = widget.listing.location;
     return location == null ? const <LocationDetail>[] : [location];
+  }
+
+  List<LocationDetail> _locationsForStations(
+    List<SubwayStationDetail> stations,
+  ) {
+    if (stations.isEmpty) return const <LocationDetail>[];
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    final locationIds = <int>{};
+    final locations = <LocationDetail>[];
+    for (final stationDetail in displayStations) {
+      final locationId =
+          MetroCache.getStationById(stationDetail.id)?.locationId;
+      if (locationId == null || !locationIds.add(locationId)) continue;
+      final location = LocationCache.getLocationById(locationId);
+      if (location == null) continue;
+      locations.add(
+        LocationDetail(
+          id: location.id,
+          nameUz: location.nameUz,
+          nameRu: location.nameRu,
+          nameEn: location.nameEn,
+          shortNameUz: location.shortNameUz,
+          shortNameRu: location.shortNameRu,
+          shortNameEn: location.shortNameEn,
+        ),
+      );
+    }
+    return locations;
   }
 
   String _stationSummaryLabel(List<SubwayStationDetail> stations) {
@@ -1508,11 +1542,15 @@ class _ListingTileState extends State<ListingTile> {
   }
 
   Widget _buildSubwayStationsSummary(List<SubwayStationDetail> stations) {
-    if (stations.length == 1) {
-      return _buildSubwayStationDisplay(stations.first);
+    final displayStations = MetroCache.dedupeTransferStationPairs(
+      stations,
+      (station) => station.id,
+    );
+    if (displayStations.length == 1) {
+      return _buildSubwayStationDisplay(displayStations.first);
     }
     final lineIds = <int>[];
-    for (final station in stations) {
+    for (final station in displayStations) {
       if (!lineIds.contains(station.line)) lineIds.add(station.line);
     }
     return Row(
@@ -1523,7 +1561,7 @@ class _ListingTileState extends State<ListingTile> {
         ],
         Expanded(
           child: Text(
-            _stationSummaryLabel(stations),
+            _stationSummaryLabel(displayStations),
             style: TextStyle(fontSize: 14, color: _getLocationTextColor()),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

@@ -24,6 +24,23 @@ Map<String, dynamic> _requireResponseMap(dynamic json) {
   throw FormatException("Expected JSON object, got ${json.runtimeType}");
 }
 
+class LandlordInviteResult {
+  const LandlordInviteResult({
+    this.inviteId,
+    this.conversationId,
+  });
+
+  factory LandlordInviteResult.fromJson(Map<String, dynamic> json) {
+    return LandlordInviteResult(
+      inviteId: (json["invite_id"] as num?)?.toInt(),
+      conversationId: (json["conversation_id"] as num?)?.toInt(),
+    );
+  }
+
+  final int? inviteId;
+  final int? conversationId;
+}
+
 abstract class IListingGroupService {
   Future<void> createJoinRequest({
     required int listingId,
@@ -77,6 +94,21 @@ abstract class IListingGroupService {
   Future<void> removeFromShortlist({
     required int groupListingId,
     required int housingListingId,
+  });
+
+  Future<LandlordInviteResult> inviteLandlordToGroupChat({
+    required int groupListingId,
+    required int housingListingId,
+  });
+
+  Future<int> acceptLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
+  });
+
+  Future<void> declineLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
   });
 
   Future<ListingGroupShortlistRating> rateShortlistItem({
@@ -295,6 +327,49 @@ class ListingGroupService implements IListingGroupService {
     await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
       "/listings/$groupListingId/group/shortlist/$housingListingId",
       (json) => json as Map<String, dynamic>,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+  }
+
+  @override
+  Future<LandlordInviteResult> inviteLandlordToGroupChat({
+    required int groupListingId,
+    required int housingListingId,
+  }) async {
+    final response =
+        await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/shortlist/$housingListingId/landlord-invites",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+    return LandlordInviteResult.fromJson(response);
+  }
+
+  @override
+  Future<int> acceptLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
+  }) async {
+    final response =
+        await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/landlord-invites/$inviteId/accept",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
+    return (response["conversation_id"] as num).toInt();
+  }
+
+  @override
+  Future<void> declineLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
+  }) async {
+    await _oauthApiClient.post<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/landlord-invites/$inviteId/decline",
+      _requireResponseMap,
       basePath: EnvironmentUtil.basePath,
       data: const _EmptyBody(),
     );
