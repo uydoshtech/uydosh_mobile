@@ -3,9 +3,11 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/photo.dart";
@@ -57,6 +59,15 @@ class GroupShortlistItemCard extends StatelessWidget {
   static const double _thumbSize = 72;
   static const double _actionButtonGap = 2;
   static const double _actionButtonIconSize = 20;
+  static const double _avatarLinesTopGap = 14;
+  static const double _avatarLinesGap = 4;
+  static const int _maxVisibleAmenityIcons = 4;
+  static const List<String> _amenityPriority = <String>[
+    "wifi",
+    "air_conditioning",
+    "bed",
+    "oven",
+  ];
 
   static List<InlineSpan> _pricePerPersonSpans({
     required String price,
@@ -101,6 +112,7 @@ class GroupShortlistItemCard extends StatelessWidget {
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
     final perPersonPrice = fit.formatPerPersonPriceLabel();
+    final amenities = _sortedAmenities(listing.amenities);
     final showDiscuss = onDiscussInGroup != null;
     final rating = item.rating ??
         const ListingGroupShortlistRating(
@@ -110,6 +122,7 @@ class GroupShortlistItemCard extends StatelessWidget {
     final showRatingSection = item.rating != null || onRate != null;
     final hasGroupActivity = rating.count > 0 ||
         rating.participants.any((participant) => participant.stars != null);
+    final hasOwnerLine = ownerName != null || ownerAvatarUrl != null;
     final discussLabelKey = hasGroupActivity
         ? "group_shortlist_continue_discussion"
         : "group_shortlist_start_listing_discussion";
@@ -163,6 +176,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                        if (amenities.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          _ShortlistAmenityIcons(amenities: amenities),
+                        ],
                       ],
                     ],
                   ),
@@ -195,15 +212,17 @@ class GroupShortlistItemCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (ownerName != null || ownerAvatarUrl != null) ...[
-              const SizedBox(height: 8),
+            if (hasOwnerLine) ...[
+              const SizedBox(height: _avatarLinesTopGap),
               _OwnerLine(
                 name: ownerName,
                 avatarUrl: ownerAvatarUrl,
               ),
             ],
             if (item.savedByName != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(
+                height: hasOwnerLine ? _avatarLinesGap : _avatarLinesTopGap,
+              ),
               _SaverLine(
                 name: item.savedByName!,
                 avatarUrl: item.savedByAvatarUrl,
@@ -277,6 +296,68 @@ class GroupShortlistItemCard extends StatelessWidget {
     checks.add(_ListingLocationRows(listing: listing));
 
     return checks;
+  }
+
+  static List<Amenity> _sortedAmenities(List<Amenity>? amenities) {
+    if (amenities == null || amenities.isEmpty) return const <Amenity>[];
+
+    final sortedAmenities = List<Amenity>.from(amenities);
+
+    int rank(Amenity amenity) {
+      final index = _amenityPriority.indexOf(amenity.code ?? "");
+      return index == -1 ? _amenityPriority.length : index;
+    }
+
+    sortedAmenities.sort((a, b) {
+      final rankCompare = rank(a).compareTo(rank(b));
+      if (rankCompare != 0) return rankCompare;
+      return (a.code ?? "").compareTo(b.code ?? "");
+    });
+
+    return sortedAmenities;
+  }
+
+  static IconData amenityIconFor(Amenity amenity) {
+    final code = amenity.code;
+    if (code != null && code.isNotEmpty) {
+      return AmenityIconHelper.getIcon(code);
+    }
+
+    switch (amenity.icon) {
+      case "❄️":
+        return Icons.ac_unit;
+      case "🌐":
+        return Icons.wifi;
+      case "🪑":
+        return Icons.chair;
+      case "🍳":
+        return Icons.kitchen;
+      case "🚿":
+        return Icons.shower;
+      case "🧺":
+        return Icons.local_laundry_service;
+      case "📺":
+        return Icons.tv;
+      case "🚗":
+        return Icons.local_parking;
+      case "🐕":
+        return Icons.pets;
+      case "🚭":
+        return Icons.smoke_free;
+      default:
+        return Icons.check;
+    }
+  }
+
+  static String amenityLabelFor(Amenity amenity) {
+    switch (L10n.currentLanguage) {
+      case "ru":
+        return amenity.nameRu;
+      case "uz":
+        return amenity.nameUz;
+      default:
+        return amenity.nameEn;
+    }
   }
 
   static String _localizedDistrictLabel(Listing listing) {
@@ -401,6 +482,48 @@ class _ShortlistActionButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ShortlistAmenityIcons extends StatelessWidget {
+  const _ShortlistAmenityIcons({required this.amenities});
+
+  final List<Amenity> amenities;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible =
+        amenities.length > GroupShortlistItemCard._maxVisibleAmenityIcons
+            ? amenities.sublist(0, GroupShortlistItemCard._maxVisibleAmenityIcons)
+            : amenities;
+    final remaining = amenities.length - visible.length;
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return Wrap(
+      spacing: 9,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final amenity in visible)
+          Tooltip(
+            message: GroupShortlistItemCard.amenityLabelFor(amenity),
+            child: Icon(
+              GroupShortlistItemCard.amenityIconFor(amenity),
+              size: 18,
+              color: color,
+            ),
+          ),
+        if (remaining > 0)
+          Text(
+            "+$remaining",
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+      ],
     );
   }
 }
@@ -734,7 +857,12 @@ class _GroupRatingSection extends StatelessWidget {
               );
               if (!hasSummary) return participantList;
 
-              final summaryCard = _GroupRatingAiSummary(summary: summary);
+              final summaryCard = _GroupRatingAiSummary(
+                summary: summary,
+                participantNames: orderedParticipants
+                    .map((participant) => participant.name)
+                    .toList(growable: false),
+              );
               if (constraints.maxWidth >= 560) {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -886,14 +1014,71 @@ class _EmptyRatingPrompt extends StatelessWidget {
 }
 
 class _GroupRatingAiSummary extends StatelessWidget {
-  const _GroupRatingAiSummary({required this.summary});
+  const _GroupRatingAiSummary({
+    required this.summary,
+    required this.participantNames,
+  });
 
   final String summary;
+  final List<String> participantNames;
+
+  List<InlineSpan> _summarySpans(TextStyle? baseStyle) {
+    final names = participantNames
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    if (names.isEmpty) return [TextSpan(text: summary)];
+
+    final matches = <({int start, int end})>[];
+    for (final name in names) {
+      final pattern = RegExp(RegExp.escape(name), caseSensitive: false);
+      for (final match in pattern.allMatches(summary)) {
+        final start = match.start;
+        final end = match.end;
+        if (matches.any(
+          (existing) => start < existing.end && end > existing.start,
+        )) {
+          continue;
+        }
+        matches.add((start: start, end: end));
+      }
+    }
+
+    if (matches.isEmpty) return [TextSpan(text: summary)];
+    matches.sort((a, b) => a.start.compareTo(b.start));
+
+    final boldStyle = baseStyle?.copyWith(fontWeight: FontWeight.w800) ??
+        const TextStyle(fontWeight: FontWeight.w800);
+    final spans = <InlineSpan>[];
+    var cursor = 0;
+    for (final match in matches) {
+      if (cursor < match.start) {
+        spans.add(TextSpan(text: summary.substring(cursor, match.start)));
+      }
+      spans.add(
+        TextSpan(
+          text: summary.substring(match.start, match.end),
+          style: boldStyle,
+        ),
+      );
+      cursor = match.end;
+    }
+    if (cursor < summary.length) {
+      spans.add(TextSpan(text: summary.substring(cursor)));
+    }
+    return spans;
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final summaryStyle = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.onSurface.withValues(alpha: 0.82),
+      height: 1.25,
+    );
 
     return Container(
       width: double.infinity,
@@ -930,12 +1115,9 @@ class _GroupRatingAiSummary extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            summary,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.82),
-              height: 1.25,
-            ),
+          Text.rich(
+            TextSpan(children: _summarySpans(summaryStyle)),
+            style: summaryStyle,
           ),
         ],
       ),
