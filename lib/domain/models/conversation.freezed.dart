@@ -729,6 +729,9 @@ mixin _$ConversationSummary {
   int? get subwayStationLine => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station_ordinal")
   int? get subwayStationOrdinal => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations =>
+      throw _privateConstructorUsedError;
   @JsonKey(name: "location_name_uz")
   String? get locationNameUz => throw _privateConstructorUsedError;
   @JsonKey(name: "location_name_ru")
@@ -741,6 +744,9 @@ mixin _$ConversationSummary {
   String? get locationShortNameRu => throw _privateConstructorUsedError;
   @JsonKey(name: "location_short_name_en")
   String? get locationShortNameEn => throw _privateConstructorUsedError;
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this ConversationSummary to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -796,12 +802,16 @@ abstract class $ConversationSummaryCopyWith<$Res> {
       @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
       @JsonKey(name: "subway_station_line") int? subwayStationLine,
       @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location_name_uz") String? locationNameUz,
       @JsonKey(name: "location_name_ru") String? locationNameRu,
       @JsonKey(name: "location_name_en") String? locationNameEn,
       @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
       @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
-      @JsonKey(name: "location_short_name_en") String? locationShortNameEn});
+      @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
+      @JsonKey(name: "search_locations")
+      List<LocationDetail>? searchLocations});
 }
 
 /// @nodoc
@@ -856,12 +866,14 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
     Object? subwayStationNameEn = freezed,
     Object? subwayStationLine = freezed,
     Object? subwayStationOrdinal = freezed,
+    Object? searchSubwayStations = freezed,
     Object? locationNameUz = freezed,
     Object? locationNameRu = freezed,
     Object? locationNameEn = freezed,
     Object? locationShortNameUz = freezed,
     Object? locationShortNameRu = freezed,
     Object? locationShortNameEn = freezed,
+    Object? searchLocations = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -1012,6 +1024,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.subwayStationOrdinal
           : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
               as int?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value.searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       locationNameUz: freezed == locationNameUz
           ? _value.locationNameUz
           : locationNameUz // ignore: cast_nullable_to_non_nullable
@@ -1036,6 +1052,10 @@ class _$ConversationSummaryCopyWithImpl<$Res, $Val extends ConversationSummary>
           ? _value.locationShortNameEn
           : locationShortNameEn // ignore: cast_nullable_to_non_nullable
               as String?,
+      searchLocations: freezed == searchLocations
+          ? _value.searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
     ) as $Val);
   }
 }
@@ -1086,12 +1106,16 @@ abstract class _$$ConversationSummaryImplCopyWith<$Res>
       @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
       @JsonKey(name: "subway_station_line") int? subwayStationLine,
       @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+      @JsonKey(name: "search_subway_stations")
+      List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location_name_uz") String? locationNameUz,
       @JsonKey(name: "location_name_ru") String? locationNameRu,
       @JsonKey(name: "location_name_en") String? locationNameEn,
       @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
       @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
-      @JsonKey(name: "location_short_name_en") String? locationShortNameEn});
+      @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
+      @JsonKey(name: "search_locations")
+      List<LocationDetail>? searchLocations});
 }
 
 /// @nodoc
@@ -1144,12 +1168,14 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
     Object? subwayStationNameEn = freezed,
     Object? subwayStationLine = freezed,
     Object? subwayStationOrdinal = freezed,
+    Object? searchSubwayStations = freezed,
     Object? locationNameUz = freezed,
     Object? locationNameRu = freezed,
     Object? locationNameEn = freezed,
     Object? locationShortNameUz = freezed,
     Object? locationShortNameRu = freezed,
     Object? locationShortNameEn = freezed,
+    Object? searchLocations = freezed,
   }) {
     return _then(_$ConversationSummaryImpl(
       id: null == id
@@ -1300,6 +1326,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.subwayStationOrdinal
           : subwayStationOrdinal // ignore: cast_nullable_to_non_nullable
               as int?,
+      searchSubwayStations: freezed == searchSubwayStations
+          ? _value._searchSubwayStations
+          : searchSubwayStations // ignore: cast_nullable_to_non_nullable
+              as List<SubwayStationDetail>?,
       locationNameUz: freezed == locationNameUz
           ? _value.locationNameUz
           : locationNameUz // ignore: cast_nullable_to_non_nullable
@@ -1324,6 +1354,10 @@ class __$$ConversationSummaryImplCopyWithImpl<$Res>
           ? _value.locationShortNameEn
           : locationShortNameEn // ignore: cast_nullable_to_non_nullable
               as String?,
+      searchLocations: freezed == searchLocations
+          ? _value._searchLocations
+          : searchLocations // ignore: cast_nullable_to_non_nullable
+              as List<LocationDetail>?,
     ));
   }
 }
@@ -1370,13 +1404,19 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
       @JsonKey(name: "subway_station_name_en") this.subwayStationNameEn,
       @JsonKey(name: "subway_station_line") this.subwayStationLine,
       @JsonKey(name: "subway_station_ordinal") this.subwayStationOrdinal,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location_name_uz") this.locationNameUz,
       @JsonKey(name: "location_name_ru") this.locationNameRu,
       @JsonKey(name: "location_name_en") this.locationNameEn,
       @JsonKey(name: "location_short_name_uz") this.locationShortNameUz,
       @JsonKey(name: "location_short_name_ru") this.locationShortNameRu,
-      @JsonKey(name: "location_short_name_en") this.locationShortNameEn})
-      : _members = members;
+      @JsonKey(name: "location_short_name_en") this.locationShortNameEn,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations})
+      : _members = members,
+        _searchSubwayStations = searchSubwayStations,
+        _searchLocations = searchLocations;
 
   factory _$ConversationSummaryImpl.fromJson(Map<String, dynamic> json) =>
       _$$ConversationSummaryImplFromJson(json);
@@ -1512,6 +1552,19 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "subway_station_ordinal")
   final int? subwayStationOrdinal;
+  final List<SubwayStationDetail>? _searchSubwayStations;
+  @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations {
+    final value = _searchSubwayStations;
+    if (value == null) return null;
+    if (_searchSubwayStations is EqualUnmodifiableListView) {
+      return _searchSubwayStations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: "location_name_uz")
   final String? locationNameUz;
@@ -1530,10 +1583,22 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   @override
   @JsonKey(name: "location_short_name_en")
   final String? locationShortNameEn;
+  final List<LocationDetail>? _searchLocations;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations {
+    final value = _searchLocations;
+    if (value == null) return null;
+    if (_searchLocations is EqualUnmodifiableListView) {
+      return _searchLocations;
+    }
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, conversationType: $conversationType, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, members: $members, gigOwnerName: $gigOwnerName, gigOwnerAvatar: $gigOwnerAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn)';
+    return 'ConversationSummary(id: $id, initiatorId: $initiatorId, participantId: $participantId, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, listingId: $listingId, contextType: $contextType, contextId: $contextId, gigRequestId: $gigRequestId, gigRequestTitle: $gigRequestTitle, gigCategoryId: $gigCategoryId, gigBudgetType: $gigBudgetType, lastMessageAt: $lastMessageAt, lastMessageContent: $lastMessageContent, lastMessageSenderId: $lastMessageSenderId, archivedAt: $archivedAt, listingTitle: $listingTitle, listingTypeId: $listingTypeId, listingGender: $listingGender, listingPrice: $listingPrice, priceCurrencyCode: $priceCurrencyCode, conversationType: $conversationType, otherUserName: $otherUserName, otherUserAvatar: $otherUserAvatar, members: $members, gigOwnerName: $gigOwnerName, gigOwnerAvatar: $gigOwnerAvatar, unreadCount: $unreadCount, listingSubwayLineId: $listingSubwayLineId, listingSubwayStationId: $listingSubwayStationId, listingLocationId: $listingLocationId, subwayStationNameUz: $subwayStationNameUz, subwayStationNameRu: $subwayStationNameRu, subwayStationNameEn: $subwayStationNameEn, subwayStationLine: $subwayStationLine, subwayStationOrdinal: $subwayStationOrdinal, searchSubwayStations: $searchSubwayStations, locationNameUz: $locationNameUz, locationNameRu: $locationNameRu, locationNameEn: $locationNameEn, locationShortNameUz: $locationShortNameUz, locationShortNameRu: $locationShortNameRu, locationShortNameEn: $locationShortNameEn, searchLocations: $searchLocations)';
   }
 
   @override
@@ -1613,6 +1678,10 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.subwayStationLine == subwayStationLine) &&
             (identical(other.subwayStationOrdinal, subwayStationOrdinal) ||
                 other.subwayStationOrdinal == subwayStationOrdinal) &&
+            const DeepCollectionEquality().equals(
+              other._searchSubwayStations,
+              _searchSubwayStations,
+            ) &&
             (identical(other.locationNameUz, locationNameUz) ||
                 other.locationNameUz == locationNameUz) &&
             (identical(other.locationNameRu, locationNameRu) ||
@@ -1624,7 +1693,11 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
             (identical(other.locationShortNameRu, locationShortNameRu) ||
                 other.locationShortNameRu == locationShortNameRu) &&
             (identical(other.locationShortNameEn, locationShortNameEn) ||
-                other.locationShortNameEn == locationShortNameEn));
+                other.locationShortNameEn == locationShortNameEn) &&
+            const DeepCollectionEquality().equals(
+              other._searchLocations,
+              _searchLocations,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1668,12 +1741,14 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
         subwayStationNameEn,
         subwayStationLine,
         subwayStationOrdinal,
+        const DeepCollectionEquality().hash(_searchSubwayStations),
         locationNameUz,
         locationNameRu,
         locationNameEn,
         locationShortNameUz,
         locationShortNameRu,
-        locationShortNameEn
+        locationShortNameEn,
+        const DeepCollectionEquality().hash(_searchLocations)
       ]);
 
   /// Create a copy of ConversationSummary
@@ -1736,6 +1811,8 @@ abstract class _ConversationSummary implements ConversationSummary {
       final String? subwayStationNameEn,
       @JsonKey(name: "subway_station_line") final int? subwayStationLine,
       @JsonKey(name: "subway_station_ordinal") final int? subwayStationOrdinal,
+      @JsonKey(name: "search_subway_stations")
+      final List<SubwayStationDetail>? searchSubwayStations,
       @JsonKey(name: "location_name_uz") final String? locationNameUz,
       @JsonKey(name: "location_name_ru") final String? locationNameRu,
       @JsonKey(name: "location_name_en") final String? locationNameEn,
@@ -1744,7 +1821,9 @@ abstract class _ConversationSummary implements ConversationSummary {
       @JsonKey(name: "location_short_name_ru")
       final String? locationShortNameRu,
       @JsonKey(name: "location_short_name_en")
-      final String? locationShortNameEn}) = _$ConversationSummaryImpl;
+      final String? locationShortNameEn,
+      @JsonKey(name: "search_locations")
+      final List<LocationDetail>? searchLocations}) = _$ConversationSummaryImpl;
 
   factory _ConversationSummary.fromJson(Map<String, dynamic> json) =
       _$ConversationSummaryImpl.fromJson;
@@ -1871,6 +1950,9 @@ abstract class _ConversationSummary implements ConversationSummary {
   @JsonKey(name: "subway_station_ordinal")
   int? get subwayStationOrdinal;
   @override
+  @JsonKey(name: "search_subway_stations")
+  List<SubwayStationDetail>? get searchSubwayStations;
+  @override
   @JsonKey(name: "location_name_uz")
   String? get locationNameUz;
   @override
@@ -1888,6 +1970,9 @@ abstract class _ConversationSummary implements ConversationSummary {
   @override
   @JsonKey(name: "location_short_name_en")
   String? get locationShortNameEn;
+  @override
+  @JsonKey(name: "search_locations")
+  List<LocationDetail>? get searchLocations;
 
   /// Create a copy of ConversationSummary
   /// with the given fields replaced by the non-null parameter values.

@@ -52,8 +52,10 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "context_id") int? contextId,
     @JsonKey(name: "gig_request_id") int? gigRequestId,
     @JsonKey(name: "gig_request_title") String? gigRequestTitle,
+
     /// Gig category id (`gig_categories.id`) for gig-scoped chats.
     @JsonKey(name: "gig_category_id") int? gigCategoryId,
+
     /// Budget / pricing type from the gig surface (`open`, `hourly`, etc.).
     @JsonKey(name: "gig_budget_type") String? gigBudgetType,
     @JsonKey(name: "last_message_at") String? lastMessageAt,
@@ -65,16 +67,19 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "listing_type_id") int? listingTypeId,
     @JsonKey(name: "listing_gender") int? listingGender,
     @JsonKey(name: "listing_price") int? listingPrice,
+
     /// When set (e.g. gig-request chats), [ConversationPriceDisplay] shows this currency instead of y.e.
     @JsonKey(name: "price_currency_code") String? priceCurrencyCode,
     @JsonKey(name: "conversation_type") String? conversationType,
     @JsonKey(name: "other_user_name") String? otherUserName,
     @JsonKey(name: "other_user_avatar") String? otherUserAvatar,
+
     /// Group-chat (`listing_group`) member previews for overlapping inbox
     /// avatars. Empty for direct/listing/gig chats.
     @JsonKey(name: "members")
     @Default(<ConversationMemberSummary>[])
     List<ConversationMemberSummary> members,
+
     /// Gig row author: task client for `gig_request`, provider for `gig_offer` / `gig_booking`.
     @JsonKey(name: "gig_owner_name") String? gigOwnerName,
     @JsonKey(name: "gig_owner_avatar") String? gigOwnerAvatar,
@@ -88,12 +93,15 @@ class ConversationSummary with _$ConversationSummary {
     @JsonKey(name: "subway_station_name_en") String? subwayStationNameEn,
     @JsonKey(name: "subway_station_line") int? subwayStationLine,
     @JsonKey(name: "subway_station_ordinal") int? subwayStationOrdinal,
+    @JsonKey(name: "search_subway_stations")
+    List<SubwayStationDetail>? searchSubwayStations,
     @JsonKey(name: "location_name_uz") String? locationNameUz,
     @JsonKey(name: "location_name_ru") String? locationNameRu,
     @JsonKey(name: "location_name_en") String? locationNameEn,
     @JsonKey(name: "location_short_name_uz") String? locationShortNameUz,
     @JsonKey(name: "location_short_name_ru") String? locationShortNameRu,
     @JsonKey(name: "location_short_name_en") String? locationShortNameEn,
+    @JsonKey(name: "search_locations") List<LocationDetail>? searchLocations,
   }) = _ConversationSummary;
 
   factory ConversationSummary.fromJson(Map<String, dynamic> json) =>

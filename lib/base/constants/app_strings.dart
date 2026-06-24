@@ -668,6 +668,8 @@ class AppStrings {
       "all_stations_count": "All {count} stations",
       "all_stations_count_one": "All {count} station",
       "all_stations_count_other": "All {count} stations",
+      "stations_count_one": "{count} station",
+      "stations_count_other": "{count} stations",
       "all_stations_explanation":
           "Search along the entire line <b>{line}</b> through <b>{count}</b> stations",
       "entire_line_stations": "Entire line {line}: {count} stations",
@@ -2703,6 +2705,9 @@ class AppStrings {
       "all_stations_count_one": "Вся {count} станция",
       "all_stations_count_few": "Все {count} станции",
       "all_stations_count_many": "Все {count} станций",
+      "stations_count_one": "{count} станция",
+      "stations_count_few": "{count} станции",
+      "stations_count_many": "{count} станций",
       "all_stations_explanation":
           "Поиск вдоль всей линии <b>{line}</b> по <b>{count}</b> станциям",
       "entire_line_stations": "Вся линия {line}: {count} станций",
@@ -4774,6 +4779,7 @@ class AppStrings {
 
       "all_stations_count": "Barcha {count} bekat",
       "all_stations_count_other": "Barcha {count} bekat",
+      "stations_count_other": "{count} bekat",
       "all_stations_explanation":
           "Liniya <b>{line}</b> bo'ylab <b>{count}</b> bekat orqali qidiruv",
       "entire_line_stations": "Butun liniya {line}: {count} bekat",

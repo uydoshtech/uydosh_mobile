@@ -99,12 +99,18 @@ _$ConversationSummaryImpl _$$ConversationSummaryImplFromJson(
       subwayStationNameEn: json['subway_station_name_en'] as String?,
       subwayStationLine: (json['subway_station_line'] as num?)?.toInt(),
       subwayStationOrdinal: (json['subway_station_ordinal'] as num?)?.toInt(),
+      searchSubwayStations: (json['search_subway_stations'] as List<dynamic>?)
+          ?.map((e) => SubwayStationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
       locationNameUz: json['location_name_uz'] as String?,
       locationNameRu: json['location_name_ru'] as String?,
       locationNameEn: json['location_name_en'] as String?,
       locationShortNameUz: json['location_short_name_uz'] as String?,
       locationShortNameRu: json['location_short_name_ru'] as String?,
       locationShortNameEn: json['location_short_name_en'] as String?,
+      searchLocations: (json['search_locations'] as List<dynamic>?)
+          ?.map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$ConversationSummaryImplToJson(
@@ -147,10 +153,12 @@ Map<String, dynamic> _$$ConversationSummaryImplToJson(
       'subway_station_name_en': instance.subwayStationNameEn,
       'subway_station_line': instance.subwayStationLine,
       'subway_station_ordinal': instance.subwayStationOrdinal,
+      'search_subway_stations': instance.searchSubwayStations,
       'location_name_uz': instance.locationNameUz,
       'location_name_ru': instance.locationNameRu,
       'location_name_en': instance.locationNameEn,
       'location_short_name_uz': instance.locationShortNameUz,
       'location_short_name_ru': instance.locationShortNameRu,
       'location_short_name_en': instance.locationShortNameEn,
+      'search_locations': instance.searchLocations,
     };

@@ -548,9 +548,22 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     );
   }
 
+  bool _shouldHideSingleDistrictWithMultipleStations({
+    required List<SubwayStationDetail> stations,
+    required List<LocationDetail> locations,
+  }) {
+    return stations.length > 1 && locations.length == 1;
+  }
+
   Widget _buildInlineLocationMapSection() {
     final stations = _effectiveSearchStations();
-    final locations = _effectiveSearchLocations();
+    final effectiveLocations = _effectiveSearchLocations();
+    final locations = _shouldHideSingleDistrictWithMultipleStations(
+      stations: stations,
+      locations: effectiveLocations,
+    )
+        ? const <LocationDetail>[]
+        : effectiveLocations;
     final hasLocation = locations.isNotEmpty;
     final hasSubway = stations.isNotEmpty;
     final hasMap = hasLocation || hasSubway;

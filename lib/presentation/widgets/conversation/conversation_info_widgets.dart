@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
@@ -183,111 +184,174 @@ class ConversationLocationInfo extends StatelessWidget {
     }
   }
 
+  List<SubwayStationDetail> _effectiveSearchStations() {
+    final stations = conversation.searchSubwayStations;
+    if (stations != null && stations.isNotEmpty) return stations;
+
+    final hasStationName = conversation.subwayStationNameUz != null ||
+        conversation.subwayStationNameRu != null ||
+        conversation.subwayStationNameEn != null;
+    if (!hasStationName) return const <SubwayStationDetail>[];
+
+    return [
+      SubwayStationDetail(
+        id: conversation.listingSubwayStationId ?? 0,
+        line: conversation.subwayStationLine ??
+            conversation.listingSubwayLineId ??
+            1,
+        nameUz: conversation.subwayStationNameUz,
+        nameRu: conversation.subwayStationNameRu,
+        nameEn: conversation.subwayStationNameEn,
+      ),
+    ];
+  }
+
+  List<LocationDetail> _effectiveSearchLocations() {
+    final locations = conversation.searchLocations;
+    if (locations != null && locations.isNotEmpty) return locations;
+
+    final hasLocationName = conversation.locationNameUz != null ||
+        conversation.locationNameRu != null ||
+        conversation.locationNameEn != null;
+    if (!hasLocationName) return const <LocationDetail>[];
+
+    return [
+      LocationDetail(
+        id: conversation.listingLocationId ?? 0,
+        nameUz: conversation.locationNameUz,
+        nameRu: conversation.locationNameRu,
+        nameEn: conversation.locationNameEn,
+        shortNameUz: conversation.locationShortNameUz,
+        shortNameRu: conversation.locationShortNameRu,
+        shortNameEn: conversation.locationShortNameEn,
+      ),
+    ];
+  }
+
+  String _stationSummaryLabel(List<SubwayStationDetail> stations) {
+    if (stations.length == 1) {
+      return MetroCache.formatStationLabel(
+        _getLocalizedName(
+          nameUz: stations.first.nameUz,
+          nameRu: stations.first.nameRu,
+          nameEn: stations.first.nameEn,
+        ),
+        LanguageState().currentLanguage,
+      );
+    }
+    return L10n.plural("stations_count", stations.length);
+  }
+
+  String _locationSummaryLabel(List<LocationDetail> locations) {
+    if (locations.length == 1) {
+      return _getLocalizedName(
+        nameUz: locations.first.nameUz,
+        nameRu: locations.first.nameRu,
+        nameEn: locations.first.nameEn,
+      );
+    }
+    return L10n.plural("districts_count", locations.length);
+  }
+
+  List<int> _stationLineIds(List<SubwayStationDetail> stations) {
+    final lineIds = <int>[];
+    for (final station in stations) {
+      if (!lineIds.contains(station.line)) lineIds.add(station.line);
+    }
+    return lineIds;
+  }
+
+  Widget _buildCompactStationRow(
+    List<SubwayStationDetail> stations,
+    TextStyle textStyle,
+  ) {
+    final lineIds = _stationLineIds(stations);
+    return Row(
+      children: [
+        for (var i = 0; i < lineIds.length; i++) ...[
+          ThemeIcon(
+            Icons.train,
+            color: ConversationSubwayStationDisplay._getLineColor(
+              lineIds[i],
+            ),
+            size: 16,
+          ),
+          SizedBox(width: i == lineIds.length - 1 ? 4 : 2),
+        ],
+        Expanded(
+          child: Text(
+            _stationSummaryLabel(stations),
+            style: textStyle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactLocationRow(
+    List<LocationDetail> locations,
+    TextStyle textStyle,
+  ) {
+    return Row(
+      children: [
+        const ThemeIcon(
+          Icons.location_on,
+          color: AppColors.error,
+          size: 16,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            _locationSummaryLabel(locations),
+            style: textStyle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactGeoRows({
+    required List<SubwayStationDetail> stations,
+    required List<LocationDetail> locations,
+  }) {
+    final hasStations = stations.isNotEmpty;
+    final hasLocations = locations.isNotEmpty;
+
+    if (!hasStations && !hasLocations) return const SizedBox.shrink();
+
+    final textStyle = TextStyle(fontSize: 12, color: textColor);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasStations) _buildCompactStationRow(stations, textStyle),
+        if (hasStations && hasLocations) const SizedBox(height: 4),
+        if (hasLocations) _buildCompactLocationRow(locations, textStyle),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: LanguageState(),
       builder: (context, child) {
-        final hasLocation = conversation.locationNameUz != null ||
-            conversation.locationNameRu != null ||
-            conversation.locationNameEn != null;
-        final hasSubwayStation = conversation.subwayStationNameUz != null ||
-            conversation.subwayStationNameRu != null ||
-            conversation.subwayStationNameEn != null;
+        final searchStations = _effectiveSearchStations();
+        final searchLocations = _effectiveSearchLocations();
+        final hasLocation = searchLocations.isNotEmpty;
+        final hasSubwayStation = searchStations.isNotEmpty;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasLocation && hasSubwayStation)
-              // A fixed `maxWidth` cap (rather than a percentage of the
-              // parent) keeps the station label from hogging space on long
-              // names, while [Expanded] lets the district fill whatever
-              // remains. An earlier version wrapped this row in a
-              // [LayoutBuilder] to derive the cap from the parent width,
-              // but nesting a [LayoutBuilder] inside an [IntrinsicHeight]
-              // (as this widget is on the grouped inbox header) produces
-              // wrong intrinsic heights and pushes the price row below the
-              // card's clip.
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ThemeIcon(
-                    Icons.train,
-                    color: ConversationSubwayStationDisplay._getLineColor(
-                      conversation.subwayStationLine ?? 1,
-                    ),
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 140),
-                      child: Text(
-                        MetroCache.formatStationLabel(
-                          _getLocalizedName(
-                            nameUz: conversation.subwayStationNameUz,
-                            nameRu: conversation.subwayStationNameRu,
-                            nameEn: conversation.subwayStationNameEn,
-                          ),
-                          LanguageState().currentLanguage,
-                        ),
-                        style: TextStyle(fontSize: 12, color: textColor),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const ThemeIcon(
-                    Icons.location_on,
-                    color: AppColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      _getLocalizedName(
-                        nameUz: conversation.locationNameUz,
-                        nameRu: conversation.locationNameRu,
-                        nameEn: conversation.locationNameEn,
-                      ),
-                      style: TextStyle(fontSize: 12, color: textColor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              )
-            else ...[
-              if (hasLocation)
-                Row(
-                  children: [
-                    const ThemeIcon(
-                      Icons.location_on,
-                      color: AppColors.error,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        _getLocalizedName(
-                          nameUz: conversation.locationNameUz,
-                          nameRu: conversation.locationNameRu,
-                          nameEn: conversation.locationNameEn,
-                        ),
-                        style: TextStyle(fontSize: 12, color: textColor),
-                      ),
-                    ),
-                  ],
-                ),
-              if (hasSubwayStation) ...[
-                if (hasLocation) const SizedBox(height: 4),
-                ConversationSubwayStationDisplay(
-                  conversation: conversation,
-                  textColor: textColor,
-                ),
-              ],
-            ],
+            if (hasLocation || hasSubwayStation)
+              _buildCompactGeoRows(
+                stations: searchStations,
+                locations: searchLocations,
+              ),
             if (showPrice &&
                 conversation.listingPrice != null &&
                 conversation.listingPrice! > 0) ...[
