@@ -39,17 +39,37 @@ class ThemeIcon extends StatelessWidget {
   }
 
   Color? _resolveColor(BuildContext context, ThemeData theme) {
-    if (color != null) return color;
+    if (color != null) {
+      if (useThemeColor && _isBlackOrWhite(color!)) {
+        return _themeForegroundColor(theme);
+      }
+
+      return color;
+    }
     if (!useThemeColor) return Colors.grey;
 
     // Allow widgets like PopupMenu to override icon color via [IconTheme].
     final inheritedIconColor = IconTheme.of(context).color;
     if (inheritedIconColor != null) return inheritedIconColor;
 
+    return _themeForegroundColor(theme);
+  }
+
+  Color _themeForegroundColor(ThemeData theme) {
     if (ThemeState().isBlueTheme) return Colors.white;
     if (ThemeState().isLightTheme) return Colors.black87;
 
     return theme.iconTheme.color ?? theme.colorScheme.onSurface;
+  }
+
+  static bool _isBlackOrWhite(Color color) {
+    final value = color.toARGB32();
+    final red = (value >> 16) & 0xFF;
+    final green = (value >> 8) & 0xFF;
+    final blue = value & 0xFF;
+
+    if (red != green || green != blue) return false;
+    return red == 0x00 || red == 0xFF;
   }
 }
 

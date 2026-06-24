@@ -945,6 +945,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
   }
 
+  Color _getCurrentLocationIconColor() {
+    if (ThemeState().isLightTheme) {
+      return Colors.black;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+  }
+
   // Theme-dependent color method for amenity selections
   void _makeNewPhotoPrimary(int index) {
     setState(() {
@@ -1500,52 +1509,58 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           const SizedBox(height: 12),
           LabeledFieldOverlay(
             label: L10n.get("listing_address_field_label"),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: YandexAddressSuggestField(
-                    hintText: L10n.get("listing_address_text_label"),
-                    controller: _addressTextController,
-                    dirtyOutlineColor: _getBorderColor(),
-                    decoration: UydoshPlateFieldDecoration.forHint(
-                      context,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: YandexAddressSuggestField(
                       hintText: L10n.get("listing_address_text_label"),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 56,
-                  child: Tooltip(
-                    message: L10n.get("use_current_location"),
-                    child: Semantics(
-                      button: true,
-                      label: L10n.get("use_current_location"),
-                      child: OutlinedButton(
-                        onPressed: _isResolvingCurrentLocation
-                            ? null
-                            : _useCurrentLocationForAddress,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _getBorderColor(),
-                          side: BorderSide(color: _getBorderColor()),
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(56, 56),
-                        ),
-                        child: _isResolvingCurrentLocation
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.my_location, size: 20),
+                      controller: _addressTextController,
+                      dirtyOutlineColor: _getBorderColor(),
+                      decoration: UydoshPlateFieldDecoration.forHint(
+                        context,
+                        hintText: L10n.get("listing_address_text_label"),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 56,
+                    child: Tooltip(
+                      message: L10n.get("use_current_location"),
+                      child: Semantics(
+                        button: true,
+                        label: L10n.get("use_current_location"),
+                        child: OutlinedButton(
+                          onPressed: _isResolvingCurrentLocation
+                              ? null
+                              : _useCurrentLocationForAddress,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _getBorderColor(),
+                            side: BorderSide(color: _getBorderColor()),
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(56, 56),
+                          ),
+                          child: _isResolvingCurrentLocation
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.my_location,
+                                  size: 20,
+                                  color: _getCurrentLocationIconColor(),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
