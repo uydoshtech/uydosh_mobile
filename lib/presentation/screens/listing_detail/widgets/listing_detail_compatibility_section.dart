@@ -1625,9 +1625,12 @@ class _ListingDetailCompatibilitySectionState
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          key: PageStorageKey<String>(
+            "listing_detail_group_preference_matrix_${widget.listingDetail.id}",
+          ),
           backgroundColor: Colors.transparent,
           collapsedBackgroundColor: Colors.transparent,
-          initiallyExpanded: true,
+          initiallyExpanded: _isMatrixExpanded,
           onExpansionChanged: _onMatrixExpansionChanged,
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
@@ -1890,7 +1893,7 @@ class _ListingDetailCompatibilitySectionState
 
   void _onMatrixExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
-    _isMatrixExpanded = isExpanded;
+    setState(() => _isMatrixExpanded = isExpanded);
     if (!isExpanded) {
       _setMatrixStickyHeaderVisible(false);
     } else {
@@ -1900,7 +1903,7 @@ class _ListingDetailCompatibilitySectionState
 
   void _onExpansionChanged(bool isExpanded) {
     HapticFeedbackUtils.impact();
-    _isCompatibilitySectionExpanded = isExpanded;
+    setState(() => _isCompatibilitySectionExpanded = isExpanded);
     if (!isExpanded) {
       _setMatrixStickyHeaderVisible(false);
     } else if (_isMatrixExpanded) {
@@ -2257,8 +2260,6 @@ class _ListingDetailCompatibilitySectionState
         ? L10n.get("na")
         : "${widget.compatibilityPercent}%";
 
-    final isProfileComplete = ProfileCompletionState().isProfileComplete;
-
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
 
     return ListingDetailTileShell(
@@ -2266,9 +2267,12 @@ class _ListingDetailCompatibilitySectionState
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          key: PageStorageKey<String>(
+            "listing_detail_compatibility_${widget.listingDetail.id}",
+          ),
           backgroundColor: Colors.transparent,
           collapsedBackgroundColor: Colors.transparent,
-          initiallyExpanded: !isAuthenticated || !isProfileComplete,
+          initiallyExpanded: _isCompatibilitySectionExpanded,
           onExpansionChanged: _onExpansionChanged,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

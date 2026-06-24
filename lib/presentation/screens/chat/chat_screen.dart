@@ -60,6 +60,7 @@ import "package:uy_dosh/presentation/blocs/conversations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/screens/complaint/create_complaint_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/group_member_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_owner_profile/listing_owner_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
@@ -239,6 +240,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int? _peerProfileFetchedForUserId;
   List<ConversationMemberSummary> _groupParticipants = [];
   bool _groupMembersFetchInFlight = false;
+  Map<int, GroupMemberCompatibilitySummary> _groupMemberCompatibility = {};
   ListingDetail? _groupListingDetail;
   bool _groupChatIsOwner = false;
   bool _showSecurityRibbon = true;
@@ -335,6 +337,9 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _groupParticipants =
             members.isNotEmpty ? members : _participantsFromMessages();
+        _groupMemberCompatibility = _groupMemberCompatibilityForParticipants(
+          _groupParticipants,
+        );
       });
     } catch (e) {
       logger.d("❌ [ChatScreen] Error fetching group participants: $e");
@@ -549,6 +554,76 @@ class _ChatScreenState extends State<ChatScreen> {
     if (derived.isEmpty) return;
     if (_groupParticipants.isNotEmpty) return;
     setState(() => _groupParticipants = derived);
+  }
+
+  Map<int, GroupMemberCompatibilitySummary>
+      _groupMemberCompatibilityForParticipants(
+    List<ConversationMemberSummary> participants,
+  ) {
+    final participantIds = participants.map((member) => member.userId).toSet();
+    return Map<int, GroupMemberCompatibilitySummary>.fromEntries(
+      _groupMemberCompatibility.entries.where(
+        (entry) => participantIds.contains(entry.key),
+      ),
+    );
+  }
+
+  Future<Map<int, GroupMemberCompatibilitySummary>>
+      _loadGroupMemberCompatibility() async {
+    final participants = List<ConversationMemberSummary>.of(_groupParticipants);
+    final currentUserId = _currentUserId;
+    if (!_isGroupChat || participants.isEmpty || currentUserId == null) {
+      return _groupMemberCompatibility;
+    }
+
+    final targetIds = participants
+        .map((member) => member.userId)
+        .where((userId) => userId != currentUserId)
+        .toSet();
+    final missingIds = targetIds
+        .where((userId) => !_groupMemberCompatibility.containsKey(userId))
+        .toList(growable: false);
+    if (missingIds.isEmpty) {
+      return _groupMemberCompatibilityForParticipants(participants);
+    }
+
+    try {
+      final profileService = getIt<IUserProfileService>();
+      final currentProfile =
+          _currentUserProfile ?? await profileService.getCurrentUserProfile();
+      final entries = await Future.wait(
+        missingIds.map((userId) async {
+          try {
+            final memberProfile = await profileService.getUserProfile(userId);
+            return MapEntry(
+              userId,
+              GroupMemberCompatibilityHelper.summarize(
+                currentProfile,
+                memberProfile,
+              ),
+            );
+          } catch (e) {
+            logger.d(
+              "❌ [ChatScreen] Error loading member compatibility for $userId: $e",
+            );
+            return MapEntry(userId, GroupMemberCompatibilitySummary.empty);
+          }
+        }),
+      );
+      if (!mounted) return _groupMemberCompatibility;
+
+      setState(() {
+        _currentUserProfile ??= currentProfile;
+        _groupMemberCompatibility = {
+          ..._groupMemberCompatibilityForParticipants(participants),
+          for (final entry in entries) entry.key: entry.value,
+        };
+      });
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error loading group compatibility: $e");
+    }
+
+    return _groupMemberCompatibilityForParticipants(participants);
   }
 
   List<MessageGroupListItem> _groupedItemsFor(List<Message> messages) {
@@ -2112,7 +2187,6 @@ class _ChatScreenState extends State<ChatScreen> {
       currentStars: initialStars,
       initialReasonCodes: currentReasons,
       initialCategoryRatings: currentCategoryRatings,
-      initialVerdict: currentVerdict,
     );
 
     if (result == null || !mounted) {
@@ -2571,6 +2645,8 @@ class _ChatScreenState extends State<ChatScreen> {
         _groupParticipants.first.userId;
     final isOwner = _groupChatIsOwner ||
         (_currentUserId != null && _currentUserId == ownerUserId);
+    final memberCompatibility = await _loadGroupMemberCompatibility();
+    if (!mounted) return;
 
     await showListingGroupMemberProfilesSheet(
       context: context,
@@ -2582,9 +2658,11 @@ class _ChatScreenState extends State<ChatScreen> {
       groupProgress: detail == null
           ? null
           : ListingGroupProgress.fromListingDetail(detail),
+      memberCompatibility: memberCompatibility,
       groupListingDetail: detail,
       onMemberTap: _navigateToProfile,
       onChanged: () {
+        setState(() => _groupMemberCompatibility = {});
         unawaited(_loadGroupParticipants());
         unawaited(_loadGroupHousingContext());
       },

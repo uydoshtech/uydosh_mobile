@@ -85,7 +85,6 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
   required int currentStars,
   Set<String> initialReasonCodes = const {},
   Map<String, int> initialCategoryRatings = const {},
-  String? initialVerdict,
 }) {
   return showDialog<ListingRatingDialogResult>(
     context: context,
@@ -98,7 +97,6 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
           return value == null ? selected : value.clamp(1, 5).toInt();
         },
       );
-      var verdict = initialVerdict ?? _verdictForStars(selected);
       final selectedReasonCodes = {...initialReasonCodes};
       return StatefulBuilder(
         builder: (context, setDialogState) {
@@ -178,23 +176,11 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                               .round()
                               .clamp(1, 5)
                               .toInt();
-                          verdict = _verdictForStars(selected);
                         });
                       },
                     ),
                   );
                 }),
-                const SizedBox(height: 8),
-                _VerdictCard(
-                  verdict: verdict,
-                  onChanged: (value) {
-                    HapticFeedbackUtils.selectionClick();
-                    setDialogState(() {
-                      selected = value;
-                      verdict = _verdictForStars(value);
-                    });
-                  },
-                ),
                 const SizedBox(height: 14),
                 Text.rich(
                   TextSpan(
@@ -266,7 +252,7 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                         for (var i = 0; i < _ratingCategories.length; i++)
                           _ratingCategories[i].code: categoryRatings[i],
                       },
-                      verdict: verdict,
+                      verdict: _verdictForStars(selected),
                     ),
                   ),
                   style: FilledButton.styleFrom(
@@ -279,16 +265,6 @@ Future<ListingRatingDialogResult?> showListingRatingDialog({
                     ),
                   ),
                   child: Text(L10n.get("listing_rating_submit")),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  L10n.get("listing_rating_participants_summary"),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: scheme.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
                 ),
               ],
             ),
@@ -436,147 +412,6 @@ class _InlineStars extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
-}
-
-class _VerdictCard extends StatelessWidget {
-  const _VerdictCard({
-    required this.verdict,
-    required this.onChanged,
-  });
-
-  final String verdict;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.34),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.32),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              L10n.get("listing_rating_verdict_title"),
-              style: TextStyle(
-                color: scheme.onSurface,
-                fontSize: 13,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              L10n.get("listing_rating_verdict_subtitle"),
-              style: TextStyle(
-                color: scheme.onSurfaceVariant,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 9),
-            Row(
-              children: [
-                Expanded(
-                  child: _VerdictOption(
-                    label: L10n.get("listing_rating_verdict_yes"),
-                    icon: Icons.thumb_up_alt_outlined,
-                    color: AppColors.success,
-                    selected: verdict == "yes",
-                    onTap: () => onChanged(5),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _VerdictOption(
-                    label: L10n.get("listing_rating_verdict_maybe"),
-                    icon: Icons.lightbulb_outline_rounded,
-                    color: AppColors.warning,
-                    selected: verdict == "maybe",
-                    onTap: () => onChanged(4),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _VerdictOption(
-                    label: L10n.get("listing_rating_verdict_no"),
-                    icon: Icons.thumb_down_alt_outlined,
-                    color: AppColors.error,
-                    selected: verdict == "no",
-                    onTap: () => onChanged(2),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _VerdictOption extends StatelessWidget {
-  const _VerdictOption({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.12)
-              : scheme.surface.withValues(alpha: 0.28),
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(
-            color: selected
-                ? color.withValues(alpha: 0.85)
-                : scheme.outlineVariant.withValues(alpha: 0.4),
-            width: selected ? 1.2 : 0.8,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 25),
-            const SizedBox(height: 7),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: selected ? color : scheme.onSurface,
-                fontSize: 11,
-                height: 1.1,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
