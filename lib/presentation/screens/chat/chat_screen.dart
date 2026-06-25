@@ -428,24 +428,57 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Merges the server-authoritative card list with any share cards present in
   /// the loaded window (so freshly posted/received cards appear immediately),
-  /// de-duplicated by listing and kept in first-mention order.
+  /// de-duplicated by listing and ordered by the original share message id.
+  ///
+  /// Message ids are the stable timeline order. Created timestamps can be equal
+  /// or arrive skewed, which previously made option badges appear as #2, #1, ...
   List<({int listingId, String title})> _mentionedListings() {
-    final result = <({int listingId, String title})>[];
-    final seen = <int>{};
+    final byListingId =
+        <int, ({int listingId, String title, int messageId, int fallbackOrder})>{};
+    var fallbackOrder = 0;
+
     for (final d in _discussedFromServer) {
-      if (seen.add(d.listingId)) {
-        result.add((listingId: d.listingId, title: d.title));
-      }
+      byListingId[d.listingId] = (
+        listingId: d.listingId,
+        title: d.title,
+        messageId: d.messageId,
+        fallbackOrder: fallbackOrder++,
+      );
     }
+
     for (final m in _messages) {
       if (m.isDeleted == true) continue;
       final payload = ListingShareMessageCodec.parse(m.content);
       if (payload == null) continue;
-      if (seen.add(payload.listingId)) {
-        result.add((listingId: payload.listingId, title: payload.title));
+      final existing = byListingId[payload.listingId];
+      if (existing == null ||
+          existing.messageId <= 0 ||
+          (m.id > 0 && m.id < existing.messageId)) {
+        byListingId[payload.listingId] = (
+          listingId: payload.listingId,
+          title: payload.title,
+          messageId: m.id,
+          fallbackOrder: existing?.fallbackOrder ?? fallbackOrder++,
+        );
       }
     }
-    return result;
+
+    final result = byListingId.values.toList()
+      ..sort((a, b) {
+        final aMessageId = a.messageId;
+        final bMessageId = b.messageId;
+        if (aMessageId > 0 && bMessageId > 0) {
+          return aMessageId.compareTo(bMessageId);
+        }
+        if (aMessageId > 0) return -1;
+        if (bMessageId > 0) return 1;
+        return a.fallbackOrder.compareTo(b.fallbackOrder);
+      });
+
+    return [
+      for (final item in result)
+        (listingId: item.listingId, title: item.title),
+    ];
   }
 
   int? _listingShareOptionNumber(ListingShareMessagePayload payload) {
