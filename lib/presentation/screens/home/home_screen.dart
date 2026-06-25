@@ -63,6 +63,8 @@ import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overla
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
+part "home_search_results_shell.dart";
+
 /// Matches empty-search Ghost + Primary CTAs (30px bell stack + 14px vertical padding).
 const double _kEmptySearchCtaButtonHeight = 58;
 
@@ -1054,181 +1056,36 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final inSearchContext = widget.isSearchMode || _inlineSearchActive;
     final mapResult =
         _mapViewSearchResult ?? _currentSearchResultForViewToggle();
-    final listView = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        listContent,
-        if (widget.isSearchMode)
-          Positioned(
-            left: 12,
-            right: 12,
-            top: 0,
-            height: searchRibbonHeight,
-            child: _buildSearchModeFiltersRibbon(),
-          ),
-        if (!widget.isSearchMode)
-          Positioned(
-            left: 12,
-            right: 12,
-            top: ThemeState().mainShellGlassExtraTopInset(context),
-            child: _buildInlineFiltersRibbonAnimated(),
-          ),
-        if (inSearchContext)
-          Positioned(
-            right: 16,
-            top: _viewToggleFabTop(searchRibbonHeight: searchRibbonHeight),
-            child: Transform.scale(
-              scale: 0.92,
-              child: SearchFloatingActionButton(
-                onPressed: () => _openSearchResultsMap(
-                  _currentSearchResultForViewToggle(),
-                ),
-                iconData: Icons.map_rounded,
-                tooltip: L10n.get("open_map_view"),
-                elevation: ThemeState().isBlueTheme ? null : 8,
-              ),
-            ),
-          ),
-        Positioned(
-          right: 16,
-          bottom: _searchAlertFabStackBottom(context),
-          child:
-              BlocSelector<ListingsBloc, ListingsState, _SearchAlertFabState>(
-            selector: (state) {
-              final loaded =
-                  state.maybeMap(loaded: (_) => true, orElse: () => false);
-              final isEmpty = state.maybeMap(
-                loaded: (s) => s.listings.isEmpty,
-                orElse: () => false,
-              );
-              return _SearchAlertFabState(
-                showFab: inSearchContext && loaded && !isEmpty,
-                isEmpty: inSearchContext && isEmpty,
-              );
-            },
-            builder: (context, fabState) {
-              final showBellHint = fabState.showFab &&
-                  fabState.isEmpty &&
-                  TooltipsState().enabled &&
-                  !_bellHintDismissed;
-
-              return Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.bottomRight,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (fabState.showFab) ...[
-                        CompositedTransformTarget(
-                          link: _bellHintLayerLink,
-                          child: Transform.scale(
-                            scale: 0.92,
-                            child: SearchFloatingActionButton(
-                              searchFiltersState: _searchFiltersState,
-                              onPressed: _isCreatingSearchAlert
-                                  ? null
-                                  : _showCreateSearchAlertSheet,
-                              iconData: Icons.add_alert,
-                              tooltip: L10n.get("search_alert_notify_me"),
-                              replaceCurrentRoute: false,
-                              openedFromHomeScreen: widget.isHomeTabActive,
-                              elevation: ThemeState().isBlueTheme ? null : 8,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: _kFabGap),
-                      ],
-                      TutorialTargetWrapper(
-                        key: _searchButtonTutorialKey,
-                        child: ListenableBuilder(
-                          listenable: AnimationSettingsState(),
-                          builder: (context, _) {
-                            return TutorialPulseWrapper(
-                              enabled: false,
-                              variant:
-                                  TutorialPulseVariant.floatingActionButton,
-                              child: SearchFloatingActionButton(
-                                searchFiltersState: _searchFiltersState,
-                                onPressed: widget.isSearchMode
-                                    ? null
-                                    : _openInlineSearchFromFab,
-                                iconData: Icons.search,
-                                replaceCurrentRoute: widget.isSearchMode,
-                                openedFromHomeScreen: widget.isHomeTabActive,
-                                elevation: ThemeState().isBlueTheme ? null : 8,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Align bubble's right edge with the bell FAB so it sits near
-                  // the screen edge and grows left (avoids horizontal clipping).
-                  CompositedTransformFollower(
-                    link: _bellHintLayerLink,
-                    showWhenUnlinked: false,
-                    targetAnchor: Alignment.topRight,
-                    followerAnchor: Alignment.bottomRight,
-                    offset: const Offset(0, -4),
-                    child: TooltipFade(
-                      collapse: false,
-                      duration: const Duration(milliseconds: 260),
-                      visible: showBellHint,
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: NeumorphicHintBubble(
-                          maxWidth: 220,
-                          // Bubble right edge aligns with the bell FAB layout
-                          // box; tail points at its horizontal center (56 / 2).
-                          tailRightInset: 28,
-                          onClose: _dismissBellHint,
-                          message: TextSpan(
-                            text: L10n.get("search_alert_bell_hint"),
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              height: 1.3,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
+    final body = _SearchResultsShell(
+      listContent: listContent,
+      inSearchContext: inSearchContext,
+      isSearchMode: widget.isSearchMode,
+      isHomeTabActive: widget.isHomeTabActive,
+      searchResultsView: _searchResultsView,
+      mapResult: mapResult,
+      searchRibbonHeight: searchRibbonHeight,
+      inlineRibbonTop: ThemeState().mainShellGlassExtraTopInset(context),
+      mapTopPadding: ThemeState().mainShellGlassExtraTopInset(context),
+      viewToggleTop: _viewToggleFabTop(
+        searchRibbonHeight: searchRibbonHeight,
+      ),
+      alertFabBottom: _searchAlertFabStackBottom(context),
+      searchFiltersState: _searchFiltersState,
+      bellHintLayerLink: _bellHintLayerLink,
+      searchButtonTutorialKey: _searchButtonTutorialKey,
+      bellHintDismissed: _bellHintDismissed,
+      isCreatingSearchAlert: _isCreatingSearchAlert,
+      fabGap: _kFabGap,
+      searchModeFiltersRibbonBuilder: (_) => _buildSearchModeFiltersRibbon(),
+      inlineFiltersRibbonBuilder: (_) => _buildInlineFiltersRibbonAnimated(),
+      onOpenMapView: () => _openSearchResultsMap(
+        _currentSearchResultForViewToggle(),
+      ),
+      onCreateSearchAlert: _showCreateSearchAlertSheet,
+      onOpenInlineSearch: _openInlineSearchFromFab,
+      onDismissBellHint: _dismissBellHint,
+      onOpenFeedFromMap: _returnToFeedFromMap,
     );
-
-    Widget buildMapView() => SearchResultsMapScreen(
-          listingTypeId: mapResult.listingTypeId,
-          locationId: mapResult.locationId,
-          subwayStationId: mapResult.subwayStationId,
-          subwayStationIds: mapResult.subwayStationIds,
-          subwayLineId: mapResult.subwayLineId,
-          gender: mapResult.gender,
-          minPrice: mapResult.minPrice,
-          maxPrice: mapResult.maxPrice,
-          privateRoom: mapResult.privateRoom,
-          withPhoto: mapResult.withPhoto,
-          onOpenFeed: _returnToFeedFromMap,
-          embedded: true,
-        );
-    final body = inSearchContext && _searchResultsView == _SearchResultsView.map
-        ? widget.isSearchMode
-            ? buildMapView()
-            : Padding(
-                padding: EdgeInsets.only(
-                  top: ThemeState().mainShellGlassExtraTopInset(context),
-                ),
-                child: buildMapView(),
-              )
-        : listView;
 
     return Scaffold(
       backgroundColor: ThemeState().backgroundColor,
