@@ -9,18 +9,21 @@ import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
@@ -239,6 +242,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   ListingMapPin? _pinForListing(Listing listing) {
     final pinMeta = _pinMetaForListing(listing);
+    final listingTypeCode = listing.listingType?.code ??
+        _listingTypeCodeFromId(listing.listingTypeId);
     final stationId = listing.subwayStationId ??
         listing.subwayStation?.id ??
         (listing.searchSubwayStations?.isNotEmpty == true
@@ -256,6 +261,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           locationLabel: pinMeta.locationLabel,
           stationLabel: pinMeta.stationLabel,
           subwayLineIds: pinMeta.subwayLineIds,
+          listingTypeId: listing.listingTypeId,
+          listingTypeCode: listingTypeCode,
+          gender: listing.gender,
           photoUrl: _listingPrimaryPhotoUrl(listing),
         );
       }
@@ -278,6 +286,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           locationLabel: pinMeta.locationLabel,
           stationLabel: pinMeta.stationLabel,
           subwayLineIds: pinMeta.subwayLineIds,
+          listingTypeId: listing.listingTypeId,
+          listingTypeCode: listingTypeCode,
+          gender: listing.gender,
           photoUrl: _listingPrimaryPhotoUrl(listing),
         );
       }
@@ -502,6 +513,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     return Scaffold(
       appBar: CommonAppBar(
         title: context.l10n.search_results,
+        titleWidget: _MapHeaderTitle(
+          title: context.l10n.search_results,
+          loading: _isLoading,
+        ),
         showBackButton: true,
       ),
       body: _buildBody(context),
@@ -602,6 +617,57 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 }
 
+class _MapHeaderTitle extends StatelessWidget {
+  const _MapHeaderTitle({
+    required this.title,
+    required this.loading,
+  });
+
+  final String title;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ) ??
+        const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textLight,
+        );
+    final spinnerColor = Theme.of(context).appBarTheme.foregroundColor ??
+        Theme.of(context).colorScheme.onSurface;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(title, style: style),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          child: loading
+              ? Padding(
+                  key: const ValueKey("map-header-loading"),
+                  padding: const EdgeInsetsDirectional.only(start: 8),
+                  child: SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: spinnerColor,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey("map-header-idle")),
+        ),
+      ],
+    );
+  }
+}
+
 class _MapFilterRibbon extends StatelessWidget {
   const _MapFilterRibbon({
     required this.onPressed,
@@ -662,6 +728,7 @@ class _MapFilterRibbon extends StatelessWidget {
             privateRoom: privateRoom,
             withPhoto: withPhoto,
             total: total,
+            showLabel: false,
             height: 44,
             chipSize: 32,
             alwaysShowPriceRange: true,
@@ -779,9 +846,10 @@ class _PinSummaryTooltip extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 10, 52, 10),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _PinSummaryPhoto(
-                      photoUrl: pin.photoUrl,
+                    _PinSummaryMediaColumn(
+                      pin: pin,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -789,13 +857,28 @@ class _PinSummaryTooltip extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            pin.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                          Row(
+                            children: [
+                              if (pin.listingTypeCode?.isNotEmpty == true ||
+                                  pin.gender != null) ...[
+                                _PinSummaryBadges(
+                                  listingTypeCode: pin.listingTypeCode,
+                                  gender: pin.gender,
+                                  compact: true,
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  pin.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           if (pin.subtitle?.isNotEmpty == true) ...[
                             const SizedBox(height: 4),
@@ -809,19 +892,13 @@ class _PinSummaryTooltip extends StatelessWidget {
                               ),
                             ),
                           ],
-                          if (pin.locationLabel?.isNotEmpty == true) ...[
+                          if (pin.locationLabel?.isNotEmpty == true ||
+                              pin.stationLabel?.isNotEmpty == true) ...[
                             const SizedBox(height: 6),
-                            _PinMetaRow(
-                              icon: Icons.location_on,
-                              iconColor: AppColors.error,
-                              label: pin.locationLabel!,
-                            ),
-                          ],
-                          if (pin.stationLabel?.isNotEmpty == true) ...[
-                            const SizedBox(height: 6),
-                            _PinMetroRow(
+                            _PinGeoLabelsRow(
+                              locationLabel: pin.locationLabel,
+                              stationLabel: pin.stationLabel,
                               lineIds: pin.subwayLineIds,
-                              label: pin.stationLabel!,
                             ),
                           ],
                           const SizedBox(height: 6),
@@ -852,6 +929,104 @@ class _PinSummaryTooltip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PinSummaryMediaColumn extends StatelessWidget {
+  const _PinSummaryMediaColumn({required this.pin});
+
+  final ListingMapPin pin;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _PinSummaryPhoto.size,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _PinSummaryPhoto(
+            photoUrl: pin.photoUrl,
+            listingTypeId: pin.listingTypeId,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PinSummaryBadges extends StatelessWidget {
+  const _PinSummaryBadges({
+    required this.listingTypeCode,
+    required this.gender,
+    this.compact = false,
+  });
+
+  final String? listingTypeCode;
+  final int? gender;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (listingTypeCode?.isNotEmpty == true)
+          ListingTypeIconBadge(
+            listingTypeCode: listingTypeCode!,
+            size: compact ? 13 : 14,
+            padding: compact
+                ? const EdgeInsets.all(4)
+                : const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          ),
+        if (gender != null)
+          GenderBadge(
+            gender: gender!,
+            size: compact ? 13 : 14,
+            padding: compact
+                ? const EdgeInsets.all(4)
+                : const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          ),
+      ],
+    );
+  }
+}
+
+class _PinGeoLabelsRow extends StatelessWidget {
+  const _PinGeoLabelsRow({
+    required this.locationLabel,
+    required this.stationLabel,
+    required this.lineIds,
+  });
+
+  final String? locationLabel;
+  final String? stationLabel;
+  final List<int> lineIds;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasLocation = locationLabel?.isNotEmpty == true;
+    final hasStation = stationLabel?.isNotEmpty == true;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasLocation)
+          _PinMetaRow(
+            icon: Icons.location_on,
+            iconColor: AppColors.error,
+            label: locationLabel!,
+          ),
+        if (hasLocation && hasStation) const SizedBox(height: 4),
+        if (hasStation)
+          _PinMetroRow(
+            lineIds: lineIds,
+            label: stationLabel!,
+          ),
+      ],
     );
   }
 }
@@ -943,28 +1118,29 @@ class _PinMetroRow extends StatelessWidget {
 }
 
 class _PinSummaryPhoto extends StatelessWidget {
-  const _PinSummaryPhoto({required this.photoUrl});
+  const _PinSummaryPhoto({
+    required this.photoUrl,
+    required this.listingTypeId,
+  });
+
+  static const String _noPhotoPlaceholderAsset =
+      "assets/images/uydosh_no_photo_placeholder.png";
+  static const String _noPhotoPlaceholderAssetLight =
+      "assets/images/uydosh_light_no_photo_placeholder.png";
+  static const String _roomNeededPlaceholderAsset =
+      "assets/images/uydosh_room_needed_no_photo_placeholder.png";
+  static const String _roomNeededPlaceholderAssetLight =
+      "assets/images/uydosh_light_room_needed_no_photo_placeholder.png";
+  static const double size = 104.0;
 
   final String? photoUrl;
+  final int? listingTypeId;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final url = photoUrl;
-    const size = 56.0;
-    final placeholder = DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.onSurface.withValues(alpha: 0.08),
-      ),
-      child: Center(
-        child: ThemeIcon(
-          Icons.photo_outlined,
-          color: scheme.onSurfaceVariant,
-          size: 24,
-          useThemeColor: false,
-        ),
-      ),
-    );
+    final placeholder = _placeholder(context, scheme);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -989,6 +1165,42 @@ class _PinSummaryPhoto extends StatelessWidget {
       ),
     );
   }
+
+  Widget _placeholder(BuildContext context, ColorScheme scheme) {
+    final isLight = ThemeState().isLightTheme;
+    final isRoomNeeded = listingTypeId == ListingTypeIds.roomNeeded;
+    final asset = isRoomNeeded
+        ? (isLight
+            ? _roomNeededPlaceholderAssetLight
+            : _roomNeededPlaceholderAsset)
+        : (isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset);
+    final gradient = isLight
+        ? const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFB1BFD5), Color(0xFFAABBD3)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1E3962), Color(0xFF112548)],
+          );
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: gradient),
+      child: Image.asset(
+        asset,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Center(
+          child: ThemeIcon(
+            Icons.photo_outlined,
+            color: scheme.onSurfaceVariant,
+            size: 24,
+            useThemeColor: false,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _RefreshAreaButton extends StatelessWidget {
@@ -1003,6 +1215,7 @@ class _RefreshAreaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final foregroundColor = theme.colorScheme.onSurface;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -1032,21 +1245,21 @@ class _RefreshAreaButton extends StatelessWidget {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: theme.colorScheme.primary,
+                      color: foregroundColor,
                     ),
                   )
                 else
                   ThemeIcon(
                     Icons.refresh,
                     size: 18,
-                    color: theme.colorScheme.primary,
+                    color: foregroundColor,
                     useThemeColor: false,
                   ),
                 const SizedBox(width: 8),
                 Text(
                   L10n.get("search_refresh_this_area"),
                   style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.onSurface,
+                    color: foregroundColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

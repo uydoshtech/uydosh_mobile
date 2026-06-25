@@ -14,6 +14,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({
     required this.title,
     super.key,
+    this.titleWidget,
     this.actions,
     this.leading,
     this.showBackButton = false,
@@ -26,6 +27,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final String title;
+  final Widget? titleWidget;
   final List<Widget>? actions;
   final Widget? leading;
   final bool showBackButton;
@@ -52,35 +54,39 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
         : (defaultBg ?? Colors.transparent);
 
     return UydoshAppBar(
-      title: centerTitle
-          ? Text(
-              title,
-              style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ) ??
-                  const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textLight,
-                  ),
-            )
-          : Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
+      title: titleWidget ??
+          (centerTitle
+              ? Text(
                   title,
                   style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ) ??
                       const TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textLight,
                       ),
-                ),
-              ),
-            ),
+                )
+              : Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      title,
+                      style: Theme.of(context)
+                              .appBarTheme
+                              .titleTextStyle
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ) ??
+                          const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textLight,
+                          ),
+                    ),
+                  ),
+                )),
       backgroundColor: resolvedBg,
       foregroundColor: foregroundColor ??
           Theme.of(context).appBarTheme.foregroundColor ??

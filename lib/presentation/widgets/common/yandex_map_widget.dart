@@ -22,6 +22,9 @@ class ListingMapPin {
     this.locationLabel,
     this.stationLabel,
     this.subwayLineIds = const [],
+    this.listingTypeId,
+    this.listingTypeCode,
+    this.gender,
     this.photoUrl,
   });
 
@@ -33,6 +36,9 @@ class ListingMapPin {
   final String? locationLabel;
   final String? stationLabel;
   final List<int> subwayLineIds;
+  final int? listingTypeId;
+  final String? listingTypeCode;
+  final int? gender;
   final String? photoUrl;
 }
 
@@ -670,7 +676,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       final newPin = newPins[i];
       if (oldPin.listingId != newPin.listingId ||
           oldPin.latitude != newPin.latitude ||
-          oldPin.longitude != newPin.longitude) {
+          oldPin.longitude != newPin.longitude ||
+          oldPin.listingTypeId != newPin.listingTypeId ||
+          oldPin.listingTypeCode != newPin.listingTypeCode ||
+          oldPin.gender != newPin.gender) {
         return true;
       }
     }
