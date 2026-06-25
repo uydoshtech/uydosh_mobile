@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
+import "package:uy_dosh/presentation/screens/search/search_results_map_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -41,6 +42,8 @@ import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.da
 
 part "search_bottom_sheet/search_bottom_sheet_state.dart";
 
+enum SearchBottomSheetAction { feed, map }
+
 class SearchBottomSheetResult {
   const SearchBottomSheetResult({
     required this.listingTypeId,
@@ -52,6 +55,7 @@ class SearchBottomSheetResult {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.action = SearchBottomSheetAction.feed,
     this.subwayStationIds = const [],
   });
 
@@ -68,6 +72,7 @@ class SearchBottomSheetResult {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final SearchBottomSheetAction action;
 }
 
 /// Reusable search bottom sheet widget that can be used throughout the app
@@ -104,7 +109,8 @@ class SearchBottomSheetWidget {
     // caller of the bottom sheet gets consistent behavior.
     final searchFiltersState = SearchFiltersState();
     final prefs = await SharedPreferences.getInstance();
-    final hadSavedListingTypeId = prefs.getInt("search_listing_type_id") != null;
+    final hadSavedListingTypeId =
+        prefs.getInt("search_listing_type_id") != null;
     final hadSavedGender = prefs.getInt("search_gender") != null;
     final isFirstOpen = !hadSavedListingTypeId && !hadSavedGender;
 
@@ -126,8 +132,9 @@ class SearchBottomSheetWidget {
     // override the profile-derived values inside the sheet initState. When we
     // detect first open (no saved prefs yet), force-seed the sheet with the
     // computed values instead.
-    final resolvedListingTypeId =
-        isFirstOpen ? searchFiltersState.selectedListingTypeId : currentListingTypeId;
+    final resolvedListingTypeId = isFirstOpen
+        ? searchFiltersState.selectedListingTypeId
+        : currentListingTypeId;
     final resolvedGender =
         isFirstOpen ? searchFiltersState.selectedGender : currentGender;
 
@@ -151,55 +158,55 @@ class SearchBottomSheetWidget {
 
     try {
       await showAppBottomSheet<void>(
-      context: context,
-      useSafeArea: false,
-      builder: (context) => MultiBlocProvider(
-        providers: [
-          // Provide ListingsBloc - either existing or new one
-          existingListingsBloc != null
-              ? BlocProvider.value(value: existingListingsBloc)
-              : BlocProvider(
-                  create: (context) => ListingsBloc(getIt<IListingService>()),
-                ),
-          if (!metroOnly) ...[
-            // Provide LocationsBloc - reuse if available to avoid refetch
-            existingLocationsBloc != null
-                ? BlocProvider.value(value: existingLocationsBloc)
+        context: context,
+        useSafeArea: false,
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            // Provide ListingsBloc - either existing or new one
+            existingListingsBloc != null
+                ? BlocProvider.value(value: existingListingsBloc)
                 : BlocProvider(
-                    create: (context) {
-                      final locationsBloc = LocationsBloc(
-                        getIt<ILocationService>(),
-                      );
-                      locationsBloc.add(const LocationsEvent.fetchLocations());
-                      return locationsBloc;
-                    },
+                    create: (context) => ListingsBloc(getIt<IListingService>()),
                   ),
+            if (!metroOnly) ...[
+              // Provide LocationsBloc - reuse if available to avoid refetch
+              existingLocationsBloc != null
+                  ? BlocProvider.value(value: existingLocationsBloc)
+                  : BlocProvider(
+                      create: (context) {
+                        final locationsBloc = LocationsBloc(
+                          getIt<ILocationService>(),
+                        );
+                        locationsBloc
+                            .add(const LocationsEvent.fetchLocations());
+                        return locationsBloc;
+                      },
+                    ),
+            ],
+            BlocProvider(
+              create: (context) => SubwayStationsBloc(),
+            ),
           ],
-          BlocProvider(
-            create: (context) =>
-                SubwayStationsBloc(),
+          child: _SearchBottomSheetContent(
+            replaceCurrentRoute: replaceCurrentRoute,
+            openedFromHomeScreen: openedFromHomeScreen,
+            metroOnly: metroOnly,
+            currentListingTypeId: resolvedListingTypeId,
+            currentLocationId: currentLocationId,
+            currentSubwayStationId: currentSubwayStationId,
+            currentSubwayLineId: currentSubwayLineId,
+            currentGender: resolvedGender,
+            currentMinPrice: currentMinPrice,
+            currentMaxPrice: currentMaxPrice,
+            currentPrivateRoom: currentPrivateRoom,
+            currentWithPhoto: currentWithPhoto,
+            onApply: onApply,
+            onCommit: markCommitted,
+            primaryLabelKey: primaryLabelKey,
+            primaryIcon: primaryIcon,
           ),
-        ],
-        child: _SearchBottomSheetContent(
-          replaceCurrentRoute: replaceCurrentRoute,
-          openedFromHomeScreen: openedFromHomeScreen,
-          metroOnly: metroOnly,
-          currentListingTypeId: resolvedListingTypeId,
-          currentLocationId: currentLocationId,
-          currentSubwayStationId: currentSubwayStationId,
-          currentSubwayLineId: currentSubwayLineId,
-          currentGender: resolvedGender,
-          currentMinPrice: currentMinPrice,
-          currentMaxPrice: currentMaxPrice,
-          currentPrivateRoom: currentPrivateRoom,
-          currentWithPhoto: currentWithPhoto,
-          onApply: onApply,
-          onCommit: markCommitted,
-          primaryLabelKey: primaryLabelKey,
-          primaryIcon: primaryIcon,
         ),
-      ),
-    );
+      );
     } finally {
       if (didCommit) {
         // End the session and notify outside listeners so the home chips

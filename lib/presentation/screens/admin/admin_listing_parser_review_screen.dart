@@ -644,6 +644,8 @@ class _AdminListingParserReviewScreenState
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;
         final iconColor = themeState.cardIconColor;
+        final fieldFillColor = textColor.withOpacity(0.08);
+        final fieldBorderColor = secondaryTextColor.withOpacity(0.5);
         return ThreeDElevatedSurface(
           baseColor: themeState.cardColor,
           child: Padding(
@@ -689,10 +691,15 @@ class _AdminListingParserReviewScreenState
                   enableSuggestions: false,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _saveOwnerUsername(),
+                  cursorColor: textColor,
                   style: TextStyle(fontSize: 14, color: textColor),
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: fieldFillColor,
                     prefixText: "@",
                     prefixStyle:
+                        TextStyle(fontSize: 14, color: secondaryTextColor),
+                    hintStyle:
                         TextStyle(fontSize: 14, color: secondaryTextColor),
                     hintText: L10n.get(
                       "admin_parser_review_owner_hint",
@@ -703,7 +710,15 @@ class _AdminListingParserReviewScreenState
                       horizontal: 12,
                       vertical: 12,
                     ),
-                    border: const OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: fieldBorderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: textColor, width: 1.5),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: fieldBorderColor),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),

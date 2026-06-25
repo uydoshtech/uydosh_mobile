@@ -63,6 +63,8 @@ class SearchBottomSheetMetroSection extends StatefulWidget {
 
 class _SearchBottomSheetMetroSectionState
     extends State<SearchBottomSheetMetroSection> {
+  static const double _stationListItemExtent = 40;
+
   /// User-dismissed flag for the "search across all stations of line X" hint.
   /// Loaded from SharedPreferences so the dismissal survives across sheet
   /// re-openings and app restarts. Until prefs resolve we keep the hint
@@ -82,6 +84,7 @@ class _SearchBottomSheetMetroSectionState
   /// — does not inflate the bottom sheet scroll area (when inline mode is off).
   final OverlayPortalController _metroAllStationsHintPortalController =
       OverlayPortalController();
+  final ScrollController _stationListScrollController = ScrollController();
 
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
@@ -92,6 +95,7 @@ class _SearchBottomSheetMetroSectionState
     TooltipsState().addListener(_onTooltipsStateChanged);
     _lastSeenLine = widget.searchFiltersState.selectedSubwayLine;
     _scheduleHintDebounce(_lastSeenLine);
+    _scheduleScrollSelectedStationToTop(jump: true);
   }
 
   @override
@@ -102,6 +106,7 @@ class _SearchBottomSheetMetroSectionState
       _lastSeenLine = currentLine;
       _scheduleHintDebounce(currentLine);
     }
+    _scheduleScrollSelectedStationToTop();
 
     // After the async station list mounts, [OverlayChildLayoutInfo] may need a
     // second frame before the paint transform is usable.
@@ -129,7 +134,38 @@ class _SearchBottomSheetMetroSectionState
     }
     _hintDebounceTimer?.cancel();
     TooltipsState().removeListener(_onTooltipsStateChanged);
+    _stationListScrollController.dispose();
     super.dispose();
+  }
+
+  void _scheduleScrollSelectedStationToTop({bool jump = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_stationListScrollController.hasClients) return;
+
+      final selected = widget.searchFiltersState.selectedStationIdsList.toSet();
+      final selectedIndex = widget.currentStations.indexWhere(
+        (station) => selected.contains(station.id),
+      );
+      if (selectedIndex < 0) return;
+
+      final position = _stationListScrollController.position;
+      final targetOffset = (selectedIndex * _stationListItemExtent)
+          .clamp(position.minScrollExtent, position.maxScrollExtent)
+          .toDouble();
+
+      if ((position.pixels - targetOffset).abs() < 0.5) return;
+
+      if (jump) {
+        _stationListScrollController.jumpTo(targetOffset);
+        return;
+      }
+
+      _stationListScrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   /// Restart the debounce window every time the user changes metro lines so
@@ -194,8 +230,7 @@ class _SearchBottomSheetMetroSectionState
     );
 
     final theme = Theme.of(context);
-    final viewInsetsBottom =
-        MediaQuery.maybeViewInsetsOf(context)?.bottom ?? 0;
+    final viewInsetsBottom = MediaQuery.maybeViewInsetsOf(context)?.bottom ?? 0;
 
     return Positioned.fill(
       bottom: viewInsetsBottom,
@@ -288,6 +323,18 @@ class _SearchBottomSheetMetroSectionState
   }
 
   Widget _buildPickersRow(BuildContext context, ThemeData theme) {
+    final language = LanguageState().currentLanguage;
+    final selectedStationIds =
+        widget.searchFiltersState.selectedStationIdsList.toSet();
+    final lineLabels = MetroCache.getAvailableLines().map((line) {
+      final lineName = MetroCache.getLineName(line, language);
+      final selectedCount = MetroCache.getStationsForLine(line)
+          .where((station) => selectedStationIds.contains(station.id))
+          .length;
+      final label = selectedCount > 0 ? "$lineName [$selectedCount]" : lineName;
+      return MapEntry(line, label);
+    }).toList();
+
     return Row(
       children: [
         Expanded(
@@ -335,51 +382,34 @@ class _SearchBottomSheetMetroSectionState
                             ],
                           ),
                         ),
-                        ...([
-                          MetroCache.getLineName(
-                            1,
-                            LanguageState().currentLanguage,
-                          ),
-                          MetroCache.getLineName(
-                            2,
-                            LanguageState().currentLanguage,
-                          ),
-                          MetroCache.getLineName(
-                            3,
-                            LanguageState().currentLanguage,
-                          ),
-                          MetroCache.getLineName(
-                            4,
-                            LanguageState().currentLanguage,
-                          ),
-                        ].asMap().entries.map(
-                              (entry) => Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    MLetterIcon(
-                                      color: _getLineColor(entry.key + 1),
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        entry.value,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: ThemeState().isBlueTheme
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+                        ...(lineLabels.map(
+                          (lineEntry) => Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                MLetterIcon(
+                                  color: _getLineColor(lineEntry.key),
+                                  size: 20,
                                 ),
-                              ),
-                            )),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    lineEntry.value,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: ThemeState().isBlueTheme
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )),
                       ],
                     ),
                   ),
@@ -481,8 +511,8 @@ class _SearchBottomSheetMetroSectionState
     final selected = widget.searchFiltersState.selectedStationIdsList.toSet();
     final lineStationIds =
         widget.currentStations.map((station) => station.id).toList();
-    final allSelected = lineStationIds.isNotEmpty &&
-        lineStationIds.every(selected.contains);
+    final allSelected =
+        lineStationIds.isNotEmpty && lineStationIds.every(selected.contains);
     final lineColor = widget.searchFiltersState.selectedSubwayLine > 0
         ? _getLineColor(widget.searchFiltersState.selectedSubwayLine)
         : theme.colorScheme.onSurfaceVariant;
@@ -552,6 +582,8 @@ class _SearchBottomSheetMetroSectionState
           Divider(height: 1, color: textColor.withValues(alpha: 0.12)),
           Expanded(
             child: ListView.builder(
+              controller: _stationListScrollController,
+              itemExtent: _stationListItemExtent,
               padding: EdgeInsets.zero,
               itemCount: widget.currentStations.length,
               itemBuilder: (context, index) {
@@ -660,8 +692,7 @@ class _MetroAllStationsHintLayoutDelegate extends SingleChildLayoutDelegate {
 
   @override
   Offset getPositionForChild(Size size, Size childSize) {
-    final double dxDesired =
-        anchorTopCenterInOverlay.dx - childSize.width / 2;
+    final double dxDesired = anchorTopCenterInOverlay.dx - childSize.width / 2;
     final double leftBound = _horizontalMarginPx;
     final double rightBoundCandidate =
         size.width - childSize.width - _horizontalMarginPx;
@@ -674,6 +705,7 @@ class _MetroAllStationsHintLayoutDelegate extends SingleChildLayoutDelegate {
   }
 
   @override
-  bool shouldRelayout(covariant _MetroAllStationsHintLayoutDelegate oldDelegate) =>
+  bool shouldRelayout(
+          covariant _MetroAllStationsHintLayoutDelegate oldDelegate) =>
       anchorTopCenterInOverlay != oldDelegate.anchorTopCenterInOverlay;
 }

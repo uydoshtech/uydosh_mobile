@@ -12,6 +12,30 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
+class ListingMapPin {
+  const ListingMapPin({
+    required this.listingId,
+    required this.latitude,
+    required this.longitude,
+    required this.title,
+    this.subtitle,
+    this.locationLabel,
+    this.stationLabel,
+    this.subwayLineIds = const [],
+    this.photoUrl,
+  });
+
+  final int listingId;
+  final double latitude;
+  final double longitude;
+  final String title;
+  final String? subtitle;
+  final String? locationLabel;
+  final String? stationLabel;
+  final List<int> subwayLineIds;
+  final String? photoUrl;
+}
+
 class MapPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -65,6 +89,11 @@ class YandexMapWidget extends StatefulWidget {
     this.longitude,
     this.title,
     this.listingDetail,
+    this.pins = const [],
+    this.onPinTap,
+    this.onMapTap,
+    this.onMapCreated,
+    this.onCameraPositionChanged,
     this.height = 200,
   });
 
@@ -74,17 +103,25 @@ class YandexMapWidget extends StatefulWidget {
   final double height;
   final String apiKey;
   final ListingDetail? listingDetail;
+  final List<ListingMapPin> pins;
+  final ValueChanged<ListingMapPin>? onPinTap;
+  final ValueChanged<Point>? onMapTap;
+  final MapCreatedCallback? onMapCreated;
+  final CameraPositionCallback? onCameraPositionChanged;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
 }
 
 class _YandexMapWidgetState extends State<YandexMapWidget> {
+  static const double _maxMultiPinAutoZoom = 13.25;
+
   Uint8List? _cachedIconBytes;
   YandexMapController? _mapController;
   bool _isMapReady = false;
   bool _isInitializing = false;
   int _retryCount = 0;
+  int _automaticCameraFinishesToIgnore = 0;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
 
@@ -96,6 +133,17 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   @override
+  void didUpdateWidget(covariant YandexMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_mapTargetChanged(oldWidget)) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_isMapReady || _mapController == null) return;
+      _moveCameraToCurrentTarget();
+    });
+  }
+
+  @override
   void dispose() {
     _mapController = null;
     super.dispose();
@@ -103,11 +151,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Future<void> _initializeIcon() async {
     try {
-      _cachedIconBytes = await _createIconBytes(
+      final iconBytes = await _createIconBytes(
         Icons.location_on,
         Colors.red,
         100,
       );
+      _cachedIconBytes = iconBytes;
       logger.d("✅ Cupertino icon created successfully");
       if (mounted) {
         setState(() {});
@@ -351,6 +400,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           if (!mounted) return;
           // Store controller for zoom controls
           _mapController = controller;
+          widget.onMapCreated?.call(controller);
 
           // Map created successfully
           logger.d(
@@ -363,27 +413,20 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             "🎯 MapObjects: ${mapObjects.map((obj) => obj.runtimeType).toList()}",
           );
 
-          // Move camera to center on the pin location
-          controller.moveCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: Point(
-                  latitude: centerPoint["latitude"]!,
-                  longitude: centerPoint["longitude"]!,
-                ),
-                zoom: 16.0,
-                azimuth: 0.0,
-                tilt: 0.0,
-              ),
-            ),
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _moveCameraToCurrentTarget();
+            }
+          });
 
           // Map created successfully - placemarks should be visible from mapObjects
           logger.d("🔧 Map created with ${mapObjects.length} placemarks");
         },
         onMapTap: (point) {
           logger.d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
+          widget.onMapTap?.call(point);
         },
+        onCameraPositionChanged: _handleCameraPositionChanged,
         mapObjects: mapObjects,
       );
     } catch (e) {
@@ -405,6 +448,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   List<MapObject> _createMapObjects() {
+    if (widget.pins.isNotEmpty) {
+      return _createListingPinMapObjects();
+    }
+
     final coordinates = _getCoordinates();
     if (coordinates == null) {
       logger.w("❌ No coordinates available for map objects");
@@ -443,6 +490,36 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
     );
     return [placemark];
+  }
+
+  List<MapObject> _createListingPinMapObjects() {
+    logger.d("📍 Creating ${widget.pins.length} listing map pins");
+
+    final iconBytes = _cachedIconBytes;
+    if (iconBytes == null) {
+      logger.w("📍 Listing pin icon is not ready yet");
+      return [];
+    }
+    final iconDescriptor = BitmapDescriptor.fromBytes(iconBytes);
+
+    return [
+      for (final pin in widget.pins)
+        PlacemarkMapObject(
+          mapId: MapObjectId("listing_${pin.listingId}_placemark"),
+          point: Point(latitude: pin.latitude, longitude: pin.longitude),
+          zIndex: 2,
+          opacity: 1.0,
+          consumeTapEvents: true,
+          icon: PlacemarkIcon.single(
+            PlacemarkIconStyle(
+              image: iconDescriptor,
+              anchor: const Offset(0.5, 0.5),
+              scale: 0.9,
+            ),
+          ),
+          onTap: (_, __) => widget.onPinTap?.call(pin),
+        ),
+    ];
   }
 
   Map<String, double>? _getCoordinates() {
@@ -538,6 +615,21 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Map<String, double> _getCenterPoint() {
+    if (widget.pins.isNotEmpty) {
+      final latSum = widget.pins.fold<double>(
+        0,
+        (sum, pin) => sum + pin.latitude,
+      );
+      final lonSum = widget.pins.fold<double>(
+        0,
+        (sum, pin) => sum + pin.longitude,
+      );
+      return {
+        "latitude": latSum / widget.pins.length,
+        "longitude": lonSum / widget.pins.length,
+      };
+    }
+
     final coordinates = _getCoordinates();
     if (coordinates != null) return coordinates;
 
@@ -554,6 +646,143 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return CoordinatesCache.getDefaultCoordinates();
   }
 
+  double _initialZoom() {
+    return widget.pins.length == 1 ? 16.0 : 14.25;
+  }
+
+  Future<void> _moveCameraToCurrentTarget() async {
+    final controller = _mapController;
+    if (controller == null) return;
+    await _moveInitialCamera(controller, _getCenterPoint());
+  }
+
+  bool _mapTargetChanged(YandexMapWidget oldWidget) {
+    if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
+    return oldWidget.latitude != widget.latitude ||
+        oldWidget.longitude != widget.longitude ||
+        oldWidget.listingDetail?.id != widget.listingDetail?.id;
+  }
+
+  bool _pinsChanged(List<ListingMapPin> oldPins, List<ListingMapPin> newPins) {
+    if (oldPins.length != newPins.length) return true;
+    for (var i = 0; i < oldPins.length; i++) {
+      final oldPin = oldPins[i];
+      final newPin = newPins[i];
+      if (oldPin.listingId != newPin.listingId ||
+          oldPin.latitude != newPin.latitude ||
+          oldPin.longitude != newPin.longitude) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> _moveInitialCamera(
+    YandexMapController controller,
+    Map<String, double> centerPoint,
+  ) async {
+    final pins = widget.pins;
+    if (pins.length > 1) {
+      var minLat = pins.first.latitude;
+      var maxLat = pins.first.latitude;
+      var minLon = pins.first.longitude;
+      var maxLon = pins.first.longitude;
+      for (final pin in pins.skip(1)) {
+        minLat = pin.latitude < minLat ? pin.latitude : minLat;
+        maxLat = pin.latitude > maxLat ? pin.latitude : maxLat;
+        minLon = pin.longitude < minLon ? pin.longitude : minLon;
+        maxLon = pin.longitude > maxLon ? pin.longitude : maxLon;
+      }
+
+      final latPadding = ((maxLat - minLat).abs() * 0.18).clamp(0.008, 0.06);
+      final lonPadding = ((maxLon - minLon).abs() * 0.18).clamp(0.008, 0.06);
+      final boundsCenter = Point(
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLon + maxLon) / 2,
+      );
+      final geometry = Geometry.fromBoundingBox(
+        BoundingBox(
+          northEast: Point(
+            latitude: maxLat + latPadding,
+            longitude: maxLon + lonPadding,
+          ),
+          southWest: Point(
+            latitude: minLat - latPadding,
+            longitude: minLon - lonPadding,
+          ),
+        ),
+      );
+      final moved = await _moveCameraAutomatically(
+        controller,
+        CameraUpdate.newGeometry(geometry),
+      );
+      if (!moved) return;
+
+      final cameraPosition = await controller.getCameraPosition();
+      if (cameraPosition.zoom > _maxMultiPinAutoZoom) {
+        await _moveCameraAutomatically(
+          controller,
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: boundsCenter,
+              zoom: _maxMultiPinAutoZoom,
+              azimuth: cameraPosition.azimuth,
+              tilt: cameraPosition.tilt,
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    await _moveCameraAutomatically(
+      controller,
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: Point(
+            latitude: centerPoint["latitude"]!,
+            longitude: centerPoint["longitude"]!,
+          ),
+          zoom: _initialZoom(),
+          azimuth: 0.0,
+          tilt: 0.0,
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _moveCameraAutomatically(
+    YandexMapController controller,
+    CameraUpdate cameraUpdate,
+  ) async {
+    _automaticCameraFinishesToIgnore++;
+    final moved = await controller.moveCamera(cameraUpdate);
+    if (!moved) {
+      _consumeAutomaticCameraFinish();
+    }
+    return moved;
+  }
+
+  void _handleCameraPositionChanged(
+    CameraPosition cameraPosition,
+    CameraUpdateReason reason,
+    bool finished,
+  ) {
+    if (_automaticCameraFinishesToIgnore > 0) {
+      if (finished) {
+        _consumeAutomaticCameraFinish();
+      }
+      return;
+    }
+    widget.onCameraPositionChanged?.call(cameraPosition, reason, finished);
+  }
+
+  void _consumeAutomaticCameraFinish() {
+    if (_automaticCameraFinishesToIgnore > 0) {
+      _automaticCameraFinishesToIgnore--;
+    }
+  }
+
   Future<Uint8List> _createIconBytes(
     IconData iconData,
     Color color,
@@ -562,34 +791,30 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
 
-    // Use pitch black color for maximum solidity
-    const solidBlack = Color(0xFF000000); // Pitch black
+    const solidBlack = Color(0xFF000000);
 
-    // Draw a solid black circle background first to ensure complete opacity
     final circlePaint = Paint()
       ..color = solidBlack
       ..style = PaintingStyle.fill;
 
     final center = Offset(size / 2, size / 2);
-    final radius = size * 0.4; // Make it a bit smaller than the canvas
+    final radius = size * 0.4;
     canvas.drawCircle(center, radius, circlePaint);
 
-    // Now draw the icon on top in white for contrast
     final textPainter = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(iconData.codePoint),
         style: TextStyle(
-          fontSize: size.toDouble() * 0.6, // Make icon smaller to fit in circle
+          fontSize: size.toDouble() * 0.6,
           fontFamily: iconData.fontFamily,
           package: iconData.fontPackage,
-          color: Colors.white, // White icon on black background
+          color: Colors.white,
         ),
       ),
       textDirection: TextDirection.ltr,
     );
 
     textPainter.layout();
-    // Center the icon on the canvas
     final offset = Offset(
       (size - textPainter.width) / 2,
       (size - textPainter.height) / 2,
@@ -605,75 +830,53 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Widget _buildZoomControls() {
     return Positioned(
-      left: 12,
-      bottom: 12,
-      child: Row(
+      right: 12,
+      bottom: 12 + MediaQuery.paddingOf(context).bottom,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Zoom In button
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: _zoomIn,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const ThemeIcon(Icons.add,
-                      color: Colors.black87, size: 24),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Zoom Out button
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: _zoomOut,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const ThemeIcon(
-                    Icons.remove,
-                    color: Colors.black87,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
+          _buildZoomButton(icon: Icons.add, onTap: _zoomIn),
+          const SizedBox(height: 8),
+          _buildZoomButton(icon: Icons.remove, onTap: _zoomOut),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildZoomButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    const radius = 12.0;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF111111),
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: onTap,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: ThemeIcon(
+              icon,
+              color: Colors.white,
+              size: 24,
+              useThemeColor: false,
+            ),
+          ),
+        ),
       ),
     );
   }

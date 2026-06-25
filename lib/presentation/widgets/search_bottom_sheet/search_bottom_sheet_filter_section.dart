@@ -66,6 +66,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
     required this.primaryLabelKey,
     required this.primaryIcon,
     super.key,
+    this.onMapPressed,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -73,6 +74,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
   final VoidCallback onPrimaryPressed;
+  final VoidCallback? onMapPressed;
   final String primaryLabelKey;
   final IconData primaryIcon;
 
@@ -127,34 +129,53 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // Search / save alert
-        SizedBox(
-          width: double.infinity,
-          child: Builder(
-            builder: (context) {
-              // Match Create Listing CTA typography and pill radius.
-              final label = Theme.of(context).textTheme.labelLarge;
-              final baseSize = label?.fontSize ?? 14;
-              final textStyle =
-                  label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
-                      TextStyle(
-                        fontSize: baseSize * 1.2,
-                        height: 1.0,
-                        fontWeight: FontWeight.w500,
-                      );
-              return PrimaryButtonFactory.iconText(
-                onPressed: onPrimaryPressed,
-                icon: primaryIcon,
-                text: primaryLabelKey == "apply"
-                    ? context.l10n.apply
-                    : L10n.get(primaryLabelKey),
-                width: double.infinity,
-                borderRadius: BorderRadius.circular(20),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: textStyle,
-              );
-            },
-          ),
+        Builder(
+          builder: (context) {
+            // Match Create Listing CTA typography and pill radius.
+            final label = Theme.of(context).textTheme.labelLarge;
+            final baseSize = label?.fontSize ?? 14;
+            final textStyle =
+                label?.copyWith(fontSize: baseSize * 1.2, height: 1.0) ??
+                    TextStyle(
+                      fontSize: baseSize * 1.2,
+                      height: 1.0,
+                      fontWeight: FontWeight.w500,
+                    );
+            final searchButton = PrimaryButtonFactory.iconText(
+              onPressed: onPrimaryPressed,
+              icon: primaryIcon,
+              text: primaryLabelKey == "apply"
+                  ? context.l10n.apply
+                  : L10n.get(primaryLabelKey),
+              width: double.infinity,
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              textStyle: textStyle,
+            );
+            final mapPressed = onMapPressed;
+            if (mapPressed == null) {
+              return SizedBox(width: double.infinity, child: searchButton);
+            }
+
+            return Row(
+              children: [
+                Expanded(child: searchButton),
+                const SizedBox(width: 10),
+                Tooltip(
+                  message: L10n.get("open_in_yandex_maps"),
+                  child: PrimaryButton(
+                    onPressed: mapPressed,
+                    width: 64,
+                    borderRadius: BorderRadius.circular(20),
+                    surfaceGradientBase: AppColors.secondaryLight,
+                    textColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: const Icon(Icons.map_outlined),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 30),
       ],

@@ -229,8 +229,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         ? _searchFiltersState.selectedSubwayLine
         : null;
     final stationIds = _searchFiltersState.selectedStationIdsList;
-    final subwayStationId =
-        stationIds.length == 1 ? stationIds.first : _getSelectedSubwayStationId();
+    final subwayStationId = stationIds.length == 1
+        ? stationIds.first
+        : _getSelectedSubwayStationId();
 
     final hasAnyLocationConstraint = (locationId != null && locationId > 0) ||
         (subwayLineId != null && subwayLineId > 0) ||
@@ -687,6 +688,11 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       setState(() {});
                     },
                     onPrimaryPressed: _performSearch,
+                    onMapPressed: widget.primaryLabelKey == "search"
+                        ? () => _performSearch(
+                              action: SearchBottomSheetAction.map,
+                            )
+                        : null,
                     primaryLabelKey: widget.primaryLabelKey,
                     primaryIcon: widget.primaryIcon,
                   ),
@@ -699,7 +705,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     );
   }
 
-  void _performSearch() {
+  void _performSearch({
+    SearchBottomSheetAction action = SearchBottomSheetAction.feed,
+  }) {
     HapticFeedbackUtils.impact();
 
     // Tell SearchBottomSheetWidget.show() to commit the in-session edits.
@@ -748,12 +756,31 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           maxPrice: maxPrice,
           privateRoom: privateRoom,
           withPhoto: withPhoto,
+          action: action,
         ),
       );
       return;
     }
 
-    if (widget.replaceCurrentRoute) {
+    if (action == SearchBottomSheetAction.map) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchResultsMapScreen(
+            listingTypeId: listingTypeId,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayStationIds: subwayStationIds,
+            subwayLineId: subwayLine > 0 ? subwayLine : null,
+            gender: gender > 0 ? gender : null,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            privateRoom: privateRoom,
+            withPhoto: withPhoto,
+          ),
+        ),
+      );
+    } else if (widget.replaceCurrentRoute) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

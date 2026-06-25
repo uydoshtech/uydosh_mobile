@@ -57,6 +57,7 @@ import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile_skeleton.dart";
 import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
 import "package:uy_dosh/presentation/screens/home/home_feed_placeholder_widgets.dart";
+import "package:uy_dosh/presentation/screens/search/search_results_map_screen.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
@@ -228,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // surprise the user with the ribbon popping up during normal browsing
   // (e.g. when another part of the app touches a filter setter).
   DateTime? _postLoginActivationDeadline;
+
   /// True while reloading per-user ribbon-dismiss prefs after a login flip.
   /// Blocks [_onSearchFiltersStateChanged] from auto-opening the ribbon until
   /// the scoped dismiss flag is hydrated (logout clears session before prefs).
@@ -871,14 +873,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     final listingTypeId = fromExplicit
         ? (explicitNullFallsBackToState
-            ? (widget.listingTypeId ??
-                _searchFiltersState.searchListingTypeId)
+            ? (widget.listingTypeId ?? _searchFiltersState.searchListingTypeId)
             : widget.listingTypeId)
         : _searchFiltersState.searchListingTypeId;
 
-    final listingTypeIds = fromExplicit
-        ? null
-        : _searchFiltersState.searchListingTypeIds;
+    final listingTypeIds =
+        fromExplicit ? null : _searchFiltersState.searchListingTypeIds;
 
     // For location / metro fields we preserve current behavior: if opened with
     // explicit filters, we display/use exactly what was provided (nullable).
@@ -946,8 +946,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           loaded: (loadedState) {
             _resetLoadMoreState();
             _syncFeedEntriesCache(loadedState.listings);
-            final shouldUpdateSearchFlags =
-                _searchRefreshInFlight ||
+            final shouldUpdateSearchFlags = _searchRefreshInFlight ||
                 (widget.isSearchMode && !_searchResultsReady);
             if (shouldUpdateSearchFlags && mounted) {
               setState(() {
@@ -1199,8 +1198,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: AppliedSearchFiltersBar(
           onPressed: _openSearchModeFiltersSheet,
-          listingTypeId: filters.listingTypeId ??
-              _searchFiltersState.searchListingTypeId,
+          listingTypeId:
+              filters.listingTypeId ?? _searchFiltersState.searchListingTypeId,
           listingTypeIds: filters.listingTypeIds ??
               _searchFiltersState.searchListingTypeIds,
           gender: filters.gender,
@@ -2049,34 +2048,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _applyInlineSearchResult(SearchBottomSheetResult result) async {
-    await _searchFiltersState.setListingTypeId(result.listingTypeId);
-    await _searchFiltersState.setGender(result.gender ?? 0);
-    await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
-    await _searchFiltersState.setPrivateRoom(result.privateRoom);
-    await _searchFiltersState.setWithPhoto(result.withPhoto);
+    await _persistSearchResultFilters(result);
 
-    // Metro line is just a "whole line" marker now; it coexists with both the
-    // multi-station selection and a chosen location (filters are combined).
-    if (result.subwayLineId != null && (result.subwayLineId ?? 0) > 0) {
-      await _searchFiltersState.setSubwayLine(result.subwayLineId!);
-    } else {
-      await _searchFiltersState.setSubwayLine(0);
-    }
-
-    if (result.subwayStationIds.isNotEmpty) {
-      await _searchFiltersState.setStationIds(result.subwayStationIds);
-    } else if (result.subwayStationId != null &&
-        (result.subwayStationId ?? 0) > 0) {
-      await _searchFiltersState.setStationId(result.subwayStationId!);
-    } else {
-      await _searchFiltersState.setStationIds(const []);
-    }
-
-    // Location is single-select and now coexists with the metro filters.
-    if (result.locationId != null && (result.locationId ?? 0) > 0) {
-      await _searchFiltersState.setLocationIndex(result.locationId!);
-    } else {
-      await _searchFiltersState.setLocationIndex(0);
+    if (result.action == SearchBottomSheetAction.map) {
+      if (!mounted) return;
+      _openSearchResultsMap(result);
+      return;
     }
 
     if (!mounted) return;
@@ -2297,6 +2274,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _applySearchModeResult(SearchBottomSheetResult result) async {
+    await _persistSearchResultFilters(result);
+
+    if (result.action == SearchBottomSheetAction.map) {
+      if (!mounted) return;
+      _openSearchResultsMap(result);
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {});
+    _performSearch();
+  }
+
+  Future<void> _persistSearchResultFilters(
+      SearchBottomSheetResult result) async {
     await _searchFiltersState.setListingTypeId(result.listingTypeId);
     await _searchFiltersState.setGender(result.gender ?? 0);
     await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
@@ -2326,10 +2318,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     } else {
       await _searchFiltersState.setLocationIndex(0);
     }
+  }
 
-    if (!mounted) return;
-    setState(() {});
-    _performSearch();
+  void _openSearchResultsMap(SearchBottomSheetResult result) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SearchResultsMapScreen(
+          listingTypeId: result.listingTypeId,
+          locationId: result.locationId,
+          subwayStationId: result.subwayStationId,
+          subwayStationIds: result.subwayStationIds,
+          subwayLineId: result.subwayLineId,
+          gender: result.gender,
+          minPrice: result.minPrice,
+          maxPrice: result.maxPrice,
+          privateRoom: result.privateRoom,
+          withPhoto: result.withPhoto,
+        ),
+      ),
+    );
   }
 
   /// Perform search using current filters
@@ -2407,9 +2414,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     listingsBloc.add(
       ListingsEvent.searchListings(
-        listingTypeId: filters.listingTypeIds != null
-            ? null
-            : filters.listingTypeId,
+        listingTypeId:
+            filters.listingTypeIds != null ? null : filters.listingTypeId,
         listingTypeIds: filters.listingTypeIds,
         locationId: filters.locationId,
         subwayStationId: filters.subwayStationId,

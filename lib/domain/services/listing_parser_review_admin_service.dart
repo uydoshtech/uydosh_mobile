@@ -15,8 +15,7 @@ class ParserCorrectionDiff {
 
   factory ParserCorrectionDiff.fromJson(Map<String, dynamic> json) {
     return ParserCorrectionDiff(
-      fieldName:
-          (json["field_name"] ?? json["fieldName"]) as String? ?? "",
+      fieldName: (json["field_name"] ?? json["fieldName"]) as String? ?? "",
       oldValue: json["old_value"] ?? json["oldValue"],
       newValue: json["new_value"] ?? json["newValue"],
       correctionType:
@@ -45,9 +44,9 @@ class ParserSnapshot {
 
   factory ParserSnapshot.fromJson(Map<String, dynamic> json) {
     return ParserSnapshot(
-      outputJson:
-          (json["output_json"] ?? json["outputJson"]) as Map<String, dynamic>? ??
-              const {},
+      outputJson: (json["output_json"] ?? json["outputJson"])
+              as Map<String, dynamic>? ??
+          const {},
       parserVersion:
           (json["parser_version"] ?? json["parserVersion"]) as String?,
       parserType: (json["parser_type"] ?? json["parserType"]) as String?,
@@ -80,13 +79,11 @@ class ParserRawSource {
     return ParserRawSource(
       text: json["text"] as String?,
       chatKey: (json["chatKey"] ?? json["chat_key"]) as String?,
-      messageDate:
-          (json["messageDate"] ?? json["message_date"]) as String?,
+      messageDate: (json["messageDate"] ?? json["message_date"]) as String?,
       authorUsername:
           (json["authorUsername"] ?? json["author_username"]) as String?,
       authorDisplayName:
-          (json["authorDisplayName"] ?? json["author_display_name"])
-              as String?,
+          (json["authorDisplayName"] ?? json["author_display_name"]) as String?,
       telegramMessageId:
           (json["telegramMessageId"] ?? json["telegram_message_id"])
               ?.toString(),
@@ -117,16 +114,16 @@ class ParserReviewBundle {
     final snapshotJson = json["parserSnapshot"] as Map<String, dynamic>?;
     final humanJson =
         json["latestHumanCorrectedVersion"] as Map<String, dynamic>?;
-    final approvedJson =
-        json["latestApprovedVersion"] as Map<String, dynamic>?;
+    final approvedJson = json["latestApprovedVersion"] as Map<String, dynamic>?;
     final diffs = (json["correctionDiffs"] as List<dynamic>? ?? [])
         .whereType<Map<String, dynamic>>()
         .map(ParserCorrectionDiff.fromJson)
         .toList();
     return ParserReviewBundle(
       listing: json["listing"] as Map<String, dynamic>? ?? const {},
-      rawSource:
-          rawSourceJson != null ? ParserRawSource.fromJson(rawSourceJson) : null,
+      rawSource: rawSourceJson != null
+          ? ParserRawSource.fromJson(rawSourceJson)
+          : null,
       parserSnapshot:
           snapshotJson != null ? ParserSnapshot.fromJson(snapshotJson) : null,
       latestHumanCorrected: humanJson,
@@ -148,11 +145,35 @@ class ParserReviewBundle {
   /// any. Admin-editable on the review screen. Falls back to the raw source's
   /// author username so the field is pre-filled even before it's been saved.
   String? get telegramAuthorUsername {
-    final stored = listing["telegram_author_username"];
-    if (stored is String && stored.trim().isNotEmpty) return stored.trim();
-    final author = rawSource?.authorUsername;
-    if (author != null && author.trim().isNotEmpty) return author.trim();
+    final candidates = <Object?>[
+      listing["telegram_author_username"],
+      rawSource?.authorUsername,
+      parserSnapshot?.outputJson["telegram_author_username"],
+      parserSnapshot?.outputJson["contact_telegram"],
+      listing["contact_telegram"],
+    ];
+    for (final candidate in candidates) {
+      final normalized = _normalizeTelegramUsername(candidate);
+      if (normalized != null) return normalized;
+    }
     return null;
+  }
+
+  static String? _normalizeTelegramUsername(Object? value) {
+    if (value is! String) return null;
+    var normalized = value.trim();
+    if (normalized.isEmpty) return null;
+
+    normalized = normalized
+        .replaceFirst(RegExp(r"^https?://", caseSensitive: false), "")
+        .replaceFirst(RegExp(r"^(www\.)?t\.me/", caseSensitive: false), "")
+        .replaceFirst(RegExp(r"^telegram\.me/", caseSensitive: false), "")
+        .replaceFirst(RegExp(r"^@+"), "")
+        .split(RegExp(r"[\s/?#]"))
+        .first
+        .trim();
+
+    return normalized.isEmpty ? null : normalized;
   }
 }
 
@@ -207,8 +228,8 @@ class ListingParserReviewAdminService
       final normalized = (trimmed == null || trimmed.isEmpty)
           ? null
           : trimmed.replaceAll(RegExp(r"^@+"), "").trim();
-      final response = await _oauthApiClient
-          .patch<dynamic, _SetTelegramAuthorUsernameBody>(
+      final response =
+          await _oauthApiClient.patch<dynamic, _SetTelegramAuthorUsernameBody>(
         "/admin/listings/$listingId/telegram-author-username",
         (data) => data,
         basePath: EnvironmentUtil.basePath,

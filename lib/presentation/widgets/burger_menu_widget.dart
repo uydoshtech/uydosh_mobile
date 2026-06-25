@@ -458,11 +458,17 @@ final class _DrawerColors {
     };
   }
 
-  static Color glassTint(BuildContext context) {
+  static Color glassTint(
+    BuildContext context, {
+    required bool effectsEnabled,
+  }) {
     final base = ThemeState().backgroundColor;
     final brightness = ThemeData.estimateBrightnessForColor(base);
     final isDark = brightness == Brightness.dark;
-    return LiquidGlassRendering.panelFillColor(base, isDark: isDark);
+    final alpha = effectsEnabled
+        ? (isDark ? 0.64 : 0.78)
+        : (isDark ? 0.88 : 0.94);
+    return base.withValues(alpha: alpha);
   }
 }
 
@@ -472,13 +478,17 @@ class _DrawerGlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tint = _DrawerColors.glassTint(context);
+    final effectsEnabled = LiquidGlassRendering.effectsEnabled(context);
+    final tint = _DrawerColors.glassTint(
+      context,
+      effectsEnabled: effectsEnabled,
+    );
     return ClipRRect(
       borderRadius: const BorderRadius.horizontal(
         right: Radius.circular(20),
       ),
       child: LiquidGlassRendering.backdropBlur(
-        enabled: LiquidGlassRendering.effectsEnabled(context),
+        enabled: effectsEnabled,
         sigma: LiquidGlassRendering.panelBlurSigma,
         child: DecoratedBox(
           decoration: BoxDecoration(color: tint),
