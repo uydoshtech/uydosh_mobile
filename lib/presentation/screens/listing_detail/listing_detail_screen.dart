@@ -1392,6 +1392,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         .listMembers(listingId: listingDetail.id);
 
     final memberUserIds = members.map((m) => m.userId).toSet();
+    final canViewGroupCompatibilityDetails =
+        memberUserIds.contains(currentProfile.userId) ||
+            (members.isEmpty && listingUserId == currentProfile.userId);
     final profiles = <UserProfile>[];
     final groupMembers = <ConversationMemberSummary>[];
 
@@ -1412,7 +1415,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           ),
         );
       }
-      if (!profiles.any((p) => p.userId == currentProfile.userId)) {
+      if (canViewGroupCompatibilityDetails &&
+          !profiles.any((p) => p.userId == currentProfile.userId)) {
         profiles.add(currentProfile);
         groupMembers.add(
           ConversationMemberSummary(
@@ -1435,11 +1439,6 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
             avatarUrl: _listingAuthorAvatarUrlFromProfile(profile),
           ),
         );
-      }
-      // Preview compatibility for a viewer who has not joined yet, without
-      // adding them to the official member avatars/subtitle.
-      if (!memberUserIds.contains(currentProfile.userId)) {
-        profiles.add(currentProfile);
       }
     }
 
@@ -1465,15 +1464,17 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       matrixProfiles,
     );
     final groupMemberCompatibility = <int, GroupMemberCompatibilitySummary>{};
-    for (final member in groupMembers) {
-      if (member.userId == currentProfile.userId) continue;
-      final memberProfile = profileByUserId[member.userId];
-      if (memberProfile == null) continue;
-      groupMemberCompatibility[member.userId] =
-          GroupMemberCompatibilityHelper.summarize(
-        currentProfile,
-        memberProfile,
-      );
+    if (canViewGroupCompatibilityDetails) {
+      for (final member in groupMembers) {
+        if (member.userId == currentProfile.userId) continue;
+        final memberProfile = profileByUserId[member.userId];
+        if (memberProfile == null) continue;
+        groupMemberCompatibility[member.userId] =
+            GroupMemberCompatibilityHelper.summarize(
+          currentProfile,
+          memberProfile,
+        );
+      }
     }
 
     if (!mounted) return;
@@ -1495,6 +1496,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupDiscussItems: groupResult.discussItems,
       groupPreferenceMatrix: groupPreferenceMatrix,
       groupMemberCompatibility: groupMemberCompatibility,
+      canViewGroupCompatibilityDetails: canViewGroupCompatibilityDetails,
     );
   }
 
@@ -2995,6 +2997,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           List<GroupCompatibilityDiscussItem> groupDiscussItems,
           List<GroupPreferenceMatrixRow> groupPreferenceMatrix,
           Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility,
+          bool canViewGroupCompatibilityDetails,
         })>(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
@@ -3014,6 +3017,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupDiscussItems: s.groupDiscussItems,
         groupPreferenceMatrix: s.groupPreferenceMatrix,
         groupMemberCompatibility: s.groupMemberCompatibility,
+        canViewGroupCompatibilityDetails: s.canViewGroupCompatibilityDetails,
       ),
       builder: (context, compat) => ListingDetailCompatibilitySection(
         listingDetail: listingDetail,
@@ -3036,6 +3040,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         groupDiscussItems: compat.groupDiscussItems,
         groupPreferenceMatrix: compat.groupPreferenceMatrix,
         memberCompatibility: compat.groupMemberCompatibility,
+        canViewGroupCompatibilityDetails:
+            compat.canViewGroupCompatibilityDetails,
         currentUserId: _sessionUserId,
         telegramHandle: listingDetail.contactTelegram,
         phoneNumber: listingDetail.contactPhone,

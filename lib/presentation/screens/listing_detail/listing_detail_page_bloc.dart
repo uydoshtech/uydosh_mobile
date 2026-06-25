@@ -36,6 +36,7 @@ class ListingDetailPageState {
     this.groupDiscussItems = const [],
     this.groupPreferenceMatrix = const [],
     this.groupMemberCompatibility = const {},
+    this.canViewGroupCompatibilityDetails = false,
     this.similarListingsCount,
     this.similarListingsCountListingId,
     this.isLoadingSimilarListingsCount = false,
@@ -72,6 +73,7 @@ class ListingDetailPageState {
   final List<GroupCompatibilityDiscussItem> groupDiscussItems;
   final List<GroupPreferenceMatrixRow> groupPreferenceMatrix;
   final Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility;
+  final bool canViewGroupCompatibilityDetails;
 
   /// Number of "similar" listings excluding the current one. When this is
   /// known and equal to 0 the UI hides the "view similar" affordance because
@@ -114,6 +116,7 @@ class ListingDetailPageState {
     List<GroupCompatibilityDiscussItem>? groupDiscussItems,
     List<GroupPreferenceMatrixRow>? groupPreferenceMatrix,
     Map<int, GroupMemberCompatibilitySummary>? groupMemberCompatibility,
+    bool? canViewGroupCompatibilityDetails,
     int? similarListingsCount,
     int? similarListingsCountListingId,
     bool? isLoadingSimilarListingsCount,
@@ -161,6 +164,8 @@ class ListingDetailPageState {
           groupPreferenceMatrix ?? this.groupPreferenceMatrix,
       groupMemberCompatibility:
           groupMemberCompatibility ?? this.groupMemberCompatibility,
+      canViewGroupCompatibilityDetails: canViewGroupCompatibilityDetails ??
+          this.canViewGroupCompatibilityDetails,
       similarListingsCount: similarListingsCount ?? this.similarListingsCount,
       similarListingsCountListingId:
           similarListingsCountListingId ?? this.similarListingsCountListingId,
@@ -207,6 +212,8 @@ class ListingDetailPageState {
         _listEquals(other.groupDiscussItems, groupDiscussItems) &&
         _listEquals(other.groupPreferenceMatrix, groupPreferenceMatrix) &&
         _mapEquals(other.groupMemberCompatibility, groupMemberCompatibility) &&
+        other.canViewGroupCompatibilityDetails ==
+            canViewGroupCompatibilityDetails &&
         other.similarListingsCount == similarListingsCount &&
         other.similarListingsCountListingId == similarListingsCountListingId &&
         other.isLoadingSimilarListingsCount == isLoadingSimilarListingsCount &&
@@ -249,6 +256,14 @@ class ListingDetailPageState {
         ownerNameListingUserId,
         ownerAvatarUrl,
         currentUserAvatarUrl,
+        isGroupCompatibility,
+        Object.hashAll(groupMembers),
+        Object.hashAll(groupFullMatches),
+        Object.hashAll(groupPartialMatches),
+        Object.hashAll(groupDiscussItems),
+        Object.hashAll(groupPreferenceMatrix),
+        Object.hashAll(groupMemberCompatibility.entries),
+        canViewGroupCompatibilityDetails,
         similarListingsCount,
         similarListingsCountListingId,
         isLoadingSimilarListingsCount,
@@ -354,6 +369,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
     List<GroupPreferenceMatrixRow> groupPreferenceMatrix = const [],
     Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility =
         const {},
+    bool canViewGroupCompatibilityDetails = false,
   }) =>
       emit(state.copyWith(
         compatibilityPercent: percent,
@@ -376,6 +392,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
         groupDiscussItems: groupDiscussItems,
         groupPreferenceMatrix: groupPreferenceMatrix,
         groupMemberCompatibility: groupMemberCompatibility,
+        canViewGroupCompatibilityDetails: canViewGroupCompatibilityDetails,
       ));
 
   void setLoadingCompatibility(int listingUserId) => emit(
@@ -396,6 +413,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupDiscussItems: [],
           groupPreferenceMatrix: [],
           groupMemberCompatibility: {},
+          canViewGroupCompatibilityDetails: false,
         ),
       );
 
@@ -416,6 +434,7 @@ class ListingDetailPageBloc extends Cubit<ListingDetailPageState> {
           groupDiscussItems: [],
           groupPreferenceMatrix: [],
           groupMemberCompatibility: {},
+          canViewGroupCompatibilityDetails: false,
         ),
       );
 

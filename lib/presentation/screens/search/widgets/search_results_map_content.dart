@@ -106,6 +106,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                     onPressed: onOpenFeedView,
                     iconData: Icons.view_list_rounded,
                     tooltip: L10n.get("open_feed_view"),
+                    foregroundColor:
+                        ThemeState().isBlueTheme ? Colors.black : null,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
                 ),

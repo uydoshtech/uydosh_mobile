@@ -87,6 +87,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
     this.groupDiscussItems = const [],
     this.groupPreferenceMatrix = const [],
     this.memberCompatibility = const {},
+    this.canViewGroupCompatibilityDetails = false,
     this.currentUserId,
     super.key,
   });
@@ -120,6 +121,7 @@ class ListingDetailCompatibilitySection extends StatefulWidget {
   /// Per-member pairwise compatibility with the current viewer, keyed by
   /// member userId. Used to annotate the matrix header avatars.
   final Map<int, GroupMemberCompatibilitySummary> memberCompatibility;
+  final bool canViewGroupCompatibilityDetails;
   final int? currentUserId;
 
   @override
@@ -1141,14 +1143,19 @@ class _ListingDetailCompatibilitySectionState
               color: _getDescriptionTextColor(),
             ),
             children: [
-              TextSpan(text: L10n.get("group_compatibility_title")),
               TextSpan(
-                text: " $headerPercentText",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: _getCompatibilityPercentColor(),
-                ),
+                text: widget.canViewGroupCompatibilityDetails
+                    ? L10n.get("group_compatibility_title")
+                    : L10n.get("group_profile_summary_title"),
               ),
+              if (widget.canViewGroupCompatibilityDetails)
+                TextSpan(
+                  text: " $headerPercentText",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: _getCompatibilityPercentColor(),
+                  ),
+                ),
             ],
           ),
           maxLines: 2,
@@ -1223,7 +1230,9 @@ class _ListingDetailCompatibilitySectionState
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  L10n.get("group_compatibility_report_title"),
+                  widget.canViewGroupCompatibilityDetails
+                      ? L10n.get("group_compatibility_report_title")
+                      : L10n.get("group_profile_report_title"),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -1840,6 +1849,53 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
+  Widget _buildGroupProfileSummaryBody() {
+    final textColor = _getDescriptionTextColor();
+    final hasReport =
+        widget.listingDetail.groupCompatibilityReport?.trim().isNotEmpty ==
+            true;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasReport) ...[
+          _buildGroupCompatibilityReport(textColor),
+          const SizedBox(height: 12),
+        ],
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: textColor.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: textColor.withValues(alpha: 0.12)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ThemeIcon(
+                Icons.groups_outlined,
+                size: 20,
+                color: ListingDetailThemeHelper.locationTextColor,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  L10n.get("group_profile_summary_description"),
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.35,
+                    color: textColor.withValues(alpha: 0.85),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildOverlappingHeaderAvatars() {
     const size = 32.0;
     const overlap = 8.0;
@@ -1912,7 +1968,12 @@ class _ListingDetailCompatibilitySectionState
     required bool isAuthenticated,
     required String? percentText,
   }) {
+    final isGroupForming =
+        ListingGroupProgress.isGroupFormingDetail(widget.listingDetail);
     if (!isAuthenticated) {
+      if (isGroupForming) {
+        return _buildGroupProfileSummaryBody();
+      }
       return Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -1967,7 +2028,9 @@ class _ListingDetailCompatibilitySectionState
       valueListenable: ClientListingContactsConfig.showListingContacts,
       builder: (context, showContacts, _) {
         if (widget.isGroupCompatibility) {
-          return _buildGroupCompatibilityBody();
+          return widget.canViewGroupCompatibilityDetails
+              ? _buildGroupCompatibilityBody()
+              : _buildGroupProfileSummaryBody();
         }
 
         final hasPhone = showContacts &&
@@ -2210,6 +2273,8 @@ class _ListingDetailCompatibilitySectionState
     final isOwner = UserListingState().isOwner(widget.listingDetail.user.id);
     final isGroupForming =
         ListingGroupProgress.isGroupFormingDetail(widget.listingDetail);
+    final shouldUseGroupHeader =
+        isGroupForming && (!isAuthenticated || widget.isGroupCompatibility);
 
     // One-on-one compatibility is viewer vs owner; group compatibility is about
     // the whole forming group — owners need that section too (including while
@@ -2297,7 +2362,7 @@ class _ListingDetailCompatibilitySectionState
                       ),
                     if (!isAuthenticated) const SizedBox(width: 8),
                     Expanded(
-                      child: widget.isGroupCompatibility && isAuthenticated
+                      child: shouldUseGroupHeader
                           ? _buildGroupHeaderTitle(headerPercentText)
                           : Text(
                               L10n.get("compatibility_title"),

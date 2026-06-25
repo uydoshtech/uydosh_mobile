@@ -110,6 +110,10 @@ class AppStrings {
       "group_compatibility_summary_full": "full matches",
       "group_compatibility_summary_partial": "partial",
       "group_compatibility_summary_discuss": "topics to discuss",
+      "group_profile_summary_title": "Group profile",
+      "group_profile_report_title": "Group profile summary",
+      "group_profile_summary_description":
+          "This summary shows the group's size and broad lifestyle profile. Detailed roommate compatibility is only visible to group members.",
       "group_preference_matrix_title": "Lifestyle preference matrix",
       "group_preference_matrix_subtitle":
           "Compare all participants at a glance",
@@ -2163,6 +2167,10 @@ class AppStrings {
       "group_compatibility_summary_full": "полных совпадений",
       "group_compatibility_summary_partial": "частичных",
       "group_compatibility_summary_discuss": "темы обсудить",
+      "group_profile_summary_title": "Профиль группы",
+      "group_profile_report_title": "Сводка профиля группы",
+      "group_profile_summary_description":
+          "Эта сводка показывает размер группы и общий бытовой профиль. Подробная совместимость соседей видна только участникам группы.",
       "group_preference_matrix_title": "Матрица бытовых предпочтений",
       "group_preference_matrix_subtitle":
           "Сравните всех участников одним взглядом",
@@ -4258,6 +4266,10 @@ class AppStrings {
       "group_compatibility_summary_full": "to'liq moslik",
       "group_compatibility_summary_partial": "qisman",
       "group_compatibility_summary_discuss": "muhokama qilish",
+      "group_profile_summary_title": "Guruh profili",
+      "group_profile_report_title": "Guruh profili xulosasi",
+      "group_profile_summary_description":
+          "Bu xulosa guruh hajmi va umumiy yashash odatlarini ko'rsatadi. Batafsil moslik faqat guruh a'zolariga ko'rinadi.",
       "group_preference_matrix_title": "Turmush tarzi afzalliklari jadvali",
       "group_preference_matrix_subtitle":
           "Barcha ishtirokchilarni tez solishtiring",
