@@ -231,8 +231,10 @@ class AppStrings {
       "listing_rating_participants_summary": "Rated by group participants",
       "group_shortlist_rating_updated": "Rating updated",
       "group_shortlist_contact_landlord": "Invite landlord to chat",
+      "group_landlord_invite_revoke": "Revoke invitation",
       "group_landlord_invite_sent":
           "Invite sent. The landlord will only see new messages after joining.",
+      "group_landlord_invite_revoked": "Invitation revoked",
       "group_landlord_invite_dialog_title": "Join group chat?",
       "group_landlord_invite_dialog_message":
           "You were invited to discuss this listing with the group. You will only see messages sent after you join.",
@@ -2298,8 +2300,10 @@ class AppStrings {
       "listing_rating_participants_summary": "Оценяют участники группы",
       "group_shortlist_rating_updated": "Оценка обновлена",
       "group_shortlist_contact_landlord": "Пригласить арендодателя в чат",
+      "group_landlord_invite_revoke": "Отозвать приглашение",
       "group_landlord_invite_sent":
           "Приглашение отправлено. Арендодатель увидит только новые сообщения после входа.",
+      "group_landlord_invite_revoked": "Приглашение отозвано",
       "group_landlord_invite_dialog_title": "Войти в групповой чат?",
       "group_landlord_invite_dialog_message":
           "Вас пригласили обсудить это объявление с группой. Вы увидите только сообщения, отправленные после входа.",
@@ -4406,8 +4410,10 @@ class AppStrings {
       "group_shortlist_rating_updated": "Baho yangilandi",
       "group_shortlist_contact_landlord":
           "Ijara beruvchini chatga taklif qilish",
+      "group_landlord_invite_revoke": "Taklifni bekor qilish",
       "group_landlord_invite_sent":
           "Taklif yuborildi. Ijara beruvchi qo'shilgandan keyingi yangi xabarlarni ko'radi.",
+      "group_landlord_invite_revoked": "Taklif bekor qilindi",
       "group_landlord_invite_dialog_title": "Guruh chatiga qo'shilasizmi?",
       "group_landlord_invite_dialog_message":
           "Siz bu e'lonni guruh bilan muhokama qilishga taklif qilindingiz. Faqat qo'shilganingizdan keyingi xabarlarni ko'rasiz.",

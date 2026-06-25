@@ -183,6 +183,7 @@ class ListingGroupShortlistItem {
     this.savedByGender,
     this.listingJson,
     this.rating,
+    this.pendingLandlordInviteId,
   });
 
   factory ListingGroupShortlistItem.fromJson(Map<String, dynamic> json) {
@@ -198,6 +199,8 @@ class ListingGroupShortlistItem {
       savedByGender: (savedBy?["gender"] as num?)?.toInt(),
       listingJson: _optionalJsonMap(json["listing"]),
       rating: ListingGroupShortlistRating.fromJsonOrNull(json["rating"]),
+      pendingLandlordInviteId:
+          (json["pending_landlord_invite_id"] as num?)?.toInt(),
     );
   }
 
@@ -211,9 +214,12 @@ class ListingGroupShortlistItem {
   final int? savedByGender;
   final Map<String, dynamic>? listingJson;
   final ListingGroupShortlistRating? rating;
+  final int? pendingLandlordInviteId;
 
   ListingGroupShortlistItem copyWith({
     ListingGroupShortlistRating? rating,
+    int? pendingLandlordInviteId,
+    bool clearPendingLandlordInviteId = false,
   }) {
     return ListingGroupShortlistItem(
       id: id,
@@ -226,6 +232,9 @@ class ListingGroupShortlistItem {
       savedByGender: savedByGender,
       listingJson: listingJson,
       rating: rating ?? this.rating,
+      pendingLandlordInviteId: clearPendingLandlordInviteId
+          ? null
+          : pendingLandlordInviteId ?? this.pendingLandlordInviteId,
     );
   }
 }

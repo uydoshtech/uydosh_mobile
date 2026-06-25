@@ -101,6 +101,11 @@ abstract class IListingGroupService {
     required int housingListingId,
   });
 
+  Future<void> cancelLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
+  });
+
   Future<PendingLandlordInvite?> getPendingLandlordInviteForConversation({
     required int conversationId,
   });
@@ -351,6 +356,19 @@ class ListingGroupService implements IListingGroupService {
       data: const _EmptyBody(),
     );
     return LandlordInviteResult.fromJson(response);
+  }
+
+  @override
+  Future<void> cancelLandlordInvite({
+    required int groupListingId,
+    required int inviteId,
+  }) async {
+    await _oauthApiClient.delete<Map<String, dynamic>, _EmptyBody>(
+      "/listings/$groupListingId/group/landlord-invites/$inviteId",
+      _requireResponseMap,
+      basePath: EnvironmentUtil.basePath,
+      data: const _EmptyBody(),
+    );
   }
 
   @override

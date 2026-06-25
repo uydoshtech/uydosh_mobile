@@ -36,8 +36,11 @@ class GroupShortlistItemCard extends StatelessWidget {
     this.ownerAvatarUrl,
     this.isOwner = false,
     this.currentUserId,
+    this.isLandlordInvitePending = false,
+    this.isLandlordInviteBusy = false,
     this.onRate,
     this.onContactLandlord,
+    this.onRevokeLandlordInvite,
     this.onDiscussInGroup,
     super.key,
   });
@@ -50,10 +53,13 @@ class GroupShortlistItemCard extends StatelessWidget {
   final bool isOwner;
   final bool isRemoving;
   final int? currentUserId;
+  final bool isLandlordInvitePending;
+  final bool isLandlordInviteBusy;
   final VoidCallback onOpen;
   final VoidCallback onRemove;
   final ValueChanged<int>? onRate;
   final VoidCallback? onContactLandlord;
+  final VoidCallback? onRevokeLandlordInvite;
   final VoidCallback? onDiscussInGroup;
 
   static const double _thumbSize = 72;
@@ -107,6 +113,12 @@ class GroupShortlistItemCard extends StatelessWidget {
         isLightTheme ? Colors.black87 : AppColors.textLight70;
     final actionButtonStyle = TextButton.styleFrom(
       foregroundColor: actionButtonForegroundColor,
+      minimumSize: const Size(0, 32),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+    final revokeInviteButtonStyle = TextButton.styleFrom(
+      foregroundColor: theme.colorScheme.error,
       minimumSize: const Size(0, 32),
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -268,10 +280,22 @@ class GroupShortlistItemCard extends StatelessWidget {
             if (isOwner && onContactLandlord != null) ...[
               const SizedBox(height: _actionButtonGap),
               _ShortlistActionButton(
-                onPressed: isRemoving ? null : onContactLandlord,
-                style: actionButtonStyle,
-                icon: Icons.person_add_outlined,
-                label: L10n.get("group_shortlist_contact_landlord"),
+                onPressed: isRemoving || isLandlordInviteBusy
+                    ? null
+                    : isLandlordInvitePending
+                        ? onRevokeLandlordInvite
+                        : onContactLandlord,
+                style: isLandlordInvitePending
+                    ? revokeInviteButtonStyle
+                    : actionButtonStyle,
+                icon: isLandlordInvitePending
+                    ? Icons.person_remove_outlined
+                    : Icons.person_add_outlined,
+                label: L10n.get(
+                  isLandlordInvitePending
+                      ? "group_landlord_invite_revoke"
+                      : "group_shortlist_contact_landlord",
+                ),
               ),
             ],
           ],
@@ -493,10 +517,10 @@ class _ShortlistAmenityIcons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visible =
-        amenities.length > GroupShortlistItemCard._maxVisibleAmenityIcons
-            ? amenities.sublist(0, GroupShortlistItemCard._maxVisibleAmenityIcons)
-            : amenities;
+    final visible = amenities.length >
+            GroupShortlistItemCard._maxVisibleAmenityIcons
+        ? amenities.sublist(0, GroupShortlistItemCard._maxVisibleAmenityIcons)
+        : amenities;
     final remaining = amenities.length - visible.length;
     final color = Theme.of(context).colorScheme.onSurfaceVariant;
 

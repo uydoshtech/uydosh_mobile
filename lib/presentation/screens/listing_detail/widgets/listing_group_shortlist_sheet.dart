@@ -106,6 +106,7 @@ class _ListingGroupShortlistSheetState
     extends State<_ListingGroupShortlistSheet> {
   var _loading = true;
   var _removingId = 0;
+  var _landlordInviteBusyListingId = 0;
   final _pageController = PageController();
   var _currentPage = 0;
   int? _currentUserId;
@@ -431,12 +432,30 @@ class _ListingGroupShortlistSheetState
   }
 
   Future<void> _contactLandlord(_ShortlistRow row) async {
+    if (_landlordInviteBusyListingId != 0) return;
+    setState(() => _landlordInviteBusyListingId = row.listing.id);
     try {
-      await getIt<IListingGroupService>().inviteLandlordToGroupChat(
+      final result =
+          await getIt<IListingGroupService>().inviteLandlordToGroupChat(
         groupListingId: widget.groupListingId,
         housingListingId: row.listing.id,
       );
       if (!context.mounted) return;
+      if (result.inviteId != null) {
+        setState(() {
+          _rows = _rows
+              .map(
+                (candidate) => candidate.listing.id == row.listing.id
+                    ? candidate.copyWith(
+                        item: candidate.item.copyWith(
+                          pendingLandlordInviteId: result.inviteId,
+                        ),
+                      )
+                    : candidate,
+              )
+              .toList();
+        });
+      }
       ToastTheme.showSuccess(
         context,
         message: L10n.get("group_landlord_invite_sent"),
@@ -447,6 +466,46 @@ class _ListingGroupShortlistSheetState
         context,
         message: _landlordInviteErrorMessage(e),
       );
+    } finally {
+      if (mounted) setState(() => _landlordInviteBusyListingId = 0);
+    }
+  }
+
+  Future<void> _revokeLandlordInvite(_ShortlistRow row) async {
+    final inviteId = row.item.pendingLandlordInviteId;
+    if (inviteId == null || _landlordInviteBusyListingId != 0) return;
+    setState(() => _landlordInviteBusyListingId = row.listing.id);
+    try {
+      await getIt<IListingGroupService>().cancelLandlordInvite(
+        groupListingId: widget.groupListingId,
+        inviteId: inviteId,
+      );
+      if (!context.mounted) return;
+      setState(() {
+        _rows = _rows
+            .map(
+              (candidate) => candidate.listing.id == row.listing.id
+                  ? candidate.copyWith(
+                      item: candidate.item.copyWith(
+                        clearPendingLandlordInviteId: true,
+                      ),
+                    )
+                  : candidate,
+            )
+            .toList();
+      });
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("group_landlord_invite_revoked"),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ToastTheme.showError(
+        context,
+        message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
+      );
+    } finally {
+      if (mounted) setState(() => _landlordInviteBusyListingId = 0);
     }
   }
 
@@ -614,6 +673,8 @@ class _ListingGroupShortlistSheetState
                           housingListing: row.listing,
                         );
                   final isRemoving = _removingId == row.listing.id;
+                  final isLandlordInviteBusy =
+                      _landlordInviteBusyListingId == row.listing.id;
                   final hasGroupChat =
                       groupDetail?.groupContext?.hasGroupChat == true;
 
@@ -628,11 +689,17 @@ class _ListingGroupShortlistSheetState
                       isOwner: widget.isOwner,
                       isRemoving: isRemoving,
                       currentUserId: _currentUserId,
+                      isLandlordInvitePending:
+                          row.item.pendingLandlordInviteId != null,
+                      isLandlordInviteBusy: isLandlordInviteBusy,
                       onOpen: () => _openListing(row),
                       onRemove: () => _confirmRemove(row),
                       onRate: (stars) => _editRating(row, stars),
                       onContactLandlord:
                           widget.isOwner ? () => _contactLandlord(row) : null,
+                      onRevokeLandlordInvite: widget.isOwner
+                          ? () => _revokeLandlordInvite(row)
+                          : null,
                       onDiscussInGroup:
                           hasGroupChat ? () => _discussInGroup(row) : null,
                     ),
