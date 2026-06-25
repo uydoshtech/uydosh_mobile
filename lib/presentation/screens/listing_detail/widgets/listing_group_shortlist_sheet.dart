@@ -572,49 +572,52 @@ class _ListingGroupShortlistSheetState
               ),
             )
           else
-            _ExpandablePageView(
-              controller: _pageController,
-              itemCount: _rows.length,
-              maxHeight: maxCarouselHeight,
-              onPageChanged: (page) {
-                setState(() => _currentPage = page);
-              },
-              itemBuilder: (context, index) {
-                final row = _rows[index];
-                final fit = groupDetail == null
-                    ? const GroupHousingListingFit(
-                        budget: GroupHousingBudgetFit.unknown,
-                        location: GroupHousingLocationFit.unknown,
-                      )
-                    : GroupHousingListingFit.evaluate(
-                        groupListing: groupDetail,
-                        housingListing: row.listing,
-                      );
-                final isRemoving = _removingId == row.listing.id;
-                final hasGroupChat =
-                    groupDetail?.groupContext?.hasGroupChat == true;
+            Flexible(
+              fit: FlexFit.loose,
+              child: _ExpandablePageView(
+                controller: _pageController,
+                itemCount: _rows.length,
+                maxHeight: maxCarouselHeight,
+                onPageChanged: (page) {
+                  setState(() => _currentPage = page);
+                },
+                itemBuilder: (context, index) {
+                  final row = _rows[index];
+                  final fit = groupDetail == null
+                      ? const GroupHousingListingFit(
+                          budget: GroupHousingBudgetFit.unknown,
+                          location: GroupHousingLocationFit.unknown,
+                        )
+                      : GroupHousingListingFit.evaluate(
+                          groupListing: groupDetail,
+                          housingListing: row.listing,
+                        );
+                  final isRemoving = _removingId == row.listing.id;
+                  final hasGroupChat =
+                      groupDetail?.groupContext?.hasGroupChat == true;
 
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-                  child: GroupShortlistItemCard(
-                    item: row.item,
-                    listing: row.listing,
-                    fit: fit,
-                    ownerName: row.ownerName,
-                    ownerAvatarUrl: row.ownerAvatarUrl,
-                    isOwner: widget.isOwner,
-                    isRemoving: isRemoving,
-                    currentUserId: _currentUserId,
-                    onOpen: () => _openListing(row),
-                    onRemove: () => _confirmRemove(row),
-                    onRate: (stars) => _editRating(row, stars),
-                    onContactLandlord:
-                        widget.isOwner ? () => _contactLandlord(row) : null,
-                    onDiscussInGroup:
-                        hasGroupChat ? () => _discussInGroup(row) : null,
-                  ),
-                );
-              },
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+                    child: GroupShortlistItemCard(
+                      item: row.item,
+                      listing: row.listing,
+                      fit: fit,
+                      ownerName: row.ownerName,
+                      ownerAvatarUrl: row.ownerAvatarUrl,
+                      isOwner: widget.isOwner,
+                      isRemoving: isRemoving,
+                      currentUserId: _currentUserId,
+                      onOpen: () => _openListing(row),
+                      onRemove: () => _confirmRemove(row),
+                      onRate: (stars) => _editRating(row, stars),
+                      onContactLandlord:
+                          widget.isOwner ? () => _contactLandlord(row) : null,
+                      onDiscussInGroup:
+                          hasGroupChat ? () => _discussInGroup(row) : null,
+                    ),
+                  );
+                },
+              ),
             ),
           if (!_loading && _rows.length > 1) _buildShortlistNavigation(context),
         ],
@@ -695,16 +698,21 @@ class _ExpandablePageView extends StatefulWidget {
 }
 
 class _ExpandablePageViewState extends State<_ExpandablePageView> {
+  static const _estimatedInitialHeight = 260.0;
+
   late List<double> _heights;
   var _currentPage = 0;
 
   double get _currentHeight =>
       _heights.isEmpty ? widget.maxHeight : _heights[_currentPage];
 
+  double get _initialHeight =>
+      _estimatedInitialHeight.clamp(0.0, widget.maxHeight).toDouble();
+
   @override
   void initState() {
     super.initState();
-    _heights = List<double>.filled(widget.itemCount, widget.maxHeight);
+    _heights = List<double>.filled(widget.itemCount, _initialHeight);
     _currentPage = widget.controller.initialPage
         .clamp(0, widget.itemCount == 0 ? 0 : widget.itemCount - 1)
         .toInt();
@@ -714,7 +722,7 @@ class _ExpandablePageViewState extends State<_ExpandablePageView> {
   void didUpdateWidget(covariant _ExpandablePageView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.itemCount != widget.itemCount) {
-      final next = List<double>.filled(widget.itemCount, widget.maxHeight);
+      final next = List<double>.filled(widget.itemCount, _initialHeight);
       for (var i = 0; i < widget.itemCount && i < _heights.length; i++) {
         next[i] = _heights[i];
       }

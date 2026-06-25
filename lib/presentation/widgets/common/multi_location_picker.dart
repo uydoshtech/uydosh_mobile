@@ -33,6 +33,7 @@ class MultiLocationPicker extends StatelessWidget {
     final theme = Theme.of(context);
     final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
     final accent = accentColor ?? theme.colorScheme.primary;
+    const locationPinColor = Colors.red;
     final selected = {...selectedLocationIds};
     final locationIds = locations.map((location) => location.id).toList();
     final allSelected =
@@ -83,7 +84,11 @@ class MultiLocationPicker extends StatelessWidget {
                 children: [
                   checkbox(allSelected),
                   const SizedBox(width: 8),
-                  ThemeIcon(Icons.location_on, color: accent, size: 20),
+                  const ThemeIcon(
+                    Icons.location_on,
+                    color: locationPinColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -138,9 +143,9 @@ class MultiLocationPicker extends StatelessWidget {
                             children: [
                               checkbox(isSelected),
                               const SizedBox(width: 6),
-                              ThemeIcon(
+                              const ThemeIcon(
                                 Icons.location_on,
-                                color: accent,
+                                color: locationPinColor,
                                 size: 20,
                               ),
                               const SizedBox(width: 4),
