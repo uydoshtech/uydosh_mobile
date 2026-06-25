@@ -242,6 +242,8 @@ class AppStrings {
       "group_landlord_invite_chat_card_title": "Group chat invite",
       "group_landlord_invite_chat_card_body":
           "The group owner invited you to discuss this listing with their group. You will only see messages sent after you join.",
+      "group_landlord_invite_one_at_a_time":
+          "This group already has a landlord invite or landlord in the chat. Remove or resolve it before inviting another.",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
           "{title} will be removed from the group saved list.",
@@ -1175,6 +1177,8 @@ class AppStrings {
       "menu_contact_support": "Contact Support",
       "menu_add_listing": "Add Listing",
       "menu_my_listings": "My Listings",
+      "menu_my_groups": "My Groups",
+      "my_groups_empty_subtitle": "Groups you own or joined will appear here.",
       "menu_gigs": "Services",
 
       // ===== GIGS =====
@@ -2304,6 +2308,8 @@ class AppStrings {
       "group_landlord_invite_chat_card_title": "Приглашение в групповой чат",
       "group_landlord_invite_chat_card_body":
           "Организатор группы пригласил вас обсудить это объявление с группой. Вы увидите только сообщения, отправленные после входа.",
+      "group_landlord_invite_one_at_a_time":
+          "У этой группы уже есть приглашение арендодателю или арендодатель в чате. Удалите или завершите его, прежде чем приглашать другого.",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
           "«{title}» будет удалено из списка сохранённых группы.",
@@ -3253,6 +3259,9 @@ class AppStrings {
       "menu_contact_support": "Связаться с поддержкой",
       "menu_add_listing": "Добавить объявление",
       "menu_my_listings": "Мои объявления",
+      "menu_my_groups": "Мои группы",
+      "my_groups_empty_subtitle":
+          "Группы, которыми вы управляете или к которым присоединились, появятся здесь.",
       "menu_gigs": "Услуги",
 
       // ===== GIGS =====
@@ -4406,6 +4415,8 @@ class AppStrings {
       "group_landlord_invite_chat_card_title": "Guruh chatiga taklif",
       "group_landlord_invite_chat_card_body":
           "Guruh egasi sizni bu e'lonni guruh bilan muhokama qilishga taklif qildi. Faqat qo'shilganingizdan keyingi xabarlarni ko'rasiz.",
+      "group_landlord_invite_one_at_a_time":
+          "Bu guruhda allaqachon ijara beruvchiga taklif yoki chatda ijara beruvchi bor. Boshqasini taklif qilishdan oldin uni olib tashlang yoki yakunlang.",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",
       "group_shortlist_remove_message":
@@ -5361,6 +5372,9 @@ class AppStrings {
       "menu_contact_support": "Qo'llab-quvvatlash bilan bog'lanish",
       "menu_add_listing": "E'lon qo'shish",
       "menu_my_listings": "Mening e'lonlarim",
+      "menu_my_groups": "Mening guruhlarim",
+      "my_groups_empty_subtitle":
+          "Siz boshqaradigan yoki qo'shilgan guruhlar shu yerda ko'rinadi.",
       "menu_gigs": "Xizmatlar",
 
       // ===== GIGS =====

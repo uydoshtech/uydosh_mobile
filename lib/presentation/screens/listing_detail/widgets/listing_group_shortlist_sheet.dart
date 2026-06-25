@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
+import "package:dio/dio.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -444,9 +445,25 @@ class _ListingGroupShortlistSheetState
       if (!context.mounted) return;
       ToastTheme.showError(
         context,
-        message: ErrorMessageHelper.sanitizeErrorMessage(e, context: context),
+        message: _landlordInviteErrorMessage(e),
       );
     }
+  }
+
+  String _landlordInviteErrorMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      final serverError = data is Map
+          ? data["error"]?.toString()
+          : data is String
+              ? data
+              : null;
+      if (serverError == "GROUP_LANDLORD_ALREADY_ACTIVE" ||
+          serverError == "GROUP_LANDLORD_INVITE_ALREADY_PENDING") {
+        return L10n.get("group_landlord_invite_one_at_a_time");
+      }
+    }
+    return ErrorMessageHelper.sanitizeErrorMessage(error, context: context);
   }
 
   Future<void> _discussInGroup(_ShortlistRow row) async {

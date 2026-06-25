@@ -6,6 +6,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
+import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
@@ -105,6 +106,18 @@ class ProfileListingsSection extends StatelessWidget {
                         ),
                         _buildGroupedMenuItem(
                           context: context,
+                          icon: Icons.groups_outlined,
+                          title: L10n.get("menu_my_groups"),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const MyGroupsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildGroupedMenuItem(
+                          context: context,
                           icon: CupertinoIcons.suit_heart,
                           title: L10n.get("menu_favorites"),
                           onTap: () => _openFavoritesTab(context),
@@ -129,8 +142,7 @@ class ProfileListingsSection extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const ViewHistoryScreen(),
+                                builder: (context) => const ViewHistoryScreen(),
                               ),
                             );
                           },
@@ -203,8 +215,7 @@ class ProfileListingsSection extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const SupportChatScreen(),
+                                builder: (context) => const SupportChatScreen(),
                               ),
                             );
                           },

@@ -25,6 +25,8 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/main.dart";
@@ -47,6 +49,7 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -122,6 +125,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   /// state variant for a single boolean.
   bool _hasArchivedChats = false;
   final IMessagingService _messagingService = getIt<IMessagingService>();
+  List<PendingLandlordInvite> _pendingLandlordInvites = const [];
+  bool _pendingLandlordInvitesLoading = false;
+  bool _landlordInviteActionInFlight = false;
 
   /// OS-level push permission status. `null` until first probe completes (or
   /// when the platform doesn't support push at all).
@@ -248,8 +254,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           "🔍 [MessagesInboxScreen] User logged out, clearing conversations...",
         );
         context.read<ConversationsBloc>().add(const ConversationsClear());
-        if (_hasArchivedChats) {
-          setState(() => _hasArchivedChats = false);
+        if (_hasArchivedChats || _pendingLandlordInvites.isNotEmpty) {
+          setState(() {
+            _hasArchivedChats = false;
+            _pendingLandlordInvites = const [];
+          });
         }
         // Re-arm the auto-default-tab rule so the next sign-in gets a fresh
         // pick based on the new account's unread state.
@@ -307,6 +316,26 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     if (mounted) {
       _hasLoadedInitialInboxData = true;
       context.read<ConversationsBloc>().add(const ConversationsRefresh());
+      unawaited(_refreshPendingLandlordInvites());
+    }
+  }
+
+  Future<void> _refreshPendingLandlordInvites() async {
+    if (!AuthenticationState().isAuthenticated ||
+        widget.filterGigRequestId != null ||
+        _pendingLandlordInvitesLoading) {
+      return;
+    }
+    _pendingLandlordInvitesLoading = true;
+    try {
+      final invites =
+          await getIt<IListingGroupService>().listPendingLandlordInvites();
+      if (!mounted) return;
+      setState(() => _pendingLandlordInvites = invites);
+    } catch (e) {
+      logger.d("🔍 [MessagesInboxScreen] Pending landlord invites failed: $e");
+    } finally {
+      _pendingLandlordInvitesLoading = false;
     }
   }
 
@@ -474,6 +503,131 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   bool get _shouldRenderPushBannerRow =>
       widget.filterGigRequestId == null &&
       (_shouldShowPushBanner || _pushBannerClosing);
+
+  int get _leadingInboxItemCount =>
+      (_pendingLandlordInvites.isNotEmpty ? 1 : 0) +
+      (_shouldRenderPushBannerRow ? 1 : 0);
+
+  Widget _buildLeadingInboxItem(BuildContext context, int index) {
+    var localIndex = index;
+    if (_pendingLandlordInvites.isNotEmpty) {
+      if (localIndex == 0) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: _PendingLandlordInviteInboxCard(
+            invite: _pendingLandlordInvites.first,
+            busy: _landlordInviteActionInFlight,
+            onAccept: _acceptPendingLandlordInvite,
+            onDecline: _declinePendingLandlordInvite,
+          ),
+        );
+      }
+      localIndex -= 1;
+    }
+
+    if (_shouldRenderPushBannerRow && localIndex == 0) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: _pushBannerClosing
+            ? RollUpFadeOut(
+                duration: _pushBannerCloseDuration,
+                child: InboxPushBanner(
+                  key: const ValueKey("inbox_push_banner"),
+                  status: _pushStatus ?? AuthorizationStatus.notDetermined,
+                  busy: _pushBannerBusy,
+                  onPressed: _onPushBannerPressed,
+                  onDismiss: _onPushBannerDismiss,
+                ),
+              )
+            : InboxPushBanner(
+                key: const ValueKey("inbox_push_banner"),
+                status: _pushStatus ?? AuthorizationStatus.notDetermined,
+                busy: _pushBannerBusy,
+                onPressed: _onPushBannerPressed,
+                onDismiss: _onPushBannerDismiss,
+              ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _acceptPendingLandlordInvite() async {
+    if (_pendingLandlordInvites.isEmpty || _landlordInviteActionInFlight) {
+      return;
+    }
+    final invite = _pendingLandlordInvites.first;
+    HapticFeedbackUtils.impact();
+    setState(() => _landlordInviteActionInFlight = true);
+    try {
+      final conversationId =
+          await getIt<IListingGroupService>().acceptLandlordInvite(
+        groupListingId: invite.groupListingId,
+        inviteId: invite.inviteId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingLandlordInvites =
+            _pendingLandlordInvites.skip(1).toList(growable: false);
+      });
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_landlord_invite_accepted"),
+      );
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+          builder: (_) => ChatScreen(
+            conversationId: conversationId,
+            listingId: invite.groupListingId,
+            listingTitle: invite.groupListingTitle,
+            conversationContextType: "listing_group",
+          ),
+        ),
+      );
+      if (mounted) _loadConversations();
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic_try_again"),
+      );
+    } finally {
+      if (mounted) setState(() => _landlordInviteActionInFlight = false);
+    }
+  }
+
+  Future<void> _declinePendingLandlordInvite() async {
+    if (_pendingLandlordInvites.isEmpty || _landlordInviteActionInFlight) {
+      return;
+    }
+    final invite = _pendingLandlordInvites.first;
+    HapticFeedbackUtils.impact();
+    setState(() => _landlordInviteActionInFlight = true);
+    try {
+      await getIt<IListingGroupService>().declineLandlordInvite(
+        groupListingId: invite.groupListingId,
+        inviteId: invite.inviteId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _pendingLandlordInvites =
+            _pendingLandlordInvites.skip(1).toList(growable: false);
+      });
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("group_landlord_invite_declined"),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic_try_again"),
+      );
+    } finally {
+      if (mounted) setState(() => _landlordInviteActionInFlight = false);
+    }
+  }
 
   Future<void> _onPushBannerPressed() async {
     if (_pushBannerBusy) return;
@@ -871,7 +1025,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
   Widget _buildTabbedConversationsList(
     List<ConversationSummary> conversations,
   ) {
-    if (conversations.isEmpty) {
+    if (conversations.isEmpty && _leadingInboxItemCount == 0) {
       return _buildEmptyState();
     }
 
@@ -886,8 +1040,10 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     final outgoingConversations =
         conversations.where(_isOutgoingConversation).toList();
 
-    final showInboxTabs =
-        incomingConversations.isNotEmpty && outgoingConversations.isNotEmpty;
+    final hasPendingLandlordInvite = _pendingLandlordInvites.isNotEmpty;
+    final showInboxTabs = (incomingConversations.isNotEmpty &&
+            outgoingConversations.isNotEmpty) ||
+        hasPendingLandlordInvite;
     // Without the toggle, pick the sole non-empty lane regardless of [_selectedTabIndex].
     final displayIncoming = showInboxTabs
         ? _selectedTabIndex == 0
@@ -1293,7 +1449,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     List<ConversationSummary> conversations,
     String type,
   ) {
-    if (conversations.isEmpty) {
+    if (conversations.isEmpty && _leadingInboxItemCount == 0) {
       return _buildEmptyStateForType(type);
     }
 
@@ -1634,32 +1790,9 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       useOutgoingInnerTiles: outgoingInnerTiles,
       onConversationTap: _openChatScreen,
       onConversationLongPress: _promptConversationActions,
-      leadingItemCount: _shouldRenderPushBannerRow ? 1 : 0,
-      leadingItemBuilder: _shouldRenderPushBannerRow
-          ? (context, index) => Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: _pushBannerClosing
-                    ? RollUpFadeOut(
-                        duration: _pushBannerCloseDuration,
-                        child: InboxPushBanner(
-                          key: const ValueKey("inbox_push_banner"),
-                          status:
-                              _pushStatus ?? AuthorizationStatus.notDetermined,
-                          busy: _pushBannerBusy,
-                          onPressed: _onPushBannerPressed,
-                          onDismiss: _onPushBannerDismiss,
-                        ),
-                      )
-                    : InboxPushBanner(
-                        key: const ValueKey("inbox_push_banner"),
-                        status:
-                            _pushStatus ?? AuthorizationStatus.notDetermined,
-                        busy: _pushBannerBusy,
-                        onPressed: _onPushBannerPressed,
-                        onDismiss: _onPushBannerDismiss,
-                      ),
-              )
-          : null,
+      leadingItemCount: _leadingInboxItemCount,
+      leadingItemBuilder:
+          _leadingInboxItemCount > 0 ? _buildLeadingInboxItem : null,
     );
   }
 
@@ -1687,6 +1820,108 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
       icon: Icons.chat_bubble_outline,
       title: L10n.get("no_messages"),
       subtitle: L10n.get("no_messages_description"),
+    );
+  }
+}
+
+class _PendingLandlordInviteInboxCard extends StatelessWidget {
+  const _PendingLandlordInviteInboxCard({
+    required this.invite,
+    required this.busy,
+    required this.onAccept,
+    required this.onDecline,
+  });
+
+  final PendingLandlordInvite invite;
+  final bool busy;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeState = ThemeState();
+    final scheme = theme.colorScheme;
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final title = invite.groupListingTitle?.trim();
+
+    return ThreeDElevatedSurface(
+      baseColor:
+          useLiquidGlass ? themeState.primaryColor : themeState.cardColor,
+      useLiquidGlass: useLiquidGlass,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.14),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.groups_2_outlined,
+                color: scheme.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title == null || title.isEmpty
+                        ? L10n.get("group_landlord_invite_chat_card_title")
+                        : title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: themeState.cardTextColor,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    L10n.get("group_landlord_invite_chat_card_body"),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: themeState.cardSecondaryTextColor,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: busy ? null : onDecline,
+                        child: Text(L10n.get("group_landlord_invite_decline")),
+                      ),
+                      FilledButton(
+                        onPressed: busy ? null : onAccept,
+                        child: busy
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(L10n.get("group_landlord_invite_accept")),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
