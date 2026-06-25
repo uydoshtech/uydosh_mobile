@@ -108,8 +108,7 @@ class _LocationPickerState extends State<LocationPicker> {
       if ((oldWidget.selectedLocationIndex != widget.selectedLocationIndex ||
               locationsLengthChanged) &&
           (_ownScrollController?.hasClients ?? false)) {
-        final maxIdx =
-            widget.locations.isEmpty ? 0 : widget.locations.length;
+        final maxIdx = widget.locations.isEmpty ? 0 : widget.locations.length;
         final target = (widget.selectedLocationIndex + 1).clamp(0, maxIdx);
         if (target != _ownScrollController!.selectedItem) {
           _ownScrollController!.animateToItem(
@@ -173,13 +172,20 @@ class _LocationPickerState extends State<LocationPicker> {
       );
     }
 
-    final selectionOverlayFill =
-        theme.colorScheme.onSurface.withValues(alpha: isBlueTheme ? 0.14 : 0.07);
+    final selectionOverlayFill = theme.colorScheme.onSurface
+        .withValues(alpha: isBlueTheme ? 0.14 : 0.07);
 
     Widget wheel = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: NotificationListener<ScrollStartNotification>(
+            onNotification: (notification) {
+              if (!widget.readOnly && notification.dragDetails != null) {
+                widget.onMetroReset?.call();
+              }
+              return false;
+            },
             child: CupertinoPicker(
               backgroundColor: Colors.transparent,
               changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
@@ -191,13 +197,10 @@ class _LocationPickerState extends State<LocationPicker> {
               onSelectedItemChanged: widget.readOnly
                   ? null
                   : (index) {
-                FocusScope.of(context).unfocus();
-                SendSoundUtils.playCupertinoWheelSound();
-                widget.onLocationChanged(index - 1);
-                if (widget.onMetroReset != null && index > 0) {
-                  widget.onMetroReset!();
-                }
-              },
+                      FocusScope.of(context).unfocus();
+                      SendSoundUtils.playCupertinoWheelSound();
+                      widget.onLocationChanged(index - 1);
+                    },
               children: [
                 // Unselected option
                 Center(
@@ -230,7 +233,8 @@ class _LocationPickerState extends State<LocationPicker> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ThemeIcon(Icons.location_on, color: iconColor, size: 20),
+                        ThemeIcon(Icons.location_on,
+                            color: iconColor, size: 20),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
@@ -244,66 +248,67 @@ class _LocationPickerState extends State<LocationPicker> {
                   )
                 else
                   ...displayLocations.asMap().entries.map(
-                    (entry) => Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ThemeIcon(
-                            Icons.location_on,
-                            color:
-                                widget.useColoredIcons
+                        (entry) => Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ThemeIcon(
+                                Icons.location_on,
+                                color: widget.useColoredIcons
                                     ? _getLocationIconColorForIndex(
-                                      entry.key + 1,
-                                    )
+                                        entry.key + 1,
+                                      )
                                     : iconColor,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              _getLocalizedName(context, entry.value),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: textColor,
-                                overflow: TextOverflow.ellipsis,
+                                size: 20,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  _getLocalizedName(context, entry.value),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
               ],
             ),
           ),
-          // Right part with arrows - same as metro line picker
-          if (widget.showArrows)
-            Container(
-              width: 24,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                borderRadius: ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ThemeIcon(
-                    Icons.keyboard_arrow_up,
-                    color: theme.colorScheme.onSurfaceVariant,
-                    size: 16,
-                  ),
-                  ThemeIcon(
-                    Icons.keyboard_arrow_down,
-                    color: theme.colorScheme.onSurfaceVariant,
-                    size: 16,
-                  ),
-                ],
-              ),
+        ),
+        // Right part with arrows - same as metro line picker
+        if (widget.showArrows)
+          Container(
+            width: 24,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
+              borderRadius:
+                  ThreeDSurfaceStyle.wheelPickerPlateArrowStripBorderRadius,
             ),
-        ],
-      );
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ThemeIcon(
+                  Icons.keyboard_arrow_up,
+                  color: theme.colorScheme.onSurfaceVariant,
+                  size: 16,
+                ),
+                ThemeIcon(
+                  Icons.keyboard_arrow_down,
+                  color: theme.colorScheme.onSurfaceVariant,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
 
     if (widget.readOnly) {
       wheel = Opacity(

@@ -501,11 +501,10 @@ class _ListingGroupShortlistSheetState
   Widget build(BuildContext context) {
     final groupDetail = widget.groupListingDetail;
     final mediaQuery = MediaQuery.of(context);
-    final maxSheetHeight = (mediaQuery.size.height -
-            mediaQuery.padding.top -
-            mediaQuery.padding.bottom -
-            24) *
-        0.82;
+    final maxSheetHeight = mediaQuery.size.height -
+        mediaQuery.padding.top -
+        mediaQuery.padding.bottom -
+        24;
     final reservedHeight = _shortlistSheetTopChromeHeight +
         (_rows.length > 1 ? _shortlistSheetNavigationHeight : 0);
     final maxCarouselHeight =
@@ -674,7 +673,8 @@ class _ContinueSearchPillButton extends StatelessWidget {
 ///
 /// Each page's natural height is measured on layout; the container animates to
 /// that height so cards are shown in full without an inner scroll. [maxHeight]
-/// only prevents the sheet from covering the app bar on very small screens.
+/// only prevents the sheet from exceeding the visible screen on very small
+/// devices.
 class _ExpandablePageView extends StatefulWidget {
   const _ExpandablePageView({
     required this.controller,
@@ -747,11 +747,10 @@ class _ExpandablePageViewState extends State<_ExpandablePageView> {
           widget.onPageChanged(page);
         },
         itemBuilder: (context, index) {
-          final canScrollVertically = _heights[index] > widget.maxHeight;
-          return SingleChildScrollView(
-            physics: canScrollVertically
-                ? const BouncingScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
+          return OverflowBox(
+            minHeight: 0,
+            maxHeight: double.infinity,
+            alignment: Alignment.topCenter,
             child: _MeasureSize(
               onChange: (size) => _setHeight(index, size.height),
               child: widget.itemBuilder(context, index),

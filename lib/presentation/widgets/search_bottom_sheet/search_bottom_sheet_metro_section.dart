@@ -23,6 +23,7 @@ import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet/search_bottom_sheet_hints_config.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/metro_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
+import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Metro line and station pickers section for the search bottom sheet.
 class SearchBottomSheetMetroSection extends StatefulWidget {
@@ -336,86 +337,105 @@ class _SearchBottomSheetMetroSectionState
     }).toList();
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: TutorialTargetWrapper(
-            key: widget.metroLineTutorialKey,
-            child: LiquidGlassPlate(
-              height: 80,
-              borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CupertinoPicker(
-                      backgroundColor: Colors.transparent,
-                      changeReportingBehavior:
-                          ChangeReportingBehavior.onScrollEnd,
-                      itemExtent: 40,
-                      scrollController: widget.metroLineScrollController,
-                      onSelectedItemChanged: (index) {
-                        SendSoundUtils.playCupertinoWheelSound();
-                        widget.onSubwayLineChanged(index);
-                      },
-                      children: [
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              MLetterIcon(
-                                color: Colors.black,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  L10n.get("select_metro_line"),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: ThemeState().isBlueTheme
-                                        ? Colors.white
-                                        : Colors.black,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TutorialTargetWrapper(
+                key: widget.metroLineTutorialKey,
+                child: LiquidGlassPlate(
+                  height: 80,
+                  borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CupertinoPicker(
+                          backgroundColor: Colors.transparent,
+                          changeReportingBehavior:
+                              ChangeReportingBehavior.onScrollEnd,
+                          itemExtent: 40,
+                          scrollController: widget.metroLineScrollController,
+                          onSelectedItemChanged: (index) {
+                            SendSoundUtils.playCupertinoWheelSound();
+                            widget.onSubwayLineChanged(index);
+                          },
+                          children: [
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  MLetterIcon(
+                                    color: Colors.black,
+                                    size: 20,
                                   ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ...(lineLabels.map(
-                          (lineEntry) => Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                MLetterIcon(
-                                  color: _getLineColor(lineEntry.key),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: Text(
-                                    lineEntry.value,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: ThemeState().isBlueTheme
-                                          ? Colors.white
-                                          : Colors.black,
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      L10n.get("select_metro_line"),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: ThemeState().isBlueTheme
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    textAlign: TextAlign.center,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        )),
-                      ],
-                    ),
+                            ...(lineLabels.map(
+                              (lineEntry) => Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    MLetterIcon(
+                                      color: _getLineColor(lineEntry.key),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        lineEntry.value,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: ThemeState().isBlueTheme
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              if (selectedStationIds.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                UydoshLinkButton(
+                  text: L10n.get("search_clear_filters"),
+                  onPressed: () => widget.onStationsSelected(const []),
+                  destructive: true,
+                  fontSize: 13,
+                  maxLines: 1,
+                  icon: Icons.close,
+                  iconSize: 16,
+                  iconAfterText: true,
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(width: 12),

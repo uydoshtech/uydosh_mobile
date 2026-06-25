@@ -198,6 +198,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map_web_preview => 'Web preview';
 
   @override
+  String get open_map_view => 'Open map view';
+
+  @override
+  String get open_feed_view => 'Open feed view';
+
+  @override
   String get error => 'Error';
 
   @override

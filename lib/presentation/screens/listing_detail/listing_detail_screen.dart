@@ -362,9 +362,14 @@ class _FloatingGroupParticipantsButton extends StatelessWidget {
     final foreground = isDark ? Colors.white : Colors.black;
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(999),
-      side: isBlueTheme
-          ? const BorderSide(color: Colors.white, width: 1)
-          : BorderSide(color: accentColor.withValues(alpha: 0.58), width: 1),
+      side: isDark
+          ? (isBlueTheme
+              ? const BorderSide(color: Colors.white, width: 1)
+              : BorderSide(
+                  color: accentColor.withValues(alpha: 0.58),
+                  width: 1,
+                ))
+          : BorderSide.none,
     );
 
     return Stack(

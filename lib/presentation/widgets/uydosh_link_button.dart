@@ -48,6 +48,7 @@ class UydoshLinkButton extends StatelessWidget {
     this.maxLines,
     this.icon,
     this.iconSize = 18,
+    this.iconAfterText = false,
     super.key,
   });
 
@@ -70,6 +71,7 @@ class UydoshLinkButton extends StatelessWidget {
   final int? maxLines;
   final IconData? icon;
   final double iconSize;
+  final bool iconAfterText;
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +124,17 @@ class UydoshLinkButton extends StatelessWidget {
         ? textWidget
         : Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: iconSize, color: effectiveColor),
-              const SizedBox(width: 6),
-              textWidget,
-            ],
+            children: iconAfterText
+                ? [
+                    textWidget,
+                    const SizedBox(width: 6),
+                    Icon(icon, size: iconSize, color: effectiveColor),
+                  ]
+                : [
+                    Icon(icon, size: iconSize, color: effectiveColor),
+                    const SizedBox(width: 6),
+                    textWidget,
+                  ],
           );
 
     void handleTap() {
@@ -140,7 +148,8 @@ class UydoshLinkButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: handleTap,
           style: OutlinedButton.styleFrom(
-            padding: padding ?? const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            padding: padding ??
+                const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             side: BorderSide(

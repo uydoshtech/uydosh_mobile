@@ -199,6 +199,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get map_web_preview => 'Веб-предпросмотр';
 
   @override
+  String get open_map_view => 'Открыть карту';
+
+  @override
+  String get open_feed_view => 'Открыть ленту';
+
+  @override
   String get error => 'Ошибка';
 
   @override

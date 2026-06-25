@@ -45,6 +45,15 @@ class _PublishConsentDialogState extends State<_PublishConsentDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final isLightTheme = ThemeState().isLightTheme;
+    final checkboxFillColor = isLightTheme
+        ? WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) return Colors.black;
+            return Colors.white;
+          })
+        : null;
+    final checkboxSide =
+        isLightTheme ? const BorderSide(color: Colors.black, width: 1.6) : null;
 
     return UydoshGlassDialog(
       fallbackBackgroundColor: ThemeState().cardColor,
@@ -81,7 +90,11 @@ class _PublishConsentDialogState extends State<_PublishConsentDialog> {
                 children: [
                   Checkbox(
                     value: _agreed,
-                    activeColor: AppColors.primary,
+                    activeColor:
+                        isLightTheme ? Colors.black : AppColors.primary,
+                    checkColor: isLightTheme ? Colors.white : null,
+                    fillColor: checkboxFillColor,
+                    side: checkboxSide,
                     onChanged: (value) {
                       HapticFeedbackUtils.selection();
                       setState(() => _agreed = value ?? false);

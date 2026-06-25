@@ -1817,6 +1817,7 @@ class _ToggleTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
+    final iconColor = isSelected ? Colors.white : Colors.black;
     final labelParts = label.split("\n");
     final isTwoLine = labelParts.length == 2;
     const twoLineFontSize = 13.0;
@@ -1845,7 +1846,12 @@ class _ToggleTabContent extends StatelessWidget {
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    ThemeIcon(Icons.mail, size: 18, color: targetColor),
+                    ThemeIcon(
+                      Icons.mail,
+                      size: 18,
+                      color: iconColor,
+                      useThemeColor: false,
+                    ),
                     if (hasUnread)
                       Positioned(
                         right: -4,

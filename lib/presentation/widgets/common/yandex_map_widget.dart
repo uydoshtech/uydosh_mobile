@@ -104,6 +104,7 @@ class YandexMapWidget extends StatefulWidget {
     this.height = 200,
     this.moveCameraOnTargetChange = true,
     this.showListingDetailTooltip = true,
+    this.showDefaultPlacemark = true,
   });
 
   final double? latitude;
@@ -119,6 +120,7 @@ class YandexMapWidget extends StatefulWidget {
   final CameraPositionCallback? onCameraPositionChanged;
   final bool moveCameraOnTargetChange;
   final bool showListingDetailTooltip;
+  final bool showDefaultPlacemark;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -170,17 +172,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Future<void> _initializeIcon() async {
     try {
       final iconBytes = await _createIconBytes(
-        Icons.location_on,
-        Colors.red,
+        Icons.home,
         100,
       );
       _cachedIconBytes = iconBytes;
-      logger.d("✅ Cupertino icon created successfully");
+      logger.d("✅ Map house icon created successfully");
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      logger.e("❌ Error creating Cupertino icon: $e");
+      logger.e("❌ Error creating map house icon: $e");
     }
   }
 
@@ -483,6 +484,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   List<MapObject> _createMapObjects() {
     if (widget.pins.isNotEmpty) {
       return _createListingPinMapObjects();
+    }
+    if (!widget.showDefaultPlacemark) {
+      return [];
     }
 
     final coordinates = _getCoordinates();
@@ -825,20 +829,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Future<Uint8List> _createIconBytes(
     IconData iconData,
-    Color color,
     int size,
   ) async {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
 
-    const solidBlack = Color(0xFF000000);
+    const mapMarkerBlack = Color(0xFF000000);
 
     final circlePaint = Paint()
-      ..color = solidBlack
+      ..color = mapMarkerBlack
       ..style = PaintingStyle.fill;
 
     final center = Offset(size / 2, size / 2);
-    final radius = size * 0.4;
+    final radius = size * 0.43;
     canvas.drawCircle(center, radius, circlePaint);
 
     final textPainter = TextPainter(

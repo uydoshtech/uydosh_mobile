@@ -4,6 +4,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
@@ -11,6 +12,7 @@ import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 
 /// Opens the shared "search area" editor for a forming group. Returns the
@@ -183,8 +185,7 @@ class _GroupSearchPrefsEditSheetState
             const SizedBox(height: 2),
             Text(
               L10n.get("group_search_area_hint"),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: onSurface.withValues(alpha: 0.7)),
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.black),
             ),
             const SizedBox(height: 12),
             Flexible(
@@ -199,26 +200,18 @@ class _GroupSearchPrefsEditSheetState
                     ),
                     const SizedBox(height: 8),
                     Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         for (final loc in LocationCache.getAllLocations())
-                          FilterChip(
-                            label: Text(
-                              LocationCache.getLocationShortName(loc.id, lang),
-                              style: theme.textTheme.bodySmall,
+                          _buildDistrictChip(
+                            context,
+                            label: LocationCache.getLocationShortName(
+                              loc.id,
+                              lang,
                             ),
                             selected: _locationId == loc.id,
-                            onSelected: (_) => _toggleLocation(loc.id),
-                            visualDensity: VisualDensity.compact,
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            labelPadding:
-                                const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
+                            onTap: () => _toggleLocation(loc.id),
                           ),
                       ],
                     ),
@@ -244,6 +237,51 @@ class _GroupSearchPrefsEditSheetState
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDistrictChip(
+    BuildContext context, {
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final chipBase = selected
+        ? (isBlueTheme
+            ? BlueThemeColors.buttonPrimary
+            : theme.colorScheme.primary)
+        : (isBlueTheme
+            ? BlueThemeColors.card
+            : theme.colorScheme.surfaceContainerHighest);
+    final textColor = isBlueTheme
+        ? (selected
+            ? BlueThemeColors.textPrimary
+            : theme.colorScheme.onSurfaceVariant)
+        : (selected ? theme.colorScheme.onPrimary : Colors.grey[600]!);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+          gradient: ThreeDSurfaceStyle.surfaceGradient(context, chipBase),
+          boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: textColor,
+          ),
         ),
       ),
     );

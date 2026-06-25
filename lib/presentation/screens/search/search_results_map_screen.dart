@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -41,6 +42,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.subwayStationIds = const [],
     this.subwayLineId,
     this.gender,
+    this.onOpenFeed,
   });
 
   final int listingTypeId;
@@ -53,6 +55,10 @@ class SearchResultsMapScreen extends StatefulWidget {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final void Function(
+    BuildContext context,
+    SearchBottomSheetResult result,
+  )? onOpenFeed;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -208,6 +214,31 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     );
   }
 
+  void _openFeedView() {
+    final onOpenFeed = widget.onOpenFeed;
+    if (onOpenFeed != null) {
+      onOpenFeed(context, _currentSearchResult());
+      return;
+    }
+    Navigator.of(context).maybePop();
+  }
+
+  SearchBottomSheetResult _currentSearchResult() {
+    return SearchBottomSheetResult(
+      listingTypeId: _listingTypeId,
+      locationId: _locationId,
+      subwayStationId: _subwayStationId,
+      subwayStationIds: _subwayStationIds,
+      subwayLineId: _subwayLineId,
+      gender: _gender,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
+      privateRoom: _privateRoom,
+      withPhoto: _withPhoto,
+      action: SearchBottomSheetAction.feed,
+    );
+  }
+
   Future<void> _refreshVisibleArea() async {
     final controller = _mapController;
     if (controller == null || _isLoading) return;
@@ -234,7 +265,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     CameraUpdateReason reason,
     bool finished,
   ) {
-    if (!finished || _result == null) return;
+    if (!finished || reason != CameraUpdateReason.gestures || _result == null) {
+      return;
+    }
     if (!_showRefreshAreaButton) {
       setState(() {
         _showRefreshAreaButton = true;
@@ -514,14 +547,23 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hasNoResults = _result?.pins.isEmpty == true;
+    final title = hasNoResults
+        ? context.l10n.no_search_results
+        : context.l10n.search_results;
     return Scaffold(
       appBar: CommonAppBar(
-        title: context.l10n.search_results,
+        title: title,
         titleWidget: _MapHeaderTitle(
-          title: context.l10n.search_results,
+          title: title,
           loading: _isLoading,
         ),
         showBackButton: true,
+        actions: hasNoResults
+            ? [
+                _MapHeaderSearchButton(onPressed: _openFilters),
+              ]
+            : null,
       ),
       body: _buildBody(context),
     );
@@ -577,22 +619,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
                   title: context.l10n.search_results,
                   height: double.infinity,
                   moveCameraOnTargetChange: result.pins.isNotEmpty,
+                  showDefaultPlacemark: false,
                   onMapCreated: (controller) => _mapController = controller,
                   onCameraPositionChanged: _handleCameraPositionChanged,
                   onMapTap: (_) => setState(() => _selectedPin = null),
                   onPinTap: (pin) => setState(() => _selectedPin = pin),
                 ),
               ),
-              if (result.pins.isEmpty)
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  top: 12,
-                  child: _MapStatusBanner(
-                    icon: Icons.search_off_outlined,
-                    title: context.l10n.no_search_results,
-                  ),
-                ),
               if (_selectedPin != null)
                 Positioned(
                   left: 8,
@@ -606,6 +639,19 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
                     ),
                   ),
                 ),
+              Positioned(
+                right: 16,
+                top: 12,
+                child: Transform.scale(
+                  scale: 0.92,
+                  child: SearchFloatingActionButton(
+                    onPressed: _openFeedView,
+                    iconData: Icons.view_list_rounded,
+                    tooltip: L10n.get("open_feed_view"),
+                    elevation: ThemeState().isBlueTheme ? null : 8,
+                  ),
+                ),
+              ),
               if (_showRefreshAreaButton || _isLoading)
                 Positioned(
                   bottom: 16 + MediaQuery.paddingOf(context).bottom,
@@ -673,6 +719,36 @@ class _MapHeaderTitle extends StatelessWidget {
               : const SizedBox.shrink(key: ValueKey("map-header-idle")),
         ),
       ],
+    );
+  }
+}
+
+class _MapHeaderSearchButton extends StatelessWidget {
+  const _MapHeaderSearchButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final foregroundColor =
+        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(Icons.search, size: 18, color: foregroundColor),
+      label: Text(
+        L10n.get("search"),
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: foregroundColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        minimumSize: const Size(0, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
     );
   }
 }
@@ -910,14 +986,6 @@ class _PinSummaryTooltip extends StatelessWidget {
                               lineIds: pin.subwayLineIds,
                             ),
                           ],
-                          const SizedBox(height: 6),
-                          Text(
-                            L10n.get("view_listing"),
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -1054,6 +1122,9 @@ class _PinMetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final labelColor = ThemeState().isLightTheme
+        ? Colors.black
+        : theme.colorScheme.onSurfaceVariant;
     return Row(
       children: [
         ThemeIcon(icon, color: iconColor, size: 18, useThemeColor: false),
@@ -1064,7 +1135,7 @@ class _PinMetaRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: labelColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1083,6 +1154,9 @@ class _PinMetroRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final labelColor = ThemeState().isLightTheme
+        ? Colors.black
+        : theme.colorScheme.onSurfaceVariant;
     final visibleLineIds = lineIds.isEmpty ? const [1] : lineIds;
     return Row(
       children: [
@@ -1101,7 +1175,7 @@ class _PinMetroRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: labelColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1274,59 +1348,6 @@ class _RefreshAreaButton extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MapStatusBanner extends StatelessWidget {
-  const _MapStatusBanner({
-    required this.icon,
-    required this.title,
-  });
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      color: Colors.transparent,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.14),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ThemeIcon(
-                icon,
-                size: 20,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),

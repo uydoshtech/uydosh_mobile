@@ -364,6 +364,41 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     });
   }
 
+  void _resetMetroPicker() {
+    final hasMetroSelection = _searchFiltersState.selectedSubwayLine > 0 ||
+        _searchFiltersState.selectedStationIndex > 0 ||
+        _searchFiltersState.selectedStationId > 0 ||
+        _searchFiltersState.selectedStationIdsList.isNotEmpty ||
+        _currentStations.isNotEmpty;
+    if (!hasMetroSelection) return;
+
+    setState(() {
+      _currentStations = [];
+      unawaited(_searchFiltersState.setSubwayLine(0));
+      unawaited(_searchFiltersState.setStationIndex(0));
+      unawaited(_searchFiltersState.setStationId(0));
+      unawaited(_searchFiltersState.setStationIds(const []));
+    });
+
+    final metroController = _metroLineScrollController;
+    if (metroController != null &&
+        metroController.hasClients &&
+        metroController.selectedItem != 0) {
+      metroController.animateToItem(
+        0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
+    final stationController = _stationPickerController;
+    if (stationController != null &&
+        stationController.hasClients &&
+        stationController.selectedItem != 0) {
+      stationController.jumpToItem(0);
+    }
+  }
+
   /// Restores the picker to the correct position without disrupting scrolling
   void _restoreStationPickerPosition() {
     logger.d("DEBUG: _restoreStationPickerPosition called");
@@ -627,9 +662,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                           }
                         });
                       },
-                      // Location and metro filters now coexist — selecting a
-                      // district no longer clears the metro selection.
-                      onMetroReset: () {},
+                      onMetroReset: _resetMetroPicker,
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -688,11 +721,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       setState(() {});
                     },
                     onPrimaryPressed: _performSearch,
-                    onMapPressed: widget.primaryLabelKey == "search"
-                        ? () => _performSearch(
-                              action: SearchBottomSheetAction.map,
-                            )
-                        : null,
                     primaryLabelKey: widget.primaryLabelKey,
                     primaryIcon: widget.primaryIcon,
                   ),
@@ -777,6 +805,30 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             maxPrice: maxPrice,
             privateRoom: privateRoom,
             withPhoto: withPhoto,
+            onOpenFeed: (mapContext, result) {
+              Navigator.of(mapContext).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (context) => BlocProvider(
+                    create: (context) => ListingsBloc(getIt<IListingService>()),
+                    child: HomeScreen(
+                      listingTypeId: result.listingTypeId,
+                      locationId: result.locationId,
+                      subwayStationId: result.subwayStationId,
+                      subwayStationIds: result.subwayStationIds,
+                      subwayLineId: result.subwayLineId,
+                      gender: result.gender,
+                      minPrice: result.minPrice,
+                      maxPrice: result.maxPrice,
+                      privateRoom: result.privateRoom,
+                      withPhoto: result.withPhoto,
+                      isSearchMode: true,
+                      useExplicitFiltersOnly: true,
+                      isHomeTabActive: false,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );

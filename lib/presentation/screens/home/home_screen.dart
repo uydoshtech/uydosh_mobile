@@ -1064,6 +1064,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               top: ThemeState().mainShellGlassExtraTopInset(context),
               child: _buildInlineFiltersRibbonAnimated(),
             ),
+          if (widget.isSearchMode || _inlineSearchActive)
+            Positioned(
+              right: 16,
+              top: _viewToggleFabTop(searchRibbonHeight: searchRibbonHeight),
+              child: Transform.scale(
+                scale: 0.92,
+                child: SearchFloatingActionButton(
+                  onPressed: () => _openSearchResultsMap(
+                      _currentSearchResultForViewToggle()),
+                  iconData: Icons.map_rounded,
+                  tooltip: L10n.get("open_map_view"),
+                  elevation: ThemeState().isBlueTheme ? null : 8,
+                ),
+              ),
+            ),
           Positioned(
             right: 16,
             bottom: _searchAlertFabStackBottom(context),
@@ -1226,6 +1241,50 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           chipSize: 34,
         ),
       ),
+    );
+  }
+
+  double _viewToggleFabTop({required double searchRibbonHeight}) {
+    if (widget.isSearchMode) {
+      return searchRibbonHeight + 8;
+    }
+    return ThemeState().mainShellGlassExtraTopInset(context) +
+        _inlineSearchRibbonHeight +
+        8;
+  }
+
+  SearchBottomSheetResult _currentSearchResultForViewToggle() {
+    final filters = _resolveSearchFilters(
+      includeSafeFallbacks: false,
+      explicitNullFallsBackToState: true,
+    );
+    final listingTypeId =
+        filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId;
+    final locationId = filters.locationId != null && filters.locationId! > 0
+        ? filters.locationId
+        : null;
+    final subwayStationId =
+        filters.subwayStationId != null && filters.subwayStationId! > 0
+            ? filters.subwayStationId
+            : null;
+    final subwayLineId =
+        filters.subwayLineId != null && filters.subwayLineId! > 0
+            ? filters.subwayLineId
+            : null;
+
+    return SearchBottomSheetResult(
+      listingTypeId: listingTypeId,
+      locationId: locationId,
+      subwayStationId: subwayStationId,
+      subwayStationIds: filters.subwayStationIds ?? const [],
+      subwayLineId: subwayLineId,
+      gender:
+          filters.gender != null && filters.gender! > 0 ? filters.gender : null,
+      minPrice: filters.minPrice ?? _searchFiltersState.minPrice,
+      maxPrice: filters.maxPrice ?? _searchFiltersState.maxPrice,
+      privateRoom: filters.privateRoom ?? _searchFiltersState.privateRoom,
+      withPhoto: filters.withPhoto ?? _searchFiltersState.withPhoto,
+      action: SearchBottomSheetAction.map,
     );
   }
 
@@ -2334,9 +2393,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           maxPrice: result.maxPrice,
           privateRoom: result.privateRoom,
           withPhoto: result.withPhoto,
+          onOpenFeed: _returnToFeedFromMap,
         ),
       ),
     );
+  }
+
+  Future<void> _returnToFeedFromMap(
+    BuildContext mapContext,
+    SearchBottomSheetResult result,
+  ) async {
+    if (widget.isSearchMode) {
+      await _applySearchModeResult(result);
+    } else {
+      await _applyInlineSearchResult(result);
+    }
+    if (!mapContext.mounted) return;
+    Navigator.of(mapContext).pop();
   }
 
   /// Perform search using current filters

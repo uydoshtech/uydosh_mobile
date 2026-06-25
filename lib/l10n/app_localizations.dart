@@ -460,6 +460,18 @@ abstract class AppLocalizations {
   /// **'Web preview'**
   String get map_web_preview;
 
+  /// No description provided for @open_map_view.
+  ///
+  /// In en, this message translates to:
+  /// **'Open map view'**
+  String get open_map_view;
+
+  /// No description provided for @open_feed_view.
+  ///
+  /// In en, this message translates to:
+  /// **'Open feed view'**
+  String get open_feed_view;
+
   /// No description provided for @error.
   ///
   /// In en, this message translates to:

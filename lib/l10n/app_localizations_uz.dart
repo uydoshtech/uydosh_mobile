@@ -199,6 +199,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get map_web_preview => 'Veb koʻrinish';
 
   @override
+  String get open_map_view => 'Xaritani ochish';
+
+  @override
+  String get open_feed_view => 'Lentani ochish';
+
+  @override
   String get error => 'Xatolik';
 
   @override

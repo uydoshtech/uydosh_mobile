@@ -88,6 +88,8 @@
   "loading_regions": "Загрузка районов...",
   "loading_map": "Загрузка карты...",
   "map_web_preview": "Веб-предпросмотр",
+  "open_map_view": "Открыть карту",
+  "open_feed_view": "Открыть ленту",
   "error": "Ошибка",
   "error_loading_listing_details": "Ошибка загрузки деталей объявления",
   "error_listing_not_loaded": "Объявление еще не загружено",

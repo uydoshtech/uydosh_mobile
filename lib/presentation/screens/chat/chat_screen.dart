@@ -3623,10 +3623,13 @@ class _GroupParticipantsFooterPill extends StatelessWidget {
                       alpha: ThemeState().isBlueTheme ? 0.16 : 0.10,
                     ),
                     borderRadius: radius,
-                    border: Border.all(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.10),
-                    ),
+                    border: isDark
+                        ? Border.all(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.10,
+                            ),
+                          )
+                        : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

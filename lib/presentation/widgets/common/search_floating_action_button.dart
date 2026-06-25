@@ -14,8 +14,8 @@ import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 /// the blur). Otherwise [ThreeDSurfaceStyle] neumorphic fill + shadows.
 class SearchFloatingActionButton extends StatefulWidget {
   const SearchFloatingActionButton({
-    required this.searchFiltersState,
     super.key,
+    this.searchFiltersState,
     this.onPressed,
     this.tooltip,
     this.iconData = Icons.search,
@@ -25,9 +25,12 @@ class SearchFloatingActionButton extends StatefulWidget {
     this.elevation,
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
-  });
+  }) : assert(
+          searchFiltersState != null || onPressed != null,
+          "searchFiltersState is required when using the default search action.",
+        );
 
-  final SearchFiltersState searchFiltersState;
+  final SearchFiltersState? searchFiltersState;
   final VoidCallback? onPressed;
   final String? tooltip;
   final IconData iconData;
@@ -228,19 +231,22 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
   }
 
   void _handleSearchPressed(BuildContext context) {
-    widget.searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
+    final searchFiltersState = widget.searchFiltersState;
+    if (searchFiltersState == null) return;
+
+    searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
       if (!context.mounted) return;
       SearchBottomSheetWidget.show(
         context,
         replaceCurrentRoute: widget.replaceCurrentRoute,
         openedFromHomeScreen: widget.openedFromHomeScreen,
-        currentListingTypeId: widget.searchFiltersState.selectedListingTypeId,
-        currentLocationId: widget.searchFiltersState.selectedLocationIndex,
-        currentSubwayStationId: widget.searchFiltersState.selectedStationId,
-        currentSubwayLineId: widget.searchFiltersState.selectedSubwayLine,
-        currentGender: widget.searchFiltersState.selectedGender,
-        currentMinPrice: widget.searchFiltersState.minPrice,
-        currentMaxPrice: widget.searchFiltersState.maxPrice,
+        currentListingTypeId: searchFiltersState.selectedListingTypeId,
+        currentLocationId: searchFiltersState.selectedLocationIndex,
+        currentSubwayStationId: searchFiltersState.selectedStationId,
+        currentSubwayLineId: searchFiltersState.selectedSubwayLine,
+        currentGender: searchFiltersState.selectedGender,
+        currentMinPrice: searchFiltersState.minPrice,
+        currentMaxPrice: searchFiltersState.maxPrice,
       );
     });
   }

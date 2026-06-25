@@ -66,7 +66,6 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
     required this.primaryLabelKey,
     required this.primaryIcon,
     super.key,
-    this.onMapPressed,
   });
 
   final SearchFiltersState searchFiltersState;
@@ -74,7 +73,6 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
   final VoidCallback onPrimaryPressed;
-  final VoidCallback? onMapPressed;
   final String primaryLabelKey;
   final IconData primaryIcon;
 
@@ -152,29 +150,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               textStyle: textStyle,
             );
-            final mapPressed = onMapPressed;
-            if (mapPressed == null) {
-              return SizedBox(width: double.infinity, child: searchButton);
-            }
-
-            return Row(
-              children: [
-                Expanded(child: searchButton),
-                const SizedBox(width: 10),
-                Tooltip(
-                  message: L10n.get("open_in_yandex_maps"),
-                  child: PrimaryButton(
-                    onPressed: mapPressed,
-                    width: 64,
-                    borderRadius: BorderRadius.circular(20),
-                    surfaceGradientBase: AppColors.secondaryLight,
-                    textColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: const Icon(Icons.map_outlined),
-                  ),
-                ),
-              ],
-            );
+            return SizedBox(width: double.infinity, child: searchButton);
           },
         ),
         const SizedBox(height: 30),
