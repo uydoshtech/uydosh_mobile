@@ -20,6 +20,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
     required this.pageController,
     required this.buildPhotoUrl,
     required this.onPhotoTapCarouselIndex,
+    this.useTileShell = true,
     super.key,
   });
 
@@ -27,6 +28,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
   final PageController pageController;
   final String Function(String rawPhotoUrl) buildPhotoUrl;
   final void Function(int carouselIndex) onPhotoTapCarouselIndex;
+  final bool useTileShell;
 
   @override
   Widget build(BuildContext context) {
@@ -35,107 +37,117 @@ class DetailHostedPhotoGallery extends StatelessWidget {
 
     final dotStrokeColor = _detailPhotoCarouselDotStrokeColor(context);
 
-    return SizedBox(
-      width: double.infinity,
-      child: ListingDetailTileShell(
-        useLiquidGlass: ThemeState().isBlueTheme || ThemeState().isLightTheme,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(5, 6, 5, 5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: PageView.builder(
-                  controller: pageController,
-                  itemCount: n,
-                  itemBuilder: (context, index) {
-                    final rawUrl = orderedRawPhotoUrls[index];
-                    return GestureDetector(
-                      onTap: () => onPhotoTapCarouselIndex(index),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                _buildCoverFill(rawUrl),
-                                ColoredBox(
-                                  color: Colors.black.withValues(alpha: 0.12),
-                                ),
-                                Positioned.fill(
-                                  child: CachedNetworkImage(
-                                    imageUrl: buildPhotoUrl(rawUrl),
-                                    fit: BoxFit.contain,
-                                    memCacheWidth: 720,
-                                    fadeInDuration:
-                                        const Duration(milliseconds: 300),
-                                    fadeInCurve: Curves.easeOut,
-                                    placeholder: (context, url) =>
-                                        const SizedBox.shrink(),
-                                    errorWidget: (context, url, error) =>
-                                        const SizedBox.shrink(),
-                                  ),
-                                ),
-                                const Positioned(
-                                  bottom: 12,
-                                  right: 12,
-                                  child: _PhotoGlassPill(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 4,
-                                    ),
-                                    child: ThemeIcon(
-                                      Icons.fullscreen,
-                                      color: Colors.white,
-                                      useThemeColor: false,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                                if (n > 1)
-                                  Positioned(
-                                    top: 12,
-                                    right: 12,
-                                    child: _PhotoCounterPill(
-                                      text: "${index + 1}/$n",
-                                    ),
-                                  ),
-                              ],
+    final content = Padding(
+      padding: useTileShell
+          ? const EdgeInsets.fromLTRB(5, 6, 5, 5)
+          : EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PageView.builder(
+              controller: pageController,
+              itemCount: n,
+              itemBuilder: (context, index) {
+                final rawUrl = orderedRawPhotoUrls[index];
+                return GestureDetector(
+                  onTap: () => onPhotoTapCarouselIndex(index),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Padding(
+                      padding: useTileShell
+                          ? const EdgeInsets.symmetric(horizontal: 8)
+                          : EdgeInsets.zero,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            _buildCoverFill(rawUrl),
+                            ColoredBox(
+                              color: Colors.black.withValues(alpha: 0.12),
                             ),
-                          ),
+                            Positioned.fill(
+                              child: CachedNetworkImage(
+                                imageUrl: buildPhotoUrl(rawUrl),
+                                fit: BoxFit.contain,
+                                memCacheWidth: 720,
+                                fadeInDuration:
+                                    const Duration(milliseconds: 300),
+                                fadeInCurve: Curves.easeOut,
+                                placeholder: (context, url) =>
+                                    const SizedBox.shrink(),
+                                errorWidget: (context, url, error) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
+                            const Positioned(
+                              bottom: 12,
+                              right: 12,
+                              child: _PhotoGlassPill(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 4,
+                                ),
+                                child: ThemeIcon(
+                                  Icons.fullscreen,
+                                  color: Colors.white,
+                                  useThemeColor: false,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                            if (n > 1)
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: _PhotoCounterPill(
+                                  text: "${index + 1}/$n",
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              if (n > 1) ...[
-                const SizedBox(height: 10),
-                Center(
-                  child: SmoothPageIndicator(
-                    controller: pageController,
-                    count: n,
-                    effect: WormEffect(
-                      dotColor: dotStrokeColor,
-                      activeDotColor: dotStrokeColor,
-                      dotHeight: 8,
-                      dotWidth: 8,
-                      spacing: 8,
-                      paintStyle: PaintingStyle.stroke,
-                      strokeWidth: 1.2,
                     ),
                   ),
-                ),
-                const SizedBox(height: 5),
-              ],
-            ],
+                );
+              },
+            ),
           ),
-        ),
+          if (n > 1) ...[
+            const SizedBox(height: 10),
+            Center(
+              child: SmoothPageIndicator(
+                controller: pageController,
+                count: n,
+                effect: WormEffect(
+                  dotColor: dotStrokeColor,
+                  activeDotColor: dotStrokeColor,
+                  dotHeight: 8,
+                  dotWidth: 8,
+                  spacing: 8,
+                  paintStyle: PaintingStyle.stroke,
+                  strokeWidth: 1.2,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
+    );
+
+    final gallery = useTileShell
+        ? ListingDetailTileShell(
+            useLiquidGlass:
+                ThemeState().isBlueTheme || ThemeState().isLightTheme,
+            child: content,
+          )
+        : content;
+
+    return SizedBox(
+      width: double.infinity,
+      child: gallery,
     );
   }
 

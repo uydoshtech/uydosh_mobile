@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -97,6 +98,7 @@ class YandexMapWidget extends StatefulWidget {
     this.title,
     this.listingDetail,
     this.pins = const [],
+    this.selectedListingId,
     this.onPinTap,
     this.onMapTap,
     this.onMapCreated,
@@ -114,6 +116,7 @@ class YandexMapWidget extends StatefulWidget {
   final String apiKey;
   final ListingDetail? listingDetail;
   final List<ListingMapPin> pins;
+  final int? selectedListingId;
   final ValueChanged<ListingMapPin>? onPinTap;
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
@@ -130,6 +133,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _maxMultiPinAutoZoom = 13.25;
 
   Uint8List? _cachedIconBytes;
+  Uint8List? _cachedSelectedIconBytes;
   YandexMapController? _mapController;
   bool _isMapReady = false;
   bool _isInitializing = false;
@@ -171,11 +175,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Future<void> _initializeIcon() async {
     try {
-      final iconBytes = await _createIconBytes(
+      final iconBytes = await _createIconBytes(Icons.home, 100);
+      final selectedIconBytes = await _createIconBytes(
         Icons.home,
-        100,
+        124,
+        backgroundColor: AppColors.primary,
+        outlineColor: Colors.white,
+        outlineWidth: 7,
+        shadowColor: Colors.black.withValues(alpha: 0.35),
+        shadowBlurRadius: 10,
+        shadowOffset: const Offset(0, 5),
       );
       _cachedIconBytes = iconBytes;
+      _cachedSelectedIconBytes = selectedIconBytes;
       logger.d("✅ Map house icon created successfully");
       if (mounted) {
         setState(() {});
@@ -533,29 +545,56 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     logger.d("📍 Creating ${widget.pins.length} listing map pins");
 
     final iconBytes = _cachedIconBytes;
-    if (iconBytes == null) {
+    final selectedIconBytes = _cachedSelectedIconBytes;
+    if (iconBytes == null || selectedIconBytes == null) {
       logger.w("📍 Listing pin icon is not ready yet");
       return [];
     }
     final iconDescriptor = BitmapDescriptor.fromBytes(iconBytes);
+    final selectedIconDescriptor =
+        BitmapDescriptor.fromBytes(selectedIconBytes);
+    final selectedListingId = widget.selectedListingId;
+    final orderedPins = <ListingMapPin>[
+      for (final pin in widget.pins)
+        if (pin.listingId != selectedListingId) pin,
+      for (final pin in widget.pins)
+        if (pin.listingId == selectedListingId) pin,
+    ];
 
     return [
-      for (final pin in widget.pins)
-        PlacemarkMapObject(
-          mapId: MapObjectId("listing_${pin.listingId}_placemark"),
-          point: Point(latitude: pin.latitude, longitude: pin.longitude),
-          zIndex: 2,
-          opacity: 1.0,
-          consumeTapEvents: true,
-          icon: PlacemarkIcon.single(
-            PlacemarkIconStyle(
-              image: iconDescriptor,
-              anchor: const Offset(0.5, 0.5),
-              scale: 0.9,
+      for (final pin in orderedPins)
+        if (pin.listingId == selectedListingId)
+          PlacemarkMapObject(
+            mapId: MapObjectId("listing_${pin.listingId}_placemark"),
+            point: Point(latitude: pin.latitude, longitude: pin.longitude),
+            zIndex: 8,
+            opacity: 1.0,
+            consumeTapEvents: true,
+            icon: PlacemarkIcon.single(
+              PlacemarkIconStyle(
+                image: selectedIconDescriptor,
+                anchor: const Offset(0.5, 0.5),
+                scale: 1.0,
+              ),
             ),
+            onTap: (_, __) => widget.onPinTap?.call(pin),
+          )
+        else
+          PlacemarkMapObject(
+            mapId: MapObjectId("listing_${pin.listingId}_placemark"),
+            point: Point(latitude: pin.latitude, longitude: pin.longitude),
+            zIndex: 2,
+            opacity: 1.0,
+            consumeTapEvents: true,
+            icon: PlacemarkIcon.single(
+              PlacemarkIconStyle(
+                image: iconDescriptor,
+                anchor: const Offset(0.5, 0.5),
+                scale: 0.9,
+              ),
+            ),
+            onTap: (_, __) => widget.onPinTap?.call(pin),
           ),
-          onTap: (_, __) => widget.onPinTap?.call(pin),
-        ),
     ];
   }
 
@@ -829,19 +868,39 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Future<Uint8List> _createIconBytes(
     IconData iconData,
-    int size,
-  ) async {
+    int size, {
+    Color backgroundColor = const Color(0xFF000000),
+    Color iconColor = Colors.white,
+    Color? outlineColor,
+    double outlineWidth = 0,
+    Color? shadowColor,
+    double shadowBlurRadius = 0,
+    Offset shadowOffset = Offset.zero,
+  }) async {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
 
-    const mapMarkerBlack = Color(0xFF000000);
+    final center = Offset(size / 2, size / 2);
+    final radius = size * 0.39;
+
+    if (shadowColor != null && shadowBlurRadius > 0) {
+      final shadowPaint = Paint()
+        ..color = shadowColor
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadowBlurRadius)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center + shadowOffset, radius, shadowPaint);
+    }
+
+    if (outlineColor != null && outlineWidth > 0) {
+      final outlinePaint = Paint()
+        ..color = outlineColor
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius + outlineWidth, outlinePaint);
+    }
 
     final circlePaint = Paint()
-      ..color = mapMarkerBlack
+      ..color = backgroundColor
       ..style = PaintingStyle.fill;
-
-    final center = Offset(size / 2, size / 2);
-    final radius = size * 0.43;
     canvas.drawCircle(center, radius, circlePaint);
 
     final textPainter = TextPainter(
@@ -851,7 +910,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           fontSize: size.toDouble() * 0.6,
           fontFamily: iconData.fontFamily,
           package: iconData.fontPackage,
-          color: Colors.white,
+          color: iconColor,
         ),
       ),
       textDirection: TextDirection.ltr,

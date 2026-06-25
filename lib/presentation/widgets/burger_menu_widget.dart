@@ -22,6 +22,7 @@ import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
+import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
 // import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
@@ -255,6 +256,22 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
       addItem(
         _DrawerItemSpec(
+          icon: Icons.groups_outlined,
+          titleKey: "menu_my_groups",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const MyGroupsScreen(),
+              ),
+            );
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
           icon: CupertinoIcons.suit_heart,
           titleKey: "menu_favorites",
           onTap: () {
@@ -465,9 +482,8 @@ final class _DrawerColors {
     final base = ThemeState().backgroundColor;
     final brightness = ThemeData.estimateBrightnessForColor(base);
     final isDark = brightness == Brightness.dark;
-    final alpha = effectsEnabled
-        ? (isDark ? 0.64 : 0.78)
-        : (isDark ? 0.88 : 0.94);
+    final alpha =
+        effectsEnabled ? (isDark ? 0.64 : 0.78) : (isDark ? 0.88 : 0.94);
     return base.withValues(alpha: alpha);
   }
 }

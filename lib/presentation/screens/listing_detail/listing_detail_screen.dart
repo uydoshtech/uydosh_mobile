@@ -3219,23 +3219,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               ),
             ),
           if (hasPhotos)
-            Theme(
-              data: Theme.of(context).copyWith(
-                cardTheme: Theme.of(context).cardTheme.copyWith(
-                      margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                    ),
-              ),
-              child: ListingDetailPhotoSection(
-                photos: listingDetail.photos!,
-                orderedPhotos:
-                    _getOrderedPhotos(listingDetail.photos!).cast<Photo>(),
-                pageController: _pageController,
-                buildPhotoUrl: _buildPhotoUrl,
-                onPhotoTap: _openFullScreenPhotoViewer,
-              ),
+            ListingDetailPhotoSection(
+              photos: listingDetail.photos!,
+              orderedPhotos:
+                  _getOrderedPhotos(listingDetail.photos!).cast<Photo>(),
+              pageController: _pageController,
+              buildPhotoUrl: _buildPhotoUrl,
+              onPhotoTap: _openFullScreenPhotoViewer,
             ),
           Padding(
-            padding: EdgeInsets.only(top: hasPhotos ? 4 : 0, bottom: 4),
+            padding: const EdgeInsets.only(bottom: 4),
             child: _metaBadgesTile(listingDetail),
           ),
           if (show3d)
@@ -3409,12 +3402,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
-                  // Tight top: global [CardTheme.margin] is all(8); photo
-                  // [ListingDetailPhotoSection] has zero top margin so the
-                  // carousel sits closer to the app bar. When the liquid
-                  // glass app bar is active the body renders behind the
-                  // header, so we add [mainShellGlassExtraTopInset] to keep
-                  // content clear of the transparent toolbar.
+                  // When the liquid glass app bar is active the body renders
+                  // behind the header, so we add [mainShellGlassExtraTopInset]
+                  // to keep content clear of the transparent toolbar.
                   padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, bottomPad),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(

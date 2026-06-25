@@ -8,8 +8,11 @@ import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
+import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
@@ -24,6 +27,9 @@ class ConversationTile extends StatelessWidget {
 
     /// When true (e.g. messages inbox with day headers), show clock time only — no calendar date in the tile.
     this.showActivityTimeOnly = false,
+    this.useFeedTileSurface = false,
+    this.surfaceMargin = const EdgeInsets.only(bottom: 16),
+    this.showParticipantAvatarStack = false,
     this.onLongPress,
   });
   final ConversationSummary conversation;
@@ -31,6 +37,9 @@ class ConversationTile extends StatelessWidget {
   final int? currentUserId;
   final bool isGrouped;
   final bool showActivityTimeOnly;
+  final bool useFeedTileSurface;
+  final EdgeInsetsGeometry? surfaceMargin;
+  final bool showParticipantAvatarStack;
   final VoidCallback? onLongPress;
 
   @override
@@ -90,17 +99,27 @@ class ConversationTile extends StatelessWidget {
         currentUserId != null &&
         conversation.lastMessageSenderId != currentUserId;
 
-    final avatarLeading = UyDoshAvatar(
-      avatarUrl: rawAvatar,
-      size: UyDoshAvatarSize.medium,
-      backgroundColor: avatarColor,
-      foregroundColor: avatarIconColor,
-      fallback: ConversationAvatarContent(
-        conversation: conversation,
-        iconColor: avatarIconColor,
-        userNameOverride: initialsName,
-      ),
-    );
+    final shouldShowParticipantStack = showParticipantAvatarStack &&
+        isListingGroup &&
+        conversation.members.isNotEmpty;
+    final avatarLeading = shouldShowParticipantStack
+        ? ChatParticipantAvatarStack(
+            participants: conversation.members,
+            currentUserId: currentUserId,
+            avatarSize: 28,
+            maxVisible: 5,
+          )
+        : UyDoshAvatar(
+            avatarUrl: rawAvatar,
+            size: UyDoshAvatarSize.medium,
+            backgroundColor: avatarColor,
+            foregroundColor: avatarIconColor,
+            fallback: ConversationAvatarContent(
+              conversation: conversation,
+              iconColor: avatarIconColor,
+              userNameOverride: initialsName,
+            ),
+          );
 
     final listTile = ListTile(
       onTap: onTap,
@@ -277,9 +296,30 @@ class ConversationTile extends StatelessWidget {
       );
     }
 
+    final borderRadius = useFeedTileSurface
+        ? BorderRadius.circular(12)
+        : const BorderRadius.all(Radius.circular(20));
+    final useLiquidGlass = useFeedTileSurface &&
+        (themeState.isBlueTheme || themeState.isLightTheme);
+
     return ThreeDElevatedSurface(
-      baseColor: cardColor,
-      margin: const EdgeInsets.only(bottom: 16),
+      baseColor: useFeedTileSurface
+          ? (useLiquidGlass
+              ? themeState.primaryColor
+              : Theme.of(context).colorScheme.surface)
+          : cardColor,
+      margin: surfaceMargin,
+      borderRadius: borderRadius,
+      useLiquidGlass: useLiquidGlass,
+      enableBackdropBlur: useFeedTileSurface
+          ? LiquidGlassRendering.feedTileBackdropBlurEnabled(context)
+          : true,
+      liquidGlassShadows: useFeedTileSurface &&
+              LiquidGlassRendering.feedTileUseCompactShadows(context)
+          ? LiquidGlassRendering.feedTileCompactShadows(context)
+          : useFeedTileSurface && themeState.isBlueTheme
+              ? ThreeDSurfaceStyle.elevatedShadows(context)
+              : null,
       child: listTile,
     );
   }

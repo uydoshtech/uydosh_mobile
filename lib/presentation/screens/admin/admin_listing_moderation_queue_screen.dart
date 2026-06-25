@@ -167,6 +167,20 @@ class _AdminListingModerationQueueScreenState
     }
   }
 
+  String _formatModerationPrice(int price) {
+    if (price <= 0) return "";
+    final raw = price.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < raw.length; i++) {
+      final remaining = raw.length - i;
+      buffer.write(raw[i]);
+      if (remaining > 1 && remaining % 3 == 1) {
+        buffer.write(" ");
+      }
+    }
+    return buffer.toString();
+  }
+
   String _monthLabel(DateTime date) {
     final monthKey = switch (date.month) {
       1 => "january",
@@ -436,11 +450,6 @@ class _AdminListingModerationQueueScreenState
     final expanded = _expandedById[item.id] ?? false;
     final busy = _approvingId == item.id;
 
-    final metaParts = <String>[
-      _formatIsoDate(item.createdAt),
-      "${L10n.get("admin_listing_moderation_id")}: ${item.id}",
-    ];
-
     final ownerNameTrimmed = item.userName?.trim();
     final hasOwnerName =
         ownerNameTrimmed != null && ownerNameTrimmed.isNotEmpty;
@@ -450,11 +459,14 @@ class _AdminListingModerationQueueScreenState
     final titleText = item.title.isEmpty
         ? "${L10n.get("admin_listing_moderation_id")} #${item.id}"
         : item.title;
+    final priceText = _formatModerationPrice(item.price);
 
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        final useLiquidGlass =
+            themeState.isBlueTheme || themeState.isLightTheme;
         final cardColor = themeState.cardColor;
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;
@@ -463,8 +475,9 @@ class _AdminListingModerationQueueScreenState
         final avatarIconColor = themeState.avatarIconColor;
 
         return ThreeDElevatedSurface(
-          baseColor: cardColor,
-          margin: const EdgeInsets.only(bottom: 10),
+          baseColor: useLiquidGlass ? themeState.primaryColor : cardColor,
+          margin: const EdgeInsets.only(bottom: 12),
+          useLiquidGlass: useLiquidGlass,
           child: Column(
             children: [
               GestureDetector(
@@ -473,115 +486,187 @@ class _AdminListingModerationQueueScreenState
                   HapticFeedbackUtils.impact();
                   setState(() => _expandedById[item.id] = !expanded);
                 },
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 12, 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: ThemeIcon(
-                                    Icons.home_work_outlined,
-                                    size: 22,
-                                    color: iconColor,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        18,
+                        16,
+                        18,
+                        14,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1),
+                                child: ThemeIcon(
+                                  Icons.home_work_outlined,
+                                  size: 24,
+                                  color: iconColor,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  titleText,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    height: 1.15,
+                                    color: textColor,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (item.listingTypeLabel != null &&
+                              item.listingTypeLabel!.trim().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              item.listingTypeLabel!.trim(),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: secondaryTextColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              ThemeIcon(
+                                Icons.calendar_today_outlined,
+                                size: 18,
+                                color: secondaryTextColor,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _formatIsoDate(item.createdAt),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: secondaryTextColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (priceText.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                ThemeIcon(
+                                  Icons.payments,
+                                  size: 19,
+                                  color: Colors.green,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    titleText,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: textColor,
+                                    priceText,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.green,
                                     ),
-                                    maxLines: 2,
+                                    maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Row(
+                          ],
+                        ],
+                      ),
+                    ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: secondaryTextColor.withValues(alpha: 0.18),
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        18,
+                        14,
+                        12,
+                        14,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _ownerAvatarForListing(
+                            context,
+                            item,
+                            avatarColor: avatarColor,
+                            avatarIconColor: avatarIconColor,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                _ownerAvatarForListing(
-                                  context,
-                                  item,
-                                  avatarColor: avatarColor,
-                                  avatarIconColor: avatarIconColor,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (hasOwnerName)
-                                        Text(
-                                          ownerNameTrimmed,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: textColor,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        )
-                                      else if (hasEmail)
-                                        Text(
-                                          item.userEmail!,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: textColor,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      Text(
-                                        metaParts.join(" · "),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: secondaryTextColor,
-                                        ),
-                                      ),
-                                      if (hasOwnerName && hasEmail)
-                                        Text(
-                                          "${L10n.get("admin_listing_moderation_user")}: ${item.userEmail}",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: secondaryTextColor,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                    ],
+                                Text(
+                                  hasOwnerName
+                                      ? ownerNameTrimmed
+                                      : hasEmail
+                                          ? item.userEmail!
+                                          : L10n.get(
+                                              "admin_listing_moderation_user",
+                                            ),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.15,
+                                    fontWeight: FontWeight.w800,
+                                    color: textColor,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  [
+                                    "${L10n.get("admin_listing_moderation_id")}: ${item.id}",
+                                    if (hasOwnerName && hasEmail)
+                                      "${L10n.get("admin_listing_moderation_user")}: ${item.userEmail}",
+                                  ].join(" · "),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    height: 1.2,
+                                    color: secondaryTextColor,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          AnimatedRotation(
+                            turns: expanded ? 0.25 : 0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            child: ThemeIcon(
+                              Icons.chevron_right_rounded,
+                              size: 32,
+                              color: iconColor,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      AnimatedRotation(
-                        turns: expanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: ThemeIcon(Icons.expand_more, color: iconColor),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               AnimatedCrossFade(
@@ -595,74 +680,74 @@ class _AdminListingModerationQueueScreenState
                 firstChild: const SizedBox(width: double.infinity, height: 0),
                 secondChild: Column(
                   children: [
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: secondaryTextColor.withValues(alpha: 0.18),
+                    ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: Row(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: PrimaryButton(
-                                  onPressed: busy
-                                      ? null
-                                      : () => _openListingDetail(item.id),
-                                  surfaceGradientBase: scheme.primary,
-                                  textColor: scheme.onPrimary,
-                                  borderRadius: BorderRadius.circular(8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 12,
+                          Expanded(
+                            child: PrimaryButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => _openListingDetail(item.id),
+                              surfaceGradientBase: scheme.primary,
+                              textColor: scheme.onPrimary,
+                              borderRadius: BorderRadius.circular(8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              child: ButtonIconLabel(
+                                slotWidth: 26,
+                                leading: ThemeIcon(
+                                  Icons.open_in_new_rounded,
+                                  size: 18,
+                                  color: scheme.onPrimary,
+                                ),
+                                label: Text(
+                                  L10n.get(
+                                    "admin_listing_moderation_open",
                                   ),
-                                  child: ButtonIconLabel(
-                                    slotWidth: 26,
-                                    leading: ThemeIcon(
-                                      Icons.open_in_new_rounded,
-                                      size: 18,
-                                      color: scheme.onPrimary,
-                                    ),
-                                    label: Text(
-                                      L10n.get(
-                                        "admin_listing_moderation_open",
-                                      ),
-                                      style: TextStyle(
-                                        color: scheme.onPrimary,
-                                      ),
-                                    ),
+                                  style: TextStyle(
+                                    color: scheme.onPrimary,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: PrimaryButton(
-                                  onPressed: busy ? null : () => _approve(item),
-                                  isLoading: busy,
-                                  surfaceGradientBase: scheme.primary,
-                                  textColor: scheme.onPrimary,
-                                  borderRadius: BorderRadius.circular(8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: PrimaryButton(
+                              onPressed: busy ? null : () => _approve(item),
+                              isLoading: busy,
+                              surfaceGradientBase: scheme.primary,
+                              textColor: scheme.onPrimary,
+                              borderRadius: BorderRadius.circular(8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              child: ButtonIconLabel(
+                                slotWidth: 26,
+                                leading: ThemeIcon(
+                                  Icons.check_circle_outline,
+                                  size: 18,
+                                  color: scheme.onPrimary,
+                                ),
+                                label: Text(
+                                  L10n.get(
+                                    "admin_listing_moderation_approve",
                                   ),
-                                  child: ButtonIconLabel(
-                                    slotWidth: 26,
-                                    leading: ThemeIcon(
-                                      Icons.check_circle_outline,
-                                      size: 18,
-                                      color: scheme.onPrimary,
-                                    ),
-                                    label: Text(
-                                      L10n.get(
-                                        "admin_listing_moderation_approve",
-                                      ),
-                                      style: TextStyle(
-                                        color: scheme.onPrimary,
-                                      ),
-                                    ),
+                                  style: TextStyle(
+                                    color: scheme.onPrimary,
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),

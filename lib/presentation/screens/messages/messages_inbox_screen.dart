@@ -2076,7 +2076,7 @@ class _ToggleTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
-    const iconColor = Colors.white;
+    final iconColor = targetColor;
     final labelParts = label.split("\n");
     final isTwoLine = labelParts.length == 2;
     const twoLineFontSize = 13.0;

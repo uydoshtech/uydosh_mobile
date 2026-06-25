@@ -790,6 +790,8 @@ class _ListingGroupMemberProfilesSheetState
             currentUserId: widget.currentUserId,
             isGroupFull: _isGroupFull,
             groupProgress: _groupProgress,
+            statusLabelKey:
+                widget.groupListingDetail?.groupContext?.progressStatusLabelKey,
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -967,12 +969,14 @@ class _MemberProfilesHeader extends StatelessWidget {
     required this.currentUserId,
     required this.isGroupFull,
     this.groupProgress,
+    this.statusLabelKey,
   });
 
   final List<ConversationMemberSummary> members;
   final int? currentUserId;
   final bool isGroupFull;
   final ListingGroupProgress? groupProgress;
+  final String? statusLabelKey;
 
   String _memberNamesLabel() {
     final names = members.map((member) => member.name).toList();
@@ -997,6 +1001,10 @@ class _MemberProfilesHeader extends StatelessWidget {
     final progressLabel = membersNeeded > 0
         ? L10n.plural("group_members_needed", membersNeeded)
         : null;
+    final statusLabel = statusLabelKey == null ||
+            (isGroupFull && statusLabelKey == "group_status_full")
+        ? null
+        : L10n.get(statusLabelKey!);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
@@ -1041,6 +1049,10 @@ class _MemberProfilesHeader extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+          if (statusLabel != null) ...[
+            const SizedBox(height: 10),
+            _GroupMembersProgressPill(label: statusLabel),
+          ],
           const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,

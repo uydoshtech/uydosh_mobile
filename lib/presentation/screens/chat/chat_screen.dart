@@ -314,6 +314,12 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Message>? _groupedCacheMessagesRef;
   int? _groupedCacheCurrentUserId;
   int _groupedCacheNewMessageIdsFingerprint = 0;
+  final GlobalKey _messagesViewportKey = GlobalKey();
+  final Map<String, GlobalKey> _dateHeaderKeys = {};
+  final Map<int, GlobalKey> _messageItemKeys = {};
+  final Map<int, DateTime> _messageItemDates = {};
+  DateTime? _stickyDateHeaderDate;
+  bool _stickyDateHeaderUpdateScheduled = false;
 
   int _fingerprintNewMessageIds(Set<int> ids) {
     if (ids.isEmpty) return 0;
@@ -351,6 +357,150 @@ class _ChatScreenState extends State<ChatScreen> {
         : offsetFromBottom > _scrollToBottomShowOffset;
     if (shouldShow == _showScrollToBottomButton) return;
     setState(() => _showScrollToBottomButton = shouldShow);
+  }
+
+  String _dateHeaderKey(DateTime date) =>
+      "${date.year}-${date.month}-${date.day}";
+
+  GlobalKey _dateHeaderGlobalKey(DateTime date) {
+    return _dateHeaderKeys.putIfAbsent(_dateHeaderKey(date), GlobalKey.new);
+  }
+
+  GlobalKey _messageItemGlobalKey(Message message) {
+    return _messageItemKeys.putIfAbsent(message.id, GlobalKey.new);
+  }
+
+  void _syncDateHeaderKeys(List<MessageGroupListItem> groupedItems) {
+    final activeKeys = groupedItems
+        .whereType<DateHeaderListItem>()
+        .map((item) => _dateHeaderKey(item.date))
+        .toSet();
+    _dateHeaderKeys.removeWhere((key, value) => !activeKeys.contains(key));
+
+    final activeMessageIds = <int>{};
+    for (final item in groupedItems.whereType<MessageListItem>()) {
+      activeMessageIds.add(item.message.id);
+      _messageItemDates[item.message.id] =
+          DateTime.parse(item.message.createdAt).toLocal();
+    }
+    _messageItemKeys
+        .removeWhere((key, value) => !activeMessageIds.contains(key));
+    _messageItemDates
+        .removeWhere((key, value) => !activeMessageIds.contains(key));
+  }
+
+  void _scheduleStickyDateHeaderUpdate() {
+    if (_stickyDateHeaderUpdateScheduled) return;
+    _stickyDateHeaderUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _stickyDateHeaderUpdateScheduled = false;
+      if (!mounted) return;
+      _syncStickyDateHeaderDate();
+    });
+  }
+
+  void _syncStickyDateHeaderDate() {
+    final viewportContext = _messagesViewportKey.currentContext;
+    final viewportRenderObject = viewportContext?.findRenderObject();
+    if (viewportRenderObject is! RenderBox) return;
+
+    final viewportTop = viewportRenderObject.localToGlobal(Offset.zero).dy;
+    final anchorY = viewportTop + _messagesListPadding(context).top;
+    final nextDateFromMessages = _stickyDateFromVisibleMessages(anchorY);
+    if (nextDateFromMessages != null) {
+      _setStickyDateHeaderDate(nextDateFromMessages);
+      return;
+    }
+
+    final nextDateFromHeaders = _stickyDateFromVisibleDateHeaders(anchorY);
+    _setStickyDateHeaderDate(nextDateFromHeaders);
+  }
+
+  DateTime? _stickyDateFromVisibleMessages(double anchorY) {
+    final visibleMessages = <({DateTime date, double y, double bottom})>[];
+
+    for (final entry in _messageItemKeys.entries) {
+      final messageDate = _messageItemDates[entry.key];
+      final messageContext = entry.value.currentContext;
+      final messageRenderObject = messageContext?.findRenderObject();
+      if (messageDate == null ||
+          messageRenderObject is! RenderBox ||
+          !messageRenderObject.hasSize) {
+        continue;
+      }
+
+      final messageTop = messageRenderObject.localToGlobal(Offset.zero).dy;
+      visibleMessages.add(
+        (
+          date: messageDate,
+          y: messageTop,
+          bottom: messageTop + messageRenderObject.size.height,
+        ),
+      );
+    }
+
+    if (visibleMessages.isEmpty) return null;
+    visibleMessages.sort((a, b) => a.y.compareTo(b.y));
+
+    final crossingMessages = visibleMessages
+        .where((message) => message.y <= anchorY && message.bottom >= anchorY);
+    if (crossingMessages.isNotEmpty) return crossingMessages.last.date;
+
+    final aboveMessages =
+        visibleMessages.where((message) => message.y <= anchorY);
+    if (aboveMessages.isNotEmpty) return aboveMessages.last.date;
+
+    return visibleMessages.first.date;
+  }
+
+  DateTime? _stickyDateFromVisibleDateHeaders(double anchorY) {
+    final visibleHeaders = <({DateTime date, double y})>[];
+
+    for (final entry in _dateHeaderKeys.entries) {
+      final headerContext = entry.value.currentContext;
+      final headerRenderObject = headerContext?.findRenderObject();
+      if (headerRenderObject is! RenderBox || !headerRenderObject.hasSize) {
+        continue;
+      }
+      visibleHeaders.add(
+        (
+          date: _dateFromHeaderKey(entry.key),
+          y: headerRenderObject.localToGlobal(Offset.zero).dy,
+        ),
+      );
+    }
+
+    if (visibleHeaders.isEmpty) return null;
+
+    visibleHeaders.sort((a, b) => a.y.compareTo(b.y));
+    final passedHeaders = visibleHeaders.where((header) => header.y <= anchorY);
+    return passedHeaders.isNotEmpty
+        ? passedHeaders.last.date
+        : visibleHeaders.first.date;
+  }
+
+  void _setStickyDateHeaderDate(DateTime? nextDate) {
+    final current = _stickyDateHeaderDate;
+    if (current == null && nextDate == null) return;
+    if (current != null &&
+        nextDate != null &&
+        _isSameLocalDate(current, nextDate)) {
+      return;
+    }
+    setState(() => _stickyDateHeaderDate = nextDate);
+  }
+
+  DateTime _dateFromHeaderKey(String key) {
+    final parts = key.split("-");
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
+
+  bool _isSameLocalDate(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   Future<void> _loadGroupParticipants() async {
@@ -2625,45 +2775,75 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Group messages by date for lazy building (memoized across rebuilds)
     final groupedItems = _groupedItemsFor(messages);
+    _syncDateHeaderKeys(groupedItems);
+    _scheduleStickyDateHeaderUpdate();
 
-    return CommonListView(
-      controller: _scrollController,
-      padding: _messagesListPadding(context),
-      reverse: true, // Show newest messages at bottom
-      itemSpacing: 0, // Message grouping handles spacing
-      itemCount: groupedItems.length,
-      itemBuilder: (context, index) {
-        // Since we're using reverse: true, we need to reverse the index
-        final itemIndex = groupedItems.length - 1 - index;
-        final item = groupedItems[itemIndex];
+    return Stack(
+      key: _messagesViewportKey,
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _scheduleStickyDateHeaderUpdate();
+            return false;
+          },
+          child: CommonListView(
+            controller: _scrollController,
+            padding: _messagesListPadding(context),
+            reverse: true, // Show newest messages at bottom
+            itemSpacing: 0, // Message grouping handles spacing
+            itemCount: groupedItems.length,
+            itemBuilder: (context, index) {
+              // Since we're using reverse: true, we need to reverse the index
+              final itemIndex = groupedItems.length - 1 - index;
+              final item = groupedItems[itemIndex];
 
-        return switch (item) {
-          DateHeaderListItem(:final date) => DateHeaderWidget(
-              dateString: AppDateUtils.formatDateHeader(date, context),
-              date: date,
-            ),
-          MessageListItem(
-            :final message,
-            :final isCurrentUser,
-            :final isLatest,
-          ) =>
-            _wrapMessageForReplyGesture(
-              message,
-              _wrapMessageForFocus(
-                message,
-                _buildChatMessageBubble(
-                  message: message,
-                  isCurrentUser: isCurrentUser,
-                  isLatest: isLatest,
-                ),
+              return switch (item) {
+                DateHeaderListItem(:final date) => DateHeaderWidget(
+                    key: _dateHeaderGlobalKey(date),
+                    dateString: AppDateUtils.formatDateHeader(date, context),
+                    date: date,
+                  ),
+                MessageListItem(
+                  :final message,
+                  :final isCurrentUser,
+                  :final isLatest,
+                ) =>
+                  KeyedSubtree(
+                    key: _messageItemGlobalKey(message),
+                    child: _wrapMessageForReplyGesture(
+                      message,
+                      _wrapMessageForFocus(
+                        message,
+                        _buildChatMessageBubble(
+                          message: message,
+                          isCurrentUser: isCurrentUser,
+                          isLatest: isLatest,
+                        ),
+                      ),
+                    ),
+                  ),
+              };
+            },
+            showRefreshIndicator: true,
+            onRefresh: () async {
+              await _refreshMessagesWithSkeleton();
+            },
+          ),
+        ),
+        if (_stickyDateHeaderDate case final stickyDate?)
+          Positioned(
+            top: 0,
+            left: 16,
+            right: 16,
+            child: IgnorePointer(
+              child: DateHeaderWidget(
+                dateString: AppDateUtils.formatDateHeader(stickyDate, context),
+                date: stickyDate,
+                padding: const EdgeInsets.symmetric(vertical: 8),
               ),
             ),
-        };
-      },
-      showRefreshIndicator: true,
-      onRefresh: () async {
-        await _refreshMessagesWithSkeleton();
-      },
+          ),
+      ],
     );
   }
 

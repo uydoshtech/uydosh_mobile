@@ -49,7 +49,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
     try {
       final userId = await SessionManager.getUserId();
       final response = await getIt<IMessagingService>()
-          .getParticipantConversations(limit: _conversationLimit);
+          .getConversations(limit: _conversationLimit);
       final groups = response.data
           .where((c) => c.contextType?.trim().toLowerCase() == "listing_group")
           .toList()
@@ -153,7 +153,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
       onRefresh: _refresh,
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
         itemCount: _groups.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
@@ -161,6 +161,9 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
           return ConversationTile(
             conversation: group,
             currentUserId: _currentUserId,
+            useFeedTileSurface: true,
+            surfaceMargin: EdgeInsets.zero,
+            showParticipantAvatarStack: true,
             onTap: () => _openGroup(group),
           );
         },

@@ -592,6 +592,9 @@ class _ListingGroupShortlistSheetState
     final maxCarouselHeight =
         (maxSheetHeight - reservedHeight).clamp(0.0, maxSheetHeight).toDouble();
     final scheme = Theme.of(context).colorScheme;
+    final statusLabelKey = groupDetail?.groupContext?.progressStatusLabelKey;
+    final statusLabel =
+        statusLabelKey == null ? null : L10n.get(statusLabelKey);
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxSheetHeight),
@@ -612,23 +615,35 @@ class _ListingGroupShortlistSheetState
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 12, 8),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    GroupHousingFlow.savedListingsLabel(_rows.length),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        GroupHousingFlow.savedListingsLabel(_rows.length),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (!_loading &&
+                        _rows.isNotEmpty &&
+                        groupDetail != null) ...[
+                      const SizedBox(width: 8),
+                      _ContinueSearchPillButton(
+                        onPressed: () => _openGroupHousingSearch(groupDetail),
+                      ),
+                    ],
+                  ],
                 ),
-                if (!_loading && _rows.isNotEmpty && groupDetail != null) ...[
-                  const SizedBox(width: 8),
-                  _ContinueSearchPillButton(
-                    onPressed: () => _openGroupHousingSearch(groupDetail),
-                  ),
+                if (statusLabel != null) ...[
+                  const SizedBox(height: 8),
+                  _ShortlistStatusLabel(label: statusLabel),
                 ],
               ],
             ),
@@ -909,6 +924,50 @@ class _MeasureSizeRenderObject extends RenderProxyBox {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       onChange(newSize);
     });
+  }
+}
+
+class _ShortlistStatusLabel extends StatelessWidget {
+  const _ShortlistStatusLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final color = scheme.primary;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width - 32,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timeline_rounded, size: 15, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w800,
+                height: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

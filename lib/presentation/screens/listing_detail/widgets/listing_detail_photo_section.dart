@@ -24,16 +24,20 @@ class ListingDetailPhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DetailHostedPhotoGallery(
-      orderedRawPhotoUrls:
-          orderedPhotos.map((photo) => photo.networkDisplayPhotoUrl).toList(),
-      pageController: pageController,
-      buildPhotoUrl: buildPhotoUrl,
-      onPhotoTapCarouselIndex: (carouselIndex) {
-        final tapped = orderedPhotos[carouselIndex];
-        final originalIndex = photos.indexWhere((p) => p.id == tapped.id);
-        onPhotoTap(originalIndex >= 0 ? originalIndex : 0);
-      },
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: DetailHostedPhotoGallery(
+        orderedRawPhotoUrls:
+            orderedPhotos.map((photo) => photo.networkDisplayPhotoUrl).toList(),
+        pageController: pageController,
+        buildPhotoUrl: buildPhotoUrl,
+        useTileShell: false,
+        onPhotoTapCarouselIndex: (carouselIndex) {
+          final tapped = orderedPhotos[carouselIndex];
+          final originalIndex = photos.indexWhere((p) => p.id == tapped.id);
+          onPhotoTap(originalIndex >= 0 ? originalIndex : 0);
+        },
+      ),
     );
   }
 }

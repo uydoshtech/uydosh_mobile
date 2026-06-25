@@ -203,6 +203,39 @@ class ListingGroupContext {
 
   bool get canRevokeLandlordInvite =>
       groupProgress?.canRevokeLandlordInvite ?? false;
+
+  String? get progressStatusLabelKey {
+    if (hasPendingJoinRequest) return "group_status_request_pending";
+    if (groupProgress?.isClosed == true || isClosed) {
+      return "group_status_closed";
+    }
+    if (groupProgress == null) {
+      if (isFull) return "group_status_full";
+      if (isRecruiting) return "group_status_looking_for_roommates";
+      return null;
+    }
+
+    switch (groupProgress!.phase) {
+      case "forming":
+        return isFull
+            ? "group_status_full"
+            : "group_status_looking_for_roommates";
+      case "housing_search":
+        return "group_status_housing_search";
+      case "shortlisting":
+        return "group_status_reviewing_shortlist";
+      case "landlord_outreach":
+        return isOwner
+            ? "group_status_landlord_outreach_owner"
+            : "group_status_landlord_outreach_member";
+      case "landlord_joined":
+        return "group_status_landlord_joined";
+      case "closed":
+        return "group_status_closed";
+      default:
+        return null;
+    }
+  }
 }
 
 class ListingGroupJoinRequest {

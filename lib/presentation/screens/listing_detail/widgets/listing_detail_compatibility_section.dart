@@ -2191,6 +2191,12 @@ class _ListingDetailCompatibilitySectionState
         : "${widget.compatibilityPercent}%";
 
     final chevronColor = ListingDetailThemeHelper.locationTextColor;
+    final groupStatusLabelKey =
+        shouldUseGroupHeader && !widget.canViewGroupCompatibilityDetails
+            ? widget.listingDetail.groupContext?.progressStatusLabelKey
+            : null;
+    final groupStatusLabel =
+        groupStatusLabelKey == null ? null : L10n.get(groupStatusLabelKey);
 
     return ListingDetailTileShell(
       useLiquidGlass: ListingDetailThemeHelper.useGlassTiles,
@@ -2224,6 +2230,34 @@ class _ListingDetailCompatibilitySectionState
           ),
           iconColor: chevronColor,
           collapsedIconColor: chevronColor,
+          trailing: groupStatusLabel == null
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: SizedBox(
+                    height: 70,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(0, -12),
+                          child: _GroupHeaderStatusPill(
+                            label: groupStatusLabel,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          _isCompatibilitySectionExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: chevronColor,
+                          size: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
           title: KeyedSubtree(
             key: widget.sectionKey,
             // Animate the header height change when compatibility data lands
@@ -2318,6 +2352,53 @@ class _ListingDetailCompatibilitySectionState
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _GroupHeaderStatusPill extends StatelessWidget {
+  const _GroupHeaderStatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final color =
+        ThemeState().isLightTheme ? AppColors.primary : scheme.primary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemeIcon(
+            Icons.timeline_rounded,
+            size: 13,
+            color: color,
+          ),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                height: 1,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

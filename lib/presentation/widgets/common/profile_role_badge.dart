@@ -32,11 +32,16 @@ class ProfileRoleIconBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final icon = profileRoleIcon(role);
+    final iconColor = ThemeState().isLightTheme
+        ? Colors.black
+        : scheme.onSurfaceVariant.withValues(alpha: 0.88);
 
     return Tooltip(
       message: label,
+      triggerMode: TooltipTriggerMode.tap,
       child: Semantics(
         label: label,
+        button: true,
         child: Container(
           width: 34,
           height: 34,
@@ -51,7 +56,7 @@ class ProfileRoleIconBadge extends StatelessWidget {
           child: ThemeIcon(
             icon ?? Icons.badge_outlined,
             size: 18,
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.88),
+            color: iconColor,
           ),
         ),
       ),

@@ -12,7 +12,7 @@ class VerticalParticipantAvatarStack extends StatelessWidget {
     required this.participants,
     super.key,
     this.avatarSize = 30,
-    this.maxVisible = 3,
+    this.maxVisible = 5,
   });
 
   final List<ConversationMemberSummary> participants;

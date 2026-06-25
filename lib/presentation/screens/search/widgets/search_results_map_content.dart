@@ -66,6 +66,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                 child: YandexMapWidget(
                   apiKey: AppConfig.yandexMapsApiKey,
                   pins: result.pins,
+                  selectedListingId: selectedPin?.listingId,
                   title: context.l10n.search_results,
                   height: double.infinity,
                   moveCameraOnTargetChange: result.pins.isNotEmpty,

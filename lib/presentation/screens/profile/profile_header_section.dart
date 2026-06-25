@@ -413,7 +413,6 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
   }
 
   Widget _buildCameraBadge(BuildContext context) {
-    final theme = Theme.of(context);
     return Tooltip(
       message: L10n.get("upload_profile_photo"),
       child: GestureDetector(
@@ -423,17 +422,17 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
+            color: Colors.white,
             shape: BoxShape.circle,
             border: Border.all(
-              color: theme.colorScheme.surface,
+              color: Colors.black,
               width: 2,
             ),
           ),
           child: const ThemeIcon(
             Icons.photo_camera,
             size: 18,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
       ),
