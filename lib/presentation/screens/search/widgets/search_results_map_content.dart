@@ -9,13 +9,8 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.privateRoom,
     required this.withPhoto,
     required this.selectedPin,
-    required this.showRefreshAreaButton,
-    required this.loading,
     required this.onOpenFilters,
     required this.onOpenFeedView,
-    required this.onRefreshVisibleArea,
-    required this.onMapCreated,
-    required this.onCameraPositionChanged,
     required this.onClearSelectedPin,
     required this.onSelectPin,
     required this.onOpenPin,
@@ -38,13 +33,8 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool privateRoom;
   final bool withPhoto;
   final ListingMapPin? selectedPin;
-  final bool showRefreshAreaButton;
-  final bool loading;
   final VoidCallback onOpenFilters;
   final VoidCallback onOpenFeedView;
-  final VoidCallback onRefreshVisibleArea;
-  final MapCreatedCallback onMapCreated;
-  final CameraPositionCallback onCameraPositionChanged;
   final VoidCallback onClearSelectedPin;
   final ValueChanged<ListingMapPin> onSelectPin;
   final ValueChanged<ListingMapPin> onOpenPin;
@@ -80,8 +70,6 @@ class _SearchResultsMapContent extends StatelessWidget {
                   height: double.infinity,
                   moveCameraOnTargetChange: result.pins.isNotEmpty,
                   showDefaultPlacemark: false,
-                  onMapCreated: onMapCreated,
-                  onCameraPositionChanged: onCameraPositionChanged,
                   onMapTap: (_) => onClearSelectedPin(),
                   onPinTap: onSelectPin,
                 ),
@@ -112,18 +100,6 @@ class _SearchResultsMapContent extends StatelessWidget {
                   ),
                 ),
               ),
-              if (showRefreshAreaButton || loading)
-                Positioned(
-                  bottom: 16 + MediaQuery.paddingOf(context).bottom,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: _RefreshAreaButton(
-                      loading: loading,
-                      onPressed: onRefreshVisibleArea,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

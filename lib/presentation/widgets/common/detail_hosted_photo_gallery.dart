@@ -91,6 +91,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
                                     child: ThemeIcon(
                                       Icons.fullscreen,
                                       color: Colors.white,
+                                      useThemeColor: false,
                                       size: 18,
                                     ),
                                   ),

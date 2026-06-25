@@ -1851,9 +1851,11 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
         : themeState.cardSecondaryTextColor;
     final joinColor =
         themeState.isLightTheme ? AppColors.successDark : AppColors.success;
+    final inviteIconColor =
+        themeState.isBlueTheme ? Colors.white : scheme.primary;
     const declineColor = AppColors.error;
     const buttonTextStyle = TextStyle(
-      fontSize: 15,
+      fontSize: 14,
       fontWeight: FontWeight.w700,
     );
 
@@ -1870,12 +1872,12 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.14),
+                color: inviteIconColor.withValues(alpha: 0.14),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.groups_2_outlined,
-                color: scheme.primary,
+                color: inviteIconColor,
                 size: 22,
               ),
             ),
@@ -1907,14 +1909,13 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
                     children: [
                       GhostButtonFactory.text(
                         onPressed: busy ? null : onDecline,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                          horizontal: 14,
                           vertical: 11,
                         ),
                         borderWidth: 1.5,
@@ -1924,10 +1925,11 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(28),
                         text: L10n.get("group_landlord_invite_decline"),
                       ),
+                      const Spacer(),
                       GhostButtonFactory.text(
                         onPressed: busy ? null : onAccept,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 22,
+                          horizontal: 16,
                           vertical: 11,
                         ),
                         borderWidth: 1.5,
@@ -2076,7 +2078,7 @@ class _ToggleTabContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final targetColor = isSelected ? selectedTextColor : unselectedTextColor;
-    final iconColor = isSelected ? Colors.white : Colors.black;
+    const iconColor = Colors.white;
     final labelParts = label.split("\n");
     final isTwoLine = labelParts.length == 2;
     const twoLineFontSize = 13.0;

@@ -1,5 +1,3 @@
-import "dart:async";
-
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
@@ -29,7 +27,6 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
-import "package:yandex_mapkit/yandex_mapkit.dart";
 
 part "widgets/search_results_map_header.dart";
 part "widgets/search_results_map_filter_ribbon.dart";
@@ -81,10 +78,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   _SearchMapResult? _result;
   Object? _loadError;
   bool _isLoading = true;
-  bool _showRefreshAreaButton = false;
-  YandexMapController? _mapController;
   int _loadGeneration = 0;
-  Timer? _cameraIdleRefreshTimer;
   ListingMapPin? _selectedPin;
 
   late int _listingTypeId;
@@ -114,14 +108,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _loadResults(showLoading: false);
   }
 
-  @override
-  void dispose() {
-    _cameraIdleRefreshTimer?.cancel();
-    super.dispose();
-  }
-
   Future<void> _loadResults({
-    _MapBounds? bounds,
     bool showLoading = true,
   }) async {
     final loadGeneration = ++_loadGeneration;
@@ -129,13 +116,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       setState(() {
         _isLoading = true;
         _loadError = null;
-        _showRefreshAreaButton = false;
         _selectedPin = null;
       });
     }
 
     try {
-      final result = await _fetchResults(bounds: bounds);
+      final result = await _fetchResults();
       if (!mounted || loadGeneration != _loadGeneration) return;
       setState(() {
         _result = result;
@@ -152,7 +138,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     }
   }
 
-  Future<_SearchMapResult> _fetchResults({_MapBounds? bounds}) async {
+  Future<_SearchMapResult> _fetchResults() async {
     final response = await getIt<IListingService>().searchListings(
       page: 1,
       limit: _mapSearchLimit,
@@ -168,21 +154,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       withPhoto: _withPhoto,
     );
 
-    final listings = <Listing>[];
     final pins = <ListingMapPin>[];
     for (final listing in response.data) {
       final pin = _pinForListing(listing);
       if (pin == null) continue;
-      if (bounds != null && !bounds.contains(pin.latitude, pin.longitude)) {
-        continue;
-      }
-      listings.add(listing);
       pins.add(pin);
     }
     return _SearchMapResult(
-      listings: bounds == null ? response.data : listings,
       pins: pins,
-      total: bounds == null ? response.total : listings.length,
+      total: response.total,
     );
   }
 
@@ -217,7 +197,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _maxPrice = result.maxPrice;
           _privateRoom = result.privateRoom;
           _withPhoto = result.withPhoto;
-          _showRefreshAreaButton = false;
           _selectedPin = null;
         });
         _loadResults();
@@ -248,44 +227,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       withPhoto: _withPhoto,
       action: SearchBottomSheetAction.feed,
     );
-  }
-
-  Future<void> _refreshVisibleArea() async {
-    final controller = _mapController;
-    if (controller == null || _isLoading) return;
-
-    final visibleRegion = await controller.getVisibleRegion();
-    if (!mounted) return;
-    await _loadResults(bounds: _MapBounds.fromVisibleRegion(visibleRegion));
-  }
-
-  void _scheduleVisibleAreaRefresh() {
-    _cameraIdleRefreshTimer?.cancel();
-    _cameraIdleRefreshTimer = Timer(const Duration(milliseconds: 450), () {
-      if (!mounted) return;
-      if (_isLoading) {
-        _scheduleVisibleAreaRefresh();
-        return;
-      }
-      unawaited(_refreshVisibleArea());
-    });
-  }
-
-  void _handleCameraPositionChanged(
-    CameraPosition cameraPosition,
-    CameraUpdateReason reason,
-    bool finished,
-  ) {
-    if (!finished || reason != CameraUpdateReason.gestures || _result == null) {
-      return;
-    }
-    if (!_showRefreshAreaButton) {
-      setState(() {
-        _showRefreshAreaButton = true;
-        _selectedPin = null;
-      });
-    }
-    _scheduleVisibleAreaRefresh();
   }
 
   ListingMapPin? _pinForListing(Listing listing) {
@@ -620,13 +561,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
-      showRefreshAreaButton: _showRefreshAreaButton,
-      loading: _isLoading,
       onOpenFilters: _openFilters,
       onOpenFeedView: _openFeedView,
-      onRefreshVisibleArea: _refreshVisibleArea,
-      onMapCreated: (controller) => _mapController = controller,
-      onCameraPositionChanged: _handleCameraPositionChanged,
       onClearSelectedPin: () => setState(() => _selectedPin = null),
       onSelectPin: (pin) => setState(() => _selectedPin = pin),
       onOpenPin: (pin) => context.pushListingDetail(pin.listingId),
