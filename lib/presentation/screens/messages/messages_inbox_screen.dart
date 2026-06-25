@@ -1857,6 +1857,7 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
       fontSize: 14,
       fontWeight: FontWeight.w700,
     );
+    final inviteButtonRadius = BorderRadius.circular(12);
 
     return ThreeDElevatedSurface(
       baseColor:
@@ -1913,13 +1914,13 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                         onPressed: busy ? null : onDecline,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
-                          vertical: 11,
+                          vertical: 10,
                         ),
-                        borderWidth: 1.5,
+                        borderWidth: 1.25,
                         borderColor: declineColor,
                         textColor: declineColor,
                         textStyle: buttonTextStyle,
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: inviteButtonRadius,
                         text: L10n.get("group_landlord_invite_decline"),
                       ),
                       const Spacer(),
@@ -1927,13 +1928,13 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                         onPressed: busy ? null : onAccept,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 11,
+                          vertical: 10,
                         ),
-                        borderWidth: 1.5,
+                        borderWidth: 1.25,
                         borderColor: joinColor,
                         textColor: joinColor,
                         textStyle: buttonTextStyle,
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: inviteButtonRadius,
                         isLoading: busy,
                         text: L10n.get("group_landlord_invite_accept"),
                       ),

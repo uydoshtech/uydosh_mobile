@@ -17,6 +17,7 @@ import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/services/yandex_geosuggest_service.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/active_search_alerts_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -26,14 +27,19 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
+import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/create_listing/post_create_listing_search_alerts.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_alerts.dart";
+import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/keyboard_dismiss_scope.dart";
@@ -53,6 +59,7 @@ import "package:uy_dosh/presentation/widgets/common/photo_item.dart";
 import "package:uy_dosh/presentation/widgets/common/photo_uploader.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/publish_consent_gate.dart";
+import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -2616,6 +2623,153 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     );
   }
 
+  Future<void> _maybeOfferPostCreateSearchAlert(
+    ListingDetail createdListing,
+  ) async {
+    if (!mounted) return;
+
+    final suggestion =
+        PostCreateListingSearchAlertSuggestion.fromListing(createdListing);
+    if (suggestion == null) return;
+
+    final shouldCreate = await _showPostCreateSearchAlertSheet(suggestion);
+    if (!mounted || shouldCreate != true) return;
+
+    final result = await PostCreateListingSearchAlerts.create(suggestion);
+    if (!mounted) return;
+
+    switch (result.kind) {
+      case PostCreateListingSearchAlertSaveKind.created:
+        ActiveSearchAlertsState().bumpCelebration();
+        await ActiveSearchAlertsState().refresh();
+        if (!mounted) return;
+
+        final push = getIt<IPushNotificationService>();
+        if (push.isSupported) {
+          final notificationsEnabled = await NotificationPermissionGate.ensure(
+            context,
+            allowSkipPersistsAcrossLaunches: false,
+          );
+          if (!mounted) return;
+          if (!notificationsEnabled) {
+            ToastTheme.showWarning(
+              context,
+              message: L10n.get("search_alert_permission"),
+            );
+          }
+        }
+
+        ToastTheme.showSuccess(
+          context,
+          message: L10n.get("search_alert_created"),
+          leadingIcon: Icons.notifications_active_outlined,
+        );
+      case PostCreateListingSearchAlertSaveKind.alreadyExists:
+        ToastTheme.showWarning(
+          context,
+          message: L10n.get("search_alert_already_exists"),
+          leadingIcon: Icons.notifications_active_outlined,
+        );
+      case PostCreateListingSearchAlertSaveKind.failed:
+        ToastTheme.showError(
+          context,
+          message: result.error == null || result.error == "error"
+              ? L10n.get("search_alert_failed")
+              : result.error!,
+        );
+    }
+  }
+
+  Future<bool?> _showPostCreateSearchAlertSheet(
+    PostCreateListingSearchAlertSuggestion suggestion,
+  ) {
+    return showAppBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final theme = Theme.of(context);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: LiquidGlassPlate(
+            borderRadius: BorderRadius.circular(20),
+            sigma: 18,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          L10n.get("search_alert_cta_title"),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ThreeDAppBarIconButton(
+                        iconData: Icons.close,
+                        onPressed: () => Navigator.of(context).pop(false),
+                        semanticsLabel: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(999)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    L10n.get("search_alert_bell_hint"),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  AppliedSearchFiltersBar(
+                    onPressed: () {},
+                    listingTypeId: suggestion.listingTypeId,
+                    gender: suggestion.gender,
+                    locationId: suggestion.locationId,
+                    subwayStationId: suggestion.subwayStationId,
+                    subwayStationIds: suggestion.subwayStationIds,
+                    subwayLineId: suggestion.subwayLineId,
+                    minPrice: suggestion.minPrice,
+                    maxPrice: suggestion.maxPrice,
+                    privateRoom: suggestion.privateRoomOnly,
+                    withPhoto: suggestion.withPhotoOnly,
+                    total: null,
+                    showLabel: false,
+                    alignRight: false,
+                    height: 46,
+                    chipSize: 34,
+                    alwaysShowPriceRange: true,
+                  ),
+                  const SizedBox(height: 14),
+                  PrimaryButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    height: 52,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Text(L10n.get("search_alert_cta_create")),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(L10n.get("skip")),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _submitForm() async {
     HapticFeedbackUtils.impact();
 
@@ -2929,6 +3083,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           );
         }
       }
+
+      await _maybeOfferPostCreateSearchAlert(createdListing);
+      if (!mounted) return;
 
       // Clear form
       _titleController.clear();
