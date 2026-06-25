@@ -74,6 +74,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.
 import "package:uy_dosh/presentation/widgets/chat/chat_security_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_safety_warning_ribbon.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
+import "package:uy_dosh/presentation/widgets/chat/vertical_participant_avatar_stack.dart";
 import "package:uy_dosh/domain/utils/listing_share_message.dart";
 import "package:uy_dosh/presentation/widgets/chat/listing_ref_message_bubble.dart";
 import "package:uy_dosh/presentation/widgets/chat/mentioned_listings_ribbon.dart";
@@ -1641,7 +1642,13 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.groups_2_outlined, color: scheme.onPrimaryContainer),
+            SizedBox(
+              width: 34,
+              child: VerticalParticipantAvatarStack(
+                participants: _pendingLandlordInvite?.members ?? const [],
+                avatarSize: 28,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

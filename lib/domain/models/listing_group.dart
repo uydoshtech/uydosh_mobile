@@ -1,5 +1,7 @@
 import "dart:convert";
 
+import "package:uy_dosh/domain/models/conversation_member.dart";
+
 class ListingGroupMember {
   const ListingGroupMember({
     required this.userId,
@@ -31,9 +33,11 @@ class PendingLandlordInvite {
     required this.groupConversationId,
     this.groupListingTitle,
     this.housingListingTitle,
+    this.members = const [],
   });
 
   factory PendingLandlordInvite.fromJson(Map<String, dynamic> json) {
+    final rawMembers = json["members"];
     return PendingLandlordInvite(
       inviteId: (json["invite_id"] as num).toInt(),
       groupListingId: (json["group_listing_id"] as num).toInt(),
@@ -41,6 +45,16 @@ class PendingLandlordInvite {
       groupConversationId: (json["group_conversation_id"] as num).toInt(),
       groupListingTitle: json["group_listing_title"] as String?,
       housingListingTitle: json["housing_listing_title"] as String?,
+      members: rawMembers is List
+          ? rawMembers
+              .whereType<Map>()
+              .map(
+                (item) => ConversationMemberSummary.fromJson(
+                  Map<String, dynamic>.from(item),
+                ),
+              )
+              .toList(growable: false)
+          : const [],
     );
   }
 
@@ -50,6 +64,7 @@ class PendingLandlordInvite {
   final int groupConversationId;
   final String? groupListingTitle;
   final String? housingListingTitle;
+  final List<ConversationMemberSummary> members;
 }
 
 class ListingGroupContext {

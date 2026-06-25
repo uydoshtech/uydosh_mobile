@@ -36,6 +36,7 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/screens/messages/archived_conversations_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
+import "package:uy_dosh/presentation/widgets/chat/vertical_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
@@ -1842,17 +1843,15 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final themeState = ThemeState();
-    final scheme = theme.colorScheme;
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
     final title = invite.housingListingTitle?.trim();
     final fallbackTitle = invite.groupListingTitle?.trim();
     final bodyTextColor = themeState.isLightTheme
         ? Colors.black
         : themeState.cardSecondaryTextColor;
+    final inviteBodyFontSize = (theme.textTheme.bodySmall?.fontSize ?? 12) + 1;
     final joinColor =
         themeState.isLightTheme ? AppColors.successDark : AppColors.success;
-    final inviteIconColor =
-        themeState.isBlueTheme ? Colors.white : scheme.primary;
     const declineColor = AppColors.error;
     const buttonTextStyle = TextStyle(
       fontSize: 14,
@@ -1868,17 +1867,14 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            SizedBox(
               width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: inviteIconColor.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.groups_2_outlined,
-                color: inviteIconColor,
-                size: 22,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: VerticalParticipantAvatarStack(
+                  participants: invite.members,
+                  avatarSize: 30,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -1905,6 +1901,7 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                     L10n.get("group_landlord_invite_chat_card_body"),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: bodyTextColor,
+                      fontSize: inviteBodyFontSize,
                       height: 1.25,
                     ),
                   ),
