@@ -56,6 +56,7 @@ class _SearchResultsMapContent extends StatelessWidget {
       children: [
         _MapFilterRibbon(
           onPressed: onOpenFilters,
+          onClose: onOpenFeedView,
           listingTypeId: listingTypeId,
           gender: gender,
           locationId: locationId,

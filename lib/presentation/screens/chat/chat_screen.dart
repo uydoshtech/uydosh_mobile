@@ -16,7 +16,6 @@ import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/achievement_unlock_state.dart";
 import "package:uy_dosh/base/state/chat_composer_draft_state.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/services/sound_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";

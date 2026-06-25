@@ -794,41 +794,24 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SearchResultsMapScreen(
-            listingTypeId: listingTypeId,
-            locationId: locationId,
-            subwayStationId: subwayStationId,
-            subwayStationIds: subwayStationIds,
-            subwayLineId: subwayLine > 0 ? subwayLine : null,
-            gender: gender > 0 ? gender : null,
-            minPrice: minPrice,
-            maxPrice: maxPrice,
-            privateRoom: privateRoom,
-            withPhoto: withPhoto,
-            onOpenFeed: (mapContext, result) {
-              Navigator.of(mapContext).pushReplacement(
-                MaterialPageRoute<void>(
-                  builder: (context) => BlocProvider(
-                    create: (context) => ListingsBloc(getIt<IListingService>()),
-                    child: HomeScreen(
-                      listingTypeId: result.listingTypeId,
-                      locationId: result.locationId,
-                      subwayStationId: result.subwayStationId,
-                      subwayStationIds: result.subwayStationIds,
-                      subwayLineId: result.subwayLineId,
-                      gender: result.gender,
-                      minPrice: result.minPrice,
-                      maxPrice: result.maxPrice,
-                      privateRoom: result.privateRoom,
-                      withPhoto: result.withPhoto,
-                      isSearchMode: true,
-                      useExplicitFiltersOnly: true,
-                      isHomeTabActive: false,
-                    ),
-                  ),
-                ),
-              );
-            },
+          builder: (context) => BlocProvider(
+            create: (context) => ListingsBloc(getIt<IListingService>()),
+            child: HomeScreen(
+              listingTypeId: listingTypeId,
+              locationId: locationId,
+              subwayStationId: subwayStationId,
+              subwayStationIds: subwayStationIds,
+              subwayLineId: subwayLine > 0 ? subwayLine : null,
+              gender: gender > 0 ? gender : null,
+              minPrice: minPrice,
+              maxPrice: maxPrice,
+              privateRoom: privateRoom,
+              withPhoto: withPhoto,
+              isSearchMode: true,
+              useExplicitFiltersOnly: true,
+              isHomeTabActive: false,
+              showMapInitially: true,
+            ),
           ),
         ),
       );

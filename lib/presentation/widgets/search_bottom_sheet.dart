@@ -26,7 +26,6 @@ import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
-import "package:uy_dosh/presentation/screens/search/search_results_map_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";

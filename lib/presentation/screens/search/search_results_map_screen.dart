@@ -20,7 +20,9 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -50,6 +52,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.subwayLineId,
     this.gender,
     this.onOpenFeed,
+    this.embedded = false,
   });
 
   final int listingTypeId;
@@ -66,6 +69,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     BuildContext context,
     SearchBottomSheetResult result,
   )? onOpenFeed;
+  final bool embedded;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -558,6 +562,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final title = hasNoResults
         ? context.l10n.no_search_results
         : context.l10n.search_results;
+    if (widget.embedded) {
+      return _buildBody(context);
+    }
     return Scaffold(
       appBar: CommonAppBar(
         title: title,
