@@ -14,7 +14,6 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
-import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -65,22 +64,12 @@ class _ListingDescriptionTranslationState
   final Map<String, String> _cache = {};
   String? _loadingLang;
   String? _error;
-  ListingAiQuotaSnapshot? _quotaSnap;
   final List<TapGestureRecognizer> _telegramRecognizers = [];
 
   @override
   void initState() {
     super.initState();
     _mergeDbIntoCache();
-    unawaited(_loadListingAiQuotaHint());
-  }
-
-  Future<void> _loadListingAiQuotaHint() async {
-    final q = await _gemini.fetchListingAiQuota();
-    if (!mounted) {
-      return;
-    }
-    setState(() => _quotaSnap = q);
   }
 
   @override
@@ -360,7 +349,6 @@ class _ListingDescriptionTranslationState
           _target = _TranslationTarget.original;
           _error = null;
         });
-        unawaited(_loadListingAiQuotaHint());
         return;
       }
       if (outcome.authRequired) {
@@ -575,34 +563,6 @@ class _ListingDescriptionTranslationState
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: controls,
-          ),
-        if (_quotaSnap != null && _quotaSnap!.shouldShowLowListingAiHint)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                Navigator.of(context).push<void>(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const AiPremiumPlaceholderScreen(),
-                  ),
-                );
-              },
-              child: Text(
-                L10n.getWithParams(
-                  "ai_allowance_inline_listing_ai_hint",
-                  params: {
-                    "translate": "${_quotaSnap!.translateRemaining}",
-                    "enhance": "${_quotaSnap!.enhanceRemaining}",
-                  },
-                ),
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.25,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
           ),
         SizedBox(
           height: widget.listingTitle != null && widget.listingTitle!.isNotEmpty

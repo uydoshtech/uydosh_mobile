@@ -3038,7 +3038,12 @@ class _LocationModeTabContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              ThemeIcon(icon, color: targetColor, size: 22),
+              ThemeIcon(
+                icon,
+                color: targetColor,
+                size: 22,
+                useThemeColor: false,
+              ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

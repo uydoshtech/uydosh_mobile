@@ -378,8 +378,10 @@ class _ListingGroupShortlistSheetState
   Widget _buildShortlistNavigation(BuildContext context) {
     final canGoBack = _currentPage > 0;
     final canGoNext = _currentPage < _rows.length - 1;
-    final scheme = Theme.of(context).colorScheme;
-    final dotColor = scheme.onSurfaceVariant;
+    final theme = Theme.of(context);
+    final controlColor = theme.brightness == Brightness.light
+        ? Colors.black
+        : theme.colorScheme.onSurfaceVariant;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
@@ -388,6 +390,7 @@ class _ListingGroupShortlistSheetState
           _ShortlistArrowButton(
             icon: Icons.chevron_left,
             tooltip: L10n.get("back"),
+            color: controlColor,
             onPressed: canGoBack ? () => _goToPage(_currentPage - 1) : null,
           ),
           Expanded(
@@ -396,8 +399,8 @@ class _ListingGroupShortlistSheetState
                 controller: _pageController,
                 count: _rows.length,
                 effect: WormEffect(
-                  dotColor: dotColor,
-                  activeDotColor: dotColor,
+                  dotColor: controlColor,
+                  activeDotColor: controlColor,
                   dotHeight: 7,
                   dotWidth: 7,
                   spacing: 6,
@@ -410,6 +413,7 @@ class _ListingGroupShortlistSheetState
           _ShortlistArrowButton(
             icon: Icons.chevron_right,
             tooltip: L10n.get("next"),
+            color: controlColor,
             onPressed: canGoNext ? () => _goToPage(_currentPage + 1) : null,
           ),
         ],
@@ -813,16 +817,19 @@ class _ShortlistArrowButton extends StatelessWidget {
   const _ShortlistArrowButton({
     required this.icon,
     required this.tooltip,
+    required this.color,
     required this.onPressed,
   });
 
   final IconData icon;
   final String tooltip;
+  final Color color;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return IconButton.filledTonal(
       onPressed: onPressed,
       tooltip: tooltip,
@@ -834,9 +841,10 @@ class _ShortlistArrowButton extends StatelessWidget {
         minimumSize: const Size.square(32),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         backgroundColor: scheme.onSurface.withValues(alpha: 0.10),
-        foregroundColor: scheme.onSurface,
+        foregroundColor: color,
         disabledBackgroundColor: scheme.onSurface.withValues(alpha: 0.05),
-        disabledForegroundColor: scheme.onSurface.withValues(alpha: 0.32),
+        disabledForegroundColor:
+            isLight ? color : scheme.onSurface.withValues(alpha: 0.32),
       ),
     );
   }

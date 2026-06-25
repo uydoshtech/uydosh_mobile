@@ -893,8 +893,6 @@ class AppStrings {
       "ai_premium_placeholder_title": "AI Premium",
       "ai_premium_placeholder_body":
           "In-app checkout for AI Premium (Payme / Click) will be available here soon.",
-      "ai_allowance_inline_listing_ai_hint":
-          "Listing AI: {translate} translations · {enhance} improvements left this month (UTC).",
       "ai_allowance_inline_chat_hint":
           "Chat translations left this month (UTC): {count}",
       "listing_description_template_label": "Template",
@@ -2963,8 +2961,6 @@ class AppStrings {
       "ai_premium_placeholder_title": "AI Premium",
       "ai_premium_placeholder_body":
           "Оплата AI Premium (Payme / Click) в приложении скоро появится здесь.",
-      "ai_allowance_inline_listing_ai_hint":
-          "AI для объявлений: {translate} переводов · {enhance} улучшений в этом месяце (UTC).",
       "ai_allowance_inline_chat_hint":
           "Переводов в чате в этом месяце (UTC): {count}",
       "listing_description_template_label": "Шаблон",
@@ -5064,8 +5060,6 @@ class AppStrings {
       "ai_premium_placeholder_title": "AI Premium",
       "ai_premium_placeholder_body":
           "AI Premium uchun ilova ichida to‘lov (Payme / Click) tez orada shu yerda bo‘ladi.",
-      "ai_allowance_inline_listing_ai_hint":
-          "E'lon AI: {translate} tarjima · {enhance} yaxshilash qoldi (UTC oy).",
       "ai_allowance_inline_chat_hint":
           "Bu oy chat tarjimalari qoldi (UTC): {count}",
       "listing_description_template_label": "Shablon",
