@@ -1702,129 +1702,68 @@ class _ListingDetailCompatibilitySectionState
       return const SizedBox.shrink();
     }
 
-    Widget statColumn({
-      required IconData icon,
+    final textColor = _getDescriptionTextColor();
+    final labelColor = textColor.withValues(alpha: 0.78);
+    final spans = <InlineSpan>[];
+
+    void addSummaryItem({
       required int count,
       required Color color,
-      required String label,
+      required String labelKey,
     }) {
-      const labelStyleHeight = 1.2;
-      const labelFontSize = 11.0;
-      const labelReservedLines = 2;
-      return Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.85),
-                  shape: BoxShape.circle,
-                ),
-                child: ThemeIcon(
-                  icon,
-                  size: 14,
-                  color: Colors.white,
-                  useThemeColor: false,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      count.toString(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
-                        color: _getDescriptionTextColor(),
-                      ),
-                    ),
-                    SizedBox(
-                      height:
-                          labelFontSize * labelStyleHeight * labelReservedLines,
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          label,
-                          maxLines: labelReservedLines,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: labelFontSize,
-                            height: labelStyleHeight,
-                            color: _getDescriptionTextColor()
-                                .withValues(alpha: 0.75),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      if (count == 0) return;
+      if (spans.isNotEmpty) {
+        spans.add(
+          TextSpan(
+            text: "  ·  ",
+            style: TextStyle(color: textColor.withValues(alpha: 0.42)),
           ),
-        ),
-      );
+        );
+      }
+      spans
+        ..add(
+          TextSpan(
+            text: count.toString(),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        )
+        ..add(
+          TextSpan(
+            text: " ${L10n.get(labelKey)}",
+            style: TextStyle(color: labelColor),
+          ),
+        );
     }
 
-    final columns = <Widget>[
-      if (fullCount > 0)
-        statColumn(
-          icon: Icons.check,
-          count: fullCount,
-          color: AppColors.success,
-          label: L10n.get("group_compatibility_summary_full"),
-        ),
-      if (partialCount > 0)
-        statColumn(
-          icon: Icons.warning_amber_rounded,
-          count: partialCount,
-          color: AppColors.warning,
-          label: L10n.get("group_compatibility_summary_partial"),
-        ),
-      if (discussCount > 0)
-        statColumn(
-          icon: Icons.warning_amber_rounded,
-          count: discussCount,
-          color: AppColors.error,
-          label: L10n.get("group_compatibility_summary_discuss"),
-        ),
-    ];
+    addSummaryItem(
+      count: fullCount,
+      color: AppColors.success,
+      labelKey: "group_compatibility_summary_compact_full",
+    );
+    addSummaryItem(
+      count: partialCount,
+      color: AppColors.warning,
+      labelKey: "group_compatibility_summary_compact_partial",
+    );
+    addSummaryItem(
+      count: discussCount,
+      color: AppColors.error,
+      labelKey: "group_compatibility_summary_compact_discuss",
+    );
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      decoration: BoxDecoration(
-        color: _getDescriptionTextColor().withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: _getDescriptionTextColor().withValues(alpha: 0.12),
-        ),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            for (var i = 0; i < columns.length; i++) ...[
-              if (i > 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: VerticalDivider(
-                    width: 1,
-                    thickness: 1,
-                    color: _getDescriptionTextColor().withValues(alpha: 0.15),
-                  ),
-                ),
-              columns[i],
-            ],
-          ],
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text.rich(
+        TextSpan(children: spans),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 13,
+          height: 1.25,
+          color: labelColor,
         ),
       ),
     );
@@ -1850,50 +1789,7 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupProfileSummaryBody() {
-    final textColor = _getDescriptionTextColor();
-    final hasReport =
-        widget.listingDetail.groupCompatibilityReport?.trim().isNotEmpty ==
-            true;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (hasReport) ...[
-          _buildGroupCompatibilityReport(textColor),
-          const SizedBox(height: 12),
-        ],
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: textColor.withValues(alpha: 0.12)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ThemeIcon(
-                Icons.groups_outlined,
-                size: 20,
-                color: ListingDetailThemeHelper.locationTextColor,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  L10n.get("group_profile_summary_description"),
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.35,
-                    color: textColor.withValues(alpha: 0.85),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    return _buildGroupCompatibilityReport(_getDescriptionTextColor());
   }
 
   Widget _buildOverlappingHeaderAvatars() {

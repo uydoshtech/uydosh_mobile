@@ -41,6 +41,7 @@ import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_state_builder.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
@@ -1843,7 +1844,18 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
     final themeState = ThemeState();
     final scheme = theme.colorScheme;
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final title = invite.groupListingTitle?.trim();
+    final title = invite.housingListingTitle?.trim();
+    final fallbackTitle = invite.groupListingTitle?.trim();
+    final bodyTextColor = themeState.isLightTheme
+        ? Colors.black
+        : themeState.cardSecondaryTextColor;
+    final joinColor =
+        themeState.isLightTheme ? AppColors.successDark : AppColors.success;
+    const declineColor = AppColors.error;
+    const buttonTextStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w700,
+    );
 
     return ThreeDElevatedSurface(
       baseColor:
@@ -1874,9 +1886,11 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    title == null || title.isEmpty
-                        ? L10n.get("group_landlord_invite_chat_card_title")
-                        : title,
+                    title != null && title.isNotEmpty
+                        ? title
+                        : fallbackTitle == null || fallbackTitle.isEmpty
+                            ? L10n.get("group_landlord_invite_chat_card_title")
+                            : fallbackTitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall?.copyWith(
@@ -1888,7 +1902,7 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                   Text(
                     L10n.get("group_landlord_invite_chat_card_body"),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: themeState.cardSecondaryTextColor,
+                      color: bodyTextColor,
                       height: 1.25,
                     ),
                   ),
@@ -1897,22 +1911,32 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      TextButton(
+                      GhostButtonFactory.text(
                         onPressed: busy ? null : onDecline,
-                        child: Text(L10n.get("group_landlord_invite_decline")),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 11,
+                        ),
+                        borderWidth: 1.5,
+                        borderColor: declineColor,
+                        textColor: declineColor,
+                        textStyle: buttonTextStyle,
+                        borderRadius: BorderRadius.circular(28),
+                        text: L10n.get("group_landlord_invite_decline"),
                       ),
-                      FilledButton(
+                      GhostButtonFactory.text(
                         onPressed: busy ? null : onAccept,
-                        child: busy
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(L10n.get("group_landlord_invite_accept")),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 11,
+                        ),
+                        borderWidth: 1.5,
+                        borderColor: joinColor,
+                        textColor: joinColor,
+                        textStyle: buttonTextStyle,
+                        borderRadius: BorderRadius.circular(28),
+                        isLoading: busy,
+                        text: L10n.get("group_landlord_invite_accept"),
                       ),
                     ],
                   ),

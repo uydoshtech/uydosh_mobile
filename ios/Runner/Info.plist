@@ -113,6 +113,8 @@
 	<string>This app needs access to photo library to select photos for your listings.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app uses your location to show nearby listings and metro stations.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app uses your location to show nearby listings and metro stations.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>
