@@ -277,7 +277,9 @@ class GroupShortlistItemCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (isOwner && onContactLandlord != null) ...[
+            if (isOwner &&
+                (onContactLandlord != null ||
+                    onRevokeLandlordInvite != null)) ...[
               const SizedBox(height: _actionButtonGap),
               _ShortlistActionButton(
                 onPressed: isRemoving || isLandlordInviteBusy

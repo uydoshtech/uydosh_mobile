@@ -460,6 +460,7 @@ class _ListingGroupShortlistSheetState
         context,
         message: L10n.get("group_landlord_invite_sent"),
       );
+      widget.onChanged?.call();
     } catch (e) {
       if (!context.mounted) return;
       ToastTheme.showError(
@@ -498,6 +499,7 @@ class _ListingGroupShortlistSheetState
         context,
         message: L10n.get("group_landlord_invite_revoked"),
       );
+      widget.onChanged?.call();
     } catch (e) {
       if (!context.mounted) return;
       ToastTheme.showError(
@@ -675,8 +677,17 @@ class _ListingGroupShortlistSheetState
                   final isRemoving = _removingId == row.listing.id;
                   final isLandlordInviteBusy =
                       _landlordInviteBusyListingId == row.listing.id;
-                  final hasGroupChat =
-                      groupDetail?.groupContext?.hasGroupChat == true;
+                  final groupContext = groupDetail?.groupContext;
+                  final isLandlordInvitePending =
+                      row.item.pendingLandlordInviteId != null;
+                  final hasGroupChat = groupContext?.hasGroupChat == true;
+                  final canInviteLandlord = groupContext?.groupProgress == null
+                      ? widget.isOwner && !isLandlordInvitePending
+                      : groupContext?.canInviteLandlord == true;
+                  final canRevokeLandlordInvite =
+                      groupContext?.groupProgress == null
+                          ? widget.isOwner && isLandlordInvitePending
+                          : groupContext?.canRevokeLandlordInvite == true;
 
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
@@ -689,15 +700,19 @@ class _ListingGroupShortlistSheetState
                       isOwner: widget.isOwner,
                       isRemoving: isRemoving,
                       currentUserId: _currentUserId,
-                      isLandlordInvitePending:
-                          row.item.pendingLandlordInviteId != null,
+                      isLandlordInvitePending: isLandlordInvitePending,
                       isLandlordInviteBusy: isLandlordInviteBusy,
                       onOpen: () => _openListing(row),
                       onRemove: () => _confirmRemove(row),
                       onRate: (stars) => _editRating(row, stars),
-                      onContactLandlord:
-                          widget.isOwner ? () => _contactLandlord(row) : null,
-                      onRevokeLandlordInvite: widget.isOwner
+                      onContactLandlord: widget.isOwner &&
+                              canInviteLandlord &&
+                              !isLandlordInvitePending
+                          ? () => _contactLandlord(row)
+                          : null,
+                      onRevokeLandlordInvite: widget.isOwner &&
+                              canRevokeLandlordInvite &&
+                              isLandlordInvitePending
                           ? () => _revokeLandlordInvite(row)
                           : null,
                       onDiscussInGroup:

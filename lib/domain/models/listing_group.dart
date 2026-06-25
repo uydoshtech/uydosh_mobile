@@ -67,6 +67,64 @@ class PendingLandlordInvite {
   final List<ConversationMemberSummary> members;
 }
 
+class ListingGroupProgressState {
+  const ListingGroupProgressState({
+    required this.phase,
+    required this.availableActions,
+    required this.canOpenGroupChat,
+    required this.canViewShortlist,
+    required this.canFindHousing,
+    required this.canInviteLandlord,
+    required this.canRevokeLandlordInvite,
+    required this.landlordInviteStatus,
+    this.pendingLandlordInviteId,
+    this.pendingLandlordInviteListingId,
+    this.activeLandlordUserId,
+  });
+
+  factory ListingGroupProgressState.fromJson(Map<String, dynamic> json) {
+    return ListingGroupProgressState(
+      phase: json["phase"] as String? ?? "forming",
+      availableActions: (json["available_actions"] as List?)
+              ?.map((action) => action.toString())
+              .toList(growable: false) ??
+          const [],
+      canOpenGroupChat: json["can_open_group_chat"] == true,
+      canViewShortlist: json["can_view_shortlist"] == true,
+      canFindHousing: json["can_find_housing"] == true,
+      canInviteLandlord: json["can_invite_landlord"] == true,
+      canRevokeLandlordInvite: json["can_revoke_landlord_invite"] == true,
+      landlordInviteStatus: json["landlord_invite_status"] as String? ?? "none",
+      pendingLandlordInviteId:
+          (json["pending_landlord_invite_id"] as num?)?.toInt(),
+      pendingLandlordInviteListingId:
+          (json["pending_landlord_invite_listing_id"] as num?)?.toInt(),
+      activeLandlordUserId: (json["active_landlord_user_id"] as num?)?.toInt(),
+    );
+  }
+
+  final String phase;
+  final List<String> availableActions;
+  final bool canOpenGroupChat;
+  final bool canViewShortlist;
+  final bool canFindHousing;
+  final bool canInviteLandlord;
+  final bool canRevokeLandlordInvite;
+  final String landlordInviteStatus;
+  final int? pendingLandlordInviteId;
+  final int? pendingLandlordInviteListingId;
+  final int? activeLandlordUserId;
+
+  bool get isForming => phase == "forming";
+  bool get isHousingSearch => phase == "housing_search";
+  bool get isShortlisting => phase == "shortlisting";
+  bool get isLandlordOutreach => phase == "landlord_outreach";
+  bool get isLandlordJoined => phase == "landlord_joined";
+  bool get isClosed => phase == "closed";
+  bool get hasPendingLandlordInvite => landlordInviteStatus == "pending";
+  bool get hasAcceptedLandlordInvite => landlordInviteStatus == "accepted";
+}
+
 class ListingGroupContext {
   const ListingGroupContext({
     required this.isGroupForming,
@@ -80,6 +138,7 @@ class ListingGroupContext {
     this.myJoinRequestStatus,
     this.pendingJoinRequestCount,
     this.groupShortlistCount,
+    this.groupProgress,
   });
 
   factory ListingGroupContext.fromJson(Map<String, dynamic> json) {
@@ -96,6 +155,11 @@ class ListingGroupContext {
       pendingJoinRequestCount:
           (json["pending_join_request_count"] as num?)?.toInt(),
       groupShortlistCount: (json["group_shortlist_count"] as num?)?.toInt(),
+      groupProgress: json["group_progress"] is Map
+          ? ListingGroupProgressState.fromJson(
+              Map<String, dynamic>.from(json["group_progress"] as Map),
+            )
+          : null,
     );
   }
 
@@ -110,6 +174,7 @@ class ListingGroupContext {
   final String? myJoinRequestStatus;
   final int? pendingJoinRequestCount;
   final int? groupShortlistCount;
+  final ListingGroupProgressState? groupProgress;
 
   bool get isClosed => groupFormingStatus == "closed";
 
@@ -123,14 +188,21 @@ class ListingGroupContext {
       !isClosed && groupMemberCount >= 2;
 
   bool get canUseHousingShortlist =>
-      (isOwner || isMember) && hasEnoughMembersForHousingSearch;
+      groupProgress?.canViewShortlist ??
+      ((isOwner || isMember) && hasEnoughMembersForHousingSearch);
 
   bool get hasPendingJoinRequest => myJoinRequestStatus == "pending";
 
   bool get canRequestToJoin =>
       !isOwner && !isMember && !hasPendingJoinRequest && isRecruiting;
 
-  bool get hasGroupChat => groupConversationId != null;
+  bool get hasGroupChat =>
+      groupProgress?.canOpenGroupChat ?? groupConversationId != null;
+
+  bool get canInviteLandlord => groupProgress?.canInviteLandlord ?? false;
+
+  bool get canRevokeLandlordInvite =>
+      groupProgress?.canRevokeLandlordInvite ?? false;
 }
 
 class ListingGroupJoinRequest {
