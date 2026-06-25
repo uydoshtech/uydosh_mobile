@@ -35,6 +35,7 @@ import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
@@ -246,6 +247,9 @@ class _ChatScreenState extends State<ChatScreen> {
   ListingDetail? _groupListingDetail;
   bool _groupHousingContextLoaded = false;
   bool _groupChatIsOwner = false;
+  PendingLandlordInvite? _pendingLandlordInvite;
+  bool _pendingLandlordInviteFetchInFlight = false;
+  bool _landlordInviteActionInFlight = false;
   bool _showSecurityRibbon = true;
   // Raw safety-warning state. We intentionally store the *raw* reason
   // (Gemini's English string) and the severity, then re-derive the
@@ -405,6 +409,27 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _loadPendingLandlordInvite() async {
+    if (_isGroupChat ||
+        widget.listingId == null ||
+        _pendingLandlordInviteFetchInFlight) {
+      return;
+    }
+    _pendingLandlordInviteFetchInFlight = true;
+    try {
+      final invite = await getIt<IListingGroupService>()
+          .getPendingLandlordInviteForConversation(
+        conversationId: widget.conversationId,
+      );
+      if (!mounted) return;
+      setState(() => _pendingLandlordInvite = invite);
+    } catch (e) {
+      logger.d("❌ [ChatScreen] Error loading landlord invite: $e");
+    } finally {
+      _pendingLandlordInviteFetchInFlight = false;
+    }
+  }
+
   /// Pulls the authoritative set of listing cards posted in this group chat so
   /// the quick-jump ribbon is complete regardless of how many messages are
   /// loaded. Best-effort: failures just leave the ribbon to message-derived
@@ -432,8 +457,8 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Message ids are the stable timeline order. Created timestamps can be equal
   /// or arrive skewed, which previously made option badges appear as #2, #1, ...
   List<({int listingId, String title})> _mentionedListings() {
-    final byListingId =
-        <int, ({int listingId, String title, int messageId, int fallbackOrder})>{};
+    final byListingId = <int,
+        ({int listingId, String title, int messageId, int fallbackOrder})>{};
     var fallbackOrder = 0;
 
     for (final d in _discussedFromServer) {
@@ -475,8 +500,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
     return [
-      for (final item in result)
-        (listingId: item.listingId, title: item.title),
+      for (final item in result) (listingId: item.listingId, title: item.title),
     ];
   }
 
@@ -885,6 +909,7 @@ class _ChatScreenState extends State<ChatScreen> {
         unawaited(_loadDiscussedListings());
       } else {
         _refreshPeerAvatarIfPossible();
+        unawaited(_loadPendingLandlordInvite());
       }
     } catch (e) {
       logger.d("❌ [ChatScreen] Error initializing chat: $e");
@@ -1542,6 +1567,137 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _acceptPendingLandlordInvite() async {
+    final invite = _pendingLandlordInvite;
+    if (invite == null || _landlordInviteActionInFlight) return;
+    setState(() => _landlordInviteActionInFlight = true);
+    try {
+      final conversationId =
+          await getIt<IListingGroupService>().acceptLandlordInvite(
+        groupListingId: invite.groupListingId,
+        inviteId: invite.inviteId,
+      );
+      if (!mounted) return;
+      setState(() => _pendingLandlordInvite = null);
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("group_landlord_invite_accepted"),
+      );
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+          builder: (_) => ChatScreen(
+            conversationId: conversationId,
+            listingId: invite.groupListingId,
+            listingTitle: invite.groupListingTitle,
+            conversationContextType: "listing_group",
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic_try_again"),
+      );
+    } finally {
+      if (mounted) setState(() => _landlordInviteActionInFlight = false);
+    }
+  }
+
+  Future<void> _declinePendingLandlordInvite() async {
+    final invite = _pendingLandlordInvite;
+    if (invite == null || _landlordInviteActionInFlight) return;
+    setState(() => _landlordInviteActionInFlight = true);
+    try {
+      await getIt<IListingGroupService>().declineLandlordInvite(
+        groupListingId: invite.groupListingId,
+        inviteId: invite.inviteId,
+      );
+      if (!mounted) return;
+      setState(() => _pendingLandlordInvite = null);
+      ToastTheme.showInfo(
+        context,
+        message: L10n.get("group_landlord_invite_declined"),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(
+        context,
+        message: L10n.get("error_generic_try_again"),
+      );
+    } finally {
+      if (mounted) setState(() => _landlordInviteActionInFlight = false);
+    }
+  }
+
+  Widget _buildPendingLandlordInviteCard() {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: scheme.primaryContainer.withValues(alpha: 0.72),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.groups_2_outlined, color: scheme.onPrimaryContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    L10n.get("group_landlord_invite_chat_card_title"),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: scheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    L10n.get("group_landlord_invite_chat_card_body"),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: _landlordInviteActionInFlight
+                            ? null
+                            : () => unawaited(_declinePendingLandlordInvite()),
+                        child: Text(L10n.get("group_landlord_invite_decline")),
+                      ),
+                      FilledButton(
+                        onPressed: _landlordInviteActionInFlight
+                            ? null
+                            : () => unawaited(_acceptPendingLandlordInvite()),
+                        child: _landlordInviteActionInFlight
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: UydoshInlineSpinner(
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(L10n.get("group_landlord_invite_accept")),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<Widget> _chatLeadingRibbonWidgets() {
     final mentioned = _isGroupChat
         ? _mentionedListings()
@@ -1555,6 +1711,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
           onTap: (id) => _jumpToSharedListing(id, focusComposer: false),
         ),
+      if (_pendingLandlordInvite != null) _buildPendingLandlordInviteCard(),
       if (_showSecurityRibbon)
         ChatSecurityRibbon(onClose: _dismissSecurityRibbon),
       if (_safetyWarningActive)

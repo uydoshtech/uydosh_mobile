@@ -239,6 +239,9 @@ class AppStrings {
       "group_landlord_invite_decline": "Decline",
       "group_landlord_invite_accepted": "You joined the group chat",
       "group_landlord_invite_declined": "Invite declined",
+      "group_landlord_invite_chat_card_title": "Group chat invite",
+      "group_landlord_invite_chat_card_body":
+          "The group owner invited you to discuss this listing with their group. You will only see messages sent after you join.",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
           "{title} will be removed from the group saved list.",
@@ -2298,6 +2301,9 @@ class AppStrings {
       "group_landlord_invite_decline": "Отклонить",
       "group_landlord_invite_accepted": "Вы вошли в групповой чат",
       "group_landlord_invite_declined": "Приглашение отклонено",
+      "group_landlord_invite_chat_card_title": "Приглашение в групповой чат",
+      "group_landlord_invite_chat_card_body":
+          "Организатор группы пригласил вас обсудить это объявление с группой. Вы увидите только сообщения, отправленные после входа.",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
           "«{title}» будет удалено из списка сохранённых группы.",
@@ -4397,6 +4403,9 @@ class AppStrings {
       "group_landlord_invite_decline": "Rad etish",
       "group_landlord_invite_accepted": "Guruh chatiga qo'shildingiz",
       "group_landlord_invite_declined": "Taklif rad etildi",
+      "group_landlord_invite_chat_card_title": "Guruh chatiga taklif",
+      "group_landlord_invite_chat_card_body":
+          "Guruh egasi sizni bu e'lonni guruh bilan muhokama qilishga taklif qildi. Faqat qo'shilganingizdan keyingi xabarlarni ko'rasiz.",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",
       "group_shortlist_remove_message":

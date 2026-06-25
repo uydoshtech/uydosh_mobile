@@ -101,6 +101,10 @@ abstract class IListingGroupService {
     required int housingListingId,
   });
 
+  Future<PendingLandlordInvite?> getPendingLandlordInviteForConversation({
+    required int conversationId,
+  });
+
   Future<int> acceptLandlordInvite({
     required int groupListingId,
     required int inviteId,
@@ -345,6 +349,25 @@ class ListingGroupService implements IListingGroupService {
       data: const _EmptyBody(),
     );
     return LandlordInviteResult.fromJson(response);
+  }
+
+  @override
+  Future<PendingLandlordInvite?> getPendingLandlordInviteForConversation({
+    required int conversationId,
+  }) async {
+    final response = await _oauthApiClient.get<Map<String, dynamic>>(
+      "/conversations/$conversationId/pending-landlord-invite",
+      _requireResponseMap,
+    );
+    final data = response["data"];
+    if (data == null) return null;
+    if (data is Map<String, dynamic>) {
+      return PendingLandlordInvite.fromJson(data);
+    }
+    if (data is Map) {
+      return PendingLandlordInvite.fromJson(Map<String, dynamic>.from(data));
+    }
+    throw FormatException("Unexpected invite response: ${data.runtimeType}");
   }
 
   @override

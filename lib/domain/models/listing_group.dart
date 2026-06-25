@@ -23,6 +23,35 @@ class ListingGroupMember {
   final String? role;
 }
 
+class PendingLandlordInvite {
+  const PendingLandlordInvite({
+    required this.inviteId,
+    required this.groupListingId,
+    required this.housingListingId,
+    required this.groupConversationId,
+    this.groupListingTitle,
+    this.housingListingTitle,
+  });
+
+  factory PendingLandlordInvite.fromJson(Map<String, dynamic> json) {
+    return PendingLandlordInvite(
+      inviteId: (json["invite_id"] as num).toInt(),
+      groupListingId: (json["group_listing_id"] as num).toInt(),
+      housingListingId: (json["housing_listing_id"] as num).toInt(),
+      groupConversationId: (json["group_conversation_id"] as num).toInt(),
+      groupListingTitle: json["group_listing_title"] as String?,
+      housingListingTitle: json["housing_listing_title"] as String?,
+    );
+  }
+
+  final int inviteId;
+  final int groupListingId;
+  final int housingListingId;
+  final int groupConversationId;
+  final String? groupListingTitle;
+  final String? housingListingTitle;
+}
+
 class ListingGroupContext {
   const ListingGroupContext({
     required this.isGroupForming,
