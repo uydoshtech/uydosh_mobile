@@ -1699,6 +1699,9 @@ class _ListingDetailCompatibilitySectionState
       required Color color,
       required String label,
     }) {
+      const labelStyleHeight = 1.2;
+      const labelFontSize = 11.0;
+      const labelReservedLines = 2;
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -1736,13 +1739,22 @@ class _ListingDetailCompatibilitySectionState
                         color: _getDescriptionTextColor(),
                       ),
                     ),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        height: 1.2,
-                        color:
-                            _getDescriptionTextColor().withValues(alpha: 0.75),
+                    SizedBox(
+                      height:
+                          labelFontSize * labelStyleHeight * labelReservedLines,
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          label,
+                          maxLines: labelReservedLines,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: labelFontSize,
+                            height: labelStyleHeight,
+                            color: _getDescriptionTextColor()
+                                .withValues(alpha: 0.75),
+                          ),
+                        ),
                       ),
                     ),
                   ],

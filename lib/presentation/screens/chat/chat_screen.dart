@@ -298,8 +298,8 @@ class _ChatScreenState extends State<ChatScreen> {
   static const Duration _minSkeletonDuration = Duration(milliseconds: 450);
   static const String _chatTranslateAutoTarget = "";
   static const double _translateTargetSwitchHeight = 135 * 60 / 145;
-  static const double _scrollToBottomShowOffset = 220;
-  static const double _scrollToBottomHideOffset = 120;
+  static const double _scrollToBottomShowOffset = 72;
+  static const double _scrollToBottomHideOffset = 24;
 
   /// Reserve space so the last messages clear the stacked glass composer (blue theme).
   static const double _glassComposerEstimatedHeight = 196;
@@ -339,10 +339,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _handleMessageListScroll() {
     if (!_scrollController.hasClients) return;
-    final offset = _scrollController.position.pixels;
+    final position = _scrollController.position;
+    final offsetFromBottom = (position.pixels - position.minScrollExtent)
+        .clamp(0.0, position.maxScrollExtent);
     final shouldShow = _showScrollToBottomButton
-        ? offset > _scrollToBottomHideOffset
-        : offset > _scrollToBottomShowOffset;
+        ? offsetFromBottom > _scrollToBottomHideOffset
+        : offsetFromBottom > _scrollToBottomShowOffset;
     if (shouldShow == _showScrollToBottomButton) return;
     setState(() => _showScrollToBottomButton = shouldShow);
   }
@@ -1749,8 +1751,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildScrollToBottomButton() {
     final theme = Theme.of(context);
+    final themeState = ThemeState();
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+    final glassTint = themeState.isBlueTheme
+        ? BlueThemeColors.background
+        : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
+    final iconColor =
+        themeState.isBlueTheme ? Colors.white : themeState.cardIconColor;
+    const shape = CircleBorder();
+
     return AnimatedScale(
       scale: _showScrollToBottomButton ? 1 : 0.88,
       duration:
@@ -1766,22 +1779,51 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Tooltip(
             message: L10n.get("chat_scroll_to_bottom"),
             child: Material(
-              color: theme.colorScheme.surface,
-              elevation: 8,
-              shadowColor: Colors.black.withValues(alpha: 0.18),
-              shape: const CircleBorder(),
+              type: MaterialType.transparency,
+              shape: shape,
               clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: _scrollToBottom,
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: theme.colorScheme.primary,
-                    size: 28,
-                    semanticLabel: L10n.get("chat_scroll_to_bottom"),
+              child: LiquidGlassRendering.backdropBlur(
+                enabled: enableGlass,
+                sigma: LiquidGlassRendering.plateBlurSigma,
+                child: InkWell(
+                  customBorder: shape,
+                  onTap: () {
+                    UiFeedbackUtils.selection();
+                    _scrollToBottom();
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: glassTint.withValues(alpha: isDark ? 0.30 : 0.46),
+                      border: Border.all(
+                        color: (themeState.isBlueTheme
+                                ? Colors.white
+                                : scheme.onSurface)
+                            .withValues(
+                          alpha: themeState.isBlueTheme ? 0.22 : 0.12,
+                        ),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.26 : 0.14,
+                          ),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: iconColor,
+                        size: 30,
+                        semanticLabel: L10n.get("chat_scroll_to_bottom"),
+                      ),
+                    ),
                   ),
                 ),
               ),

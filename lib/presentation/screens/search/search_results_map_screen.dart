@@ -124,7 +124,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _result = result;
         _loadError = null;
         _isLoading = false;
-        _selectedPin = null;
+        _selectedPin = _autoSelectedPin(result);
       });
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
@@ -167,6 +167,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       pins: pins,
       total: bounds == null ? response.total : listings.length,
     );
+  }
+
+  ListingMapPin? _autoSelectedPin(_SearchMapResult result) {
+    return result.pins.length == 1 ? result.pins.first : null;
   }
 
   Future<void> _openFilters() async {
@@ -539,17 +543,11 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         title: L10n.get("error"),
       );
     }
-
-    if (result == null || result.listings.isEmpty) {
+    if (result == null) {
       return _CenteredMapStatus(
-        icon: Icons.search_off_outlined,
-        title: context.l10n.no_search_results,
-      );
-    }
-    if (result.pins.isEmpty) {
-      return _CenteredMapStatus(
-        icon: Icons.location_off_outlined,
-        title: context.l10n.no_search_results,
+        icon: Icons.map_outlined,
+        title: context.l10n.loading_map,
+        loading: true,
       );
     }
 
@@ -578,12 +576,23 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
                   pins: result.pins,
                   title: context.l10n.search_results,
                   height: double.infinity,
+                  moveCameraOnTargetChange: result.pins.isNotEmpty,
                   onMapCreated: (controller) => _mapController = controller,
                   onCameraPositionChanged: _handleCameraPositionChanged,
                   onMapTap: (_) => setState(() => _selectedPin = null),
                   onPinTap: (pin) => setState(() => _selectedPin = pin),
                 ),
               ),
+              if (result.pins.isEmpty)
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  child: _MapStatusBanner(
+                    icon: Icons.search_off_outlined,
+                    title: context.l10n.no_search_results,
+                  ),
+                ),
               if (_selectedPin != null)
                 Positioned(
                   left: 8,
@@ -1265,6 +1274,59 @@ class _RefreshAreaButton extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapStatusBanner extends StatelessWidget {
+  const _MapStatusBanner({
+    required this.icon,
+    required this.title,
+  });
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.14),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ThemeIcon(
+                icon,
+                size: 20,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

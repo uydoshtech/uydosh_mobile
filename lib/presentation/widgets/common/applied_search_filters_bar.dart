@@ -55,10 +55,12 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   final bool alignRight;
   final double height;
   final double chipSize;
+
   /// Extra scroll content padding on the trailing edge. Useful when this bar
   /// sits next to trailing actions (e.g. close/camera/lock) so the last chip
   /// never scrolls underneath those buttons.
   final double endPadding;
+
   /// When true, show the price pill even for the full default range (0–1000).
   final bool alwaysShowPriceRange;
 
@@ -195,7 +197,9 @@ class AppliedSearchFiltersBar extends StatelessWidget {
 
     final typeIds = listingTypeIds != null && listingTypeIds!.length > 1
         ? listingTypeIds!
-        : (listingTypeId != null && listingTypeId! > 0 ? [listingTypeId!] : null);
+        : (listingTypeId != null && listingTypeId! > 0
+            ? [listingTypeId!]
+            : null);
     if (typeIds != null && typeIds.isNotEmpty) {
       final typeChips = typeIds.map((lt) {
         final code = ListingTypeHelper.getCodeFromId(lt);
@@ -404,7 +408,8 @@ class AppliedSearchFiltersBar extends StatelessWidget {
       final lineName = MetroCache.getLineLabel(line, lang).trim();
       return pillChip(
         tooltip: lineName,
-        leading: MLetterIcon(color: AppColors.getMetroLineColor(line), size: 20),
+        leading:
+            MLetterIcon(color: AppColors.getMetroLineColor(line), size: 20),
         text: lineName,
       );
     }
@@ -475,15 +480,28 @@ class AppliedSearchFiltersBar extends StatelessWidget {
         out.add(gap);
       } else {
         // Collapse many stations into one chip per line with a station count,
-        // so the ribbon stays compact instead of listing every station.
-        final byLine = <int, int>{};
+        // so the ribbon stays compact instead of listing every station. When a
+        // line is fully selected, show the same line chip as the line filter.
+        final byLine = <int, Set<int>>{};
         for (final id in selectedStationIds) {
           final line = MetroCache.getStationById(id)?.line ?? 0;
-          byLine.update(line, (v) => v + 1, ifAbsent: () => 1);
+          byLine.putIfAbsent(line, () => <int>{}).add(id);
         }
         final lines = byLine.keys.toList()..sort();
         for (final line in lines) {
-          out.add(lineCountChip(line, byLine[line]!));
+          final selectedLineStationIds = byLine[line]!;
+          final allLineStationIds = MetroCache.getStationsForLine(line)
+              .map((station) => station.id)
+              .toSet();
+          final isEntireLineSelected = allLineStationIds.isNotEmpty &&
+              selectedLineStationIds.length == allLineStationIds.length &&
+              selectedLineStationIds.containsAll(allLineStationIds);
+
+          out.add(
+            isEntireLineSelected
+                ? lineChip(line)
+                : lineCountChip(line, selectedLineStationIds.length),
+          );
           out.add(gap);
         }
       }
@@ -579,4 +597,3 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     return out;
   }
 }
-

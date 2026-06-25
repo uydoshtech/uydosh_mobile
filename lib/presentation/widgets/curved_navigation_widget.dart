@@ -222,7 +222,12 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }) {
     final iconColor = isDisabled ? palette.disabled : Colors.white;
 
-    final iconWidget = ThemeIcon(icon, size: 28, color: iconColor);
+    final iconWidget = ThemeIcon(
+      icon,
+      size: 28,
+      color: iconColor,
+      useThemeColor: false,
+    );
 
     return _columnForNavItem(
       palette: palette,
@@ -272,6 +277,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       CupertinoIcons.bubble_left_bubble_right,
       size: 28,
       color: Colors.white,
+      useThemeColor: false,
     );
 
     // IMPORTANT: The badge subtree must be mounted exactly once.

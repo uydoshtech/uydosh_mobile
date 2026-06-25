@@ -10,6 +10,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
 class ListingMapPin {
@@ -101,6 +102,8 @@ class YandexMapWidget extends StatefulWidget {
     this.onMapCreated,
     this.onCameraPositionChanged,
     this.height = 200,
+    this.moveCameraOnTargetChange = true,
+    this.showListingDetailTooltip = true,
   });
 
   final double? latitude;
@@ -114,6 +117,8 @@ class YandexMapWidget extends StatefulWidget {
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
   final CameraPositionCallback? onCameraPositionChanged;
+  final bool moveCameraOnTargetChange;
+  final bool showListingDetailTooltip;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -128,12 +133,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   bool _isInitializing = false;
   int _retryCount = 0;
   int _automaticCameraFinishesToIgnore = 0;
+  bool _showListingDetailTooltip = false;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
 
   @override
   void initState() {
     super.initState();
+    _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
     _initializeMapWithDelay();
   }
@@ -141,7 +148,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   @override
   void didUpdateWidget(covariant YandexMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_mapTargetChanged(oldWidget)) return;
+    if (oldWidget.listingDetail?.id != widget.listingDetail?.id) {
+      _showListingDetailTooltip = _canShowListingDetailTooltip;
+    }
+    if (!_mapTargetChanged(oldWidget) || !widget.moveCameraOnTargetChange) {
+      return;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_isMapReady || _mapController == null) return;
@@ -241,6 +253,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                       centerPoint["longitude"]!,
                     )
                   : _buildMobileMap(context, centerPoint, mapObjects),
+            if (_showListingDetailTooltip && widget.listingDetail != null)
+              Positioned(
+                left: 8,
+                right: 8,
+                top: 8,
+                child: _ListingDetailMapTooltip(
+                  listingDetail: widget.listingDetail!,
+                  onClose: () => setState(() {
+                    _showListingDetailTooltip = false;
+                  }),
+                ),
+              ),
             // Zoom controls (only when map is ready)
             if (!kIsWeb && _isMapReady) _buildZoomControls(),
           ],
@@ -430,6 +454,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         },
         onMapTap: (point) {
           logger.d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
+          if (_showListingDetailTooltip) {
+            setState(() => _showListingDetailTooltip = false);
+          }
           widget.onMapTap?.call(point);
         },
         onCameraPositionChanged: _handleCameraPositionChanged,
@@ -686,6 +713,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return false;
   }
 
+  bool get _canShowListingDetailTooltip {
+    return widget.showListingDetailTooltip && widget.listingDetail != null;
+  }
+
   Future<void> _moveInitialCamera(
     YandexMapController controller,
     Map<String, double> centerPoint,
@@ -900,5 +931,92 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (_mapController != null) {
       _mapController!.moveCamera(CameraUpdate.zoomOut());
     }
+  }
+}
+
+class _ListingDetailMapTooltip extends StatelessWidget {
+  const _ListingDetailMapTooltip({
+    required this.listingDetail,
+    required this.onClose,
+  });
+
+  final ListingDetail listingDetail;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    listingDetail.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _priceLabel(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: -10,
+                right: -40,
+                child: IconButton(
+                  onPressed: onClose,
+                  icon: const Icon(Icons.close),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _priceLabel() {
+    final bounds = PriceRangeHelper.resolveListingDisplayBounds(
+      storedPrice: listingDetail.price,
+      listingTypeCode: listingDetail.listingType.code,
+      minPrice: listingDetail.minPrice,
+      maxPrice: listingDetail.maxPrice,
+    );
+    return PriceRangeHelper.formatListingPriceRangeWithCurrencyMarker(
+      bounds.min,
+      bounds.max,
+    );
   }
 }
