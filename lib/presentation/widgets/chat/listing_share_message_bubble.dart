@@ -35,6 +35,7 @@ class ListingShareMessageBubble extends StatelessWidget {
     this.rightAvatarInitials,
     this.leftAvatarUrl,
     this.rightAvatarUrl,
+    this.isLandlordBubble = false,
     super.key,
   });
 
@@ -51,8 +52,10 @@ class ListingShareMessageBubble extends StatelessWidget {
   final String? rightAvatarInitials;
   final String? leftAvatarUrl;
   final String? rightAvatarUrl;
+  final bool isLandlordBubble;
 
   static const double _ownerAvatarGap = 8;
+  static const Color _landlordAccentColor = Color(0xFFFF8A00);
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +76,7 @@ class ListingShareMessageBubble extends StatelessWidget {
       rightAvatarInitials: rightAvatarInitials,
       leftAvatarUrl: leftAvatarUrl,
       rightAvatarUrl: rightAvatarUrl,
+      bubbleAccentColor: isLandlordBubble ? _landlordAccentColor : null,
       bubbleChild: Stack(
         children: [
           Column(

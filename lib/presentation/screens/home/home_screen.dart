@@ -1140,11 +1140,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   double _viewToggleFabTop({required double searchRibbonHeight}) {
     if (widget.isSearchMode) {
-      return searchRibbonHeight + 8;
+      return searchRibbonHeight + 4;
     }
     return ThemeState().mainShellGlassExtraTopInset(context) +
         _inlineSearchRibbonHeight +
-        8;
+        4;
   }
 
   SearchBottomSheetResult _currentSearchResultForViewToggle() {

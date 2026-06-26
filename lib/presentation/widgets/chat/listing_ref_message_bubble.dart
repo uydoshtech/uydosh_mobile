@@ -16,6 +16,7 @@ class ListingRefMessageBubble extends StatelessWidget {
     required this.payload,
     required this.isCurrentUser,
     required this.onTapAnchor,
+    this.isLandlordBubble = false,
     this.leftAvatarInitials,
     this.rightAvatarInitials,
     this.leftAvatarUrl,
@@ -27,6 +28,7 @@ class ListingRefMessageBubble extends StatelessWidget {
   final ListingRefMessagePayload payload;
   final bool isCurrentUser;
   final VoidCallback onTapAnchor;
+  final bool isLandlordBubble;
   final String? leftAvatarInitials;
   final String? rightAvatarInitials;
   final String? leftAvatarUrl;
@@ -48,6 +50,7 @@ class ListingRefMessageBubble extends StatelessWidget {
     final title = payload.title.trim().isEmpty
         ? L10n.get("group_shortlist_ref_label")
         : payload.title.trim();
+    const landlordAccentColor = Color(0xFFFF8A00);
 
     return ChatMessageRow(
       isFromCurrentUser: isCurrentUser,
@@ -55,6 +58,7 @@ class ListingRefMessageBubble extends StatelessWidget {
       rightAvatarInitials: rightAvatarInitials,
       leftAvatarUrl: leftAvatarUrl,
       rightAvatarUrl: rightAvatarUrl,
+      bubbleAccentColor: isLandlordBubble ? landlordAccentColor : null,
       bubbleChild: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -110,8 +114,8 @@ class ListingRefMessageBubble extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.open_in_new, size: 13,
-                        color: textColor.withValues(alpha: 0.7)),
+                    Icon(Icons.open_in_new,
+                        size: 13, color: textColor.withValues(alpha: 0.7)),
                     const SizedBox(width: 4),
                     Text(
                       L10n.get("group_shortlist_ref_tap_hint"),

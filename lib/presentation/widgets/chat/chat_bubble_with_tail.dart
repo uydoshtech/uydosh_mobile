@@ -10,6 +10,7 @@ class ChatBubbleWithTail extends StatelessWidget {
   const ChatBubbleWithTail({
     required this.isFromCurrentUser,
     required this.child,
+    this.accentColor,
     super.key,
   });
 
@@ -18,6 +19,9 @@ class ChatBubbleWithTail extends StatelessWidget {
 
   /// Content to display inside the bubble.
   final Widget child;
+
+  /// Optional role/accent treatment painted as a thin border plus leading stripe.
+  final Color? accentColor;
 
   /// Corner radius of the bubble body (must stay in sync with painter path).
   static const double cornerRadius = 18;
@@ -61,9 +65,12 @@ class ChatBubbleWithTail extends StatelessWidget {
               )
             : ThreeDSurfaceStyle.surfaceGradient(context, solidBubbleColor);
 
-        final Color borderColor = useGlass
-            ? Colors.white.withValues(alpha: 0.22)
-            : (isFromCurrentUser ? solidBorderColor : Colors.transparent);
+        final accent = accentColor;
+        final Color borderColor = accent != null
+            ? accent.withValues(alpha: themeState.isBlueTheme ? 0.90 : 0.75)
+            : useGlass
+                ? Colors.white.withValues(alpha: 0.22)
+                : (isFromCurrentUser ? solidBorderColor : Colors.transparent);
 
         final List<BoxShadow> elevationShadows = useGlass
             ? <BoxShadow>[
@@ -80,9 +87,28 @@ class ChatBubbleWithTail extends StatelessWidget {
           borderColor: borderColor,
           elevationShadows: elevationShadows,
           tailPointsRight: isFromCurrentUser,
-          hasBorder: isFromCurrentUser || useGlass,
+          hasBorder: accent != null || isFromCurrentUser || useGlass,
           radius: cornerRadius,
         );
+
+        final contentChild = accent == null
+            ? child
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 3,
+                    height: 34,
+                    margin: const EdgeInsetsDirectional.only(end: 10, top: 2),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  Flexible(child: child),
+                ],
+              );
 
         final content = Container(
           padding: EdgeInsets.only(
@@ -91,7 +117,7 @@ class ChatBubbleWithTail extends StatelessWidget {
             top: innerVerticalPadding,
             bottom: innerVerticalPadding,
           ),
-          child: child,
+          child: contentChild,
         );
 
         if (!useGlass) {

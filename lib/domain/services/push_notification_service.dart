@@ -358,7 +358,8 @@ class PushNotificationService implements IPushNotificationService {
           );
           Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
-              settings: RouteSettings(name: ChatScreen.routeName(conversationId)),
+              settings:
+                  RouteSettings(name: ChatScreen.routeName(conversationId)),
               builder: (_) => ChatScreen(
                 conversationId: conversationId,
                 listingId: groupListingId,
@@ -410,6 +411,11 @@ class PushNotificationService implements IPushNotificationService {
 
     final conversationIdStr = data["conversationId"];
     final listingIdStr = data["listingId"];
+    final conversationType =
+        (data["conversationType"] ?? data["conversation_type"] ?? "")
+            .toString()
+            .trim()
+            .toLowerCase();
     final senderIdStr = data["senderId"];
     final senderName = data["senderName"] ?? "Someone";
 
@@ -450,9 +456,15 @@ class PushNotificationService implements IPushNotificationService {
           builder: (_) => ChatScreen(
             conversationId: conversationId,
             listingId: (listingId != null && listingId > 0) ? listingId : null,
+            conversationContextType:
+                conversationType == "listing_group" ? "listing_group" : null,
             otherUserInitials: StringUtils.extractInitials(senderName),
             otherUserName: senderName,
-            otherUserId: (senderId != null && senderId > 0) ? senderId : null,
+            otherUserId: conversationType == "listing_group"
+                ? null
+                : (senderId != null && senderId > 0)
+                    ? senderId
+                    : null,
             otherUserAvatar: null,
           ),
         ),

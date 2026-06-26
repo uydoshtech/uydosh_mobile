@@ -39,6 +39,7 @@ class MessageBubble extends StatefulWidget {
     this.translation,
     this.isTranslating = false,
     this.showOriginal = false,
+    this.isLandlordBubble = false,
     this.onToggleTranslation,
     this.onSetReaction,
     this.onClearReaction,
@@ -75,6 +76,9 @@ class MessageBubble extends StatefulWidget {
   /// is available. Parent screen owns the toggle state so scroll off-screen
   /// + back preserves it.
   final bool showOriginal;
+
+  /// Whether this group-chat message was authored by the invited landlord.
+  final bool isLandlordBubble;
 
   /// Invoked when the user taps the translation toggle. Parent is expected
   /// to flip [showOriginal]. No-op when [translation] is null.
@@ -127,6 +131,7 @@ class _MessageBubbleState extends State<MessageBubble>
   /// How far the picker extends **below** the painted bubble top (positive =
   /// overlaps glass). Tuned so most of the pill sits on the bubble like legacy UX.
   static const double _reactionToolbarOverlapIntoBubble = 22;
+  static const Color _landlordAccentColor = Color(0xFFFF8A00);
 
   /// Picker uses a slightly smaller inward trailing inset than the corner badge
   /// so the strip sits nearer the bubble edge.
@@ -349,6 +354,9 @@ class _MessageBubbleState extends State<MessageBubble>
                         rightAvatarInitials: _getCurrentUserInitials(),
                         leftAvatarUrl: _getOtherUserAvatarUrl(),
                         rightAvatarUrl: widget.currentUserProfile?.avatarUrl,
+                        bubbleAccentColor: widget.isLandlordBubble
+                            ? _landlordAccentColor
+                            : null,
                         bubbleChild: KeyedSubtree(
                           key: _bubbleAnchorKey,
                           child: Stack(

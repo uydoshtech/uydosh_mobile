@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -313,8 +315,9 @@ Future<bool> showListingGroupMemberProfilesSheet({
     context: context,
     builder: (sheetContext) {
       final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
+      final bottomPadding = bottomInset + 12;
       return Padding(
-        padding: EdgeInsets.only(bottom: bottomInset + 12),
+        padding: EdgeInsets.only(bottom: bottomPadding),
         child: SizedBox(
           width: MediaQuery.sizeOf(sheetContext).width,
           child: GlassBottomSheetSurface(
@@ -327,6 +330,7 @@ Future<bool> showListingGroupMemberProfilesSheet({
                 ownerUserId: ownerUserId,
                 currentUserId: currentUserId,
                 isOwner: isOwner,
+                reservedBottomPadding: bottomPadding,
                 groupProgress: groupProgress,
                 memberCompatibility: memberCompatibility,
                 groupListingDetail: groupListingDetail,
@@ -349,6 +353,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
     required this.ownerUserId,
     required this.onMemberTap,
     required this.isOwner,
+    required this.reservedBottomPadding,
     this.currentUserId,
     this.groupProgress,
     this.memberCompatibility = const {},
@@ -361,6 +366,7 @@ class _ListingGroupMemberProfilesSheet extends StatefulWidget {
   final int ownerUserId;
   final int? currentUserId;
   final bool isOwner;
+  final double reservedBottomPadding;
   final ListingGroupProgress? groupProgress;
   final Map<int, GroupMemberCompatibilitySummary> memberCompatibility;
   final ListingDetail? groupListingDetail;
@@ -402,6 +408,9 @@ class _ListingGroupMemberProfilesSheetState
     );
   }
 
+  int? get _activeLandlordUserId => widget
+      .groupListingDetail?.groupContext?.groupProgress?.activeLandlordUserId;
+
   bool get _isGroupFull {
     final progress = _groupProgress;
     return progress != null &&
@@ -412,6 +421,7 @@ class _ListingGroupMemberProfilesSheetState
   List<ConversationMemberSummary> get _sortedMembers => _sortMembersForDisplay(
         members: _members,
         ownerUserId: widget.ownerUserId,
+        landlordUserId: _activeLandlordUserId,
         currentUserId: widget.currentUserId,
       );
 
@@ -420,6 +430,7 @@ class _ListingGroupMemberProfilesSheetState
     return (mediaQuery.size.height -
             mediaQuery.padding.top -
             mediaQuery.padding.bottom -
+            widget.reservedBottomPadding -
             _sheetScreenMargin)
         .clamp(0.0, mediaQuery.size.height)
         .toDouble();
@@ -750,195 +761,209 @@ class _ListingGroupMemberProfilesSheetState
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final sortedMembers = _sortedMembers;
-    final showPendingRequests = widget.isOwner &&
-        (_loadingRequests ||
-            _pendingRequests.isNotEmpty ||
-            _hasCheckedRequests);
-    final maxSheetHeight = _availableSheetHeight(context);
-    final estimatedSheetHeight = _estimatedSheetHeight(
-      sortedMembers: sortedMembers,
-      showPendingRequests: showPendingRequests,
-    );
-    final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
-        ? maxSheetHeight
-        : _sheetMinimumHeight;
-    final sheetHeight =
-        estimatedSheetHeight.clamp(minSheetHeight, maxSheetHeight).toDouble();
-    final shouldScroll = estimatedSheetHeight > maxSheetHeight;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scheme = Theme.of(context).colorScheme;
+        final sortedMembers = _sortedMembers;
+        final showPendingRequests = widget.isOwner &&
+            (_loadingRequests ||
+                _pendingRequests.isNotEmpty ||
+                _hasCheckedRequests);
+        final maxSheetHeight = math.min(
+          _availableSheetHeight(context),
+          constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : double.infinity,
+        );
+        final estimatedSheetHeight = _estimatedSheetHeight(
+          sortedMembers: sortedMembers,
+          showPendingRequests: showPendingRequests,
+        );
+        final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
+            ? maxSheetHeight
+            : _sheetMinimumHeight;
+        final sheetHeight = estimatedSheetHeight
+            .clamp(minSheetHeight, maxSheetHeight)
+            .toDouble();
+        final shouldScroll = estimatedSheetHeight > maxSheetHeight;
 
-    return SizedBox(
-      height: sheetHeight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 10),
-          Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: scheme.onSurface.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(99),
+        return SizedBox(
+          height: sheetHeight,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: scheme.onSurface.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
               ),
-            ),
-          ),
-          _MemberProfilesHeader(
-            members: _members,
-            currentUserId: widget.currentUserId,
-            isGroupFull: _isGroupFull,
-            groupProgress: _groupProgress,
-            statusLabelKey:
-                widget.groupListingDetail?.groupContext?.progressStatusLabelKey,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: shouldScroll
-                  ? const BouncingScrollPhysics()
-                  : const NeverScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_isGroupFull) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              await GroupHousingFlow.openShortlistSheet(
-                                context: context,
-                                groupListingId: widget.listingId,
-                                isOwner: widget.isOwner,
-                                groupListingDetail: widget.groupListingDetail,
-                                onChanged: widget.onChanged,
-                              );
-                            },
-                            icon: const Icon(Icons.bookmark_outline),
-                            label: Text(
-                              GroupHousingFlow.savedListingsLabel(
-                                widget.groupListingDetail?.groupContext
-                                        ?.groupShortlistCount ??
-                                    GroupShortlistState()
-                                        .shortlistCountForGroup(
-                                      widget.listingId,
-                                    ),
+              _MemberProfilesHeader(
+                members: sortedMembers,
+                currentUserId: widget.currentUserId,
+                isGroupFull: _isGroupFull,
+                groupProgress: _groupProgress,
+                statusLabelKey: widget
+                    .groupListingDetail?.groupContext?.progressStatusLabelKey,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: shouldScroll
+                      ? const BouncingScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_isGroupFull) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  await GroupHousingFlow.openShortlistSheet(
+                                    context: context,
+                                    groupListingId: widget.listingId,
+                                    isOwner: widget.isOwner,
+                                    groupListingDetail:
+                                        widget.groupListingDetail,
+                                    onChanged: widget.onChanged,
+                                  );
+                                },
+                                icon: const Icon(Icons.bookmark_outline),
+                                label: Text(
+                                  GroupHousingFlow.savedListingsLabel(
+                                    widget.groupListingDetail?.groupContext
+                                            ?.groupShortlistCount ??
+                                        GroupShortlistState()
+                                            .shortlistCountForGroup(
+                                          widget.listingId,
+                                        ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final member in sortedMembers) ...[
-                          if (member != sortedMembers.first)
-                            const SizedBox(height: 10),
-                          _MemberProfileCard(
-                            member: member,
-                            ownerUserId: widget.ownerUserId,
-                            currentUserId: widget.currentUserId,
-                            compatibility:
-                                widget.memberCompatibility[member.userId],
-                            canRemove: widget.isOwner &&
-                                member.userId != widget.ownerUserId &&
-                                !_isRemoving,
-                            canLeave: !widget.isOwner &&
-                                widget.currentUserId != null &&
-                                member.userId == widget.currentUserId &&
-                                member.userId != widget.ownerUserId &&
-                                !_isLeaving,
-                            onTap: () {
-                              HapticFeedbackUtils.impact();
-                              Navigator.of(context).pop();
-                              widget.onMemberTap(member.userId);
-                            },
-                            onRemove: widget.isOwner &&
+                        ),
+                      ],
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final member in sortedMembers) ...[
+                              if (member != sortedMembers.first)
+                                const SizedBox(height: 10),
+                              _MemberProfileCard(
+                                member: member,
+                                ownerUserId: widget.ownerUserId,
+                                landlordUserId: _activeLandlordUserId,
+                                currentUserId: widget.currentUserId,
+                                compatibility:
+                                    widget.memberCompatibility[member.userId],
+                                canRemove: widget.isOwner &&
                                     member.userId != widget.ownerUserId &&
-                                    !_isRemoving
-                                ? () => _confirmRemoveMember(member)
-                                : null,
-                            onLeave: !widget.isOwner &&
+                                    !_isRemoving,
+                                canLeave: !widget.isOwner &&
                                     widget.currentUserId != null &&
                                     member.userId == widget.currentUserId &&
                                     member.userId != widget.ownerUserId &&
-                                    !_isLeaving
-                                ? _confirmLeaveGroup
-                                : null,
-                          ),
-                        ],
-                        if (showPendingRequests) ...[
-                          const SizedBox(height: 18),
-                          Text(
-                            L10n.get("group_pending_join_requests"),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                          const SizedBox(height: 10),
-                          if (_loadingRequests)
-                            const SizedBox(
-                              height: _sheetLoadingRequestsHeight,
-                              child: Center(
-                                child: HouseLoadingIndicator(size: 24),
-                              ),
-                            )
-                          else if (_pendingRequests.isEmpty)
-                            SizedBox(
-                              height: _sheetLoadingRequestsHeight,
-                              child: Center(
-                                child: Text(
-                                  L10n.get("group_no_pending_requests"),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: scheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                              ),
-                            )
-                          else
-                            for (final request in _pendingRequests) ...[
-                              if (request != _pendingRequests.first)
-                                const SizedBox(height: 10),
-                              _PendingJoinRequestCard(
-                                request: request,
-                                compatibility: _pendingRequestCompatibility[
-                                    request.applicantUserId],
-                                isBusy: _busyRequestIds.contains(request.id),
+                                    !_isLeaving,
                                 onTap: () {
                                   HapticFeedbackUtils.impact();
                                   Navigator.of(context).pop();
-                                  widget.onMemberTap(request.applicantUserId);
+                                  widget.onMemberTap(member.userId);
                                 },
-                                onApprove: () => _approveRequest(request),
-                                onReject: () => _rejectRequest(request),
+                                onRemove: widget.isOwner &&
+                                        member.userId != widget.ownerUserId &&
+                                        !_isRemoving
+                                    ? () => _confirmRemoveMember(member)
+                                    : null,
+                                onLeave: !widget.isOwner &&
+                                        widget.currentUserId != null &&
+                                        member.userId == widget.currentUserId &&
+                                        member.userId != widget.ownerUserId &&
+                                        !_isLeaving
+                                    ? _confirmLeaveGroup
+                                    : null,
                               ),
                             ],
-                        ],
-                      ],
-                    ),
+                            if (showPendingRequests) ...[
+                              const SizedBox(height: 18),
+                              Text(
+                                L10n.get("group_pending_join_requests"),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              if (_loadingRequests)
+                                const SizedBox(
+                                  height: _sheetLoadingRequestsHeight,
+                                  child: Center(
+                                    child: HouseLoadingIndicator(size: 24),
+                                  ),
+                                )
+                              else if (_pendingRequests.isEmpty)
+                                SizedBox(
+                                  height: _sheetLoadingRequestsHeight,
+                                  child: Center(
+                                    child: Text(
+                                      L10n.get("group_no_pending_requests"),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                for (final request in _pendingRequests) ...[
+                                  if (request != _pendingRequests.first)
+                                    const SizedBox(height: 10),
+                                  _PendingJoinRequestCard(
+                                    request: request,
+                                    compatibility: _pendingRequestCompatibility[
+                                        request.applicantUserId],
+                                    isBusy:
+                                        _busyRequestIds.contains(request.id),
+                                    onTap: () {
+                                      HapticFeedbackUtils.impact();
+                                      Navigator.of(context).pop();
+                                      widget
+                                          .onMemberTap(request.applicantUserId);
+                                    },
+                                    onApprove: () => _approveRequest(request),
+                                    onReject: () => _rejectRequest(request),
+                                  ),
+                                ],
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -946,14 +971,16 @@ class _ListingGroupMemberProfilesSheetState
 List<ConversationMemberSummary> _sortMembersForDisplay({
   required List<ConversationMemberSummary> members,
   required int ownerUserId,
+  int? landlordUserId,
   int? currentUserId,
 }) {
   final sorted = List<ConversationMemberSummary>.from(members);
   sorted.sort((a, b) {
     int rank(ConversationMemberSummary member) {
-      if (member.userId == ownerUserId) return 0;
-      if (currentUserId != null && member.userId == currentUserId) return 1;
-      return 2;
+      if (landlordUserId != null && member.userId == landlordUserId) return 0;
+      if (member.userId == ownerUserId) return 1;
+      if (currentUserId != null && member.userId == currentUserId) return 2;
+      return 3;
     }
 
     final rankCompare = rank(a).compareTo(rank(b));
@@ -1147,6 +1174,7 @@ class _MemberProfileCard extends StatelessWidget {
     required this.member,
     required this.ownerUserId,
     required this.onTap,
+    this.landlordUserId,
     this.currentUserId,
     this.compatibility,
     this.canRemove = false,
@@ -1157,6 +1185,7 @@ class _MemberProfileCard extends StatelessWidget {
 
   final ConversationMemberSummary member;
   final int ownerUserId;
+  final int? landlordUserId;
   final int? currentUserId;
   final GroupMemberCompatibilitySummary? compatibility;
   final VoidCallback onTap;
@@ -1167,16 +1196,21 @@ class _MemberProfileCard extends StatelessWidget {
 
   bool get _isOwner => member.userId == ownerUserId;
 
+  bool get _isLandlord =>
+      landlordUserId != null && member.userId == landlordUserId;
+
   bool get _isCurrentUser =>
       currentUserId != null && member.userId == currentUserId;
 
   String? get _roleLabel {
+    if (_isLandlord) return L10n.get("role_landlord");
     if (_isOwner) return L10n.get("group_member_role_owner");
     if (_isCurrentUser) return L10n.get("group_member_role_you");
     return L10n.get("group_member_role_member");
   }
 
   Color _roleColor(ColorScheme scheme) {
+    if (_isLandlord) return ListingDetailThemeHelper.iconColor;
     if (_isOwner) return ListingDetailThemeHelper.iconColor;
     if (_isCurrentUser) return AppColors.success;
     if (ThemeState().isLightTheme) return Colors.black;

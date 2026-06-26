@@ -866,6 +866,15 @@ class _ChatScreenState extends State<ChatScreen> {
     return _groupMemberCompatibilityForParticipants(participants);
   }
 
+  bool _isLandlordMessage(Message message) {
+    if (!_isGroupChat) return false;
+    for (final participant in _groupParticipants) {
+      if (participant.userId != message.senderId) continue;
+      return participant.role?.trim().toLowerCase() == "landlord_guest";
+    }
+    return false;
+  }
+
   List<MessageGroupListItem> _groupedItemsFor(List<Message> messages) {
     final fp = _fingerprintNewMessageIds(_newMessageIds);
     if (_cachedGroupedItems != null &&
@@ -2295,6 +2304,7 @@ class _ChatScreenState extends State<ChatScreen> {
           message: message,
           payload: refPayload,
           isCurrentUser: isCurrentUser,
+          isLandlordBubble: _isLandlordMessage(message),
           leftAvatarInitials:
               isCurrentUser ? null : StringUtils.extractInitials(senderName),
           rightAvatarInitials: _getCurrentUserInitials(),
@@ -2323,6 +2333,7 @@ class _ChatScreenState extends State<ChatScreen> {
           rating: message.listingRating,
           optionNumber: _listingShareOptionNumber(payload),
           isCurrentUser: isCurrentUser,
+          isLandlordBubble: _isLandlordMessage(message),
           leftAvatarInitials:
               isCurrentUser ? null : StringUtils.extractInitials(senderName),
           rightAvatarInitials: _getCurrentUserInitials(),
@@ -2393,6 +2404,7 @@ class _ChatScreenState extends State<ChatScreen> {
           isCurrentUser && _isOwnTextBubbleForLongPressEdit(message)
               ? () => _onLongPressOwnMessageForEdit(message)
               : null,
+      isLandlordBubble: _isLandlordMessage(message),
       onTapReplyPreview: (replyId) => _jumpToMessageById(
         replyId,
         focusComposer: false,
@@ -2798,10 +2810,16 @@ class _ChatScreenState extends State<ChatScreen> {
               final item = groupedItems[itemIndex];
 
               return switch (item) {
-                DateHeaderListItem(:final date) => DateHeaderWidget(
+                DateHeaderListItem(:final date) => Opacity(
                     key: _dateHeaderGlobalKey(date),
-                    dateString: AppDateUtils.formatDateHeader(date, context),
-                    date: date,
+                    opacity: _stickyDateHeaderDate != null &&
+                            _isSameLocalDate(_stickyDateHeaderDate!, date)
+                        ? 0
+                        : 1,
+                    child: DateHeaderWidget(
+                      dateString: AppDateUtils.formatDateHeader(date, context),
+                      date: date,
+                    ),
                   ),
                 MessageListItem(
                   :final message,

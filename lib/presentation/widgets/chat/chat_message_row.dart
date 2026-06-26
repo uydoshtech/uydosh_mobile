@@ -13,6 +13,7 @@ class ChatMessageRow extends StatelessWidget {
     this.leftAvatarUrl,
     this.rightAvatarUrl,
     this.belowBubble,
+    this.bubbleAccentColor,
     super.key,
   });
 
@@ -46,16 +47,19 @@ class ChatMessageRow extends StatelessWidget {
   /// Optional avatar image URL (raw or resolvable) for the right avatar.
   final String? rightAvatarUrl;
 
+  /// Optional role/accent treatment applied by [ChatBubbleWithTail].
+  final Color? bubbleAccentColor;
+
   @override
   Widget build(BuildContext context) {
-    final bubbleColumnCrossAxis = isFromCurrentUser
-        ? CrossAxisAlignment.end
-        : CrossAxisAlignment.start;
+    final bubbleColumnCrossAxis =
+        isFromCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
 
     final Widget flexibleInner;
     if (belowBubble == null) {
       flexibleInner = ChatBubbleWithTail(
         isFromCurrentUser: isFromCurrentUser,
+        accentColor: bubbleAccentColor,
         child: bubbleChild,
       );
     } else {
@@ -76,6 +80,7 @@ class ChatMessageRow extends StatelessWidget {
                 children: [
                   ChatBubbleWithTail(
                     isFromCurrentUser: isFromCurrentUser,
+                    accentColor: bubbleAccentColor,
                     child: bubbleChild,
                   ),
                   belowBubble!(context, constraints.maxWidth),

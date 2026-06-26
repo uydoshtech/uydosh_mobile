@@ -79,14 +79,13 @@ class _SearchResultsShell extends StatelessWidget {
           Positioned(
             right: 16,
             top: viewToggleTop,
-            child: Transform.scale(
-              scale: 0.92,
-              child: SearchFloatingActionButton(
-                onPressed: onOpenMapView,
-                iconData: Icons.map_rounded,
-                tooltip: L10n.get("open_map_view"),
-                elevation: ThemeState().isBlueTheme ? null : 8,
-              ),
+            child: SearchFloatingActionButton(
+              onPressed: onOpenMapView,
+              iconData: Icons.map_rounded,
+              tooltip: L10n.get("open_map_view"),
+              width: 68,
+              height: 46,
+              elevation: ThemeState().isBlueTheme ? null : 8,
             ),
           ),
         _SearchResultsFabStack(

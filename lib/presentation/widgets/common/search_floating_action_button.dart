@@ -22,6 +22,8 @@ class SearchFloatingActionButton extends StatefulWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.iconSize = 25.0,
+    this.width,
+    this.height,
     this.elevation,
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
@@ -37,6 +39,8 @@ class SearchFloatingActionButton extends StatefulWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double? iconSize;
+  final double? width;
+  final double? height;
   final double? elevation;
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
@@ -126,7 +130,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final theme = Theme.of(context);
     final base = widget.backgroundColor ?? theme.colorScheme.surface;
     final tip = widget.tooltip ?? L10n.get("search");
-    // Match the profile button shape (circle-ish), but keep the same 56x56 size.
+    final width = widget.width ?? SearchFloatingActionButton.fabSize;
+    final height = widget.height ?? SearchFloatingActionButton.fabSize;
     final radius = const BorderRadius.all(Radius.circular(999));
     final fg = widget.foregroundColor ??
         (ThemeState().isBlueTheme ? Colors.white : Colors.black);
@@ -152,13 +157,11 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     // Mirrors `_buildInlineFiltersRibbon` on [HomeScreen]: [LiquidGlassPlate] is
     // the glass surface; interaction sits inside it (ribbon uses IconButtons).
     final Widget liquidBody = SizedBox(
-      width: SearchFloatingActionButton.fabSize,
-      height: SearchFloatingActionButton.fabSize,
+      width: width,
+      height: height,
       child: LiquidGlassPlate(
-        height: SearchFloatingActionButton.fabSize,
-        borderRadius: BorderRadius.circular(
-          SearchFloatingActionButton.fabSize / 2,
-        ),
+        height: height,
+        borderRadius: BorderRadius.circular(height / 2),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: (_) => setPressed(true),
@@ -190,8 +193,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
         onHighlightChanged: setPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 90),
-          width: SearchFloatingActionButton.fabSize,
-          height: SearchFloatingActionButton.fabSize,
+          width: width,
+          height: height,
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: shadows,

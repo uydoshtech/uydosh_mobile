@@ -88,17 +88,16 @@ class _SearchResultsMapContent extends StatelessWidget {
                 ),
               Positioned(
                 right: 16,
-                top: 12,
-                child: Transform.scale(
-                  scale: 0.92,
-                  child: SearchFloatingActionButton(
-                    onPressed: onOpenFeedView,
-                    iconData: Icons.view_list_rounded,
-                    tooltip: L10n.get("open_feed_view"),
-                    foregroundColor:
-                        ThemeState().isBlueTheme ? Colors.black : null,
-                    elevation: ThemeState().isBlueTheme ? null : 8,
-                  ),
+                top: 4,
+                child: SearchFloatingActionButton(
+                  onPressed: onOpenFeedView,
+                  iconData: Icons.view_list_rounded,
+                  tooltip: L10n.get("open_feed_view"),
+                  width: 68,
+                  height: 46,
+                  foregroundColor:
+                      ThemeState().isBlueTheme ? Colors.black : null,
+                  elevation: ThemeState().isBlueTheme ? null : 8,
                 ),
               ),
             ],

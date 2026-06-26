@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -13,9 +14,9 @@ import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/photo.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
-import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_geo_label_rows.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
+import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 TextStyle _plusOneFontSize(BuildContext context, TextStyle? style) {
   final fallbackStyle = DefaultTextStyle.of(context).style;
@@ -184,8 +185,6 @@ class GroupShortlistItemCard extends StatelessWidget {
                           style: _plusOneFontSize(
                             context,
                             theme.textTheme.bodyMedium,
-                          ).copyWith(
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         if (amenities.isNotEmpty) ...[
@@ -712,8 +711,7 @@ class _OwnerLine extends StatelessWidget {
               context,
               Theme.of(context).textTheme.bodySmall,
             ).copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -757,12 +755,18 @@ class _ListingLocationRows extends StatelessWidget {
   const _ListingLocationRows({required this.listing});
 
   final Listing listing;
+  static const Color _blueThemeSecondary = Color(0xFFB3C0CC);
+
+  Color _locationTextColor() {
+    return ThemeState().isBlueTheme ? _blueThemeSecondary : Colors.black;
+  }
 
   @override
   Widget build(BuildContext context) {
     final districtLabel = GroupShortlistItemCard.districtLabelFor(listing);
     final stationLabel = GroupShortlistItemCard.stationLabelFor(listing);
     final hasPlaceLabel = GroupShortlistItemCard.hasAnyPlaceLabel(listing);
+    final textColor = _locationTextColor();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -770,20 +774,62 @@ class _ListingLocationRows extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (districtLabel.isNotEmpty)
-            ListingDistrictLabelRow(label: districtLabel),
+            _FeedPlaceLabelRow(
+              icon: Icons.location_on,
+              iconColor: AppColors.error,
+              label: districtLabel,
+              textColor: textColor,
+            ),
           if (!hasPlaceLabel)
-            ListingDistrictLabelRow(
+            _FeedPlaceLabelRow(
+              icon: Icons.location_on,
+              iconColor: AppColors.error,
               label: GroupShortlistItemCard._fallbackLocationLabel(),
+              textColor: textColor,
             ),
           if (stationLabel.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            ListingMetroLabelRow(
+            const SizedBox(height: 8),
+            _FeedPlaceLabelRow(
+              icon: Icons.train,
+              iconColor: GroupShortlistItemCard.stationLineColorFor(listing),
               label: stationLabel,
-              lineColor: GroupShortlistItemCard.stationLineColorFor(listing),
+              textColor: textColor,
             ),
           ],
         ],
       ),
+    );
+  }
+}
+
+class _FeedPlaceLabelRow extends StatelessWidget {
+  const _FeedPlaceLabelRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.textColor,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        ThemeIcon(icon, color: iconColor, size: 20),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 14, color: textColor),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1101,10 +1147,13 @@ class _GroupRatingAiSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final summaryStyle = theme.textTheme.bodySmall?.copyWith(
+    final baseSummaryStyle = theme.textTheme.bodySmall;
+    final summaryStyle = baseSummaryStyle?.copyWith(
       color: scheme.onSurface.withValues(alpha: 0.82),
+      fontSize: (baseSummaryStyle.fontSize ?? 12) + 1,
       height: 1.25,
     );
+    final titleStyle = theme.textTheme.labelMedium;
 
     return Container(
       width: double.infinity,
@@ -1132,8 +1181,9 @@ class _GroupRatingAiSummary extends StatelessWidget {
                   L10n.get("group_shortlist_ai_summary_title"),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelMedium?.copyWith(
+                  style: titleStyle?.copyWith(
                     color: scheme.onSurface,
+                    fontSize: (titleStyle.fontSize ?? 12) + 1,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

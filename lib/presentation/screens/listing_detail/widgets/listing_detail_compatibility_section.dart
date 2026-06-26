@@ -1199,7 +1199,7 @@ class _ListingDetailCompatibilitySectionState
     );
   }
 
-  /// AI-generated group compatibility summary shown above the matrix avatars.
+  /// AI-generated group compatibility summary shown below the matrix.
   /// Hidden until the backend has produced a report for this group.
   Widget _buildGroupCompatibilityReport(Color textColor) {
     final report = widget.listingDetail.groupCompatibilityReport?.trim();
@@ -1648,8 +1648,6 @@ class _ListingDetailCompatibilitySectionState
             ],
           ),
           children: [
-            _buildGroupCompatibilityReport(textColor),
-            const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(_matrixTableCornerRadius),
               child: DecoratedBox(
@@ -1770,10 +1768,13 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupCompatibilityBody() {
+    final textColor = _getDescriptionTextColor();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildGroupPreferenceMatrix(),
+        _buildGroupCompatibilityReport(textColor),
         if (widget.groupPreferenceMatrix.isEmpty)
           UydoshLinkButton(
             text: L10n.get("complete_profile"),
