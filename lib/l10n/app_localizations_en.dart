@@ -204,6 +204,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_feed_view => 'Open feed view';
 
   @override
+  String get show_district_layer => 'Show districts layer';
+
+  @override
+  String get hide_district_layer => 'Hide districts layer';
+
+  @override
   String get error => 'Error';
 
   @override
@@ -1916,6 +1922,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_panel_section_subway_map => 'Subway map';
+
+  @override
+  String get admin_panel_section_universities_map => 'Universities map';
+
+  @override
+  String get admin_universities_map_title => 'Universities map';
+
+  @override
+  String get admin_universities_map_error => 'Could not load universities';
+
+  @override
+  String get admin_universities_map_retry => 'Retry';
+
+  @override
+  String get admin_universities_map_empty =>
+      'No universities with map coordinates yet.';
 
   @override
   String get admin_panel_section_search_analytics => 'Search analytics';

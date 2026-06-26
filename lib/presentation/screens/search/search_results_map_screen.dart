@@ -90,6 +90,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   ListingMapPin? _selectedPin;
   UniversityMapMarker? _selectedUniversityMarker;
   List<UniversityMapMarker> _universityMarkers = const [];
+  bool _showDistrictLayer = false;
 
   late int _listingTypeId;
   int? _locationId;
@@ -634,8 +635,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedPin: _selectedPin,
       selectedUniversityMarker: _selectedUniversityMarker,
       universityMarkers: _universityMarkers,
+      showDistrictLayer: _showDistrictLayer,
       onOpenFilters: _openFilters,
       onOpenFeedView: _openFeedView,
+      onToggleDistrictLayer: () {
+        setState(() => _showDistrictLayer = !_showDistrictLayer);
+      },
       onClearSelectedPin: () => setState(() => _selectedPin = null),
       onClearSelectedUniversityMarker: () {
         setState(() => _selectedUniversityMarker = null);

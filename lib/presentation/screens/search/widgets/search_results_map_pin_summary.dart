@@ -5,6 +5,7 @@ class _PinSummaryTooltip extends StatelessWidget {
     required this.pin,
     required this.onClose,
     required this.onOpen,
+    super.key,
   });
 
   final ListingMapPin pin;

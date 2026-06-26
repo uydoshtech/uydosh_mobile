@@ -6,6 +6,7 @@ import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/cache/tashkent_district_boundary_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -130,6 +131,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showUniversityMarkerTooltip = true,
     this.showDefaultPlacemark = true,
     this.showUserLocation = false,
+    this.showDistrictLayer = false,
   });
 
   final double? latitude;
@@ -151,6 +153,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showUniversityMarkerTooltip;
   final bool showDefaultPlacemark;
   final bool showUserLocation;
+  final bool showDistrictLayer;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -241,7 +244,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       final universityIconBytes = await _createIconBytes(
         Icons.school_rounded,
         112,
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.success,
         outlineColor: Colors.white,
         outlineWidth: 7,
         shadowColor: Colors.black.withValues(alpha: 0.32),
@@ -335,31 +338,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                       centerPoint["longitude"]!,
                     )
                   : _buildMobileMap(context, centerPoint, mapObjects),
-            if (_showListingDetailTooltip && widget.listingDetail != null)
-              Positioned(
-                left: 8,
-                right: 8,
-                top: 8,
-                child: _ListingDetailMapTooltip(
-                  listingDetail: widget.listingDetail!,
-                  onClose: () => setState(() {
-                    _showListingDetailTooltip = false;
-                  }),
-                ),
+            Positioned(
+              left: 8,
+              right: 8,
+              top: 8,
+              child: MapTooltipFadeTransition(
+                child: _activeMapTooltip(),
               ),
-            if (widget.showUniversityMarkerTooltip &&
-                _selectedUniversityMarker != null)
-              Positioned(
-                left: 8,
-                right: 8,
-                top: 8,
-                child: UniversityMapTooltip(
-                  marker: _selectedUniversityMarker!,
-                  onClose: () => setState(() {
-                    _selectedUniversityMarker = null;
-                  }),
-                ),
-              ),
+            ),
             // Zoom controls (only when map is ready)
             if (!kIsWeb && _isMapReady) _buildZoomControls(),
           ],
@@ -622,24 +608,31 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   List<MapObject> _createMapObjects() {
+    final districtLayerObjects = widget.showDistrictLayer
+        ? _createDistrictLayerMapObjects()
+        : const <MapObject>[];
     final universityMarkerObjects = _createUniversityMarkerMapObjects();
     if (widget.pins.isNotEmpty) {
       return [
+        ...districtLayerObjects,
         ..._createListingPinMapObjects(),
         ...universityMarkerObjects,
       ];
     }
     if (universityMarkerObjects.isNotEmpty) {
-      return universityMarkerObjects;
+      return [
+        ...districtLayerObjects,
+        ...universityMarkerObjects,
+      ];
     }
     if (!widget.showDefaultPlacemark) {
-      return [];
+      return districtLayerObjects;
     }
 
     final coordinates = _getCoordinates();
     if (coordinates == null) {
       logger.w("❌ No coordinates available for map objects");
-      return [];
+      return districtLayerObjects;
     }
 
     logger.d(
@@ -679,7 +672,68 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     logger.d(
       "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
     );
-    return [placemark];
+    return [
+      ...districtLayerObjects,
+      placemark,
+    ];
+  }
+
+  List<MapObject> _createDistrictLayerMapObjects() {
+    return [
+      for (final district in TashkentDistrictBoundaryCache.districts)
+        for (var polygonIndex = 0;
+            polygonIndex < district.polygons.length;
+            polygonIndex++)
+          PolygonMapObject(
+            mapId: MapObjectId(
+              "tashkent_district_${district.locationId}_$polygonIndex",
+            ),
+            polygon: Polygon(
+              outerRing: _toLinearRing(
+                district.polygons[polygonIndex].outerRing,
+              ),
+              innerRings: [
+                for (final ring in district.polygons[polygonIndex].innerRings)
+                  _toLinearRing(ring),
+              ],
+            ),
+            zIndex: 0.1,
+            strokeWidth: 2.0,
+            strokeColor: _districtLayerColor(
+              district.locationId,
+            ).withValues(alpha: 0.78),
+            fillColor: _districtLayerColor(
+              district.locationId,
+            ).withValues(alpha: 0.22),
+          ),
+    ];
+  }
+
+  LinearRing _toLinearRing(List<DistrictBoundaryPoint> points) {
+    return LinearRing(
+      points: [
+        for (final point in points)
+          Point(latitude: point.latitude, longitude: point.longitude),
+      ],
+    );
+  }
+
+  Color _districtLayerColor(int locationId) {
+    const colors = [
+      Color(0xFFE53935),
+      Color(0xFF8E24AA),
+      Color(0xFF3949AB),
+      Color(0xFF1E88E5),
+      Color(0xFF00ACC1),
+      Color(0xFF43A047),
+      Color(0xFF7CB342),
+      Color(0xFFFDD835),
+      Color(0xFFFFB300),
+      Color(0xFFFB8C00),
+      Color(0xFF6D4C41),
+      Color(0xFF546E7A),
+    ];
+    return colors[(locationId - 1).abs() % colors.length];
   }
 
   List<MapObject> _createUniversityMarkerMapObjects() {
@@ -1036,6 +1090,32 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return widget.showListingDetailTooltip && widget.listingDetail != null;
   }
 
+  Widget? _activeMapTooltip() {
+    final listingDetail = widget.listingDetail;
+    if (_showListingDetailTooltip && listingDetail != null) {
+      return _ListingDetailMapTooltip(
+        key: ValueKey("listing-detail-${listingDetail.id}"),
+        listingDetail: listingDetail,
+        onClose: () => setState(() {
+          _showListingDetailTooltip = false;
+        }),
+      );
+    }
+
+    final marker = _selectedUniversityMarker;
+    if (widget.showUniversityMarkerTooltip && marker != null) {
+      return UniversityMapTooltip(
+        key: ValueKey("university-${marker.id}"),
+        marker: marker,
+        onClose: () => setState(() {
+          _selectedUniversityMarker = null;
+        }),
+      );
+    }
+
+    return null;
+  }
+
   void _syncSelectedUniversityMarker() {
     final selected = _selectedUniversityMarker;
     if (selected == null) return;
@@ -1290,10 +1370,56 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 }
 
+class MapTooltipFadeTransition extends StatelessWidget {
+  const MapTooltipFadeTransition({
+    required this.child,
+    super.key,
+    this.duration = const Duration(milliseconds: 220),
+    this.reverseDuration = const Duration(milliseconds: 170),
+  });
+
+  final Widget? child;
+  final Duration duration;
+  final Duration reverseDuration;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: duration,
+      reverseDuration: reverseDuration,
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: duration,
+        reverseDuration: reverseDuration,
+        transitionBuilder: (child, animation) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+          return FadeTransition(
+            opacity: curvedAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, -0.04),
+                end: Offset.zero,
+              ).animate(curvedAnimation),
+              child: child,
+            ),
+          );
+        },
+        child: child ?? const SizedBox.shrink(key: ValueKey("empty-tooltip")),
+      ),
+    );
+  }
+}
+
 class _ListingDetailMapTooltip extends StatelessWidget {
   const _ListingDetailMapTooltip({
     required this.listingDetail,
     required this.onClose,
+    super.key,
   });
 
   final ListingDetail listingDetail;

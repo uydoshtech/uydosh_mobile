@@ -205,6 +205,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get open_feed_view => 'Lentani ochish';
 
   @override
+  String get show_district_layer => 'Tumanlar qatlamini ko‘rsatish';
+
+  @override
+  String get hide_district_layer => 'Tumanlar qatlamini yashirish';
+
+  @override
   String get error => 'Xatolik';
 
   @override
@@ -1945,6 +1951,22 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get admin_panel_section_subway_map => 'Metro sxemasi';
+
+  @override
+  String get admin_panel_section_universities_map => 'Universitetlar xaritasi';
+
+  @override
+  String get admin_universities_map_title => 'Universitetlar xaritasi';
+
+  @override
+  String get admin_universities_map_error => 'Universitetlar yuklanmadi';
+
+  @override
+  String get admin_universities_map_retry => 'Qayta urinish';
+
+  @override
+  String get admin_universities_map_empty =>
+      'Xarita koordinatalari bor universitetlar hali yo\'q.';
 
   @override
   String get admin_panel_section_search_analytics => 'Qidiruv statistikasi';

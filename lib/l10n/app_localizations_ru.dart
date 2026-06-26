@@ -205,6 +205,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_feed_view => 'Открыть ленту';
 
   @override
+  String get show_district_layer => 'Показать слой районов';
+
+  @override
+  String get hide_district_layer => 'Скрыть слой районов';
+
+  @override
   String get error => 'Ошибка';
 
   @override
@@ -1923,6 +1929,23 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get admin_panel_section_subway_map => 'Схема метро';
+
+  @override
+  String get admin_panel_section_universities_map => 'Карта университетов';
+
+  @override
+  String get admin_universities_map_title => 'Карта университетов';
+
+  @override
+  String get admin_universities_map_error =>
+      'Не удалось загрузить университеты';
+
+  @override
+  String get admin_universities_map_retry => 'Повторить';
+
+  @override
+  String get admin_universities_map_empty =>
+      'Пока нет университетов с координатами для карты.';
 
   @override
   String get admin_panel_section_search_analytics => 'Аналитика поиска';
