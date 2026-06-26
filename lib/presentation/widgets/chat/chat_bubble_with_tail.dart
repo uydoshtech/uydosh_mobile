@@ -93,21 +93,26 @@ class ChatBubbleWithTail extends StatelessWidget {
 
         final contentChild = accent == null
             ? child
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 3,
-                    height: 34,
-                    margin: const EdgeInsetsDirectional.only(end: 10, top: 2),
-                    decoration: BoxDecoration(
-                      color: accent,
-                      borderRadius: BorderRadius.circular(999),
+            : IntrinsicHeight(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 3,
+                      margin: const EdgeInsetsDirectional.only(
+                        end: 10,
+                        top: 2,
+                        bottom: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                     ),
-                  ),
-                  Flexible(child: child),
-                ],
+                    Flexible(child: child),
+                  ],
+                ),
               );
 
         final content = Container(

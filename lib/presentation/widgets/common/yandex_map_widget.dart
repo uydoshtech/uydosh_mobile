@@ -11,6 +11,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
@@ -134,6 +135,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
+  final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
+  final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   YandexMapController? _mapController;
   bool _isMapReady = false;
   bool _isInitializing = false;
@@ -186,14 +189,36 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         shadowBlurRadius: 10,
         shadowOffset: const Offset(0, 5),
       );
+      final listingTypeIconBytes = <String, Uint8List>{};
+      final selectedListingTypeIconBytes = <String, Uint8List>{};
+      for (final code in ListingTypeHelper.getAllCodes()) {
+        final icon = ListingTypeHelper.getIcon(code);
+        listingTypeIconBytes[code] = await _createIconBytes(icon, 100);
+        selectedListingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          124,
+          backgroundColor: AppColors.primary,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+          shadowColor: Colors.black.withValues(alpha: 0.35),
+          shadowBlurRadius: 10,
+          shadowOffset: const Offset(0, 5),
+        );
+      }
       _cachedIconBytes = iconBytes;
       _cachedSelectedIconBytes = selectedIconBytes;
-      logger.d("✅ Map house icon created successfully");
+      _cachedListingTypeIconBytes
+        ..clear()
+        ..addAll(listingTypeIconBytes);
+      _cachedSelectedListingTypeIconBytes
+        ..clear()
+        ..addAll(selectedListingTypeIconBytes);
+      logger.d("✅ Map listing type icons created successfully");
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      logger.e("❌ Error creating map house icon: $e");
+      logger.e("❌ Error creating map listing type icons: $e");
     }
   }
 
@@ -515,7 +540,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     BitmapDescriptor iconDescriptor;
     if (_cachedIconBytes != null) {
       logger.d("🎨 Using Cupertino location icon");
-      iconDescriptor = BitmapDescriptor.fromBytes(_cachedIconBytes!);
+      final listingTypeCode = widget.listingDetail?.listingType.code;
+      final listingTypeIconBytes = listingTypeCode == null
+          ? null
+          : _cachedListingTypeIconBytes[listingTypeCode];
+      iconDescriptor = BitmapDescriptor.fromBytes(
+        listingTypeIconBytes ?? _cachedIconBytes!,
+      );
     } else {
       logger.d("🖼️ Using PNG fallback");
       iconDescriptor = BitmapDescriptor.fromAssetImage(
@@ -550,9 +581,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       logger.w("📍 Listing pin icon is not ready yet");
       return [];
     }
-    final iconDescriptor = BitmapDescriptor.fromBytes(iconBytes);
-    final selectedIconDescriptor =
-        BitmapDescriptor.fromBytes(selectedIconBytes);
     final selectedListingId = widget.selectedListingId;
     final orderedPins = <ListingMapPin>[
       for (final pin in widget.pins)
@@ -572,7 +600,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: selectedIconDescriptor,
+                image: _listingPinIconDescriptor(pin, selected: true),
                 anchor: const Offset(0.5, 0.5),
                 scale: 1.0,
               ),
@@ -588,7 +616,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: iconDescriptor,
+                image: _listingPinIconDescriptor(pin),
                 anchor: const Offset(0.5, 0.5),
                 scale: 0.9,
               ),
@@ -596,6 +624,54 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             onTap: (_, __) => widget.onPinTap?.call(pin),
           ),
     ];
+  }
+
+  BitmapDescriptor _listingPinIconDescriptor(
+    ListingMapPin pin, {
+    bool selected = false,
+  }) {
+    return _listingTypeIconDescriptor(
+      listingTypeCode: pin.listingTypeCode,
+      listingTypeId: pin.listingTypeId,
+      selected: selected,
+    );
+  }
+
+  BitmapDescriptor _listingTypeIconDescriptor({
+    String? listingTypeCode,
+    int? listingTypeId,
+    bool selected = false,
+  }) {
+    final fallbackBytes =
+        selected ? _cachedSelectedIconBytes : _cachedIconBytes;
+    final bytesByCode = selected
+        ? _cachedSelectedListingTypeIconBytes
+        : _cachedListingTypeIconBytes;
+    final resolvedCode = _resolveListingTypeCode(
+      listingTypeCode: listingTypeCode,
+      listingTypeId: listingTypeId,
+    );
+    final iconBytes = resolvedCode == null ? null : bytesByCode[resolvedCode];
+    return BitmapDescriptor.fromBytes(iconBytes ?? fallbackBytes!);
+  }
+
+  String? _resolveListingTypeCode({
+    String? listingTypeCode,
+    int? listingTypeId,
+  }) {
+    final code = listingTypeCode;
+    if (code != null &&
+        code.isNotEmpty &&
+        ListingTypeHelper.getAllCodes().contains(code)) {
+      return code;
+    }
+
+    final id = listingTypeId;
+    if (id == null) return null;
+    final codeFromId = ListingTypeHelper.getCodeFromId(id);
+    return ListingTypeHelper.getAllCodes().contains(codeFromId)
+        ? codeFromId
+        : null;
   }
 
   Map<String, double>? _getCoordinates() {

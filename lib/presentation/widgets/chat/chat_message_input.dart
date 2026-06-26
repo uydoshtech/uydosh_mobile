@@ -9,7 +9,6 @@ import "package:uy_dosh/presentation/widgets/common/listing_description_dictatio
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 
 class ChatMessageInput extends StatefulWidget {
   const ChatMessageInput({
@@ -58,11 +57,13 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
       ]),
       builder: (context, child) {
         final themeState = ThemeState();
-        final inputBackgroundColor = themeState.chatComposerFieldBackground(context);
-        final inputFieldTextColor = themeState.chatComposerFieldTextColor(context);
-        final inputFieldHintColor = themeState.chatComposerFieldHintColor(context);
+        final inputBackgroundColor =
+            themeState.chatComposerFieldBackground(context);
+        final inputFieldTextColor =
+            themeState.chatComposerFieldTextColor(context);
+        final inputFieldHintColor =
+            themeState.chatComposerFieldHintColor(context);
         final sendButtonColor = themeState.sendButtonColor;
-        final borderColor = themeState.borderColor;
         final scheme = Theme.of(context).colorScheme;
         final sendButtonBase = Color.lerp(
           scheme.surface,
@@ -73,41 +74,60 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
 
         // Bottom safe area is handled below this bar (e.g. quick questions row);
         // avoid stacking large bottom padding here or it reads as empty space.
-        final barDecoration =
-            widget.blendWithGlassBackdrop
-                ? null
-                : BoxDecoration(
-                  color: themeState.chatInputBarBackgroundColor,
-                  border: Border(top: BorderSide(color: borderColor)),
-                );
-        final fieldRadius =
-            themeState.isBlueTheme
-                ? ThreeDSurfaceStyle.wheelPickerPlateRadius
-                : const BorderRadius.all(Radius.circular(24));
+        final barDecoration = widget.blendWithGlassBackdrop
+            ? null
+            : BoxDecoration(
+                color: themeState.chatInputBarBackgroundColor,
+              );
+        final fieldRadius = themeState.isBlueTheme
+            ? ThreeDSurfaceStyle.wheelPickerPlateRadius
+            : const BorderRadius.all(Radius.circular(24));
+        final inputBorderColor = themeState.isBlueTheme
+            ? Colors.white.withValues(alpha: 0.35)
+            : Theme.of(context).brightness == Brightness.light
+                ? Colors.grey.shade400
+                : scheme.onSurface.withValues(alpha: 0.08);
+        final inputBorder = OutlineInputBorder(
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: inputBorderColor),
+        );
 
-        Widget textField = ThreeDTextField(
+        Widget textField = TextField(
           controller: widget.controller,
           focusNode: widget.focusNode,
-          hintText: L10n.get("type_message"),
-          backgroundColor: inputBackgroundColor,
-          textColor: inputFieldTextColor,
-          hintColor: inputFieldHintColor,
           cursorColor: inputFieldTextColor,
-          borderRadius: fieldRadius,
+          style: TextStyle(color: inputFieldTextColor),
           maxLines: null,
           textCapitalization: TextCapitalization.sentences,
           textInputAction: TextInputAction.newline,
-          suffixIcon: ListingDescriptionDictateButton(
-            controller: widget.controller,
-            iconOnly: true,
-            enabled: !widget.isSendingMessage,
-            iconColor: inputFieldHintColor,
-            maxDescriptionLength: 2000,
-            dictationMeter: _dictationMeter,
-          ),
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 40,
-            minHeight: 40,
+          decoration: InputDecoration(
+            hintText: L10n.get("type_message"),
+            hintStyle: TextStyle(color: inputFieldHintColor),
+            suffixIcon: ListingDescriptionDictateButton(
+              controller: widget.controller,
+              iconOnly: true,
+              enabled: !widget.isSendingMessage,
+              iconColor: inputFieldHintColor,
+              maxDescriptionLength: 2000,
+              dictationMeter: _dictationMeter,
+            ),
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 40,
+            ),
+            filled: true,
+            fillColor: inputBackgroundColor,
+            border: inputBorder,
+            enabledBorder: inputBorder,
+            disabledBorder: inputBorder,
+            focusedBorder: inputBorder.copyWith(
+              borderSide: BorderSide(color: inputBorderColor, width: 1.2),
+            ),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         );
         final hasText = widget.controller.text.trim().isNotEmpty;
@@ -130,14 +150,15 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
                 alignment: Alignment.topCenter,
                 child: recording
                     ? Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: IgnorePointer(
-                        child: ListingDescriptionDictationMeterCompact(
-                          controller: _dictationMeter,
-                          fillColor: inputFieldHintColor.withValues(alpha: 0.85),
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: IgnorePointer(
+                          child: ListingDescriptionDictationMeterCompact(
+                            controller: _dictationMeter,
+                            fillColor:
+                                inputFieldHintColor.withValues(alpha: 0.85),
+                          ),
                         ),
-                      ),
-                    )
+                      )
                     : const SizedBox(width: double.infinity),
               ),
               Row(
@@ -147,13 +168,12 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
                   ),
                   const SizedBox(width: 8),
                   ThreeDPillButton(
-                    onPressed:
-                        widget.isSendingMessage
-                            ? null
-                            : () {
-                              HapticFeedbackUtils.impact();
-                              widget.onSend();
-                            },
+                    onPressed: widget.isSendingMessage
+                        ? null
+                        : () {
+                            HapticFeedbackUtils.impact();
+                            widget.onSend();
+                          },
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 10,
@@ -167,19 +187,18 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
                       width: 24,
                       height: 24,
                       child: Center(
-                        child:
-                            widget.isSendingMessage
-                                ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      sendButtonColor,
-                                    ),
+                        child: widget.isSendingMessage
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    sendButtonColor,
                                   ),
-                                )
-                                : ThemeIcon(Icons.send, color: sendButtonColor),
+                                ),
+                              )
+                            : ThemeIcon(Icons.send, color: sendButtonColor),
                       ),
                     ),
                   ),

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 
@@ -55,6 +56,8 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final descriptionColor =
+        ThemeState().isLightTheme ? Colors.black : scheme.onSurfaceVariant;
     final cancelTextColor = scheme.onSurface;
     final confirmTextColor = confirmButtonColor ??
         (isDestructive ? scheme.error : scheme.onSurface);
@@ -72,7 +75,7 @@ class ConfirmationDialog extends StatelessWidget {
         L10n.get(messageKey),
         style: TextStyle(
           fontSize: 16,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: descriptionColor,
         ),
       ),
       actions: [

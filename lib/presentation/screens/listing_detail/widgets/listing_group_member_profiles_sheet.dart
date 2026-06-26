@@ -43,6 +43,7 @@ const _sheetFullGroupHeaderExtraHeight = 55.0;
 const _sheetFullGroupShortlistActionHeight = 52.0;
 const _sheetListBottomPadding = 16.0;
 const _sheetCardGap = 10.0;
+const _sheetMeasurementSlack = 8.0;
 const _sheetPendingSectionHeaderHeight = 46.0;
 const _sheetLoadingRequestsHeight = 48.0;
 const _memberCardBaseHeight = 82.0;
@@ -782,10 +783,14 @@ class _ListingGroupMemberProfilesSheetState
         final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
             ? maxSheetHeight
             : _sheetMinimumHeight;
-        final sheetHeight = estimatedSheetHeight
+        final wantsFullHeight =
+            estimatedSheetHeight + _sheetMeasurementSlack >= maxSheetHeight;
+        final sheetHeight = (wantsFullHeight
+                ? maxSheetHeight
+                : estimatedSheetHeight + _sheetMeasurementSlack)
             .clamp(minSheetHeight, maxSheetHeight)
             .toDouble();
-        final shouldScroll = estimatedSheetHeight > maxSheetHeight;
+        final shouldScroll = wantsFullHeight;
 
         return SizedBox(
           height: sheetHeight,

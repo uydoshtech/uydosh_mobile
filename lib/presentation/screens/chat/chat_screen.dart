@@ -2810,16 +2810,9 @@ class _ChatScreenState extends State<ChatScreen> {
               final item = groupedItems[itemIndex];
 
               return switch (item) {
-                DateHeaderListItem(:final date) => Opacity(
+                DateHeaderListItem(:final date) => SizedBox(
                     key: _dateHeaderGlobalKey(date),
-                    opacity: _stickyDateHeaderDate != null &&
-                            _isSameLocalDate(_stickyDateHeaderDate!, date)
-                        ? 0
-                        : 1,
-                    child: DateHeaderWidget(
-                      dateString: AppDateUtils.formatDateHeader(date, context),
-                      date: date,
-                    ),
+                    height: 10,
                   ),
                 MessageListItem(
                   :final message,
